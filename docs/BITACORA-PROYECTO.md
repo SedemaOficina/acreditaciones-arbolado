@@ -100,3 +100,26 @@ esté vigente; la corrección de CURP se verifica contra el documento.
 
 **Eliminado**: los campos separados `tipo` y `modalidad` del formulario (sustituidos por `tramite`); la
 contraseña ficticia `Prueba-2026`; las CURP ficticias con clave `PRUEB`.
+
+## 2026-10-14 · Bloque 7 · Observaciones de Liber: expediente, pago, entrega, CURP y menú de pruebas
+
+- **Expediente por persona**: una CURP, un expediente, para todos sus trámites; se abre en el primer cotejo
+  (`apd.asignar_expediente`, SECURITY DEFINER). Se retiró de la solicitud.
+- **Datos de pago** al validar con cita: concepto y monto por curso (monto pendiente de la Gaceta), referencia
+  provisional (folio sin guiones) e instrucciones (pendientes de Finanzas). Se ven en «Mis trámites».
+- **Firma de recibido**: requisito «Acuse de entrega firmado» (momento `entrega`), cargado por el personal; sin
+  él la base no registra la entrega.
+- **Cuenta**: se pide la fecha de nacimiento y la CURP se comprueba contra nombre, apellidos y fecha
+  (`sitio/app/curp-nombre.js`, la misma regla en navegador y servidor). Las CURP ficticias se forman ahora del
+  nombre ficticio. Activar una cuenta de Kobo exige además el nombre del registro.
+- **Avisos**: «Mis trámites» dice el resultado del examen y cuándo y dónde recoger la acreditación.
+- **Menú de pruebas** en todas las pantallas (sólo versión 0.N): entrar como cualquier persona ficticia,
+  desactivar las obligatorias, llenar con datos ficticios, saltar de paso, simular fallos.
+- Confirmados sin cambio: RFC lo captura el personal; factura → bandeja (no inscripción automática); 7/8;
+  cupos 5–25; documentos de renovación.
+- Mapa del trámite actualizado (versión 6): R01, R03, R18, R20, R21, R35, R40, R46 y la nueva R49.
+
+**Verificado**: 77 de 77 pruebas de la base; 18 casos de validación en el servidor; 86 comprobaciones del sitio
+en teléfono y escritorio, con accesibilidad (axe) sin hallazgos.
+
+**Eliminado**: `solicitud.numero_expediente` y su restricción (pasa a `solicitante`); las CURP ficticias `XAXX…`.

@@ -12,10 +12,10 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`requisito`](#requisito) — Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
 - [`organizacion`](#organizacion) — Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.
-- [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+- [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
 - [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
-- [`solicitud`](#solicitud) — Un trámite: una persona, un curso. Sus cambios de estado los valida la base y quedan en la bitácora.
+- [`solicitud`](#solicitud) — Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
 - [`revision`](#revision) — Cada ronda de revisión documental en línea, con su resultado. Permite contar cuántas vueltas dio un expediente.
 - [`documento`](#documento) — Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`grupo`](#grupo) — Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con el cupo mínimo y nunca pasa del máximo.
@@ -53,6 +53,8 @@ Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asiste
 | `calificacion_minima` | `numeric(3,1)` | Sí | Calificación mínima aprobatoria, de 0 a 10 |
 | `cupo_minimo` | `smallint` | Sí | Personas necesarias para confirmar un grupo |
 | `cupo_maximo` | `smallint` | Sí | Personas máximas en un grupo |
+| `pago_concepto` | `text` | Sí | Concepto del pago de derechos que se muestra a la persona al asignarle la cita de cotejo |
+| `pago_monto` | `numeric(10,2)` | No | Monto del pago de derechos, en pesos. Vacío mientras no se confirme con la Gaceta Oficial |
 | `activo` | `boolean` | Sí | Si se pueden abrir grupos de este curso (por omisión: `true`) |
 | `actualizado_en` | `timestamptz` | Sí | Último cambio (por omisión: `now()`) |
 
@@ -64,6 +66,7 @@ Restricciones e índices:
 - `CONSTRAINT curso_dias_ck CHECK (dias_duracion BETWEEN 1 AND 15 AND dias_minimos_asistencia BETWEEN 1 AND dias_duracion)`
 - `CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10)`
 - `CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)`
+- `CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR pago_monto > 0)`
 
 ## requisito
 
@@ -75,14 +78,14 @@ Catálogo de requisitos. Un requisito es un documento que se carga o un registro
 | `nombre` | `text` | Sí | Nombre visible |
 | `descripcion` | `text` | Sí | Características que debe cumplir (por omisión: `''`) |
 | `forma` | `text` | Sí | documento: se carga un archivo; registro: el sistema lo comprueba en el padrón |
-| `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial |
+| `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (acuse firmado) |
 | `activo` | `boolean` | Sí | Si se pide en solicitudes nuevas (por omisión: `true`) |
 
 Restricciones e índices:
 
 - `CONSTRAINT requisito_pk PRIMARY KEY (clave)`
 - `CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))`
-- `CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo'))`
+- `CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))`
 
 ## requisito_curso
 
@@ -124,7 +127,7 @@ Restricciones e índices:
 
 ## solicitante
 
-Cuenta de la persona solicitante. Una por CURP. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
@@ -135,6 +138,7 @@ Cuenta de la persona solicitante. Una por CURP. La contraseña se guarda derivad
 | `segundo_apellido` | `text` | No | Segundo apellido, si lo hay |
 | `correo` | `text` | Sí | Correo de contacto, en minúsculas |
 | `telefono` | `text` | Sí | Teléfono de contacto, 10 dígitos |
+| `numero_expediente` | `text` | No | Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN |
 | `contrasena_hash` | `text` | No | scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar |
 | `estado` | `text` | Sí | activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña) (por omisión: `'activa'`) |
 | `intentos_fallidos` | `smallint` | Sí | Intentos de entrada fallidos seguidos (por omisión: `0`) |
@@ -147,6 +151,7 @@ Restricciones e índices:
 
 - `CONSTRAINT solicitante_pk PRIMARY KEY (id)`
 - `CONSTRAINT solicitante_curp_uk UNIQUE (curp)`
+- `CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente)`
 - `CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp))`
 - `CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$')`
 - `CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')`
@@ -206,13 +211,12 @@ Restricciones e índices:
 
 ## solicitud
 
-Un trámite: una persona, un curso. Sus cambios de estado los valida la base y quedan en la bitácora.
+Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
 | `folio` | `text` | Sí | Folio público; lo asigna la base (APD-S-AAAA-NNNNN) |
-| `numero_expediente` | `text` | No | Número del expediente físico. Lo asigna la base al concluir el cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN |
 | `solicitante_id` | `uuid` | Sí | Persona solicitante |
 | `tipo_acreditacion` | `text` | Sí | Curso solicitado |
 | `modalidad` | `text` | Sí | Curso solicitado |
@@ -228,6 +232,7 @@ Un trámite: una persona, un curso. Sus cambios de estado los valida la base y q
 | `estado_desde` | `timestamptz` | Sí | Desde cuándo está en el estado actual; lo pone la base (por omisión: `now()`) |
 | `enviada_en` | `timestamptz` | No | Primer envío a revisión; lo pone la base |
 | `cita_en` | `timestamptz` | No | Cita para el cotejo presencial |
+| `pago_referencia` | `text` | No | Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura |
 | `lista_para_curso_en` | `timestamptz` | No | Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad |
 | `motivo_cierre` | `text` | No | Motivo de cancelación o conclusión sin atender |
 | `folio_origen` | `text` | No | Folio en Kobo, para las migradas |
@@ -238,8 +243,8 @@ Restricciones e índices:
 
 - `CONSTRAINT solicitud_pk PRIMARY KEY (id)`
 - `CONSTRAINT solicitud_folio_uk UNIQUE (folio)`
-- `CONSTRAINT solicitud_expediente_uk UNIQUE (numero_expediente)`
-- `CONSTRAINT solicitud_expediente_ck CHECK (estado NOT IN ('lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR numero_expediente IS NOT NULL)`
+- `CONSTRAINT solicitud_pago_referencia_uk UNIQUE (pago_referencia)`
+- `CONSTRAINT solicitud_pago_referencia_ck CHECK (estado NOT IN ('validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR pago_referencia IS NOT NULL)`
 - `CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
 - `CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)`
 - `CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`

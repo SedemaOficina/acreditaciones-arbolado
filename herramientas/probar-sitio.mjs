@@ -20,6 +20,15 @@ const CAPTURAS = process.argv[3] ? join(raiz, process.argv[3]) : null;
 if (CAPTURAS) mkdirSync(CAPTURAS, { recursive: true });
 
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
+await import('../sitio/app/curp-nombre.js'); // la misma regla nombre ↔ CURP del formulario
+const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
+// Persona nueva ficticia, con CURP coherente con su nombre y su fecha de nacimiento
+const NUEVA = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', nacimiento: '1999-12-30' };
+NUEVA.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: NUEVA.nombre, primer: NUEVA.primer_apellido, segundo: NUEVA.segundo_apellido }, NUEVA.nacimiento, 'M', 'NE') + '0');
+const otroDigito = (c) => c.slice(0, 17) + String((Number(c[17]) + 1) % 10);
+// Fecha de nacimiento de una persona ficticia: está en su CURP (homoclave 0 = nacida antes de 2000)
+const nacimientoDe = (p) => `19${p.curp.slice(4, 6)}-${p.curp.slice(6, 8)}-${p.curp.slice(8, 10)}`;
 const CONTRASENA = 'Prueba-ficticia-2026';
 const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'];
 
@@ -74,9 +83,11 @@ async function cargaObligatorios(page) {
   }
   return nombres.length;
 }
-async function llenaCuenta(page, curp) {
-  await page.fill('#nombre', 'Nadia');
-  await page.fill('#primer_apellido', 'Ejemplo');
+async function llenaCuenta(page, p, curp = p.curp) {
+  await page.fill('#nombre', p.nombre);
+  await page.fill('#primer_apellido', p.primer_apellido);
+  await page.fill('#segundo_apellido', p.segundo_apellido || '');
+  await page.fill('#fecha_nacimiento', p.nacimiento || nacimientoDe(p));
   await page.fill('#curp', curp);
   await page.fill('#correo', 'nadia@ejemplo.local');
   await page.fill('#correo2', 'nadia@ejemplo.local');
@@ -109,20 +120,23 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'cuenta.html');
   await page.click('[data-accion="enviar"]');
   comprueba(await page.locator('.resumen-errores, [aria-invalid="true"]').count() > 0, t('cuenta: enviar vacío muestra los errores'));
-  await page.fill('#nombre', 'Nadia');
-  await page.fill('#primer_apellido', 'Ejemplo');
-  await page.fill('#curp', 'XAXX991230MNEXXX01'); // dígito verificador correcto: 8
-  await page.fill('#correo', 'nadia@ejemplo.local');
-  await page.fill('#correo2', 'nadia@ejemplo.local');
-  await page.fill('#telefono', '0000000077');
-  await page.fill('#contrasena', 'una frase larga de prueba');
-  await page.fill('#contrasena2', 'una frase larga de prueba');
-  await marcaCasillas(page);
   // CURP con dígito incorrecto: el formulario la rechaza, igual que la base
+  await llenaCuenta(page, NUEVA, otroDigito(NUEVA.curp));
   await page.click('[data-accion="enviar"]');
-  const curpInvalida = await page.getAttribute('#curp', 'aria-invalid');
-  comprueba(curpInvalida === 'true', t('cuenta: CURP con dígito verificador incorrecto se rechaza'));
-  await page.fill('#curp', 'XAXX991230MNEXXX08');
+  comprueba(await page.getAttribute('#curp', 'aria-invalid') === 'true', t('cuenta: CURP con dígito verificador incorrecto se rechaza'));
+  // CURP ajena (de otra persona ficticia) con el nombre propio: no corresponde
+  const ajena = datos.solicitante.find((p) => p.estado === 'activa');
+  await page.fill('#curp', ajena.curp);
+  await page.click('[data-accion="enviar"]');
+  comprueba(await page.getAttribute('#curp', 'aria-invalid') === 'true' && /no corresponde|no coincide/.test(await page.textContent('[data-campo="curp"] .err')),
+    t('cuenta: una CURP ajena no corresponde con el nombre y se rechaza'));
+  // Nombre correcto pero otra fecha de nacimiento
+  await page.fill('#curp', NUEVA.curp);
+  await page.fill('#fecha_nacimiento', '1999-12-31');
+  await page.click('[data-accion="enviar"]');
+  comprueba(await page.locator('[aria-invalid="true"]').count() > 0, t('cuenta: la fecha de nacimiento distinta a la de la CURP se rechaza'));
+  await page.fill('#fecha_nacimiento', NUEVA.nacimiento);
+  await page.fill('#curp', NUEVA.curp);
   await captura(page, `02-cuenta-${sufijo}`);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
@@ -157,7 +171,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 
   // Padrón migrado: crea su cuenta con su CURP, ve su historial y renueva
   await page.goto(BASE + 'cuenta.html');
-  await llenaCuenta(page, renovable.curp);
+  await llenaCuenta(page, renovable);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
   comprueba(await page.isVisible('[data-cuenta-historial]'), t('cuenta del padrón migrado: avisa que encontró acreditaciones anteriores'));
@@ -243,10 +257,41 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 
   // Fallo de envío simulado
   await page.goto(BASE + 'cuenta.html?simular=error');
-  await llenaCuenta(page, 'XAXX991230MNEXXX08');
+  await llenaCuenta(page, NUEVA);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-estado-envio]:not([hidden])');
   bien(t('cuenta: el fallo de envío se avisa y la captura se conserva'));
+
+  // Menú de pruebas: sin obligatorias se avanza vacío hasta la revisión; se vuelve a activar
+  await page.goto(BASE + 'solicitud.html');
+  await page.click('.menu-pruebas-boton');
+  comprueba(await page.isVisible('dialog.menu-pruebas'), t('menú de pruebas: se abre'));
+  await page.selectOption('#menu-pruebas-persona', 'nueva');
+  await page.click('dialog.menu-pruebas >> text=Entrar como esta persona');
+  await page.waitForURL(/tramites\.html/);
+  await page.goto(BASE + 'solicitud.html');
+  await page.click('.menu-pruebas-boton');
+  await page.click('dialog.menu-pruebas >> text=Desactivar las preguntas obligatorias');
+  await page.waitForLoadState('load');
+  await page.waitForSelector('.menu-pruebas-boton');
+  comprueba(await page.locator('form [data-requerido]').count() === 0, t('menú de pruebas: preguntas obligatorias desactivadas'));
+  await page.click('.menu-pruebas-boton');
+  await page.click('dialog.menu-pruebas >> text=3. Revisión');
+  await page.waitForSelector('section[data-paso][data-revision]:not([hidden])');
+  bien(t('menú de pruebas: salta al paso de revisión sin llenar'));
+  await captura(page, `11-menu-pruebas-${sufijo}`);
+  await page.click('.menu-pruebas-boton');
+  await page.click('dialog.menu-pruebas >> text=Activar las preguntas obligatorias');
+  await page.waitForLoadState('load');
+  await page.waitForSelector('.menu-pruebas-boton');
+  comprueba(await page.locator('form [data-requerido]').count() > 0, t('menú de pruebas: preguntas obligatorias activadas de nuevo'));
+  await page.goto(BASE + 'cuenta.html');
+  await page.click('.menu-pruebas-boton');
+  await page.click('dialog.menu-pruebas >> text=Llenar con datos ficticios');
+  await page.click('dialog.menu-pruebas >> text=Cerrar');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  bien(t('menú de pruebas: «Llenar con datos ficticios» crea una cuenta válida'));
 
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await contexto.close();

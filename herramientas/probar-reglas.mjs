@@ -99,20 +99,41 @@ const casos = [
   ['Un folio fiscal no se repite en dos solicitudes', { sqlstate: '23505' }, null, `
      UPDATE apd.solicitud SET factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL LIMIT 1)
       WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
-  ['Con factura y sus datos entra a la bandeja con número de expediente consecutivo', 'ok', null, `
+  ['Con factura y sus datos entra a la bandeja y la persona recibe su expediente consecutivo', 'ok', null, `
      ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
-     CREATE TEMP TABLE s AS SELECT (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1) AS id;
+     CREATE TEMP TABLE s AS SELECT id, solicitante_id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1;
+     DO $$ BEGIN ASSERT (SELECT numero_expediente IS NULL FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM s)); END $$;
      UPDATE apd.solicitud SET factura_rfc = 'xaxx010101000', factura_razon_social = 'Persona de prueba',
        factura_folio_fiscal = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', estado = 'lista_para_curso' WHERE id = (SELECT id FROM s);
      DO $$ BEGIN
-       ASSERT (SELECT numero_expediente FROM apd.solicitud WHERE id = (SELECT id FROM s))
-            = (SELECT 'EXP-2026-' || lpad((count(*))::text, 4, '0') FROM apd.solicitud WHERE numero_expediente IS NOT NULL);
+       ASSERT (SELECT numero_expediente FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM s))
+            = (SELECT 'EXP-2026-' || lpad((count(*))::text, 4, '0') FROM apd.solicitante WHERE numero_expediente IS NOT NULL);
        ASSERT (SELECT factura_rfc = 'XAXX010101000' AND factura_folio_fiscal = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE' FROM apd.solicitud WHERE id = (SELECT id FROM s));
        ASSERT (SELECT cargado_por = 'prueba.automatica' AND estado = 'aceptado' FROM apd.documento
                 WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'factura_pago' AND vigente);
      END $$;`],
+  ['Un segundo trámite de la misma persona usa su mismo expediente', 'ok', null, `
+     CREATE TEMP TABLE p AS SELECT s.solicitante_id, pe.numero_expediente
+       FROM apd.solicitud s JOIN apd.solicitante pe ON pe.id = s.solicitante_id
+      WHERE s.estado = 'acreditada' AND s.tipo_acreditacion = 'poda'
+        AND NOT EXISTS (SELECT 1 FROM apd.solicitud x WHERE x.solicitante_id = s.solicitante_id AND x.tipo_acreditacion = 'dictaminador')
+      ORDER BY s.folio LIMIT 1;
+     CREATE TEMP TABLE c AS SELECT count(*) AS n FROM apd.solicitante WHERE numero_expediente IS NOT NULL;
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, perfil_academico, carrera, anios_experiencia)
+     VALUES ('00000000-0000-4000-a000-000000000009', (SELECT solicitante_id FROM p), 'dictaminador', 'nueva', 'titulo', 'Biología', 3);
+     SELECT apd.asignar_expediente((SELECT solicitante_id FROM p));
+     DO $$ BEGIN
+       ASSERT (SELECT numero_expediente FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM p)) = (SELECT numero_expediente FROM p);
+       ASSERT (SELECT count(*) FROM apd.solicitante WHERE numero_expediente IS NOT NULL) = (SELECT n FROM c);
+     END $$;`],
   ['El número de expediente no se cambia', { sqlstate: '42501' }, null, `
-     UPDATE apd.solicitud SET numero_expediente = 'X' WHERE numero_expediente IS NOT NULL;`],
+     UPDATE apd.solicitante SET numero_expediente = 'X' WHERE numero_expediente IS NOT NULL;`],
+  ['Al validar con cita, la solicitud recibe su referencia de pago', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitud WHERE estado = 'validada_en_linea' AND pago_referencia IS NULL);
+     ASSERT (SELECT bool_and(pago_referencia = replace(folio, '-', '')) FROM apd.solicitud WHERE pago_referencia IS NOT NULL);
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitud WHERE estado IN ('borrador', 'enviada') AND pago_referencia IS NOT NULL); END $$;`],
+  ['La referencia de pago no la escribe la cuenta del servicio', { sqlstate: '42501' }, null, `
+     UPDATE apd.solicitud SET pago_referencia = 'X' WHERE estado = 'validada_en_linea';`],
   ['Un salto de estado no previsto se rechaza', { codigo: 'transicion_invalida' }, null, `
      UPDATE apd.solicitud SET estado = 'aprobada' WHERE id = ${BORRADOR};`],
   ['El folio no se cambia', { sqlstate: '42501' }, null, `
@@ -224,7 +245,8 @@ const casos = [
      ASSERT (SELECT bool_and(dias_duracion = 5) FROM apd.curso WHERE modalidad = 'nueva'); END $$;`],
   ['En una renovación sólo son obligatorios la constancia fiscal y el pago (R46)', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT array_agg(requisito ORDER BY requisito) FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
-              WHERE modalidad = 'renovacion' AND tipo_acreditacion = 'dictaminador' AND obligatorio AND forma = 'documento')
+              WHERE modalidad = 'renovacion' AND tipo_acreditacion = 'dictaminador' AND obligatorio AND forma = 'documento'
+                AND momento IN ('en_linea', 'cotejo'))
             = ARRAY['constancia_situacion_fiscal', 'factura_pago']; END $$;`],
   ['La poda vigente se exige al iniciar, no al enviar (R05)', 'ok', '2027-06-01 10:00', `
      -- La solicitud de dictaminador con observaciones se inició con poda vigente (vence el 10/05/2027).
@@ -238,6 +260,16 @@ const casos = [
      SELECT solicitante_id, 'poda', id FROM apd.solicitud WHERE id = ${BORRADOR};`],
   ['Una acreditación emitida no se modifica', { sqlstate: '42501' }, null, `
      UPDATE apd.acreditacion SET vence_en = vence_en + 30 WHERE numero = 'PD-2026-0001';`],
+  ['Sin acuse de entrega firmado no se registra la entrega', { codigo: 'sin_acuse_entrega' }, null, `
+     UPDATE apd.acreditacion SET entregada_en = apd.hoy() WHERE origen = 'sistema' AND entregada_en IS NULL AND numero LIKE 'PD-2026-%';`],
+  ['La persona solicitante no carga el acuse de entrega', { codigo: 'carga_de_personal' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${DOC_PEQUENO("(SELECT solicitud_id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL LIMIT 1)", 'acuse_entrega')}`],
+  ['Con el acuse firmado se registra la entrega', 'ok', null, `
+     CREATE TEMP TABLE a AS SELECT id, solicitud_id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL LIMIT 1;
+     ${DOC_PEQUENO("(SELECT solicitud_id FROM a)", 'acuse_entrega')}
+     UPDATE apd.acreditacion SET entregada_en = apd.hoy() WHERE id = (SELECT id FROM a);
+     DO $$ BEGIN ASSERT (SELECT entregada_en IS NOT NULL FROM apd.acreditacion WHERE id = (SELECT id FROM a)); END $$;`],
   ['La entrega se registra una sola vez', { codigo: 'entrega_ya_registrada' }, null, `
      UPDATE apd.acreditacion SET entregada_en = '2026-10-01' WHERE entregada_en IS NOT NULL AND numero LIKE 'PD-2026-%';`],
 

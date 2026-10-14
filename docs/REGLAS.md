@@ -23,7 +23,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
 | → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador. La elegibilidad no se vuelve a comprobar |
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada |
-| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados. Asigna el número de expediente y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
+| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados. Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
@@ -72,16 +72,16 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 
 ## Siempre
 
-- **Folios** los asigna la base: `APD-S-AAAA-NNNNN` (solicitud), `EXP-AAAA-NNNN` (expediente físico, al concluir
-  el cotejo), `APD-G-AAAA-NNN` (grupo), `PD-AAAA-NNNN` y
+- **Folios** los asigna la base: `APD-S-AAAA-NNNNN` (solicitud), `EXP-AAAA-NNNN` (expediente físico de la persona,
+  en su primer cotejo; uno por CURP), referencia de pago (provisional: el folio sin guiones, al validar con cita), `APD-G-AAAA-NNN` (grupo), `PD-AAAA-NNNN` y
   `DT-AAAA-NNNN` (acreditaciones emitidas en el sistema; las migradas conservan el suyo). El de la
   acreditación es provisional: Liber definirá su formato.
 - **CURP**: estructura, clave de entidad y dígito verificador, con las mismas reglas que el Estándar de
   formularios del SIA (`apd.curp_valida`). La base no acepta una CURP que el formulario rechazaría.
 - **Bitácora**: cada alta y cambio de estado queda con quién, cuándo y desde dónde. No se edita ni se borra,
   ni siquiera por la administración.
-- **Documentos**: los de la solicitud los carga la persona; los de la cita (la factura en PDF) los carga el
-  personal y quedan aceptados. Sólo PDF, JPG o PNG, de hasta 5 MB.
+- **Documentos**: los de la solicitud los carga la persona; los de la cita (la factura en PDF) y el acuse de
+  entrega firmado los carga el personal y quedan aceptados. Sin acuse no se registra la entrega. Sólo PDF, JPG o PNG, de hasta 5 MB.
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
   anterior sin borrarlo.
 - **La hora** sale de `apd.ahora()`. Sólo en una base de pruebas se puede simular; en producción, simularla
@@ -92,7 +92,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 71 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 77 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y

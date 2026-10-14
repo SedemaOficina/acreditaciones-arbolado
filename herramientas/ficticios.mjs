@@ -7,7 +7,7 @@
 //
 // Reglas de los datos ficticios (norma 3 de construir-sistema-nuevo):
 //   · inequívocamente falsos y legibles: apellidos Ejemplo, Muestra, Prueba…; correo @ejemplo.local;
-//     teléfono de ceros; CURP con prefijo XAXX y entidad NE seguida de XXX (válidas en formato); organizaciones «de Prueba»;
+//     teléfono de ceros; CURP formadas del nombre ficticio, con entidad NE y homoclave 0 (válidas en formato y coherentes con el nombre); organizaciones «de Prueba»;
 //   · todos los estados de la solicitud, del grupo y de la vigencia, al menos una vez;
 //   · casos incómodos: nombre larguísimo, nombres repetidos, sin segundo apellido, calificación justo en el
 //     mínimo, asistencia insuficiente, grupo cancelado, renovación vencida esperando grupo, dictaminador con
@@ -17,6 +17,7 @@
 
 import { createHash, scryptSync } from 'node:crypto';
 import { CORTE } from './corte-ficticios.mjs';
+await import('../sitio/app/curp-nombre.js'); // la regla nombre ↔ CURP del formulario, para formar las CURP ficticias
 
 const CORTE_MIGRACION = '2026-07-01';
 const sql = [];
@@ -80,12 +81,15 @@ function persona(clave, opciones = {}) {
     nombre: opciones.nombre || NOMBRES[n % NOMBRES.length],
     primer: opciones.primer || APELLIDOS[n % APELLIDOS.length],
     segundo: opciones.segundo === null ? null : opciones.segundo || APELLIDOS[(n + 2) % APELLIDOS.length],
-    // CURP ficticia que pasa las mismas reglas que una real (estructura, entidad, dígito; apd.curp_valida):
-    // XAXX + fecha + sexo + NE (nacida en el extranjero) + XXX + homoclave 0 + dígito verificador
-    curp: conDigito(`XAXX${String(70 + (n % 30)).padStart(2, '0')}${String((n % 12) + 1).padStart(2, '0')}${String((n % 27) + 1).padStart(2, '0')}${sexo}NEXXX0`),
+    curp: null, // se forma abajo, del nombre ficticio
     correo: `persona${String(n + 1).padStart(2, '0')}@ejemplo.local`,
     telefono: `00000000${String(n + 1).padStart(2, '0')}`
   };
+  // CURP ficticia que pasa las mismas reglas que una real: se forma del nombre ficticio como lo haría
+  // RENAPO (sitio/app/curp-nombre.js, la misma regla del formulario), con fecha de nacimiento ficticia,
+  // entidad NE (nacida en el extranjero), homoclave 0 y dígito verificador (apd.curp_valida).
+  p.nacimiento = `19${String(70 + (n % 30)).padStart(2, '0')}-${String((n % 12) + 1).padStart(2, '0')}-${String((n % 27) + 1).padStart(2, '0')}`;
+  p.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.nacimiento, sexo, 'NE') + '0');
   return p;
 }
 
@@ -256,6 +260,10 @@ function emitirAcreditacion(s, fecha) {
 function entregar(s, fecha) {
   en(fecha, '12:00');
   como(EMISION, 'personal');
+  // Firma de recibido: el personal carga el acuse firmado y escaneado, y después marca la entrega
+  emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+  VALUES (${q(uuid(`acuse:${s.id}`))}, ${q(s.id)}, 'acuse_entrega', ${q(`ficticio/${s.id}/acuse-entrega.pdf`)}, 'acuse-entrega.pdf', 'application/pdf', 152300,
+    encode(sha256(convert_to(${q(s.id + 'acuse')}, 'UTF8')), 'hex'))`);
   emitir(`UPDATE apd.acreditacion SET entregada_en = ${q(fecha)} WHERE id = ${q(s.acreditacion)}`);
 }
 function cerrar(s, fecha, estado, motivo, quien = COTEJO) {

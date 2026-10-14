@@ -32,7 +32,7 @@
 
   <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
     <h2 class="titulo-paso">Crea tu cuenta</h2>
-    <p class="bajada">Una cuenta por persona, ligada a tu CURP. Con ella haces tu trámite y das seguimiento. Si ya tuviste una acreditación de la Secretaría, al crear tu cuenta la verás en tu historial.</p>
+    <p class="bajada">Una cuenta por persona, ligada a tu CURP. Escribe tus datos tal como aparecen en ella: el sistema comprueba que la CURP corresponda a tu nombre y a tu fecha de nacimiento. Si ya tuviste una acreditación de la Secretaría, al crear tu cuenta la verás en tu historial.</p>
     <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
 
     <div class="campo" data-campo="nombre" data-formato="nombre" data-requerido data-sensible
@@ -56,8 +56,18 @@
       </div>
     </div>
 
-    <!-- autocomplete off: el navegador no tiene un valor de autocompletado para la CURP; se escribe cada vez. -->
+    <div class="campo" data-campo="fecha_nacimiento" data-formato="fecha" data-requerido data-no-futura data-sensible
+         data-finalidad="Comprobar que la CURP corresponde a quien crea la cuenta." data-uso="Comprobar la CURP; no se guarda aparte porque ya está en ella.">
+      <label class="etiqueta" for="fecha_nacimiento">Fecha de nacimiento</label>
+      <p class="ayuda">Como aparece en tu acta de nacimiento o en tu identificación.</p>
+      <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="date" autocomplete="bday">
+    </div>
+
+    <!-- Tres validaciones cruzadas: la fecha (curp-fecha, del estándar) y el nombre y los apellidos
+         (curp-nombre y curp-segundo-apellido, propias del proyecto: app/curp-nombre.js). -->
     <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
+         data-cruzada="curp-fecha curp-nombre curp-segundo-apellido"
+         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido"
          data-finalidad="Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona." data-uso="Identificador único de la cuenta y llave del historial de acreditaciones.">
       <label class="etiqueta" for="curp">CURP
         <span class="tooltip" data-tooltip>
@@ -65,7 +75,8 @@
           <span class="tooltip-texto" role="tooltip" hidden>Son 18 caracteres, como aparecen en tu constancia de CURP. Con ella entrarás a tu cuenta.</span>
         </span>
       </label>
-      <p class="ayuda">Con ella entras a tu cuenta. No se puede cambiar después; si te equivocas, sólo la Secretaría la corrige.</p>
+      <p class="ayuda">Debe corresponder a tu nombre, tus apellidos y tu fecha de nacimiento. Con ella entras a tu cuenta; si te equivocas, sólo la Secretaría la corrige.</p>
+      <!-- autocomplete off: el navegador no tiene un valor de autocompletado para la CURP; se escribe cada vez. -->
       <input class="control" id="curp" name="curp" type="text" maxlength="18" autocomplete="off" spellcheck="false">
     </div>
 
@@ -154,6 +165,7 @@
 </dialog>
 
 <script src="app/apd.js?v=0.1"></script>
+<script src="app/curp-nombre.js?v=0.1"></script>
 <script src="app/config-cuenta.js?v=0.1"></script>
 <script src="formkit/js/validaciones.config.js"></script>
 <script src="formkit/js/iconos.js"></script>
@@ -163,6 +175,8 @@
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/pruebas.js?v=0.1"></script>
 <script src="app/version-visible.js?v=0.1"></script>
 </body>
 </html>

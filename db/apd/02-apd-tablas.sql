@@ -24,6 +24,8 @@ CREATE TABLE apd.curso (
   calificacion_minima        numeric(3,1)  NOT NULL,
   cupo_minimo                smallint      NOT NULL,
   cupo_maximo                smallint      NOT NULL,
+  pago_concepto              text          NOT NULL,
+  pago_monto                 numeric(10,2) NULL,
   activo                     boolean       NOT NULL DEFAULT true,
   actualizado_en             timestamptz   NOT NULL DEFAULT now(),
   CONSTRAINT curso_pk PRIMARY KEY (tipo_acreditacion, modalidad),
@@ -31,7 +33,8 @@ CREATE TABLE apd.curso (
   CONSTRAINT curso_modalidad_ck CHECK (modalidad IN ('nueva', 'renovacion')),
   CONSTRAINT curso_dias_ck CHECK (dias_duracion BETWEEN 1 AND 15 AND dias_minimos_asistencia BETWEEN 1 AND dias_duracion),
   CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10),
-  CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)
+  CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo),
+  CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR pago_monto > 0)
 );
 COMMENT ON TABLE apd.curso IS 'Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asistencia mínima, calificación mínima y cupos vigentes; un grupo copia los cupos al crearse.';
 COMMENT ON COLUMN apd.curso.tipo_acreditacion IS 'poda o dictaminador';
@@ -42,6 +45,8 @@ COMMENT ON COLUMN apd.curso.dias_minimos_asistencia IS 'Días de asistencia nece
 COMMENT ON COLUMN apd.curso.calificacion_minima IS 'Calificación mínima aprobatoria, de 0 a 10';
 COMMENT ON COLUMN apd.curso.cupo_minimo IS 'Personas necesarias para confirmar un grupo';
 COMMENT ON COLUMN apd.curso.cupo_maximo IS 'Personas máximas en un grupo';
+COMMENT ON COLUMN apd.curso.pago_concepto IS 'Concepto del pago de derechos que se muestra a la persona al asignarle la cita de cotejo';
+COMMENT ON COLUMN apd.curso.pago_monto IS 'Monto del pago de derechos, en pesos. Vacío mientras no se confirme con la Gaceta Oficial';
 COMMENT ON COLUMN apd.curso.activo IS 'Si se pueden abrir grupos de este curso';
 COMMENT ON COLUMN apd.curso.actualizado_en IS 'Último cambio';
 
@@ -54,14 +59,14 @@ CREATE TABLE apd.requisito (
   activo                     boolean       NOT NULL DEFAULT true,
   CONSTRAINT requisito_pk PRIMARY KEY (clave),
   CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro')),
-  CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo'))
+  CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))
 );
 COMMENT ON TABLE apd.requisito IS 'Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.';
 COMMENT ON COLUMN apd.requisito.clave IS 'Identificador corto';
 COMMENT ON COLUMN apd.requisito.nombre IS 'Nombre visible';
 COMMENT ON COLUMN apd.requisito.descripcion IS 'Características que debe cumplir';
 COMMENT ON COLUMN apd.requisito.forma IS 'documento: se carga un archivo; registro: el sistema lo comprueba en el padrón';
-COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial';
+COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (acuse firmado)';
 COMMENT ON COLUMN apd.requisito.activo IS 'Si se pide en solicitudes nuevas';
 
 CREATE TABLE apd.requisito_curso (
@@ -110,6 +115,7 @@ CREATE TABLE apd.solicitante (
   segundo_apellido           text          NULL,
   correo                     text          NOT NULL,
   telefono                   text          NOT NULL,
+  numero_expediente          text          NULL,
   contrasena_hash            text          NULL,
   estado                     text          NOT NULL DEFAULT 'activa',
   intentos_fallidos          smallint      NOT NULL DEFAULT 0,
@@ -119,6 +125,7 @@ CREATE TABLE apd.solicitante (
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT solicitante_pk PRIMARY KEY (id),
   CONSTRAINT solicitante_curp_uk UNIQUE (curp),
+  CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente),
   CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp)),
   CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$'),
@@ -126,7 +133,7 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))
 );
 CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre);
-COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
+COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
 COMMENT ON COLUMN apd.solicitante.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitante.curp IS 'CURP en mayúsculas; identificador único de la cuenta';
 COMMENT ON COLUMN apd.solicitante.nombre IS 'Nombre(s)';
@@ -134,6 +141,7 @@ COMMENT ON COLUMN apd.solicitante.primer_apellido IS 'Primer apellido';
 COMMENT ON COLUMN apd.solicitante.segundo_apellido IS 'Segundo apellido, si lo hay';
 COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas';
 COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos';
+COMMENT ON COLUMN apd.solicitante.numero_expediente IS 'Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
 COMMENT ON COLUMN apd.solicitante.contrasena_hash IS 'scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar';
 COMMENT ON COLUMN apd.solicitante.estado IS 'activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)';
 COMMENT ON COLUMN apd.solicitante.intentos_fallidos IS 'Intentos de entrada fallidos seguidos';
@@ -200,7 +208,6 @@ COMMENT ON COLUMN apd.acreditacion.es_ficticio IS 'Dato de prueba';
 CREATE TABLE apd.solicitud (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
   folio                      text          NOT NULL,
-  numero_expediente          text          NULL,
   solicitante_id             uuid          NOT NULL,
   tipo_acreditacion          text          NOT NULL,
   modalidad                  text          NOT NULL,
@@ -216,6 +223,7 @@ CREATE TABLE apd.solicitud (
   estado_desde               timestamptz   NOT NULL DEFAULT now(),
   enviada_en                 timestamptz   NULL,
   cita_en                    timestamptz   NULL,
+  pago_referencia            text          NULL,
   lista_para_curso_en        timestamptz   NULL,
   motivo_cierre              text          NULL,
   folio_origen               text          NULL,
@@ -223,8 +231,8 @@ CREATE TABLE apd.solicitud (
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT solicitud_pk PRIMARY KEY (id),
   CONSTRAINT solicitud_folio_uk UNIQUE (folio),
-  CONSTRAINT solicitud_expediente_uk UNIQUE (numero_expediente),
-  CONSTRAINT solicitud_expediente_ck CHECK (estado NOT IN ('lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR numero_expediente IS NOT NULL),
+  CONSTRAINT solicitud_pago_referencia_uk UNIQUE (pago_referencia),
+  CONSTRAINT solicitud_pago_referencia_ck CHECK (estado NOT IN ('validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR pago_referencia IS NOT NULL),
   CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
   CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad),
   CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
@@ -243,10 +251,9 @@ CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_
 CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en);
 CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id);
 CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id);
-COMMENT ON TABLE apd.solicitud IS 'Un trámite: una persona, un curso. Sus cambios de estado los valida la base y quedan en la bitácora.';
+COMMENT ON TABLE apd.solicitud IS 'Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.';
 COMMENT ON COLUMN apd.solicitud.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitud.folio IS 'Folio público; lo asigna la base (APD-S-AAAA-NNNNN)';
-COMMENT ON COLUMN apd.solicitud.numero_expediente IS 'Número del expediente físico. Lo asigna la base al concluir el cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
 COMMENT ON COLUMN apd.solicitud.solicitante_id IS 'Persona solicitante';
 COMMENT ON COLUMN apd.solicitud.tipo_acreditacion IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.modalidad IS 'Curso solicitado';
@@ -262,6 +269,7 @@ COMMENT ON COLUMN apd.solicitud.estado IS 'Ver apd.transicion_solicitud()';
 COMMENT ON COLUMN apd.solicitud.estado_desde IS 'Desde cuándo está en el estado actual; lo pone la base';
 COMMENT ON COLUMN apd.solicitud.enviada_en IS 'Primer envío a revisión; lo pone la base';
 COMMENT ON COLUMN apd.solicitud.cita_en IS 'Cita para el cotejo presencial';
+COMMENT ON COLUMN apd.solicitud.pago_referencia IS 'Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura';
 COMMENT ON COLUMN apd.solicitud.lista_para_curso_en IS 'Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad';
 COMMENT ON COLUMN apd.solicitud.motivo_cierre IS 'Motivo de cancelación o conclusión sin atender';
 COMMENT ON COLUMN apd.solicitud.folio_origen IS 'Folio en Kobo, para las migradas';

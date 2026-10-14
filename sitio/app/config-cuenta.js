@@ -7,14 +7,21 @@
    codigo/servidor/validar.mjs y el esquema derivado de cuenta.html, guarda
    la contraseña derivada con scrypt y nunca la devuelve.
 
+   La CURP ya llegó comprobada contra el nombre, los apellidos y la fecha
+   de nacimiento (validaciones cruzadas). Eso prueba coherencia, no
+   identidad: la identidad la confirma la identificación oficial en el
+   cotejo presencial y, si se decide, la consulta a RENAPO [pendiente].
+
    Respuestas del servidor que la pantalla ya contempla:
      · CURP con cuenta activa      → rechazo con mensaje (no se crea otra);
-     · CURP del padrón migrado     → se activa esa cuenta y se muestra su historial
-                                     [Pendiente: cómo se comprueba la titularidad al activar];
+     · CURP del padrón migrado     → si el nombre es el del registro, se activa esa cuenta y se
+                                     muestra su historial; si no, se rechaza;
      · CURP nueva                  → cuenta nueva.
    ?simular=error | limite | lento muestra cada pantalla de fallo.
    ========================================================= */
-window.FORMKIT_CONFIG = {};
+/* Validaciones cruzadas propias del proyecto (CURP ↔ nombre y apellidos), de app/curp-nombre.js:
+   la misma regla que aplica el servidor. La de la fecha (curp-fecha) ya viene en el estándar. */
+window.FORMKIT_CONFIG = { cruzadas: window.APD_CRUZADAS };
 
 window.FORMKIT_OPCIONES = {
   enviar(payload, { signal }) {
@@ -30,6 +37,12 @@ window.FORMKIT_OPCIONES = {
             return mal({ mensaje: 'Ya hay una cuenta con esta CURP. Entra con ella; si no recuerdas tu contraseña, pide ayuda a la Secretaría.' });
           }
           if (existente) {
+            // Registro anterior (Kobo): además de la CURP, el nombre debe ser el del registro
+            const igual = (a, b) => APD_CURP.limpia(a) === APD_CURP.limpia(b);
+            if (!igual(d.nombre, existente.nombre) || !igual(d.primer_apellido, existente.primer_apellido)
+                || !igual(d.segundo_apellido || '', existente.segundo_apellido || '')) {
+              return mal({ mensaje: 'Tu nombre no coincide con el registro anterior de la Secretaría para esta CURP. Acude a la Secretaría para aclararlo.' });
+            }
             APD.guardaSesion({ id: existente.id });
           } else {
             // Sólo lo necesario para la pantalla (el nombre); nada más se guarda en el navegador.

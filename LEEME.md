@@ -47,7 +47,7 @@ Requiere Node 18+ y un PostgreSQL 13+ **de pruebas** (no hace falta PostGIS).
 
 ```sh
 npm run esquema                                    # regenera tablas y documentación desde db/esquema.json
-PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 71 pruebas
+PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 77 pruebas
 ```
 
 `probar-base` se niega a correr sobre una base cuyo nombre no contenga «prueba», y se detiene en el primer
@@ -75,6 +75,6 @@ bash herramientas/publicar-sitio.sh                 # gh-pages = sitio/ (despué
 
 47 personas, 46 solicitudes en todos los estados, 4 grupos (concluido, en curso, en integración y cancelado),
 21 acreditaciones en todas las situaciones de vigencia. Nombres con apellidos «Ejemplo», «Muestra», «Prueba»;
-correos `@ejemplo.local`; teléfonos de ceros; CURP con prefijo `XAXX` y entidad `NE` seguida de `XXX` (pasan la validación de formato, como cualquier CURP). La contraseña de las
+correos `@ejemplo.local`; teléfonos de ceros; CURP formadas de su nombre y fecha ficticios con entidad `NE` (pasan las mismas comprobaciones que una real). La contraseña de las
 cuentas ficticias es `Prueba-ficticia-2026`. Se generan pasando por todas las reglas de la base: si un dato ficticio
 viola una regla, la carga falla.

@@ -45,7 +45,7 @@
     return { ins, grupo: datos.grupo.find((g) => g.id === ins.grupo_id) };
   }
 
-  function fichaSolicitud(datos, s) {
+  function fichaSolicitud(datos, s, persona) {
     const e = APD.ESTADOS[s.estado] || { texto: s.estado, tono: '', sigue: '' };
     let sigue = e.sigue;
     const pares = [['Folio', s.folio], ['Enviada el', fechaHora(s.enviada_en)]];
@@ -53,7 +53,24 @@
     const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad);
 
     if (s.estado === 'validada_en_linea' && s.cita_en) pares.push(['Cita de cotejo', fechaHora(s.cita_en)]);
-    if (s.numero_expediente) pares.push(['Expediente', s.numero_expediente]);
+    // El expediente físico es de la persona y lo comparten todos sus trámites; se abre en el primer cotejo
+    if (persona.numero_expediente && !['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'cancelada', 'concluida_sin_atender'].includes(s.estado)) {
+      pares.push(['Expediente', persona.numero_expediente]);
+    }
+
+    // Con la cita, los datos para pagar: el comprobante se presenta en la cita y ahí se emite la factura
+    if (s.estado === 'validada_en_linea' && c) {
+      const monto = c.pago_monto ? Number(c.pago_monto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
+      const instrucciones = (datos.parametro.find((x) => x.clave === 'pago_instrucciones') || {}).valor || '';
+      extra.push(el('div', { class: 'aviso' }, [
+        el('div', { class: 'aviso-texto' }, [
+          el('p', {}, [el('strong', { texto: 'Datos para tu pago' })]),
+          APD.datosLista([['Concepto', c.pago_concepto], ['Monto', monto || 'Pendiente: lo confirma la Gaceta Oficial'], ['Referencia', s.pago_referencia]]),
+          APD.limpia(instrucciones) ? el('p', { texto: APD.limpia(instrucciones) }) : el('p', { class: 'pendiente', texto: 'Pendiente: banco, cuenta y forma de pago.' }),
+          el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' })
+        ])
+      ]));
+    }
 
     const g = grupoDe(datos, s);
     if (g && g.grupo) {
@@ -89,8 +106,19 @@
     }
     if (s.estado === 'acreditada') {
       const a = datos.acreditacion.find((x) => x.solicitud_id === s.id);
-      if (a) { pares.push(['Acreditación', a.numero]); if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`; }
+      if (a) {
+        pares.push(['Acreditación', a.numero]);
+        if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
+        else {
+          const lugar = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
+          sigue = `Tu acreditación está lista desde el ${fecha(a.emitida_en)}. Recógela en persona con tu identificación oficial; al recibirla firmas un acuse.`;
+          extra.push(APD.limpia(lugar) ? el('p', { texto: APD.limpia(lugar) }) : el('p', { class: 'pendiente', texto: 'Pendiente: lugar, días y horario de entrega.' }));
+        }
+      }
     }
+    if (s.estado === 'aprobada') sigue = 'Aprobaste el examen. La Secretaría emite tu acreditación; aquí verás cuándo puedes recogerla.';
+    if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
+    if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.motivo_cierre) pares.push(['Motivo', APD.limpia(s.motivo_cierre)]);
 
     const acciones = [];
@@ -128,7 +156,7 @@
     const sols = extras.concat(APD.solicitudesDe(datos, persona)
       .map((s) => (reenviadas.includes(s.folio) ? Object.assign({}, s, { estado: 'enviada' }) : s)));
     document.querySelector('[data-solicitudes]').replaceChildren(...(sols.length
-      ? sols.map((s) => fichaSolicitud(datos, s))
+      ? sols.map((s) => fichaSolicitud(datos, s, persona))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes solicitudes.' })]));
 
     // Una sola acción principal: iniciar una solicitud nueva, si hay algo que se pueda pedir como nueva

@@ -28,6 +28,8 @@
         { "nombre": "calificacion_minima", "tipo": "numeric(3,1)", "nulo": false, "descripcion": "Calificación mínima aprobatoria, de 0 a 10" },
         { "nombre": "cupo_minimo", "tipo": "smallint", "nulo": false, "descripcion": "Personas necesarias para confirmar un grupo" },
         { "nombre": "cupo_maximo", "tipo": "smallint", "nulo": false, "descripcion": "Personas máximas en un grupo" },
+        { "nombre": "pago_concepto", "tipo": "text", "nulo": false, "descripcion": "Concepto del pago de derechos que se muestra a la persona al asignarle la cita de cotejo" },
+        { "nombre": "pago_monto", "tipo": "numeric(10,2)", "nulo": true, "descripcion": "Monto del pago de derechos, en pesos. Vacío mientras no se confirme con la Gaceta Oficial" },
         { "nombre": "activo", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si se pueden abrir grupos de este curso" },
         { "nombre": "actualizado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Último cambio" }
       ],
@@ -37,7 +39,8 @@
         "CONSTRAINT curso_modalidad_ck CHECK (modalidad IN ('nueva', 'renovacion'))",
         "CONSTRAINT curso_dias_ck CHECK (dias_duracion BETWEEN 1 AND 15 AND dias_minimos_asistencia BETWEEN 1 AND dias_duracion)",
         "CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10)",
-        "CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)"
+        "CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)",
+        "CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR pago_monto > 0)"
       ]
     },
     {
@@ -48,13 +51,13 @@
         { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre visible" },
         { "nombre": "descripcion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Características que debe cumplir" },
         { "nombre": "forma", "tipo": "text", "nulo": false, "descripcion": "documento: se carga un archivo; registro: el sistema lo comprueba en el padrón" },
-        { "nombre": "momento", "tipo": "text", "nulo": false, "descripcion": "en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial" },
+        { "nombre": "momento", "tipo": "text", "nulo": false, "descripcion": "en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (acuse firmado)" },
         { "nombre": "activo", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si se pide en solicitudes nuevas" }
       ],
       "restricciones": [
         "CONSTRAINT requisito_pk PRIMARY KEY (clave)",
         "CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))",
-        "CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo'))"
+        "CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))"
       ]
     },
     {
@@ -93,7 +96,7 @@
     },
     {
       "nombre": "solicitante",
-      "descripcion": "Cuenta de la persona solicitante. Una por CURP. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.",
+      "descripcion": "Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
         { "nombre": "curp", "tipo": "text", "nulo": false, "descripcion": "CURP en mayúsculas; identificador único de la cuenta" },
@@ -102,6 +105,7 @@
         { "nombre": "segundo_apellido", "tipo": "text", "nulo": true, "descripcion": "Segundo apellido, si lo hay" },
         { "nombre": "correo", "tipo": "text", "nulo": false, "descripcion": "Correo de contacto, en minúsculas" },
         { "nombre": "telefono", "tipo": "text", "nulo": false, "descripcion": "Teléfono de contacto, 10 dígitos" },
+        { "nombre": "numero_expediente", "tipo": "text", "nulo": true, "descripcion": "Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN" },
         { "nombre": "contrasena_hash", "tipo": "text", "nulo": true, "descripcion": "scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'activa'", "descripcion": "activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)" },
         { "nombre": "intentos_fallidos", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Intentos de entrada fallidos seguidos" },
@@ -113,6 +117,7 @@
       "restricciones": [
         "CONSTRAINT solicitante_pk PRIMARY KEY (id)",
         "CONSTRAINT solicitante_curp_uk UNIQUE (curp)",
+        "CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente)",
         "CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp))",
         "CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')",
         "CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')",
@@ -175,11 +180,10 @@
     },
     {
       "nombre": "solicitud",
-      "descripcion": "Un trámite: una persona, un curso. Sus cambios de estado los valida la base y quedan en la bitácora.",
+      "descripcion": "Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
         { "nombre": "folio", "tipo": "text", "nulo": false, "descripcion": "Folio público; lo asigna la base (APD-S-AAAA-NNNNN)" },
-        { "nombre": "numero_expediente", "tipo": "text", "nulo": true, "descripcion": "Número del expediente físico. Lo asigna la base al concluir el cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN" },
         { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Persona solicitante" },
         { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
         { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
@@ -195,6 +199,7 @@
         { "nombre": "estado_desde", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Desde cuándo está en el estado actual; lo pone la base" },
         { "nombre": "enviada_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Primer envío a revisión; lo pone la base" },
         { "nombre": "cita_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cita para el cotejo presencial" },
+        { "nombre": "pago_referencia", "tipo": "text", "nulo": true, "descripcion": "Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura" },
         { "nombre": "lista_para_curso_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad" },
         { "nombre": "motivo_cierre", "tipo": "text", "nulo": true, "descripcion": "Motivo de cancelación o conclusión sin atender" },
         { "nombre": "folio_origen", "tipo": "text", "nulo": true, "descripcion": "Folio en Kobo, para las migradas" },
@@ -204,8 +209,8 @@
       "restricciones": [
         "CONSTRAINT solicitud_pk PRIMARY KEY (id)",
         "CONSTRAINT solicitud_folio_uk UNIQUE (folio)",
-        "CONSTRAINT solicitud_expediente_uk UNIQUE (numero_expediente)",
-        "CONSTRAINT solicitud_expediente_ck CHECK (estado NOT IN ('lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR numero_expediente IS NOT NULL)",
+        "CONSTRAINT solicitud_pago_referencia_uk UNIQUE (pago_referencia)",
+        "CONSTRAINT solicitud_pago_referencia_ck CHECK (estado NOT IN ('validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR pago_referencia IS NOT NULL)",
         "CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)",
         "CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
         "CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",

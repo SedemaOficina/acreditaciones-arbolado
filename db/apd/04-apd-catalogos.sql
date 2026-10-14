@@ -11,17 +11,22 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
   ('dias_alerta_espera', '31',
    'Días de espera sin grupo a partir de los que la solicitud se marca como prioritaria (decisión 2026-10-14).'),
   ('tamano_maximo_archivo_bytes', '5242880',
-   'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).');
+   'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).'),
+  ('pago_instrucciones', '[pendiente] Banco, cuenta o CLABE y forma de pago: los define la Secretaría de Administración y Finanzas.',
+   'Cómo pagar los derechos; se muestra a la persona con su cita y su referencia (decisión 2026-10-14).'),
+  ('entrega_lugar', '[pendiente] Lugar, días y horario de entrega de acreditaciones.',
+   'Dónde y cuándo se recoge la acreditación emitida; se muestra a la persona (decisión 2026-10-14).');
 
 -- Cupos 5–25 iguales para los cuatro cursos (corrección R23 y R24, 2026-10-14; antes 10–25).
 -- Duración (corrección R31): 5 días la primera vez y 1 día la renovación, en poda y en dictaminador.
 -- Asistencia mínima, en días (decisión R33): 4 de 5 en los cursos nuevos y 1 de 1 en renovación.
 -- Calificación mínima (segunda corrección R34, 2026-10-14): 7.0 poda, 8.0 dictaminador.
-INSERT INTO apd.curso (tipo_acreditacion, modalidad, nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo) VALUES
-  ('poda',         'nueva',      'Poda y derribo · solicitud nueva',      5, 4, 7.0, 5, 25),
-  ('poda',         'renovacion', 'Poda y derribo · renovación',           1, 1, 7.0, 5, 25),
-  ('dictaminador', 'nueva',      'Dictaminador técnico · solicitud nueva', 5, 4, 8.0, 5, 25),
-  ('dictaminador', 'renovacion', 'Dictaminador técnico · renovación',      1, 1, 8.0, 5, 25);
+-- Pago de derechos: concepto provisional y monto vacío hasta confirmarlos con la Gaceta Oficial [pendiente].
+INSERT INTO apd.curso (tipo_acreditacion, modalidad, nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo, pago_concepto, pago_monto) VALUES
+  ('poda',         'nueva',      'Poda y derribo · solicitud nueva',      5, 4, 7.0, 5, 25, 'Acreditación de poda y derribo de arbolado urbano', NULL),
+  ('poda',         'renovacion', 'Poda y derribo · renovación',           1, 1, 7.0, 5, 25, 'Renovación de la acreditación de poda y derribo de arbolado urbano', NULL),
+  ('dictaminador', 'nueva',      'Dictaminador técnico · solicitud nueva', 5, 4, 8.0, 5, 25, 'Acreditación de dictaminador técnico de arbolado urbano', NULL),
+  ('dictaminador', 'renovacion', 'Dictaminador técnico · renovación',      1, 1, 8.0, 5, 25, 'Renovación de la acreditación de dictaminador técnico de arbolado urbano', NULL);
 
 INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('identificacion_oficial', 'Identificación oficial',
@@ -47,10 +52,13 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('comprobantes_experiencia', 'Comprobantes de experiencia',
    'Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF.', 'documento', 'en_linea'),
   ('constancias_capacitacion', 'Constancias de capacitación especializada',
-   'Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador.', 'documento', 'en_linea');
+   'Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador.', 'documento', 'en_linea'),
+  ('acuse_entrega', 'Acuse de entrega firmado',
+   'El sistema lo imprime al entregar la acreditación; la persona lo firma y el personal carga el PDF escaneado.', 'documento', 'entrega');
 
--- Qué pide cada curso (corrección R46, 2026-10-14): en una renovación sólo es obligatorio lo que cambia en
--- cada trámite (la constancia fiscal y la factura del pago). Lo demás se carga sólo si la persona lo
+-- Qué pide cada curso (corrección R46, confirmada por Liber el 2026-10-14): en una renovación sólo es
+-- obligatorio lo que cambia en cada trámite (la constancia fiscal y la factura del pago); se actualizan los
+-- documentos vencidos o que ya no estén vigentes, y los de estudios o experiencia que la persona quiera. Lo demás se carga sólo si la persona lo
 -- actualizó o si ya no está vigente (R46): si ya se le acreditó una vez, la Secretaría ya lo revisó. [pendiente] confirmar con Liber que
 -- también aplica a identificación, CURP y domicilio, y qué pasa con quien viene de Kobo sin archivos.
 INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden, obligatorio, nota) VALUES
@@ -85,4 +93,9 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'renovacion', 'comprobante_estudios',        8, false, 'Sólo si actualizaste tus estudios.'),
   ('dictaminador', 'renovacion', 'curriculum_vitae',            9, false, 'Sólo si actualizaste tu experiencia.'),
   ('dictaminador', 'renovacion', 'comprobantes_experiencia',   10, false, 'Sólo si actualizaste tu experiencia.'),
-  ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.');
+  ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.'),
+  -- Firma de recibido al entregar la acreditación (decisión 2026-10-14)
+  ('poda', 'nueva',              'acuse_entrega',              90, true,  ''),
+  ('poda', 'renovacion',         'acuse_entrega',              90, true,  ''),
+  ('dictaminador', 'nueva',      'acuse_entrega',              90, true,  ''),
+  ('dictaminador', 'renovacion', 'acuse_entrega',              90, true,  '');

@@ -78,6 +78,8 @@ GRANT SELECT ON apd.migraciones TO apd_api;
 -- Los folios sólo por la función, que corre con los permisos de quien instala
 REVOKE ALL ON FUNCTION apd.siguiente_folio(text, smallint) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION apd.siguiente_folio(text, smallint) TO apd_api;
+REVOKE ALL ON FUNCTION apd.asignar_expediente(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION apd.asignar_expediente(uuid) TO apd_api;
 
 INSERT INTO apd.migraciones (version, nombre)
 VALUES (1, 'Instalación')

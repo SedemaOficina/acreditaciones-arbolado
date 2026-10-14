@@ -14,6 +14,10 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const estandar = process.argv[2];
 if (!estandar) { console.error('Uso: node herramientas/probar-esquemas.mjs <ruta-al-clon-de-estandar-formularios>'); process.exit(2); }
 const { validaPayload } = await import(pathToFileURL(join(estandar, 'codigo/servidor/validar.mjs')).href);
+// Las validaciones cruzadas propias (CURP ↔ nombre) se suman a las del estándar, como en el navegador
+await import(pathToFileURL(join(raiz, 'sitio/app/curp-nombre.js')).href);
+const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
+const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalThis.APD_CRUZADAS } };
 
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
@@ -27,16 +31,23 @@ let fallas = 0;
 const meta = { trampa: '', ms_en_formulario: 90000, idempotencia: 'prueba' };
 const pdf = (n) => ({ nombre: `${n}.pdf`, size: 200000, type: 'application/pdf', campo: n });
 function caso(nombre, form, datos, espera, archivos = []) {
-  const r = validaPayload({ datos, archivos, meta }, esquema[form]);
+  const r = validaPayload({ datos, archivos, meta }, esquema[form], { config });
   const campos = r.errores.map((e) => e.campo);
   const ok = espera === true ? r.ok : !r.ok && espera.every((c) => campos.includes(c)) && campos.every((c) => espera.includes(c));
   console.log(`${ok ? 'BIEN' : 'MAL '}  ${nombre}${ok ? '' : ` → ${JSON.stringify([...new Set(campos)])}`}`);
   if (!ok) fallas++;
 }
 
-const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', curp: 'XAXX991230MNEXXX08', correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', aviso: 'si', humano: 'si' };
+const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
+const curpNadia = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Nadia', primer: 'Ejemplo', segundo: 'Simulado' }, '1999-12-30', 'M', 'NE') + '0');
+const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', fecha_nacimiento: '1999-12-30', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', aviso: 'si', humano: 'si' };
 caso('Cuenta completa se acepta', 'cuenta', cuenta, true);
-caso('Cuenta: CURP con dígito incorrecto y correo sin confirmar se rechazan', 'cuenta', { ...cuenta, curp: 'XAXX991230MNEXXX01', correo2: 'otra@ejemplo.local' }, ['curp', 'correo2']);
+caso('Cuenta: CURP con dígito incorrecto y correo sin confirmar se rechazan', 'cuenta', { ...cuenta, curp: curpNadia.slice(0, 17) + ((Number(curpNadia[17]) + 1) % 10), correo2: 'otra@ejemplo.local' }, ['curp', 'correo2']);
+caso('Cuenta: una CURP ajena (de otro nombre) se rechaza', 'cuenta', { ...cuenta, nombre: 'Pedro', primer_apellido: 'López' }, ['curp']);
+caso('Cuenta: otro segundo apellido se rechaza', 'cuenta', { ...cuenta, segundo_apellido: 'Muestra' }, ['curp']);
+caso('Cuenta: otra fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '1999-12-31' }, ['curp']);
+caso('Cuenta: sin fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '' }, ['fecha_nacimiento']);
 caso('Cuenta: contraseña corta se rechaza', 'cuenta', { ...cuenta, contrasena: 'corta', contrasena2: 'corta' }, ['contrasena', 'contrasena2']);
 caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso: '' }, ['aviso']);
 
@@ -52,7 +63,7 @@ caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (
 caso('Solicitud con trámite que no existe se rechaza', 'solicitud', { ...base, tramite: 'poda_otra' }, ['tramite']);
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tramite: 'dictaminador_renovacion', anterior: 'DT-2025-K109', perfil_academico: 'titulo', carrera: 'Biología', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
 
-caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: 'XAXX991230MNEXXX08', contrasena: 'x' }, true);
+caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);
 caso('Verificar sin número se rechaza', 'verificar', {}, ['numero']);
 

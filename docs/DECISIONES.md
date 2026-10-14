@@ -24,6 +24,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | La CURP es el identificador único de la cuenta: no hay dos cuentas con la misma CURP. La Secretaría puede corregir la CURP de una cuenta, con motivo en la bitácora, después de verificarla contra el documento de CURP cargado (mapa, R02) | Liber Saltijeral |
 | 2026-10-14 | Instructores: personal de la Secretaría; capturan asistencia por día y calificación | Liber Saltijeral |
 | 2026-10-14 | El instructor de un grupo puede variar, también durante el curso; cada día queda quién capturó la asistencia (mapa, R26) | Liber Saltijeral |
+| 2026-10-14 | Al crear la cuenta se pide la fecha de nacimiento y el sistema comprueba que la CURP corresponda al nombre, a los apellidos y a esa fecha, además de su dígito verificador, para evitar CURP ajenas. Comprueba coherencia, no identidad: la identidad la confirma la identificación oficial en el cotejo. La fecha no se guarda aparte (ya está en la CURP) | Liber Saltijeral |
+| 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
 ## Requisitos
@@ -38,11 +40,15 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 |---|---|---|
 | 2026-10-14 | Se mantiene la cita presencial de cotejo y pago: la Secretaría necesita expedientes físicos. La persona lleva la documentación impresa, se coteja contra lo cargado con el check list y se verifica el pago | Liber Saltijeral |
 | 2026-10-14 | La factura es obligatoria siempre que hay pago. En la cita, la Secretaría verifica el pago, emite la factura y su personal la carga en el sistema (sólo PDF). La persona solicitante no la carga | Liber Saltijeral |
+| 2026-10-14 | Al validar en línea y asignar la cita, el sistema da a la persona los datos de pago (concepto, monto y referencia bancaria) para que pague y presente el comprobante en el cotejo. Monto, referencia definitiva, banco y forma de pago: **pendientes** (Gaceta Oficial y Finanzas); la referencia provisional es el folio sin guiones | Liber Saltijeral |
 | 2026-10-14 | Hasta que la factura está cargada, la solicitud no entra a la bandeja: no se le puede asignar grupo ni fecha de curso y examen | Liber Saltijeral |
+| 2026-10-14 | Cargada la factura, la solicitud entra sola a la bandeja de grupos («en espera de grupo»); el personal arma los grupos desde ahí. No se inscribe sola a un grupo | Liber Saltijeral |
+| 2026-10-14 | Confirmado: la persona no captura RFC; sólo carga su constancia de situación fiscal. El personal captura RFC, razón social y folio fiscal al cargar la factura | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~El sistema no pide capturar RFC ni razón social~~ Sustituida | — |
 | 2026-10-14 | De la factura se carga sólo el PDF, y el personal captura RFC y nombre o razón social a cuyo favor se emitió, y el folio fiscal para seguimiento. Un folio fiscal no se repite (mapa, R20) | Liber Saltijeral |
 | 2026-10-14 | En el cotejo la persona presenta los mismos documentos que cargó; si no coinciden, no se da por válido y el trámite no continúa hasta que los corrija (mapa, R19) | Liber Saltijeral |
-| 2026-10-14 | Cada solicitud recibe un número de expediente físico al concluir el cotejo, consecutivo por año y sin huecos. No se registra la ubicación. Formato provisional EXP-AAAA-NNNN | Liber Saltijeral |
+| ~~2026-10-14~~ | ~~Cada solicitud recibe un número de expediente físico al concluir el cotejo~~ Sustituida | Liber Saltijeral |
+| 2026-10-14 | El expediente físico es de la persona: una CURP, un expediente, asociado a uno o más trámites. Se abre en su primer cotejo, consecutivo por año y sin huecos, y los trámites siguientes usan el mismo número. No se registra la ubicación. Formato provisional EXP-AAAA-NNNN | Liber Saltijeral |
 
 ## Cursos y grupos
 
@@ -60,6 +66,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | ~~2026-10-14~~ | ~~Asistencia mínima: dictaminador 4 de 5; poda provisionalmente 3 de 3~~ Sustituida al cambiar la duración | Liber Saltijeral |
 | 2026-10-14 | Asistencia mínima, en días: 4 de 5 en los cursos nuevos (permite una falta) y 1 de 1 en renovación (mapa, R33) | Liber Saltijeral |
 | 2026-10-14 | Sin la asistencia mínima, el sistema no permite el examen (mapa, R35) | Liber Saltijeral |
+| 2026-10-14 | Quien no aprueba el examen (o se queda sin derecho a él) hace un trámite nuevo y repite todo el proceso, incluido el pago de derechos | Liber Saltijeral |
 | ~~—~~ | ~~Calificación mínima: 7.0 poda, 9.0 dictaminador (del borrador)~~ Sustituida | Insumo |
 | ~~2026-10-14~~ | ~~Calificación mínima: 8.0 poda, 9.0 dictaminador~~ Sustituida | Liber Saltijeral |
 | 2026-10-14 | Calificación mínima: 7.0 poda, 8.0 dictaminador (mapa, R34, segunda corrección) | Liber Saltijeral |
@@ -75,9 +82,11 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | En ningún momento se opera sin acreditación vigente. La verificación pública sólo dice «Vigente» o «No vigente» | Liber Saltijeral |
 | 2026-10-14 | Renovación de poda vencida: mismos requisitos que la renovación por vencer | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~Toda renovación de dictaminador actualiza los comprobantes de estudios y de experiencia~~ Sustituida | Liber Saltijeral |
-| 2026-10-14 | En una renovación los documentos se vuelven a cargar sólo si la persona los actualizó o si alguno ya no está vigente; no limitan la emisión, porque ya se revisaron la primera vez. Obligatorios en cada renovación: constancia fiscal (factura) y pago. En poda tampoco es obligatorio actualizar (mapa, R46). [pendiente] confirmar que aplica también a identificación, CURP y domicilio | Liber Saltijeral |
+| 2026-10-14 | En una renovación los documentos se vuelven a cargar sólo si la persona los actualizó o si alguno ya no está vigente; no limitan la emisión, porque ya se revisaron la primera vez. Obligatorios en cada renovación: constancia fiscal (factura) y pago. En poda tampoco es obligatorio actualizar (mapa, R46). Confirmado el 14/10: se actualizan los documentos vencidos o no vigentes, y los de estudios o experiencia que la persona quiera | Liber Saltijeral |
 | 2026-10-14 | Para tramitar dictaminador (nueva o renovación) se exige acreditación de poda vigente **al iniciar la solicitud**. No se vuelve a comprobar al enviar ni al emitir (mapa, R05 y R39) | Liber Saltijeral |
 | 2026-10-14 | Si la acreditación de poda vence, la de dictaminador sigue vigente hasta su propia fecha (mapa, R43). Se retiró el parámetro `dictaminador_sigue_a_poda` | Liber Saltijeral |
+| 2026-10-14 | Firma de recibido: al entregar, el sistema imprime un acuse con folio, la persona lo firma y el personal carga el PDF escaneado; sin acuse no se registra la entrega. Queda en el expediente físico y en el digital | Liber Saltijeral |
+| 2026-10-14 | Avisos: la persona ve en «Mis trámites» su resultado (aprobada o no, con asistencia y calificación) y, ya emitida, que su acreditación está lista para recoger, con lugar y horario. El aviso por correo depende del servicio del SIA. Lugar y horario de entrega: **pendientes** | Liber Saltijeral |
 | 2026-10-14 | La acreditación se emite con la fecha del día de emisión, no del curso ni del examen. Liber definirá el formato del folio; el actual (PD-AAAA-NNNN, DT-AAAA-NNNN) es provisional (mapa, R38) | Liber Saltijeral |
 
 ## Lo que hay que corregir en los lineamientos
@@ -91,7 +100,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 5 | Numeración de la tabla de dictaminador salta del 2 al 4 | Renumerar |
 | 6 | El cotejo compara contra lo «adjuntado por correo» | Contra lo cargado en la plataforma |
 | 7 | 80 % de asistencia | Expresar la asistencia mínima en días; cursos de 5 días (nuevos) y 1 día (renovación) |
-| 14 | Calificación mínima de poda: 7.0 | 8.0 |
+| 14 | Calificación mínima de dictaminador: 9.0 | 8.0 (poda se queda en 7.0) |
 | 15 | Renovación de dictaminador pide comprobante de estudios y currículum | Sólo si se actualizaron |
 | 8 | Renovación «mediante escrito libre dirigido al Titular» | Solicitud en la plataforma |
 | 9 | Sin plazos para atender observaciones ni para presentarse a la cita | Fijarlos. **Pendiente de la Dirección** |
@@ -99,6 +108,10 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 11 | «El resultado de la evaluación será inapelable» | Liber lo mantiene (mapa, R37). Recomendación: que la Dirección Jurídica revise la redacción antes de publicar |
 | 12 | Faltan el check list (anexo), el Anexo 1 de carreras afines, el concepto y monto del derecho, y las secciones «Del pago» y «Del curso» | Pedirlos a la Dirección |
 | 13 | El comprobante de domicilio no tiene uso declarado en el procedimiento | Justificar su uso o retirarlo |
+| 16 | Expediente por solicitud o sin regla | Un expediente por persona (CURP) para todos sus trámites, abierto en su primer cotejo |
+| 17 | Sin datos de pago antes de la cita | Al asignar la cita se dan concepto, monto y referencia; el comprobante se presenta en el cotejo |
+| 18 | La entrega no deja constancia | Acuse de entrega firmado por la persona, escaneado y cargado por la Secretaría |
+| 19 | Quien no aprueba el examen: sin regla | Trámite nuevo completo, incluido el pago de derechos |
 
 ## Pendientes que no bloquean las etapas con datos ficticios
 
@@ -110,7 +123,10 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 6. Formato del registro histórico de Kobo, para la migración.
 7. Plazos para atender observaciones y para presentarse a la cita.
 9. Requisitos de renovación para quien viene de Kobo sin archivos en el sistema.
-10. Cómo se comprueba la titularidad cuando alguien del registro de Kobo crea su cuenta con su CURP (hoy basta la
-    CURP; el riesgo es que otra persona la use).
-11. Lugar de la cita de cotejo y de la sede del curso: dónde se informa a la persona (hoy sólo fecha y hora de cita).
-12. Si se contrasta la CURP con el servicio oficial de consulta (hoy sólo se valida su formato y dígito).
+10. Titularidad al activar una cuenta del registro de Kobo: hoy se exigen CURP coherente con nombre y fecha, y el
+    nombre del registro; confirmar si basta.
+11. Lugar de la cita de cotejo, sede del curso y lugar y horario de entrega de acreditaciones.
+12. Si se contrasta la CURP con el servicio oficial de consulta de RENAPO (hoy: formato, dígito y coherencia con
+    nombre y fecha).
+13. Datos de pago: monto (Gaceta Oficial), referencia o línea de captura definitiva, banco y forma de pago (Finanzas).
+14. Si el registro de Kobo tenía números de expediente físico que deban conservarse.

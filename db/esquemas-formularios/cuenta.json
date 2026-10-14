@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-14T23:01:54.112Z",
+  "generado": "2026-10-14T23:45:23.135Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -41,6 +41,20 @@
       },
       "autocomplete": "off"
     },
+    "fecha_nacimiento": {
+      "etiqueta": "Fecha de nacimiento",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha",
+      "sensible": true,
+      "uso": "Comprobar la CURP; no se guarda aparte porque ya está en ella.",
+      "finalidad": "Comprobar que la CURP corresponde a quien crea la cuenta.",
+      "atributos": {
+        "max": "hoy",
+        "noFutura": ""
+      },
+      "autocomplete": "bday"
+    },
     "curp": {
       "etiqueta": "CURP Son 18 caracteres, como aparecen en tu constancia de CURP. Con ella entrarás a tu cuenta.",
       "tipo": "texto",
@@ -52,7 +66,42 @@
       "atributos": {
         "maxlength": "18"
       },
-      "autocomplete": "off"
+      "autocomplete": "off",
+      "cruzadas": [
+        {
+          "clave": "curp-fecha",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-nombre",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-segundo-apellido",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        }
+      ]
     },
     "correo": {
       "etiqueta": "Correo electrónico",

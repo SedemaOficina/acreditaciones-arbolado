@@ -132,11 +132,30 @@ CREATE TRIGGER organizacion_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.
 
 -- ───────────────────────────── Cuentas de solicitantes ─────────────────────────────
 
+-- Expediente físico: uno por persona (por CURP), para todos sus trámites (decisión 2026-10-14, Liber).
+-- Se abre al concluir su primer cotejo presencial, cuando llegan los documentos en papel; los trámites
+-- siguientes usan el mismo número. SECURITY DEFINER: la cuenta del servicio no escribe el número.
+CREATE FUNCTION apd.asignar_expediente(p_solicitante uuid) RETURNS text
+  LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
+DECLARE
+  n text;
+  anio smallint := extract(year FROM apd.hoy())::smallint;
+BEGIN
+  SELECT numero_expediente INTO n FROM apd.solicitante WHERE id = p_solicitante FOR UPDATE;
+  IF n IS NULL THEN
+    n := 'EXP-' || anio || '-' || lpad(apd.siguiente_folio('E', anio)::text, 4, '0');
+    UPDATE apd.solicitante SET numero_expediente = n WHERE id = p_solicitante;
+    PERFORM apd.registrar('expediente', 'solicitante', p_solicitante::text, 'Abre el expediente ' || n);
+  END IF;
+  RETURN n;
+END $$;
+
 CREATE FUNCTION apd.solicitante_alta() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   NEW.curp := upper(trim(NEW.curp));
   NEW.correo := lower(trim(NEW.correo));
   NEW.creada_en := apd.ahora();
+  NEW.numero_expediente := NULL;  -- se abre en el primer cotejo
   RETURN NEW;
 END $$;
 CREATE TRIGGER solicitante_alta BEFORE INSERT ON apd.solicitante
@@ -150,6 +169,9 @@ BEGIN
   NEW.correo := lower(trim(NEW.correo));
   IF NEW.creada_en IS DISTINCT FROM OLD.creada_en OR NEW.es_ficticio IS DISTINCT FROM OLD.es_ficticio THEN
     PERFORM apd.error('campo_inmutable', 'La fecha de alta y la marca de dato de prueba no se cambian');
+  END IF;
+  IF OLD.numero_expediente IS NOT NULL AND NEW.numero_expediente IS DISTINCT FROM OLD.numero_expediente THEN
+    PERFORM apd.error('expediente_fijo', 'El número de expediente no cambia');
   END IF;
   IF NEW.curp <> OLD.curp THEN
     IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('motivo') = '' THEN
@@ -286,6 +308,13 @@ BEGIN
     IF NEW.entregada_en > apd.hoy() THEN
       PERFORM apd.error('entrega_futura', 'La entrega no puede registrarse con fecha futura');
     END IF;
+    -- Firma de recibido (decisión 2026-10-14): el sistema imprime el acuse, la persona lo firma y el
+    -- personal carga el PDF firmado antes de marcar la entrega. Las migradas se entregaron fuera del sistema.
+    IF NEW.origen = 'sistema' AND NOT EXISTS (
+         SELECT 1 FROM apd.documento d JOIN apd.requisito r ON r.clave = d.requisito
+          WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND r.momento = 'entrega') THEN
+      PERFORM apd.error('sin_acuse_entrega', 'Carga el acuse de entrega firmado antes de registrar la entrega');
+    END IF;
     PERFORM apd.registrar('entrega', 'acreditacion', NEW.id::text, format('%s entregada el %s', NEW.numero, NEW.entregada_en));
   END IF;
   RETURN NEW;
@@ -307,7 +336,7 @@ BEGIN
   NEW.estado_desde := NEW.creada_en;
   NEW.enviada_en := NULL;
   NEW.lista_para_curso_en := NULL;
-  NEW.numero_expediente := NULL;
+  NEW.pago_referencia := NULL;
   RETURN NEW;
 END $$;
 CREATE TRIGGER solicitud_alta BEFORE INSERT ON apd.solicitud
@@ -417,8 +446,8 @@ BEGIN
      IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id) THEN
     PERFORM apd.comprobar_elegibilidad(NEW);
   END IF;
-  -- Quien manda las fechas de control y el número de expediente es la base
-  NEW.numero_expediente := OLD.numero_expediente;
+  -- Quien manda las fechas de control y la referencia de pago es la base
+  NEW.pago_referencia := OLD.pago_referencia;
   -- Los datos de la factura los captura el personal en la cita, antes de concluir el cotejo (R20)
   IF (NEW.factura_rfc, NEW.factura_razon_social, NEW.factura_folio_fiscal)
      IS DISTINCT FROM (OLD.factura_rfc, OLD.factura_razon_social, OLD.factura_folio_fiscal) THEN
@@ -476,6 +505,9 @@ BEGIN
       IF NEW.cita_en IS NULL THEN
         PERFORM apd.error('sin_cita', 'Para validar hay que asignar la cita de cotejo');
       END IF;
+      -- Con la cita, la persona recibe los datos para pagar: concepto y monto del curso, y su referencia.
+      -- Formato provisional (folio sin guiones) [pendiente: referencia o línea de captura que defina Finanzas].
+      IF NEW.pago_referencia IS NULL THEN NEW.pago_referencia := replace(NEW.folio, '-', ''); END IF;
     WHEN 'lista_para_curso' THEN
       IF OLD.estado = 'inscrita' AND ins.id IS NOT NULL THEN
         PERFORM apd.error('sigue_inscrita', 'La solicitud regresa a la bandeja sólo al darla de baja del grupo');
@@ -493,11 +525,8 @@ BEGIN
                                               OR coalesce(NEW.factura_folio_fiscal, '') = '') THEN
         PERFORM apd.error('sin_datos_factura', 'Captura el RFC, el nombre o razón social y el folio fiscal de la factura');
       END IF;
-      -- El expediente físico se integra en el cotejo: ahí recibe su número, consecutivo y sin huecos
-      IF NEW.numero_expediente IS NULL THEN
-        NEW.numero_expediente := 'EXP-' || extract(year FROM apd.hoy())::int || '-'
-          || lpad(apd.siguiente_folio('E', extract(year FROM apd.hoy())::smallint)::text, 4, '0');
-      END IF;
+      -- El expediente físico es de la persona: se abre en su primer cotejo y lo usan todos sus trámites
+      IF OLD.estado = 'validada_en_linea' THEN PERFORM apd.asignar_expediente(NEW.solicitante_id); END IF;
       -- La espera empieza la primera vez; si regresa de un grupo, conserva su antigüedad
       IF NEW.lista_para_curso_en IS NULL THEN NEW.lista_para_curso_en := apd.ahora(); END IF;
     WHEN 'inscrita' THEN
@@ -594,13 +623,16 @@ BEGIN
   IF momento = 'en_linea' AND s.estado NOT IN ('borrador', 'con_observaciones') THEN
     PERFORM apd.error('carga_fuera_de_turno', 'Sólo se cargan documentos en borrador o para atender observaciones');
   END IF;
-  IF momento = 'cotejo' THEN
-    IF s.estado <> 'validada_en_linea' THEN
-      PERFORM apd.error('carga_fuera_de_turno', 'Este documento se carga en la cita presencial');
-    END IF;
-    IF apd.contexto('usuario_tipo') <> 'personal' THEN
-      PERFORM apd.error('carga_de_personal', 'Este documento lo carga el personal de la Secretaría');
-    END IF;
+  IF momento = 'cotejo' AND s.estado <> 'validada_en_linea' THEN
+    PERFORM apd.error('carga_fuera_de_turno', 'Este documento se carga en la cita presencial');
+  END IF;
+  -- El acuse de entrega firmado se carga cuando la acreditación está emitida y todavía no se entrega
+  IF momento = 'entrega' AND (s.estado <> 'acreditada' OR NOT EXISTS (
+       SELECT 1 FROM apd.acreditacion a WHERE a.solicitud_id = s.id AND a.entregada_en IS NULL)) THEN
+    PERFORM apd.error('carga_fuera_de_turno', 'El acuse de entrega se carga al entregar la acreditación');
+  END IF;
+  IF momento IN ('cotejo', 'entrega') AND apd.contexto('usuario_tipo') <> 'personal' THEN
+    PERFORM apd.error('carga_de_personal', 'Este documento lo carga el personal de la Secretaría');
   END IF;
   IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
     PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
@@ -612,8 +644,8 @@ BEGIN
   NEW.observacion := '';
   NEW.cargado_en := apd.ahora();
   NEW.cargado_por := apd.contexto('usuario');
-  -- Lo que carga el personal en la cita ya está revisado; lo que carga la persona espera revisión
-  IF momento = 'cotejo' THEN
+  -- Lo que carga el personal (cita y entrega) ya está revisado; lo que carga la persona espera revisión
+  IF momento IN ('cotejo', 'entrega') THEN
     NEW.estado := 'aceptado';
     NEW.revisado_por := NEW.cargado_por;
     NEW.revisado_en := NEW.cargado_en;
