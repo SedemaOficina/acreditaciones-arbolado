@@ -26,6 +26,12 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | El instructor de un grupo puede variar, también durante el curso; cada día queda quién capturó la asistencia (mapa, R26) | Liber Saltijeral |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
+## Cotejo presencial
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-14 | Se mantiene la cita presencial de cotejo y pago: la Secretaría necesita expedientes físicos. La persona lleva la documentación impresa, se coteja contra lo cargado con el check list y se canjea la factura del pago | Liber Saltijeral |
+
 ## Cursos y grupos
 
 | Fecha | Decisión | Quién |
@@ -39,7 +45,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Los cursos se imparten en instalaciones de la Secretaría; no hay sede externa | Liber Saltijeral |
 | 2026-10-14 | Alerta de prioridad a los 31 días de espera sin grupo. En los cursos de renovación, la bandeja ordena por fecha de vencimiento | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~Asistencia mínima: dictaminador 4 de 5; poda provisionalmente 3 de 3~~ Sustituida al cambiar la duración | Liber Saltijeral |
-| — | Asistencia mínima, en días: provisionalmente 4 de 5 en los cursos nuevos y 1 de 1 en renovación. **Pendiente** de que Liber la confirme (mapa, R33) | **Pendiente** |
+| 2026-10-14 | Asistencia mínima, en días: 4 de 5 en los cursos nuevos (permite una falta) y 1 de 1 en renovación (mapa, R33) | Liber Saltijeral |
 | 2026-10-14 | Sin la asistencia mínima, el sistema no permite el examen (mapa, R35) | Liber Saltijeral |
 | ~~—~~ | ~~Calificación mínima: 7.0 poda, 9.0 dictaminador (del borrador)~~ Sustituida | Insumo |
 | 2026-10-14 | Calificación mínima: 8.0 poda, 9.0 dictaminador (mapa, R34) | Liber Saltijeral |
@@ -85,9 +91,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 1. Datos personales y aviso de privacidad (antes del primer dato real).
 2. Restablecimiento de contraseñas: responsable y procedimiento.
 3. Correo institucional: pregunta al SIA.
-4. Asistencia mínima en días para los cursos de 5 días y de 1 día.
-5. Formato del folio de la acreditación (lo define Liber).
+4. Formato del folio de la acreditación (lo define Liber).
+5. Formato del check list de cotejo (anexo del borrador).
 6. Formato del registro histórico de Kobo, para la migración.
 7. Plazos para atender observaciones y para presentarse a la cita.
-8. Si se mantiene la cita presencial de cotejo y pago (dudas en el mapa, R16 a R21).
 9. Requisitos de renovación para quien viene de Kobo sin archivos en el sistema.

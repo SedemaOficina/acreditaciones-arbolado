@@ -15,7 +15,7 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
 
 -- Cupos 10–25 iguales para los cuatro cursos (decisión 2026-10-14).
 -- Duración (corrección R31): 5 días la primera vez y 1 día la renovación, en poda y en dictaminador.
--- Asistencia mínima, en días [pendiente] de confirmar con Liber (R33): 4 de 5 (80 %) y 1 de 1.
+-- Asistencia mínima, en días (decisión R33): 4 de 5 en los cursos nuevos y 1 de 1 en renovación.
 -- Calificación mínima (corrección R34): 8.0 poda, 9.0 dictaminador.
 INSERT INTO apd.curso (tipo_acreditacion, modalidad, nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo) VALUES
   ('poda',         'nueva',      'Poda y derribo · solicitud nueva',      5, 4, 8.0, 10, 25),

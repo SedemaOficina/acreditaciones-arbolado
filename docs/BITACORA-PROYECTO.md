@@ -48,3 +48,10 @@ Liber marcó 46 de las 48 reglas en el mapa del trámite: 25 correctas, 11 por c
 
 **Eliminado**: el parámetro `dictaminador_sigue_a_poda` y su lógica (la decisión R43 lo dejó sin uso); la
 comprobación de poda vigente al enviar y al emitir.
+
+## 2026-10-14 · Bloque 3 · Cierre de la etapa 0
+
+- Confirmado: se mantiene la cita presencial de cotejo y pago (la Secretaría necesita expedientes físicos).
+- Confirmada la asistencia mínima: 4 de 5 y 1 de 1 (ya estaba así en la base; sólo cambia el comentario).
+- Sigue pendiente qué documentos carga en su primera renovación quien viene de Kobo sin archivos.
+- Etapa 0 cerrada. Los pendientes abiertos no bloquean la etapa 1, que trabaja con datos ficticios.
