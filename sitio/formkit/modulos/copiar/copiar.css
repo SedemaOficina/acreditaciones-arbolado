@@ -1,0 +1,17 @@
+/* =========================================================
+   copiar.css · Módulo «copiar» · nivel RECOMENDADO
+   Campo de solo lectura con su botón «Copiar» al lado.
+   Depende de: nucleo.css. Bloques: componentes → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.copiar-grupo{display:flex;flex-direction:column;gap:var(--e-2)}
+.copiar-btn{flex:none}
+
+/* @bloque adaptaciones */
+
+@media (min-width:560px){
+  .copiar-grupo{flex-direction:row}
+  .copiar-btn{width:auto}
+}

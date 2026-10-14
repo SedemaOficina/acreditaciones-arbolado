@@ -1,0 +1,179 @@
+/* =========================================================
+   base.css · Estándar de formularios del SIA (SEDEMA)
+
+   Reinicio y estructura de página. No contiene componentes ni valores
+   literales: todo viene de tokens.css. Se escribe para el teléfono; lo que
+   cambia en pantallas anchas vive en el bloque «adaptaciones» de nucleo.css.
+
+   Bloques (orden fijo del paquete): reinicio → estructura.
+   ========================================================= */
+
+/* @bloque reinicio */
+
+*,*::before,*::after{box-sizing:border-box}
+
+/* Con una barra fija arriba, todo desplazamiento automático (el foco al
+   abrir un paso, el salto al resumen de errores) debe detenerse por debajo
+   de ella. Se declara una vez aquí y cubre cualquier elemento. */
+html{scroll-padding-top:var(--alto-barra-fija-movil);-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  background:var(--fondo);
+  color:var(--texto);
+  font-family:var(--fuente-cuerpo);
+  font-size:var(--t-base);
+  line-height:var(--interlineado-cuerpo);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Los encabezados no traen margen propio: el espacio lo decide el bloque
+   que los contiene, nunca el navegador. */
+h1,h2,h3,h4{
+  margin:0;
+  font-family:var(--fuente-titulo);
+  font-weight:var(--peso-semi);
+  line-height:var(--interlineado-titulo);
+  text-wrap:balance;
+}
+
+p,dl,dd,figure{margin:0}
+ul,ol{margin:0;padding:0;list-style:none}
+fieldset{margin:0;padding:0;border:0;min-width:0}
+legend{padding:0}
+
+/* Los controles heredan la tipografía de la página: sin esto cada sistema
+   operativo pinta la suya y la columna queda dispareja. */
+input,select,textarea{font:inherit;color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+img,svg{max-width:100%}
+a{color:var(--azul)}
+
+/* @bloque estructura */
+
+/* Zona de contenido. El relleno inferior deja aire para la última acción y
+   respeta la franja segura de los teléfonos con muesca. */
+.pagina{
+  max-width:var(--ancho-pagina);
+  margin-inline:auto;
+  padding:var(--e-5) var(--e-pagina) calc(var(--e-11) + var(--safe-inf));
+}
+
+/* Una tarjeta es un paso o una pantalla completa; no se anidan tarjetas. */
+.tarjeta{
+  margin-bottom:var(--e-5);
+  padding:var(--e-seccion);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--linea);
+  border-radius:var(--r-caja);
+}
+
+/* Renglones de campos: en teléfono una columna; en tableta y escritorio las
+   columnas que su nombre indica (bloque adaptaciones de nucleo.css). */
+.fila,.fila-3,.fila-2-1{display:grid;grid-template-columns:1fr;gap:var(--e-4);align-items:start}
+
+/* Los seis niveles de jerarquía. Se distinguen por familia, tamaño y color a
+   la vez; una diferencia de medio punto no se percibe como jerarquía.
+     1 título de página  · Cabin 2xl guinda
+     2 título de paso    · Cabin xl guinda, peso fuerte
+     3 título de bloque  · Cabin lg guinda con filete dorado
+     4 pregunta          · Roboto base, peso medio (la etiqueta del campo)
+     5 texto y ayuda     · Roboto base / md / sm
+     6 rótulo            · Roboto sm mayúsculas espaciadas */
+.titulo-pagina{font-size:var(--t-2xl);color:var(--guinda)}
+
+.titulo-paso{
+  margin-bottom:var(--e-2);
+  font-size:var(--t-xl);
+  font-weight:var(--peso-fuerte);
+  color:var(--guinda);
+}
+
+.titulo-bloque{
+  margin:var(--e-seccion) 0 var(--e-2);
+  padding-top:var(--e-3);
+  border-top:var(--b-2) solid var(--dorado);
+  font-size:var(--t-lg);
+  color:var(--guinda);
+}
+
+.rotulo{
+  margin:var(--e-6) 0 var(--e-3);
+  padding-bottom:var(--e-2);
+  border-bottom:var(--b-1) solid var(--linea);
+  font-family:var(--fuente-cuerpo);
+  font-size:var(--t-sm);
+  letter-spacing:var(--tracking-rotulo);
+  text-transform:uppercase;
+  color:var(--gris);
+}
+
+/* Bajada del título de paso: dice qué se pide y para qué. */
+.bajada{max-width:var(--ancho-lectura);margin-bottom:var(--e-5);font-size:var(--t-md);color:var(--gris)}
+
+/* ---------- Encabezado y pie institucionales ----------
+   El logotipo es ancho (Gobierno · Secretaría): va en su renglón y el título
+   debajo. El fondo beige y el filete dorado son la identidad de encabezado y
+   pie. El logotipo es un enlace al sitio de la Secretaría (FRM-34). */
+.cabecera{
+  padding:var(--e-4) var(--e-pagina);
+  background:var(--beige);
+  border-bottom:var(--b-3) solid var(--dorado);
+}
+.cabecera-int{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:var(--e-3);
+  max-width:var(--ancho-pagina);
+  margin-inline:auto;
+}
+.cabecera-logo{display:block;width:auto;height:auto;max-width:100%;max-height:var(--alto-logo)}
+.cabecera-titulo{width:100%;padding-top:var(--e-3);border-top:var(--b-1) solid var(--linea)}
+
+.pie{
+  padding:var(--e-7) var(--e-pagina) calc(var(--e-7) + var(--safe-inf));
+  background:var(--beige);
+  border-top:var(--b-3) solid var(--dorado);
+  font-size:var(--t-sm);
+  color:var(--gris);
+}
+.pie-int{max-width:var(--ancho-pagina);margin-inline:auto}
+
+/* Enlace de salto al contenido: primer elemento enfocable de la página. */
+.salto{
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:var(--z-dialogo);
+  padding:var(--e-3) var(--e-5);
+  background:var(--guinda);
+  border-radius:0 0 var(--r-ctrl) 0;
+  font-weight:var(--peso-semi);
+  color:var(--blanco);
+  transform:translateY(-200%);
+}
+
+/* Texto sólo para lector de pantalla: sigue en el árbol de accesibilidad. */
+.solo-lector{
+  position:absolute;
+  width:var(--b-1);
+  height:var(--b-1);
+  margin:calc(var(--b-1) * -1);
+  padding:0;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* Aviso de entorno de pruebas: visible mientras se trabaja con datos ficticios. */
+.entorno-pruebas{
+  padding:var(--e-2) var(--e-pagina);
+  background:var(--pend-bg);
+  border-bottom:var(--b-1) dashed var(--pend);
+  font-size:var(--t-sm);
+  font-weight:var(--peso-medio);
+  text-align:center;
+  color:var(--pend-txt);
+}

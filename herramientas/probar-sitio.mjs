@@ -1,0 +1,287 @@
+// PRUEBAS DEL SITIO (etapa 1, pantallas de la persona solicitante) con Playwright, en teléfono (390 px) y
+// escritorio (1280 px). Recorre los caminos principales sobre los datos ficticios y falla si:
+//   · hay errores en la consola o excepciones en la página;
+//   · la página se desborda a lo ancho;
+//   · una pantalla no muestra lo que debe (acuse, estados, observaciones, resultado de verificación).
+//
+// Uso:  node herramientas/probar-sitio.mjs <url-base> [carpeta-de-capturas]
+//   p. ej. con el sitio servido localmente:  (cd sitio && python3 -m http.server 8765) &
+//          node herramientas/probar-sitio.mjs http://localhost:8765/ verificacion/capturas
+// Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
+
+import { chromium } from 'playwright';
+import { readFileSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
+const BASE = (process.argv[2] || 'http://localhost:8765/').replace(/\/?$/, '/');
+const CAPTURAS = process.argv[3] ? join(raiz, process.argv[3]) : null;
+if (CAPTURAS) mkdirSync(CAPTURAS, { recursive: true });
+
+const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
+const CONTRASENA = 'Prueba-ficticia-2026';
+const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'];
+
+// ── Personas para cada camino, elegidas de los datos (no fijadas a mano) ──
+const persona = (id) => datos.solicitante.find((p) => p.id === id);
+const conObs = datos.solicitud.find((s) => s.estado === 'con_observaciones');
+const ultimaDe = (p, tipo) => datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === tipo).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];
+const tieneActiva = (p, tipo) => datos.solicitud.some((s) => s.solicitante_id === p.id && s.tipo_acreditacion === tipo && !FINALES.includes(s.estado));
+// Del padrón migrado, sin cuenta, con su poda en periodo de renovación: activa su cuenta y renueva
+const renovable = datos.solicitante.find((p) => {
+  const poda = ultimaDe(p, 'poda');
+  return p.estado === 'sin_activar' && poda && ['por_vencer', 'vencida_renovable'].includes(datos.estado_acreditacion[poda.numero]) && !tieneActiva(p, 'poda');
+});
+// Con poda vigente y sin dictaminador: puede pedir dictaminador nueva
+const paraDictaminador = datos.solicitante.find((p) => {
+  const poda = ultimaDe(p, 'poda');
+  return p.estado === 'activa' && poda && datos.estado_acreditacion[poda.numero] === 'vigente' && !ultimaDe(p, 'dictaminador') && !tieneActiva(p, 'dictaminador');
+});
+const inscrita = datos.solicitud.find((s) => s.estado === 'inscrita');
+const vigente = datos.verificacion_publica.find((v) => v.situacion === 'Vigente');
+const noVigente = datos.verificacion_publica.find((v) => v.situacion !== 'Vigente');
+
+const PDF = { name: 'documento.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% documento ficticio de prueba\n%%EOF\n') };
+
+let fallas = 0;
+const bien = (m) => console.log(`BIEN  ${m}`);
+const mal = (m) => { fallas++; console.log(`MAL   ${m}`); };
+const comprueba = (cond, m) => (cond ? bien(m) : mal(m));
+
+async function captura(page, nombre) {
+  if (CAPTURAS) await page.screenshot({ path: join(CAPTURAS, `${nombre}.png`), fullPage: true });
+}
+async function sinDesborde(page, donde) {
+  const ok = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+  comprueba(ok, `${donde}: sin desborde horizontal`);
+}
+async function entra(page, curp) {
+  await page.goto(BASE + 'entrar.html');
+  await page.fill('#curp', curp);
+  await page.fill('#contrasena', CONTRASENA);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForURL(/tramites\.html/);
+  await page.waitForSelector('[data-solicitudes] .ficha, [data-solicitudes] .vacio');
+}
+const pasoVisible = 'section[data-paso]:not([hidden])';
+async function siguiente(page) { await page.click(`${pasoVisible} [data-accion="siguiente"]`); }
+async function cargaObligatorios(page) {
+  const nombres = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo));
+  for (const n of nombres) {
+    await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, PDF);
+    await page.waitForSelector(`[data-campo="${n}"] .lista-arch li`);
+  }
+  return nombres.length;
+}
+async function llenaCuenta(page, curp) {
+  await page.fill('#nombre', 'Nadia');
+  await page.fill('#primer_apellido', 'Ejemplo');
+  await page.fill('#curp', curp);
+  await page.fill('#correo', 'nadia@ejemplo.local');
+  await page.fill('#correo2', 'nadia@ejemplo.local');
+  await page.fill('#telefono', '0000000077');
+  await page.fill('#contrasena', 'una frase larga de prueba');
+  await page.fill('#contrasena2', 'una frase larga de prueba');
+  await marcaCasillas(page);
+}
+async function marcaCasillas(page) {
+  for (const n of ['aviso', 'humano']) await page.check(`input[name="${n}"]`, { force: true });
+}
+
+async function recorrido(navegador, ancho, alto, sufijo) {
+  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const page = await contexto.newPage();
+  const errores = [];
+  page.on('console', (m) => { if (m.type() === 'error') errores.push(`${page.url()} · ${m.text()}`); });
+  page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`));
+  const t = (m) => `[${sufijo}] ${m}`;
+
+  // Inicio
+  await page.goto(BASE + 'index.html');
+  await page.waitForSelector('[data-requisitos] details');
+  comprueba(await page.locator('[data-requisitos] details').count() === 4, t('inicio: requisitos de los 4 cursos, desde el catálogo'));
+  comprueba(/Versión de prueba 0\.\d+/.test(await page.textContent('#version-sia')), t('inicio: versión de prueba visible'));
+  await sinDesborde(page, t('inicio'));
+  await captura(page, `01-inicio-${sufijo}`);
+
+  // Cuenta nueva
+  await page.goto(BASE + 'cuenta.html');
+  await page.click('[data-accion="enviar"]');
+  comprueba(await page.locator('.resumen-errores, [aria-invalid="true"]').count() > 0, t('cuenta: enviar vacío muestra los errores'));
+  await page.fill('#nombre', 'Nadia');
+  await page.fill('#primer_apellido', 'Ejemplo');
+  await page.fill('#curp', 'XAXX991230MNEXXX01'); // dígito verificador correcto: 8
+  await page.fill('#correo', 'nadia@ejemplo.local');
+  await page.fill('#correo2', 'nadia@ejemplo.local');
+  await page.fill('#telefono', '0000000077');
+  await page.fill('#contrasena', 'una frase larga de prueba');
+  await page.fill('#contrasena2', 'una frase larga de prueba');
+  await marcaCasillas(page);
+  // CURP con dígito incorrecto: el formulario la rechaza, igual que la base
+  await page.click('[data-accion="enviar"]');
+  const curpInvalida = await page.getAttribute('#curp', 'aria-invalid');
+  comprueba(curpInvalida === 'true', t('cuenta: CURP con dígito verificador incorrecto se rechaza'));
+  await page.fill('#curp', 'XAXX991230MNEXXX08');
+  await captura(page, `02-cuenta-${sufijo}`);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  bien(t('cuenta nueva: acuse visible'));
+  await sinDesborde(page, t('cuenta acuse'));
+  await page.click('[data-acuse] a[href="tramites.html"]');
+  await page.waitForSelector('[data-solicitudes] .vacio');
+  comprueba(await page.isVisible('[data-nueva] a'), t('cuenta nueva: «Iniciar una solicitud» disponible'));
+
+  // Persona nueva: sólo puede pedir poda nueva; dictaminador deshabilitado con su motivo
+  await page.click('[data-nueva] a');
+  await page.waitForFunction(() => document.querySelector('input[name="tramite"][value="poda_nueva"]').checked);
+  comprueba(await page.isDisabled('input[name="tramite"][value="dictaminador_nueva"]'), t('solicitud: dictaminador deshabilitado sin poda vigente'));
+  comprueba(await page.isDisabled('input[name="tramite"][value="poda_renovacion"]'), t('solicitud: renovación deshabilitada sin acreditación'));
+  await siguiente(page);
+  const n = await cargaObligatorios(page);
+  comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
+  await captura(page, `03-solicitud-documentos-${sufijo}`);
+  await siguiente(page);
+  await marcaCasillas(page);
+  await captura(page, `04-solicitud-revision-${sufijo}`);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  const folio = await page.textContent('[data-acuse-folio]');
+  comprueba(/^APD-S-\d{4}-\d{5}$/.test(folio), t(`solicitud: acuse con folio ${folio}`));
+  await captura(page, `05-solicitud-acuse-${sufijo}`);
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
+  comprueba((await page.textContent('[data-solicitudes]')).includes(folio), t('mis trámites: aparece la solicitud enviada, «En revisión»'));
+  await page.click('[data-sesion] button');
+  await page.waitForURL(/index\.html/);
+
+  // Padrón migrado: crea su cuenta con su CURP, ve su historial y renueva
+  await page.goto(BASE + 'cuenta.html');
+  await llenaCuenta(page, renovable.curp);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  comprueba(await page.isVisible('[data-cuenta-historial]'), t('cuenta del padrón migrado: avisa que encontró acreditaciones anteriores'));
+  await page.click('[data-acuse] a[href="tramites.html"]');
+  await page.waitForSelector('[data-acreditaciones] .ficha');
+  await captura(page, `06-tramites-renovacion-${sufijo}`);
+  await sinDesborde(page, t('mis trámites'));
+  comprueba(await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() >= 1, t('mis trámites: botón «Renovar» en la acreditación renovable'));
+  await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).first().click();
+  await page.waitForFunction(() => document.querySelector('input[name="tramite"][value="poda_renovacion"]').checked);
+  comprueba(/^PD-/.test(await page.inputValue('#anterior')), t('solicitud renovación: acreditación anterior en sólo lectura'));
+  comprueba(await page.isDisabled('input[name="tramite"][value="poda_nueva"]'), t('solicitud renovación: «nueva» deshabilitada'));
+  await siguiente(page);
+  await cargaObligatorios(page);
+  await siguiente(page);
+  await marcaCasillas(page);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  bien(t('solicitud renovación: enviada'));
+  await page.click('[data-sesion] button');
+
+  // Dictaminador nueva: perfil y sus documentos
+  await entra(page, paraDictaminador.curp);
+  await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
+  await page.waitForFunction(() => document.querySelector('input[name="tramite"][value="dictaminador_nueva"]').checked);
+  await siguiente(page);
+  comprueba(await page.isVisible('[data-campo="perfil_academico"]'), t('dictaminador: sin perfil no avanza'));
+  await page.check('input[name="perfil_academico"][value="titulo"]', { force: true });
+  await page.fill('#carrera', 'Biología');
+  await page.fill('#anios_experiencia', '3');
+  await captura(page, `10-dictaminador-perfil-${sufijo}`);
+  await siguiente(page);
+  const nd = await cargaObligatorios(page);
+  const esperados = datos.requisito_curso.filter((rc) => rc.tipo_acreditacion === 'dictaminador' && rc.modalidad === 'nueva' && rc.obligatorio
+    && datos.requisito.find((r) => r.clave === rc.requisito).forma === 'documento' && datos.requisito.find((r) => r.clave === rc.requisito).momento === 'en_linea').length;
+  comprueba(nd === esperados, t(`dictaminador nueva: ${nd} documentos obligatorios (catálogo: ${esperados})`));
+  await siguiente(page);
+  await marcaCasillas(page);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  bien(t('dictaminador nueva: enviada'));
+  await page.click('[data-sesion] button');
+
+  // Con observaciones: lo que hay que corregir y sólo lo observado es obligatorio
+  await entra(page, persona(conObs.solicitante_id).curp);
+  comprueba(await page.locator('[data-solicitudes] .aviso').count() > 0, t('mis trámites: observaciones visibles'));
+  await page.click(`a[href="solicitud.html?folio=${conObs.folio}"]`);
+  await page.waitForFunction(() => document.querySelector('input[name="tramite"]:checked'));
+  await siguiente(page);
+  comprueba(await page.isVisible('[data-observaciones]'), t('corregir: observaciones arriba de los documentos'));
+  const obligatorios = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).length);
+  const observados = datos.documento.filter((d) => d.solicitud_id === conObs.id && d.vigente && d.estado === 'con_observacion').length;
+  comprueba(obligatorios === observados, t(`corregir: sólo ${observados} documento(s) observado(s) obligatorio(s)`));
+  await captura(page, `07-corregir-${sufijo}`);
+  await page.click('[data-sesion] button');
+
+  // Inscrita: grupo visible
+  await entra(page, persona(inscrita.solicitante_id).curp);
+  comprueba((await page.textContent('[data-solicitudes]')).includes('APD-G-'), t('mis trámites: grupo asignado visible'));
+  await page.click('[data-sesion] button');
+
+  // Entrar con contraseña equivocada
+  await page.goto(BASE + 'entrar.html');
+  await page.fill('#curp', paraDictaminador.curp);
+  await page.fill('#contrasena', 'otra contraseña');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-estado-envio]:not([hidden])');
+  comprueba((await page.textContent('[data-estado-envio]')).includes('no coinciden'), t('entrar: error sin decir cuál dato falló'));
+  await captura(page, `08-entrar-${sufijo}`);
+
+  // Verificación pública, dos consultas seguidas
+  await page.goto(BASE + 'verificar.html');
+  await page.fill('#numero', vigente.numero);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-resultado]:not([hidden])');
+  comprueba((await page.getAttribute('[data-resultado]', 'data-tono')) === 'ok', t(`verificar: ${vigente.numero} vigente`));
+  await page.fill('#numero', noVigente.numero);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForFunction(() => document.querySelector('[data-resultado]').dataset.tono === 'error');
+  bien(t(`verificar: ${noVigente.numero} no vigente (segunda consulta sin recargar)`));
+  await captura(page, `09-verificar-${sufijo}`);
+  await sinDesborde(page, t('verificar'));
+
+  // Fallo de envío simulado
+  await page.goto(BASE + 'cuenta.html?simular=error');
+  await llenaCuenta(page, 'XAXX991230MNEXXX08');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-estado-envio]:not([hidden])');
+  bien(t('cuenta: el fallo de envío se avisa y la captura se conserva'));
+
+  comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await contexto.close();
+}
+
+// CHROMIUM: ruta a un Chromium ya instalado, si no coincide con la versión que espera Playwright
+// Accesibilidad con axe-core (el del Estándar: AXE=<ruta>/vendor/axe-core/axe.min.js). Sin AXE, se omite y se dice.
+async function accesibilidad(navegador) {
+  if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
+  const axe = readFileSync(process.env.AXE, 'utf8');
+  const page = await navegador.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(BASE + 'index.html');
+  await page.evaluate((id) => sessionStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
+  const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html']];
+  for (const [url, estado] of pantallas) {
+    await page.goto(BASE + url);
+    await page.waitForLoadState('networkidle');
+    if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
+    await page.addScriptTag({ content: axe });
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
+      .violations.map((x) => `${x.id} (${x.nodes.length})`));
+    comprueba(v.length === 0, `[accesibilidad] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
+  }
+  await page.close();
+}
+
+const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+try {
+  await recorrido(navegador, 390, 844, 'telefono');
+  await recorrido(navegador, 1280, 900, 'escritorio');
+  await accesibilidad(navegador);
+} catch (e) {
+  mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
+} finally {
+  await navegador.close();
+}
+console.log(fallas ? `\n${fallas} comprobación(es) fallida(s).` : '\nTodas las comprobaciones correctas.');
+process.exit(fallas ? 1 : 0);

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acreditaciones de arbolado urbano · Secretaría del Medio Ambiente</title>
+<meta name="description" content="Acreditación de poda y derribo y de dictaminador técnico de arbolado urbano. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/acordeon/acordeon.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.1">
+<link rel="stylesheet" href="app/apd.css?v=0.1">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+  <h2 class="titulo-paso">Acreditación de poda y derribo, y de dictaminador técnico</h2>
+  <p class="bajada">Para trabajar en el arbolado urbano de la Ciudad de México necesitas una acreditación vigente de la Secretaría. Aquí la solicitas por primera vez o la renuevas, y das seguimiento a tu trámite.</p>
+
+  <nav class="menu-inicio" aria-label="Opciones">
+    <a class="menu-opcion" href="cuenta.html">
+      <span class="menu-opcion-titulo">Crear tu cuenta</span>
+      <span class="menu-opcion-texto">La primera vez. Necesitas tu CURP y un correo.</span>
+    </a>
+    <a class="menu-opcion" href="entrar.html">
+      <span class="menu-opcion-titulo">Entrar</span>
+      <span class="menu-opcion-texto">Inicia o renueva tu acreditación y consulta en qué va tu trámite.</span>
+    </a>
+    <a class="menu-opcion" href="verificar.html">
+      <span class="menu-opcion-titulo">Verificar una acreditación</span>
+      <span class="menu-opcion-texto">Consulta si una acreditación está vigente. No necesitas cuenta.</span>
+    </a>
+  </nav>
+
+  <section class="seccion" aria-labelledby="t-como">
+    <h2 class="titulo-bloque" id="t-como">Cómo es el trámite</h2>
+    <ol class="pasos-tramite">
+      <li>Creas tu cuenta con tu CURP. Cada persona hace su propio trámite.</li>
+      <li>Llenas tu solicitud y cargas tus documentos en PDF o en foto.</li>
+      <li>La Secretaría revisa tus documentos. Si algo falta, te lo indica y lo corriges en línea.</li>
+      <li>Acudes a tu cita de cotejo con los mismos documentos, impresos, y con tu comprobante de pago. Ahí la Secretaría emite tu factura y abre tu expediente.</li>
+      <li>Cuando se reúne un grupo, la Secretaría te asigna a un curso: <span data-duraciones>de 5 días la primera vez y de 1 día la renovación</span>.</li>
+      <li>Al terminar el curso presentas el examen. Si lo apruebas, la Secretaría emite tu acreditación y la recoges en persona.</li>
+    </ol>
+  </section>
+
+  <section class="seccion" aria-labelledby="t-renovar">
+    <h2 class="titulo-bloque" id="t-renovar">Cuándo renovar</h2>
+    <p>Puedes renovar desde <strong data-param="dias_antes_renovacion">30</strong> días antes de que venza tu acreditación y hasta <strong data-param="meses_despues_renovacion">12</strong> meses después. Pasado ese plazo, haces una solicitud nueva.</p>
+    <div class="aviso aviso-advertencia">
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+      <p class="aviso-texto">Mientras tu acreditación no esté vigente no puedes trabajar en el arbolado, aunque tu renovación esté en trámite.</p>
+    </div>
+    <p>Para la acreditación de dictaminador técnico necesitas tener vigente la de poda y derribo al momento del trámite.</p>
+  </section>
+
+  <section class="seccion" aria-labelledby="t-requisitos">
+    <h2 class="titulo-bloque" id="t-requisitos">Requisitos</h2>
+    <p class="texto-gris">Los documentos se cargan en PDF, JPG o PNG, de hasta 5 MB cada uno.</p>
+    <div data-requisitos>
+      <p class="vacio">Cargando requisitos…</p>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="formkit/js/iconos.js"></script>
+<script src="app/apd.js?v=0.1"></script>
+<script src="app/inicio.js?v=0.1"></script>
+<script src="app/version-visible.js?v=0.1"></script>
+</body>
+</html>

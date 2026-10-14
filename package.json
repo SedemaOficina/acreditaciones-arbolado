@@ -6,9 +6,15 @@
   "scripts": {
     "esquema": "node herramientas/generar-esquema.mjs",
     "verificar-esquema": "node herramientas/generar-esquema.mjs --verificar",
-    "probar-base": "bash herramientas/probar-base.sh"
+    "probar-base": "bash herramientas/probar-base.sh",
+    "probar-sitio": "node herramientas/probar-sitio.mjs http://localhost:8765/ verificacion/capturas",
+    "construir-sitio": "node herramientas/construir-sitio.mjs",
+    "probar-esquemas": "node herramientas/probar-esquemas.mjs"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
   }
 }

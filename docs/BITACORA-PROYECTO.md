@@ -82,3 +82,21 @@ esté vigente; la corrección de CURP se verifica contra el documento.
 **Verificado**: 70 de 70 pruebas.
 
 **Eliminado**: el requisito «Factura (XML)» y el formato XML.
+
+## 2026-10-14 · Bloque 6 · Etapa 1: pantallas de la persona solicitante
+
+- Seis pantallas en `sitio/` con el Estándar de formularios del SIA v1.0.0 (copiado sin cambios): inicio,
+  crear cuenta, entrar, mis trámites, solicitud por pasos y verificación pública. Datos ficticios; envío y
+  acceso simulados. Detalle, configuración, validación en el servidor y lista de cierre en `docs/ETAPA-1-PANTALLAS.md`.
+- La base valida la CURP con las mismas tres capas que el formulario (`apd.curp_valida`); CURP ficticias
+  regeneradas en formato válido. Contraseña ficticia de 12 o más caracteres.
+- Acreditación y modalidad en un solo campo `tramite`, para que el esquema del servidor aplique las mismas
+  condiciones que el navegador.
+- Seis hallazgos del estándar documentados para reportarlos a su repositorio.
+
+**Verificado** (emulación en Chromium, 390 y 1280 px): 72 comprobaciones del sitio, axe-core sin hallazgos en
+8 pantallas, 46 campos auditados, 13 casos de validación en el servidor, 71 de 71 pruebas de la base.
+**Pendiente**: dispositivos y lectores de pantalla reales, Firefox y Safari.
+
+**Eliminado**: los campos separados `tipo` y `modalidad` del formulario (sustituidos por `tramite`); la
+contraseña ficticia `Prueba-2026`; las CURP ficticias con clave `PRUEB`.

@@ -7416,7 +7416,7 @@
    "activo": true,
    "nombre": "Constancias de capacitación especializada",
    "momento": "en_linea",
-   "descripcion": "Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador (corrección R11)."
+   "descripcion": "Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador."
   },
   {
    "clave": "curp",
@@ -9297,7 +9297,7 @@
  "solicitante": [
   {
    "id": "75ba2751-9798-44db-ac72-842d5c1b0c3f",
-   "curp": "XAXX700101MPRUEBA0",
+   "curp": "XAXX700101MNEXXX07",
    "correo": "persona01@ejemplo.local",
    "estado": "activa",
    "nombre": "Ana",
@@ -9312,7 +9312,7 @@
   },
   {
    "id": "8eae0ed1-fca7-4ed0-a315-d6361c87c422",
-   "curp": "XAXX700704MPRUEBD0",
+   "curp": "XAXX700704MNEXXX04",
    "correo": "persona31@ejemplo.local",
    "estado": "activa",
    "nombre": "Fabián",
@@ -9327,7 +9327,7 @@
   },
   {
    "id": "c37c7829-b41c-4d37-a7d0-44d2628cb21e",
-   "curp": "XAXX710202HPRUEBA1",
+   "curp": "XAXX710202HNEXXX04",
    "correo": "persona02@ejemplo.local",
    "estado": "activa",
    "nombre": "Bruno",
@@ -9342,7 +9342,7 @@
   },
   {
    "id": "42a4a0dd-6906-434c-ad6e-2f7b7090c018",
-   "curp": "XAXX710805HPRUEBD1",
+   "curp": "XAXX710805HNEXXX01",
    "correo": "persona32@ejemplo.local",
    "estado": "activa",
    "nombre": "Gloria",
@@ -9357,7 +9357,7 @@
   },
   {
    "id": "af0df2ec-006a-4fc4-a275-2f711aed3532",
-   "curp": "XAXX720303MPRUEBA2",
+   "curp": "XAXX720303MNEXXX01",
    "correo": "persona03@ejemplo.local",
    "estado": "activa",
    "nombre": "Carla",
@@ -9372,7 +9372,7 @@
   },
   {
    "id": "a2666a5a-0277-4583-a442-a5c27731ee36",
-   "curp": "XAXX720906MPRUEBD2",
+   "curp": "XAXX720906MNEXXX08",
    "correo": "persona33@ejemplo.local",
    "estado": "activa",
    "nombre": "Héctor",
@@ -9387,7 +9387,7 @@
   },
   {
    "id": "75329da4-21e1-4f10-a07d-213a7ffda09a",
-   "curp": "XAXX730404HPRUEBA3",
+   "curp": "XAXX730404HNEXXX08",
    "correo": "persona04@ejemplo.local",
    "estado": "activa",
    "nombre": "María de los Ángeles Guadalupe",
@@ -9402,7 +9402,7 @@
   },
   {
    "id": "eda1b6b4-6960-4da1-a106-f775cf1679e1",
-   "curp": "XAXX731007HPRUEBD3",
+   "curp": "XAXX731007HNEXXX03",
    "correo": "persona34@ejemplo.local",
    "estado": "activa",
    "nombre": "Irene",
@@ -9417,7 +9417,7 @@
   },
   {
    "id": "94586179-43d4-4d00-af2a-848d1860a484",
-   "curp": "XAXX740505MPRUEBA4",
+   "curp": "XAXX740505MNEXXX05",
    "correo": "persona05@ejemplo.local",
    "estado": "activa",
    "nombre": "Elena",
@@ -9432,7 +9432,7 @@
   },
   {
    "id": "b0533310-0bda-4e7b-af42-3cd15c73f2d6",
-   "curp": "XAXX741108MPRUEBD4",
+   "curp": "XAXX741108MNEXXX00",
    "correo": "persona35@ejemplo.local",
    "estado": "activa",
    "nombre": "Jorge",
@@ -9447,7 +9447,7 @@
   },
   {
    "id": "90c0ea92-100b-499c-aea9-ec9f2cbbc0f5",
-   "curp": "XAXX750606HPRUEBA5",
+   "curp": "XAXX750606HNEXXX02",
    "correo": "persona06@ejemplo.local",
    "estado": "activa",
    "nombre": "Fabián",
@@ -9462,7 +9462,7 @@
   },
   {
    "id": "39310c7d-1b11-43f6-a11c-af0d874eed33",
-   "curp": "XAXX751209HPRUEBD5",
+   "curp": "XAXX751209HNEXXX07",
    "correo": "persona36@ejemplo.local",
    "estado": "activa",
    "nombre": "Karla",
@@ -9477,7 +9477,7 @@
   },
   {
    "id": "0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4",
-   "curp": "XAXX760110MPRUEBD6",
+   "curp": "XAXX760110MNEXXX08",
    "correo": "persona37@ejemplo.local",
    "estado": "activa",
    "nombre": "Luis",
@@ -9492,7 +9492,7 @@
   },
   {
    "id": "7cfb2a2d-d797-42d4-a53c-94758ea964a9",
-   "curp": "XAXX760707HPRUEBA6",
+   "curp": "XAXX760707HNEXXX09",
    "correo": "persona07@ejemplo.local",
    "estado": "activa",
    "nombre": "Juan",
@@ -9507,7 +9507,7 @@
   },
   {
    "id": "b4911a5b-1aa9-4e14-a874-b7cd82282c1a",
-   "curp": "XAXX770211HPRUEBD7",
+   "curp": "XAXX770211HNEXXX05",
    "correo": "persona38@ejemplo.local",
    "estado": "activa",
    "nombre": "Marta",
@@ -9522,7 +9522,7 @@
   },
   {
    "id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93",
-   "curp": "XAXX770808HPRUEBA7",
+   "curp": "XAXX770808HNEXXX06",
    "correo": "persona08@ejemplo.local",
    "estado": "activa",
    "nombre": "Héctor",
@@ -9537,7 +9537,7 @@
   },
   {
    "id": "5ec69233-0cd1-4157-a23c-adfb1acda361",
-   "curp": "XAXX780312MPRUEBD8",
+   "curp": "XAXX780312MNEXXX02",
    "correo": "persona39@ejemplo.local",
    "estado": "activa",
    "nombre": "Néstor",
@@ -9552,7 +9552,7 @@
   },
   {
    "id": "c16b4c47-728c-4910-a5b9-efe26efe0d46",
-   "curp": "XAXX780909MPRUEBA8",
+   "curp": "XAXX780909MNEXXX03",
    "correo": "persona09@ejemplo.local",
    "estado": "activa",
    "nombre": "Irene",
@@ -9567,7 +9567,7 @@
   },
   {
    "id": "7eee6731-4ea8-4916-a078-800b1ca7e703",
-   "curp": "XAXX790413HPRUEBD9",
+   "curp": "XAXX790413HNEXXX09",
    "correo": "persona40@ejemplo.local",
    "estado": "activa",
    "nombre": "Olga",
@@ -9582,7 +9582,7 @@
   },
   {
    "id": "b758208c-1561-4de7-a555-ca182e501e14",
-   "curp": "XAXX791010HPRUEBA9",
+   "curp": "XAXX791010HNEXXX08",
    "correo": "persona10@ejemplo.local",
    "estado": "activa",
    "nombre": "Jorge",
@@ -9597,7 +9597,7 @@
   },
   {
    "id": "05bb32ae-8d1a-4c3e-a47a-5c8860aee092",
-   "curp": "XAXX800514MPRUEBE0",
+   "curp": "XAXX800514MNEXXX02",
    "correo": "persona41@ejemplo.local",
    "estado": "activa",
    "nombre": "Pablo",
@@ -9612,7 +9612,7 @@
   },
   {
    "id": "5079c00e-94c9-4b9c-a63d-63f110394d7d",
-   "curp": "XAXX801111MPRUEBB0",
+   "curp": "XAXX801111MNEXXX01",
    "correo": "persona11@ejemplo.local",
    "estado": "sin_activar",
    "nombre": "Karla",
@@ -9627,7 +9627,7 @@
   },
   {
    "id": "3a939f55-5357-4d4b-a426-7c5408f01b7c",
-   "curp": "XAXX810615HPRUEBE1",
+   "curp": "XAXX810615HNEXXX09",
    "correo": "persona42@ejemplo.local",
    "estado": "activa",
    "nombre": "Rosa",
@@ -9642,7 +9642,7 @@
   },
   {
    "id": "f6e48496-1699-4b15-af4a-e4270249e05f",
-   "curp": "XAXX811212HPRUEBB1",
+   "curp": "XAXX811212HNEXXX08",
    "correo": "persona12@ejemplo.local",
    "estado": "activa",
    "nombre": "Luis",
@@ -9657,7 +9657,7 @@
   },
   {
    "id": "5ea01eb2-de13-462a-a4ca-4667ef0a8b3c",
-   "curp": "XAXX820113MPRUEBB2",
+   "curp": "XAXX820113MNEXXX09",
    "correo": "persona13@ejemplo.local",
    "estado": "activa",
    "nombre": "Marta",
@@ -9672,7 +9672,7 @@
   },
   {
    "id": "c5f9d9aa-c874-46d3-a037-9d273f6aa2e5",
-   "curp": "XAXX820716MPRUEBE2",
+   "curp": "XAXX820716MNEXXX06",
    "correo": "persona43@ejemplo.local",
    "estado": "activa",
    "nombre": "Sergio",
@@ -9687,7 +9687,7 @@
   },
   {
    "id": "67cf436a-a0ce-4d00-ae82-d0b40d575058",
-   "curp": "XAXX830214HPRUEBB3",
+   "curp": "XAXX830214HNEXXX06",
    "correo": "persona14@ejemplo.local",
    "estado": "activa",
    "nombre": "Néstor",
@@ -9702,7 +9702,7 @@
   },
   {
    "id": "b67eb5d7-c863-4900-a9d0-e4f3719bca06",
-   "curp": "XAXX830817HPRUEBE3",
+   "curp": "XAXX830817HNEXXX03",
    "correo": "persona44@ejemplo.local",
    "estado": "activa",
    "nombre": "Teresa",
@@ -9717,7 +9717,7 @@
   },
   {
    "id": "a5f29365-181a-4c92-a268-4a4029c2c9f5",
-   "curp": "XAXX840315HPRUEBB4",
+   "curp": "XAXX840315HNEXXX03",
    "correo": "persona15@ejemplo.local",
    "estado": "activa",
    "nombre": "Juan",
@@ -9732,7 +9732,7 @@
   },
   {
    "id": "061e78f9-f0bd-46c0-a3e5-a51800e8e919",
-   "curp": "XAXX840918MPRUEBE4",
+   "curp": "XAXX840918MNEXXX00",
    "correo": "persona45@ejemplo.local",
    "estado": "activa",
    "nombre": "Ulises",
@@ -9747,7 +9747,7 @@
   },
   {
    "id": "a615e119-b885-4a9a-ae16-386dc9efaef8",
-   "curp": "XAXX850416HPRUEBB5",
+   "curp": "XAXX850416HNEXXX00",
    "correo": "persona16@ejemplo.local",
    "estado": "activa",
    "nombre": "Pablo",
@@ -9762,7 +9762,7 @@
   },
   {
    "id": "a5c6cde4-4c27-4fed-a850-77b3217bd4fa",
-   "curp": "XAXX851019HPRUEBE5",
+   "curp": "XAXX851019HNEXXX05",
    "correo": "persona46@ejemplo.local",
    "estado": "activa",
    "nombre": "Valeria",
@@ -9777,7 +9777,7 @@
   },
   {
    "id": "184fea5a-b3c9-44f8-a76b-516117f3031c",
-   "curp": "XAXX860517MPRUEBB6",
+   "curp": "XAXX860517MNEXXX07",
    "correo": "persona17@ejemplo.local",
    "estado": "sin_activar",
    "nombre": "Rosa",
@@ -9792,7 +9792,7 @@
   },
   {
    "id": "8116fc20-d786-47f6-afa6-801a10f085b9",
-   "curp": "XAXX861120MPRUEBE6",
+   "curp": "XAXX861120MNEXXX02",
    "correo": "persona47@ejemplo.local",
    "estado": "activa",
    "nombre": "Wendy",
@@ -9807,7 +9807,7 @@
   },
   {
    "id": "751cf4e1-256e-4484-a6e2-63d2235bb70b",
-   "curp": "XAXX870618HPRUEBB7",
+   "curp": "XAXX870618HNEXXX04",
    "correo": "persona18@ejemplo.local",
    "estado": "activa",
    "nombre": "Sergio",
@@ -9822,7 +9822,7 @@
   },
   {
    "id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
-   "curp": "XAXX880719MPRUEBB8",
+   "curp": "XAXX880719MNEXXX01",
    "correo": "persona19@ejemplo.local",
    "estado": "activa",
    "nombre": "Teresa",
@@ -9837,7 +9837,7 @@
   },
   {
    "id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
-   "curp": "XAXX890820HPRUEBB9",
+   "curp": "XAXX890820HNEXXX08",
    "correo": "persona20@ejemplo.local",
    "estado": "activa",
    "nombre": "Ulises",
@@ -9852,7 +9852,7 @@
   },
   {
    "id": "84a21dbf-161e-4044-a213-f660eeb0b14c",
-   "curp": "XAXX900921MPRUEBC0",
+   "curp": "XAXX900921MNEXXX01",
    "correo": "persona21@ejemplo.local",
    "estado": "activa",
    "nombre": "Valeria",
@@ -9867,7 +9867,7 @@
   },
   {
    "id": "4de12634-5f50-414f-a9cc-ebb97a1b3a92",
-   "curp": "XAXX911022HPRUEBC1",
+   "curp": "XAXX911022HNEXXX06",
    "correo": "persona22@ejemplo.local",
    "estado": "activa",
    "nombre": "Wendy",
@@ -9882,7 +9882,7 @@
   },
   {
    "id": "60237a0f-dc58-4eea-afe1-2c7ad8f09217",
-   "curp": "XAXX921123MPRUEBC2",
+   "curp": "XAXX921123MNEXXX03",
    "correo": "persona23@ejemplo.local",
    "estado": "activa",
    "nombre": "Ximena",
@@ -9897,7 +9897,7 @@
   },
   {
    "id": "0efcf35f-4b5a-41fa-a1a5-294fc26a2732",
-   "curp": "XAXX931224HPRUEBC3",
+   "curp": "XAXX931224HNEXXX00",
    "correo": "persona24@ejemplo.local",
    "estado": "activa",
    "nombre": "Yolanda",
@@ -9912,7 +9912,7 @@
   },
   {
    "id": "5bb60068-0ca4-4d84-ad08-9901a54cceb7",
-   "curp": "XAXX940125MPRUEBC4",
+   "curp": "XAXX940125MNEXXX01",
    "correo": "persona25@ejemplo.local",
    "estado": "activa",
    "nombre": "Zacarías",
@@ -9927,7 +9927,7 @@
   },
   {
    "id": "6295db4a-f71f-4277-a0f4-3010922a9003",
-   "curp": "XAXX950226HPRUEBC5",
+   "curp": "XAXX950226HNEXXX08",
    "correo": "persona26@ejemplo.local",
    "estado": "activa",
    "nombre": "Ana",
@@ -9942,7 +9942,7 @@
   },
   {
    "id": "c52ae32f-f47f-480b-aa40-d3940ce006d4",
-   "curp": "XAXX960327MPRUEBC6",
+   "curp": "XAXX960327MNEXXX05",
    "correo": "persona27@ejemplo.local",
    "estado": "activa",
    "nombre": "Bruno",
@@ -9957,7 +9957,7 @@
   },
   {
    "id": "2ffbc313-3a83-4728-a21d-b952eb9efbf6",
-   "curp": "XAXX970401HPRUEBC7",
+   "curp": "XAXX970401HNEXXX05",
    "correo": "persona28@ejemplo.local",
    "estado": "activa",
    "nombre": "Carla",
@@ -9972,7 +9972,7 @@
   },
   {
    "id": "08193753-7b69-4ee7-a162-3e4eb14ebfc0",
-   "curp": "XAXX980502MPRUEBC8",
+   "curp": "XAXX980502MNEXXX02",
    "correo": "persona29@ejemplo.local",
    "estado": "activa",
    "nombre": "Diego",
@@ -9987,7 +9987,7 @@
   },
   {
    "id": "19e97f98-8eb5-4f5e-ab8e-942a038df7db",
-   "curp": "XAXX990603HPRUEBC9",
+   "curp": "XAXX990603HNEXXX09",
    "correo": "persona30@ejemplo.local",
    "estado": "activa",
    "nombre": "Elena",

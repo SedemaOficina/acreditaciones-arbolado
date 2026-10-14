@@ -78,7 +78,7 @@ const casos = [
      SELECT solicitante_id, 'poda', 'nueva' FROM apd.solicitud WHERE id = ${BORRADOR};`],
   ['No se envía con documentos faltantes', { codigo: 'faltan_documentos' }, null, `
      INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, contrasena_hash, es_ficticio)
-     VALUES ('00000000-0000-4000-a000-000000000001', 'XAXX991231HPRUEBZ9', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'x', true);
+     VALUES ('00000000-0000-4000-a000-000000000001', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'x', true);
      INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
      VALUES ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000001', 'poda', 'nueva');
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000002';`],
@@ -248,12 +248,15 @@ const casos = [
   ['Una CURP con formato inválido se rechaza', { sqlstate: '23514' }, null, `
      INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, contrasena_hash)
      VALUES ('ABC123', 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'x');`],
+  ['Una CURP con dígito verificador incorrecto se rechaza, igual que en el formulario', { sqlstate: '23514' }, null, `
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, contrasena_hash)
+     VALUES ('XAXX991231HNEXXX01', 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'x');`],
   ['La persona no corrige su propia CURP', { codigo: 'curp_sin_motivo' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
-     UPDATE apd.solicitante SET curp = 'XAXX991231HPRUEBZ8' WHERE id = ${PERSONA_VIGENTE};`],
+     UPDATE apd.solicitante SET curp = 'XAXX991230HNEXXX08' WHERE id = ${PERSONA_VIGENTE};`],
   ['La Secretaría corrige una CURP con motivo, y queda en la bitácora', 'ok', null, `
      SELECT set_config('apd.motivo', 'Error de captura comprobado con la identificación', true);
-     UPDATE apd.solicitante SET curp = 'XAXX991231HPRUEBZ8' WHERE id = ${PERSONA_VIGENTE};
+     UPDATE apd.solicitante SET curp = 'XAXX991230HNEXXX08' WHERE id = ${PERSONA_VIGENTE};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'correccion_curp' AND detalle LIKE '%Error de captura%'); END $$;`],
   ['«C.F.E.» y «CFE» son la misma organización', { sqlstate: '23505' }, null, `
      INSERT INTO apd.organizacion (tipo, nombre) VALUES ('dependencia_publica', 'DEPENDENCIA de prueba  de ENERGIA.');`],

@@ -110,3 +110,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 6. Formato del registro histórico de Kobo, para la migración.
 7. Plazos para atender observaciones y para presentarse a la cita.
 9. Requisitos de renovación para quien viene de Kobo sin archivos en el sistema.
+10. Cómo se comprueba la titularidad cuando alguien del registro de Kobo crea su cuenta con su CURP (hoy basta la
+    CURP; el riesgo es que otra persona la use).
+11. Lugar de la cita de cotejo y de la sede del curso: dónde se informa a la persona (hoy sólo fecha y hora de cita).
+12. Si se contrasta la CURP con el servicio oficial de consulta (hoy sólo se valida su formato y dígito).

@@ -16,7 +16,7 @@ principio.
 | Etapa | Qué cierra | Estado |
 |---|---|---|
 | 0. Decisiones previas | Nueve decisiones del SIA, reglas del trámite validadas en el mapa, modelo de datos, base y datos ficticios | **Cerrada** el 14/10/2026, con pendientes que no bloquean |
-| 1. Cascarón | Pantallas públicas y de la persona solicitante, con el Estándar de formularios del SIA y datos ficticios, publicadas y probadas en teléfono | Siguiente |
+| 1. Cascarón | Pantallas públicas y de la persona solicitante, con el Estándar de formularios del SIA y datos ficticios, publicadas y probadas en teléfono | **Construida** el 14/10/2026; falta revisión en dispositivos reales (`docs/ETAPA-1-PANTALLAS.md`) |
 | 2. Administración | Revisión, cotejo, bandeja de demanda, grupos, asistencia, examen, emisión; carga del padrón de Kobo | — |
 | 3. Datos reales | Backend `crearRutasApd(pool)` sobre la base | — |
 | 4–6 | Trámites, indicadores, cierre y paquete para el SIA | — |
@@ -34,7 +34,12 @@ principio.
 | `db/esquema.json` | **Fuente única del modelo de datos** |
 | `db/apd/` | Guiones de instalación del esquema `apd`, en orden; `instalar.sql` los corre en una transacción |
 | `datos/ficticios.json` | Expedientes ficticios exportados de la base, con sus mismas tablas (generado) |
-| `herramientas/` | Generador del esquema, generador de ficticios, pruebas y exportación |
+| `sitio/` | Versión de prueba de las pantallas de la persona solicitante (se publica tal cual en GitHub Pages) |
+| `sitio/formkit/` | Copia sin cambios del Estándar de formularios del SIA (generada) |
+| `db/esquemas-formularios/` | Esquema de cada formulario para la validación en el servidor (generado del HTML) |
+| `docs/ETAPA-1-PANTALLAS.md` | Pantallas, archivos del estándar, configuración, validación en el servidor y lista de cierre |
+| `verificacion/capturas/` | Capturas de las pruebas del sitio en teléfono y escritorio |
+| `herramientas/` | Generador del esquema, generador de ficticios, construcción y pruebas del sitio, pruebas y exportación |
 
 ## Cómo se prueba la base
 
@@ -42,11 +47,23 @@ Requiere Node 18+ y un PostgreSQL 13+ **de pruebas** (no hace falta PostGIS).
 
 ```sh
 npm run esquema                                    # regenera tablas y documentación desde db/esquema.json
-PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 70 pruebas
+PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 71 pruebas
 ```
 
 `probar-base` se niega a correr sobre una base cuyo nombre no contenga «prueba», y se detiene en el primer
 paso que falle.
+
+## Cómo se construye y se prueba el sitio
+
+Requiere un clon de `SedemaOficina/estandar-formularios` (v1.0.0) y `npm install` (Playwright para las pruebas).
+
+```sh
+npm run construir-sitio -- <ruta-al-estandar>       # copia el estándar, la versión, los ficticios y genera los documentos
+npm run probar-esquemas -- <ruta-al-estandar>       # esquemas del servidor y su validación con validar.mjs
+(cd sitio && python3 -m http.server 8765) &         # cualquier servidor estático
+AXE=<ruta-al-estandar>/vendor/axe-core/axe.min.js npm run probar-sitio   # teléfono y escritorio, consola, accesibilidad, capturas
+bash herramientas/publicar-sitio.sh                 # gh-pages = sitio/ (después del commit en main)
+```
 
 ## Lo que este proyecto toca del SIA
 
@@ -58,6 +75,6 @@ paso que falle.
 
 47 personas, 46 solicitudes en todos los estados, 4 grupos (concluido, en curso, en integración y cancelado),
 21 acreditaciones en todas las situaciones de vigencia. Nombres con apellidos «Ejemplo», «Muestra», «Prueba»;
-correos `@ejemplo.local`; teléfonos de ceros; CURP con prefijo `XAXX` y clave `PRUEB`. La contraseña de las
-cuentas ficticias es `Prueba-2026`. Se generan pasando por todas las reglas de la base: si un dato ficticio
+correos `@ejemplo.local`; teléfonos de ceros; CURP con prefijo `XAXX` y entidad `NE` seguida de `XXX` (pasan la validación de formato, como cualquier CURP). La contraseña de las
+cuentas ficticias es `Prueba-ficticia-2026`. Se generan pasando por todas las reglas de la base: si un dato ficticio
 viola una regla, la carga falla.

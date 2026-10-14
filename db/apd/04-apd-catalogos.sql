@@ -47,7 +47,7 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('comprobantes_experiencia', 'Comprobantes de experiencia',
    'Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF.', 'documento', 'en_linea'),
   ('constancias_capacitacion', 'Constancias de capacitación especializada',
-   'Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador (corrección R11).', 'documento', 'en_linea');
+   'Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador.', 'documento', 'en_linea');
 
 -- Qué pide cada curso (corrección R46, 2026-10-14): en una renovación sólo es obligatorio lo que cambia en
 -- cada trámite (la constancia fiscal y la factura del pago). Lo demás se carga sólo si la persona lo

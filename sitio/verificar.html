@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verificar una acreditación · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Consulta si una acreditación de poda y derribo o de dictaminador técnico está vigente. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.1">
+<link rel="stylesheet" href="app/apd.css?v=0.1">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+  <p><a class="btn-atras" href="index.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Inicio</a></p>
+
+  <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
+    <h2 class="titulo-paso">Verifica una acreditación</h2>
+    <p class="bajada">Antes de contratar a alguien para podar, derribar o dictaminar árboles, confirma que su acreditación esté vigente.</p>
+
+    <div class="campo" data-campo="numero" data-formato="folio" data-requerido data-uso="Buscar la acreditación que se quiere verificar.">
+      <label class="etiqueta" for="numero">Número de acreditación</label>
+      <p class="ayuda">Viene impreso en la acreditación. Por ejemplo: PD-2026-0001.</p>
+      <input class="control" id="numero" name="numero" type="text" maxlength="20" autocomplete="off" spellcheck="false">
+    </div>
+
+    <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario" data-accion="enviar">Verificar</button>
+    </div>
+  </form>
+
+  <section class="resultado" data-resultado aria-live="polite" tabindex="-1" hidden></section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/apd.js?v=0.1"></script>
+<script src="app/config-verificar.js?v=0.1"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/identificadores/identificadores.js"></script>
+<script src="app/version-visible.js?v=0.1"></script>
+</body>
+</html>

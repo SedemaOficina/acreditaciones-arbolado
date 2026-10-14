@@ -119,7 +119,7 @@ CREATE TABLE apd.solicitante (
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT solicitante_pk PRIMARY KEY (id),
   CONSTRAINT solicitante_curp_uk UNIQUE (curp),
-  CONSTRAINT solicitante_curp_ck CHECK (curp ~ '^[A-Z][AEIOUX][A-Z]{2}[0-9]{6}[HMX][A-Z]{5}[0-9A-Z][0-9]$'),
+  CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp)),
   CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$'),
   CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar')),

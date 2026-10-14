@@ -1,0 +1,156 @@
+{
+  "formulario": "cuenta.html",
+  "generado": "2026-10-14T23:01:54.112Z",
+  "campos": {
+    "nombre": {
+      "etiqueta": "Nombre o nombres",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "nombre",
+      "sensible": true,
+      "uso": "Nombre que aparece en el expediente y en la acreditación.",
+      "finalidad": "Identificar a la persona en su expediente y en la acreditación que se emita.",
+      "atributos": {
+        "maxlength": "80"
+      },
+      "autocomplete": "given-name"
+    },
+    "primer_apellido": {
+      "etiqueta": "Primer apellido",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "nombre",
+      "sensible": true,
+      "uso": "Nombre que aparece en el expediente y en la acreditación.",
+      "finalidad": "Identificar a la persona en su expediente y en la acreditación que se emita.",
+      "atributos": {
+        "maxlength": "80"
+      },
+      "autocomplete": "family-name"
+    },
+    "segundo_apellido": {
+      "etiqueta": "Segundo apellido",
+      "tipo": "texto",
+      "requerido": false,
+      "formato": "nombre",
+      "sensible": true,
+      "uso": "Nombre que aparece en el expediente y en la acreditación.",
+      "finalidad": "Identificar a la persona en su expediente y en la acreditación que se emita.",
+      "atributos": {
+        "maxlength": "80"
+      },
+      "autocomplete": "off"
+    },
+    "curp": {
+      "etiqueta": "CURP Son 18 caracteres, como aparecen en tu constancia de CURP. Con ella entrarás a tu cuenta.",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "curp",
+      "sensible": true,
+      "uso": "Identificador único de la cuenta y llave del historial de acreditaciones.",
+      "finalidad": "Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona.",
+      "atributos": {
+        "maxlength": "18"
+      },
+      "autocomplete": "off"
+    },
+    "correo": {
+      "etiqueta": "Correo electrónico",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "correo",
+      "sensible": true,
+      "uso": "Avisos del trámite y recuperación del acceso.",
+      "finalidad": "Avisar a la persona el avance de su trámite y recuperar el acceso a su cuenta.",
+      "atributos": {
+        "maxlength": "120"
+      },
+      "autocomplete": "email"
+    },
+    "correo2": {
+      "etiqueta": "Confirma tu correo",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "correo",
+      "sensible": true,
+      "uso": "Evitar errores de captura en el correo.",
+      "atributos": {
+        "maxlength": "120"
+      },
+      "autocomplete": "off",
+      "cruzadas": [
+        {
+          "clave": "igual",
+          "mapa": {
+            "original": "correo",
+            "confirmacion": "correo2"
+          },
+          "nivel": "error"
+        }
+      ]
+    },
+    "telefono": {
+      "etiqueta": "Teléfono",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "telefono",
+      "sensible": true,
+      "uso": "Contacto por la cita de cotejo y el curso.",
+      "finalidad": "Confirmar o reprogramar la cita de cotejo y avisar cambios del curso.",
+      "atributos": {},
+      "autocomplete": "tel-national"
+    },
+    "contrasena": {
+      "etiqueta": "Contraseña",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "contrasena",
+      "sensible": true,
+      "uso": "Acceso a la cuenta; se guarda cifrada, nunca en claro.",
+      "finalidad": "Proteger el acceso a la cuenta.",
+      "atributos": {
+        "minlength": "12"
+      },
+      "autocomplete": "new-password"
+    },
+    "contrasena2": {
+      "etiqueta": "Escríbela de nuevo",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "contrasena",
+      "sensible": true,
+      "uso": "Evitar errores de captura en la contraseña.",
+      "atributos": {
+        "minlength": "12"
+      },
+      "autocomplete": "new-password",
+      "cruzadas": [
+        {
+          "clave": "igual",
+          "mapa": {
+            "original": "contrasena",
+            "confirmacion": "contrasena2"
+          },
+          "nivel": "error"
+        }
+      ]
+    },
+    "aviso": {
+      "etiqueta": "Leí el aviso de privacidad",
+      "tipo": "casilla",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Dejar constancia de que se informó a la persona.",
+      "atributos": {}
+    },
+    "humano": {
+      "etiqueta": "No soy un programa automático",
+      "tipo": "casilla",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Distinguir personas de envíos automáticos.",
+      "atributos": {}
+    }
+  },
+  "repetibles": []
+}

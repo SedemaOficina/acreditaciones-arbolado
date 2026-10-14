@@ -1,0 +1,50 @@
+/* =========================================================
+   modal.css · Módulo «modal» · nivel RECOMENDADO
+   <dialog> nativo. En teléfono es una hoja inferior a todo lo ancho, con
+   esquinas superiores redondeadas y respeto a la franja segura; desde
+   tableta, una caja centrada. Usa dvh: el alto del teléfono cambia con la
+   barra del navegador y vh dejaría el pie fuera de pantalla.
+   Depende de: nucleo.css. Bloques: componentes → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.dialogo{
+  position:fixed;
+  inset:auto 0 0 0;
+  width:100%;
+  max-width:100%;
+  max-height:calc(90dvh - var(--safe-inf));
+  margin:0;
+  padding:var(--e-6) var(--e-pagina) calc(var(--e-6) + var(--safe-inf));
+  overflow:auto;
+  background:var(--blanco);
+  border:0;
+  border-radius:var(--r-caja) var(--r-caja) 0 0;
+  box-shadow:var(--sombra-hoja);
+  color:var(--texto);
+}
+.dialogo::backdrop{background:var(--velo)}
+.dialogo-titulo{margin-top:0;padding-top:0;border-top:0}
+.dialogo-acciones{margin-top:var(--e-5)}
+.dialogo-cierre{display:flex;justify-content:flex-end;margin-top:var(--e-5)}
+
+/* Aviso en línea antes del diálogo de privacidad. */
+.priv{margin:var(--e-1) 0 var(--e-4);padding:var(--e-4);background:var(--blanco);border:var(--b-1) solid var(--linea);border-radius:var(--r-caja)}
+.priv-parrafo{margin-bottom:var(--e-3);font-size:var(--t-md)}
+.priv-parrafo:last-child{margin-bottom:0}
+
+/* @bloque adaptaciones */
+
+@media (min-width:560px){
+  .dialogo{
+    inset:0;
+    width:calc(100% - var(--e-6));
+    max-width:var(--ancho-dialogo);
+    max-height:90dvh;
+    margin:auto;
+    padding:var(--e-6);
+    border-radius:var(--r-caja);
+    box-shadow:none;
+  }
+}

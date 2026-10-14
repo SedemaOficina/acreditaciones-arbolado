@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entrar · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Entra a tu cuenta para solicitar, renovar o consultar tu acreditación de arbolado urbano. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.1">
+<link rel="stylesheet" href="app/apd.css?v=0.1">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+  <p><a class="btn-atras" href="index.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Inicio</a></p>
+
+  <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
+    <h2 class="titulo-paso">Entra a tu cuenta</h2>
+    <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+    <!-- autocomplete username: la CURP es el nombre de usuario de la cuenta; así el gestor de contraseñas la recuerda. -->
+    <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
+         data-finalidad="Identificar la cuenta a la que se entra." data-uso="Nombre de usuario de la cuenta.">
+      <label class="etiqueta" for="curp">CURP</label>
+      <input class="control" id="curp" name="curp" type="text" maxlength="18" autocomplete="username" spellcheck="false">
+    </div>
+    <div class="campo" data-campo="contrasena" data-requerido data-sensible
+         data-finalidad="Comprobar que quien entra es la persona titular de la cuenta." data-uso="Comprobar el acceso; no se guarda.">
+      <label class="etiqueta" for="contrasena">Contraseña</label>
+      <input class="control" id="contrasena" name="contrasena" type="password" autocomplete="current-password">
+    </div>
+    <!-- Trampa para programas automáticos: una persona no la ve ni la llena. -->
+    <div class="solo-lector" aria-hidden="true" data-trampa><label>No llenar <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label></div>
+
+    <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario" data-accion="enviar">Entrar</button>
+    </div>
+    <p>¿No tienes cuenta? <a href="cuenta.html">Créala aquí</a>.</p>
+    <p class="texto-gris">¿Olvidaste tu contraseña? <span class="pendiente">Pendiente: definir quién atiende la recuperación del acceso y por qué medio.</span></p>
+  </form>
+
+  <section class="pruebas" aria-labelledby="t-pruebas">
+    <h2 class="pruebas-titulo" id="t-pruebas">Sólo en la versión de prueba: personas de ejemplo</h2>
+    <p>Todas son ficticias y su contraseña es <span class="mono" data-contrasena-ficticia></span>. Elige una para llenar el formulario con sus datos; después presiona «Entrar».</p>
+    <ul class="pruebas-lista" data-ejemplos></ul>
+    <div data-ejemplos-migradas-caja hidden>
+      <p>Del registro anterior, todavía sin cuenta: para ver cómo se activa, <a href="cuenta.html">crea la cuenta</a> con una de estas CURP.</p>
+      <ul class="lista-obs" data-ejemplos-migradas></ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/apd.js?v=0.1"></script>
+<script src="app/config-entrar.js?v=0.1"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/identificadores/identificadores.js"></script>
+<script src="app/entrar.js?v=0.1"></script>
+<script src="app/version-visible.js?v=0.1"></script>
+</body>
+</html>

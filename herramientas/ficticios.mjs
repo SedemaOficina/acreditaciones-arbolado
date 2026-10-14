@@ -7,7 +7,7 @@
 //
 // Reglas de los datos ficticios (norma 3 de construir-sistema-nuevo):
 //   · inequívocamente falsos y legibles: apellidos Ejemplo, Muestra, Prueba…; correo @ejemplo.local;
-//     teléfono de ceros; CURP con prefijo XAXX y clave de entidad PRUEB; organizaciones «de Prueba»;
+//     teléfono de ceros; CURP con prefijo XAXX y entidad NE seguida de XXX (válidas en formato); organizaciones «de Prueba»;
 //   · todos los estados de la solicitud, del grupo y de la vigencia, al menos una vez;
 //   · casos incómodos: nombre larguísimo, nombres repetidos, sin segundo apellido, calificación justo en el
 //     mínimo, asistencia insuficiente, grupo cancelado, renovación vencida esperando grupo, dictaminador con
@@ -28,11 +28,11 @@ function uuid(clave) {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }
 
-// Contraseña de todas las cuentas ficticias: «Prueba-2026». scrypt N=2^14, r=8, p=1 (parámetros de acceso).
+// Contraseña de todas las cuentas ficticias: «Prueba-ficticia-2026». scrypt N=2^14, r=8, p=1 (parámetros de acceso).
 // [pendiente] copiar el formato exacto de la cadena que usa el esquema acceso del SIA.
 function hashContrasena(clave) {
   const sal = createHash('sha256').update('sal:' + clave).digest().subarray(0, 16);
-  const h = scryptSync('Prueba-2026', sal, 32, { N: 16384, r: 8, p: 1 });
+  const h = scryptSync('Prueba-ficticia-2026', sal, 32, { N: 16384, r: 8, p: 1 });
   return `scrypt$16384$8$1$${sal.toString('base64url')}$${h.toString('base64url')}`;
 }
 
@@ -63,6 +63,13 @@ const NOMBRES = ['Ana', 'Bruno', 'Carla', 'Diego', 'Elena', 'Fabián', 'Gloria',
   'Yolanda', 'Zacarías'];
 const APELLIDOS = ['Ejemplo', 'Muestra', 'Prueba', 'Ficticio', 'Modelo', 'Simulado'];
 let consecutivo = 0;
+// Dígito verificador de la CURP, como en el Estándar de formularios del SIA
+const ALFABETO_CURP = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+function conDigito(base17) {
+  let suma = 0;
+  for (let i = 0; i < 17; i++) suma += ALFABETO_CURP.indexOf(base17[i]) * (18 - i);
+  return base17 + String((10 - (suma % 10)) % 10);
+}
 
 function persona(clave, opciones = {}) {
   const n = consecutivo++;
@@ -73,8 +80,9 @@ function persona(clave, opciones = {}) {
     nombre: opciones.nombre || NOMBRES[n % NOMBRES.length],
     primer: opciones.primer || APELLIDOS[n % APELLIDOS.length],
     segundo: opciones.segundo === null ? null : opciones.segundo || APELLIDOS[(n + 2) % APELLIDOS.length],
-    // CURP inequívocamente ficticia: XAXX + fecha + sexo + PRUEB + homoclave
-    curp: `XAXX${String(70 + (n % 30)).padStart(2, '0')}${String((n % 12) + 1).padStart(2, '0')}${String((n % 27) + 1).padStart(2, '0')}${sexo}PRUEB${'ABCDEFGHJK'[Math.floor(n / 10) % 10]}${n % 10}`,
+    // CURP ficticia que pasa las mismas reglas que una real (estructura, entidad, dígito; apd.curp_valida):
+    // XAXX + fecha + sexo + NE (nacida en el extranjero) + XXX + homoclave 0 + dígito verificador
+    curp: conDigito(`XAXX${String(70 + (n % 30)).padStart(2, '0')}${String((n % 12) + 1).padStart(2, '0')}${String((n % 27) + 1).padStart(2, '0')}${sexo}NEXXX0`),
     correo: `persona${String(n + 1).padStart(2, '0')}@ejemplo.local`,
     telefono: `00000000${String(n + 1).padStart(2, '0')}`
   };

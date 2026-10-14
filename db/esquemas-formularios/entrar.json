@@ -1,0 +1,30 @@
+{
+  "formulario": "entrar.html",
+  "generado": "2026-10-14T23:01:54.184Z",
+  "campos": {
+    "curp": {
+      "etiqueta": "CURP",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "curp",
+      "sensible": true,
+      "uso": "Nombre de usuario de la cuenta.",
+      "finalidad": "Identificar la cuenta a la que se entra.",
+      "atributos": {
+        "maxlength": "18"
+      },
+      "autocomplete": "username"
+    },
+    "contrasena": {
+      "etiqueta": "Contraseña",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el acceso; no se guarda.",
+      "finalidad": "Comprobar que quien entra es la persona titular de la cuenta.",
+      "atributos": {},
+      "autocomplete": "current-password"
+    }
+  },
+  "repetibles": []
+}

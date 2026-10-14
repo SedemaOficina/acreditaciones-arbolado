@@ -1,0 +1,610 @@
+{
+  "formulario": "solicitud.html",
+  "generado": "2026-10-14T23:01:54.262Z",
+  "campos": {
+    "tramite": {
+      "etiqueta": "Trámite",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Definir la acreditación, el curso y los documentos que corresponden a la solicitud.",
+      "atributos": {},
+      "opciones": [
+        "poda_nueva",
+        "poda_renovacion",
+        "dictaminador_nueva",
+        "dictaminador_renovacion"
+      ]
+    },
+    "anterior": {
+      "etiqueta": "Acreditación que renuevas",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Ligar la renovación con la acreditación que se renueva.",
+      "atributos": {},
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_renovacion",
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "organizacion": {
+      "etiqueta": "Organización con la que trabajas",
+      "tipo": "combo",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Integrar grupos de curso por organización cuando hay suficientes personas de la misma.",
+      "atributos": {
+        "maxlength": "160"
+      },
+      "cerrado": false,
+      "catalogo": "organizaciones",
+      "autocomplete": "off"
+    },
+    "perfil_academico": {
+      "etiqueta": "Estudios",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Definir la experiencia mínima y los documentos de estudios que se piden.",
+      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "atributos": {},
+      "opciones": [
+        "titulo",
+        "creditos_100",
+        "pasante",
+        "tecnica"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva",
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "carrera": {
+      "etiqueta": "Carrera",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Comprobar que la formación es afín al manejo del arbolado.",
+      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "atributos": {
+        "maxlength": "120"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva",
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "anios_experiencia": {
+      "etiqueta": "Experiencia en manejo de arbolado",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "numero",
+      "sensible": false,
+      "uso": "Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.",
+      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "atributos": {
+        "min": "0",
+        "max": "70",
+        "step": "0.5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva",
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_poda_nueva_identificacion_oficial": {
+      "etiqueta": "Identificación oficial",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Identificación oficial» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_nueva"
+        ]
+      }
+    },
+    "doc_poda_nueva_curp": {
+      "etiqueta": "Clave Única de Registro de Población (CURP)",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_nueva"
+        ]
+      }
+    },
+    "doc_poda_nueva_comprobante_domicilio": {
+      "etiqueta": "Comprobante de domicilio",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobante de domicilio» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_nueva"
+        ]
+      }
+    },
+    "doc_poda_nueva_constancia_situacion_fiscal": {
+      "etiqueta": "Constancia de situación fiscal",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Constancia de situación fiscal» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_nueva"
+        ]
+      }
+    },
+    "doc_poda_renovacion_identificacion_oficial": {
+      "etiqueta": "Identificación oficial (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Identificación oficial» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_renovacion"
+        ]
+      }
+    },
+    "doc_poda_renovacion_curp": {
+      "etiqueta": "Clave Única de Registro de Población (CURP) (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_renovacion"
+        ]
+      }
+    },
+    "doc_poda_renovacion_comprobante_domicilio": {
+      "etiqueta": "Comprobante de domicilio (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobante de domicilio» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_renovacion"
+        ]
+      }
+    },
+    "doc_poda_renovacion_constancia_situacion_fiscal": {
+      "etiqueta": "Constancia de situación fiscal",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Constancia de situación fiscal» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "poda_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_identificacion_oficial": {
+      "etiqueta": "Identificación oficial",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Identificación oficial» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_curp": {
+      "etiqueta": "Clave Única de Registro de Población (CURP)",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_comprobante_domicilio": {
+      "etiqueta": "Comprobante de domicilio",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobante de domicilio» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_constancia_situacion_fiscal": {
+      "etiqueta": "Constancia de situación fiscal",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Constancia de situación fiscal» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_comprobante_estudios": {
+      "etiqueta": "Comprobante de estudios",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobante de estudios» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_curriculum_vitae": {
+      "etiqueta": "Currículum vitae",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Currículum vitae» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_comprobantes_experiencia": {
+      "etiqueta": "Comprobantes de experiencia",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobantes de experiencia» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_nueva_constancias_capacitacion": {
+      "etiqueta": "Constancias de capacitación especializada",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Constancias de capacitación especializada» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_nueva"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_identificacion_oficial": {
+      "etiqueta": "Identificación oficial (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Identificación oficial» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_curp": {
+      "etiqueta": "Clave Única de Registro de Población (CURP) (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_comprobante_domicilio": {
+      "etiqueta": "Comprobante de domicilio (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobante de domicilio» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_constancia_situacion_fiscal": {
+      "etiqueta": "Constancia de situación fiscal",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Constancia de situación fiscal» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_comprobante_estudios": {
+      "etiqueta": "Comprobante de estudios (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobante de estudios» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_curriculum_vitae": {
+      "etiqueta": "Currículum vitae (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Currículum vitae» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_comprobantes_experiencia": {
+      "etiqueta": "Comprobantes de experiencia (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Comprobantes de experiencia» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "doc_dictaminador_renovacion_constancias_capacitacion": {
+      "etiqueta": "Constancias de capacitación especializada (si aplica)",
+      "tipo": "archivos",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Comprobar el requisito «Constancias de capacitación especializada» del trámite.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "tramite",
+        "valores": [
+          "dictaminador_renovacion"
+        ]
+      }
+    },
+    "aviso": {
+      "etiqueta": "Leí el aviso de privacidad",
+      "tipo": "casilla",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Dejar constancia de que se informó a la persona.",
+      "atributos": {}
+    },
+    "humano": {
+      "etiqueta": "No soy un programa automático",
+      "tipo": "casilla",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Distinguir personas de envíos automáticos.",
+      "atributos": {}
+    }
+  },
+  "repetibles": []
+}
