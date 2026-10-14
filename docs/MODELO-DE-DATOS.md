@@ -218,6 +218,9 @@ Un trámite: una persona, un curso. Sus cambios de estado los valida la base y q
 | `modalidad` | `text` | Sí | Curso solicitado |
 | `organizacion_id` | `uuid` | No | Organización de procedencia; vacía para particulares |
 | `acreditacion_anterior_id` | `uuid` | No | Acreditación que se renueva; obligatoria en renovación |
+| `factura_rfc` | `text` | No | RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo |
+| `factura_razon_social` | `text` | No | Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo |
+| `factura_folio_fiscal` | `text` | No | Folio fiscal (UUID) de la factura, para seguimiento; lo captura el personal en el cotejo |
 | `perfil_academico` | `text` | No | Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima |
 | `carrera` | `text` | No | Sólo dictaminador: carrera o formación declarada |
 | `anios_experiencia` | `numeric(4,1)` | No | Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban |
@@ -243,6 +246,9 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)`
 - `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))`
 - `CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))`
+- `CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal)`
+- `CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')`
+- `CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')`
 - `CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica'))`
 - `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL))`
 - `CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70)`
@@ -283,7 +289,7 @@ Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo pub
 | `requisito` | `text` | Sí | Requisito que atiende |
 | `archivo_clave` | `text` | Sí | Clave exacta en el almacén, con sello propio |
 | `nombre_original` | `text` | Sí | Nombre con que se cargó |
-| `tipo_mime` | `text` | Sí | application/pdf, image/jpeg, image/png o application/xml (el XML de la factura) |
+| `tipo_mime` | `text` | Sí | application/pdf, image/jpeg o image/png |
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
 | `estado` | `text` | Sí | pendiente, aceptado o con_observacion (por omisión: `'pendiente'`) |
@@ -300,7 +306,7 @@ Restricciones e índices:
 - `CONSTRAINT documento_archivo_uk UNIQUE (archivo_clave)`
 - `CONSTRAINT documento_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
 - `CONSTRAINT documento_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)`
-- `CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png', 'application/xml'))`
+- `CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png'))`
 - `CONSTRAINT documento_tamano_ck CHECK (tamano_bytes > 0)`
 - `CONSTRAINT documento_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')`
 - `CONSTRAINT documento_estado_ck CHECK (estado IN ('pendiente', 'aceptado', 'con_observacion'))`

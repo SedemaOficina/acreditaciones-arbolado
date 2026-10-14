@@ -21,19 +21,27 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | Fecha | Decisión | Quién |
 |---|---|---|
 | 2026-10-14 | Las personas solicitantes siempre tienen cuenta propia, que crean ellas mismas | Liber Saltijeral |
-| 2026-10-14 | La CURP es el identificador único de la cuenta: no hay dos cuentas con la misma CURP. La Secretaría puede corregir la CURP de una cuenta, con motivo en la bitácora | Liber Saltijeral |
+| 2026-10-14 | La CURP es el identificador único de la cuenta: no hay dos cuentas con la misma CURP. La Secretaría puede corregir la CURP de una cuenta, con motivo en la bitácora, después de verificarla contra el documento de CURP cargado (mapa, R02) | Liber Saltijeral |
 | 2026-10-14 | Instructores: personal de la Secretaría; capturan asistencia por día y calificación | Liber Saltijeral |
 | 2026-10-14 | El instructor de un grupo puede variar, también durante el curso; cada día queda quién capturó la asistencia (mapa, R26) | Liber Saltijeral |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
+
+## Requisitos
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-14 | Las constancias de capacitación sólo se piden para dictaminador, y ahí son obligatorias en la solicitud nueva (mapa, R11). [pendiente] confirmar que también aplican a quien tiene título | Liber Saltijeral |
 
 ## Cotejo presencial
 
 | Fecha | Decisión | Quién |
 |---|---|---|
 | 2026-10-14 | Se mantiene la cita presencial de cotejo y pago: la Secretaría necesita expedientes físicos. La persona lleva la documentación impresa, se coteja contra lo cargado con el check list y se verifica el pago | Liber Saltijeral |
-| 2026-10-14 | La factura es obligatoria siempre que hay pago. En la cita, la Secretaría verifica el pago, emite la factura y su personal la carga en el sistema (PDF obligatorio; XML si se tiene). La persona solicitante no la carga | Liber Saltijeral |
+| 2026-10-14 | La factura es obligatoria siempre que hay pago. En la cita, la Secretaría verifica el pago, emite la factura y su personal la carga en el sistema (sólo PDF). La persona solicitante no la carga | Liber Saltijeral |
 | 2026-10-14 | Hasta que la factura está cargada, la solicitud no entra a la bandeja: no se le puede asignar grupo ni fecha de curso y examen | Liber Saltijeral |
-| 2026-10-14 | El sistema no pide capturar RFC ni razón social: los datos fiscales están en la constancia de situación fiscal que carga la persona y en la factura | Liber Saltijeral |
+| ~~2026-10-14~~ | ~~El sistema no pide capturar RFC ni razón social~~ Sustituida | — |
+| 2026-10-14 | De la factura se carga sólo el PDF, y el personal captura RFC y nombre o razón social a cuyo favor se emitió, y el folio fiscal para seguimiento. Un folio fiscal no se repite (mapa, R20) | Liber Saltijeral |
+| 2026-10-14 | En el cotejo la persona presenta los mismos documentos que cargó; si no coinciden, no se da por válido y el trámite no continúa hasta que los corrija (mapa, R19) | Liber Saltijeral |
 | 2026-10-14 | Cada solicitud recibe un número de expediente físico al concluir el cotejo, consecutivo por año y sin huecos. No se registra la ubicación. Formato provisional EXP-AAAA-NNNN | Liber Saltijeral |
 
 ## Cursos y grupos
@@ -43,7 +51,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Cuatro cursos: poda y derribo (nueva), poda y derribo (renovación), dictaminador (nueva), dictaminador (renovación). Nunca se mezclan en un grupo | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~Duración: poda y derribo, 3 días; dictaminador, 5 días. La misma para el curso de renovación de cada tipo~~ Sustituida | Liber Saltijeral |
 | 2026-10-14 | Duración: 5 días la primera vez y 1 día la renovación, en poda y en dictaminador (mapa, R31) | Liber Saltijeral |
-| 2026-10-14 | Cupo mínimo 10 y máximo 25, para todos los cursos, editables por la administración. Cada grupo copia los cupos vigentes al crearse | Liber Saltijeral |
+| ~~2026-10-14~~ | ~~Cupo mínimo 10 y máximo 25~~ Sustituida | Liber Saltijeral |
+| 2026-10-14 | Cupo mínimo 5 y máximo 25, para los cuatro cursos, editables por la administración. Cada grupo copia los cupos vigentes al crearse (mapa, R23 y R24) | Liber Saltijeral |
 | 2026-10-14 | **Ningún grupo abre con menos del mínimo.** Sin excepción | Liber Saltijeral |
 | 2026-10-14 | Los grupos pueden ser específicos (una organización) o combinados | Liber Saltijeral |
 | 2026-10-14 | Los cursos se imparten en instalaciones de la Secretaría; no hay sede externa | Liber Saltijeral |
@@ -52,7 +61,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Asistencia mínima, en días: 4 de 5 en los cursos nuevos (permite una falta) y 1 de 1 en renovación (mapa, R33) | Liber Saltijeral |
 | 2026-10-14 | Sin la asistencia mínima, el sistema no permite el examen (mapa, R35) | Liber Saltijeral |
 | ~~—~~ | ~~Calificación mínima: 7.0 poda, 9.0 dictaminador (del borrador)~~ Sustituida | Insumo |
-| 2026-10-14 | Calificación mínima: 8.0 poda, 9.0 dictaminador (mapa, R34) | Liber Saltijeral |
+| ~~2026-10-14~~ | ~~Calificación mínima: 8.0 poda, 9.0 dictaminador~~ Sustituida | Liber Saltijeral |
+| 2026-10-14 | Calificación mínima: 7.0 poda, 8.0 dictaminador (mapa, R34, segunda corrección) | Liber Saltijeral |
 | 2026-10-14 | Habrá un examen en línea, en salones de cómputo, que registrará la calificación en esta base de forma automática. La base ya distingue el origen de cada calificación (captura o examen en línea) (mapa, R36) | Liber Saltijeral |
 | 2026-10-14 | El resultado del examen es inapelable: una calificación registrada no se modifica (mapa, R37) | Liber Saltijeral |
 
@@ -65,7 +75,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | En ningún momento se opera sin acreditación vigente. La verificación pública sólo dice «Vigente» o «No vigente» | Liber Saltijeral |
 | 2026-10-14 | Renovación de poda vencida: mismos requisitos que la renovación por vencer | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~Toda renovación de dictaminador actualiza los comprobantes de estudios y de experiencia~~ Sustituida | Liber Saltijeral |
-| 2026-10-14 | En una renovación los documentos se vuelven a cargar sólo si la persona los actualizó; no limitan la emisión, porque ya se revisaron la primera vez. Obligatorios en cada renovación: constancia fiscal (factura) y pago. En poda tampoco es obligatorio actualizar (mapa, R46). [pendiente] confirmar que aplica también a identificación, CURP y domicilio | Liber Saltijeral |
+| 2026-10-14 | En una renovación los documentos se vuelven a cargar sólo si la persona los actualizó o si alguno ya no está vigente; no limitan la emisión, porque ya se revisaron la primera vez. Obligatorios en cada renovación: constancia fiscal (factura) y pago. En poda tampoco es obligatorio actualizar (mapa, R46). [pendiente] confirmar que aplica también a identificación, CURP y domicilio | Liber Saltijeral |
 | 2026-10-14 | Para tramitar dictaminador (nueva o renovación) se exige acreditación de poda vigente **al iniciar la solicitud**. No se vuelve a comprobar al enviar ni al emitir (mapa, R05 y R39) | Liber Saltijeral |
 | 2026-10-14 | Si la acreditación de poda vence, la de dictaminador sigue vigente hasta su propia fecha (mapa, R43). Se retiró el parámetro `dictaminador_sigue_a_poda` | Liber Saltijeral |
 | 2026-10-14 | La acreditación se emite con la fecha del día de emisión, no del curso ni del examen. Liber definirá el formato del folio; el actual (PD-AAAA-NNNN, DT-AAAA-NNNN) es provisional (mapa, R38) | Liber Saltijeral |

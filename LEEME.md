@@ -42,7 +42,7 @@ Requiere Node 18+ y un PostgreSQL 13+ **de pruebas** (no hace falta PostGIS).
 
 ```sh
 npm run esquema                                    # regenera tablas y documentación desde db/esquema.json
-PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 66 pruebas
+PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 70 pruebas
 ```
 
 `probar-base` se niega a correr sobre una base cuyo nombre no contenga «prueba», y se detiene en el primer

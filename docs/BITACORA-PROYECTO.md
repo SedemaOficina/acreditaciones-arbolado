@@ -58,7 +58,7 @@ comprobación de poda vigente al enviar y al emitir.
 
 ## 2026-10-14 · Bloque 4 · Factura y número de expediente
 
-- La factura del pago la emite la Secretaría en la cita y la carga su personal (PDF obligatorio, XML opcional).
+- La factura del pago la emite la Secretaría en la cita y la carga su personal.
   La persona solicitante no puede cargarla. Sin factura, la solicitud no entra a la bandeja: no hay grupo ni fecha.
 - Número de expediente físico `EXP-AAAA-NNNN` asignado por la base al concluir el cotejo, consecutivo y sin huecos.
 - Cada documento registra quién lo cargó.
@@ -68,3 +68,17 @@ comprobación de poda vigente al enviar y al emitir.
 **Eliminado**: los campos `rfc_factura` y `razon_social_factura` (los datos fiscales están en la constancia y en
 la factura; capturarlos era duplicar un dato personal sin uso propio) y el requisito «Pago de derechos»,
 sustituido por la factura.
+
+## 2026-10-14 · Bloque 5 · Segunda ronda de correcciones del mapa
+
+Diez marcas nuevas de Liber; tres cambian decisiones del mismo día (se registran como sustituidas):
+- Cupo de grupos: 5 a 25 (antes 10 a 25).
+- Calificación mínima: 7.0 poda y 8.0 dictaminador (antes 8.0 y 9.0).
+- Factura: sólo PDF; el personal vuelve a capturar RFC y razón social, más el folio fiscal (único).
+
+Además: constancias de capacitación obligatorias en dictaminador nueva; en renovación se recarga lo que ya no
+esté vigente; la corrección de CURP se verifica contra el documento.
+
+**Verificado**: 70 de 70 pruebas.
+
+**Eliminado**: el requisito «Factura (XML)» y el formato XML.

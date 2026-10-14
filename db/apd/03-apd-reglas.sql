@@ -419,6 +419,15 @@ BEGIN
   END IF;
   -- Quien manda las fechas de control y el número de expediente es la base
   NEW.numero_expediente := OLD.numero_expediente;
+  -- Los datos de la factura los captura el personal en la cita, antes de concluir el cotejo (R20)
+  IF (NEW.factura_rfc, NEW.factura_razon_social, NEW.factura_folio_fiscal)
+     IS DISTINCT FROM (OLD.factura_rfc, OLD.factura_razon_social, OLD.factura_folio_fiscal) THEN
+    IF OLD.estado <> 'validada_en_linea' OR apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('factura_fuera_de_turno', 'Los datos de la factura los captura el personal de la Secretaría en la cita');
+    END IF;
+    NEW.factura_rfc := upper(trim(NEW.factura_rfc));
+    NEW.factura_folio_fiscal := upper(trim(NEW.factura_folio_fiscal));
+  END IF;
   NEW.enviada_en := OLD.enviada_en;
   NEW.lista_para_curso_en := OLD.lista_para_curso_en;
   NEW.estado_desde := OLD.estado_desde;
@@ -479,6 +488,10 @@ BEGIN
               AND NOT EXISTS (SELECT 1 FROM apd.documento d
                                WHERE d.solicitud_id = NEW.id AND d.requisito = rc.requisito AND d.vigente)) THEN
         PERFORM apd.error('sin_factura', 'Carga la factura del pago de derechos para concluir el cotejo');
+      END IF;
+      IF OLD.estado = 'validada_en_linea' AND (coalesce(NEW.factura_rfc, '') = '' OR coalesce(trim(NEW.factura_razon_social), '') = ''
+                                              OR coalesce(NEW.factura_folio_fiscal, '') = '') THEN
+        PERFORM apd.error('sin_datos_factura', 'Captura el RFC, el nombre o razón social y el folio fiscal de la factura');
       END IF;
       -- El expediente físico se integra en el cotejo: ahí recibe su número, consecutivo y sin huecos
       IF NEW.numero_expediente IS NULL THEN
@@ -588,10 +601,6 @@ BEGIN
     IF apd.contexto('usuario_tipo') <> 'personal' THEN
       PERFORM apd.error('carga_de_personal', 'Este documento lo carga el personal de la Secretaría');
     END IF;
-  END IF;
-  IF (NEW.tipo_mime = 'application/xml') <> (NEW.requisito = 'factura_xml') THEN
-    PERFORM apd.error('formato_no_admitido', CASE WHEN NEW.requisito = 'factura_xml'
-      THEN 'Aquí va el XML de la factura' ELSE 'Carga el documento en PDF, JPG o PNG' END);
   END IF;
   IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
     PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',

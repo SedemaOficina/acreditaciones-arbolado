@@ -13,15 +13,15 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
   ('tamano_maximo_archivo_bytes', '5242880',
    'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).');
 
--- Cupos 10–25 iguales para los cuatro cursos (decisión 2026-10-14).
+-- Cupos 5–25 iguales para los cuatro cursos (corrección R23 y R24, 2026-10-14; antes 10–25).
 -- Duración (corrección R31): 5 días la primera vez y 1 día la renovación, en poda y en dictaminador.
 -- Asistencia mínima, en días (decisión R33): 4 de 5 en los cursos nuevos y 1 de 1 en renovación.
--- Calificación mínima (corrección R34): 8.0 poda, 9.0 dictaminador.
+-- Calificación mínima (segunda corrección R34, 2026-10-14): 7.0 poda, 8.0 dictaminador.
 INSERT INTO apd.curso (tipo_acreditacion, modalidad, nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo) VALUES
-  ('poda',         'nueva',      'Poda y derribo · solicitud nueva',      5, 4, 8.0, 10, 25),
-  ('poda',         'renovacion', 'Poda y derribo · renovación',           1, 1, 8.0, 10, 25),
-  ('dictaminador', 'nueva',      'Dictaminador técnico · solicitud nueva', 5, 4, 9.0, 10, 25),
-  ('dictaminador', 'renovacion', 'Dictaminador técnico · renovación',      1, 1, 9.0, 10, 25);
+  ('poda',         'nueva',      'Poda y derribo · solicitud nueva',      5, 4, 7.0, 5, 25),
+  ('poda',         'renovacion', 'Poda y derribo · renovación',           1, 1, 7.0, 5, 25),
+  ('dictaminador', 'nueva',      'Dictaminador técnico · solicitud nueva', 5, 4, 8.0, 5, 25),
+  ('dictaminador', 'renovacion', 'Dictaminador técnico · renovación',      1, 1, 8.0, 5, 25);
 
 INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('identificacion_oficial', 'Identificación oficial',
@@ -31,11 +31,9 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('comprobante_domicilio', 'Comprobante de domicilio',
    'De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. [pendiente] la Dirección debe declarar su uso.', 'documento', 'en_linea'),
   ('constancia_situacion_fiscal', 'Constancia de situación fiscal',
-   'Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos. De ahí se toman los datos fiscales: el sistema no pide capturar el RFC.', 'documento', 'en_linea'),
+   'Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.', 'documento', 'en_linea'),
   ('factura_pago', 'Factura del pago de derechos',
-   'La emite la Secretaría en la cita presencial, después de verificar el pago, y la carga su personal en PDF. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente].', 'documento', 'cotejo'),
-  ('factura_xml', 'Factura del pago de derechos (XML)',
-   'El archivo XML de la misma factura, si se tiene. Lo carga el personal de la Secretaría.', 'documento', 'cotejo'),
+   'La emite la Secretaría en la cita presencial, después de verificar el pago. Su personal carga el PDF y captura RFC, nombre o razón social y folio fiscal. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente].', 'documento', 'cotejo'),
   ('poda_anterior', 'Acreditación de poda y derribo a renovar',
    'El sistema la comprueba en su padrón.', 'registro', 'en_linea'),
   ('poda_vigente', 'Acreditación de poda y derribo vigente',
@@ -49,11 +47,11 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('comprobantes_experiencia', 'Comprobantes de experiencia',
    'Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF.', 'documento', 'en_linea'),
   ('constancias_capacitacion', 'Constancias de capacitación especializada',
-   'Sólo para carrera técnica: constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría.', 'documento', 'en_linea');
+   'Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador (corrección R11).', 'documento', 'en_linea');
 
 -- Qué pide cada curso (corrección R46, 2026-10-14): en una renovación sólo es obligatorio lo que cambia en
 -- cada trámite (la constancia fiscal y la factura del pago). Lo demás se carga sólo si la persona lo
--- actualizó: si ya se le acreditó una vez, la Secretaría ya lo revisó. [pendiente] confirmar con Liber que
+-- actualizó o si ya no está vigente (R46): si ya se le acreditó una vez, la Secretaría ya lo revisó. [pendiente] confirmar con Liber que
 -- también aplica a identificación, CURP y domicilio, y qué pasa con quien viene de Kobo sin archivos.
 INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden, obligatorio, nota) VALUES
   ('poda', 'nueva',      'identificacion_oficial',      1, true, ''),
@@ -61,9 +59,9 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('poda', 'nueva',      'comprobante_domicilio',       3, true, ''),
   ('poda', 'nueva',      'constancia_situacion_fiscal', 4, true, ''),
   ('poda', 'nueva',      'factura_pago',                5, true, ''),
-  ('poda', 'renovacion', 'identificacion_oficial',      1, false, 'Sólo si cambió desde tu trámite anterior.'),
-  ('poda', 'renovacion', 'curp',                        2, false, 'Sólo si cambió desde tu trámite anterior.'),
-  ('poda', 'renovacion', 'comprobante_domicilio',       3, false, 'Sólo si cambió desde tu trámite anterior.'),
+  ('poda', 'renovacion', 'identificacion_oficial',      1, false, 'Sólo si cambió o ya no está vigente.'),
+  ('poda', 'renovacion', 'curp',                        2, false, 'Sólo si cambió o ya no está vigente.'),
+  ('poda', 'renovacion', 'comprobante_domicilio',       3, false, 'Sólo si cambió o ya no está vigente.'),
   ('poda', 'renovacion', 'constancia_situacion_fiscal', 4, true,  ''),
   ('poda', 'renovacion', 'factura_pago',                5, true,  ''),
   ('poda', 'renovacion', 'poda_anterior',               6, true,  ''),
@@ -76,10 +74,10 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'nueva',      'comprobante_estudios',        7, true,  ''),
   ('dictaminador', 'nueva',      'curriculum_vitae',            8, true,  ''),
   ('dictaminador', 'nueva',      'comprobantes_experiencia',    9, true,  'Dos años con título, pasantía o 100 % de créditos; cinco con carrera técnica. [pendiente] la regla para pasantes.'),
-  ('dictaminador', 'nueva',      'constancias_capacitacion',   10, false, 'Obligatorias sólo con carrera técnica.'),
-  ('dictaminador', 'renovacion', 'identificacion_oficial',      1, false, 'Sólo si cambió desde tu trámite anterior.'),
-  ('dictaminador', 'renovacion', 'curp',                        2, false, 'Sólo si cambió desde tu trámite anterior.'),
-  ('dictaminador', 'renovacion', 'comprobante_domicilio',       3, false, 'Sólo si cambió desde tu trámite anterior.'),
+  ('dictaminador', 'nueva',      'constancias_capacitacion',   10, true,  ''),
+  ('dictaminador', 'renovacion', 'identificacion_oficial',      1, false, 'Sólo si cambió o ya no está vigente.'),
+  ('dictaminador', 'renovacion', 'curp',                        2, false, 'Sólo si cambió o ya no está vigente.'),
+  ('dictaminador', 'renovacion', 'comprobante_domicilio',       3, false, 'Sólo si cambió o ya no está vigente.'),
   ('dictaminador', 'renovacion', 'constancia_situacion_fiscal', 4, true,  ''),
   ('dictaminador', 'renovacion', 'factura_pago',                5, true,  ''),
   ('dictaminador', 'renovacion', 'poda_vigente',                6, true,  ''),
@@ -87,8 +85,4 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'renovacion', 'comprobante_estudios',        8, false, 'Sólo si actualizaste tus estudios.'),
   ('dictaminador', 'renovacion', 'curriculum_vitae',            9, false, 'Sólo si actualizaste tu experiencia.'),
   ('dictaminador', 'renovacion', 'comprobantes_experiencia',   10, false, 'Sólo si actualizaste tu experiencia.'),
-  ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.'),
-  ('poda',         'nueva',      'factura_xml', 50, false, ''),
-  ('poda',         'renovacion', 'factura_xml', 50, false, ''),
-  ('dictaminador', 'nueva',      'factura_xml', 50, false, ''),
-  ('dictaminador', 'renovacion', 'factura_xml', 50, false, '');
+  ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.');

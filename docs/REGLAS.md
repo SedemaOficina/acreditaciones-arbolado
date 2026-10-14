@@ -23,7 +23,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
 | → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador. La elegibilidad no se vuelve a comprobar |
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada |
-| → lista_para_curso | Cotejo | La factura del pago cargada por el personal. Asigna el número de expediente y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
+| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados. Asigna el número de expediente y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
@@ -56,7 +56,7 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 
 | Paso | La base exige |
 |---|---|
-| Alta | Curso activo. Copia los cupos vigentes del curso (hoy 10 a 25) |
+| Alta | Curso activo. Copia los cupos vigentes del curso (hoy 5 a 25) |
 | Inscribir | Grupo en integración o confirmado; solicitud en espera, del mismo curso y, si el grupo es específico, de la misma organización; cupo máximo (el grupo se bloquea mientras se cuenta) |
 | → confirmado | Cupo mínimo, instructor, sede y fecha de inicio. **Sin excepción** |
 | → en_curso | Cupo mínimo y que haya llegado la fecha de inicio |
@@ -67,7 +67,7 @@ Cursos: 5 días los nuevos y 1 día las renovaciones. El instructor puede cambia
 constancia en la bitácora; sede y fecha no cambian una vez iniciado.
 
 Asistencia: por día, nunca de un día que no ha ocurrido. Examen: sólo con la asistencia mínima del curso;
-calificación mínima 8.0 en poda y 9.0 en dictaminador. Una calificación registrada no se modifica
+calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación registrada no se modifica
 (resultado inapelable). Cada calificación guarda su origen: captura del instructor o examen en línea.
 
 ## Siempre
@@ -78,8 +78,8 @@ calificación mínima 8.0 en poda y 9.0 en dictaminador. Una calificación regis
   acreditación es provisional: Liber definirá su formato.
 - **Bitácora**: cada alta y cambio de estado queda con quién, cuándo y desde dónde. No se edita ni se borra,
   ni siquiera por la administración.
-- **Documentos**: los de la solicitud los carga la persona; los de la cita (factura en PDF y XML) los carga el
-  personal y quedan aceptados. Un XML sólo se admite como XML de la factura.
+- **Documentos**: los de la solicitud los carga la persona; los de la cita (la factura en PDF) los carga el
+  personal y quedan aceptados. Sólo PDF, JPG o PNG, de hasta 5 MB.
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
   anterior sin borrarlo.
 - **La hora** sale de `apd.ahora()`. Sólo en una base de pruebas se puede simular; en producción, simularla
@@ -90,5 +90,5 @@ calificación mínima 8.0 en poda y 9.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 66 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 70 casos con fechas
 movidas, cupos, permisos y bitácora.

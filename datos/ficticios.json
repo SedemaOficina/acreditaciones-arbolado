@@ -8,10 +8,10 @@
    "nombre": "Dictaminador técnico · solicitud nueva",
    "modalidad": "nueva",
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "dias_duracion": 5,
    "tipo_acreditacion": "dictaminador",
-   "calificacion_minima": 9,
+   "calificacion_minima": 8,
    "dias_minimos_asistencia": 4
   },
   {
@@ -19,10 +19,10 @@
    "nombre": "Dictaminador técnico · renovación",
    "modalidad": "renovacion",
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "dias_duracion": 1,
    "tipo_acreditacion": "dictaminador",
-   "calificacion_minima": 9,
+   "calificacion_minima": 8,
    "dias_minimos_asistencia": 1
   },
   {
@@ -30,10 +30,10 @@
    "nombre": "Poda y derribo · solicitud nueva",
    "modalidad": "nueva",
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "dias_duracion": 5,
    "tipo_acreditacion": "poda",
-   "calificacion_minima": 8,
+   "calificacion_minima": 7,
    "dias_minimos_asistencia": 4
   },
   {
@@ -41,10 +41,10 @@
    "nombre": "Poda y derribo · renovación",
    "modalidad": "renovacion",
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "dias_duracion": 1,
    "tipo_acreditacion": "poda",
-   "calificacion_minima": 8,
+   "calificacion_minima": 7,
    "dias_minimos_asistencia": 1
   }
  ],
@@ -58,7 +58,7 @@
    "modalidad": "nueva",
    "instructor": "instructor.ficticio",
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "es_ficticio": true,
    "integracion": "combinado",
    "estado_desde": "2026-09-12T08:30:00-06:00",
@@ -76,7 +76,7 @@
    "modalidad": "renovacion",
    "instructor": null,
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "es_ficticio": true,
    "integracion": "combinado",
    "estado_desde": "2026-10-12T08:30:00-06:00",
@@ -94,7 +94,7 @@
    "modalidad": "nueva",
    "instructor": "instructor.ficticio",
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "es_ficticio": true,
    "integracion": "especifico",
    "estado_desde": "2026-10-13T08:30:00-06:00",
@@ -112,7 +112,7 @@
    "modalidad": "nueva",
    "instructor": null,
    "cupo_maximo": 25,
-   "cupo_minimo": 10,
+   "cupo_minimo": 5,
    "es_ficticio": true,
    "integracion": "combinado",
    "estado_desde": "2026-10-07T09:00:00-06:00",
@@ -165,7 +165,7 @@
   },
   {
    "origen": "captura",
-   "calificacion": 7.5,
+   "calificacion": 6.8,
    "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
    "presentado_en": "2026-09-11",
@@ -189,7 +189,7 @@
   },
   {
    "origen": "captura",
-   "calificacion": 8,
+   "calificacion": 7,
    "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
    "presentado_en": "2026-09-11",
@@ -830,7 +830,7 @@
   {
    "fecha": "2026-08-20T09:00:00-06:00",
    "accion": "alta",
-   "detalle": "APD-G-2026-001 · poda nueva · combinado · cupo 10-25",
+   "detalle": "APD-G-2026-001 · poda nueva · combinado · cupo 5-25",
    "entidad": "grupo",
    "usuario": "cotejo.ficticio",
    "entidad_id": "48f93bff-b3b7-4160-a7d6-2be1ed246ed9",
@@ -1250,7 +1250,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.4 (mínima 8.0)",
+   "detalle": "Calificación 8.4 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
@@ -1260,7 +1260,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 7.5 (mínima 8.0)",
+   "detalle": "Calificación 6.8 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
@@ -1270,7 +1270,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.8 (mínima 8.0)",
+   "detalle": "Calificación 8.8 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "40667225-9eca-40ea-af57-1873c1fbb62f",
@@ -1280,7 +1280,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 9.2 (mínima 8.0)",
+   "detalle": "Calificación 9.2 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "4f024511-6131-4de3-adc7-53295f3154bc",
@@ -1290,7 +1290,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 9.0 (mínima 8.0)",
+   "detalle": "Calificación 9.0 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
@@ -1300,7 +1300,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.0 (mínima 8.0)",
+   "detalle": "Calificación 7.0 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
@@ -1310,7 +1310,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.5 (mínima 8.0)",
+   "detalle": "Calificación 8.5 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
@@ -1320,7 +1320,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 9.6 (mínima 8.0)",
+   "detalle": "Calificación 9.6 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "94f1487a-3e47-4361-a972-7555eba72d13",
@@ -1330,7 +1330,7 @@
   {
    "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.2 (mínima 8.0)",
+   "detalle": "Calificación 8.2 (mínima 7.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
@@ -2190,7 +2190,7 @@
   {
    "fecha": "2026-10-01T09:00:00-06:00",
    "accion": "alta",
-   "detalle": "APD-G-2026-003 · poda nueva · especifico · cupo 10-25",
+   "detalle": "APD-G-2026-003 · poda nueva · especifico · cupo 5-25",
    "entidad": "grupo",
    "usuario": "cotejo.ficticio",
    "entidad_id": "e2707153-ffdb-4591-a555-a5b817368776",
@@ -2750,7 +2750,7 @@
   {
    "fecha": "2026-10-07T09:00:00-06:00",
    "accion": "alta",
-   "detalle": "APD-G-2026-004 · poda nueva · combinado · cupo 10-25",
+   "detalle": "APD-G-2026-004 · poda nueva · combinado · cupo 5-25",
    "entidad": "grupo",
    "usuario": "cotejo.ficticio",
    "entidad_id": "3a6138be-b25a-4290-a971-1cb0a6dc4177",
@@ -2823,16 +2823,6 @@
    "detalle": "lista_para_curso → inscrita",
    "entidad": "solicitud",
    "usuario": "cotejo.ficticio",
-   "entidad_id": "862317b0-b00f-479c-a846-8aa5d454502e",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T12:00:00-06:00",
-   "accion": "estado",
-   "detalle": "lista_para_curso → inscrita",
-   "entidad": "solicitud",
-   "usuario": "cotejo.ficticio",
    "entidad_id": "878eecbd-db6f-42a6-a453-538554e90c94",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
@@ -2844,16 +2834,6 @@
    "entidad": "solicitud",
    "usuario": "cotejo.ficticio",
    "entidad_id": "dbf130f6-3e31-4577-a076-c5a9067ecc1d",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T12:00:00-06:00",
-   "accion": "estado",
-   "detalle": "lista_para_curso → inscrita",
-   "entidad": "solicitud",
-   "usuario": "cotejo.ficticio",
-   "entidad_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -2883,16 +2863,6 @@
    "detalle": "Grupo APD-G-2026-004",
    "entidad": "solicitud",
    "usuario": "cotejo.ficticio",
-   "entidad_id": "862317b0-b00f-479c-a846-8aa5d454502e",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T12:00:00-06:00",
-   "accion": "inscripcion",
-   "detalle": "Grupo APD-G-2026-004",
-   "entidad": "solicitud",
-   "usuario": "cotejo.ficticio",
    "entidad_id": "878eecbd-db6f-42a6-a453-538554e90c94",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
@@ -2904,16 +2874,6 @@
    "entidad": "solicitud",
    "usuario": "cotejo.ficticio",
    "entidad_id": "dbf130f6-3e31-4577-a076-c5a9067ecc1d",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T12:00:00-06:00",
-   "accion": "inscripcion",
-   "detalle": "Grupo APD-G-2026-004",
-   "entidad": "solicitud",
-   "usuario": "cotejo.ficticio",
-   "entidad_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -2940,7 +2900,7 @@
   {
    "fecha": "2026-10-08T09:00:00-06:00",
    "accion": "alta",
-   "detalle": "APD-G-2026-002 · poda renovacion · combinado · cupo 10-25",
+   "detalle": "APD-G-2026-002 · poda renovacion · combinado · cupo 5-25",
    "entidad": "grupo",
    "usuario": "cotejo.ficticio",
    "entidad_id": "531f4049-67de-4e9f-afca-7921f9495292",
@@ -3655,9 +3615,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "bbeace48-99e7-4b58-a3a7-481bfe2eb14b",
+   "id": "2bfe5718-ef62-4960-a600-f15f50b70c28",
    "estado": "aceptado",
-   "sha256": "eed658ad6d11962a087bbd9dbef28b5021cb9ff61222e9804df85a058c68fce5",
+   "sha256": "59343e2edb56da1708104b4aa86eb6cc9a722eb0a8fa9994f206dd77eba7b60a",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -3670,23 +3630,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "f3d9be56-2899-485c-a0ba-fb3acf140fb6",
-   "estado": "aceptado",
-   "sha256": "a38f61065fbaa2e5c21cebc16fda1b1144f2423662050e70900212a49dbeace3",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-13T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-13T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "cee4344d-91eb-4e92-935a-0b77d601cc03",
@@ -3723,9 +3666,9 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
-   "id": "f8fb58fe-d9ed-424a-a63b-41740f49ad4e",
+   "id": "1dbe82f2-3732-494d-a7c7-6f4cbca825fb",
    "estado": "aceptado",
-   "sha256": "641010d1031ff693d66e3933b3748bd7a1afea242573adca778ac0f729ff86c3",
+   "sha256": "d458aeb7467b4af477e63ec103181bcc72da9f0a725040dcec7b43b078d8be21",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -3738,23 +3681,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/0817c281-7552-418b-ae7e-bc65c9853c2a/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "5e6ffba1-a9f4-45a6-a9cd-87133e605775",
-   "estado": "aceptado",
-   "sha256": "f5bdd0d0b447117f49e9999023bfe730aae05b4d9626da797ccd27493bb9e42a",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-05T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-05T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/0817c281-7552-418b-ae7e-bc65c9853c2a/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "0e1f6bdb-0dc2-a8e1-16a4-d74e194da2f2",
@@ -3876,9 +3802,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "d5ad8aa8-3c76-4bf7-a40f-ccd3bf9498de",
+   "id": "97740807-c048-407f-aa0d-ddad297a4495",
    "estado": "aceptado",
-   "sha256": "cdeb493bf65ee568408f670d3bcc00cdde0d2fe4336ce6dd0e3bfd34ae3422db",
+   "sha256": "1b1c0245a1ad914cb5b0ac300dc8b793839af4a7c3c4a65290c7bc28b6f49d19",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -3891,23 +3817,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/241d2caa-9f29-4006-ae59-f6e8f594208e/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "ef534ecd-1de0-46d7-ae80-f7388ebd287b",
-   "estado": "aceptado",
-   "sha256": "5f83559c87ecbbe56132b1f7293907301188fda5752fda29d3b71e7a1fd0a602",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "241d2caa-9f29-4006-ae59-f6e8f594208e",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/241d2caa-9f29-4006-ae59-f6e8f594208e/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "c4e5c584-73b3-10d8-1caa-2321da53a03d",
@@ -3978,9 +3887,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "2f9ca7c0-c4f7-4ea4-a9d4-6c14b2a4aabd",
+   "id": "3b88bfc9-9e53-4551-a530-7eaad0361555",
    "estado": "aceptado",
-   "sha256": "0ea47cfdf7fa00f1b41edbdc61f8c4dc8f70e122e0dd88bddee03fa8dd171eb0",
+   "sha256": "d76a771613591358a268e32f5870c2d0c9af99d86bd91769f2f1b9aef21fe23d",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -3993,23 +3902,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/2cf233d2-9822-4810-a51a-92a7db05352d/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "eb59d6de-6c2d-40b4-aa50-bcc3fad36730",
-   "estado": "aceptado",
-   "sha256": "c86c994bc800c836631b6a7797860182762115a9cab5d841dc805cac5b632a49",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/2cf233d2-9822-4810-a51a-92a7db05352d/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "428ab7c1-2d1e-c875-a7b5-133a625978f6",
@@ -4080,9 +3972,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "a2ceeb13-9b36-484f-a57d-1ece866ca980",
+   "id": "1465ea9a-0be2-4dee-acca-fc15686c9464",
    "estado": "aceptado",
-   "sha256": "4674ffbd59e474e4a479d5bf5a6293a76f4184c4dda43690f759c956b73166e6",
+   "sha256": "6e4c2a4e1e8606c220cb5d568761d9969fe3d41ee7a4c75567ee7d948fe63f40",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4095,23 +3987,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/2e6962df-6c5e-4334-ada1-77e8a4d88118/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "7b379a49-1f1f-4a2e-afac-56ebd6af5f42",
-   "estado": "aceptado",
-   "sha256": "825e0db3155bcc228b5f32862f2589db5316aa6b3e341773e2651b94e52fba79",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/2e6962df-6c5e-4334-ada1-77e8a4d88118/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "1060a6d2-f56a-a3a8-7532-7eb4e69ee521",
@@ -4182,9 +4057,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "cdeb07e7-8150-4b44-a76a-f9df320a13fb",
+   "id": "7f574003-ffb1-4f56-a67e-d7afd22ab3bf",
    "estado": "aceptado",
-   "sha256": "ceafc9a0713cbc534d5fd0f95551e898f51480ce4cc4c412684fffb2277f4a7e",
+   "sha256": "e402b5bbbdb6e34ba1cb246f3197c6bd7c9d7ddfd85c7e45297cc1bf41db2edb",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4197,23 +4072,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/37da0097-0e62-473a-a81a-a37eee0a71b0/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "ece7c090-7c8d-49bf-af67-f05d51df23c2",
-   "estado": "aceptado",
-   "sha256": "55d7c8eff44bc169650bd418cfe4e96b92514e15fcf851d8340495a13391f619",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "37da0097-0e62-473a-a81a-a37eee0a71b0",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/37da0097-0e62-473a-a81a-a37eee0a71b0/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "9df3efcc-abcd-ed87-4b1d-aa77efc2183e",
@@ -4284,9 +4142,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "97685d1d-862c-4144-af53-b38c9c8d9253",
+   "id": "41bd96b9-7391-4484-aa53-9e52e154f2fb",
    "estado": "aceptado",
-   "sha256": "77357d95b2c51af2901fcff701f298a7794289ca3dcfe7f8481577a9e3e37d29",
+   "sha256": "5bece65f687178c7c46c30723382f7092c8578e6763220081b2387b51e09bcf0",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4299,23 +4157,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/3beaf588-0e51-4066-abfe-82494dbfb48b/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "eb0e2054-0fd1-4828-a643-57b824e455c9",
-   "estado": "aceptado",
-   "sha256": "bf36252639eddcb9ea6ec5a1d0ea1309d5b9d2a0936b13032d86dc226b43db3d",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "3beaf588-0e51-4066-abfe-82494dbfb48b",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/3beaf588-0e51-4066-abfe-82494dbfb48b/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "3da5463e-0832-a619-d40c-5496b345cfe0",
@@ -4386,9 +4227,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "c7a7c346-b6e0-4aaf-aee3-18be748e510e",
+   "id": "45b75f53-21aa-478c-af0d-47aa5bff4027",
    "estado": "aceptado",
-   "sha256": "66aeda96ee8a9210c5813ee1fb49a88c011dc7183599af73462a4237c5358c92",
+   "sha256": "143b775d25725eaae14c852dea44f3eeb28c089a22493e17a71afbe657f2f7d8",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4401,23 +4242,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/3d41b571-ec44-49a4-a71d-25d0bfcb1b8e/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "a81fb66d-2c01-4a02-a177-a5c42a3e2f55",
-   "estado": "aceptado",
-   "sha256": "32024fc9ba9457a44c16659adae09e904904931eed58f532b8eecf01be9ba2e3",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "3d41b571-ec44-49a4-a71d-25d0bfcb1b8e",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/3d41b571-ec44-49a4-a71d-25d0bfcb1b8e/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "7c9e7fad-5e0a-cee7-59c9-3bb52533f96d",
@@ -4488,9 +4312,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "cb3b22d2-26a8-4c64-ac7b-0a2813779123",
+   "id": "29b39128-7a96-46dc-adeb-e88bdfcdbad4",
    "estado": "aceptado",
-   "sha256": "68c61067c1c4547fe1d519cd1cf2305f36bce503c7088c80958ce7676834f3ee",
+   "sha256": "783e737e0674a91fde528ccfd3543f2d4a571f5a248a140ae44f85727029a690",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4503,23 +4327,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/40667225-9eca-40ea-af57-1873c1fbb62f/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "40697762-fcea-418d-a686-4eee4245619c",
-   "estado": "aceptado",
-   "sha256": "4c370f6132b07693f8fa514aa7dcea9bc97b6ba68f920df833f5496e2167502c",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "40667225-9eca-40ea-af57-1873c1fbb62f",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/40667225-9eca-40ea-af57-1873c1fbb62f/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "3072d9d7-6b0d-b076-7405-1ece820f3290",
@@ -4573,9 +4380,9 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
-   "id": "eb9ffaf3-1440-457d-a91d-f002380d3698",
+   "id": "e9699dde-253e-4c88-a157-e039eac90b05",
    "estado": "aceptado",
-   "sha256": "21edebbbf79e8f6d56b6510fc313c1d598cc153c0b8cfb437161050339b69317",
+   "sha256": "f7be4e1ffa8737e9d881886971d279ad0d026add521c39995afa3d91210d699b",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4588,23 +4395,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/40ec133d-5a02-4018-a95b-fd3adbb8d7b2/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "b01d9b50-73a5-48cf-a2e3-453c397a3ada",
-   "estado": "aceptado",
-   "sha256": "67552d8219718b94de602d16fd5a224659e5502c092e24ae73b5f08584bb6494",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-08T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-08T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/40ec133d-5a02-4018-a95b-fd3adbb8d7b2/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "a4d3197c-b1db-4563-dc2c-8af8982b2365",
@@ -4658,9 +4448,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "eb591169-14cb-41a4-a4d3-b00670dd1b47",
+   "id": "b808af6d-2c17-4499-a2f6-90a1c04d3e29",
    "estado": "aceptado",
-   "sha256": "87d34a676d1996a65904a859dc5b6eafee0a324ee6838c2faf1a72cfad36a478",
+   "sha256": "a4d5cb53640cf6e7597209b47bf1a6b2d4ca16c1849b863808a28ae660d64c90",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4673,23 +4463,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/44408b1a-8a06-45a0-a93b-892046106e75/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "3bc819d1-d948-406e-a7d1-187f42e78f4c",
-   "estado": "aceptado",
-   "sha256": "4fd1fc427b16547cbf324247cad1f31119b48869e2e3e21396c525da20e93ff3",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "44408b1a-8a06-45a0-a93b-892046106e75",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/44408b1a-8a06-45a0-a93b-892046106e75/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "6a46822c-1a9b-db4e-ba2d-c88090c9acc0",
@@ -4760,9 +4533,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "853f71a2-1f3d-400c-a2e5-714103c993df",
+   "id": "10e98ddd-eef9-4ded-a809-8a0178ae5289",
    "estado": "aceptado",
-   "sha256": "7976a2d992acf38deccea212ba2d635ea3d183c8074d1022e57928f97a40ae70",
+   "sha256": "bf76aa06086ca1bbb2935e6825f15a1aa1f274d73c919dfec9259a4363a1a1a0",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4775,23 +4548,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/45ec195a-99d1-45c5-a54c-edcf60fa832a/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "717bbb8a-7abf-4e56-affe-73da31c60b90",
-   "estado": "aceptado",
-   "sha256": "90da119140a79acf149022cbd4bb6330a28c47088b1142a2bcc8d22bf7df0503",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "45ec195a-99d1-45c5-a54c-edcf60fa832a",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/45ec195a-99d1-45c5-a54c-edcf60fa832a/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "b4802f09-0c0d-3fc3-b558-679ca4b95d83",
@@ -4862,9 +4618,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "db46a2d1-48e1-468e-a03a-f0ce459d1910",
+   "id": "45ee0e8f-449a-4734-aa84-496a120de854",
    "estado": "aceptado",
-   "sha256": "3e317e487a8027ac6926269148608658a8fa169cea5c9352232fdcb5d5f9c115",
+   "sha256": "9875d29bcbc214db0a67ee8296f6c6c89788a027c0e81f3e1b22b55c4e05ad51",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4877,23 +4633,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/4f024511-6131-4de3-adc7-53295f3154bc/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "ab169bff-82b3-4723-a75d-5abcf233f08f",
-   "estado": "aceptado",
-   "sha256": "34e1e134f70ddab2ace74df4f6ec758e06d210328f01becf9ac0534d65b34a6c",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "4f024511-6131-4de3-adc7-53295f3154bc",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/4f024511-6131-4de3-adc7-53295f3154bc/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "6e121fc1-ca83-7f7e-5379-8d09d75bf25b",
@@ -4964,9 +4703,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "ae60a308-33b7-4b42-a3c4-cbd89d616a66",
+   "id": "309eea6e-330b-4b81-aff1-b32b8eab4089",
    "estado": "aceptado",
-   "sha256": "80a9dd86cee73ae2612da43c73b86e7959a6ccb93d7000b6bca5029d689339cb",
+   "sha256": "09bff4d73c93c9154e2a602fda6d12f5346f8a497fe5d88076bfe79f4cffae14",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -4979,23 +4718,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/5687c62e-b19c-4470-a017-98e1749fa2a6/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "6d0b3b20-f1b0-4939-a23a-061d98143ac6",
-   "estado": "aceptado",
-   "sha256": "5bb902ed163fdc50722405e322912e97b9a78c5c6e7a8934e2a8e0327c233534",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/5687c62e-b19c-4470-a017-98e1749fa2a6/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "eea84289-3720-1241-c1f1-242f28d9ceb6",
@@ -5066,9 +4788,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "c68aca55-2407-47a9-a3ff-6cd43b9d0399",
+   "id": "fedc43a6-83ac-4f04-ab56-53b5bf723cbc",
    "estado": "aceptado",
-   "sha256": "eeade945b61f589f03b344f067a6930185eaf1afce4e506fd9fa26de8a129503",
+   "sha256": "15610c049d996eab089e3f0eaddf47da860563fd12d02353fa01edceb74dc3bc",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5081,23 +4803,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/6d5c9b69-28df-4e2b-abba-9e330889bf08/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "127d6feb-73d0-4e98-a027-3f1c9d8a2e27",
-   "estado": "aceptado",
-   "sha256": "6879290b0093467098679b53987c0a11754c692f45224595f3bf6464503e91e7",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "6d5c9b69-28df-4e2b-abba-9e330889bf08",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/6d5c9b69-28df-4e2b-abba-9e330889bf08/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "9e52d9d5-5db3-b9ab-43d9-3cec41ea4693",
@@ -5168,9 +4873,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "59cbc1e1-449d-460a-a084-49a813bd7b25",
+   "id": "408c9f2e-440c-4ca4-a58c-2277a42740d9",
    "estado": "aceptado",
-   "sha256": "24788df472c2b17ad917309f228e0d26c63071966589f06faa640c6cfcd8761b",
+   "sha256": "8fd24d5a8eeb1ea3483addcd10af9f24164044010bfd730c7373855521577dd5",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5183,23 +4888,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/7165b2ea-a3c8-4b4a-acad-e6bc737f7c46/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "de1e20c0-5a9d-4915-ab01-36900a90d538",
-   "estado": "aceptado",
-   "sha256": "32468ab0f9f778710068127e11845332cab22df4ef1734f6623f862a46bf5b7c",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "7165b2ea-a3c8-4b4a-acad-e6bc737f7c46",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/7165b2ea-a3c8-4b4a-acad-e6bc737f7c46/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "cbb916d0-77e8-6f0c-b651-5787f3b7fc77",
@@ -5270,9 +4958,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "34452fe8-9e30-4c24-a40e-ca3f8b17e627",
+   "id": "b052bc4e-2896-45bd-a789-f0feea817ff8",
    "estado": "aceptado",
-   "sha256": "89400443e0becf228e21f6fdef703d7263bbc70dda27852f2425307d7f33de37",
+   "sha256": "e438bf27fcf3882a7c9223c7cd6353b7b4f98ff2213857b1878bdd8a85e0e606",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5285,23 +4973,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/72567ac6-fd71-49e9-a7b8-87b2cea78778/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "bc2f8b10-c0cb-4e9b-a83c-206d325b411b",
-   "estado": "aceptado",
-   "sha256": "c1c26a8c95aef9cc60e00ec6271a43f10611a6b791266eb3914b9f60016f7765",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-21T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-21T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "72567ac6-fd71-49e9-a7b8-87b2cea78778",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/72567ac6-fd71-49e9-a7b8-87b2cea78778/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "cc9d0f2c-205c-f13e-93d7-15fe6a9e424c",
@@ -5387,6 +5058,23 @@
    "tamano_bytes": 1184349,
    "archivo_clave": "ficticio/7805290c-7228-47d0-a4ca-27cdcd315311/constancia_situacion_fiscal-f533d2d078.pdf",
    "nombre_original": "constancia_situacion_fiscal.pdf"
+  },
+  {
+   "id": "07a8d8f1-c1e5-38e2-cee0-d31e39ab830d",
+   "estado": "aceptado",
+   "sha256": "e5d27c02525124b9edc4595c20c64ba0378882e656fb7e1c3592b3224ed73ac2",
+   "vigente": true,
+   "requisito": "constancias_capacitacion",
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-10-06T09:30:00-06:00",
+   "cargado_por": "persona21@ejemplo.local",
+   "observacion": "",
+   "revisado_en": "2026-10-08T12:00:00-06:00",
+   "revisado_por": "revision.ficticia",
+   "solicitud_id": "7805290c-7228-47d0-a4ca-27cdcd315311",
+   "tamano_bytes": 968664,
+   "archivo_clave": "ficticio/7805290c-7228-47d0-a4ca-27cdcd315311/constancias_capacitacion-c08b833f85.pdf",
+   "nombre_original": "constancias_capacitacion.pdf"
   },
   {
    "id": "153f8069-34cc-1ba6-ca73-4c819483455b",
@@ -5508,9 +5196,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "e0f431a8-1ec9-4df2-a02c-61d785f275a0",
+   "id": "fc6fa793-e280-484f-a64b-1eaaf98fbc64",
    "estado": "aceptado",
-   "sha256": "1ecf07e0c35a29c8c64d0f006104c274bde59407b4560bcfa7cc14f0a75c15fe",
+   "sha256": "43f4d351bee9dfb0e67b50d429ae0c0ac8b51012852a5796d84cab1c103b6481",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5523,23 +5211,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/7b7f0039-8490-4d6a-a1d6-7d410e52356a/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "771b97e3-bb9b-4c68-abb0-489c3328cce8",
-   "estado": "aceptado",
-   "sha256": "acac798ba58d44d0258a7479aa1ac288bef5a87be6f94a3e9021d36f597d0704",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/7b7f0039-8490-4d6a-a1d6-7d410e52356a/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "ef9541f1-0940-2b36-7a72-0f208c257d57",
@@ -5610,9 +5281,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "e9e10cd7-e70a-444c-a678-9aeaf895da4e",
+   "id": "9cdf9c10-2e9d-4815-a1ba-bb1f39fd7a25",
    "estado": "aceptado",
-   "sha256": "ae10ec55e69a249ec1d913f5a787c8356fbc574d8c612189ca5b92ae36dac5b9",
+   "sha256": "bf895c45d3651e4c2eb3669c3524e3ef27835405732fd1b99b03cb50611d02bf",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5625,23 +5296,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/7c06d08a-e6ab-421b-ab0b-b19e81fb40a9/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "ff1201a7-9eda-4b7d-acc3-ce5f08fb5400",
-   "estado": "aceptado",
-   "sha256": "2c6af27b41070339e1f9ff4e9a461e78a9ab18d56d52cc498659b10dd1f6675f",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "7c06d08a-e6ab-421b-ab0b-b19e81fb40a9",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/7c06d08a-e6ab-421b-ab0b-b19e81fb40a9/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "71ef0b57-ac1f-acf2-2fc3-1fce15207a2c",
@@ -5712,9 +5366,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "3e0257ea-1bac-48ea-a3d3-52eb4002efda",
+   "id": "a9e8b965-9dc8-49e3-a5ec-bc42e77ee685",
    "estado": "aceptado",
-   "sha256": "5b6780f1473bece10c0f8996ec0356ecc10e6d8cff1e9d1ee70aed9f7586ee94",
+   "sha256": "386dbe4f5778cf8aae8dd727eca26f7dadd9219161fc4e508196e2a32cb563ce",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5727,23 +5381,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/862317b0-b00f-479c-a846-8aa5d454502e/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "d5d6da64-fc8f-43ce-aeaa-d15e4d762de4",
-   "estado": "aceptado",
-   "sha256": "bb6b2658fdb7a3f3c1b3af896c35912d2edfd8317230cb7dbc7bdf608fe2f149",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "862317b0-b00f-479c-a846-8aa5d454502e",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/862317b0-b00f-479c-a846-8aa5d454502e/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "121b72f6-c7ce-ef4f-ceae-c5258c41acc5",
@@ -5882,9 +5519,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "e2b09268-cac9-43f8-a786-d1a88d52fa2b",
+   "id": "edf0c6d5-7bb8-4bb1-a1b4-896d1fd28abc",
    "estado": "aceptado",
-   "sha256": "cdbdb5a7813f6efcfdc17ce7bea5fc6a4831d4561e7732d9bbaac0d897263897",
+   "sha256": "9d5821c791288d4e33c4a967726178b08484ea0db807f09cc62a4b0338564f79",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5897,23 +5534,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/878eecbd-db6f-42a6-a453-538554e90c94/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "e55bdd33-09ad-4a2a-a8c0-564834a8c9c7",
-   "estado": "aceptado",
-   "sha256": "4262a21dc1d0dcf9b8e8decd1edd2785b1a18901eb80292dbe95a97b985ac0f5",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "878eecbd-db6f-42a6-a453-538554e90c94",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/878eecbd-db6f-42a6-a453-538554e90c94/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "e3e1543a-5faf-e177-77f4-3fff9e8fbc4b",
@@ -5984,9 +5604,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "3f6d1335-52ee-482b-af70-ac95fded0910",
+   "id": "84ea4fd8-24ba-4000-abc3-18edcbca78e0",
    "estado": "aceptado",
-   "sha256": "2206d929d8c7f6c3ecaa250d7b3a04d320a06232c4c7e978ec1a84356b72de50",
+   "sha256": "ba538fb21105d37c73be5e57646fcbe4024d3e75b0dadf27846c8e5eeac04ca0",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -5999,23 +5619,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/895fb21e-97ce-4fb4-ab3b-7dee77617baa/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "a8f1fffd-d653-42e4-a5a3-d0ff51db0b06",
-   "estado": "aceptado",
-   "sha256": "85355277f3e1e88af61a815717de22c61e9258dcbd33e203203ccb31620adb79",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "895fb21e-97ce-4fb4-ab3b-7dee77617baa",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/895fb21e-97ce-4fb4-ab3b-7dee77617baa/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "ece8c310-a0da-a0bb-8613-9ae10631b722",
@@ -6086,9 +5689,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "7d2769de-8bce-43b6-a166-501322098e5c",
+   "id": "289039f9-00da-4920-a085-96a3c6789572",
    "estado": "aceptado",
-   "sha256": "1102202d4705ab19a322c73b04f9d5e832bdb8a8d8a7211e6a56aaba665da754",
+   "sha256": "ea5d0e7f8ae0a355f5d726e8c9294bbe859df89c7b2d168c9f1375d32452635e",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -6101,23 +5704,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/8c6f2e74-cdb4-4211-a15d-725ae6118989/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "4786f1f5-3a4b-4b3b-a6f6-cd46cfec6bfc",
-   "estado": "aceptado",
-   "sha256": "c5337812d9213a3031866bac90edb2be7cd0025f15879f35441a32444c199852",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/8c6f2e74-cdb4-4211-a15d-725ae6118989/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "198def66-ccc0-e481-5fec-22b732a83503",
@@ -6203,6 +5789,23 @@
    "tamano_bytes": 688013,
    "archivo_clave": "ficticio/8c8f6104-d2b1-4d1e-ad90-f3bbdcc8046e/constancia_situacion_fiscal-7c06d8fb63.pdf",
    "nombre_original": "constancia_situacion_fiscal.pdf"
+  },
+  {
+   "id": "129eafbf-1fe1-dcfd-268a-d64384c8f1e6",
+   "estado": "pendiente",
+   "sha256": "9e2000a4d8f7eabfd2e37df94ed1b03a18bd1ddc94ce14112e199dec2d71de79",
+   "vigente": true,
+   "requisito": "constancias_capacitacion",
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-10-10T09:30:00-06:00",
+   "cargado_por": "persona02@ejemplo.local",
+   "observacion": "",
+   "revisado_en": null,
+   "revisado_por": null,
+   "solicitud_id": "8c8f6104-d2b1-4d1e-ad90-f3bbdcc8046e",
+   "tamano_bytes": 1153676,
+   "archivo_clave": "ficticio/8c8f6104-d2b1-4d1e-ad90-f3bbdcc8046e/constancias_capacitacion-edb6cc6887.pdf",
+   "nombre_original": "constancias_capacitacion.pdf"
   },
   {
    "id": "a1f626a7-9029-fdb0-1849-31d2221e450c",
@@ -6375,9 +5978,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "a9f6b208-078b-4591-a445-8279c5004ee4",
+   "id": "6953a787-f96c-4122-ab23-6fbce0f82e4b",
    "estado": "aceptado",
-   "sha256": "ddc92889b9beaddd9f4a6bbd8a42164205cd4ec0a750d3b21c1e650ca7e1248e",
+   "sha256": "b123738da66120c255da123604bcb63f58d0866ac6a11aec4ffeaea6d079c0a3",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -6390,23 +5993,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/8fafa213-b04e-42ba-a953-730932001632/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "1301422f-50bc-4368-aa66-56b40a56b384",
-   "estado": "aceptado",
-   "sha256": "aba626fdc541a9cd94cf51c3c0c5daaf379afcc85911d25ff3b016830f922a12",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "8fafa213-b04e-42ba-a953-730932001632",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/8fafa213-b04e-42ba-a953-730932001632/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "9e943d52-da57-95a1-373f-7402d7df3e3a",
@@ -6477,9 +6063,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "aa49b1e4-5bef-4902-af27-3c51fb02be66",
+   "id": "130f4cdf-4dba-4825-ac87-f8c9e3b0dba8",
    "estado": "aceptado",
-   "sha256": "19523d7867e7409b1b1e17654563ec02c7925d3e00c4c2d2532b5973307bd0e6",
+   "sha256": "3aaa1029bd4bbe65e903f51d5b7b694cca66d274e624977753b58e3e71fec0f5",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -6492,23 +6078,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/94f1487a-3e47-4361-a972-7555eba72d13/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "49449ec5-34e8-4bd7-a71c-89305cd1809c",
-   "estado": "aceptado",
-   "sha256": "b55766f7ce47c5b5b2045916be821ecbd9694a4013ab7a94b216cca729ad593d",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "94f1487a-3e47-4361-a972-7555eba72d13",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/94f1487a-3e47-4361-a972-7555eba72d13/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "7827e64a-bf17-eeab-6e58-02fce17da7c6",
@@ -6868,9 +6437,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "e17483c1-5648-4c64-a41f-6de96eb21a70",
+   "id": "ac69f897-8ea2-45d7-a47d-f022db378025",
    "estado": "aceptado",
-   "sha256": "a3ba35ae07bb2670ab41fbffaa39ce0bad1bd3c2bf59c8d53d038b38cab70834",
+   "sha256": "45cb2baf94ad6bc8e6fcb779fe2d09b44db9321be6db667e854f23f2623cd43b",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -6883,23 +6452,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/aee19a9d-dad2-47b5-a7f4-45ad5b401cc2/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "fc5351a5-8ec9-469f-a5a2-089c9ede1a2a",
-   "estado": "aceptado",
-   "sha256": "deee34313e87cbaa29b4a5207b5d038bc156d2505bd19689cc19bfa2a5d4c10d",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "aee19a9d-dad2-47b5-a7f4-45ad5b401cc2",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/aee19a9d-dad2-47b5-a7f4-45ad5b401cc2/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "d1e298c1-4573-97eb-c98b-14a4a867d76b",
@@ -6970,9 +6522,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "f44e45ff-dfcc-4e80-aec4-50e6ecd9c771",
+   "id": "5ebe87a3-630e-4598-afe9-cd9dd4632c19",
    "estado": "aceptado",
-   "sha256": "d1939b6d89cc49ef816909d87e55ab7e81ac501510696854d6a35c1427a1519c",
+   "sha256": "1c347f3231df53bcdca58af0a48b05297cbe4bf92703bfc58531f4385c7ca1b0",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -6985,23 +6537,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/b1f3ca85-dc22-4955-adc5-b881be27739d/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "214e2a78-4dac-46e5-af5c-851691e320cb",
-   "estado": "aceptado",
-   "sha256": "00dd6c5adc93c7f6f92b5572b7363a66ee5d60aabadd5b57e29c8cb8546fc217",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-13T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-13T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "b1f3ca85-dc22-4955-adc5-b881be27739d",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/b1f3ca85-dc22-4955-adc5-b881be27739d/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "db9c6afb-46e0-1940-b331-7b7e1e78671c",
@@ -7072,9 +6607,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "7f8527e4-da97-4cc1-a917-55dfcb3f3e85",
+   "id": "03cf73f2-92b2-481d-a011-f46304b8b317",
    "estado": "aceptado",
-   "sha256": "eca8055215706395b0fec0c1e0955867c93108229428f0d215840ec064fe79b3",
+   "sha256": "a67888173cf65a8fa00a32ad22a351c22b2352cd6eed2f0811afb28fa7fb679b",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7087,23 +6622,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/c3db2930-6c27-424c-a716-42dc030f2f67/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "f45d81e3-565e-4b89-a32b-aee653e349b5",
-   "estado": "aceptado",
-   "sha256": "f394521037f138e10f83763e2cd55ce97df2aa842692960a548a13c379408646",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "c3db2930-6c27-424c-a716-42dc030f2f67",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/c3db2930-6c27-424c-a716-42dc030f2f67/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "87a169fb-f047-678e-98cf-80c3336e3999",
@@ -7140,9 +6658,9 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
-   "id": "13bd14a7-b1f8-4a23-a511-a0a872b490a4",
+   "id": "7ee0b97f-d114-402d-a88c-4f185c9dc377",
    "estado": "aceptado",
-   "sha256": "4c9228b28a591a6baf952ab720de41412c68db0b66b8c496c92ebf47971faf2d",
+   "sha256": "3f5a95a040c66a19019a60218f73d796839c5650838adc3e11e9e01b29f98ce8",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7155,23 +6673,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/d3f09d69-c624-44e3-a024-4e381d947d1c/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "181499a1-8f56-444a-a85f-3d49025e35fe",
-   "estado": "aceptado",
-   "sha256": "2b561212c9c58740c66a429231517bdde45ba87ac30bb78f19ec0e9890a39aef",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-01T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-01T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/d3f09d69-c624-44e3-a024-4e381d947d1c/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "f1f9cd7e-2a8a-4dab-9904-5a90fc4a1cbd",
@@ -7191,9 +6692,9 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
-   "id": "6de040ac-69ab-4202-a709-b58c83498fd6",
+   "id": "eb49c5f3-ee22-4e89-a04f-38335b6e54e7",
    "estado": "aceptado",
-   "sha256": "f8af45e1aa97341ffee40f4b01598242398cd6132c4634499fb1bc57b56cbe24",
+   "sha256": "9769fdcfbef9082823c9df3bd257bb01db1927a1c83af0b2a751e5653d9129e1",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7206,23 +6707,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "e5263568-2c59-43e1-a0d6-1ef2fbf84c95",
-   "estado": "aceptado",
-   "sha256": "6bf48d86e0f0fdc2988a1bd49e4cbe6e52bf1eadb6582c7464babc5b59d73db0",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "fb75fb57-4734-11bd-8936-81645b764c98",
@@ -7276,9 +6760,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "7d002648-a050-4462-a8f0-90dd7e920a9a",
+   "id": "ac145a69-21de-4afd-a511-b5ea930c9602",
    "estado": "aceptado",
-   "sha256": "00ea61d63f1480fa0da27982b8ec67fbc443ca5b592823560e9ec3c8d5cead02",
+   "sha256": "420c7873cbec01e23f63f50ea77abfdf692432e2ddde9ac6bda94fa393f80889",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7291,23 +6775,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/dbf130f6-3e31-4577-a076-c5a9067ecc1d/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "c037c9eb-678d-4675-a36f-3e8ca87c6fbc",
-   "estado": "aceptado",
-   "sha256": "d34e59d991536b667674eee17a6cca2170afdbe71c08f4b65ed6714ae35693bc",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "dbf130f6-3e31-4577-a076-c5a9067ecc1d",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/dbf130f6-3e31-4577-a076-c5a9067ecc1d/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "5730575b-af1c-b380-0b5b-2f4858a45af7",
@@ -7395,6 +6862,23 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
+   "id": "463025a4-dbbe-f6da-4c9c-c625181eec26",
+   "estado": "aceptado",
+   "sha256": "a8a73d4583734576da5e89c33c0f11ee89452fccb5e3cacaed45021a0ee57acb",
+   "vigente": true,
+   "requisito": "constancias_capacitacion",
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-09-14T09:30:00-06:00",
+   "cargado_por": "persona19@ejemplo.local",
+   "observacion": "",
+   "revisado_en": "2026-09-17T13:00:00-06:00",
+   "revisado_por": "revision.ficticia",
+   "solicitud_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
+   "tamano_bytes": 660484,
+   "archivo_clave": "ficticio/e0e7160d-6687-4008-a655-f59b73be99c2/constancias_capacitacion-754e4d2417.pdf",
+   "nombre_original": "constancias_capacitacion.pdf"
+  },
+  {
    "id": "4d20f3ed-bc23-182e-89c5-331d762d348f",
    "estado": "aceptado",
    "sha256": "2b66ea7e19744ea2fe37bc467541ddff38c9b678d041500eb40e1301524761cd",
@@ -7429,9 +6913,9 @@
    "nombre_original": "curriculum_vitae.pdf"
   },
   {
-   "id": "43a2b12f-128a-408c-a6ee-ef4be541ab33",
+   "id": "add8ca7c-ecb6-4422-a731-1f63e8a15941",
    "estado": "aceptado",
-   "sha256": "98ab560b2b084b89c0c73411efb1ba03012bf0319ca2b850bfc7505784fb7a4f",
+   "sha256": "d8dc8ebe28719adbf79639f89e41581d94198b2918b88e6db3c9b307a25a5c3a",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7444,23 +6928,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/e0e7160d-6687-4008-a655-f59b73be99c2/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "0a535e74-290e-4f83-ae2c-129bb2b62a27",
-   "estado": "aceptado",
-   "sha256": "5ecb446a061d129983ef8b9fc627fe8f926adfa2c50247fd03f14f012ac734db",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-23T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-23T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/e0e7160d-6687-4008-a655-f59b73be99c2/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "38055232-f206-d205-b8d1-122e868cf6e7",
@@ -7531,9 +6998,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "b5a9b5ae-a80e-4619-a275-c80ec648ff57",
+   "id": "15b02d3a-8bed-4339-a3b0-479e9ffcff96",
    "estado": "aceptado",
-   "sha256": "b1f2a43447a807adf54d3b73fe933623943622feeaa89c963472a2d7d9000367",
+   "sha256": "be1f346d86813fc803871f7d80f438c9ba39f5b77701cdd6e8f75eb0d6ae436e",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7546,23 +7013,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/e5dde1cf-0672-4973-ad7e-876ff4081a5c/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "083283d4-23de-489e-a39e-bd45b0cbefa5",
-   "estado": "aceptado",
-   "sha256": "1504b6b9a105072a6003d19884d628c6db4188b36eb6b20f6174f561d54c488d",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-09-30T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-09-30T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "e5dde1cf-0672-4973-ad7e-876ff4081a5c",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/e5dde1cf-0672-4973-ad7e-876ff4081a5c/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "e0e62b7d-0c03-d4bf-6c90-30dccc1fc89b",
@@ -7633,9 +7083,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "59e76b57-ebc8-48df-a2d7-84017e721015",
+   "id": "b2a6cedc-de20-488e-aeb4-760aa510a9cb",
    "estado": "aceptado",
-   "sha256": "b7e0b84ce99919f62a06547597fbf1b70023acbb2bf806e5758ec46282ab168d",
+   "sha256": "456cfccd32bd29752377486c125f139a2538e57e34b4efdb4c19c4eeb70e83c4",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7648,23 +7098,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/ed83f05d-3263-4d18-a45a-334339907b5b/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "474872b5-c89a-4f24-ae84-64d5ea67000e",
-   "estado": "aceptado",
-   "sha256": "6b7a2362e49fdd2f0b0e637a755b33789328a61142276725b32b69edb1bc04f8",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-08-18T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-08-18T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/ed83f05d-3263-4d18-a45a-334339907b5b/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "a2908106-a9ba-1634-e07f-1598cbf3d5e4",
@@ -7752,6 +7185,23 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
+   "id": "4a9e21b0-2ee2-7ef3-7d96-3073ccd65ab3",
+   "estado": "aceptado",
+   "sha256": "ac5adc5f1c296668cca89b3ccdb460bc92a621ac232cf14218e9fce8120d3a77",
+   "vigente": true,
+   "requisito": "constancias_capacitacion",
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-10-05T09:30:00-06:00",
+   "cargado_por": "persona20@ejemplo.local",
+   "observacion": "",
+   "revisado_en": "2026-10-07T13:00:00-06:00",
+   "revisado_por": "revision.ficticia",
+   "solicitud_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
+   "tamano_bytes": 718488,
+   "archivo_clave": "ficticio/f647b4f6-96fa-4ad8-a3e8-702e87c767f8/constancias_capacitacion-83778e93f8.pdf",
+   "nombre_original": "constancias_capacitacion.pdf"
+  },
+  {
    "id": "03868ca3-b734-c839-8021-bb2a21ba3426",
    "estado": "aceptado",
    "sha256": "61f68cd8c19c7f03e6b00b99faa08ef371fee7a2b2fe21444e84959fa55d11b9",
@@ -7786,9 +7236,9 @@
    "nombre_original": "curriculum_vitae.pdf"
   },
   {
-   "id": "cfabbf7a-264c-48e1-a067-b937bfc940c4",
+   "id": "5c91c11e-113e-4931-a422-53e3941ea4d7",
    "estado": "aceptado",
-   "sha256": "f1b63d1e42aa6f0ec6fe7db3bb47b24b9f5fdff654c04504c5d0128634f49ed1",
+   "sha256": "17b13c805f0a373b8a62173d819d05467a339154a1fdd4e270819cb28a9c52a0",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7801,23 +7251,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/f647b4f6-96fa-4ad8-a3e8-702e87c767f8/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "25646d49-9e1a-4089-a94f-c3573541f470",
-   "estado": "aceptado",
-   "sha256": "c95f7ebc4e05d65230e66281124c4df554f47fdb1faadfa2f86597a58587e4db",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-09T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-09T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/f647b4f6-96fa-4ad8-a3e8-702e87c767f8/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "0cdca900-6fff-c2b8-a587-f9e13e8ec6e0",
@@ -7888,9 +7321,9 @@
    "nombre_original": "curp.pdf"
   },
   {
-   "id": "777b0454-a926-4c30-adbe-1a94152f7d40",
+   "id": "909a4373-93e8-44eb-ab72-83abfc9e9a43",
    "estado": "aceptado",
-   "sha256": "8f5d4889eca73c2751452fee94b433a7bf4613ba88ab6bedf0bc1a60722f82f5",
+   "sha256": "b1aac2c205276363395a4492c3eac944db0f1af85deb912afd3bce10510a2a4f",
    "vigente": true,
    "requisito": "factura_pago",
    "tipo_mime": "application/pdf",
@@ -7903,23 +7336,6 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7/factura.pdf",
    "nombre_original": "factura.pdf"
-  },
-  {
-   "id": "ea553895-03bd-48c7-a3fc-d3dd833d4a12",
-   "estado": "aceptado",
-   "sha256": "4e0bb0989ced87095d2f2508ee6a6ef10b2481977a05c6d393db86810e4e6925",
-   "vigente": true,
-   "requisito": "factura_xml",
-   "tipo_mime": "application/xml",
-   "cargado_en": "2026-10-06T10:30:00-06:00",
-   "cargado_por": "cotejo.ficticio",
-   "observacion": "",
-   "revisado_en": "2026-10-06T10:30:00-06:00",
-   "revisado_por": "cotejo.ficticio",
-   "solicitud_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
-   "tamano_bytes": 6120,
-   "archivo_clave": "ficticio/fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7/factura.xml",
-   "nombre_original": "factura.xml"
   },
   {
    "id": "45913bb3-ae44-4dd1-fffd-13e3dfe93674",
@@ -7992,7 +7408,7 @@
    "activo": true,
    "nombre": "Constancia de situación fiscal",
    "momento": "en_linea",
-   "descripcion": "Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos. De ahí se toman los datos fiscales: el sistema no pide capturar el RFC."
+   "descripcion": "Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos."
   },
   {
    "clave": "constancias_capacitacion",
@@ -8000,7 +7416,7 @@
    "activo": true,
    "nombre": "Constancias de capacitación especializada",
    "momento": "en_linea",
-   "descripcion": "Sólo para carrera técnica: constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría."
+   "descripcion": "Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador (corrección R11)."
   },
   {
    "clave": "curp",
@@ -8032,15 +7448,7 @@
    "activo": true,
    "nombre": "Factura del pago de derechos",
    "momento": "cotejo",
-   "descripcion": "La emite la Secretaría en la cita presencial, después de verificar el pago, y la carga su personal en PDF. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente]."
-  },
-  {
-   "clave": "factura_xml",
-   "forma": "documento",
-   "activo": true,
-   "nombre": "Factura del pago de derechos (XML)",
-   "momento": "cotejo",
-   "descripcion": "El archivo XML de la misma factura, si se tiene. Lo carga el personal de la Secretaría."
+   "descripcion": "La emite la Secretaría en la cita presencial, después de verificar el pago. Su personal carga el PDF y captura RFC, nombre o razón social y folio fiscal. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente]."
   },
   {
    "clave": "identificacion_oficial",
@@ -8078,6 +7486,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010110AB1",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8088,6 +7497,8 @@
    "numero_expediente": "EXP-2026-0001",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "6C256FB3-3FE6-9219-533F-11C18D11C84C",
+   "factura_razon_social": "Jardines Ejemplo del Norte, S.A. de C.V.",
    "acreditacion_anterior_id": null
   },
   {
@@ -8100,6 +7511,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8110,6 +7522,8 @@
    "numero_expediente": "EXP-2026-0002",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "1FD0C3CA-91BF-4CC6-4EF0-02595017A32A",
+   "factura_razon_social": "Bruno Muestra",
    "acreditacion_anterior_id": null
   },
   {
@@ -8122,6 +7536,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010111AB1",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8132,6 +7547,8 @@
    "numero_expediente": "EXP-2026-0003",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "CE1BC72C-1F87-CE71-9A27-B7DA920E4BC1",
+   "factura_razon_social": "Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos",
    "acreditacion_anterior_id": null
   },
   {
@@ -8144,6 +7561,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8154,6 +7572,8 @@
    "numero_expediente": "EXP-2026-0004",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "0D131138-15B3-CCE8-5D56-3450FECAED6D",
+   "factura_razon_social": "María de los Ángeles Guadalupe Ejemplo-Muestra",
    "acreditacion_anterior_id": null
   },
   {
@@ -8166,6 +7586,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010113AB1",
    "estado_desde": "2026-09-11T19:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8176,6 +7597,8 @@
    "numero_expediente": "EXP-2026-0005",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "0DE64454-23C3-CE42-1474-1E01CF7566D5",
+   "factura_razon_social": "Dependencia de Prueba de Energía",
    "acreditacion_anterior_id": null
   },
   {
@@ -8188,6 +7611,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010110AB1",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8198,6 +7622,8 @@
    "numero_expediente": "EXP-2026-0006",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "28AD7FC0-6B5E-B33D-E8DB-97AE9698D4DD",
+   "factura_razon_social": "Jardines Ejemplo del Norte, S.A. de C.V.",
    "acreditacion_anterior_id": null
   },
   {
@@ -8210,6 +7636,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8220,6 +7647,8 @@
    "numero_expediente": "EXP-2026-0007",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "432A7956-46F0-8160-01E0-08EC48D24CE5",
+   "factura_razon_social": "Juan Ejemplo",
    "acreditacion_anterior_id": null
   },
   {
@@ -8232,6 +7661,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010114AB1",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8242,6 +7672,8 @@
    "numero_expediente": "EXP-2026-0008",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "5B8FD6FB-3411-6436-1BFF-3F7CCD508585",
+   "factura_razon_social": "Universidad de Prueba",
    "acreditacion_anterior_id": null
   },
   {
@@ -8254,6 +7686,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-09-15T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8264,6 +7697,8 @@
    "numero_expediente": "EXP-2026-0009",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "7AA5510D-E5ED-7BC6-804A-B9023A870AC4",
+   "factura_razon_social": "Irene Prueba",
    "acreditacion_anterior_id": null
   },
   {
@@ -8276,6 +7711,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010111AB1",
    "estado_desde": "2026-09-12T08:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8286,6 +7722,8 @@
    "numero_expediente": "EXP-2026-0010",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-18T10:30:00-06:00",
+   "factura_folio_fiscal": "71583C06-B787-4938-D0B6-FAA4460ABC78",
+   "factura_razon_social": "Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos",
    "acreditacion_anterior_id": null
   },
   {
@@ -8298,6 +7736,7 @@
    "modalidad": "renovacion",
    "enviada_en": "2026-08-25T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-10-12T08:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8308,6 +7747,8 @@
    "numero_expediente": "EXP-2026-0011",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-01T10:30:00-06:00",
+   "factura_folio_fiscal": "AFC2150F-E113-3F95-1434-09DEB9EF734B",
+   "factura_razon_social": "Marta Ejemplo",
    "acreditacion_anterior_id": "81e325cf-f60f-461a-abf8-0120044a5e41"
   },
   {
@@ -8320,6 +7761,7 @@
    "modalidad": "renovacion",
    "enviada_en": "2026-10-01T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-12T08:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8330,6 +7772,8 @@
    "numero_expediente": "EXP-2026-0012",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-05T10:30:00-06:00",
+   "factura_folio_fiscal": "29AF7AF2-E6E7-D62A-799A-DD7CE9652C88",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": "78cc7601-756b-475b-ad44-b0ea348a7046"
   },
   {
@@ -8342,6 +7786,7 @@
    "modalidad": "renovacion",
    "enviada_en": "2026-10-07T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-10-12T08:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8352,6 +7797,8 @@
    "numero_expediente": "EXP-2026-0013",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-08T10:30:00-06:00",
+   "factura_folio_fiscal": "B6FE3EAB-0EFF-9DBC-BB01-8DC476167177",
+   "factura_razon_social": "Juan Ejemplo",
    "acreditacion_anterior_id": "2cd32a40-ad73-4081-a0dd-398846b0dfc2"
   },
   {
@@ -8364,6 +7811,7 @@
    "modalidad": "renovacion",
    "enviada_en": "2026-10-12T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-12T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8374,6 +7822,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": "2a117f55-f970-4329-af3f-17f9debcd686"
   },
   {
@@ -8386,6 +7836,7 @@
    "modalidad": "nueva",
    "enviada_en": null,
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-13T09:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8396,6 +7847,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -8408,6 +7861,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-14T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010114AB1",
    "estado_desde": "2026-09-23T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8418,6 +7872,8 @@
    "numero_expediente": "EXP-2026-0014",
    "tipo_acreditacion": "dictaminador",
    "lista_para_curso_en": "2026-09-23T10:30:00-06:00",
+   "factura_folio_fiscal": "9B53AD9D-CF94-619B-609C-28BB96456DD5",
+   "factura_razon_social": "Universidad de Prueba",
    "acreditacion_anterior_id": null
   },
   {
@@ -8430,6 +7886,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-05T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-10-09T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8440,6 +7897,8 @@
    "numero_expediente": "EXP-2026-0015",
    "tipo_acreditacion": "dictaminador",
    "lista_para_curso_en": "2026-10-09T10:30:00-06:00",
+   "factura_folio_fiscal": "2CBD2C36-A430-EBB3-E8DE-69B420D017AC",
+   "factura_razon_social": "Ulises Muestra",
    "acreditacion_anterior_id": null
   },
   {
@@ -8452,6 +7911,7 @@
    "modalidad": "renovacion",
    "enviada_en": "2026-10-01T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-10-06T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8462,6 +7922,8 @@
    "numero_expediente": "EXP-2026-0016",
    "tipo_acreditacion": "dictaminador",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "463DDC52-BC8C-6CF2-3271-1A15A6F02E98",
+   "factura_razon_social": "Sergio Simulado",
    "acreditacion_anterior_id": "74678aa9-0072-4ac7-a675-d59368360e6e"
   },
   {
@@ -8474,6 +7936,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-06T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-08T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8484,6 +7947,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "dictaminador",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -8496,6 +7961,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-10T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-10T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8506,6 +7972,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "dictaminador",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -8518,6 +7986,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8528,6 +7997,8 @@
    "numero_expediente": "EXP-2026-0017",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "848F1D65-29E5-A11A-CDF0-50F490202029",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8540,6 +8011,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8550,6 +8022,8 @@
    "numero_expediente": "EXP-2026-0018",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "84BA5E5B-419B-88B8-C0E8-EEB7564D378A",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8562,6 +8036,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8572,6 +8047,8 @@
    "numero_expediente": "EXP-2026-0019",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "200B841C-4CFB-264D-C860-C13190434F03",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8584,6 +8061,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8594,6 +8072,8 @@
    "numero_expediente": "EXP-2026-0020",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "BE68BB11-784B-A66C-E1E5-F17F443A61C3",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8606,6 +8086,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8616,6 +8097,8 @@
    "numero_expediente": "EXP-2026-0021",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "CBD3707B-C766-D1F6-A6D9-07CC22D66784",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8628,6 +8111,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8638,6 +8122,8 @@
    "numero_expediente": "EXP-2026-0022",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "F2ECC315-B612-E8A8-9755-48DB0DA58476",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8650,6 +8136,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8660,6 +8147,8 @@
    "numero_expediente": "EXP-2026-0023",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "7F289B0E-B15F-419D-DEFB-32FE06C20D47",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8672,6 +8161,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8682,6 +8172,8 @@
    "numero_expediente": "EXP-2026-0024",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "97F8C371-C8F9-DC01-7196-C4B7E293331B",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8694,6 +8186,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8704,6 +8197,8 @@
    "numero_expediente": "EXP-2026-0025",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "EDA3CF83-1096-B329-EF4E-8198928C1C60",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8716,6 +8211,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-10-01T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8726,6 +8222,8 @@
    "numero_expediente": "EXP-2026-0026",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "F9237D46-A93F-A928-DCF9-055B04EAB000",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8738,6 +8236,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010112AB1",
    "estado_desde": "2026-09-30T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8748,6 +8247,8 @@
    "numero_expediente": "EXP-2026-0027",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00",
+   "factura_folio_fiscal": "C9E2BFD8-7AD9-2B32-39EF-96CA95DB839A",
+   "factura_razon_social": "Alcaldía de Prueba Oriente",
    "acreditacion_anterior_id": null
   },
   {
@@ -8760,6 +8261,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-10-07T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8770,6 +8272,8 @@
    "numero_expediente": "EXP-2026-0028",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "146030F1-25E4-D735-443E-3F915B790A8E",
+   "factura_razon_social": "Héctor Prueba",
    "acreditacion_anterior_id": null
   },
   {
@@ -8782,6 +8286,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010111AB1",
    "estado_desde": "2026-10-07T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8792,6 +8297,8 @@
    "numero_expediente": "EXP-2026-0029",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "C1E4617E-A706-53CD-D1AE-F930C233EF3D",
+   "factura_razon_social": "Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos",
    "acreditacion_anterior_id": null
   },
   {
@@ -8804,6 +8311,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010110AB1",
    "estado_desde": "2026-10-07T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8814,6 +8322,8 @@
    "numero_expediente": "EXP-2026-0030",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "1C2491F0-E626-72BF-2D1D-7A12F1DE556F",
+   "factura_razon_social": "Jardines Ejemplo del Norte, S.A. de C.V.",
    "acreditacion_anterior_id": null
   },
   {
@@ -8826,6 +8336,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-10-07T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8836,19 +8347,22 @@
    "numero_expediente": "EXP-2026-0031",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "0E30C7E0-CFB0-F61D-432A-B027695D8CCA",
+   "factura_razon_social": "Karla Simulado",
    "acreditacion_anterior_id": null
   },
   {
    "id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
    "folio": "APD-S-2026-00036",
-   "estado": "inscrita",
+   "estado": "lista_para_curso",
    "carrera": null,
    "cita_en": "2026-10-06T10:00:00-06:00",
    "creada_en": "2026-09-28T09:30:00-06:00",
    "modalidad": "nueva",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "es_ficticio": true,
-   "estado_desde": "2026-10-07T12:00:00-06:00",
+   "factura_rfc": "EJE010113AB1",
+   "estado_desde": "2026-10-06T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
    "solicitante_id": "0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4",
@@ -8858,19 +8372,22 @@
    "numero_expediente": "EXP-2026-0032",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "3859B591-B37C-5CAD-9ED8-EBCE795A8683",
+   "factura_razon_social": "Dependencia de Prueba de Energía",
    "acreditacion_anterior_id": null
   },
   {
    "id": "862317b0-b00f-479c-a846-8aa5d454502e",
    "folio": "APD-S-2026-00037",
-   "estado": "inscrita",
+   "estado": "lista_para_curso",
    "carrera": null,
    "cita_en": "2026-10-06T10:00:00-06:00",
    "creada_en": "2026-09-28T09:30:00-06:00",
    "modalidad": "nueva",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "es_ficticio": true,
-   "estado_desde": "2026-10-07T12:00:00-06:00",
+   "factura_rfc": "XAXX010101000",
+   "estado_desde": "2026-10-06T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
    "solicitante_id": "b4911a5b-1aa9-4e14-a874-b7cd82282c1a",
@@ -8880,6 +8397,8 @@
    "numero_expediente": "EXP-2026-0033",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-06T10:30:00-06:00",
+   "factura_folio_fiscal": "65253775-4AAC-6FE6-FF52-DA5F9D1D1B7B",
+   "factura_razon_social": "Marta Muestra",
    "acreditacion_anterior_id": null
   },
   {
@@ -8892,6 +8411,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-08-06T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "XAXX010101000",
    "estado_desde": "2026-08-21T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8902,6 +8422,8 @@
    "numero_expediente": "EXP-2026-0034",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-08-21T10:30:00-06:00",
+   "factura_folio_fiscal": "04E5758F-3F44-019E-B30D-09A16514BCC2",
+   "factura_razon_social": "Néstor Prueba",
    "acreditacion_anterior_id": null
   },
   {
@@ -8914,6 +8436,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-05T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010110AB1",
    "estado_desde": "2026-10-13T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8924,6 +8447,8 @@
    "numero_expediente": "EXP-2026-0035",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-13T10:30:00-06:00",
+   "factura_folio_fiscal": "6B53B185-68C7-3929-2090-54B169B76205",
+   "factura_razon_social": "Jardines Ejemplo del Norte, S.A. de C.V.",
    "acreditacion_anterior_id": null
   },
   {
@@ -8936,6 +8461,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-05T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": "EJE010110AB1",
    "estado_desde": "2026-10-13T10:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8946,6 +8472,8 @@
    "numero_expediente": "EXP-2026-0036",
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": "2026-10-13T10:30:00-06:00",
+   "factura_folio_fiscal": "758B34AC-B53B-9F5A-D4C1-AF2646F8F0AF",
+   "factura_razon_social": "Jardines Ejemplo del Norte, S.A. de C.V.",
    "acreditacion_anterior_id": null
   },
   {
@@ -8958,6 +8486,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-02T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-06T12:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8968,6 +8497,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -8980,6 +8511,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-06T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-09T13:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -8990,6 +8522,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -9002,6 +8536,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-07T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-12T13:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -9012,6 +8547,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -9024,6 +8561,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-10-14T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-10-14T11:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
@@ -9034,6 +8572,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -9046,6 +8586,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-09-01T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-09-05T17:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": "La persona desistió del trámite por cambio de empleo.",
@@ -9056,6 +8597,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   },
   {
@@ -9068,6 +8611,7 @@
    "modalidad": "nueva",
    "enviada_en": "2026-07-21T11:00:00-06:00",
    "es_ficticio": true,
+   "factura_rfc": null,
    "estado_desde": "2026-09-23T17:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": "Las observaciones no se atendieron en el plazo [pendiente: plazo de la Dirección].",
@@ -9078,6 +8622,8 @@
    "numero_expediente": null,
    "tipo_acreditacion": "poda",
    "lista_para_curso_en": null,
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null,
    "acreditacion_anterior_id": null
   }
  ],
@@ -9523,15 +9069,6 @@
    "solicitud_id": "3d41b571-ec44-49a4-a71d-25d0bfcb1b8e"
   },
   {
-   "id": "f20bad46-c3e5-4777-a9b3-974988d2d02b",
-   "activa": true,
-   "baja_en": null,
-   "grupo_id": "3a6138be-b25a-4290-a971-1cb0a6dc4177",
-   "inscrita_en": "2026-10-07T12:00:00-06:00",
-   "motivo_baja": null,
-   "solicitud_id": "862317b0-b00f-479c-a846-8aa5d454502e"
-  },
-  {
    "id": "7d4c0587-23d1-46eb-a53a-c6223099a1e6",
    "activa": true,
    "baja_en": null,
@@ -9548,15 +9085,6 @@
    "inscrita_en": "2026-10-07T12:00:00-06:00",
    "motivo_baja": null,
    "solicitud_id": "dbf130f6-3e31-4577-a076-c5a9067ecc1d"
-  },
-  {
-   "id": "669681fb-6789-4a90-a145-a2ef34df8e0c",
-   "activa": true,
-   "baja_en": null,
-   "grupo_id": "3a6138be-b25a-4290-a971-1cb0a6dc4177",
-   "inscrita_en": "2026-10-07T12:00:00-06:00",
-   "motivo_baja": null,
-   "solicitud_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7"
   },
   {
    "id": "6fa732c6-00d7-440a-a4c9-69d35578c57b",
@@ -10877,6 +10405,40 @@
    "lista_para_curso_en": "2026-09-30T10:30:00-06:00"
   },
   {
+   "folio": "APD-S-2026-00036",
+   "nombre": "Luis Ejemplo Prueba",
+   "modalidad": "nueva",
+   "prioridad": false,
+   "dias_espera": 8,
+   "es_ficticio": true,
+   "organizacion": "Dependencia de Prueba de Energía",
+   "solicitud_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
+   "orden_sugerido": "2026-10-06",
+   "vence_anterior": null,
+   "organizacion_id": "eb98fd76-9e85-4b18-a4b3-9e91baa1d294",
+   "dias_para_vencer": null,
+   "organizacion_tipo": "dependencia_publica",
+   "tipo_acreditacion": "poda",
+   "lista_para_curso_en": "2026-10-06T10:30:00-06:00"
+  },
+  {
+   "folio": "APD-S-2026-00037",
+   "nombre": "Marta Muestra Ficticio",
+   "modalidad": "nueva",
+   "prioridad": false,
+   "dias_espera": 8,
+   "es_ficticio": true,
+   "organizacion": "Particular",
+   "solicitud_id": "862317b0-b00f-479c-a846-8aa5d454502e",
+   "orden_sugerido": "2026-10-06",
+   "vence_anterior": null,
+   "organizacion_id": null,
+   "dias_para_vencer": null,
+   "organizacion_tipo": "particular",
+   "tipo_acreditacion": "poda",
+   "lista_para_curso_en": "2026-10-06T10:30:00-06:00"
+  },
+  {
    "folio": "APD-S-2026-00039",
    "nombre": "Olga Ficticio Simulado",
    "modalidad": "nueva",
@@ -11036,23 +10598,15 @@
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Obligatorias sólo con carrera técnica.",
+   "nota": "",
    "orden": 10,
    "modalidad": "nueva",
    "requisito": "constancias_capacitacion",
-   "obligatorio": false,
+   "obligatorio": true,
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "",
-   "orden": 50,
-   "modalidad": "nueva",
-   "requisito": "factura_xml",
-   "obligatorio": false,
-   "tipo_acreditacion": "dictaminador"
-  },
-  {
-   "nota": "Sólo si cambió desde tu trámite anterior.",
+   "nota": "Sólo si cambió o ya no está vigente.",
    "orden": 1,
    "modalidad": "renovacion",
    "requisito": "identificacion_oficial",
@@ -11060,7 +10614,7 @@
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Sólo si cambió desde tu trámite anterior.",
+   "nota": "Sólo si cambió o ya no está vigente.",
    "orden": 2,
    "modalidad": "renovacion",
    "requisito": "curp",
@@ -11068,7 +10622,7 @@
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Sólo si cambió desde tu trámite anterior.",
+   "nota": "Sólo si cambió o ya no está vigente.",
    "orden": 3,
    "modalidad": "renovacion",
    "requisito": "comprobante_domicilio",
@@ -11141,14 +10695,6 @@
   },
   {
    "nota": "",
-   "orden": 50,
-   "modalidad": "renovacion",
-   "requisito": "factura_xml",
-   "obligatorio": false,
-   "tipo_acreditacion": "dictaminador"
-  },
-  {
-   "nota": "",
    "orden": 1,
    "modalidad": "nueva",
    "requisito": "identificacion_oficial",
@@ -11188,15 +10734,7 @@
    "tipo_acreditacion": "poda"
   },
   {
-   "nota": "",
-   "orden": 50,
-   "modalidad": "nueva",
-   "requisito": "factura_xml",
-   "obligatorio": false,
-   "tipo_acreditacion": "poda"
-  },
-  {
-   "nota": "Sólo si cambió desde tu trámite anterior.",
+   "nota": "Sólo si cambió o ya no está vigente.",
    "orden": 1,
    "modalidad": "renovacion",
    "requisito": "identificacion_oficial",
@@ -11204,7 +10742,7 @@
    "tipo_acreditacion": "poda"
   },
   {
-   "nota": "Sólo si cambió desde tu trámite anterior.",
+   "nota": "Sólo si cambió o ya no está vigente.",
    "orden": 2,
    "modalidad": "renovacion",
    "requisito": "curp",
@@ -11212,7 +10750,7 @@
    "tipo_acreditacion": "poda"
   },
   {
-   "nota": "Sólo si cambió desde tu trámite anterior.",
+   "nota": "Sólo si cambió o ya no está vigente.",
    "orden": 3,
    "modalidad": "renovacion",
    "requisito": "comprobante_domicilio",
@@ -11241,14 +10779,6 @@
    "modalidad": "renovacion",
    "requisito": "poda_anterior",
    "obligatorio": true,
-   "tipo_acreditacion": "poda"
-  },
-  {
-   "nota": "",
-   "orden": 50,
-   "modalidad": "renovacion",
-   "requisito": "factura_xml",
-   "obligatorio": false,
    "tipo_acreditacion": "poda"
   }
  ],

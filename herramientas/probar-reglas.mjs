@@ -87,16 +87,27 @@ const casos = [
   ['La persona solicitante no carga la factura: la carga el personal', { codigo: 'carga_de_personal' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}`],
-  ['Un XML sólo se acepta como XML de la factura', { codigo: 'formato_no_admitido' }, null, `
+  ['Sólo se aceptan PDF, JPG o PNG', { sqlstate: '23514' }, null, `
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
      VALUES ((SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1), 'factura_pago', 'prueba/x', 'x.xml', 'application/xml', 1000, repeat('a', 64));`],
-  ['Con la factura cargada entra a la bandeja con número de expediente consecutivo', 'ok', null, `
+  ['Sin RFC, razón social y folio fiscal no se concluye el cotejo', { codigo: 'sin_datos_factura' }, null, `
+     ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
+     UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
+  ['La persona solicitante no captura los datos de la factura', { codigo: 'factura_fuera_de_turno' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET factura_rfc = 'XAXX010101000' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
+  ['Un folio fiscal no se repite en dos solicitudes', { sqlstate: '23505' }, null, `
+     UPDATE apd.solicitud SET factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL LIMIT 1)
+      WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
+  ['Con factura y sus datos entra a la bandeja con número de expediente consecutivo', 'ok', null, `
      ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
      CREATE TEMP TABLE s AS SELECT (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1) AS id;
-     UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM s);
+     UPDATE apd.solicitud SET factura_rfc = 'xaxx010101000', factura_razon_social = 'Persona de prueba',
+       factura_folio_fiscal = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', estado = 'lista_para_curso' WHERE id = (SELECT id FROM s);
      DO $$ BEGIN
        ASSERT (SELECT numero_expediente FROM apd.solicitud WHERE id = (SELECT id FROM s))
             = (SELECT 'EXP-2026-' || lpad((count(*))::text, 4, '0') FROM apd.solicitud WHERE numero_expediente IS NOT NULL);
+       ASSERT (SELECT factura_rfc = 'XAXX010101000' AND factura_folio_fiscal = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE' FROM apd.solicitud WHERE id = (SELECT id FROM s));
        ASSERT (SELECT cargado_por = 'prueba.automatica' AND estado = 'aceptado' FROM apd.documento
                 WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'factura_pago' AND vigente);
      END $$;`],
@@ -118,7 +129,7 @@ const casos = [
      UPDATE apd.documento SET estado = 'aceptado' WHERE solicitud_id = ${ENVIADA} AND vigente;`],
 
   // ── Grupos y cupos ──
-  ['Un grupo no se confirma por debajo del mínimo (6 de 10)', { codigo: 'cupo_minimo' }, null, `
+  ['Un grupo no se confirma por debajo del mínimo (4 de 5)', { codigo: 'cupo_minimo' }, null, `
      UPDATE apd.grupo SET instructor = 'i', sede = 's', fecha_inicio = '2026-11-03' WHERE id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Un grupo nuevo copia los cupos vigentes del curso, y nunca pasa del máximo', { codigo: 'cupo_maximo' }, null, `
@@ -145,7 +156,7 @@ const casos = [
        JOIN apd.inscripcion i ON i.solicitud_id = s.id AND i.activa WHERE i.grupo_id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'cancelado', motivo_cancelacion = 'Prueba' WHERE id = ${GRUPO_INTEGRACION};
      DO $$ BEGIN
-       ASSERT (SELECT count(*) FROM antes) = 6;
+       ASSERT (SELECT count(*) FROM antes) = 4;
        ASSERT NOT EXISTS (SELECT 1 FROM antes a JOIN apd.solicitud s ON s.id = a.id
                            WHERE s.estado <> 'lista_para_curso' OR s.lista_para_curso_en <> a.lista_para_curso_en);
      END $$;`],
@@ -186,7 +197,7 @@ const casos = [
        ASSERT (SELECT bool_and(situacion = 'Vigente' AND vence_en = '2027-10-16') FROM apd.verificacion_publica
                 WHERE emitida_en = '2026-10-17');
      END $$;`],
-  ['Con 8.0 se aprueba poda; con 7.9 no (R34)', 'ok', '2026-10-17 20:00', `
+  ['Con 7.0 se aprueba poda; con 6.9 no (R34)', 'ok', '2026-10-17 20:00', `
      CREATE TEMP TABLE g AS SELECT ${GRUPO_EN_CURSO} AS id;
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
      SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
@@ -194,7 +205,7 @@ const casos = [
       WHERE i.grupo_id = (SELECT id FROM g) AND i.activa
         AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 5 LIMIT 2;
      INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por, origen)
-     SELECT id, '2026-10-17', CASE n WHEN 1 THEN 8.0 ELSE 7.9 END, 'sistema-examen', 'examen_web' FROM dos;
+     SELECT id, '2026-10-17', CASE n WHEN 1 THEN 7.0 ELSE 6.9 END, 'sistema-examen', 'examen_web' FROM dos;
      DO $$ BEGIN
        ASSERT (SELECT s.estado FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id JOIN dos ON dos.id = i.id WHERE n = 1) = 'aprobada';
        ASSERT (SELECT s.estado FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id JOIN dos ON dos.id = i.id WHERE n = 2) = 'no_acreditada';
@@ -206,6 +217,8 @@ const casos = [
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_instructor' AND detalle LIKE '%instructor.suplente'); END $$;`],
   ['La sede no cambia con el curso iniciado', { codigo: 'grupo_cerrado' }, null, `
      UPDATE apd.grupo SET sede = 'Otra' WHERE id = ${GRUPO_EN_CURSO};`],
+  ['Cupo de 5 a 25 en los cuatro cursos (R23 y R24)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT bool_and(cupo_minimo = 5 AND cupo_maximo = 25) FROM apd.curso); END $$;`],
   ['El curso de renovación dura un día', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT bool_and(dias_duracion = 1 AND dias_minimos_asistencia = 1) FROM apd.curso WHERE modalidad = 'renovacion');
      ASSERT (SELECT bool_and(dias_duracion = 5) FROM apd.curso WHERE modalidad = 'nueva'); END $$;`],

@@ -206,6 +206,9 @@ CREATE TABLE apd.solicitud (
   modalidad                  text          NOT NULL,
   organizacion_id            uuid          NULL,
   acreditacion_anterior_id   uuid          NULL,
+  factura_rfc                text          NULL,
+  factura_razon_social       text          NULL,
+  factura_folio_fiscal       text          NULL,
   perfil_academico           text          NULL,
   carrera                    text          NULL,
   anios_experiencia          numeric(4,1)  NULL,
@@ -228,6 +231,9 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id),
   CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')),
   CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL)),
+  CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal),
+  CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$'),
+  CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'),
   CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica')),
   CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL)),
   CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70),
@@ -246,6 +252,9 @@ COMMENT ON COLUMN apd.solicitud.tipo_acreditacion IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.modalidad IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Organización de procedencia; vacía para particulares';
 COMMENT ON COLUMN apd.solicitud.acreditacion_anterior_id IS 'Acreditación que se renueva; obligatoria en renovación';
+COMMENT ON COLUMN apd.solicitud.factura_rfc IS 'RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo';
+COMMENT ON COLUMN apd.solicitud.factura_razon_social IS 'Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo';
+COMMENT ON COLUMN apd.solicitud.factura_folio_fiscal IS 'Folio fiscal (UUID) de la factura, para seguimiento; lo captura el personal en el cotejo';
 COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima';
 COMMENT ON COLUMN apd.solicitud.carrera IS 'Sólo dictaminador: carrera o formación declarada';
 COMMENT ON COLUMN apd.solicitud.anios_experiencia IS 'Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban';
@@ -299,7 +308,7 @@ CREATE TABLE apd.documento (
   CONSTRAINT documento_archivo_uk UNIQUE (archivo_clave),
   CONSTRAINT documento_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
   CONSTRAINT documento_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave),
-  CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png', 'application/xml')),
+  CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png')),
   CONSTRAINT documento_tamano_ck CHECK (tamano_bytes > 0),
   CONSTRAINT documento_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$'),
   CONSTRAINT documento_estado_ck CHECK (estado IN ('pendiente', 'aceptado', 'con_observacion')),
@@ -312,7 +321,7 @@ COMMENT ON COLUMN apd.documento.solicitud_id IS 'Solicitud';
 COMMENT ON COLUMN apd.documento.requisito IS 'Requisito que atiende';
 COMMENT ON COLUMN apd.documento.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
 COMMENT ON COLUMN apd.documento.nombre_original IS 'Nombre con que se cargó';
-COMMENT ON COLUMN apd.documento.tipo_mime IS 'application/pdf, image/jpeg, image/png o application/xml (el XML de la factura)';
+COMMENT ON COLUMN apd.documento.tipo_mime IS 'application/pdf, image/jpeg o image/png';
 COMMENT ON COLUMN apd.documento.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.documento.sha256 IS 'Suma del archivo, para comprobar el almacén';
 COMMENT ON COLUMN apd.documento.estado IS 'pendiente, aceptado o con_observacion';

@@ -175,13 +175,17 @@ function validar(s, fecha, cita) {
 function cotejar(s, fecha) {
   en(fecha, '10:30');
   como(COTEJO, 'personal');
-  // En la cita se verifica el pago, la Secretaría emite la factura y su personal la carga (PDF y XML)
-  for (const [ext, mime, req] of [['pdf', 'application/pdf', 'factura_pago'], ['xml', 'application/xml', 'factura_xml']]) {
-    emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
-  VALUES (${q(uuid(`factura:${s.id}:${ext}`))}, ${q(s.id)}, ${q(req)}, ${q(`ficticio/${s.id}/factura.${ext}`)}, ${q('factura.' + ext)}, ${q(mime)}, ${ext === 'pdf' ? 84211 : 6120},
-    encode(sha256(convert_to(${q(s.id + 'factura' + ext)}, 'UTF8')), 'hex'))`);
-  }
-  emitir(`UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = ${q(s.id)}`);
+  // En la cita se verifica el pago, la Secretaría emite la factura y su personal carga el PDF y captura
+  // RFC, nombre o razón social y folio fiscal (a la organización, o a la propia persona con RFC genérico)
+  emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+  VALUES (${q(uuid(`factura:${s.id}`))}, ${q(s.id)}, 'factura_pago', ${q(`ficticio/${s.id}/factura.pdf`)}, 'factura.pdf', 'application/pdf', 84211,
+    encode(sha256(convert_to(${q(s.id + 'factura')}, 'UTF8')), 'hex'))`);
+  const rfc = s.org ? `EJE0101${Object.keys(ORG).indexOf(s.org) + 10}AB1` : 'XAXX010101000';
+  const razon = s.org ? ORG[s.org].nombre : `${s.persona.nombre} ${s.persona.primer}`;
+  const h = createHash('md5').update('folio-fiscal:' + s.id).digest('hex').toUpperCase();
+  const folio = `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+  emitir(`UPDATE apd.solicitud SET factura_rfc = ${q(rfc)}, factura_razon_social = ${q(razon)}, factura_folio_fiscal = ${q(folio)},
+    estado = 'lista_para_curso' WHERE id = ${q(s.id)}`);
 }
 
 // El recorrido completo hasta quedar en espera de grupo
@@ -293,8 +297,8 @@ asistencia(g1, 2, '2026-09-08', [g1[9]]);
 asistencia(g1, 3, '2026-09-09', [g1[9]]);
 asistencia(g1, 4, '2026-09-10', [g1[4]]);
 asistencia(g1, 5, '2026-09-11');
-// Mínimo 8.0 en poda: una aprueba justo con 8.0 y otra reprueba con 7.5 (con la regla anterior aprobaba)
-const calificaciones = [8.5, 9.6, 8.0, 8.4, 7.5, 9.0, 8.2, 8.8, 9.2];
+// Mínimo 7.0 en poda: una aprueba justo con 7.0 y otra reprueba con 6.8
+const calificaciones = [8.5, 9.6, 7.0, 8.4, 6.8, 9.0, 8.2, 8.8, 9.2];
 for (let i = 0; i < 9; i++) examen(g1[i], '2026-09-11', calificaciones[i]);
 estadoGrupo(G1, '2026-09-12', 'concluido');
 for (const i of [0, 1, 2, 3, 5, 6, 7, 8]) emitirAcreditacion(g1[i], '2026-09-15');
@@ -395,7 +399,7 @@ estadoGrupo(G4, '2026-10-13', 'en_curso');
 asistencia(g4.slice(0, 10), 1, '2026-10-13', [g4[4]]);
 // El undécimo de la alcaldía queda en la bandeja: el grupo específico se llenó con diez por fecha de cita
 
-// 4 · Grupo combinado de poda en integración, por debajo del mínimo
+// 4 · Grupo combinado de poda en integración, por debajo del mínimo (4 de 5); dos más siguen en la bandeja
 const g2 = [];
 const orgsG2 = [null, 'paisajes', 'norte', null, 'energia', null];
 for (let i = 0; i < 6; i++) {
@@ -406,7 +410,7 @@ for (let i = 0; i < 6; i++) {
   g2.push(s);
 }
 const G2 = grupo('g2', 'poda', 'nueva', '2026-10-07');
-inscribir(G2, g2, '2026-10-07');
+inscribir(G2, g2.slice(0, 4), '2026-10-07');
 
 // 5 · Bandeja de poda nueva: una particular esperando desde agosto (prioridad) y dos de una empresa
 const espera = persona('espera-larga');
