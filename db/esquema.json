@@ -1,0 +1,393 @@
+{
+  "proyecto": "Sistema de Acreditaciones de Poda y Dictaminación",
+  "esquema": "apd",
+  "nota": "Fuente única del modelo de datos. De aquí se generan db/apd/02-apd-tablas.sql y docs/MODELO-DE-DATOS.md con `node herramientas/generar-esquema.mjs`. No se editan a mano los archivos generados.",
+  "tablas": [
+    {
+      "nombre": "parametro",
+      "descripcion": "Valores que gobiernan reglas del sistema y que la administración puede cambiar sin programar. Cada cambio queda en la bitácora.",
+      "columnas": [
+        { "nombre": "clave", "tipo": "text", "nulo": false, "descripcion": "Nombre del parámetro" },
+        { "nombre": "valor", "tipo": "text", "nulo": false, "descripcion": "Valor como texto; la regla que lo usa lo convierte" },
+        { "nombre": "descripcion", "tipo": "text", "nulo": false, "descripcion": "Qué regla gobierna y en qué unidad" },
+        { "nombre": "actualizado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Último cambio" }
+      ],
+      "restricciones": [
+        "CONSTRAINT parametro_pk PRIMARY KEY (clave)"
+      ]
+    },
+    {
+      "nombre": "curso",
+      "descripcion": "Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asistencia mínima, calificación mínima y cupos vigentes; un grupo copia los cupos al crearse.",
+      "columnas": [
+        { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "poda o dictaminador" },
+        { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "nueva o renovacion" },
+        { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre visible del curso" },
+        { "nombre": "dias_duracion", "tipo": "smallint", "nulo": false, "descripcion": "Días de curso" },
+        { "nombre": "dias_minimos_asistencia", "tipo": "smallint", "nulo": false, "descripcion": "Días de asistencia necesarios para tener derecho a examen (en días, no en porcentaje)" },
+        { "nombre": "calificacion_minima", "tipo": "numeric(3,1)", "nulo": false, "descripcion": "Calificación mínima aprobatoria, de 0 a 10" },
+        { "nombre": "cupo_minimo", "tipo": "smallint", "nulo": false, "descripcion": "Personas necesarias para confirmar un grupo" },
+        { "nombre": "cupo_maximo", "tipo": "smallint", "nulo": false, "descripcion": "Personas máximas en un grupo" },
+        { "nombre": "activo", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si se pueden abrir grupos de este curso" },
+        { "nombre": "actualizado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Último cambio" }
+      ],
+      "restricciones": [
+        "CONSTRAINT curso_pk PRIMARY KEY (tipo_acreditacion, modalidad)",
+        "CONSTRAINT curso_tipo_ck CHECK (tipo_acreditacion IN ('poda', 'dictaminador'))",
+        "CONSTRAINT curso_modalidad_ck CHECK (modalidad IN ('nueva', 'renovacion'))",
+        "CONSTRAINT curso_dias_ck CHECK (dias_duracion BETWEEN 1 AND 15 AND dias_minimos_asistencia BETWEEN 1 AND dias_duracion)",
+        "CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10)",
+        "CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)"
+      ]
+    },
+    {
+      "nombre": "requisito",
+      "descripcion": "Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.",
+      "columnas": [
+        { "nombre": "clave", "tipo": "text", "nulo": false, "descripcion": "Identificador corto" },
+        { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre visible" },
+        { "nombre": "descripcion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Características que debe cumplir" },
+        { "nombre": "forma", "tipo": "text", "nulo": false, "descripcion": "documento: se carga un archivo; registro: el sistema lo comprueba en el padrón" },
+        { "nombre": "momento", "tipo": "text", "nulo": false, "descripcion": "en_linea: se carga al solicitar; cotejo: se presenta en la cita" },
+        { "nombre": "activo", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si se pide en solicitudes nuevas" }
+      ],
+      "restricciones": [
+        "CONSTRAINT requisito_pk PRIMARY KEY (clave)",
+        "CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))",
+        "CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo'))"
+      ]
+    },
+    {
+      "nombre": "requisito_curso",
+      "descripcion": "Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.",
+      "columnas": [
+        { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "Curso" },
+        { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso" },
+        { "nombre": "requisito", "tipo": "text", "nulo": false, "descripcion": "Requisito" },
+        { "nombre": "orden", "tipo": "smallint", "nulo": false, "descripcion": "Orden en que se muestra" },
+        { "nombre": "obligatorio", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, constancias de capacitación sólo para carrera técnica) y los valora quien revisa" },
+        { "nombre": "nota", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Indicación particular de este curso para el requisito" }
+      ],
+      "restricciones": [
+        "CONSTRAINT requisito_curso_pk PRIMARY KEY (tipo_acreditacion, modalidad, requisito)",
+        "CONSTRAINT requisito_curso_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
+        "CONSTRAINT requisito_curso_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)"
+      ]
+    },
+    {
+      "nombre": "organizacion",
+      "descripcion": "Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "tipo", "tipo": "text", "nulo": false, "descripcion": "empresa, alcaldia, dependencia_publica, institucion_academica u otra" },
+        { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre oficial" },
+        { "nombre": "nombre_normalizado", "tipo": "text", "nulo": false, "descripcion": "Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.»" },
+        { "nombre": "activa", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si aparece al solicitar" },
+        { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
+      ],
+      "restricciones": [
+        "CONSTRAINT organizacion_pk PRIMARY KEY (id)",
+        "CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('empresa', 'alcaldia', 'dependencia_publica', 'institucion_academica', 'otra'))",
+        "CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)"
+      ]
+    },
+    {
+      "nombre": "solicitante",
+      "descripcion": "Cuenta de la persona solicitante. Una por CURP. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "curp", "tipo": "text", "nulo": false, "descripcion": "CURP en mayúsculas; identificador único de la cuenta" },
+        { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre(s)" },
+        { "nombre": "primer_apellido", "tipo": "text", "nulo": false, "descripcion": "Primer apellido" },
+        { "nombre": "segundo_apellido", "tipo": "text", "nulo": true, "descripcion": "Segundo apellido, si lo hay" },
+        { "nombre": "correo", "tipo": "text", "nulo": false, "descripcion": "Correo de contacto, en minúsculas" },
+        { "nombre": "telefono", "tipo": "text", "nulo": false, "descripcion": "Teléfono de contacto, 10 dígitos" },
+        { "nombre": "contrasena_hash", "tipo": "text", "nulo": true, "descripcion": "scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar" },
+        { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'activa'", "descripcion": "activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)" },
+        { "nombre": "intentos_fallidos", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Intentos de entrada fallidos seguidos" },
+        { "nombre": "bloqueada_hasta", "tipo": "timestamptz", "nulo": true, "descripcion": "Fin del bloqueo por intentos" },
+        { "nombre": "debe_cambiar_contrasena", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Tiene una contraseña temporal de un solo uso" },
+        { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta de la cuenta" },
+        { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
+      ],
+      "restricciones": [
+        "CONSTRAINT solicitante_pk PRIMARY KEY (id)",
+        "CONSTRAINT solicitante_curp_uk UNIQUE (curp)",
+        "CONSTRAINT solicitante_curp_ck CHECK (curp ~ '^[A-Z][AEIOUX][A-Z]{2}[0-9]{6}[HMX][A-Z]{5}[0-9A-Z][0-9]$')",
+        "CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')",
+        "CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')",
+        "CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))",
+        "CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))"
+      ],
+      "indices": [
+        "CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)"
+      ]
+    },
+    {
+      "nombre": "sesion_solicitante",
+      "descripcion": "Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Cuenta" },
+        { "nombre": "testigo_sha256", "tipo": "text", "nulo": false, "descripcion": "Resumen sha256 del testigo de 32 bytes" },
+        { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Inicio" },
+        { "nombre": "vence_en", "tipo": "timestamptz", "nulo": false, "descripcion": "Vencimiento" },
+        { "nombre": "cerrada_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cierre: salida, cambio de contraseña o desactivación" }
+      ],
+      "restricciones": [
+        "CONSTRAINT sesion_solicitante_pk PRIMARY KEY (id)",
+        "CONSTRAINT sesion_solicitante_testigo_uk UNIQUE (testigo_sha256)",
+        "CONSTRAINT sesion_solicitante_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)"
+      ],
+      "indices": [
+        "CREATE INDEX sesion_solicitante_solicitante ON apd.sesion_solicitante (solicitante_id)"
+      ]
+    },
+    {
+      "nombre": "acreditacion",
+      "descripcion": "Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "numero", "tipo": "text", "nulo": false, "descripcion": "Número impreso en la credencial; lo asigna la base si no se migra" },
+        { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Titular" },
+        { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "poda o dictaminador" },
+        { "nombre": "solicitud_id", "tipo": "uuid", "nulo": true, "descripcion": "Solicitud que la originó; vacía si se migró" },
+        { "nombre": "emitida_en", "tipo": "date", "nulo": false, "descripcion": "Fecha de emisión (Ciudad de México)" },
+        { "nombre": "vence_en", "tipo": "date", "nulo": false, "descripcion": "Último día de vigencia: un año después de la emisión, menos un día. Lo calcula la base" },
+        { "nombre": "entregada_en", "tipo": "date", "nulo": true, "descripcion": "Entrega en persona" },
+        { "nombre": "origen", "tipo": "text", "nulo": false, "defecto": "'sistema'", "descripcion": "sistema, kobo o papel" },
+        { "nombre": "folio_origen", "tipo": "text", "nulo": true, "descripcion": "Folio en el sistema de origen, para las migradas" },
+        { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
+      ],
+      "restricciones": [
+        "CONSTRAINT acreditacion_pk PRIMARY KEY (id)",
+        "CONSTRAINT acreditacion_numero_uk UNIQUE (numero)",
+        "CONSTRAINT acreditacion_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)",
+        "CONSTRAINT acreditacion_tipo_ck CHECK (tipo_acreditacion IN ('poda', 'dictaminador'))",
+        "CONSTRAINT acreditacion_origen_ck CHECK (origen IN ('sistema', 'kobo', 'papel'))",
+        "CONSTRAINT acreditacion_origen_solicitud_ck CHECK ((origen = 'sistema') = (solicitud_id IS NOT NULL))",
+        "CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en))"
+      ],
+      "indices": [
+        "CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acreditacion, vence_en DESC)",
+        "CREATE INDEX acreditacion_vence ON apd.acreditacion (vence_en)"
+      ]
+    },
+    {
+      "nombre": "solicitud",
+      "descripcion": "Un trámite: una persona, un curso. Sus cambios de estado los valida la base y quedan en la bitácora.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "folio", "tipo": "text", "nulo": false, "descripcion": "Folio público; lo asigna la base (APD-S-AAAA-NNNNN)" },
+        { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Persona solicitante" },
+        { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
+        { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
+        { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Organización de procedencia; vacía para particulares" },
+        { "nombre": "acreditacion_anterior_id", "tipo": "uuid", "nulo": true, "descripcion": "Acreditación que se renueva; obligatoria en renovación" },
+        { "nombre": "rfc_factura", "tipo": "text", "nulo": true, "descripcion": "RFC a quien se factura el pago de derechos (persona física o moral)" },
+        { "nombre": "razon_social_factura", "tipo": "text", "nulo": true, "descripcion": "Nombre o razón social a quien se factura" },
+        { "nombre": "perfil_academico", "tipo": "text", "nulo": true, "descripcion": "Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima" },
+        { "nombre": "carrera", "tipo": "text", "nulo": true, "descripcion": "Sólo dictaminador: carrera o formación declarada" },
+        { "nombre": "anios_experiencia", "tipo": "numeric(4,1)", "nulo": true, "descripcion": "Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban" },
+        { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'borrador'", "descripcion": "Ver apd.transicion_solicitud()" },
+        { "nombre": "estado_desde", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Desde cuándo está en el estado actual; lo pone la base" },
+        { "nombre": "enviada_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Primer envío a revisión; lo pone la base" },
+        { "nombre": "cita_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cita para el cotejo presencial" },
+        { "nombre": "lista_para_curso_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad" },
+        { "nombre": "motivo_cierre", "tipo": "text", "nulo": true, "descripcion": "Motivo de cancelación o conclusión sin atender" },
+        { "nombre": "folio_origen", "tipo": "text", "nulo": true, "descripcion": "Folio en Kobo, para las migradas" },
+        { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta" },
+        { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
+      ],
+      "restricciones": [
+        "CONSTRAINT solicitud_pk PRIMARY KEY (id)",
+        "CONSTRAINT solicitud_folio_uk UNIQUE (folio)",
+        "CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)",
+        "CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
+        "CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
+        "CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)",
+        "CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))",
+        "CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))",
+        "CONSTRAINT solicitud_rfc_ck CHECK (rfc_factura IS NULL OR rfc_factura ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')",
+        "CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica'))",
+        "CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL))",
+        "CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70)",
+        "CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender') OR length(trim(coalesce(motivo_cierre, ''))) > 0)"
+      ],
+      "indices": [
+        "CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')",
+        "CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en)",
+        "CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id)",
+        "CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id)"
+      ]
+    },
+    {
+      "nombre": "revision",
+      "descripcion": "Cada ronda de revisión documental en línea, con su resultado. Permite contar cuántas vueltas dio un expediente.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "solicitud_id", "tipo": "uuid", "nulo": false, "descripcion": "Solicitud revisada" },
+        { "nombre": "resultado", "tipo": "text", "nulo": false, "descripcion": "con_observaciones o validada" },
+        { "nombre": "observacion_general", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Indicaciones para la persona solicitante" },
+        { "nombre": "revisor", "tipo": "text", "nulo": false, "descripcion": "Cuenta del personal (acceso)" },
+        { "nombre": "revisada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Fecha de la revisión" }
+      ],
+      "restricciones": [
+        "CONSTRAINT revision_pk PRIMARY KEY (id)",
+        "CONSTRAINT revision_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)",
+        "CONSTRAINT revision_resultado_ck CHECK (resultado IN ('con_observaciones', 'validada'))"
+      ],
+      "indices": [
+        "CREATE INDEX revision_solicitud ON apd.revision (solicitud_id, revisada_en)"
+      ]
+    },
+    {
+      "nombre": "documento",
+      "descripcion": "Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "solicitud_id", "tipo": "uuid", "nulo": false, "descripcion": "Solicitud" },
+        { "nombre": "requisito", "tipo": "text", "nulo": false, "descripcion": "Requisito que atiende" },
+        { "nombre": "archivo_clave", "tipo": "text", "nulo": false, "descripcion": "Clave exacta en el almacén, con sello propio" },
+        { "nombre": "nombre_original", "tipo": "text", "nulo": false, "descripcion": "Nombre con que se cargó" },
+        { "nombre": "tipo_mime", "tipo": "text", "nulo": false, "descripcion": "application/pdf, image/jpeg o image/png" },
+        { "nombre": "tamano_bytes", "tipo": "integer", "nulo": false, "descripcion": "Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes" },
+        { "nombre": "sha256", "tipo": "text", "nulo": false, "descripcion": "Suma del archivo, para comprobar el almacén" },
+        { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'pendiente'", "descripcion": "pendiente, aceptado o con_observacion" },
+        { "nombre": "observacion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Qué corregir" },
+        { "nombre": "vigente", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Es la última carga de ese requisito" },
+        { "nombre": "cargado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Carga" },
+        { "nombre": "revisado_por", "tipo": "text", "nulo": true, "descripcion": "Cuenta del personal (acceso)" },
+        { "nombre": "revisado_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Revisión" }
+      ],
+      "restricciones": [
+        "CONSTRAINT documento_pk PRIMARY KEY (id)",
+        "CONSTRAINT documento_archivo_uk UNIQUE (archivo_clave)",
+        "CONSTRAINT documento_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)",
+        "CONSTRAINT documento_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)",
+        "CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png'))",
+        "CONSTRAINT documento_tamano_ck CHECK (tamano_bytes > 0)",
+        "CONSTRAINT documento_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')",
+        "CONSTRAINT documento_estado_ck CHECK (estado IN ('pendiente', 'aceptado', 'con_observacion'))",
+        "CONSTRAINT documento_observacion_ck CHECK (estado <> 'con_observacion' OR length(trim(observacion)) > 0)"
+      ],
+      "indices": [
+        "CREATE UNIQUE INDEX documento_uno_vigente ON apd.documento (solicitud_id, requisito) WHERE vigente"
+      ]
+    },
+    {
+      "nombre": "grupo",
+      "descripcion": "Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con el cupo mínimo y nunca pasa del máximo.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "folio", "tipo": "text", "nulo": false, "descripcion": "Folio del grupo; lo asigna la base (APD-G-AAAA-NNN)" },
+        { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "Curso" },
+        { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso" },
+        { "nombre": "integracion", "tipo": "text", "nulo": false, "descripcion": "especifico (una organización) o combinado" },
+        { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Organización, sólo en grupos específicos" },
+        { "nombre": "cupo_minimo", "tipo": "smallint", "nulo": false, "descripcion": "Copiado del curso al crearse; lo pone la base" },
+        { "nombre": "cupo_maximo", "tipo": "smallint", "nulo": false, "descripcion": "Copiado del curso al crearse; lo pone la base" },
+        { "nombre": "instructor", "tipo": "text", "nulo": true, "descripcion": "Cuenta del instructor (acceso); obligatoria para confirmar" },
+        { "nombre": "sede", "tipo": "text", "nulo": true, "descripcion": "Instalación de la Secretaría; obligatoria para confirmar" },
+        { "nombre": "fecha_inicio", "tipo": "date", "nulo": true, "descripcion": "Primer día; obligatoria para confirmar" },
+        { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'en_integracion'", "descripcion": "en_integracion, confirmado, en_curso, concluido o cancelado" },
+        { "nombre": "estado_desde", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Desde cuándo; lo pone la base" },
+        { "nombre": "motivo_cancelacion", "tipo": "text", "nulo": true, "descripcion": "Obligatorio al cancelar" },
+        { "nombre": "creado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta" },
+        { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
+      ],
+      "restricciones": [
+        "CONSTRAINT grupo_pk PRIMARY KEY (id)",
+        "CONSTRAINT grupo_folio_uk UNIQUE (folio)",
+        "CONSTRAINT grupo_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
+        "CONSTRAINT grupo_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
+        "CONSTRAINT grupo_integracion_ck CHECK (integracion IN ('especifico', 'combinado'))",
+        "CONSTRAINT grupo_especifico_ck CHECK ((integracion = 'especifico') = (organizacion_id IS NOT NULL))",
+        "CONSTRAINT grupo_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)",
+        "CONSTRAINT grupo_estado_ck CHECK (estado IN ('en_integracion', 'confirmado', 'en_curso', 'concluido', 'cancelado'))",
+        "CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL))",
+        "CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)"
+      ],
+      "indices": [
+        "CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado)"
+      ]
+    },
+    {
+      "nombre": "inscripcion",
+      "descripcion": "Una solicitud en un grupo. No se borra: una baja o una cancelación la deja inactiva y la solicitud regresa a la bandeja con su antigüedad.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "solicitud_id", "tipo": "uuid", "nulo": false, "descripcion": "Solicitud" },
+        { "nombre": "grupo_id", "tipo": "uuid", "nulo": false, "descripcion": "Grupo" },
+        { "nombre": "activa", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Sigue en el grupo" },
+        { "nombre": "inscrita_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta en el grupo" },
+        { "nombre": "baja_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Baja o cancelación del grupo" },
+        { "nombre": "motivo_baja", "tipo": "text", "nulo": true, "descripcion": "Por qué salió del grupo" }
+      ],
+      "restricciones": [
+        "CONSTRAINT inscripcion_pk PRIMARY KEY (id)",
+        "CONSTRAINT inscripcion_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)",
+        "CONSTRAINT inscripcion_grupo_fk FOREIGN KEY (grupo_id) REFERENCES apd.grupo (id)",
+        "CONSTRAINT inscripcion_baja_ck CHECK (activa = (baja_en IS NULL))"
+      ],
+      "indices": [
+        "CREATE UNIQUE INDEX inscripcion_una_activa ON apd.inscripcion (solicitud_id) WHERE activa",
+        "CREATE INDEX inscripcion_grupo ON apd.inscripcion (grupo_id) WHERE activa"
+      ]
+    },
+    {
+      "nombre": "asistencia",
+      "descripcion": "Asistencia por día de curso, capturada por el instructor.",
+      "columnas": [
+        { "nombre": "inscripcion_id", "tipo": "uuid", "nulo": false, "descripcion": "Inscripción" },
+        { "nombre": "dia", "tipo": "smallint", "nulo": false, "descripcion": "Día del curso, desde 1" },
+        { "nombre": "asistio", "tipo": "boolean", "nulo": false, "descripcion": "Asistió ese día" },
+        { "nombre": "capturada_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso)" },
+        { "nombre": "capturada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Captura" }
+      ],
+      "restricciones": [
+        "CONSTRAINT asistencia_pk PRIMARY KEY (inscripcion_id, dia)",
+        "CONSTRAINT asistencia_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id)",
+        "CONSTRAINT asistencia_dia_ck CHECK (dia >= 1)"
+      ]
+    },
+    {
+      "nombre": "examen",
+      "descripcion": "Calificación del examen final, capturada por el instructor. Sólo se admite con la asistencia mínima.",
+      "columnas": [
+        { "nombre": "inscripcion_id", "tipo": "uuid", "nulo": false, "descripcion": "Inscripción" },
+        { "nombre": "presentado_en", "tipo": "date", "nulo": false, "descripcion": "Fecha del examen" },
+        { "nombre": "calificacion", "tipo": "numeric(3,1)", "nulo": false, "descripcion": "De 0.0 a 10.0" },
+        { "nombre": "capturado_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso)" },
+        { "nombre": "capturado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Captura" }
+      ],
+      "restricciones": [
+        "CONSTRAINT examen_pk PRIMARY KEY (inscripcion_id)",
+        "CONSTRAINT examen_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id)",
+        "CONSTRAINT examen_calificacion_ck CHECK (calificacion BETWEEN 0 AND 10)"
+      ]
+    },
+    {
+      "nombre": "folio_contador",
+      "descripcion": "Último número asignado por serie y año. Lo usa sólo la base al asignar folios.",
+      "columnas": [
+        { "nombre": "serie", "tipo": "text", "nulo": false, "descripcion": "S (solicitud), G (grupo), PD (acreditación de poda), DT (acreditación de dictaminador)" },
+        { "nombre": "anio", "tipo": "smallint", "nulo": false, "descripcion": "Año" },
+        { "nombre": "ultimo", "tipo": "integer", "nulo": false, "defecto": "0", "descripcion": "Último número asignado" }
+      ],
+      "restricciones": [
+        "CONSTRAINT folio_contador_pk PRIMARY KEY (serie, anio)"
+      ]
+    }
+  ],
+  "alteraciones": [
+    {
+      "porque": "acreditacion y solicitud se refieren mutuamente (la renovación apunta a la acreditación anterior; la acreditación apunta a la solicitud que la originó): esta llave se agrega cuando ya existen las dos tablas.",
+      "sql": "ALTER TABLE apd.acreditacion ADD CONSTRAINT acreditacion_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)"
+    },
+    {
+      "porque": "Una solicitud origina a lo más una acreditación.",
+      "sql": "CREATE UNIQUE INDEX acreditacion_solicitud_uk ON apd.acreditacion (solicitud_id) WHERE solicitud_id IS NOT NULL"
+    }
+  ]
+}

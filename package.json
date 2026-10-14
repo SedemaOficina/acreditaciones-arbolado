@@ -1,0 +1,14 @@
+{
+  "name": "acreditaciones-arbolado",
+  "private": true,
+  "description": "Sistema de Acreditaciones de Poda y Dictaminación (SEDEMA, para el SIA)",
+  "type": "module",
+  "scripts": {
+    "esquema": "node herramientas/generar-esquema.mjs",
+    "verificar-esquema": "node herramientas/generar-esquema.mjs --verificar",
+    "probar-base": "bash herramientas/probar-base.sh"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

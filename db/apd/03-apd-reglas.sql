@@ -1,0 +1,913 @@
+-- REGLAS DEL ESQUEMA apd. Lo corre quien administra la base, dentro de instalar.sql, después de las tablas.
+--
+-- Aquí vive lo que debe valer siempre, aunque alguien escriba sin pasar por la aplicación (guía SIA,
+-- sección 3): folios, vigencia, estados de la solicitud y del grupo, cupos, asistencia y examen, y la
+-- bitácora de cada cambio. Cada regla cita la decisión de docs/DECISIONES.md de donde sale.
+--
+-- Errores. Toda regla incumplida se levanta con apd.error(codigo, mensaje): el mensaje es para la persona,
+-- en español; el código viaja en HINT con el prefijo «apd:» para que el backend responda { codigo, mensaje }.
+--
+-- Contexto de quien escribe. El backend lo declara al inicio de cada transacción:
+--   SELECT set_config('apd.usuario', '<cuenta>', true), set_config('apd.usuario_tipo', 'personal', true),
+--          set_config('apd.procedencia', '<dirección>', true);
+-- y, cuando una regla pide motivo, set_config('apd.motivo', '<texto>', true).
+
+-- ───────────────────────────── Utilidades ─────────────────────────────
+
+CREATE FUNCTION apd.error(codigo text, mensaje text) RETURNS void
+  LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION USING ERRCODE = 'P0001', MESSAGE = mensaje, HINT = 'apd:' || codigo;
+END $$;
+COMMENT ON FUNCTION apd.error(text, text) IS 'Levanta una regla incumplida con su código para el backend (HINT apd:<codigo>).';
+
+CREATE FUNCTION apd.contexto(nombre text) RETURNS text
+  LANGUAGE sql STABLE AS $$ SELECT coalesce(current_setting('apd.' || nombre, true), '') $$;
+
+CREATE FUNCTION apd.parametro_texto(p_clave text) RETURNS text
+  LANGUAGE plpgsql STABLE AS $$
+DECLARE v text;
+BEGIN
+  SELECT valor INTO v FROM apd.parametro WHERE clave = p_clave;
+  IF v IS NULL THEN
+    PERFORM apd.error('parametro_inexistente', format('Falta el parámetro %s en apd.parametro', p_clave));
+  END IF;
+  RETURN v;
+END $$;
+
+-- La hora del sistema. En una base de pruebas se puede simular (apd.ahora_simulado) para probar plazos y
+-- vigencias con fechas movidas, como pide la guía (sección 8). Si la base es de producción, simular es un
+-- error, no algo que se ignore en silencio.
+--
+-- Qué base es lo dice apd.entorno(), que se instala devolviendo «produccion». Sólo quien administra la base
+-- puede reemplazarla (la cuenta del servicio no es dueña de funciones), y sólo una base de pruebas lo hace
+-- (herramientas/probar-base.sh). Por eso no es un parámetro de la tabla: la aplicación podría cambiarlo.
+CREATE FUNCTION apd.entorno() RETURNS text
+  LANGUAGE sql STABLE AS $$ SELECT 'produccion'::text $$;
+
+CREATE FUNCTION apd.ahora() RETURNS timestamptz
+  LANGUAGE plpgsql STABLE AS $$
+DECLARE simulado text := apd.contexto('ahora_simulado');
+BEGIN
+  IF simulado = '' THEN
+    RETURN now();
+  END IF;
+  IF apd.entorno() <> 'pruebas' THEN
+    PERFORM apd.error('simulacion_prohibida', 'La hora simulada sólo existe en una base de pruebas');
+  END IF;
+  RETURN simulado::timestamptz;
+END $$;
+COMMENT ON FUNCTION apd.ahora() IS 'now(), o la hora simulada en el entorno de pruebas. Todas las reglas usan esta y no now().';
+
+-- El día en la Ciudad de México, sin importar la zona horaria del servidor (norma 4.5: una columna, un formato).
+CREATE FUNCTION apd.hoy() RETURNS date
+  LANGUAGE sql STABLE AS $$ SELECT (apd.ahora() AT TIME ZONE 'America/Mexico_City')::date $$;
+
+CREATE FUNCTION apd.registrar(p_accion text, p_entidad text, p_entidad_id text, p_detalle text DEFAULT '')
+  RETURNS void LANGUAGE plpgsql AS $$
+DECLARE tipo text := apd.contexto('usuario_tipo');
+BEGIN
+  INSERT INTO apd.bitacora (fecha, usuario, usuario_tipo, procedencia, accion, entidad, entidad_id, detalle)
+  VALUES (apd.ahora(), apd.contexto('usuario'), CASE WHEN tipo = '' THEN 'sistema' ELSE tipo END,
+          apd.contexto('procedencia'), p_accion, p_entidad, p_entidad_id, coalesce(p_detalle, ''));
+END $$;
+
+-- Nombre comparable: sin acentos, minúsculas, sin puntuación y sin espacios dobles («C.F.E.» = «CFE»).
+CREATE FUNCTION apd.normalizar(t text) RETURNS text
+  LANGUAGE sql IMMUTABLE AS $$
+  SELECT trim(regexp_replace(regexp_replace(
+           lower(translate(t, 'ÁÉÍÓÚÜÑáéíóúüñ', 'AEIOUUNaeiouun')),
+           '[^a-z0-9 ]', '', 'g'), '\s+', ' ', 'g'))
+$$;
+
+-- Folios: un contador por serie y año, avanzado en un solo paso para que dos altas simultáneas nunca
+-- reciban el mismo número. SECURITY DEFINER: la cuenta del servicio no toca folio_contador directamente.
+CREATE FUNCTION apd.siguiente_folio(p_serie text, p_anio smallint) RETURNS integer
+  LANGUAGE sql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
+  INSERT INTO apd.folio_contador AS f (serie, anio, ultimo) VALUES (p_serie, p_anio, 1)
+  ON CONFLICT (serie, anio) DO UPDATE SET ultimo = f.ultimo + 1
+  RETURNING ultimo
+$$;
+
+-- ───────────────────────────── Parámetros y cursos ─────────────────────────────
+-- Editables por la administración (decisión: cupos 10–25 editables). Cada cambio, a la bitácora.
+
+CREATE FUNCTION apd.parametro_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.actualizado_en := apd.ahora();
+  IF NEW.valor IS DISTINCT FROM OLD.valor THEN
+    PERFORM apd.registrar('cambio_parametro', 'parametro', NEW.clave, format('%s → %s', OLD.valor, NEW.valor));
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER parametro_cambio BEFORE UPDATE ON apd.parametro
+  FOR EACH ROW EXECUTE FUNCTION apd.parametro_cambio();
+
+CREATE FUNCTION apd.curso_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.actualizado_en := apd.ahora();
+  PERFORM apd.registrar('cambio_curso', 'curso', NEW.tipo_acreditacion || '/' || NEW.modalidad,
+    format('duración %s→%s; asistencia %s→%s; calificación %s→%s; cupo %s-%s→%s-%s; activo %s→%s',
+      OLD.dias_duracion, NEW.dias_duracion, OLD.dias_minimos_asistencia, NEW.dias_minimos_asistencia,
+      OLD.calificacion_minima, NEW.calificacion_minima, OLD.cupo_minimo, OLD.cupo_maximo,
+      NEW.cupo_minimo, NEW.cupo_maximo, OLD.activo, NEW.activo));
+  RETURN NEW;
+END $$;
+CREATE TRIGGER curso_cambio BEFORE UPDATE ON apd.curso
+  FOR EACH ROW EXECUTE FUNCTION apd.curso_cambio();
+
+-- ───────────────────────────── Organizaciones ─────────────────────────────
+
+CREATE FUNCTION apd.organizacion_normalizar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.nombre := regexp_replace(trim(NEW.nombre), '\s+', ' ', 'g');
+  NEW.nombre_normalizado := apd.normalizar(NEW.nombre);
+  IF NEW.nombre_normalizado = '' THEN
+    PERFORM apd.error('organizacion_sin_nombre', 'La organización necesita un nombre');
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER organizacion_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.organizacion
+  FOR EACH ROW EXECUTE FUNCTION apd.organizacion_normalizar();
+
+-- ───────────────────────────── Cuentas de solicitantes ─────────────────────────────
+
+CREATE FUNCTION apd.solicitante_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.curp := upper(trim(NEW.curp));
+  NEW.correo := lower(trim(NEW.correo));
+  NEW.creada_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER solicitante_alta BEFORE INSERT ON apd.solicitante
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitante_alta();
+
+-- La CURP identifica la cuenta. La Secretaría puede corregirla, con motivo en la bitácora (decisión de
+-- cuentas, 2026-10-14). Quien solicita no la cambia: si se equivocó, lo pide a la Secretaría.
+CREATE FUNCTION apd.solicitante_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.curp := upper(trim(NEW.curp));
+  NEW.correo := lower(trim(NEW.correo));
+  IF NEW.creada_en IS DISTINCT FROM OLD.creada_en OR NEW.es_ficticio IS DISTINCT FROM OLD.es_ficticio THEN
+    PERFORM apd.error('campo_inmutable', 'La fecha de alta y la marca de dato de prueba no se cambian');
+  END IF;
+  IF NEW.curp <> OLD.curp THEN
+    IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('motivo') = '' THEN
+      PERFORM apd.error('curp_sin_motivo', 'Sólo la Secretaría corrige una CURP, y con motivo');
+    END IF;
+    PERFORM apd.registrar('correccion_curp', 'solicitante', NEW.id::text,
+      format('%s → %s. Motivo: %s', OLD.curp, NEW.curp, apd.contexto('motivo')));
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER solicitante_cambio BEFORE UPDATE ON apd.solicitante
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitante_cambio();
+
+-- ───────────────────────────── Vigencia de acreditaciones ─────────────────────────────
+-- Decisiones de vigencia y renovación (2026-10-14):
+--   · un año desde la emisión, sin efecto retroactivo; el último día vigente es el anterior al aniversario;
+--   · ventana de renovación: desde dias_antes_renovacion (30 naturales) antes del vencimiento hasta
+--     meses_despues_renovacion (12) después; pasado eso, se tramita como nueva;
+--   · nadie opera sin acreditación vigente: el estado se CALCULA con la fecha, nunca se guarda.
+
+CREATE FUNCTION apd.estado_acreditacion(p_id uuid, p_fecha date DEFAULT NULL) RETURNS text
+  LANGUAGE plpgsql STABLE AS $$
+DECLARE
+  a      apd.acreditacion;
+  f      date := coalesce(p_fecha, apd.hoy());
+  antes  integer := apd.parametro_texto('dias_antes_renovacion')::integer;
+  meses  integer := apd.parametro_texto('meses_despues_renovacion')::integer;
+BEGIN
+  SELECT * INTO a FROM apd.acreditacion WHERE id = p_id;
+  IF NOT FOUND THEN RETURN NULL; END IF;
+  IF f < a.emitida_en THEN RETURN 'no_emitida'; END IF;
+  IF f < a.vence_en - antes THEN RETURN 'vigente'; END IF;
+  IF f <= a.vence_en THEN RETURN 'por_vencer'; END IF;
+  IF f <= a.vence_en + make_interval(months => meses) THEN RETURN 'vencida_renovable'; END IF;
+  RETURN 'vencida_no_renovable';
+END $$;
+COMMENT ON FUNCTION apd.estado_acreditacion(uuid, date) IS
+  'vigente, por_vencer (ya se puede renovar), vencida_renovable, vencida_no_renovable (tramita como nueva) o no_emitida. Sólo por fechas; para saber si puede operar, apd.acreditacion_vigente().';
+
+-- ¿Tiene la persona una acreditación de poda vigente ese día?
+CREATE FUNCTION apd.poda_vigente(p_solicitante uuid, p_fecha date DEFAULT NULL) RETURNS boolean
+  LANGUAGE sql STABLE AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM apd.acreditacion
+     WHERE solicitante_id = p_solicitante AND tipo_acreditacion = 'poda'
+       AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en)
+$$;
+
+-- ¿Puede operar con esta acreditación ese día? Para dictaminador, además, si el parámetro
+-- dictaminador_sigue_a_poda es «si», necesita poda vigente ese mismo día. [pendiente] confirmar con Liber
+-- si la poda se exige sólo al tramitar o durante toda la vigencia (docs/DECISIONES.md).
+CREATE FUNCTION apd.acreditacion_vigente(p_id uuid, p_fecha date DEFAULT NULL) RETURNS boolean
+  LANGUAGE plpgsql STABLE AS $$
+DECLARE
+  a  apd.acreditacion;
+  f  date := coalesce(p_fecha, apd.hoy());
+BEGIN
+  SELECT * INTO a FROM apd.acreditacion WHERE id = p_id;
+  IF NOT FOUND OR f NOT BETWEEN a.emitida_en AND a.vence_en THEN RETURN false; END IF;
+  IF a.tipo_acreditacion = 'dictaminador' AND apd.parametro_texto('dictaminador_sigue_a_poda') = 'si' THEN
+    RETURN apd.poda_vigente(a.solicitante_id, f);
+  END IF;
+  RETURN true;
+END $$;
+
+-- Lo único que ve el público al verificar: sin CURP, sin contacto, sin domicilio; «Vigente» o «No vigente».
+-- Nunca «en renovación» ni «en trámite», que alguien podría leer como permiso para operar.
+CREATE VIEW apd.verificacion_publica AS
+  SELECT a.numero,
+         concat_ws(' ', s.nombre, s.primer_apellido, s.segundo_apellido) AS nombre,
+         CASE a.tipo_acreditacion WHEN 'poda' THEN 'Poda y derribo' ELSE 'Dictaminador técnico' END AS tipo,
+         a.emitida_en,
+         a.vence_en,
+         CASE WHEN apd.acreditacion_vigente(a.id) THEN 'Vigente' ELSE 'No vigente' END AS situacion
+    FROM apd.acreditacion a
+    JOIN apd.solicitante s ON s.id = a.solicitante_id;
+COMMENT ON VIEW apd.verificacion_publica IS 'Consulta pública por número de acreditación: sólo nombre, tipo, fechas y «Vigente»/«No vigente».';
+
+-- ───────────────────────────── Acreditaciones ─────────────────────────────
+
+CREATE FUNCTION apd.acreditacion_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE s apd.solicitud;
+BEGIN
+  IF NEW.emitida_en IS NULL THEN NEW.emitida_en := apd.hoy(); END IF;
+  NEW.vence_en := (NEW.emitida_en + interval '1 year' - interval '1 day')::date;
+  IF NEW.entregada_en IS NOT NULL AND NEW.origen = 'sistema' THEN
+    PERFORM apd.error('entrega_al_emitir', 'La entrega se registra después de emitir, cuando la persona la recoge');
+  END IF;
+
+  IF NEW.origen = 'sistema' THEN
+    SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id FOR UPDATE;
+    IF s.estado <> 'aprobada' THEN
+      PERFORM apd.error('solicitud_no_aprobada', 'Sólo se emite la acreditación de una solicitud aprobada');
+    END IF;
+    IF s.solicitante_id <> NEW.solicitante_id OR s.tipo_acreditacion <> NEW.tipo_acreditacion THEN
+      PERFORM apd.error('acreditacion_no_corresponde', 'La acreditación no corresponde a la persona o al tipo de la solicitud');
+    END IF;
+    IF NEW.emitida_en <> apd.hoy() THEN
+      PERFORM apd.error('emision_con_otra_fecha', 'La acreditación se emite con la fecha del día');
+    END IF;
+    IF NEW.tipo_acreditacion = 'dictaminador' AND NOT apd.poda_vigente(NEW.solicitante_id, NEW.emitida_en) THEN
+      PERFORM apd.error('sin_poda_vigente', 'Para emitir la acreditación de dictaminador, la persona debe tener la de poda vigente');
+    END IF;
+    NEW.numero := (CASE NEW.tipo_acreditacion WHEN 'poda' THEN 'PD' ELSE 'DT' END) || '-'
+      || extract(year FROM NEW.emitida_en)::text || '-'
+      || lpad(apd.siguiente_folio(CASE NEW.tipo_acreditacion WHEN 'poda' THEN 'PD' ELSE 'DT' END,
+                                  extract(year FROM NEW.emitida_en)::smallint)::text, 4, '0');
+  ELSIF coalesce(trim(NEW.numero), '') = '' THEN
+    PERFORM apd.error('migrada_sin_numero', 'Una acreditación migrada conserva el número que ya tenía');
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER acreditacion_alta BEFORE INSERT ON apd.acreditacion
+  FOR EACH ROW EXECUTE FUNCTION apd.acreditacion_alta();
+
+CREATE FUNCTION apd.acreditacion_emitida() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM apd.registrar(CASE WHEN NEW.origen = 'sistema' THEN 'emision' ELSE 'migracion' END,
+    'acreditacion', NEW.id::text,
+    format('%s · %s · vigente del %s al %s', NEW.numero, NEW.tipo_acreditacion, NEW.emitida_en, NEW.vence_en));
+  IF NEW.origen = 'sistema' THEN
+    UPDATE apd.solicitud SET estado = 'acreditada' WHERE id = NEW.solicitud_id;
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER acreditacion_emitida AFTER INSERT ON apd.acreditacion
+  FOR EACH ROW EXECUTE FUNCTION apd.acreditacion_emitida();
+
+-- Una acreditación emitida no se edita: sólo se registra, una vez, la entrega.
+CREATE FUNCTION apd.acreditacion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (NEW.numero, NEW.solicitante_id, NEW.tipo_acreditacion, NEW.solicitud_id, NEW.emitida_en, NEW.vence_en,
+      NEW.origen, NEW.folio_origen, NEW.es_ficticio)
+     IS DISTINCT FROM
+     (OLD.numero, OLD.solicitante_id, OLD.tipo_acreditacion, OLD.solicitud_id, OLD.emitida_en, OLD.vence_en,
+      OLD.origen, OLD.folio_origen, OLD.es_ficticio) THEN
+    PERFORM apd.error('acreditacion_inmutable', 'Una acreditación emitida no se modifica; sólo se registra su entrega');
+  END IF;
+  IF OLD.entregada_en IS NOT NULL AND NEW.entregada_en IS DISTINCT FROM OLD.entregada_en THEN
+    PERFORM apd.error('entrega_ya_registrada', 'La entrega ya está registrada');
+  END IF;
+  IF NEW.entregada_en IS NOT NULL AND OLD.entregada_en IS NULL THEN
+    IF NEW.entregada_en > apd.hoy() THEN
+      PERFORM apd.error('entrega_futura', 'La entrega no puede registrarse con fecha futura');
+    END IF;
+    PERFORM apd.registrar('entrega', 'acreditacion', NEW.id::text, format('%s entregada el %s', NEW.numero, NEW.entregada_en));
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER acreditacion_cambio BEFORE UPDATE ON apd.acreditacion
+  FOR EACH ROW EXECUTE FUNCTION apd.acreditacion_cambio();
+
+-- ───────────────────────────── Solicitudes ─────────────────────────────
+
+CREATE FUNCTION apd.solicitud_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE anio smallint := extract(year FROM apd.hoy())::smallint;
+BEGIN
+  IF NEW.estado <> 'borrador' THEN
+    PERFORM apd.error('alta_fuera_de_borrador', 'Una solicitud nace como borrador');
+  END IF;
+  PERFORM apd.comprobar_elegibilidad(NEW);
+  NEW.folio := 'APD-S-' || anio || '-' || lpad(apd.siguiente_folio('S', anio)::text, 5, '0');
+  NEW.creada_en := apd.ahora();
+  NEW.estado_desde := NEW.creada_en;
+  NEW.enviada_en := NULL;
+  NEW.lista_para_curso_en := NULL;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER solicitud_alta BEFORE INSERT ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_alta();
+
+CREATE FUNCTION apd.solicitud_alta_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM apd.registrar('alta', 'solicitud', NEW.id::text,
+    format('%s · %s %s', NEW.folio, NEW.tipo_acreditacion, NEW.modalidad));
+  RETURN NULL;
+END $$;
+CREATE TRIGGER solicitud_alta_registrar AFTER INSERT ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_alta_registrar();
+
+-- ¿Puede esta persona tramitar este curso hoy? Se comprueba al crear la solicitud (para avisar de
+-- inmediato) y otra vez al enviarla: «al momento del trámite» (decisiones de vigencia y renovación).
+CREATE FUNCTION apd.comprobar_elegibilidad(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+  previa  record;
+  estado_anterior text;
+  hoy date := apd.hoy();
+BEGIN
+  -- Dictaminador: poda vigente al momento del trámite
+  IF s.tipo_acreditacion = 'dictaminador' AND NOT apd.poda_vigente(s.solicitante_id, hoy) THEN
+    PERFORM apd.error('sin_poda_vigente', 'Para tramitar la acreditación de dictaminador necesitas la de poda y derribo vigente');
+  END IF;
+
+  IF s.modalidad = 'renovacion' THEN
+    -- La acreditación más reciente de ese tipo, dentro de su ventana
+    SELECT a.solicitante_id, a.tipo_acreditacion, a.emitida_en, a.vence_en INTO previa
+      FROM apd.acreditacion a WHERE a.id = s.acreditacion_anterior_id;
+    IF previa.solicitante_id <> s.solicitante_id OR previa.tipo_acreditacion <> s.tipo_acreditacion THEN
+      PERFORM apd.error('anterior_no_corresponde', 'La acreditación a renovar no es tuya o no es de este tipo');
+    END IF;
+    IF EXISTS (SELECT 1 FROM apd.acreditacion a
+                WHERE a.solicitante_id = s.solicitante_id AND a.tipo_acreditacion = s.tipo_acreditacion
+                  AND a.emitida_en > previa.emitida_en) THEN
+      PERFORM apd.error('anterior_no_es_la_ultima', 'Sólo se renueva la acreditación más reciente');
+    END IF;
+    estado_anterior := apd.estado_acreditacion(s.acreditacion_anterior_id, hoy);
+    IF estado_anterior = 'vigente' THEN
+      PERFORM apd.error('renovacion_anticipada', format(
+        'Tu acreditación todavía no entra en periodo de renovación: podrás renovarla desde el %s',
+        to_char(previa.vence_en - apd.parametro_texto('dias_antes_renovacion')::integer, 'DD/MM/YYYY')));
+    ELSIF estado_anterior = 'vencida_no_renovable' THEN
+      PERFORM apd.error('renovacion_vencida', 'Tu acreditación venció hace más de un año: debes tramitarla como solicitud nueva');
+    END IF;
+  ELSE
+    -- Nueva: no si ya tiene una de ese tipo vigente o todavía renovable (deducido de «pasado el año se
+    -- tramita como nueva»; [pendiente] confirmar con Liber)
+    IF EXISTS (SELECT 1 FROM apd.acreditacion a
+                WHERE a.solicitante_id = s.solicitante_id AND a.tipo_acreditacion = s.tipo_acreditacion
+                  AND apd.estado_acreditacion(a.id, hoy) IN ('vigente', 'por_vencer', 'vencida_renovable')) THEN
+      PERFORM apd.error('debe_renovar', 'Ya tienes una acreditación de este tipo vigente o en periodo de renovación: tramita una renovación');
+    END IF;
+  END IF;
+END $$;
+
+-- Al enviar: elegibilidad, perfil y documentos obligatorios que se cargan en línea
+CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE faltan text;
+BEGIN
+  PERFORM apd.comprobar_elegibilidad(s);
+  IF s.tipo_acreditacion = 'dictaminador'
+     AND (s.perfil_academico IS NULL OR coalesce(trim(s.carrera), '') = '' OR s.anios_experiencia IS NULL) THEN
+    PERFORM apd.error('falta_perfil', 'Indica tu perfil académico, tu carrera y tus años de experiencia');
+  END IF;
+  SELECT string_agg(r.nombre, ', ' ORDER BY rc.orden) INTO faltan
+    FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+   WHERE rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
+     AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'en_linea'
+     AND NOT EXISTS (SELECT 1 FROM apd.documento d
+                      WHERE d.solicitud_id = s.id AND d.requisito = rc.requisito AND d.vigente);
+  IF faltan IS NOT NULL THEN
+    PERFORM apd.error('faltan_documentos', 'Faltan documentos: ' || faltan);
+  END IF;
+END $$;
+
+-- Máquina de estados de la solicitud. Cada transición se comprueba contra los datos, no contra quién la
+-- pide: «inscrita» exige una inscripción activa, «aprobada» un examen aprobatorio, etcétera.
+CREATE FUNCTION apd.solicitud_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  permitidas text[];
+  ultima     text;
+  curso      apd.curso;
+  ins        apd.inscripcion;
+  cal        numeric;
+  dias       integer;
+BEGIN
+  IF NEW.folio <> OLD.folio OR NEW.solicitante_id <> OLD.solicitante_id OR NEW.creada_en <> OLD.creada_en
+     OR NEW.es_ficticio <> OLD.es_ficticio THEN
+    PERFORM apd.error('campo_inmutable', 'El folio, la persona y la fecha de alta de una solicitud no se cambian');
+  END IF;
+  IF OLD.estado NOT IN ('borrador', 'con_observaciones')
+     AND (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id, NEW.organizacion_id,
+          NEW.perfil_academico, NEW.carrera, NEW.anios_experiencia)
+         IS DISTINCT FROM
+         (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id, OLD.organizacion_id,
+          OLD.perfil_academico, OLD.carrera, OLD.anios_experiencia) THEN
+    PERFORM apd.error('solicitud_cerrada', 'Los datos de la solicitud sólo se cambian en borrador o con observaciones');
+  END IF;
+  IF OLD.estado <> 'borrador' AND (NEW.tipo_acreditacion, NEW.modalidad) IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad) THEN
+    PERFORM apd.error('curso_fijo', 'El curso de una solicitud enviada no cambia: cancélala y crea otra');
+  END IF;
+  -- Quien manda las fechas de control es la base
+  NEW.enviada_en := OLD.enviada_en;
+  NEW.lista_para_curso_en := OLD.lista_para_curso_en;
+  NEW.estado_desde := OLD.estado_desde;
+
+  IF NEW.estado = OLD.estado THEN RETURN NEW; END IF;
+
+  permitidas := CASE OLD.estado
+    WHEN 'borrador'          THEN ARRAY['enviada', 'cancelada']
+    WHEN 'enviada'           THEN ARRAY['con_observaciones', 'validada_en_linea', 'cancelada']
+    WHEN 'con_observaciones' THEN ARRAY['enviada', 'cancelada', 'concluida_sin_atender']
+    WHEN 'validada_en_linea' THEN ARRAY['lista_para_curso', 'con_observaciones', 'cancelada', 'concluida_sin_atender']
+    WHEN 'lista_para_curso'  THEN ARRAY['inscrita', 'cancelada']
+    WHEN 'inscrita'          THEN ARRAY['lista_para_curso', 'aprobada', 'no_acreditada', 'sin_derecho_examen', 'cancelada']
+    WHEN 'aprobada'          THEN ARRAY['acreditada']
+    ELSE ARRAY[]::text[]
+  END;
+  IF NOT NEW.estado = ANY (permitidas) THEN
+    PERFORM apd.error('transicion_invalida', format('Una solicitud no pasa de «%s» a «%s»', OLD.estado, NEW.estado));
+  END IF;
+
+  -- La revisión que corresponde a este turno: registrada desde que la solicitud llegó a su estado actual
+  SELECT r.resultado INTO ultima FROM apd.revision r
+   WHERE r.solicitud_id = NEW.id AND r.revisada_en >= OLD.estado_desde
+   ORDER BY r.revisada_en DESC LIMIT 1;
+  SELECT * INTO curso FROM apd.curso c WHERE c.tipo_acreditacion = NEW.tipo_acreditacion AND c.modalidad = NEW.modalidad;
+  SELECT * INTO ins FROM apd.inscripcion i WHERE i.solicitud_id = NEW.id AND i.activa;
+
+  CASE NEW.estado
+    WHEN 'enviada' THEN
+      PERFORM apd.comprobar_envio(NEW);
+      IF NEW.enviada_en IS NULL THEN NEW.enviada_en := apd.ahora(); END IF;
+    WHEN 'con_observaciones' THEN
+      IF OLD.estado = 'enviada' AND ultima IS DISTINCT FROM 'con_observaciones' THEN
+        PERFORM apd.error('sin_revision', 'Las observaciones se emiten con una revisión');
+      END IF;
+      IF OLD.estado = 'validada_en_linea' AND apd.contexto('motivo') = '' THEN
+        PERFORM apd.error('cotejo_sin_motivo', 'Indica qué no coincidió en el cotejo');
+      END IF;
+    WHEN 'validada_en_linea' THEN
+      IF ultima IS DISTINCT FROM 'validada' THEN
+        PERFORM apd.error('sin_revision', 'La validación se registra con una revisión');
+      END IF;
+      IF EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.id AND d.vigente AND d.estado <> 'aceptado') THEN
+        PERFORM apd.error('documentos_sin_aceptar', 'Para validar, todos los documentos deben estar aceptados');
+      END IF;
+      IF NEW.cita_en IS NULL THEN
+        PERFORM apd.error('sin_cita', 'Para validar hay que asignar la cita de cotejo');
+      END IF;
+    WHEN 'lista_para_curso' THEN
+      IF OLD.estado = 'inscrita' AND ins.id IS NOT NULL THEN
+        PERFORM apd.error('sigue_inscrita', 'La solicitud regresa a la bandeja sólo al darla de baja del grupo');
+      END IF;
+      IF OLD.estado = 'validada_en_linea' AND coalesce(NEW.rfc_factura, '') = '' THEN
+        PERFORM apd.error('sin_factura', 'Registra a quién se factura el pago de derechos');
+      END IF;
+      -- La espera empieza la primera vez; si regresa de un grupo, conserva su antigüedad
+      IF NEW.lista_para_curso_en IS NULL THEN NEW.lista_para_curso_en := apd.ahora(); END IF;
+    WHEN 'inscrita' THEN
+      IF ins.id IS NULL THEN
+        PERFORM apd.error('sin_inscripcion', 'Una solicitud queda inscrita al darla de alta en un grupo');
+      END IF;
+    WHEN 'aprobada', 'no_acreditada' THEN
+      SELECT e.calificacion INTO cal FROM apd.examen e WHERE e.inscripcion_id = ins.id;
+      IF cal IS NULL THEN
+        PERFORM apd.error('sin_examen', 'El resultado sale de la calificación del examen');
+      END IF;
+      IF (NEW.estado = 'aprobada') <> (cal >= curso.calificacion_minima) THEN
+        PERFORM apd.error('resultado_no_corresponde', 'El resultado no corresponde a la calificación');
+      END IF;
+    WHEN 'sin_derecho_examen' THEN
+      SELECT count(*) INTO dias FROM apd.asistencia a WHERE a.inscripcion_id = ins.id AND a.asistio;
+      IF ins.id IS NULL OR dias >= curso.dias_minimos_asistencia THEN
+        PERFORM apd.error('con_derecho_examen', 'La persona tiene la asistencia mínima: le corresponde examen');
+      END IF;
+    WHEN 'acreditada' THEN
+      IF NOT EXISTS (SELECT 1 FROM apd.acreditacion a WHERE a.solicitud_id = NEW.id) THEN
+        PERFORM apd.error('sin_acreditacion', 'Una solicitud queda acreditada al emitir la acreditación');
+      END IF;
+    WHEN 'cancelada', 'concluida_sin_atender' THEN
+      NULL; -- el motivo lo exige la restricción solicitud_cierre_ck
+    ELSE
+      NULL;
+  END CASE;
+
+  NEW.estado_desde := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER solicitud_cambio BEFORE UPDATE ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_cambio();
+
+CREATE FUNCTION apd.solicitud_cambio_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.estado <> OLD.estado THEN
+    PERFORM apd.registrar('estado', 'solicitud', NEW.id::text,
+      concat_ws(' · ', format('%s → %s', OLD.estado, NEW.estado), nullif(NEW.motivo_cierre, ''), nullif(apd.contexto('motivo'), '')));
+    -- Al cancelar estando en un grupo, la persona sale del grupo
+    IF NEW.estado IN ('cancelada') THEN
+      UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Solicitud cancelada: ' || NEW.motivo_cierre
+       WHERE solicitud_id = NEW.id AND activa;
+    END IF;
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER solicitud_cambio_registrar AFTER UPDATE ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_cambio_registrar();
+
+-- ───────────────────────────── Revisión y documentos ─────────────────────────────
+
+CREATE FUNCTION apd.revision_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'enviada' THEN
+    PERFORM apd.error('revision_fuera_de_turno', 'Sólo se revisa una solicitud enviada');
+  END IF;
+  IF NEW.resultado = 'con_observaciones' AND trim(NEW.observacion_general) = ''
+     AND NOT EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND d.estado = 'con_observacion') THEN
+    PERFORM apd.error('observaciones_vacias', 'Indica qué debe corregirse');
+  END IF;
+  NEW.revisada_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER revision_alta BEFORE INSERT ON apd.revision
+  FOR EACH ROW EXECUTE FUNCTION apd.revision_alta();
+
+-- La revisión mueve la solicitud: así no queda una revisión sin efecto ni un estado sin revisión.
+CREATE FUNCTION apd.revision_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE apd.solicitud
+     SET estado = CASE NEW.resultado WHEN 'validada' THEN 'validada_en_linea' ELSE 'con_observaciones' END
+   WHERE id = NEW.solicitud_id;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER revision_aplicar AFTER INSERT ON apd.revision
+  FOR EACH ROW EXECUTE FUNCTION apd.revision_aplicar();
+
+CREATE FUNCTION apd.documento_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE s apd.solicitud;
+BEGIN
+  SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id;
+  IF s.estado NOT IN ('borrador', 'con_observaciones') THEN
+    PERFORM apd.error('carga_fuera_de_turno', 'Sólo se cargan documentos en borrador o para atender observaciones');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+                  WHERE rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
+                    AND rc.requisito = NEW.requisito AND r.forma = 'documento' AND r.momento = 'en_linea') THEN
+    PERFORM apd.error('requisito_ajeno', 'Ese documento no se pide para este curso');
+  END IF;
+  IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
+    PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
+      round(apd.parametro_texto('tamano_maximo_archivo_bytes')::numeric / 1048576, 1)));
+  END IF;
+  -- La carga nueva sustituye a la anterior sin borrarla
+  UPDATE apd.documento SET vigente = false WHERE solicitud_id = NEW.solicitud_id AND requisito = NEW.requisito AND vigente;
+  NEW.vigente := true;
+  NEW.estado := 'pendiente';
+  NEW.observacion := '';
+  NEW.revisado_por := NULL;
+  NEW.revisado_en := NULL;
+  NEW.cargado_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER documento_alta BEFORE INSERT ON apd.documento
+  FOR EACH ROW EXECUTE FUNCTION apd.documento_alta();
+
+CREATE FUNCTION apd.documento_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (NEW.solicitud_id, NEW.requisito, NEW.archivo_clave, NEW.nombre_original, NEW.tipo_mime, NEW.tamano_bytes,
+      NEW.sha256, NEW.cargado_en)
+     IS DISTINCT FROM
+     (OLD.solicitud_id, OLD.requisito, OLD.archivo_clave, OLD.nombre_original, OLD.tipo_mime, OLD.tamano_bytes,
+      OLD.sha256, OLD.cargado_en) THEN
+    PERFORM apd.error('documento_inmutable', 'Un documento cargado no se modifica: se carga uno nuevo');
+  END IF;
+  IF NEW.vigente AND NOT OLD.vigente THEN
+    PERFORM apd.error('documento_inmutable', 'Una carga sustituida no vuelve a ser la vigente');
+  END IF;
+  IF (NEW.estado, NEW.observacion) IS DISTINCT FROM (OLD.estado, OLD.observacion) THEN
+    IF NOT OLD.vigente THEN
+      PERFORM apd.error('documento_sustituido', 'Sólo se revisa la carga vigente');
+    END IF;
+    IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'enviada' THEN
+      PERFORM apd.error('revision_fuera_de_turno', 'Sólo se revisan documentos de una solicitud enviada');
+    END IF;
+    IF coalesce(NEW.revisado_por, '') = '' THEN
+      PERFORM apd.error('revision_sin_responsable', 'La revisión de un documento registra quién la hizo');
+    END IF;
+    NEW.revisado_en := apd.ahora();
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER documento_cambio BEFORE UPDATE ON apd.documento
+  FOR EACH ROW EXECUTE FUNCTION apd.documento_cambio();
+
+-- ───────────────────────────── Grupos ─────────────────────────────
+-- Decisiones de cursos y grupos (2026-10-14): cupo 10–25 copiado al crear; ningún grupo abre con menos
+-- del mínimo; grupos específicos (una organización) o combinados; los cuatro cursos no se mezclan.
+
+CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  c apd.curso;
+  anio smallint := extract(year FROM apd.hoy())::smallint;
+BEGIN
+  SELECT * INTO c FROM apd.curso WHERE tipo_acreditacion = NEW.tipo_acreditacion AND modalidad = NEW.modalidad;
+  IF NOT c.activo THEN
+    PERFORM apd.error('curso_inactivo', 'Este curso no está abriendo grupos');
+  END IF;
+  IF NEW.estado <> 'en_integracion' THEN
+    PERFORM apd.error('alta_fuera_de_integracion', 'Un grupo nace en integración');
+  END IF;
+  NEW.cupo_minimo := c.cupo_minimo;
+  NEW.cupo_maximo := c.cupo_maximo;
+  NEW.folio := 'APD-G-' || anio || '-' || lpad(apd.siguiente_folio('G', anio)::text, 3, '0');
+  NEW.creado_en := apd.ahora();
+  NEW.estado_desde := NEW.creado_en;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER grupo_alta BEFORE INSERT ON apd.grupo
+  FOR EACH ROW EXECUTE FUNCTION apd.grupo_alta();
+
+CREATE FUNCTION apd.grupo_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  permitidas text[];
+  inscritos  integer;
+  pendientes text;
+BEGIN
+  IF (NEW.folio, NEW.tipo_acreditacion, NEW.modalidad, NEW.integracion, NEW.organizacion_id, NEW.cupo_minimo,
+      NEW.cupo_maximo, NEW.creado_en, NEW.es_ficticio)
+     IS DISTINCT FROM
+     (OLD.folio, OLD.tipo_acreditacion, OLD.modalidad, OLD.integracion, OLD.organizacion_id, OLD.cupo_minimo,
+      OLD.cupo_maximo, OLD.creado_en, OLD.es_ficticio) THEN
+    PERFORM apd.error('campo_inmutable', 'El curso, la integración y los cupos de un grupo no cambian después de crearlo');
+  END IF;
+  IF OLD.estado IN ('en_curso', 'concluido', 'cancelado')
+     AND (NEW.instructor, NEW.sede, NEW.fecha_inicio) IS DISTINCT FROM (OLD.instructor, OLD.sede, OLD.fecha_inicio) THEN
+    PERFORM apd.error('grupo_cerrado', 'Instructor, sede y fecha no cambian una vez iniciado el curso');
+  END IF;
+  NEW.estado_desde := OLD.estado_desde;
+  IF NEW.estado = OLD.estado THEN RETURN NEW; END IF;
+
+  permitidas := CASE OLD.estado
+    WHEN 'en_integracion' THEN ARRAY['confirmado', 'cancelado']
+    WHEN 'confirmado'     THEN ARRAY['en_curso', 'en_integracion', 'cancelado']
+    WHEN 'en_curso'       THEN ARRAY['concluido', 'cancelado']
+    ELSE ARRAY[]::text[]
+  END;
+  IF NOT NEW.estado = ANY (permitidas) THEN
+    PERFORM apd.error('transicion_invalida', format('Un grupo no pasa de «%s» a «%s»', OLD.estado, NEW.estado));
+  END IF;
+
+  SELECT count(*) INTO inscritos FROM apd.inscripcion WHERE grupo_id = NEW.id AND activa;
+
+  IF NEW.estado IN ('confirmado', 'en_curso') AND inscritos < NEW.cupo_minimo THEN
+    PERFORM apd.error('cupo_minimo', format('El grupo tiene %s personas y necesita al menos %s', inscritos, NEW.cupo_minimo));
+  END IF;
+  IF NEW.estado = 'en_curso' AND apd.hoy() < NEW.fecha_inicio THEN
+    PERFORM apd.error('antes_de_inicio', 'El curso inicia el ' || to_char(NEW.fecha_inicio, 'DD/MM/YYYY'));
+  END IF;
+  IF NEW.estado = 'concluido' THEN
+    -- Al concluir, nadie queda sin resultado: o tiene examen, o se le marca sin derecho a examen.
+    SELECT string_agg(s.folio, ', ') INTO pendientes
+      FROM apd.inscripcion i
+      JOIN apd.solicitud s ON s.id = i.solicitud_id
+      JOIN apd.curso c ON c.tipo_acreditacion = NEW.tipo_acreditacion AND c.modalidad = NEW.modalidad
+     WHERE i.grupo_id = NEW.id AND i.activa
+       AND NOT EXISTS (SELECT 1 FROM apd.examen e WHERE e.inscripcion_id = i.id)
+       AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) >= c.dias_minimos_asistencia;
+    IF pendientes IS NOT NULL THEN
+      PERFORM apd.error('faltan_calificaciones', 'Falta capturar la calificación de: ' || pendientes);
+    END IF;
+  END IF;
+  IF NEW.estado = 'cancelado' AND coalesce(trim(NEW.motivo_cancelacion), '') = '' THEN
+    PERFORM apd.error('cancelacion_sin_motivo', 'Indica el motivo de la cancelación');
+  END IF;
+  NEW.estado_desde := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER grupo_cambio BEFORE UPDATE ON apd.grupo
+  FOR EACH ROW EXECUTE FUNCTION apd.grupo_cambio();
+
+CREATE FUNCTION apd.grupo_cambio_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE r record;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    PERFORM apd.registrar('alta', 'grupo', NEW.id::text,
+      format('%s · %s %s · %s · cupo %s-%s', NEW.folio, NEW.tipo_acreditacion, NEW.modalidad, NEW.integracion, NEW.cupo_minimo, NEW.cupo_maximo));
+    RETURN NULL;
+  END IF;
+  IF NEW.estado = OLD.estado THEN RETURN NULL; END IF;
+  PERFORM apd.registrar('estado', 'grupo', NEW.id::text,
+    concat_ws(' · ', format('%s → %s', OLD.estado, NEW.estado), nullif(NEW.motivo_cancelacion, '')));
+  IF NEW.estado = 'cancelado' THEN
+    -- Las personas regresan a la bandeja con su antigüedad original (lista_para_curso_en no cambia)
+    UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Grupo cancelado: ' || NEW.motivo_cancelacion
+     WHERE grupo_id = NEW.id AND activa;
+  ELSIF NEW.estado = 'concluido' THEN
+    FOR r IN SELECT i.solicitud_id FROM apd.inscripcion i
+              WHERE i.grupo_id = NEW.id AND i.activa
+                AND NOT EXISTS (SELECT 1 FROM apd.examen e WHERE e.inscripcion_id = i.id) LOOP
+      UPDATE apd.solicitud SET estado = 'sin_derecho_examen' WHERE id = r.solicitud_id;
+    END LOOP;
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER grupo_cambio_aplicar AFTER INSERT OR UPDATE ON apd.grupo
+  FOR EACH ROW EXECUTE FUNCTION apd.grupo_cambio_aplicar();
+
+-- ───────────────────────────── Inscripciones ─────────────────────────────
+
+CREATE FUNCTION apd.inscripcion_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  g apd.grupo;
+  s apd.solicitud;
+  inscritos integer;
+BEGIN
+  -- El grupo se bloquea mientras se cuenta: dos personas del personal no pueden pasar del cupo a la vez
+  SELECT * INTO g FROM apd.grupo WHERE id = NEW.grupo_id FOR UPDATE;
+  SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id FOR UPDATE;
+  IF g.estado NOT IN ('en_integracion', 'confirmado') THEN
+    PERFORM apd.error('grupo_cerrado', 'El grupo ya no recibe personas');
+  END IF;
+  IF s.estado <> 'lista_para_curso' THEN
+    PERFORM apd.error('solicitud_no_lista', format('La solicitud %s no está en espera de grupo', s.folio));
+  END IF;
+  IF (s.tipo_acreditacion, s.modalidad) <> (g.tipo_acreditacion, g.modalidad) THEN
+    PERFORM apd.error('otro_curso', format('La solicitud %s es de otro curso', s.folio));
+  END IF;
+  IF g.integracion = 'especifico' AND s.organizacion_id IS DISTINCT FROM g.organizacion_id THEN
+    PERFORM apd.error('otra_organizacion', format('La solicitud %s no es de la organización del grupo', s.folio));
+  END IF;
+  SELECT count(*) INTO inscritos FROM apd.inscripcion WHERE grupo_id = g.id AND activa;
+  IF inscritos >= g.cupo_maximo THEN
+    PERFORM apd.error('cupo_maximo', format('El grupo está lleno: %s de %s', inscritos, g.cupo_maximo));
+  END IF;
+  NEW.activa := true;
+  NEW.baja_en := NULL;
+  NEW.motivo_baja := NULL;
+  NEW.inscrita_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER inscripcion_alta BEFORE INSERT ON apd.inscripcion
+  FOR EACH ROW EXECUTE FUNCTION apd.inscripcion_alta();
+
+CREATE FUNCTION apd.inscripcion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (NEW.solicitud_id, NEW.grupo_id, NEW.inscrita_en) IS DISTINCT FROM (OLD.solicitud_id, OLD.grupo_id, OLD.inscrita_en)
+     OR (NEW.activa AND NOT OLD.activa) OR (NOT OLD.activa AND NEW.motivo_baja IS DISTINCT FROM OLD.motivo_baja) THEN
+    PERFORM apd.error('inscripcion_inmutable', 'Una inscripción sólo cambia para darla de baja');
+  END IF;
+  IF OLD.activa AND NOT NEW.activa THEN
+    IF coalesce(trim(NEW.motivo_baja), '') = '' THEN
+      PERFORM apd.error('baja_sin_motivo', 'Indica el motivo de la baja');
+    END IF;
+    IF EXISTS (SELECT 1 FROM apd.examen WHERE inscripcion_id = NEW.id) THEN
+      PERFORM apd.error('baja_con_examen', 'No se da de baja a quien ya presentó examen');
+    END IF;
+    NEW.baja_en := apd.ahora();
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER inscripcion_cambio BEFORE UPDATE ON apd.inscripcion
+  FOR EACH ROW EXECUTE FUNCTION apd.inscripcion_cambio();
+
+CREATE FUNCTION apd.inscripcion_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE folio_grupo text := (SELECT folio FROM apd.grupo WHERE id = NEW.grupo_id);
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE apd.solicitud SET estado = 'inscrita' WHERE id = NEW.solicitud_id;
+    PERFORM apd.registrar('inscripcion', 'solicitud', NEW.solicitud_id::text, 'Grupo ' || folio_grupo);
+  ELSIF OLD.activa AND NOT NEW.activa THEN
+    -- Regresa a la bandeja salvo que la baja venga de cancelar la propia solicitud
+    UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = NEW.solicitud_id AND estado = 'inscrita';
+    PERFORM apd.registrar('baja', 'solicitud', NEW.solicitud_id::text, format('Grupo %s · %s', folio_grupo, NEW.motivo_baja));
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER inscripcion_aplicar AFTER INSERT OR UPDATE ON apd.inscripcion
+  FOR EACH ROW EXECUTE FUNCTION apd.inscripcion_aplicar();
+
+-- ───────────────────────────── Asistencia y examen ─────────────────────────────
+
+CREATE FUNCTION apd.asistencia_captura() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  g apd.grupo;
+  c apd.curso;
+  activa boolean;
+BEGIN
+  SELECT gr.* INTO g FROM apd.inscripcion i JOIN apd.grupo gr ON gr.id = i.grupo_id WHERE i.id = NEW.inscripcion_id;
+  SELECT i.activa INTO activa FROM apd.inscripcion i WHERE i.id = NEW.inscripcion_id;
+  SELECT * INTO c FROM apd.curso WHERE tipo_acreditacion = g.tipo_acreditacion AND modalidad = g.modalidad;
+  IF NOT activa THEN
+    PERFORM apd.error('inscripcion_inactiva', 'La persona ya no está en el grupo');
+  END IF;
+  IF g.estado <> 'en_curso' THEN
+    PERFORM apd.error('grupo_no_en_curso', 'La asistencia se captura mientras el curso está en marcha');
+  END IF;
+  IF NEW.dia > c.dias_duracion THEN
+    PERFORM apd.error('dia_inexistente', format('El curso dura %s días', c.dias_duracion));
+  END IF;
+  IF EXISTS (SELECT 1 FROM apd.examen WHERE inscripcion_id = NEW.inscripcion_id) THEN
+    PERFORM apd.error('asistencia_cerrada', 'Con el examen capturado, la asistencia ya no cambia');
+  END IF;
+  IF g.fecha_inicio + (NEW.dia - 1) > apd.hoy() THEN
+    PERFORM apd.error('dia_futuro', 'No se captura asistencia de un día que no ha ocurrido');
+  END IF;
+  NEW.capturada_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER asistencia_captura BEFORE INSERT OR UPDATE ON apd.asistencia
+  FOR EACH ROW EXECUTE FUNCTION apd.asistencia_captura();
+
+CREATE FUNCTION apd.examen_captura() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  g apd.grupo;
+  c apd.curso;
+  activa boolean;
+  asistidos integer;
+BEGIN
+  SELECT gr.* INTO g FROM apd.inscripcion i JOIN apd.grupo gr ON gr.id = i.grupo_id WHERE i.id = NEW.inscripcion_id;
+  SELECT i.activa INTO activa FROM apd.inscripcion i WHERE i.id = NEW.inscripcion_id;
+  SELECT * INTO c FROM apd.curso WHERE tipo_acreditacion = g.tipo_acreditacion AND modalidad = g.modalidad;
+  IF NOT activa THEN
+    PERFORM apd.error('inscripcion_inactiva', 'La persona ya no está en el grupo');
+  END IF;
+  IF g.estado <> 'en_curso' THEN
+    PERFORM apd.error('grupo_no_en_curso', 'La calificación se captura mientras el curso está en marcha');
+  END IF;
+  SELECT count(*) INTO asistidos FROM apd.asistencia WHERE inscripcion_id = NEW.inscripcion_id AND asistio;
+  IF asistidos < c.dias_minimos_asistencia THEN
+    PERFORM apd.error('sin_derecho_examen', format('Asistió %s de %s días; se necesitan %s para tener derecho a examen',
+      asistidos, c.dias_duracion, c.dias_minimos_asistencia));
+  END IF;
+  IF NEW.presentado_en > apd.hoy() OR NEW.presentado_en < g.fecha_inicio THEN
+    PERFORM apd.error('fecha_examen', 'La fecha del examen debe estar entre el inicio del curso y hoy');
+  END IF;
+  NEW.capturado_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER examen_captura BEFORE INSERT ON apd.examen
+  FOR EACH ROW EXECUTE FUNCTION apd.examen_captura();
+
+CREATE FUNCTION apd.examen_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  sol uuid;
+  minima numeric;
+BEGIN
+  SELECT i.solicitud_id, c.calificacion_minima INTO sol, minima
+    FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
+    JOIN apd.curso c ON c.tipo_acreditacion = g.tipo_acreditacion AND c.modalidad = g.modalidad
+   WHERE i.id = NEW.inscripcion_id;
+  PERFORM apd.registrar('examen', 'solicitud', sol::text, format('Calificación %s (mínima %s)', NEW.calificacion, minima));
+  UPDATE apd.solicitud SET estado = CASE WHEN NEW.calificacion >= minima THEN 'aprobada' ELSE 'no_acreditada' END
+   WHERE id = sol;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER examen_aplicar AFTER INSERT ON apd.examen
+  FOR EACH ROW EXECUTE FUNCTION apd.examen_aplicar();
+
+-- ───────────────────────────── Bandeja de demanda e indicador ─────────────────────────────
+-- Decisiones (2026-10-14): alerta de prioridad a los dias_alerta_espera (31) días; en renovación, la
+-- bandeja ordena por vencimiento de la acreditación anterior. El orden lo da la consulta del backend
+-- (ORDER BY prioridad DESC, orden_sugerido); aquí van los datos para ordenar y filtrar.
+
+CREATE VIEW apd.bandeja_demanda AS
+  SELECT s.id AS solicitud_id,
+         s.folio,
+         s.tipo_acreditacion,
+         s.modalidad,
+         concat_ws(' ', p.nombre, p.primer_apellido, p.segundo_apellido) AS nombre,
+         o.id AS organizacion_id,
+         coalesce(o.nombre, 'Particular') AS organizacion,
+         coalesce(o.tipo, 'particular') AS organizacion_tipo,
+         s.lista_para_curso_en,
+         apd.hoy() - (s.lista_para_curso_en AT TIME ZONE 'America/Mexico_City')::date AS dias_espera,
+         a.vence_en AS vence_anterior,
+         CASE WHEN a.id IS NULL THEN NULL ELSE a.vence_en - apd.hoy() END AS dias_para_vencer,
+         (apd.hoy() - (s.lista_para_curso_en AT TIME ZONE 'America/Mexico_City')::date)
+           >= apd.parametro_texto('dias_alerta_espera')::integer AS prioridad,
+         CASE WHEN s.modalidad = 'renovacion' THEN a.vence_en
+              ELSE (s.lista_para_curso_en AT TIME ZONE 'America/Mexico_City')::date END AS orden_sugerido,
+         s.es_ficticio
+    FROM apd.solicitud s
+    JOIN apd.solicitante p ON p.id = s.solicitante_id
+    LEFT JOIN apd.organizacion o ON o.id = s.organizacion_id
+    LEFT JOIN apd.acreditacion a ON a.id = s.acreditacion_anterior_id
+   WHERE s.estado = 'lista_para_curso';
+COMMENT ON VIEW apd.bandeja_demanda IS 'Personas en espera de grupo, con días de espera, prioridad (alerta) y, en renovación, días para el vencimiento.';
+
+-- Indicador permanente (decisión 2026-10-14): personas cuya acreditación venció mientras esperan grupo.
+CREATE VIEW apd.vencidas_en_espera AS
+  SELECT b.* FROM apd.bandeja_demanda b WHERE b.modalidad = 'renovacion' AND b.dias_para_vencer < 0;
+COMMENT ON VIEW apd.vencidas_en_espera IS 'Renovaciones en espera de grupo con la acreditación anterior ya vencida: no pueden operar mientras esperan.';
