@@ -47,8 +47,8 @@ GRANT UPDATE (cerrada_en) ON apd.sesion_solicitante TO apd_api;
 
 -- Trámite
 GRANT SELECT, INSERT ON apd.solicitud TO apd_api;
-GRANT UPDATE (tipo_acreditacion, modalidad, organizacion_id, acreditacion_anterior_id, rfc_factura,
-              razon_social_factura, perfil_academico, carrera, anios_experiencia, estado, cita_en, motivo_cierre)
+GRANT UPDATE (tipo_acreditacion, modalidad, organizacion_id, acreditacion_anterior_id,
+              perfil_academico, carrera, anios_experiencia, estado, cita_en, motivo_cierre)
   ON apd.solicitud TO apd_api;
 GRANT SELECT, INSERT ON apd.revision TO apd_api;
 GRANT SELECT, INSERT ON apd.documento TO apd_api;

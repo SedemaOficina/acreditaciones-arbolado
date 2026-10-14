@@ -55,3 +55,16 @@ comprobación de poda vigente al enviar y al emitir.
 - Confirmada la asistencia mínima: 4 de 5 y 1 de 1 (ya estaba así en la base; sólo cambia el comentario).
 - Sigue pendiente qué documentos carga en su primera renovación quien viene de Kobo sin archivos.
 - Etapa 0 cerrada. Los pendientes abiertos no bloquean la etapa 1, que trabaja con datos ficticios.
+
+## 2026-10-14 · Bloque 4 · Factura y número de expediente
+
+- La factura del pago la emite la Secretaría en la cita y la carga su personal (PDF obligatorio, XML opcional).
+  La persona solicitante no puede cargarla. Sin factura, la solicitud no entra a la bandeja: no hay grupo ni fecha.
+- Número de expediente físico `EXP-AAAA-NNNN` asignado por la base al concluir el cotejo, consecutivo y sin huecos.
+- Cada documento registra quién lo cargó.
+
+**Verificado**: 66 de 66 pruebas.
+
+**Eliminado**: los campos `rfc_factura` y `razon_social_factura` (los datos fiscales están en la constancia y en
+la factura; capturarlos era duplicar un dato personal sin uso propio) y el requisito «Pago de derechos»,
+sustituido por la factura.

@@ -31,9 +31,11 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('comprobante_domicilio', 'Comprobante de domicilio',
    'De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. [pendiente] la Dirección debe declarar su uso.', 'documento', 'en_linea'),
   ('constancia_situacion_fiscal', 'Constancia de situación fiscal',
-   'Actualizada, a favor de la persona física o moral a la que se emitirá la factura del pago de derechos.', 'documento', 'en_linea'),
-  ('pago_derechos', 'Pago de derechos',
-   'Se presenta en la cita de cotejo, una vez validada la documentación. Concepto y monto conforme a la Gaceta Oficial [pendiente].', 'documento', 'cotejo'),
+   'Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos. De ahí se toman los datos fiscales: el sistema no pide capturar el RFC.', 'documento', 'en_linea'),
+  ('factura_pago', 'Factura del pago de derechos',
+   'La emite la Secretaría en la cita presencial, después de verificar el pago, y la carga su personal en PDF. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente].', 'documento', 'cotejo'),
+  ('factura_xml', 'Factura del pago de derechos (XML)',
+   'El archivo XML de la misma factura, si se tiene. Lo carga el personal de la Secretaría.', 'documento', 'cotejo'),
   ('poda_anterior', 'Acreditación de poda y derribo a renovar',
    'El sistema la comprueba en su padrón.', 'registro', 'en_linea'),
   ('poda_vigente', 'Acreditación de poda y derribo vigente',
@@ -50,7 +52,7 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
    'Sólo para carrera técnica: constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría.', 'documento', 'en_linea');
 
 -- Qué pide cada curso (corrección R46, 2026-10-14): en una renovación sólo es obligatorio lo que cambia en
--- cada trámite (la constancia fiscal para la factura y el pago). Lo demás se carga sólo si la persona lo
+-- cada trámite (la constancia fiscal y la factura del pago). Lo demás se carga sólo si la persona lo
 -- actualizó: si ya se le acreditó una vez, la Secretaría ya lo revisó. [pendiente] confirmar con Liber que
 -- también aplica a identificación, CURP y domicilio, y qué pasa con quien viene de Kobo sin archivos.
 INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden, obligatorio, nota) VALUES
@@ -58,18 +60,18 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('poda', 'nueva',      'curp',                        2, true, ''),
   ('poda', 'nueva',      'comprobante_domicilio',       3, true, ''),
   ('poda', 'nueva',      'constancia_situacion_fiscal', 4, true, ''),
-  ('poda', 'nueva',      'pago_derechos',               5, true, ''),
+  ('poda', 'nueva',      'factura_pago',                5, true, ''),
   ('poda', 'renovacion', 'identificacion_oficial',      1, false, 'Sólo si cambió desde tu trámite anterior.'),
   ('poda', 'renovacion', 'curp',                        2, false, 'Sólo si cambió desde tu trámite anterior.'),
   ('poda', 'renovacion', 'comprobante_domicilio',       3, false, 'Sólo si cambió desde tu trámite anterior.'),
   ('poda', 'renovacion', 'constancia_situacion_fiscal', 4, true,  ''),
-  ('poda', 'renovacion', 'pago_derechos',               5, true,  ''),
+  ('poda', 'renovacion', 'factura_pago',                5, true,  ''),
   ('poda', 'renovacion', 'poda_anterior',               6, true,  ''),
   ('dictaminador', 'nueva',      'identificacion_oficial',      1, true,  ''),
   ('dictaminador', 'nueva',      'curp',                        2, true,  ''),
   ('dictaminador', 'nueva',      'comprobante_domicilio',       3, true,  ''),
   ('dictaminador', 'nueva',      'constancia_situacion_fiscal', 4, true,  ''),
-  ('dictaminador', 'nueva',      'pago_derechos',               5, true,  ''),
+  ('dictaminador', 'nueva',      'factura_pago',                5, true,  ''),
   ('dictaminador', 'nueva',      'poda_vigente',                6, true,  ''),
   ('dictaminador', 'nueva',      'comprobante_estudios',        7, true,  ''),
   ('dictaminador', 'nueva',      'curriculum_vitae',            8, true,  ''),
@@ -79,10 +81,14 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'renovacion', 'curp',                        2, false, 'Sólo si cambió desde tu trámite anterior.'),
   ('dictaminador', 'renovacion', 'comprobante_domicilio',       3, false, 'Sólo si cambió desde tu trámite anterior.'),
   ('dictaminador', 'renovacion', 'constancia_situacion_fiscal', 4, true,  ''),
-  ('dictaminador', 'renovacion', 'pago_derechos',               5, true,  ''),
+  ('dictaminador', 'renovacion', 'factura_pago',                5, true,  ''),
   ('dictaminador', 'renovacion', 'poda_vigente',                6, true,  ''),
   ('dictaminador', 'renovacion', 'dictaminador_anterior',       7, true,  ''),
   ('dictaminador', 'renovacion', 'comprobante_estudios',        8, false, 'Sólo si actualizaste tus estudios.'),
   ('dictaminador', 'renovacion', 'curriculum_vitae',            9, false, 'Sólo si actualizaste tu experiencia.'),
   ('dictaminador', 'renovacion', 'comprobantes_experiencia',   10, false, 'Sólo si actualizaste tu experiencia.'),
-  ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.');
+  ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.'),
+  ('poda',         'nueva',      'factura_xml', 50, false, ''),
+  ('poda',         'renovacion', 'factura_xml', 50, false, ''),
+  ('dictaminador', 'nueva',      'factura_xml', 50, false, ''),
+  ('dictaminador', 'renovacion', 'factura_xml', 50, false, '');

@@ -80,7 +80,7 @@ CREATE FUNCTION apd.normalizar(t text) RETURNS text
            '[^a-z0-9 ]', '', 'g'), '\s+', ' ', 'g'))
 $$;
 
--- Folios: un contador por serie y año, avanzado en un solo paso para que dos altas simultáneas nunca
+-- Folios y números de expediente: un contador por serie y año, avanzado en un solo paso para que dos altas simultáneas nunca
 -- reciban el mismo número. SECURITY DEFINER: la cuenta del servicio no toca folio_contador directamente.
 CREATE FUNCTION apd.siguiente_folio(p_serie text, p_anio smallint) RETURNS integer
   LANGUAGE sql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
@@ -307,6 +307,7 @@ BEGIN
   NEW.estado_desde := NEW.creada_en;
   NEW.enviada_en := NULL;
   NEW.lista_para_curso_en := NULL;
+  NEW.numero_expediente := NULL;
   RETURN NEW;
 END $$;
 CREATE TRIGGER solicitud_alta BEFORE INSERT ON apd.solicitud
@@ -416,7 +417,8 @@ BEGIN
      IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id) THEN
     PERFORM apd.comprobar_elegibilidad(NEW);
   END IF;
-  -- Quien manda las fechas de control es la base
+  -- Quien manda las fechas de control y el número de expediente es la base
+  NEW.numero_expediente := OLD.numero_expediente;
   NEW.enviada_en := OLD.enviada_en;
   NEW.lista_para_curso_en := OLD.lista_para_curso_en;
   NEW.estado_desde := OLD.estado_desde;
@@ -469,8 +471,19 @@ BEGIN
       IF OLD.estado = 'inscrita' AND ins.id IS NOT NULL THEN
         PERFORM apd.error('sigue_inscrita', 'La solicitud regresa a la bandeja sólo al darla de baja del grupo');
       END IF;
-      IF OLD.estado = 'validada_en_linea' AND coalesce(NEW.rfc_factura, '') = '' THEN
-        PERFORM apd.error('sin_factura', 'Registra a quién se factura el pago de derechos');
+      -- Sin factura no hay bandeja, y sin bandeja no hay grupo ni fecha de curso
+      IF OLD.estado = 'validada_en_linea' AND EXISTS (
+           SELECT 1 FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+            WHERE rc.tipo_acreditacion = NEW.tipo_acreditacion AND rc.modalidad = NEW.modalidad
+              AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'cotejo'
+              AND NOT EXISTS (SELECT 1 FROM apd.documento d
+                               WHERE d.solicitud_id = NEW.id AND d.requisito = rc.requisito AND d.vigente)) THEN
+        PERFORM apd.error('sin_factura', 'Carga la factura del pago de derechos para concluir el cotejo');
+      END IF;
+      -- El expediente físico se integra en el cotejo: ahí recibe su número, consecutivo y sin huecos
+      IF NEW.numero_expediente IS NULL THEN
+        NEW.numero_expediente := 'EXP-' || extract(year FROM apd.hoy())::int || '-'
+          || lpad(apd.siguiente_folio('E', extract(year FROM apd.hoy())::smallint)::text, 4, '0');
       END IF;
       -- La espera empieza la primera vez; si regresa de un grupo, conserva su antigüedad
       IF NEW.lista_para_curso_en IS NULL THEN NEW.lista_para_curso_en := apd.ahora(); END IF;
@@ -551,17 +564,34 @@ END $$;
 CREATE TRIGGER revision_aplicar AFTER INSERT ON apd.revision
   FOR EACH ROW EXECUTE FUNCTION apd.revision_aplicar();
 
+-- Dos momentos de carga: en línea, la persona solicitante (en borrador o para atender observaciones); en
+-- la cita presencial, el personal de la Secretaría carga lo que se genera ahí, como la factura del pago.
 CREATE FUNCTION apd.documento_alta() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE s apd.solicitud;
+DECLARE
+  s apd.solicitud;
+  momento text;
 BEGIN
   SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id;
-  IF s.estado NOT IN ('borrador', 'con_observaciones') THEN
+  SELECT r.momento INTO momento FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+   WHERE rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
+     AND rc.requisito = NEW.requisito AND r.forma = 'documento';
+  IF momento IS NULL THEN
+    PERFORM apd.error('requisito_ajeno', 'Ese documento no se pide para este curso');
+  END IF;
+  IF momento = 'en_linea' AND s.estado NOT IN ('borrador', 'con_observaciones') THEN
     PERFORM apd.error('carga_fuera_de_turno', 'Sólo se cargan documentos en borrador o para atender observaciones');
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
-                  WHERE rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
-                    AND rc.requisito = NEW.requisito AND r.forma = 'documento' AND r.momento = 'en_linea') THEN
-    PERFORM apd.error('requisito_ajeno', 'Ese documento no se pide para este curso');
+  IF momento = 'cotejo' THEN
+    IF s.estado <> 'validada_en_linea' THEN
+      PERFORM apd.error('carga_fuera_de_turno', 'Este documento se carga en la cita presencial');
+    END IF;
+    IF apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('carga_de_personal', 'Este documento lo carga el personal de la Secretaría');
+    END IF;
+  END IF;
+  IF (NEW.tipo_mime = 'application/xml') <> (NEW.requisito = 'factura_xml') THEN
+    PERFORM apd.error('formato_no_admitido', CASE WHEN NEW.requisito = 'factura_xml'
+      THEN 'Aquí va el XML de la factura' ELSE 'Carga el documento en PDF, JPG o PNG' END);
   END IF;
   IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
     PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
@@ -570,11 +600,19 @@ BEGIN
   -- La carga nueva sustituye a la anterior sin borrarla
   UPDATE apd.documento SET vigente = false WHERE solicitud_id = NEW.solicitud_id AND requisito = NEW.requisito AND vigente;
   NEW.vigente := true;
-  NEW.estado := 'pendiente';
   NEW.observacion := '';
-  NEW.revisado_por := NULL;
-  NEW.revisado_en := NULL;
   NEW.cargado_en := apd.ahora();
+  NEW.cargado_por := apd.contexto('usuario');
+  -- Lo que carga el personal en la cita ya está revisado; lo que carga la persona espera revisión
+  IF momento = 'cotejo' THEN
+    NEW.estado := 'aceptado';
+    NEW.revisado_por := NEW.cargado_por;
+    NEW.revisado_en := NEW.cargado_en;
+  ELSE
+    NEW.estado := 'pendiente';
+    NEW.revisado_por := NULL;
+    NEW.revisado_en := NULL;
+  END IF;
   RETURN NEW;
 END $$;
 CREATE TRIGGER documento_alta BEFORE INSERT ON apd.documento

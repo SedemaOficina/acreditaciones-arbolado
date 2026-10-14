@@ -61,7 +61,7 @@ COMMENT ON COLUMN apd.requisito.clave IS 'Identificador corto';
 COMMENT ON COLUMN apd.requisito.nombre IS 'Nombre visible';
 COMMENT ON COLUMN apd.requisito.descripcion IS 'Características que debe cumplir';
 COMMENT ON COLUMN apd.requisito.forma IS 'documento: se carga un archivo; registro: el sistema lo comprueba en el padrón';
-COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: se carga al solicitar; cotejo: se presenta en la cita';
+COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial';
 COMMENT ON COLUMN apd.requisito.activo IS 'Si se pide en solicitudes nuevas';
 
 CREATE TABLE apd.requisito_curso (
@@ -200,13 +200,12 @@ COMMENT ON COLUMN apd.acreditacion.es_ficticio IS 'Dato de prueba';
 CREATE TABLE apd.solicitud (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
   folio                      text          NOT NULL,
+  numero_expediente          text          NULL,
   solicitante_id             uuid          NOT NULL,
   tipo_acreditacion          text          NOT NULL,
   modalidad                  text          NOT NULL,
   organizacion_id            uuid          NULL,
   acreditacion_anterior_id   uuid          NULL,
-  rfc_factura                text          NULL,
-  razon_social_factura       text          NULL,
   perfil_academico           text          NULL,
   carrera                    text          NULL,
   anios_experiencia          numeric(4,1)  NULL,
@@ -221,13 +220,14 @@ CREATE TABLE apd.solicitud (
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT solicitud_pk PRIMARY KEY (id),
   CONSTRAINT solicitud_folio_uk UNIQUE (folio),
+  CONSTRAINT solicitud_expediente_uk UNIQUE (numero_expediente),
+  CONSTRAINT solicitud_expediente_ck CHECK (estado NOT IN ('lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR numero_expediente IS NOT NULL),
   CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
   CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad),
   CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
   CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id),
   CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')),
   CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL)),
-  CONSTRAINT solicitud_rfc_ck CHECK (rfc_factura IS NULL OR rfc_factura ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$'),
   CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica')),
   CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL)),
   CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70),
@@ -240,13 +240,12 @@ CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id);
 COMMENT ON TABLE apd.solicitud IS 'Un trámite: una persona, un curso. Sus cambios de estado los valida la base y quedan en la bitácora.';
 COMMENT ON COLUMN apd.solicitud.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitud.folio IS 'Folio público; lo asigna la base (APD-S-AAAA-NNNNN)';
+COMMENT ON COLUMN apd.solicitud.numero_expediente IS 'Número del expediente físico. Lo asigna la base al concluir el cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
 COMMENT ON COLUMN apd.solicitud.solicitante_id IS 'Persona solicitante';
 COMMENT ON COLUMN apd.solicitud.tipo_acreditacion IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.modalidad IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Organización de procedencia; vacía para particulares';
 COMMENT ON COLUMN apd.solicitud.acreditacion_anterior_id IS 'Acreditación que se renueva; obligatoria en renovación';
-COMMENT ON COLUMN apd.solicitud.rfc_factura IS 'RFC a quien se factura el pago de derechos (persona física o moral)';
-COMMENT ON COLUMN apd.solicitud.razon_social_factura IS 'Nombre o razón social a quien se factura';
 COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima';
 COMMENT ON COLUMN apd.solicitud.carrera IS 'Sólo dictaminador: carrera o formación declarada';
 COMMENT ON COLUMN apd.solicitud.anios_experiencia IS 'Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban';
@@ -293,13 +292,14 @@ CREATE TABLE apd.documento (
   observacion                text          NOT NULL DEFAULT '',
   vigente                    boolean       NOT NULL DEFAULT true,
   cargado_en                 timestamptz   NOT NULL DEFAULT now(),
+  cargado_por                text          NOT NULL DEFAULT '',
   revisado_por               text          NULL,
   revisado_en                timestamptz   NULL,
   CONSTRAINT documento_pk PRIMARY KEY (id),
   CONSTRAINT documento_archivo_uk UNIQUE (archivo_clave),
   CONSTRAINT documento_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
   CONSTRAINT documento_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave),
-  CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png')),
+  CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png', 'application/xml')),
   CONSTRAINT documento_tamano_ck CHECK (tamano_bytes > 0),
   CONSTRAINT documento_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$'),
   CONSTRAINT documento_estado_ck CHECK (estado IN ('pendiente', 'aceptado', 'con_observacion')),
@@ -312,13 +312,14 @@ COMMENT ON COLUMN apd.documento.solicitud_id IS 'Solicitud';
 COMMENT ON COLUMN apd.documento.requisito IS 'Requisito que atiende';
 COMMENT ON COLUMN apd.documento.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
 COMMENT ON COLUMN apd.documento.nombre_original IS 'Nombre con que se cargó';
-COMMENT ON COLUMN apd.documento.tipo_mime IS 'application/pdf, image/jpeg o image/png';
+COMMENT ON COLUMN apd.documento.tipo_mime IS 'application/pdf, image/jpeg, image/png o application/xml (el XML de la factura)';
 COMMENT ON COLUMN apd.documento.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.documento.sha256 IS 'Suma del archivo, para comprobar el almacén';
 COMMENT ON COLUMN apd.documento.estado IS 'pendiente, aceptado o con_observacion';
 COMMENT ON COLUMN apd.documento.observacion IS 'Qué corregir';
 COMMENT ON COLUMN apd.documento.vigente IS 'Es la última carga de ese requisito';
 COMMENT ON COLUMN apd.documento.cargado_en IS 'Carga';
+COMMENT ON COLUMN apd.documento.cargado_por IS 'Quién lo cargó: la persona solicitante o la cuenta del personal; lo pone la base';
 COMMENT ON COLUMN apd.documento.revisado_por IS 'Cuenta del personal (acceso)';
 COMMENT ON COLUMN apd.documento.revisado_en IS 'Revisión';
 
@@ -437,7 +438,7 @@ CREATE TABLE apd.folio_contador (
   CONSTRAINT folio_contador_pk PRIMARY KEY (serie, anio)
 );
 COMMENT ON TABLE apd.folio_contador IS 'Último número asignado por serie y año. Lo usa sólo la base al asignar folios.';
-COMMENT ON COLUMN apd.folio_contador.serie IS 'S (solicitud), G (grupo), PD (acreditación de poda), DT (acreditación de dictaminador)';
+COMMENT ON COLUMN apd.folio_contador.serie IS 'S (solicitud), E (expediente físico), G (grupo), PD (acreditación de poda), DT (acreditación de dictaminador)';
 COMMENT ON COLUMN apd.folio_contador.anio IS 'Año';
 COMMENT ON COLUMN apd.folio_contador.ultimo IS 'Último número asignado';
 

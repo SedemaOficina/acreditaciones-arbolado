@@ -175,10 +175,13 @@ function validar(s, fecha, cita) {
 function cotejar(s, fecha) {
   en(fecha, '10:30');
   como(COTEJO, 'personal');
-  // Factura a la organización (persona moral) o a la propia persona (RFC genérico de prueba)
-  const rfc = s.org ? `EJE0101${Object.keys(ORG).indexOf(s.org) + 10}AB1` : 'XAXX010101000';
-  const razon = s.org ? ORG[s.org].nombre : `${s.persona.nombre} ${s.persona.primer}`;
-  emitir(`UPDATE apd.solicitud SET rfc_factura = ${q(rfc)}, razon_social_factura = ${q(razon)}, estado = 'lista_para_curso' WHERE id = ${q(s.id)}`);
+  // En la cita se verifica el pago, la Secretaría emite la factura y su personal la carga (PDF y XML)
+  for (const [ext, mime, req] of [['pdf', 'application/pdf', 'factura_pago'], ['xml', 'application/xml', 'factura_xml']]) {
+    emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+  VALUES (${q(uuid(`factura:${s.id}:${ext}`))}, ${q(s.id)}, ${q(req)}, ${q(`ficticio/${s.id}/factura.${ext}`)}, ${q('factura.' + ext)}, ${q(mime)}, ${ext === 'pdf' ? 84211 : 6120},
+    encode(sha256(convert_to(${q(s.id + 'factura' + ext)}, 'UTF8')), 'hex'))`);
+  }
+  emitir(`UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = ${q(s.id)}`);
 }
 
 // El recorrido completo hasta quedar en espera de grupo

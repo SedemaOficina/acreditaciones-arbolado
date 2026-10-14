@@ -30,7 +30,11 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 
 | Fecha | Decisión | Quién |
 |---|---|---|
-| 2026-10-14 | Se mantiene la cita presencial de cotejo y pago: la Secretaría necesita expedientes físicos. La persona lleva la documentación impresa, se coteja contra lo cargado con el check list y se canjea la factura del pago | Liber Saltijeral |
+| 2026-10-14 | Se mantiene la cita presencial de cotejo y pago: la Secretaría necesita expedientes físicos. La persona lleva la documentación impresa, se coteja contra lo cargado con el check list y se verifica el pago | Liber Saltijeral |
+| 2026-10-14 | La factura es obligatoria siempre que hay pago. En la cita, la Secretaría verifica el pago, emite la factura y su personal la carga en el sistema (PDF obligatorio; XML si se tiene). La persona solicitante no la carga | Liber Saltijeral |
+| 2026-10-14 | Hasta que la factura está cargada, la solicitud no entra a la bandeja: no se le puede asignar grupo ni fecha de curso y examen | Liber Saltijeral |
+| 2026-10-14 | El sistema no pide capturar RFC ni razón social: los datos fiscales están en la constancia de situación fiscal que carga la persona y en la factura | Liber Saltijeral |
+| 2026-10-14 | Cada solicitud recibe un número de expediente físico al concluir el cotejo, consecutivo por año y sin huecos. No se registra la ubicación. Formato provisional EXP-AAAA-NNNN | Liber Saltijeral |
 
 ## Cursos y grupos
 
@@ -91,7 +95,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 1. Datos personales y aviso de privacidad (antes del primer dato real).
 2. Restablecimiento de contraseñas: responsable y procedimiento.
 3. Correo institucional: pregunta al SIA.
-4. Formato del folio de la acreditación (lo define Liber).
+4. Formato del folio de la acreditación y del número de expediente (los define Liber).
 5. Formato del check list de cotejo (anexo del borrador).
 6. Formato del registro histórico de Kobo, para la migración.
 7. Plazos para atender observaciones y para presentarse a la cita.

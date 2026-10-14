@@ -82,6 +82,26 @@ const casos = [
      INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
      VALUES ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000001', 'poda', 'nueva');
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000002';`],
+  ['Sin factura no se concluye el cotejo ni se asigna curso', { codigo: 'sin_factura' }, null, `
+     UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
+  ['La persona solicitante no carga la factura: la carga el personal', { codigo: 'carga_de_personal' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}`],
+  ['Un XML sólo se acepta como XML de la factura', { codigo: 'formato_no_admitido' }, null, `
+     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+     VALUES ((SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1), 'factura_pago', 'prueba/x', 'x.xml', 'application/xml', 1000, repeat('a', 64));`],
+  ['Con la factura cargada entra a la bandeja con número de expediente consecutivo', 'ok', null, `
+     ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
+     CREATE TEMP TABLE s AS SELECT (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1) AS id;
+     UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM s);
+     DO $$ BEGIN
+       ASSERT (SELECT numero_expediente FROM apd.solicitud WHERE id = (SELECT id FROM s))
+            = (SELECT 'EXP-2026-' || lpad((count(*))::text, 4, '0') FROM apd.solicitud WHERE numero_expediente IS NOT NULL);
+       ASSERT (SELECT cargado_por = 'prueba.automatica' AND estado = 'aceptado' FROM apd.documento
+                WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'factura_pago' AND vigente);
+     END $$;`],
+  ['El número de expediente no se cambia', { sqlstate: '42501' }, null, `
+     UPDATE apd.solicitud SET numero_expediente = 'X' WHERE numero_expediente IS NOT NULL;`],
   ['Un salto de estado no previsto se rechaza', { codigo: 'transicion_invalida' }, null, `
      UPDATE apd.solicitud SET estado = 'aprobada' WHERE id = ${BORRADOR};`],
   ['El folio no se cambia', { sqlstate: '42501' }, null, `
@@ -192,7 +212,7 @@ const casos = [
   ['En una renovación sólo son obligatorios la constancia fiscal y el pago (R46)', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT array_agg(requisito ORDER BY requisito) FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
               WHERE modalidad = 'renovacion' AND tipo_acreditacion = 'dictaminador' AND obligatorio AND forma = 'documento')
-            = ARRAY['constancia_situacion_fiscal', 'pago_derechos']; END $$;`],
+            = ARRAY['constancia_situacion_fiscal', 'factura_pago']; END $$;`],
   ['La poda vigente se exige al iniciar, no al enviar (R05)', 'ok', '2027-06-01 10:00', `
      -- La solicitud de dictaminador con observaciones se inició con poda vigente (vence el 10/05/2027).
      -- Se reenvía el 1/06/2027, con la poda ya vencida: el envío se acepta.

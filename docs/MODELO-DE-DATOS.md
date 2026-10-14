@@ -75,7 +75,7 @@ Catálogo de requisitos. Un requisito es un documento que se carga o un registro
 | `nombre` | `text` | Sí | Nombre visible |
 | `descripcion` | `text` | Sí | Características que debe cumplir (por omisión: `''`) |
 | `forma` | `text` | Sí | documento: se carga un archivo; registro: el sistema lo comprueba en el padrón |
-| `momento` | `text` | Sí | en_linea: se carga al solicitar; cotejo: se presenta en la cita |
+| `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial |
 | `activo` | `boolean` | Sí | Si se pide en solicitudes nuevas (por omisión: `true`) |
 
 Restricciones e índices:
@@ -212,13 +212,12 @@ Un trámite: una persona, un curso. Sus cambios de estado los valida la base y q
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
 | `folio` | `text` | Sí | Folio público; lo asigna la base (APD-S-AAAA-NNNNN) |
+| `numero_expediente` | `text` | No | Número del expediente físico. Lo asigna la base al concluir el cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN |
 | `solicitante_id` | `uuid` | Sí | Persona solicitante |
 | `tipo_acreditacion` | `text` | Sí | Curso solicitado |
 | `modalidad` | `text` | Sí | Curso solicitado |
 | `organizacion_id` | `uuid` | No | Organización de procedencia; vacía para particulares |
 | `acreditacion_anterior_id` | `uuid` | No | Acreditación que se renueva; obligatoria en renovación |
-| `rfc_factura` | `text` | No | RFC a quien se factura el pago de derechos (persona física o moral) |
-| `razon_social_factura` | `text` | No | Nombre o razón social a quien se factura |
 | `perfil_academico` | `text` | No | Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima |
 | `carrera` | `text` | No | Sólo dictaminador: carrera o formación declarada |
 | `anios_experiencia` | `numeric(4,1)` | No | Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban |
@@ -236,13 +235,14 @@ Restricciones e índices:
 
 - `CONSTRAINT solicitud_pk PRIMARY KEY (id)`
 - `CONSTRAINT solicitud_folio_uk UNIQUE (folio)`
+- `CONSTRAINT solicitud_expediente_uk UNIQUE (numero_expediente)`
+- `CONSTRAINT solicitud_expediente_ck CHECK (estado NOT IN ('lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen') OR numero_expediente IS NOT NULL)`
 - `CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
 - `CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)`
 - `CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`
 - `CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)`
 - `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))`
 - `CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))`
-- `CONSTRAINT solicitud_rfc_ck CHECK (rfc_factura IS NULL OR rfc_factura ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')`
 - `CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica'))`
 - `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL))`
 - `CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70)`
@@ -283,13 +283,14 @@ Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo pub
 | `requisito` | `text` | Sí | Requisito que atiende |
 | `archivo_clave` | `text` | Sí | Clave exacta en el almacén, con sello propio |
 | `nombre_original` | `text` | Sí | Nombre con que se cargó |
-| `tipo_mime` | `text` | Sí | application/pdf, image/jpeg o image/png |
+| `tipo_mime` | `text` | Sí | application/pdf, image/jpeg, image/png o application/xml (el XML de la factura) |
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
 | `estado` | `text` | Sí | pendiente, aceptado o con_observacion (por omisión: `'pendiente'`) |
 | `observacion` | `text` | Sí | Qué corregir (por omisión: `''`) |
 | `vigente` | `boolean` | Sí | Es la última carga de ese requisito (por omisión: `true`) |
 | `cargado_en` | `timestamptz` | Sí | Carga (por omisión: `now()`) |
+| `cargado_por` | `text` | Sí | Quién lo cargó: la persona solicitante o la cuenta del personal; lo pone la base (por omisión: `''`) |
 | `revisado_por` | `text` | No | Cuenta del personal (acceso) |
 | `revisado_en` | `timestamptz` | No | Revisión |
 
@@ -299,7 +300,7 @@ Restricciones e índices:
 - `CONSTRAINT documento_archivo_uk UNIQUE (archivo_clave)`
 - `CONSTRAINT documento_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
 - `CONSTRAINT documento_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)`
-- `CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png'))`
+- `CONSTRAINT documento_mime_ck CHECK (tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png', 'application/xml'))`
 - `CONSTRAINT documento_tamano_ck CHECK (tamano_bytes > 0)`
 - `CONSTRAINT documento_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')`
 - `CONSTRAINT documento_estado_ck CHECK (estado IN ('pendiente', 'aceptado', 'con_observacion'))`
@@ -410,7 +411,7 @@ Restricciones e índices:
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
-| `serie` | `text` | Sí | S (solicitud), G (grupo), PD (acreditación de poda), DT (acreditación de dictaminador) |
+| `serie` | `text` | Sí | S (solicitud), E (expediente físico), G (grupo), PD (acreditación de poda), DT (acreditación de dictaminador) |
 | `anio` | `smallint` | Sí | Año |
 | `ultimo` | `integer` | Sí | Último número asignado (por omisión: `0`) |
 
