@@ -281,6 +281,22 @@ for (const [clave, o] of Object.entries(ORG)) {
   emitir(`INSERT INTO apd.organizacion (id, tipo, nombre, es_ficticio) VALUES (${q(uuid('org:' + clave))}, ${q(o.tipo)}, ${q(o.nombre)}, true)`);
 }
 
+// 0 · Costo de cada curso, capturado por el personal como lo haría al publicarse en la Gaceta Oficial.
+//     MONTOS FICTICIOS: los reales los fija la Gaceta. Distintos por curso. Al final del guion sube el de poda
+//     nueva y quien ya tenía cita conserva el monto que se le indicó.
+const ADMINISTRACION = 'administracion.ficticia';
+function costo(tipo, modalidad, monto, desde) {
+  en(desde, '08:00');
+  como(ADMINISTRACION, 'personal');
+  emitir(`UPDATE apd.curso SET pago_monto = ${monto}, pago_vigente_desde = ${q(desde)},
+    pago_fundamento = 'MONTO FICTICIO DE PRUEBA, vigente desde ${desde}. El real lo fija la Gaceta Oficial.'
+    WHERE tipo_acreditacion = ${q(tipo)} AND modalidad = ${q(modalidad)}`);
+}
+costo('poda', 'nueva', 1200, '2026-07-01');
+costo('poda', 'renovacion', 800, '2026-07-01');
+costo('dictaminador', 'nueva', 1800, '2026-07-01');
+costo('dictaminador', 'renovacion', 1000, '2026-07-01');
+
 // 1 · Grupo de poda (nueva) combinado y concluido en septiembre: aprobados, uno reprobado, uno sin derecho a examen
 const g1 = [];
 const orgsG1 = ['norte', null, 'paisajes', null, 'energia', 'norte', null, 'uni', null, 'paisajes'];
@@ -481,3 +497,7 @@ en(CORTE, '20:00');
 emitir(`SELECT set_config('apd.ahora_simulado', '', false)`);
 
 process.stdout.write(sql.join('\n') + '\n');
+
+// Actualización de costo (ficticia) en la fecha de corte: la poda nueva sube. Quien ya tiene cita conserva el
+// monto que se le indicó; quien se valide desde hoy recibe el nuevo.
+costo('poda', 'nueva', 1250, CORTE);

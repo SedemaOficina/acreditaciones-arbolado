@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-14T23:45:23.135Z",
+  "generado": "2026-10-14T23:59:52.267Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -28,10 +28,22 @@
       },
       "autocomplete": "family-name"
     },
+    "tiene_segundo_apellido": {
+      "etiqueta": "¿Tienes segundo apellido?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Saber si la CURP se comprueba con un segundo apellido.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ]
+    },
     "segundo_apellido": {
       "etiqueta": "Segundo apellido",
       "tipo": "texto",
-      "requerido": false,
+      "requerido": true,
       "formato": "nombre",
       "sensible": true,
       "uso": "Nombre que aparece en el expediente y en la acreditación.",
@@ -39,7 +51,13 @@
       "atributos": {
         "maxlength": "80"
       },
-      "autocomplete": "off"
+      "autocomplete": "off",
+      "si": {
+        "campo": "tiene_segundo_apellido",
+        "valores": [
+          "si"
+        ]
+      }
     },
     "fecha_nacimiento": {
       "etiqueta": "Fecha de nacimiento",
@@ -75,7 +93,8 @@
             "fecha": "fecha_nacimiento",
             "nombre": "nombre",
             "primer": "primer_apellido",
-            "segundo": "segundo_apellido"
+            "segundo": "segundo_apellido",
+            "tiene": "tiene_segundo_apellido"
           },
           "nivel": "error"
         },
@@ -86,7 +105,8 @@
             "fecha": "fecha_nacimiento",
             "nombre": "nombre",
             "primer": "primer_apellido",
-            "segundo": "segundo_apellido"
+            "segundo": "segundo_apellido",
+            "tiene": "tiene_segundo_apellido"
           },
           "nivel": "error"
         },
@@ -97,7 +117,20 @@
             "fecha": "fecha_nacimiento",
             "nombre": "nombre",
             "primer": "primer_apellido",
-            "segundo": "segundo_apellido"
+            "segundo": "segundo_apellido",
+            "tiene": "tiene_segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-sin-segundo-apellido",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido",
+            "tiene": "tiene_segundo_apellido"
           },
           "nivel": "error"
         }

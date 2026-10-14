@@ -35,7 +35,7 @@
             document.createTextNode(`. ${APD.limpia(r.descripcion)}${nota}${cuando}`)
           ]);
         }));
-        const curso = c ? el('p', { class: 'texto-gris', texto: `Curso de ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; asistencia mínima de ${c.dias_minimos_asistencia} ${c.dias_minimos_asistencia === 1 ? 'día' : 'días'}; calificación mínima del examen: ${Number(c.calificacion_minima).toFixed(1)}.` }) : null;
+        const curso = c ? el('p', { class: 'texto-gris', texto: `Curso de ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; asistencia mínima de ${c.dias_minimos_asistencia} ${c.dias_minimos_asistencia === 1 ? 'día' : 'días'}; calificación mínima del examen: ${Number(c.calificacion_minima).toFixed(1)}. Pago de derechos: ${c.pago_monto != null ? Number(c.pago_monto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : 'pendiente de la Gaceta Oficial'}.` }) : null;
         bloques.push(el('details', { class: 'plegable' }, [
           el('summary', { class: 'plegable-titulo', texto: `${APD.TIPOS[tipo]} · ${APD.MODALIDADES[modalidad].toLowerCase()}` }),
           el('div', { class: 'plegable-cuerpo' }, [lista, curso])

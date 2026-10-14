@@ -132,6 +132,28 @@ const casos = [
      ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitud WHERE estado = 'validada_en_linea' AND pago_referencia IS NULL);
      ASSERT (SELECT bool_and(pago_referencia = replace(folio, '-', '')) FROM apd.solicitud WHERE pago_referencia IS NOT NULL);
      ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitud WHERE estado IN ('borrador', 'enviada') AND pago_referencia IS NOT NULL); END $$;`],
+  ['Cada curso tiene su propio costo', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT count(DISTINCT pago_monto) FROM apd.curso) = 4; END $$;`],
+  ['El personal actualiza el costo con la publicación que lo fija, y queda en la bitácora', 'ok', null, `
+     SELECT set_config('apd.usuario_tipo', 'personal', true);
+     UPDATE apd.curso SET pago_monto = 2000, pago_vigente_desde = apd.hoy(), pago_fundamento = 'Gaceta de prueba'
+      WHERE tipo_acreditacion = 'dictaminador' AND modalidad = 'nueva';
+     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_monto' AND detalle LIKE '%→ 2000.00%Gaceta de prueba%'); END $$;`],
+  ['Un costo sin la publicación que lo fija se rechaza', { sqlstate: '23514' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'personal', true);
+     UPDATE apd.curso SET pago_monto = 2000, pago_fundamento = '' WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva';`],
+  ['La persona solicitante no cambia el costo', { codigo: 'monto_de_personal' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.curso SET pago_monto = 1 WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva';`],
+  ['Quien ya tiene cita conserva el monto que se le indicó, aunque cambie el costo', 'ok', null, `
+     SELECT set_config('apd.usuario_tipo', 'personal', true);
+     CREATE TEMP TABLE antes AS SELECT id, pago_monto FROM apd.solicitud WHERE pago_monto IS NOT NULL;
+     UPDATE apd.curso SET pago_monto = pago_monto + 500;
+     DO $$ BEGIN
+       ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitud s JOIN antes a ON a.id = s.id WHERE s.pago_monto <> a.pago_monto);
+       ASSERT EXISTS (SELECT 1 FROM apd.solicitud s JOIN apd.curso c USING (tipo_acreditacion, modalidad)
+                       WHERE s.estado = 'validada_en_linea' AND s.pago_monto <> c.pago_monto);
+     END $$;`],
   ['La referencia de pago no la escribe la cuenta del servicio', { sqlstate: '42501' }, null, `
      UPDATE apd.solicitud SET pago_referencia = 'X' WHERE estado = 'validada_en_linea';`],
   ['Un salto de estado no previsto se rechaza', { codigo: 'transicion_invalida' }, null, `

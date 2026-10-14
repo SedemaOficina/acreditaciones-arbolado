@@ -13,7 +13,8 @@
      · posiciones 14 y 16: primera consonante interna del primer apellido y
        del nombre;
      · posiciones 3 y 15: inicial y primera consonante interna del segundo
-       apellido (X si no hay).
+       apellido; quien responde que no tiene segundo apellido debe tener X
+       en ambas (así nadie queda sin comprobar ni atrapado).
    Se omiten partículas (DE, DEL, LA, LOS, Y, MC, VAN…); en nombres
    compuestos que empiezan con MARÍA o JOSÉ se usa el segundo; la Ñ cuenta
    como X; las palabras altisonantes de cuatro letras cambian su segunda
@@ -94,6 +95,13 @@
         if (!a2) return '';
         return curp[2] === x(a2[0]) && curp[14] === consonanteInterna(a2) ? '' : MENSAJE;
       }
+    }
+    ,
+    'curp-sin-segundo-apellido': {
+      descripcion: 'Quien declara no tener segundo apellido tiene X en las posiciones 3 y 15 de la CURP',
+      campos: ['curp', 'tiene'], bloquea: true,
+      valida: ({ curp, tiene }) => (tiene !== 'no' || (curp[2] === 'X' && curp[14] === 'X') ? ''
+        : 'Tu CURP indica que tienes segundo apellido. Revisa tu respuesta y escríbelo tal como aparece en tu CURP.')
     }
   };
 

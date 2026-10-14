@@ -41,11 +41,17 @@ function caso(nombre, form, datos, espera, archivos = []) {
 const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
 const curpNadia = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Nadia', primer: 'Ejemplo', segundo: 'Simulado' }, '1999-12-30', 'M', 'NE') + '0');
-const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', fecha_nacimiento: '1999-12-30', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', aviso: 'si', humano: 'si' };
+const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', tiene_segundo_apellido: 'si', segundo_apellido: 'Simulado', fecha_nacimiento: '1999-12-30', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', aviso: 'si', humano: 'si' };
 caso('Cuenta completa se acepta', 'cuenta', cuenta, true);
 caso('Cuenta: CURP con dígito incorrecto y correo sin confirmar se rechazan', 'cuenta', { ...cuenta, curp: curpNadia.slice(0, 17) + ((Number(curpNadia[17]) + 1) % 10), correo2: 'otra@ejemplo.local' }, ['curp', 'correo2']);
 caso('Cuenta: una CURP ajena (de otro nombre) se rechaza', 'cuenta', { ...cuenta, nombre: 'Pedro', primer_apellido: 'López' }, ['curp']);
 caso('Cuenta: otro segundo apellido se rechaza', 'cuenta', { ...cuenta, segundo_apellido: 'Muestra' }, ['curp']);
+const curpUriel = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Uriel', primer: 'Ejemplo', segundo: '' }, '1988-04-09', 'H', 'NE') + '0');
+const sinSegundo = { ...cuenta, nombre: 'Uriel', tiene_segundo_apellido: 'no', segundo_apellido: undefined, fecha_nacimiento: '1988-04-09', curp: curpUriel };
+delete sinSegundo.segundo_apellido;
+caso('Cuenta sin segundo apellido se acepta', 'cuenta', sinSegundo, true);
+caso('Cuenta: decir que no hay segundo apellido con una CURP que sí lo tiene se rechaza', 'cuenta', { ...cuenta, tiene_segundo_apellido: 'no', segundo_apellido: undefined }, ['curp']);
+caso('Cuenta: con segundo apellido pero sin escribirlo se rechaza', 'cuenta', { ...cuenta, segundo_apellido: '' }, ['segundo_apellido']);
 caso('Cuenta: otra fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '1999-12-31' }, ['curp']);
 caso('Cuenta: sin fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '' }, ['fecha_nacimiento']);
 caso('Cuenta: contraseña corta se rechaza', 'cuenta', { ...cuenta, contrasena: 'corta', contrasena2: 'corta' }, ['contrasena', 'contrasena2']);

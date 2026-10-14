@@ -26,6 +26,8 @@ CREATE TABLE apd.curso (
   cupo_maximo                smallint      NOT NULL,
   pago_concepto              text          NOT NULL,
   pago_monto                 numeric(10,2) NULL,
+  pago_fundamento            text          NULL,
+  pago_vigente_desde         date          NULL,
   activo                     boolean       NOT NULL DEFAULT true,
   actualizado_en             timestamptz   NOT NULL DEFAULT now(),
   CONSTRAINT curso_pk PRIMARY KEY (tipo_acreditacion, modalidad),
@@ -34,7 +36,7 @@ CREATE TABLE apd.curso (
   CONSTRAINT curso_dias_ck CHECK (dias_duracion BETWEEN 1 AND 15 AND dias_minimos_asistencia BETWEEN 1 AND dias_duracion),
   CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10),
   CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo),
-  CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR pago_monto > 0)
+  CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR (pago_monto > 0 AND coalesce(trim(pago_fundamento), '') <> '' AND pago_vigente_desde IS NOT NULL))
 );
 COMMENT ON TABLE apd.curso IS 'Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asistencia mínima, calificación mínima y cupos vigentes; un grupo copia los cupos al crearse.';
 COMMENT ON COLUMN apd.curso.tipo_acreditacion IS 'poda o dictaminador';
@@ -46,7 +48,9 @@ COMMENT ON COLUMN apd.curso.calificacion_minima IS 'Calificación mínima aproba
 COMMENT ON COLUMN apd.curso.cupo_minimo IS 'Personas necesarias para confirmar un grupo';
 COMMENT ON COLUMN apd.curso.cupo_maximo IS 'Personas máximas en un grupo';
 COMMENT ON COLUMN apd.curso.pago_concepto IS 'Concepto del pago de derechos que se muestra a la persona al asignarle la cita de cotejo';
-COMMENT ON COLUMN apd.curso.pago_monto IS 'Monto del pago de derechos, en pesos. Vacío mientras no se confirme con la Gaceta Oficial';
+COMMENT ON COLUMN apd.curso.pago_monto IS 'Monto del pago de derechos de este curso, en pesos. Distinto por curso. Lo actualiza el personal cuando la Gaceta Oficial publica un costo nuevo. Vacío mientras no se capture';
+COMMENT ON COLUMN apd.curso.pago_fundamento IS 'Publicación de la Gaceta Oficial que fija el monto vigente (fecha y número). Obligatorio si hay monto';
+COMMENT ON COLUMN apd.curso.pago_vigente_desde IS 'Desde cuándo aplica el monto vigente. Obligatorio si hay monto';
 COMMENT ON COLUMN apd.curso.activo IS 'Si se pueden abrir grupos de este curso';
 COMMENT ON COLUMN apd.curso.actualizado_en IS 'Último cambio';
 
@@ -223,6 +227,7 @@ CREATE TABLE apd.solicitud (
   estado_desde               timestamptz   NOT NULL DEFAULT now(),
   enviada_en                 timestamptz   NULL,
   cita_en                    timestamptz   NULL,
+  pago_monto                 numeric(10,2) NULL,
   pago_referencia            text          NULL,
   lista_para_curso_en        timestamptz   NULL,
   motivo_cierre              text          NULL,
@@ -269,6 +274,7 @@ COMMENT ON COLUMN apd.solicitud.estado IS 'Ver apd.transicion_solicitud()';
 COMMENT ON COLUMN apd.solicitud.estado_desde IS 'Desde cuándo está en el estado actual; lo pone la base';
 COMMENT ON COLUMN apd.solicitud.enviada_en IS 'Primer envío a revisión; lo pone la base';
 COMMENT ON COLUMN apd.solicitud.cita_en IS 'Cita para el cotejo presencial';
+COMMENT ON COLUMN apd.solicitud.pago_monto IS 'Monto que se le indicó a la persona al darle su cita: el vigente en ese momento. Un cambio de costo posterior no lo altera. Vacío si aún no había monto capturado';
 COMMENT ON COLUMN apd.solicitud.pago_referencia IS 'Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura';
 COMMENT ON COLUMN apd.solicitud.lista_para_curso_en IS 'Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad';
 COMMENT ON COLUMN apd.solicitud.motivo_cierre IS 'Motivo de cancelación o conclusión sin atender';

@@ -92,7 +92,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 77 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 82 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y

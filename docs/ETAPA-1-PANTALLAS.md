@@ -9,7 +9,7 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | Página | Forma | Qué hace | Módulos del estándar |
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
-| `cuenta.html` | Una página | Crea la cuenta: nombre, dos apellidos, fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, tooltip, modal, copiar, acuse |
+| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, «¿Tienes segundo apellido?» y el segundo si lo hay, fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, tooltip, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. Caja de personas de ejemplo (sólo versión de prueba) | identificadores |
 | `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado, qué sigue, cita con datos de pago, expediente de la persona, grupo, observaciones, asistencia y calificación, lista para recoger, motivo de cierre) | — |
 | `solicitud.html` | Por pasos (3) | **Trámite** (un solo campo con las 4 combinaciones; lo que no aplica, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), organización (combo abierto), perfil del dictaminador · **Documentos** (generados del catálogo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
@@ -44,7 +44,7 @@ Orden de carga en cada página (contrato del estándar):
 
 | Archivo | Qué ajusta |
 |---|---|
-| `app/curp-nombre.js` | Validaciones cruzadas propias `curp-nombre` y `curp-segundo-apellido` (iniciales y consonantes de la CURP contra nombre y apellidos). Se cargan antes de la configuración; el servidor las usa con `validaPayload(…, { config })` |
+| `app/curp-nombre.js` | Validaciones cruzadas propias `curp-nombre`, `curp-segundo-apellido` y `curp-sin-segundo-apellido` (iniciales y consonantes de la CURP contra nombre y apellidos). Se cargan antes de la configuración; el servidor las usa con `validaPayload(…, { config })` |
 | `app/config-cuenta.js` | Suma las cruzadas propias (`FORMKIT_CONFIG.cruzadas`). Envío simulado: CURP con cuenta → rechazo con motivo; CURP del registro de Kobo → activa y muestra historial; nueva → cuenta |
 | `app/config-entrar.js` | Acceso simulado (contraseña ficticia común) y regreso a la pantalla pedida |
 | `app/config-solicitud.js` | `archivos`: 5 MB, PDF/JPG/PNG, 1 por documento (parámetro de la base y tipos de `apd.documento`). Envío simulado con folio `APD-S-AAAA-NNNNN` |
@@ -61,7 +61,7 @@ node herramientas/probar-esquemas.mjs <ruta-al-estandar>
 ```
 
 Regenera `db/esquemas-formularios/<formulario>.json` con `herramientas/esquema-desde-html.mjs` del estándar
-y prueba 18 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
+y prueba 21 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
 confirmaciones distintas, contraseña corta, documentos faltantes por trámite y valores fuera de rango se
 rechazan). En la etapa 3 la API:
 
@@ -97,20 +97,21 @@ rechazan). En la etapa 3 la API:
 | Núcleo | No hay forma prevista de marcar en un campo un error que devuelve el servidor (CURP ya registrada) | Se muestra en el aviso de envío |
 | Catálogo | No hay «mostrar contraseña» | Sin cambio; se propone para el estándar |
 | Validaciones cruzadas | No hay una de CURP contra nombre y apellidos (sólo fecha, sexo y entidad) | Cruzadas propias en `app/curp-nombre.js`; se propone llevarlas al estándar |
-| Validaciones cruzadas | Un rol vacío (segundo apellido) impide que corra la cruzada | Se partió en dos; sin segundo apellido no se comprueban las posiciones 3 y 15 |
+| Validaciones cruzadas | Un rol vacío (segundo apellido) impide que corra la cruzada | Pregunta «¿Tienes segundo apellido?» y una cruzada para el «No» (X en las posiciones 3 y 15) |
+| Validaciones cruzadas | No se repiten si cambia el otro dato y el campo que las declara no tenía error | `app/cuenta.js` vuelve a validar la CURP al cambiar nombre, apellidos o fecha |
 | Plantilla de versión del SIA | `version-visible.css` usa valores literales y no pasa el auditor | Hoja equivalente con tokens |
 
 ## 7. Verificación
 
 Automática (Chromium 390 × 844 táctil y 1280 × 900):
 
-- `herramientas/probar-sitio.mjs`: **86 comprobaciones correctas** — inicio, cuenta nueva, cuenta del registro de Kobo,
+- `herramientas/probar-sitio.mjs`: **92 comprobaciones correctas** — inicio, cuenta nueva, cuenta del registro de Kobo,
   solicitud de poda nueva, renovación, dictaminador nueva con perfil y 8 documentos, corrección de observaciones
   (sólo lo observado es obligatorio), grupo asignado, error de acceso, verificación vigente y no vigente,
   fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas; sin errores de consola ni desborde horizontal; **axe-core sin hallazgos** en 8 pantallas.
-- `auditar-campos.mjs`: 47 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
+- `auditar-campos.mjs`: 48 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
 - `auditor-css.mjs` sobre `apd.css` y `version-visible.css`: 0 hallazgos.
-- `probar-esquemas.mjs`: 18 de 18. `probar-base.sh`: 77 de 77.
+- `probar-esquemas.mjs`: 21 de 21. `probar-base.sh`: 82 de 82.
 - Capturas en `verificacion/capturas/` (10 pantallas × 2 anchos).
 
 Lista para personas (`docs/08` del estándar, sección 2) — **pendiente**, no se pudo hacer en el entorno de construcción:
@@ -125,7 +126,11 @@ Lista para personas (`docs/08` del estándar, sección 2) — **pendiente**, no 
 - [ ] Servidor: `validar.mjs` integrado con el esquema del HTML final (etapa 3).
 - [ ] **Verificado en móvil y en escritorio** — nombre y fecha de quien probó.
 
-## 8. Lo que falta antes de liberar (no es de esta etapa)
+## 8. Lo que falta antes de liberar
+
+Todo está numerado en `docs/PENDIENTES.md`.
+
+## 8 bis. Resumen (no es de esta etapa)
 
 Acceso real y sesiones (etapa 3), recuperación de contraseña (pendiente 2), correo institucional (pregunta 1 al
 SIA), aviso de privacidad (pendiente 1), lugar de la cita y de la sede (pendiente 11), titularidad al activar

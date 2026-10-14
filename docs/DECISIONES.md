@@ -25,6 +25,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Instructores: personal de la Secretaría; capturan asistencia por día y calificación | Liber Saltijeral |
 | 2026-10-14 | El instructor de un grupo puede variar, también durante el curso; cada día queda quién capturó la asistencia (mapa, R26) | Liber Saltijeral |
 | 2026-10-14 | Al crear la cuenta se pide la fecha de nacimiento y el sistema comprueba que la CURP corresponda al nombre, a los apellidos y a esa fecha, además de su dígito verificador, para evitar CURP ajenas. Comprueba coherencia, no identidad: la identidad la confirma la identificación oficial en el cotejo. La fecha no se guarda aparte (ya está en la CURP) | Liber Saltijeral |
+| 2026-10-14 | La cuenta pregunta «¿Tienes segundo apellido?»: con «Sí» se escribe y se compara con la CURP; con «No», la CURP debe llevar X en su lugar. Nadie queda sin comprobar ni atrapado. La CURP se vuelve a comprobar al momento si se cambia el nombre, los apellidos o la fecha después de escribirla | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
@@ -41,6 +42,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Se mantiene la cita presencial de cotejo y pago: la Secretaría necesita expedientes físicos. La persona lleva la documentación impresa, se coteja contra lo cargado con el check list y se verifica el pago | Liber Saltijeral |
 | 2026-10-14 | La factura es obligatoria siempre que hay pago. En la cita, la Secretaría verifica el pago, emite la factura y su personal la carga en el sistema (sólo PDF). La persona solicitante no la carga | Liber Saltijeral |
 | 2026-10-14 | Al validar en línea y asignar la cita, el sistema da a la persona los datos de pago (concepto, monto y referencia bancaria) para que pague y presente el comprobante en el cotejo. Monto, referencia definitiva, banco y forma de pago: **pendientes** (Gaceta Oficial y Finanzas); la referencia provisional es el folio sin guiones | Liber Saltijeral |
+| 2026-10-14 | El monto del pago es configurable por el personal y distinto para cada curso (poda nueva, poda renovación, dictaminador nueva, dictaminador renovación). Se captura con la publicación de la Gaceta Oficial que lo fija y desde cuándo aplica; cada cambio queda en la bitácora. Quien ya tiene cita conserva el monto que se le indicó | Liber Saltijeral |
 | 2026-10-14 | Hasta que la factura está cargada, la solicitud no entra a la bandeja: no se le puede asignar grupo ni fecha de curso y examen | Liber Saltijeral |
 | 2026-10-14 | Cargada la factura, la solicitud entra sola a la bandeja de grupos («en espera de grupo»); el personal arma los grupos desde ahí. No se inscribe sola a un grupo | Liber Saltijeral |
 | 2026-10-14 | Confirmado: la persona no captura RFC; sólo carga su constancia de situación fiscal. El personal captura RFC, razón social y folio fiscal al cargar la factura | Liber Saltijeral |
@@ -113,20 +115,6 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 18 | La entrega no deja constancia | Acuse de entrega firmado por la persona, escaneado y cargado por la Secretaría |
 | 19 | Quien no aprueba el examen: sin regla | Trámite nuevo completo, incluido el pago de derechos |
 
-## Pendientes que no bloquean las etapas con datos ficticios
+## Pendientes
 
-1. Datos personales y aviso de privacidad (antes del primer dato real).
-2. Restablecimiento de contraseñas: responsable y procedimiento.
-3. Correo institucional: pregunta al SIA.
-4. Formato del folio de la acreditación y del número de expediente (los define Liber).
-5. Formato del check list de cotejo (anexo del borrador).
-6. Formato del registro histórico de Kobo, para la migración.
-7. Plazos para atender observaciones y para presentarse a la cita.
-9. Requisitos de renovación para quien viene de Kobo sin archivos en el sistema.
-10. Titularidad al activar una cuenta del registro de Kobo: hoy se exigen CURP coherente con nombre y fecha, y el
-    nombre del registro; confirmar si basta.
-11. Lugar de la cita de cotejo, sede del curso y lugar y horario de entrega de acreditaciones.
-12. Si se contrasta la CURP con el servicio oficial de consulta de RENAPO (hoy: formato, dígito y coherencia con
-    nombre y fecha).
-13. Datos de pago: monto (Gaceta Oficial), referencia o línea de captura definitiva, banco y forma de pago (Finanzas).
-14. Si el registro de Kobo tenía números de expediente físico que deban conservarse.
+Todos los pendientes, con número fijo, responsable y desde cuándo bloquean, están en `docs/PENDIENTES.md`.

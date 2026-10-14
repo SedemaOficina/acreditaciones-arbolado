@@ -25,6 +25,7 @@ principio.
 
 | Ruta | Contenido |
 |---|---|
+| `docs/PENDIENTES.md` | **Todo lo que falta decidir o hacer**, con número fijo y responsable |
 | `docs/DECISIONES.md` | Todas las reglas decididas, con fecha, y lo que hay que corregir en los lineamientos |
 | `docs/DECISIONES-SIA.md` | Las nueve decisiones del SIA y las preguntas abiertas al SIA |
 | `docs/REGLAS.md` | Qué impone la base: estados, vigencia, grupos, folios, bitácora |
@@ -47,7 +48,7 @@ Requiere Node 18+ y un PostgreSQL 13+ **de pruebas** (no hace falta PostGIS).
 
 ```sh
 npm run esquema                                    # regenera tablas y documentación desde db/esquema.json
-PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 77 pruebas
+PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 82 pruebas
 ```
 
 `probar-base` se niega a correr sobre una base cuyo nombre no contenga «prueba», y se detiene en el primer

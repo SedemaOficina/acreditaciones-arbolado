@@ -86,7 +86,8 @@ async function cargaObligatorios(page) {
 async function llenaCuenta(page, p, curp = p.curp) {
   await page.fill('#nombre', p.nombre);
   await page.fill('#primer_apellido', p.primer_apellido);
-  await page.fill('#segundo_apellido', p.segundo_apellido || '');
+  await page.check(`input[name="tiene_segundo_apellido"][value="${p.segundo_apellido ? 'si' : 'no'}"]`, { force: true });
+  if (p.segundo_apellido) await page.fill('#segundo_apellido', p.segundo_apellido);
   await page.fill('#fecha_nacimiento', p.nacimiento || nacimientoDe(p));
   await page.fill('#curp', curp);
   await page.fill('#correo', 'nadia@ejemplo.local');
@@ -120,6 +121,16 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'cuenta.html');
   await page.click('[data-accion="enviar"]');
   comprueba(await page.locator('.resumen-errores, [aria-invalid="true"]').count() > 0, t('cuenta: enviar vacío muestra los errores'));
+  // CURP escrita antes que la fecha: al cambiar la fecha se vuelve a comprobar (caso que reportó Liber)
+  await page.goto(BASE + 'cuenta.html');
+  await page.fill('#nombre', NUEVA.nombre);
+  await page.fill('#primer_apellido', NUEVA.primer_apellido);
+  await page.fill('#curp', NUEVA.curp);
+  await page.press('#curp', 'Tab');
+  await page.fill('#fecha_nacimiento', '1999-12-31');
+  await page.press('#fecha_nacimiento', 'Tab');
+  comprueba(/fecha de nacimiento no coincide/.test(await page.textContent('[data-campo="curp"] .err')), t('cuenta: con la CURP ya escrita, una fecha distinta se marca al momento'));
+  await page.goto(BASE + 'cuenta.html');
   // CURP con dígito incorrecto: el formulario la rechaza, igual que la base
   await llenaCuenta(page, NUEVA, otroDigito(NUEVA.curp));
   await page.click('[data-accion="enviar"]');
@@ -130,6 +141,13 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-accion="enviar"]');
   comprueba(await page.getAttribute('#curp', 'aria-invalid') === 'true' && /no corresponde|no coincide/.test(await page.textContent('[data-campo="curp"] .err')),
     t('cuenta: una CURP ajena no corresponde con el nombre y se rechaza'));
+  // Sin segundo apellido: no queda atrapada; si su CURP sí lo tiene, se le dice que lo escriba
+  await page.fill('#curp', NUEVA.curp);
+  await page.check('input[name="tiene_segundo_apellido"][value="no"]', { force: true });
+  await page.click('[data-accion="enviar"]');
+  comprueba(/segundo apellido/.test(await page.textContent('[data-campo="curp"] .err')), t('cuenta: «sin segundo apellido» con una CURP que sí lo tiene se rechaza con su motivo'));
+  await page.check('input[name="tiene_segundo_apellido"][value="si"]', { force: true });
+  await page.fill('#segundo_apellido', NUEVA.segundo_apellido);
   // Nombre correcto pero otra fecha de nacimiento
   await page.fill('#curp', NUEVA.curp);
   await page.fill('#fecha_nacimiento', '1999-12-31');
@@ -169,7 +187,19 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-sesion] button');
   await page.waitForURL(/index\.html/);
 
-  // Padrón migrado: crea su cuenta con su CURP, ve su historial y renueva
+  // Persona sin segundo apellido: crea su cuenta sin quedar atrapada
+  const SIN = { nombre: 'Uriel', primer_apellido: 'Ejemplo', segundo_apellido: '', nacimiento: '1988-04-09' };
+  SIN.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: SIN.nombre, primer: SIN.primer_apellido, segundo: '' }, SIN.nacimiento, 'H', 'NE') + '0');
+  await page.goto(BASE + 'cuenta.html');
+  await llenaCuenta(page, SIN);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  bien(t(`cuenta: persona sin segundo apellido (${SIN.curp}) crea su cuenta`));
+  await page.click('[data-sesion] button').catch(() => {});
+  await page.goto(BASE + 'index.html');
+  await page.evaluate(() => sessionStorage.clear());
+
+    // Padrón migrado: crea su cuenta con su CURP, ve su historial y renueva
   await page.goto(BASE + 'cuenta.html');
   await llenaCuenta(page, renovable);
   await page.click('[data-accion="enviar"]');

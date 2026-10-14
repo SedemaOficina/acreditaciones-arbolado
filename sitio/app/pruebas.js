@@ -70,7 +70,7 @@
     if (!form) return 'Esta pantalla no tiene formulario.';
     if (pagina === 'cuenta.html') {
       const p = personaNueva();
-      pon('nombre', p.nombre); pon('primer_apellido', p.primer); pon('segundo_apellido', p.segundo);
+      pon('nombre', p.nombre); pon('primer_apellido', p.primer); elige('tiene_segundo_apellido', 'si'); pon('segundo_apellido', p.segundo);
       pon('fecha_nacimiento', p.fecha); pon('curp', p.curp);
       pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');

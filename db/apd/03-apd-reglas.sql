@@ -106,6 +106,18 @@ CREATE TRIGGER parametro_cambio BEFORE UPDATE ON apd.parametro
 CREATE FUNCTION apd.curso_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   NEW.actualizado_en := apd.ahora();
+  -- Costo del curso (decisión 2026-10-14): lo actualiza el personal cuando la Gaceta Oficial publica uno
+  -- nuevo; cada curso tiene el suyo. Queda en la bitácora con la publicación que lo fija. Las solicitudes que
+  -- ya tienen cita conservan el monto que se les indicó (apd.solicitud.pago_monto).
+  IF (NEW.pago_monto, NEW.pago_fundamento, NEW.pago_vigente_desde)
+     IS DISTINCT FROM (OLD.pago_monto, OLD.pago_fundamento, OLD.pago_vigente_desde) THEN
+    IF apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('monto_de_personal', 'El costo del curso lo actualiza el personal de la Secretaría');
+    END IF;
+    PERFORM apd.registrar('cambio_monto', 'curso', NEW.tipo_acreditacion || '/' || NEW.modalidad,
+      format('%s → %s desde %s. %s', coalesce(OLD.pago_monto::text, 'sin monto'), coalesce(NEW.pago_monto::text, 'sin monto'),
+             coalesce(NEW.pago_vigente_desde::text, '—'), coalesce(NEW.pago_fundamento, '')));
+  END IF;
   PERFORM apd.registrar('cambio_curso', 'curso', NEW.tipo_acreditacion || '/' || NEW.modalidad,
     format('duración %s→%s; asistencia %s→%s; calificación %s→%s; cupo %s-%s→%s-%s; activo %s→%s',
       OLD.dias_duracion, NEW.dias_duracion, OLD.dias_minimos_asistencia, NEW.dias_minimos_asistencia,
@@ -337,6 +349,7 @@ BEGIN
   NEW.enviada_en := NULL;
   NEW.lista_para_curso_en := NULL;
   NEW.pago_referencia := NULL;
+  NEW.pago_monto := NULL;
   RETURN NEW;
 END $$;
 CREATE TRIGGER solicitud_alta BEFORE INSERT ON apd.solicitud
@@ -448,6 +461,7 @@ BEGIN
   END IF;
   -- Quien manda las fechas de control y la referencia de pago es la base
   NEW.pago_referencia := OLD.pago_referencia;
+  NEW.pago_monto := OLD.pago_monto;
   -- Los datos de la factura los captura el personal en la cita, antes de concluir el cotejo (R20)
   IF (NEW.factura_rfc, NEW.factura_razon_social, NEW.factura_folio_fiscal)
      IS DISTINCT FROM (OLD.factura_rfc, OLD.factura_razon_social, OLD.factura_folio_fiscal) THEN
@@ -508,6 +522,8 @@ BEGIN
       -- Con la cita, la persona recibe los datos para pagar: concepto y monto del curso, y su referencia.
       -- Formato provisional (folio sin guiones) [pendiente: referencia o línea de captura que defina Finanzas].
       IF NEW.pago_referencia IS NULL THEN NEW.pago_referencia := replace(NEW.folio, '-', ''); END IF;
+      -- El monto que se le indica es el vigente hoy para su curso; si después cambia, el suyo no
+      IF NEW.pago_monto IS NULL THEN NEW.pago_monto := curso.pago_monto; END IF;
     WHEN 'lista_para_curso' THEN
       IF OLD.estado = 'inscrita' AND ins.id IS NOT NULL THEN
         PERFORM apd.error('sigue_inscrita', 'La solicitud regresa a la bandeja sólo al darla de baja del grupo');

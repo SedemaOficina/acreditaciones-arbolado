@@ -54,7 +54,9 @@ Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asiste
 | `cupo_minimo` | `smallint` | Sí | Personas necesarias para confirmar un grupo |
 | `cupo_maximo` | `smallint` | Sí | Personas máximas en un grupo |
 | `pago_concepto` | `text` | Sí | Concepto del pago de derechos que se muestra a la persona al asignarle la cita de cotejo |
-| `pago_monto` | `numeric(10,2)` | No | Monto del pago de derechos, en pesos. Vacío mientras no se confirme con la Gaceta Oficial |
+| `pago_monto` | `numeric(10,2)` | No | Monto del pago de derechos de este curso, en pesos. Distinto por curso. Lo actualiza el personal cuando la Gaceta Oficial publica un costo nuevo. Vacío mientras no se capture |
+| `pago_fundamento` | `text` | No | Publicación de la Gaceta Oficial que fija el monto vigente (fecha y número). Obligatorio si hay monto |
+| `pago_vigente_desde` | `date` | No | Desde cuándo aplica el monto vigente. Obligatorio si hay monto |
 | `activo` | `boolean` | Sí | Si se pueden abrir grupos de este curso (por omisión: `true`) |
 | `actualizado_en` | `timestamptz` | Sí | Último cambio (por omisión: `now()`) |
 
@@ -66,7 +68,7 @@ Restricciones e índices:
 - `CONSTRAINT curso_dias_ck CHECK (dias_duracion BETWEEN 1 AND 15 AND dias_minimos_asistencia BETWEEN 1 AND dias_duracion)`
 - `CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10)`
 - `CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)`
-- `CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR pago_monto > 0)`
+- `CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR (pago_monto > 0 AND coalesce(trim(pago_fundamento), '') <> '' AND pago_vigente_desde IS NOT NULL))`
 
 ## requisito
 
@@ -232,6 +234,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `estado_desde` | `timestamptz` | Sí | Desde cuándo está en el estado actual; lo pone la base (por omisión: `now()`) |
 | `enviada_en` | `timestamptz` | No | Primer envío a revisión; lo pone la base |
 | `cita_en` | `timestamptz` | No | Cita para el cotejo presencial |
+| `pago_monto` | `numeric(10,2)` | No | Monto que se le indicó a la persona al darle su cita: el vigente en ese momento. Un cambio de costo posterior no lo altera. Vacío si aún no había monto capturado |
 | `pago_referencia` | `text` | No | Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura |
 | `lista_para_curso_en` | `timestamptz` | No | Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad |
 | `motivo_cierre` | `text` | No | Motivo de cancelación o conclusión sin atender |

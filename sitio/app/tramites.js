@@ -60,12 +60,15 @@
 
     // Con la cita, los datos para pagar: el comprobante se presenta en la cita y ahí se emite la factura
     if (s.estado === 'validada_en_linea' && c) {
-      const monto = c.pago_monto ? Number(c.pago_monto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
+      // El monto que se le indicó al darle la cita; si entonces aún no había, el vigente de su curso
+      const importe = s.pago_monto != null ? s.pago_monto : c.pago_monto;
+      const monto = importe != null ? Number(importe).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
       const instrucciones = (datos.parametro.find((x) => x.clave === 'pago_instrucciones') || {}).valor || '';
       extra.push(el('div', { class: 'aviso' }, [
         el('div', { class: 'aviso-texto' }, [
           el('p', {}, [el('strong', { texto: 'Datos para tu pago' })]),
           APD.datosLista([['Concepto', c.pago_concepto], ['Monto', monto || 'Pendiente: lo confirma la Gaceta Oficial'], ['Referencia', s.pago_referencia]]),
+          s.pago_monto == null && c.pago_fundamento ? el('p', { class: 'texto-gris', texto: c.pago_fundamento }) : null,
           APD.limpia(instrucciones) ? el('p', { texto: APD.limpia(instrucciones) }) : el('p', { class: 'pendiente', texto: 'Pendiente: banco, cuenta y forma de pago.' }),
           el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' })
         ])

@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="formkit/css/tokens.css">
 <link rel="stylesheet" href="formkit/css/base.css">
 <link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
 <link rel="stylesheet" href="formkit/modulos/tooltip/tooltip.css">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
 <link rel="stylesheet" href="formkit/modulos/acuse/acuse.css">
@@ -41,19 +42,26 @@
       <p class="ayuda">Como aparece en tu identificación oficial.</p>
       <input class="control" id="nombre" name="nombre" type="text" maxlength="80" autocomplete="given-name">
     </div>
-    <div class="fila">
-      <div class="campo" data-campo="primer_apellido" data-formato="nombre" data-requerido data-sensible
-           data-finalidad="Identificar a la persona en su expediente y en la acreditación que se emita." data-uso="Nombre que aparece en el expediente y en la acreditación.">
-        <label class="etiqueta" for="primer_apellido">Primer apellido</label>
-        <input class="control" id="primer_apellido" name="primer_apellido" type="text" maxlength="80" autocomplete="family-name">
+    <div class="campo" data-campo="primer_apellido" data-formato="nombre" data-requerido data-sensible
+         data-finalidad="Identificar a la persona en su expediente y en la acreditación que se emita." data-uso="Nombre que aparece en el expediente y en la acreditación.">
+      <label class="etiqueta" for="primer_apellido">Primer apellido</label>
+      <input class="control" id="primer_apellido" name="primer_apellido" type="text" maxlength="80" autocomplete="family-name">
+    </div>
+
+    <fieldset class="grupo" data-campo="tiene_segundo_apellido" data-requerido data-uso="Saber si la CURP se comprueba con un segundo apellido.">
+      <legend class="etiqueta">¿Tienes segundo apellido?</legend>
+      <p class="ayuda">Como aparece en tu CURP. Si no tienes, tu CURP lleva una X en su lugar.</p>
+      <div class="opciones-cortas">
+        <label class="opcion opcion-corta"><input class="opcion-input" type="radio" name="tiene_segundo_apellido" value="si"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Sí</span></label>
+        <label class="opcion opcion-corta"><input class="opcion-input" type="radio" name="tiene_segundo_apellido" value="no"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>No</span></label>
       </div>
-      <div class="campo" data-campo="segundo_apellido" data-formato="nombre" data-sensible
-           data-finalidad="Identificar a la persona en su expediente y en la acreditación que se emita." data-uso="Nombre que aparece en el expediente y en la acreditación.">
-        <label class="etiqueta" for="segundo_apellido">Segundo apellido</label>
-        <p class="ayuda">Si no tienes, déjalo vacío.</p>
-        <!-- autocomplete off: los navegadores no distinguen el segundo apellido; family-name ya llena el primero. -->
-        <input class="control" id="segundo_apellido" name="segundo_apellido" type="text" maxlength="80" autocomplete="off">
-      </div>
+    </fieldset>
+
+    <div class="campo" data-campo="segundo_apellido" data-si="tiene_segundo_apellido=si" data-formato="nombre" data-requerido data-sensible
+         data-finalidad="Identificar a la persona en su expediente y en la acreditación que se emita." data-uso="Nombre que aparece en el expediente y en la acreditación.">
+      <label class="etiqueta" for="segundo_apellido">Segundo apellido</label>
+      <!-- autocomplete off: los navegadores no distinguen el segundo apellido; family-name ya llena el primero. -->
+      <input class="control" id="segundo_apellido" name="segundo_apellido" type="text" maxlength="80" autocomplete="off">
     </div>
 
     <div class="campo" data-campo="fecha_nacimiento" data-formato="fecha" data-requerido data-no-futura data-sensible
@@ -63,11 +71,11 @@
       <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="date" autocomplete="bday">
     </div>
 
-    <!-- Tres validaciones cruzadas: la fecha (curp-fecha, del estándar) y el nombre y los apellidos
-         (curp-nombre y curp-segundo-apellido, propias del proyecto: app/curp-nombre.js). -->
+    <!-- Cuatro validaciones cruzadas: la fecha (curp-fecha, del estándar) y el nombre y los apellidos
+         (curp-nombre, curp-segundo-apellido y curp-sin-segundo-apellido, propias: app/curp-nombre.js). -->
     <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
-         data-cruzada="curp-fecha curp-nombre curp-segundo-apellido"
-         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido"
+         data-cruzada="curp-fecha curp-nombre curp-segundo-apellido curp-sin-segundo-apellido"
+         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido tiene=tiene_segundo_apellido"
          data-finalidad="Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona." data-uso="Identificador único de la cuenta y llave del historial de acreditaciones.">
       <label class="etiqueta" for="curp">CURP
         <span class="tooltip" data-tooltip>
@@ -175,6 +183,7 @@
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>
+<script src="app/cuenta.js?v=0.1"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/pruebas.js?v=0.1"></script>
 <script src="app/version-visible.js?v=0.1"></script>

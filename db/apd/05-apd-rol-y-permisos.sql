@@ -29,7 +29,8 @@ GRANT USAGE ON SCHEMA apd TO apd_api;
 GRANT SELECT ON apd.parametro TO apd_api;
 GRANT UPDATE (valor) ON apd.parametro TO apd_api;
 GRANT SELECT ON apd.curso TO apd_api;
-GRANT UPDATE (nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo, activo)
+GRANT UPDATE (nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo, activo,
+              pago_concepto, pago_monto, pago_fundamento, pago_vigente_desde)
   ON apd.curso TO apd_api;
 GRANT SELECT, INSERT ON apd.requisito TO apd_api;
 GRANT UPDATE (nombre, descripcion, activo) ON apd.requisito TO apd_api;

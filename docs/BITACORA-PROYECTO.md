@@ -123,3 +123,17 @@ contraseña ficticia `Prueba-2026`; las CURP ficticias con clave `PRUEB`.
 en teléfono y escritorio, con accesibilidad (axe) sin hallazgos.
 
 **Eliminado**: `solicitud.numero_expediente` y su restricción (pasa a `solicitante`); las CURP ficticias `XAXX…`.
+
+## 2026-10-14 · Bloque 8 · Segundo apellido, CURP al momento, costo por curso y documento de pendientes
+
+- **Sin segundo apellido**: la cuenta pregunta «¿Tienes segundo apellido?»; con «No», la CURP debe llevar X en
+  las posiciones 3 y 15 (cruzada `curp-sin-segundo-apellido`). Nadie queda atrapado ni sin comprobar.
+- **CURP que no marcaba error** (reporte de Liber, con la CURP escrita antes que la fecha): `app/cuenta.js`
+  vuelve a validar la CURP al cambiar nombre, apellidos, fecha o la respuesta del segundo apellido.
+- **Costo por curso configurable**: `curso.pago_monto` con `pago_fundamento` (publicación de la Gaceta) y
+  `pago_vigente_desde`; sólo el personal lo cambia y queda en la bitácora. La solicitud guarda el monto que se
+  le indicó al darle cita (`solicitud.pago_monto`). Montos ficticios distintos por curso y un cambio en la
+  fecha de corte para mostrar que quien ya tenía cita conserva el suyo.
+- **`docs/PENDIENTES.md`**: 45 pendientes numerados por responsable, y los resueltos.
+
+**Verificado**: 82 de 82 pruebas de la base; 21 casos en el servidor; 92 comprobaciones del sitio.
