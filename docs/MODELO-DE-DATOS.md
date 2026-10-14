@@ -21,7 +21,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`grupo`](#grupo) — Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con el cupo mínimo y nunca pasa del máximo.
 - [`inscripcion`](#inscripcion) — Una solicitud en un grupo. No se borra: una baja o una cancelación la deja inactiva y la solicitud regresa a la bandeja con su antigüedad.
 - [`asistencia`](#asistencia) — Asistencia por día de curso, capturada por el instructor.
-- [`examen`](#examen) — Calificación del examen final, capturada por el instructor. Sólo se admite con la asistencia mínima.
+- [`examen`](#examen) — Calificación del examen final: la captura el instructor o llega del sistema de examen en línea. Sólo se admite con la asistencia mínima, y una vez registrada no se modifica (el resultado es inapelable).
 - [`folio_contador`](#folio_contador) — Último número asignado por serie y año. Lo usa sólo la base al asignar folios.
 
 ## parametro
@@ -181,7 +181,7 @@ Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su e
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
-| `numero` | `text` | Sí | Número impreso en la credencial; lo asigna la base si no se migra |
+| `numero` | `text` | Sí | Número impreso en la credencial; lo asigna la base si no se migra. Formato provisional: Liber lo definirá |
 | `solicitante_id` | `uuid` | Sí | Titular |
 | `tipo_acreditacion` | `text` | Sí | poda o dictaminador |
 | `solicitud_id` | `uuid` | No | Solicitud que la originó; vacía si se migró |
@@ -320,7 +320,7 @@ Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con e
 | `organizacion_id` | `uuid` | No | Organización, sólo en grupos específicos |
 | `cupo_minimo` | `smallint` | Sí | Copiado del curso al crearse; lo pone la base |
 | `cupo_maximo` | `smallint` | Sí | Copiado del curso al crearse; lo pone la base |
-| `instructor` | `text` | No | Cuenta del instructor (acceso); obligatoria para confirmar |
+| `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo |
 | `sede` | `text` | No | Instalación de la Secretaría; obligatoria para confirmar |
 | `fecha_inicio` | `date` | No | Primer día; obligatoria para confirmar |
 | `estado` | `text` | Sí | en_integracion, confirmado, en_curso, concluido o cancelado (por omisión: `'en_integracion'`) |
@@ -386,19 +386,21 @@ Restricciones e índices:
 
 ## examen
 
-Calificación del examen final, capturada por el instructor. Sólo se admite con la asistencia mínima.
+Calificación del examen final: la captura el instructor o llega del sistema de examen en línea. Sólo se admite con la asistencia mínima, y una vez registrada no se modifica (el resultado es inapelable).
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `inscripcion_id` | `uuid` | Sí | Inscripción |
 | `presentado_en` | `date` | Sí | Fecha del examen |
 | `calificacion` | `numeric(3,1)` | Sí | De 0.0 a 10.0 |
-| `capturado_por` | `text` | Sí | Cuenta del instructor (acceso) |
+| `capturado_por` | `text` | Sí | Cuenta del instructor (acceso) o del sistema de examen en línea |
+| `origen` | `text` | Sí | captura: la registra el instructor; examen_web: llega del sistema de examen en salón de cómputo que se conectará después (R36) (por omisión: `'captura'`) |
 | `capturado_en` | `timestamptz` | Sí | Captura (por omisión: `now()`) |
 
 Restricciones e índices:
 
 - `CONSTRAINT examen_pk PRIMARY KEY (inscripcion_id)`
+- `CONSTRAINT examen_origen_ck CHECK (origen IN ('captura', 'examen_web'))`
 - `CONSTRAINT examen_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id)`
 - `CONSTRAINT examen_calificacion_ck CHECK (calificacion BETWEEN 0 AND 10)`
 

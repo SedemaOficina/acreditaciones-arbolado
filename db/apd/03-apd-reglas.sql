@@ -198,22 +198,14 @@ CREATE FUNCTION apd.poda_vigente(p_solicitante uuid, p_fecha date DEFAULT NULL) 
        AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en)
 $$;
 
--- ¿Puede operar con esta acreditación ese día? Para dictaminador, además, si el parámetro
--- dictaminador_sigue_a_poda es «si», necesita poda vigente ese mismo día. [pendiente] confirmar con Liber
--- si la poda se exige sólo al tramitar o durante toda la vigencia (docs/DECISIONES.md).
+-- ¿Puede operar con esta acreditación ese día? Sólo cuentan sus propias fechas. La de dictaminador
+-- sigue vigente hasta su fecha aunque la de poda venza antes (corrección R43, 2026-10-14): la poda
+-- vigente se exige sólo al iniciar la solicitud.
 CREATE FUNCTION apd.acreditacion_vigente(p_id uuid, p_fecha date DEFAULT NULL) RETURNS boolean
-  LANGUAGE plpgsql STABLE AS $$
-DECLARE
-  a  apd.acreditacion;
-  f  date := coalesce(p_fecha, apd.hoy());
-BEGIN
-  SELECT * INTO a FROM apd.acreditacion WHERE id = p_id;
-  IF NOT FOUND OR f NOT BETWEEN a.emitida_en AND a.vence_en THEN RETURN false; END IF;
-  IF a.tipo_acreditacion = 'dictaminador' AND apd.parametro_texto('dictaminador_sigue_a_poda') = 'si' THEN
-    RETURN apd.poda_vigente(a.solicitante_id, f);
-  END IF;
-  RETURN true;
-END $$;
+  LANGUAGE sql STABLE AS $$
+  SELECT EXISTS (SELECT 1 FROM apd.acreditacion
+                  WHERE id = p_id AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en)
+$$;
 
 -- Lo único que ve el público al verificar: sin CURP, sin contacto, sin domicilio; «Vigente» o «No vigente».
 -- Nunca «en renovación» ni «en trámite», que alguien podría leer como permiso para operar.
@@ -250,9 +242,8 @@ BEGIN
     IF NEW.emitida_en <> apd.hoy() THEN
       PERFORM apd.error('emision_con_otra_fecha', 'La acreditación se emite con la fecha del día');
     END IF;
-    IF NEW.tipo_acreditacion = 'dictaminador' AND NOT apd.poda_vigente(NEW.solicitante_id, NEW.emitida_en) THEN
-      PERFORM apd.error('sin_poda_vigente', 'Para emitir la acreditación de dictaminador, la persona debe tener la de poda vigente');
-    END IF;
+    -- La poda vigente del dictaminador ya se comprobó al iniciar la solicitud; aquí no se repite (R39).
+    -- El número es provisional: Liber definirá el formato del folio de la acreditación [pendiente].
     NEW.numero := (CASE NEW.tipo_acreditacion WHEN 'poda' THEN 'PD' ELSE 'DT' END) || '-'
       || extract(year FROM NEW.emitida_en)::text || '-'
       || lpad(apd.siguiente_folio(CASE NEW.tipo_acreditacion WHEN 'poda' THEN 'PD' ELSE 'DT' END,
@@ -330,15 +321,16 @@ END $$;
 CREATE TRIGGER solicitud_alta_registrar AFTER INSERT ON apd.solicitud
   FOR EACH ROW EXECUTE FUNCTION apd.solicitud_alta_registrar();
 
--- ¿Puede esta persona tramitar este curso hoy? Se comprueba al crear la solicitud (para avisar de
--- inmediato) y otra vez al enviarla: «al momento del trámite» (decisiones de vigencia y renovación).
+-- ¿Puede esta persona tramitar este curso hoy? Se comprueba al iniciar la solicitud y, si en borrador
+-- cambia el curso o la acreditación a renovar, otra vez en ese momento. No se vuelve a comprobar al enviar
+-- ni al emitir (corrección R05 y R39, 2026-10-14).
 CREATE FUNCTION apd.comprobar_elegibilidad(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   previa  record;
   estado_anterior text;
   hoy date := apd.hoy();
 BEGIN
-  -- Dictaminador: poda vigente al momento del trámite
+  -- Dictaminador: poda vigente al iniciar la solicitud
   IF s.tipo_acreditacion = 'dictaminador' AND NOT apd.poda_vigente(s.solicitante_id, hoy) THEN
     PERFORM apd.error('sin_poda_vigente', 'Para tramitar la acreditación de dictaminador necesitas la de poda y derribo vigente');
   END IF;
@@ -374,11 +366,10 @@ BEGIN
   END IF;
 END $$;
 
--- Al enviar: elegibilidad, perfil y documentos obligatorios que se cargan en línea
+-- Al enviar: perfil y documentos obligatorios que se cargan en línea
 CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE faltan text;
 BEGIN
-  PERFORM apd.comprobar_elegibilidad(s);
   IF s.tipo_acreditacion = 'dictaminador'
      AND (s.perfil_academico IS NULL OR coalesce(trim(s.carrera), '') = '' OR s.anios_experiencia IS NULL) THEN
     PERFORM apd.error('falta_perfil', 'Indica tu perfil académico, tu carrera y tus años de experiencia');
@@ -419,6 +410,11 @@ BEGIN
   END IF;
   IF OLD.estado <> 'borrador' AND (NEW.tipo_acreditacion, NEW.modalidad) IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad) THEN
     PERFORM apd.error('curso_fijo', 'El curso de una solicitud enviada no cambia: cancélala y crea otra');
+  END IF;
+  -- Cambiar en borrador el curso o la acreditación a renovar es como iniciar de nuevo
+  IF (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id)
+     IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id) THEN
+    PERFORM apd.comprobar_elegibilidad(NEW);
   END IF;
   -- Quien manda las fechas de control es la base
   NEW.enviada_en := OLD.enviada_en;
@@ -653,8 +649,20 @@ BEGIN
     PERFORM apd.error('campo_inmutable', 'El curso, la integración y los cupos de un grupo no cambian después de crearlo');
   END IF;
   IF OLD.estado IN ('en_curso', 'concluido', 'cancelado')
-     AND (NEW.instructor, NEW.sede, NEW.fecha_inicio) IS DISTINCT FROM (OLD.instructor, OLD.sede, OLD.fecha_inicio) THEN
-    PERFORM apd.error('grupo_cerrado', 'Instructor, sede y fecha no cambian una vez iniciado el curso');
+     AND (NEW.sede, NEW.fecha_inicio) IS DISTINCT FROM (OLD.sede, OLD.fecha_inicio) THEN
+    PERFORM apd.error('grupo_cerrado', 'La sede y la fecha no cambian una vez iniciado el curso');
+  END IF;
+  -- El instructor puede variar, también durante el curso (corrección R26); cada día queda quién capturó
+  -- la asistencia. Sólo no cambia con el grupo concluido o cancelado.
+  IF NEW.instructor IS DISTINCT FROM OLD.instructor THEN
+    IF OLD.estado IN ('concluido', 'cancelado') THEN
+      PERFORM apd.error('grupo_cerrado', 'El instructor no cambia en un grupo concluido o cancelado');
+    END IF;
+    IF NEW.instructor IS NULL AND OLD.estado <> 'en_integracion' THEN
+      PERFORM apd.error('sin_instructor', 'Un grupo confirmado siempre tiene instructor');
+    END IF;
+    PERFORM apd.registrar('cambio_instructor', 'grupo', NEW.id::text,
+      format('%s → %s', coalesce(OLD.instructor, 'sin instructor'), coalesce(NEW.instructor, 'sin instructor')));
   END IF;
   NEW.estado_desde := OLD.estado_desde;
   IF NEW.estado = OLD.estado THEN RETURN NEW; END IF;

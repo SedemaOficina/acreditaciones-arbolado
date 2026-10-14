@@ -186,7 +186,7 @@ CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acre
 CREATE INDEX acreditacion_vence ON apd.acreditacion (vence_en);
 COMMENT ON TABLE apd.acreditacion IS 'Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.';
 COMMENT ON COLUMN apd.acreditacion.id IS 'Identificador interno';
-COMMENT ON COLUMN apd.acreditacion.numero IS 'Número impreso en la credencial; lo asigna la base si no se migra';
+COMMENT ON COLUMN apd.acreditacion.numero IS 'Número impreso en la credencial; lo asigna la base si no se migra. Formato provisional: Liber lo definirá';
 COMMENT ON COLUMN apd.acreditacion.solicitante_id IS 'Titular';
 COMMENT ON COLUMN apd.acreditacion.tipo_acreditacion IS 'poda o dictaminador';
 COMMENT ON COLUMN apd.acreditacion.solicitud_id IS 'Solicitud que la originó; vacía si se migró';
@@ -360,7 +360,7 @@ COMMENT ON COLUMN apd.grupo.integracion IS 'especifico (una organización) o com
 COMMENT ON COLUMN apd.grupo.organizacion_id IS 'Organización, sólo en grupos específicos';
 COMMENT ON COLUMN apd.grupo.cupo_minimo IS 'Copiado del curso al crearse; lo pone la base';
 COMMENT ON COLUMN apd.grupo.cupo_maximo IS 'Copiado del curso al crearse; lo pone la base';
-COMMENT ON COLUMN apd.grupo.instructor IS 'Cuenta del instructor (acceso); obligatoria para confirmar';
+COMMENT ON COLUMN apd.grupo.instructor IS 'Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo';
 COMMENT ON COLUMN apd.grupo.sede IS 'Instalación de la Secretaría; obligatoria para confirmar';
 COMMENT ON COLUMN apd.grupo.fecha_inicio IS 'Primer día; obligatoria para confirmar';
 COMMENT ON COLUMN apd.grupo.estado IS 'en_integracion, confirmado, en_curso, concluido o cancelado';
@@ -415,16 +415,19 @@ CREATE TABLE apd.examen (
   presentado_en              date          NOT NULL,
   calificacion               numeric(3,1)  NOT NULL,
   capturado_por              text          NOT NULL,
+  origen                     text          NOT NULL DEFAULT 'captura',
   capturado_en               timestamptz   NOT NULL DEFAULT now(),
   CONSTRAINT examen_pk PRIMARY KEY (inscripcion_id),
+  CONSTRAINT examen_origen_ck CHECK (origen IN ('captura', 'examen_web')),
   CONSTRAINT examen_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id),
   CONSTRAINT examen_calificacion_ck CHECK (calificacion BETWEEN 0 AND 10)
 );
-COMMENT ON TABLE apd.examen IS 'Calificación del examen final, capturada por el instructor. Sólo se admite con la asistencia mínima.';
+COMMENT ON TABLE apd.examen IS 'Calificación del examen final: la captura el instructor o llega del sistema de examen en línea. Sólo se admite con la asistencia mínima, y una vez registrada no se modifica (el resultado es inapelable).';
 COMMENT ON COLUMN apd.examen.inscripcion_id IS 'Inscripción';
 COMMENT ON COLUMN apd.examen.presentado_en IS 'Fecha del examen';
 COMMENT ON COLUMN apd.examen.calificacion IS 'De 0.0 a 10.0';
-COMMENT ON COLUMN apd.examen.capturado_por IS 'Cuenta del instructor (acceso)';
+COMMENT ON COLUMN apd.examen.capturado_por IS 'Cuenta del instructor (acceso) o del sistema de examen en línea';
+COMMENT ON COLUMN apd.examen.origen IS 'captura: la registra el instructor; examen_web: llega del sistema de examen en salón de cómputo que se conectará después (R36)';
 COMMENT ON COLUMN apd.examen.capturado_en IS 'Captura';
 
 CREATE TABLE apd.folio_contador (

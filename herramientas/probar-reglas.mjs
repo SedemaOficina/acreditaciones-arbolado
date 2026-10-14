@@ -54,11 +54,9 @@ const casos = [
      ASSERT (SELECT array_agg(column_name::text ORDER BY ordinal_position) FROM information_schema.columns
               WHERE table_schema = 'apd' AND table_name = 'verificacion_publica')
             = ARRAY['numero', 'nombre', 'tipo', 'emitida_en', 'vence_en', 'situacion']; END $$;`],
-  ['Dictaminador con la poda vencida: «No vigente» aunque su fecha no haya llegado', 'ok', null, `DO $$ BEGIN
-     ASSERT NOT apd.acreditacion_vigente(${DICT_SIN_PODA}); END $$;`],
-  ['Con dictaminador_sigue_a_poda = no, el mismo dictaminador sí opera', 'ok', null, `
-     UPDATE apd.parametro SET valor = 'no' WHERE clave = 'dictaminador_sigue_a_poda';
-     DO $$ BEGIN ASSERT apd.acreditacion_vigente(${DICT_SIN_PODA}); END $$;`],
+  ['El dictaminador sigue vigente hasta su fecha aunque su poda haya vencido (R43)', 'ok', null, `DO $$ BEGIN
+     ASSERT apd.acreditacion_vigente(${DICT_SIN_PODA});
+     ASSERT (SELECT situacion FROM apd.verificacion_publica WHERE numero = 'DT-2026-K107') = 'Vigente'; END $$;`],
 
   // ── Elegibilidad al tramitar ──
   ['Renovar antes de la ventana se rechaza', { codigo: 'renovacion_anticipada' }, '2026-10-14 10:00', `
@@ -90,8 +88,10 @@ const casos = [
      UPDATE apd.solicitud SET folio = 'X' WHERE id = ${BORRADOR};`],
 
   // ── Documentos ──
-  ['Un archivo de más de 2 MB se rechaza', { codigo: 'archivo_grande' }, null,
-     DOC_PEQUENO(BORRADOR, 'curp', 2097153)],
+  ['Un archivo de más de 5 MB se rechaza', { codigo: 'archivo_grande' }, null,
+     DOC_PEQUENO(BORRADOR, 'curp', 5242881)],
+  ['Un archivo de 5 MB exactos se acepta', 'ok', null,
+     DOC_PEQUENO(BORRADOR, 'curp', 5242880)],
   ['No se cargan documentos en una solicitud enviada', { codigo: 'carga_fuera_de_turno' }, null,
      DOC_PEQUENO(ENVIADA, 'curp')],
   ['La revisión de un documento registra quién la hizo', { codigo: 'revision_sin_responsable' }, null, `
@@ -141,18 +141,20 @@ const casos = [
      SELECT i.id, '2026-10-15', 9, 'i' FROM apd.inscripcion i
       WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
         AND EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND NOT a.asistio) LIMIT 1;`],
-  ['No se concluye un grupo con calificaciones pendientes', { codigo: 'faltan_calificaciones' }, '2026-10-15 20:00', `
+  ['No se concluye un grupo con calificaciones pendientes', { codigo: 'faltan_calificaciones' }, '2026-10-17 20:00', `
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 3) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
      UPDATE apd.grupo SET estado = 'concluido' WHERE id = ${GRUPO_EN_CURSO};`],
-  ['Recorrido completo: examen, conclusión, emisión y verificación', 'ok', '2026-10-15 20:00', `
+  ['Recorrido completo: cinco días, examen, conclusión, emisión y verificación', 'ok', '2026-10-17 20:00', `
      CREATE TEMP TABLE g AS SELECT ${GRUPO_EN_CURSO} AS id; -- el grupo deja de estar «en curso» a la mitad del caso
+     -- quien faltó el día 1 falta también el día 2: 3 de 5, sin derecho a examen; los demás asisten todo
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 3) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
+     SELECT i.id, d, NOT (d = 2 AND EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND NOT a.asistio)), 'otro.instructor'
+       FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
      INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
-     SELECT i.id, '2026-10-15', 8, 'i' FROM apd.inscripcion i
+     SELECT i.id, '2026-10-17', 8, 'i' FROM apd.inscripcion i
       WHERE i.grupo_id = (SELECT id FROM g) AND i.activa
-        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 3;
+        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) >= 4;
      UPDATE apd.grupo SET estado = 'concluido' WHERE id = (SELECT id FROM g);
      INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id)
      SELECT solicitante_id, 'poda', id FROM apd.solicitud WHERE estado = 'aprobada';
@@ -161,9 +163,43 @@ const casos = [
                 WHERE i.grupo_id = (SELECT id FROM g) AND s.estado = 'acreditada') = 9;
        ASSERT (SELECT count(*) FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id
                 WHERE i.grupo_id = (SELECT id FROM g) AND s.estado = 'sin_derecho_examen') = 1;
-       ASSERT (SELECT bool_and(situacion = 'Vigente' AND vence_en = '2027-10-14') FROM apd.verificacion_publica
-                WHERE numero LIKE 'PD-2026-%' AND emitida_en = '2026-10-15');
+       ASSERT (SELECT bool_and(situacion = 'Vigente' AND vence_en = '2027-10-16') FROM apd.verificacion_publica
+                WHERE emitida_en = '2026-10-17');
      END $$;`],
+  ['Con 8.0 se aprueba poda; con 7.9 no (R34)', 'ok', '2026-10-17 20:00', `
+     CREATE TEMP TABLE g AS SELECT ${GRUPO_EN_CURSO} AS id;
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
+     CREATE TEMP TABLE dos AS SELECT i.id, row_number() OVER (ORDER BY i.id) AS n FROM apd.inscripcion i
+      WHERE i.grupo_id = (SELECT id FROM g) AND i.activa
+        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 5 LIMIT 2;
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por, origen)
+     SELECT id, '2026-10-17', CASE n WHEN 1 THEN 8.0 ELSE 7.9 END, 'sistema-examen', 'examen_web' FROM dos;
+     DO $$ BEGIN
+       ASSERT (SELECT s.estado FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id JOIN dos ON dos.id = i.id WHERE n = 1) = 'aprobada';
+       ASSERT (SELECT s.estado FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id JOIN dos ON dos.id = i.id WHERE n = 2) = 'no_acreditada';
+     END $$;`],
+  ['Una calificación registrada no se modifica (resultado inapelable)', { sqlstate: '42501' }, null, `
+     UPDATE apd.examen SET calificacion = 10;`],
+  ['El instructor puede cambiar durante el curso y queda en la bitácora (R26)', 'ok', null, `
+     UPDATE apd.grupo SET instructor = 'instructor.suplente' WHERE id = ${GRUPO_EN_CURSO};
+     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_instructor' AND detalle LIKE '%instructor.suplente'); END $$;`],
+  ['La sede no cambia con el curso iniciado', { codigo: 'grupo_cerrado' }, null, `
+     UPDATE apd.grupo SET sede = 'Otra' WHERE id = ${GRUPO_EN_CURSO};`],
+  ['El curso de renovación dura un día', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT bool_and(dias_duracion = 1 AND dias_minimos_asistencia = 1) FROM apd.curso WHERE modalidad = 'renovacion');
+     ASSERT (SELECT bool_and(dias_duracion = 5) FROM apd.curso WHERE modalidad = 'nueva'); END $$;`],
+  ['En una renovación sólo son obligatorios la constancia fiscal y el pago (R46)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT array_agg(requisito ORDER BY requisito) FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+              WHERE modalidad = 'renovacion' AND tipo_acreditacion = 'dictaminador' AND obligatorio AND forma = 'documento')
+            = ARRAY['constancia_situacion_fiscal', 'pago_derechos']; END $$;`],
+  ['La poda vigente se exige al iniciar, no al enviar (R05)', 'ok', '2027-06-01 10:00', `
+     -- La solicitud de dictaminador con observaciones se inició con poda vigente (vence el 10/05/2027).
+     -- Se reenvía el 1/06/2027, con la poda ya vencida: el envío se acepta.
+     CREATE TEMP TABLE s AS SELECT id FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador';
+     DO $$ BEGIN ASSERT NOT apd.poda_vigente((SELECT solicitante_id FROM apd.solicitud WHERE id = (SELECT id FROM s))); END $$;
+     ${DOC_PEQUENO('(SELECT id FROM s)', 'comprobantes_experiencia')}
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = (SELECT id FROM s);`],
   ['No se emite la acreditación de una solicitud no aprobada', { codigo: 'solicitud_no_aprobada' }, null, `
      INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id)
      SELECT solicitante_id, 'poda', id FROM apd.solicitud WHERE id = ${BORRADOR};`],

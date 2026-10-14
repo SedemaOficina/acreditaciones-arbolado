@@ -21,16 +21,16 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Paso | Lo mueve | La base exige |
 |---|---|---|
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
-| → enviada | Persona solicitante | Elegibilidad otra vez; documentos obligatorios en línea; perfil académico si es dictaminador |
+| → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador. La elegibilidad no se vuelve a comprobar |
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada |
 | → lista_para_curso | Cotejo | A quién se factura el pago. Arranca la espera de grupo |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
-| → acreditada | Al emitir la acreditación | Solicitud aprobada; si es dictaminador, poda vigente ese día |
+| → acreditada | Al emitir la acreditación | Solicitud aprobada; se emite con la fecha del día |
 | → cancelada / concluida_sin_atender | Persona o personal | Motivo. Si estaba en un grupo, sale de él |
 
-**Elegibilidad** (al crear y al enviar):
+**Elegibilidad** (al iniciar la solicitud, y otra vez sólo si en borrador cambia el curso o la acreditación a renovar):
 - Dictaminador: acreditación de poda vigente ese día.
 - Renovación: la acreditación más reciente de ese tipo, desde 30 días naturales antes de su vencimiento y
   hasta un año después.
@@ -48,8 +48,7 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 | `vencida_no_renovable` | Después | **No**; tramita como nueva |
 
 - Vence el día anterior al aniversario de la emisión. La renovada cuenta su año desde su propia emisión.
-- Dictaminador: además, deja de operar si su acreditación de poda no está vigente (parámetro
-  `dictaminador_sigue_a_poda`, provisionalmente «si»).
+- Dictaminador: sigue vigente hasta su propia fecha aunque la de poda venza antes.
 - La verificación pública (`apd.verificacion_publica`) sólo muestra número, nombre, tipo, fechas y «Vigente»
   o «No vigente».
 
@@ -64,13 +63,18 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 | → concluido | Nadie con asistencia suficiente sin calificación. Quien no alcanzó la asistencia queda sin derecho a examen |
 | → cancelado | Motivo. Las personas regresan a la bandeja con su antigüedad original |
 
-Asistencia: por día, nunca de un día que no ha ocurrido. Examen: sólo con la asistencia mínima del curso.
+Cursos: 5 días los nuevos y 1 día las renovaciones. El instructor puede cambiar hasta concluir el grupo, con
+constancia en la bitácora; sede y fecha no cambian una vez iniciado.
+
+Asistencia: por día, nunca de un día que no ha ocurrido. Examen: sólo con la asistencia mínima del curso;
+calificación mínima 8.0 en poda y 9.0 en dictaminador. Una calificación registrada no se modifica
+(resultado inapelable). Cada calificación guarda su origen: captura del instructor o examen en línea.
 
 ## Siempre
 
 - **Folios** los asigna la base: `APD-S-AAAA-NNNNN` (solicitud), `APD-G-AAAA-NNN` (grupo), `PD-AAAA-NNNN` y
-  `DT-AAAA-NNNN` (acreditaciones emitidas en el sistema; las migradas conservan el suyo). [pendiente]
-  confirmar el formato de número con la Dirección.
+  `DT-AAAA-NNNN` (acreditaciones emitidas en el sistema; las migradas conservan el suyo). El de la
+  acreditación es provisional: Liber definirá su formato.
 - **Bitácora**: cada alta y cambio de estado queda con quién, cuándo y desde dónde. No se edita ni se borra,
   ni siquiera por la administración.
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
@@ -83,5 +87,5 @@ Asistencia: por día, nunca de un día que no ha ocurrido. Examen: sólo con la 
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 54 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 61 casos con fechas
 movidas, cupos, permisos y bitácora.

@@ -148,7 +148,7 @@
       "descripcion": "Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
-        { "nombre": "numero", "tipo": "text", "nulo": false, "descripcion": "Número impreso en la credencial; lo asigna la base si no se migra" },
+        { "nombre": "numero", "tipo": "text", "nulo": false, "descripcion": "Número impreso en la credencial; lo asigna la base si no se migra. Formato provisional: Liber lo definirá" },
         { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Titular" },
         { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "poda o dictaminador" },
         { "nombre": "solicitud_id", "tipo": "uuid", "nulo": true, "descripcion": "Solicitud que la originó; vacía si se migró" },
@@ -287,7 +287,7 @@
         { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Organización, sólo en grupos específicos" },
         { "nombre": "cupo_minimo", "tipo": "smallint", "nulo": false, "descripcion": "Copiado del curso al crearse; lo pone la base" },
         { "nombre": "cupo_maximo", "tipo": "smallint", "nulo": false, "descripcion": "Copiado del curso al crearse; lo pone la base" },
-        { "nombre": "instructor", "tipo": "text", "nulo": true, "descripcion": "Cuenta del instructor (acceso); obligatoria para confirmar" },
+        { "nombre": "instructor", "tipo": "text", "nulo": true, "descripcion": "Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo" },
         { "nombre": "sede", "tipo": "text", "nulo": true, "descripcion": "Instalación de la Secretaría; obligatoria para confirmar" },
         { "nombre": "fecha_inicio", "tipo": "date", "nulo": true, "descripcion": "Primer día; obligatoria para confirmar" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'en_integracion'", "descripcion": "en_integracion, confirmado, en_curso, concluido o cancelado" },
@@ -353,16 +353,18 @@
     },
     {
       "nombre": "examen",
-      "descripcion": "Calificación del examen final, capturada por el instructor. Sólo se admite con la asistencia mínima.",
+      "descripcion": "Calificación del examen final: la captura el instructor o llega del sistema de examen en línea. Sólo se admite con la asistencia mínima, y una vez registrada no se modifica (el resultado es inapelable).",
       "columnas": [
         { "nombre": "inscripcion_id", "tipo": "uuid", "nulo": false, "descripcion": "Inscripción" },
         { "nombre": "presentado_en", "tipo": "date", "nulo": false, "descripcion": "Fecha del examen" },
         { "nombre": "calificacion", "tipo": "numeric(3,1)", "nulo": false, "descripcion": "De 0.0 a 10.0" },
-        { "nombre": "capturado_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso)" },
+        { "nombre": "capturado_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso) o del sistema de examen en línea" },
+        { "nombre": "origen", "tipo": "text", "nulo": false, "defecto": "'captura'", "descripcion": "captura: la registra el instructor; examen_web: llega del sistema de examen en salón de cómputo que se conectará después (R36)" },
         { "nombre": "capturado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Captura" }
       ],
       "restricciones": [
         "CONSTRAINT examen_pk PRIMARY KEY (inscripcion_id)",
+        "CONSTRAINT examen_origen_ck CHECK (origen IN ('captura', 'examen_web'))",
         "CONSTRAINT examen_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id)",
         "CONSTRAINT examen_calificacion_ck CHECK (calificacion BETWEEN 0 AND 10)"
       ]

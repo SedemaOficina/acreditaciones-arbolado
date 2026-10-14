@@ -284,12 +284,16 @@ const G1 = grupo('g1', 'poda', 'nueva', '2026-08-20');
 inscribir(G1, g1, '2026-08-20');
 programar(G1, '2026-08-26', '2026-09-07');
 estadoGrupo(G1, '2026-09-07', 'en_curso');
+// Curso de cinco días (lunes a viernes). Una persona falta dos días: 3 de 5, sin derecho a examen.
 asistencia(g1, 1, '2026-09-07');
 asistencia(g1, 2, '2026-09-08', [g1[9]]);
-asistencia(g1, 3, '2026-09-09');
-const calificaciones = [8.5, 9.6, 7.0, 8.0, 6.5, 9.0, 7.8, 8.8, 9.2];
-for (let i = 0; i < 9; i++) examen(g1[i], '2026-09-09', calificaciones[i]);
-estadoGrupo(G1, '2026-09-10', 'concluido');
+asistencia(g1, 3, '2026-09-09', [g1[9]]);
+asistencia(g1, 4, '2026-09-10', [g1[4]]);
+asistencia(g1, 5, '2026-09-11');
+// Mínimo 8.0 en poda: una aprueba justo con 8.0 y otra reprueba con 7.5 (con la regla anterior aprobaba)
+const calificaciones = [8.5, 9.6, 8.0, 8.4, 7.5, 9.0, 8.2, 8.8, 9.2];
+for (let i = 0; i < 9; i++) examen(g1[i], '2026-09-11', calificaciones[i]);
+estadoGrupo(G1, '2026-09-12', 'concluido');
 for (const i of [0, 1, 2, 3, 5, 6, 7, 8]) emitirAcreditacion(g1[i], '2026-09-15');
 for (const i of [0, 1, 2, 5, 6, 8]) entregar(g1[i], '2026-09-22');
 
@@ -372,7 +376,7 @@ observar(sDictObs, '2026-10-08', 'comprobantes_experiencia', 'Las constancias no
 const sDictG1 = solicitud('dict-g1', g1[1].persona, 'dictaminador', 'nueva', { fecha: '2026-10-10', carrera: 'Ingeniería Ambiental', anios: 5 });
 enviar(sDictG1, '2026-10-10');
 
-// 3 · Grupo de poda específico de una alcaldía, en curso: día 1 capturado (una falta)
+// 3 · Grupo de poda específico de una alcaldía, en curso (cinco días desde el 13/10): día 1 capturado, una falta
 const g4 = [];
 for (let i = 0; i < 11; i++) {
   const p = persona('g4-' + i);

@@ -20,10 +20,10 @@
    "modalidad": "renovacion",
    "cupo_maximo": 25,
    "cupo_minimo": 10,
-   "dias_duracion": 5,
+   "dias_duracion": 1,
    "tipo_acreditacion": "dictaminador",
    "calificacion_minima": 9,
-   "dias_minimos_asistencia": 4
+   "dias_minimos_asistencia": 1
   },
   {
    "activo": true,
@@ -31,10 +31,10 @@
    "modalidad": "nueva",
    "cupo_maximo": 25,
    "cupo_minimo": 10,
-   "dias_duracion": 3,
+   "dias_duracion": 5,
    "tipo_acreditacion": "poda",
-   "calificacion_minima": 7,
-   "dias_minimos_asistencia": 3
+   "calificacion_minima": 8,
+   "dias_minimos_asistencia": 4
   },
   {
    "activo": true,
@@ -42,10 +42,10 @@
    "modalidad": "renovacion",
    "cupo_maximo": 25,
    "cupo_minimo": 10,
-   "dias_duracion": 3,
+   "dias_duracion": 1,
    "tipo_acreditacion": "poda",
-   "calificacion_minima": 7,
-   "dias_minimos_asistencia": 3
+   "calificacion_minima": 8,
+   "dias_minimos_asistencia": 1
   }
  ],
  "grupo": [
@@ -61,7 +61,7 @@
    "cupo_minimo": 10,
    "es_ficticio": true,
    "integracion": "combinado",
-   "estado_desde": "2026-09-10T08:30:00-06:00",
+   "estado_desde": "2026-09-12T08:30:00-06:00",
    "fecha_inicio": "2026-09-07",
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
@@ -124,66 +124,75 @@
  ],
  "examen": [
   {
-   "calificacion": 8,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "origen": "captura",
+   "calificacion": 8.4,
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "13729c20-4c19-46c7-af7a-8f0987101189"
   },
   {
+   "origen": "captura",
    "calificacion": 9.6,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "1aac7b36-16d6-4fce-aa56-40e1839627c5"
   },
   {
+   "origen": "captura",
    "calificacion": 9,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "248c5bf5-0bc0-4596-a3bf-8536064ad777"
   },
   {
+   "origen": "captura",
    "calificacion": 8.8,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "5a179239-3dad-4209-a710-cabab6b3b937"
   },
   {
+   "origen": "captura",
    "calificacion": 8.5,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "73c04e0e-d469-445c-a670-165d3db98101"
   },
   {
-   "calificacion": 6.5,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "origen": "captura",
+   "calificacion": 7.5,
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "7a44ef0e-4f5b-43c1-a56d-6360bba6fca4"
   },
   {
-   "calificacion": 7.8,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "origen": "captura",
+   "calificacion": 8.2,
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "86210250-d005-4cc5-af53-e2c5f4e9dca7"
   },
   {
+   "origen": "captura",
    "calificacion": 9.2,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "c11d911f-f5fe-400b-ab62-33e39232e393"
   },
   {
-   "calificacion": 7,
-   "capturado_en": "2026-09-09T19:00:00-06:00",
+   "origen": "captura",
+   "calificacion": 8,
+   "capturado_en": "2026-09-11T19:00:00-06:00",
    "capturado_por": "instructor.ficticio",
-   "presentado_en": "2026-09-09",
+   "presentado_en": "2026-09-11",
    "inscripcion_id": "f4a7e773-2fd6-42a3-a4c6-a6551c52a2e8"
   }
  ],
@@ -1060,6 +1069,16 @@
   },
   {
    "fecha": "2026-08-26T16:00:00-06:00",
+   "accion": "cambio_instructor",
+   "detalle": "sin instructor → instructor.ficticio",
+   "entidad": "grupo",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "48f93bff-b3b7-4160-a7d6-2be1ed246ed9",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-26T16:00:00-06:00",
    "accion": "estado",
    "detalle": "en_integracion → confirmado",
    "entidad": "grupo",
@@ -1139,7 +1158,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1149,7 +1168,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → no_acreditada",
    "entidad": "solicitud",
@@ -1159,7 +1178,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1169,7 +1188,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1179,7 +1198,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1189,7 +1208,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1199,7 +1218,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1209,7 +1228,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1219,7 +1238,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → aprobada",
    "entidad": "solicitud",
@@ -1229,9 +1248,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.0 (mínima 7.0)",
+   "detalle": "Calificación 8.4 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
@@ -1239,9 +1258,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 6.5 (mínima 7.0)",
+   "detalle": "Calificación 7.5 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
@@ -1249,9 +1268,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.8 (mínima 7.0)",
+   "detalle": "Calificación 8.8 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "40667225-9eca-40ea-af57-1873c1fbb62f",
@@ -1259,9 +1278,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 9.2 (mínima 7.0)",
+   "detalle": "Calificación 9.2 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "4f024511-6131-4de3-adc7-53295f3154bc",
@@ -1269,9 +1288,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 9.0 (mínima 7.0)",
+   "detalle": "Calificación 9.0 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
@@ -1279,9 +1298,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 7.0 (mínima 7.0)",
+   "detalle": "Calificación 8.0 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
@@ -1289,9 +1308,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 8.5 (mínima 7.0)",
+   "detalle": "Calificación 8.5 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
@@ -1299,9 +1318,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 9.6 (mínima 7.0)",
+   "detalle": "Calificación 9.6 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "94f1487a-3e47-4361-a972-7555eba72d13",
@@ -1309,9 +1328,9 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-09T19:00:00-06:00",
+   "fecha": "2026-09-11T19:00:00-06:00",
    "accion": "examen",
-   "detalle": "Calificación 7.8 (mínima 7.0)",
+   "detalle": "Calificación 8.2 (mínima 8.0)",
    "entidad": "solicitud",
    "usuario": "instructor.ficticio",
    "entidad_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
@@ -1319,7 +1338,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-10T08:30:00-06:00",
+   "fecha": "2026-09-12T08:30:00-06:00",
    "accion": "estado",
    "detalle": "inscrita → sin_derecho_examen",
    "entidad": "solicitud",
@@ -1329,7 +1348,7 @@
    "usuario_tipo": "personal"
   },
   {
-   "fecha": "2026-09-10T08:30:00-06:00",
+   "fecha": "2026-09-12T08:30:00-06:00",
    "accion": "estado",
    "detalle": "en_curso → concluido",
    "entidad": "grupo",
@@ -2520,6 +2539,16 @@
   },
   {
    "fecha": "2026-10-02T16:00:00-06:00",
+   "accion": "cambio_instructor",
+   "detalle": "sin instructor → instructor.ficticio",
+   "entidad": "grupo",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "e2707153-ffdb-4591-a555-a5b817368776",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-02T16:00:00-06:00",
    "accion": "estado",
    "detalle": "en_integracion → confirmado",
    "entidad": "grupo",
@@ -3639,22 +3668,6 @@
    "nombre_original": "identificacion_oficial.pdf"
   },
   {
-   "id": "a66ed59c-1259-2100-e334-3d794e800810",
-   "estado": "aceptado",
-   "sha256": "31cd810240de0f535965674ae6d378e9f4cac4bfe5f68940fdaebfffd081c3b7",
-   "vigente": true,
-   "requisito": "comprobante_domicilio",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
-   "tamano_bytes": 618933,
-   "archivo_clave": "ficticio/0817c281-7552-418b-ae7e-bc65c9853c2a/comprobante_domicilio-6b295925ae.pdf",
-   "nombre_original": "comprobante_domicilio.pdf"
-  },
-  {
    "id": "54ece2bf-bad1-9ae7-c6bb-11ad5d645800",
    "estado": "aceptado",
    "sha256": "0763085689d27d1299ce60b4d06eb9d65301aff1fbe19204489cb1290e148f05",
@@ -3669,38 +3682,6 @@
    "tamano_bytes": 1062241,
    "archivo_clave": "ficticio/0817c281-7552-418b-ae7e-bc65c9853c2a/constancia_situacion_fiscal-d76411ee3b.pdf",
    "nombre_original": "constancia_situacion_fiscal.pdf"
-  },
-  {
-   "id": "67f99e9d-48d4-b940-d269-17c7c1ebfc09",
-   "estado": "aceptado",
-   "sha256": "919d99efc7139bf2d490ae1cd8982a6b0ab4e7b62c4a57092d6b55d6f580e6e6",
-   "vigente": true,
-   "requisito": "curp",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
-   "tamano_bytes": 415606,
-   "archivo_clave": "ficticio/0817c281-7552-418b-ae7e-bc65c9853c2a/curp-398562eed9.pdf",
-   "nombre_original": "curp.pdf"
-  },
-  {
-   "id": "f8cb4378-4e57-ba69-0d67-159ddd4a088b",
-   "estado": "aceptado",
-   "sha256": "8824c6e675b16118e3bd5892f441e54d22e7410e967f710c56ace7ab85b35b4e",
-   "vigente": true,
-   "requisito": "identificacion_oficial",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
-   "tamano_bytes": 490387,
-   "archivo_clave": "ficticio/0817c281-7552-418b-ae7e-bc65c9853c2a/identificacion_oficial-4bc738c294.pdf",
-   "nombre_original": "identificacion_oficial.pdf"
   },
   {
    "id": "0e1f6bdb-0dc2-a8e1-16a4-d74e194da2f2",
@@ -4231,22 +4212,6 @@
    "nombre_original": "identificacion_oficial-corregido.jpg"
   },
   {
-   "id": "c2f9bf0f-496c-30a1-322c-76eb5f584430",
-   "estado": "aceptado",
-   "sha256": "153589583f41afe935df40ada2bda4a1d2add247290d59127c1d21913caab510",
-   "vigente": true,
-   "requisito": "comprobante_domicilio",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-07T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-07T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
-   "tamano_bytes": 316595,
-   "archivo_clave": "ficticio/40ec133d-5a02-4018-a95b-fd3adbb8d7b2/comprobante_domicilio-21593d355a.pdf",
-   "nombre_original": "comprobante_domicilio.pdf"
-  },
-  {
    "id": "f92b92a1-0147-b8fd-8c20-068a9469e2da",
    "estado": "aceptado",
    "sha256": "f44bd532818b0cdce12b1f231dfb7fccaa11be52823a9b9d61bbac909ea45f2f",
@@ -4261,38 +4226,6 @@
    "tamano_bytes": 808883,
    "archivo_clave": "ficticio/40ec133d-5a02-4018-a95b-fd3adbb8d7b2/constancia_situacion_fiscal-99893c8f8e.pdf",
    "nombre_original": "constancia_situacion_fiscal.pdf"
-  },
-  {
-   "id": "329742b8-340e-d166-f777-57fbb2e4afd2",
-   "estado": "aceptado",
-   "sha256": "b6a99f5d34d585438c9be6dc5570985c30ed00fecf903c354a8c691030aee3f8",
-   "vigente": true,
-   "requisito": "curp",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-07T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-07T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
-   "tamano_bytes": 532193,
-   "archivo_clave": "ficticio/40ec133d-5a02-4018-a95b-fd3adbb8d7b2/curp-55fc1e7189.pdf",
-   "nombre_original": "curp.pdf"
-  },
-  {
-   "id": "7734a578-28b3-8ae3-dade-3fc6117a432f",
-   "estado": "aceptado",
-   "sha256": "d2b919f752f9fdd8f1ea1551a778e6edd6d339807dfe8322d79d4da798dca098",
-   "vigente": true,
-   "requisito": "identificacion_oficial",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-07T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-07T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
-   "tamano_bytes": 597508,
-   "archivo_clave": "ficticio/40ec133d-5a02-4018-a95b-fd3adbb8d7b2/identificacion_oficial-65ee44f295.pdf",
-   "nombre_original": "identificacion_oficial.pdf"
   },
   {
    "id": "a4d3197c-b1db-4563-dc2c-8af8982b2365",
@@ -5879,22 +5812,6 @@
    "nombre_original": "identificacion_oficial.pdf"
   },
   {
-   "id": "1613780b-7ec8-c297-46ac-a543bdaaf694",
-   "estado": "pendiente",
-   "sha256": "b5d9c932548c0e6ee980c11935525888c8e38606c5ece486418b610e268acefe",
-   "vigente": true,
-   "requisito": "comprobante_domicilio",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-12T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": null,
-   "revisado_por": null,
-   "solicitud_id": "ac978c5c-ef3e-49cd-a599-b72ff3cee7a0",
-   "tamano_bytes": 1025882,
-   "archivo_clave": "ficticio/ac978c5c-ef3e-49cd-a599-b72ff3cee7a0/comprobante_domicilio-ce83adb6bb.pdf",
-   "nombre_original": "comprobante_domicilio.pdf"
-  },
-  {
    "id": "4de41920-21ca-c638-83f1-015234d5263b",
    "estado": "pendiente",
    "sha256": "96fcbc565a07d6d1d2a1ddee78f0b8c49ecc0d3a51285e9b43ad664de26782d2",
@@ -5909,38 +5826,6 @@
    "tamano_bytes": 825014,
    "archivo_clave": "ficticio/ac978c5c-ef3e-49cd-a599-b72ff3cee7a0/constancia_situacion_fiscal-9d796e3770.pdf",
    "nombre_original": "constancia_situacion_fiscal.pdf"
-  },
-  {
-   "id": "8381abff-c0b4-5b05-8708-27da63fc9520",
-   "estado": "pendiente",
-   "sha256": "17b360b0b7578a7413f49b9d5871571fb38d18372a66f03fd02fa93f2eb1ae8f",
-   "vigente": true,
-   "requisito": "curp",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-12T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": null,
-   "revisado_por": null,
-   "solicitud_id": "ac978c5c-ef3e-49cd-a599-b72ff3cee7a0",
-   "tamano_bytes": 670052,
-   "archivo_clave": "ficticio/ac978c5c-ef3e-49cd-a599-b72ff3cee7a0/curp-77a44bfc5a.pdf",
-   "nombre_original": "curp.pdf"
-  },
-  {
-   "id": "4f993ee7-139d-0ba8-9347-b3152b73d0b0",
-   "estado": "pendiente",
-   "sha256": "27762232aae3ae8fd7fa5fdfd3a234bfdc2327ffcd2a6496af8b0e123a999549",
-   "vigente": true,
-   "requisito": "identificacion_oficial",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-12T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": null,
-   "revisado_por": null,
-   "solicitud_id": "ac978c5c-ef3e-49cd-a599-b72ff3cee7a0",
-   "tamano_bytes": 675593,
-   "archivo_clave": "ficticio/ac978c5c-ef3e-49cd-a599-b72ff3cee7a0/identificacion_oficial-78fe98d9e5.pdf",
-   "nombre_original": "identificacion_oficial.pdf"
   },
   {
    "id": "fdaba2de-9f0f-9541-32ce-191e227ace27",
@@ -6135,22 +6020,6 @@
    "nombre_original": "identificacion_oficial.pdf"
   },
   {
-   "id": "fa6166e1-d3dc-a6c7-fe77-1de0c1d34005",
-   "estado": "aceptado",
-   "sha256": "23f82ea1685c212402707baff82356c2643039eceeb755ff923d291dc8381df8",
-   "vigente": true,
-   "requisito": "comprobante_domicilio",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-08-25T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-08-27T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
-   "tamano_bytes": 380540,
-   "archivo_clave": "ficticio/d3f09d69-c624-44e3-a024-4e381d947d1c/comprobante_domicilio-30f5c84772.pdf",
-   "nombre_original": "comprobante_domicilio.pdf"
-  },
-  {
    "id": "1686d3d6-7611-ae13-94eb-e6757c164f64",
    "estado": "aceptado",
    "sha256": "fd5f5a94d30c548b0b7a319eb017f99eea36dc18abb7ec4bfd0506c245d5fb92",
@@ -6167,86 +6036,6 @@
    "nombre_original": "constancia_situacion_fiscal.pdf"
   },
   {
-   "id": "67f85a79-d844-5b57-d7ae-80329d77e730",
-   "estado": "aceptado",
-   "sha256": "08981b88578cc5f544aac191f9c590a2efe7f71ea4205979873fd7d47dc95742",
-   "vigente": true,
-   "requisito": "curp",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-08-25T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-08-27T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
-   "tamano_bytes": 1007711,
-   "archivo_clave": "ficticio/d3f09d69-c624-44e3-a024-4e381d947d1c/curp-ca13f50ce2.pdf",
-   "nombre_original": "curp.pdf"
-  },
-  {
-   "id": "a0848112-1f2b-7f67-6f4a-2e724d511c95",
-   "estado": "aceptado",
-   "sha256": "da77b0e86f23825b97b8c49c7206af0b667f73242f5a99928dfc7dae77d0df4c",
-   "vigente": true,
-   "requisito": "identificacion_oficial",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-08-25T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-08-27T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
-   "tamano_bytes": 187682,
-   "archivo_clave": "ficticio/d3f09d69-c624-44e3-a024-4e381d947d1c/identificacion_oficial-01e02fccf9.pdf",
-   "nombre_original": "identificacion_oficial.pdf"
-  },
-  {
-   "id": "67a7862e-eddb-a690-71af-bb850a523dc5",
-   "estado": "aceptado",
-   "sha256": "90e4ae2710816d9081fd18301d652804932cfaa5c5fe5d3675932b490ff12698",
-   "vigente": true,
-   "requisito": "comprobante_domicilio",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 606732,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/comprobante_domicilio-682ecc51c1.pdf",
-   "nombre_original": "comprobante_domicilio.pdf"
-  },
-  {
-   "id": "fe3e3320-cfcc-1c8a-9592-9756e3c35b62",
-   "estado": "aceptado",
-   "sha256": "e442fe7d7ab1385ed5aff7fb2110ee5d2def5ec6238ef1ce4b50c057c735956b",
-   "vigente": true,
-   "requisito": "comprobante_estudios",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 573101,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/comprobante_estudios-5ff8d94170.pdf",
-   "nombre_original": "comprobante_estudios.pdf"
-  },
-  {
-   "id": "27bcb3a8-6c93-97cc-8fb0-0f16b3a47386",
-   "estado": "aceptado",
-   "sha256": "724f58cf3eea1946bc4b1b1c118b403237ec925fe9c149f9613a7329f3a11a46",
-   "vigente": true,
-   "requisito": "comprobantes_experiencia",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 1175757,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/comprobantes_experiencia-f31aded4f7.pdf",
-   "nombre_original": "comprobantes_experiencia.pdf"
-  },
-  {
    "id": "f1f9cd7e-2a8a-4dab-9904-5a90fc4a1cbd",
    "estado": "aceptado",
    "sha256": "412871bc1c432d8c5fb77bd8c0253dbe2767bc9bab64b682bb711ff22a1de853",
@@ -6261,54 +6050,6 @@
    "tamano_bytes": 1105480,
    "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/constancia_situacion_fiscal-e1f28496f8.pdf",
    "nombre_original": "constancia_situacion_fiscal.pdf"
-  },
-  {
-   "id": "19ca2bcf-64b3-0397-98bc-0f995ac610cd",
-   "estado": "aceptado",
-   "sha256": "0a5073e2b4a1c947d5d3abf0834ec0b63bbe99940ce694ffea068882551b4a3c",
-   "vigente": true,
-   "requisito": "curp",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 698757,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/curp-7ea65e06d7.pdf",
-   "nombre_original": "curp.pdf"
-  },
-  {
-   "id": "f75378b7-8a8b-b65d-1b9d-5d9656e9b4c7",
-   "estado": "aceptado",
-   "sha256": "8380c40d841e0b64294a90f2e8b4e6636093f14ff26361b3119804fb8e643bf8",
-   "vigente": true,
-   "requisito": "curriculum_vitae",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 940435,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/curriculum_vitae-b9a73c91f6.pdf",
-   "nombre_original": "curriculum_vitae.pdf"
-  },
-  {
-   "id": "2b6e8ee2-9eb8-8c0e-f2c1-7b39acc14b7f",
-   "estado": "aceptado",
-   "sha256": "8016bb8c6ea9a9d0970ae019dc86610185f8f7adf937133c962637eca97f3a3d",
-   "vigente": true,
-   "requisito": "identificacion_oficial",
-   "tipo_mime": "application/pdf",
-   "cargado_en": "2026-10-01T09:30:00-06:00",
-   "observacion": "",
-   "revisado_en": "2026-10-02T13:00:00-06:00",
-   "revisado_por": "revision.ficticia",
-   "solicitud_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "tamano_bytes": 822234,
-   "archivo_clave": "ficticio/d565891a-2323-4184-a21c-a46ec8a3cdf0/identificacion_oficial-9ccba206ef.pdf",
-   "nombre_original": "identificacion_oficial.pdf"
   },
   {
    "id": "fb75fb57-4734-11bd-8936-81645b764c98",
@@ -6803,19 +6544,14 @@
    "descripcion": "Días naturales antes del vencimiento desde los que se puede renovar (decisión 2026-10-14)."
   },
   {
-   "clave": "dictaminador_sigue_a_poda",
-   "valor": "si",
-   "descripcion": "si: la acreditación de dictaminador deja de estar vigente si la de poda vence. no: la poda sólo se exige al tramitar. [pendiente] confirmar."
-  },
-  {
    "clave": "meses_despues_renovacion",
    "valor": "12",
    "descripcion": "Meses después del vencimiento durante los que todavía se renueva; pasado ese plazo se tramita como nueva (decisión 2026-10-14)."
   },
   {
    "clave": "tamano_maximo_archivo_bytes",
-   "valor": "2097152",
-   "descripcion": "Tamaño máximo de cada documento cargado: 2 MB (decisión 6 de DECISIONES-SIA)."
+   "valor": "5242880",
+   "descripcion": "Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14)."
   }
  ],
  "requisito": [
@@ -6913,7 +6649,7 @@
    "activo": true,
    "nombre": "Acreditación de poda y derribo vigente",
    "momento": "en_linea",
-   "descripcion": "El sistema comprueba en su padrón que esté vigente al momento del trámite."
+   "descripcion": "El sistema comprueba en su padrón que esté vigente al iniciar la solicitud."
   }
  ],
  "solicitud": [
@@ -7020,7 +6756,7 @@
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
    "rfc_factura": "EJE010113AB1",
-   "estado_desde": "2026-09-09T19:00:00-06:00",
+   "estado_desde": "2026-09-11T19:00:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
    "solicitante_id": "94586179-43d4-4d00-af2a-848d1860a484",
@@ -7135,7 +6871,7 @@
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "es_ficticio": true,
    "rfc_factura": "EJE010111AB1",
-   "estado_desde": "2026-09-10T08:30:00-06:00",
+   "estado_desde": "2026-09-12T08:30:00-06:00",
    "folio_origen": null,
    "motivo_cierre": null,
    "solicitante_id": "b758208c-1561-4de7-a555-ca182e501e14",
@@ -8006,6 +7742,20 @@
    "inscripcion_id": "13729c20-4c19-46c7-af7a-8f0987101189"
   },
   {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "13729c20-4c19-46c7-af7a-8f0987101189"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "13729c20-4c19-46c7-af7a-8f0987101189"
+  },
+  {
    "dia": 1,
    "asistio": true,
    "capturada_en": "2026-09-07T18:30:00-06:00",
@@ -8027,6 +7777,20 @@
    "inscripcion_id": "1aac7b36-16d6-4fce-aa56-40e1839627c5"
   },
   {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "1aac7b36-16d6-4fce-aa56-40e1839627c5"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "1aac7b36-16d6-4fce-aa56-40e1839627c5"
+  },
+  {
    "dia": 1,
    "asistio": true,
    "capturada_en": "2026-09-07T18:30:00-06:00",
@@ -8044,6 +7808,20 @@
    "dia": 3,
    "asistio": true,
    "capturada_en": "2026-09-09T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "248c5bf5-0bc0-4596-a3bf-8536064ad777"
+  },
+  {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "248c5bf5-0bc0-4596-a3bf-8536064ad777"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
    "capturada_por": "instructor.ficticio",
    "inscripcion_id": "248c5bf5-0bc0-4596-a3bf-8536064ad777"
   },
@@ -8090,6 +7868,20 @@
    "inscripcion_id": "5a179239-3dad-4209-a710-cabab6b3b937"
   },
   {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "5a179239-3dad-4209-a710-cabab6b3b937"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "5a179239-3dad-4209-a710-cabab6b3b937"
+  },
+  {
    "dia": 1,
    "asistio": true,
    "capturada_en": "2026-10-13T18:30:00-06:00",
@@ -8112,8 +7904,22 @@
   },
   {
    "dia": 3,
-   "asistio": true,
+   "asistio": false,
    "capturada_en": "2026-09-09T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "6fa732c6-00d7-440a-a4c9-69d35578c57b"
+  },
+  {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "6fa732c6-00d7-440a-a4c9-69d35578c57b"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
    "capturada_por": "instructor.ficticio",
    "inscripcion_id": "6fa732c6-00d7-440a-a4c9-69d35578c57b"
   },
@@ -8139,6 +7945,20 @@
    "inscripcion_id": "73c04e0e-d469-445c-a670-165d3db98101"
   },
   {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "73c04e0e-d469-445c-a670-165d3db98101"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "73c04e0e-d469-445c-a670-165d3db98101"
+  },
+  {
    "dia": 1,
    "asistio": true,
    "capturada_en": "2026-09-07T18:30:00-06:00",
@@ -8160,6 +7980,20 @@
    "inscripcion_id": "7a44ef0e-4f5b-43c1-a56d-6360bba6fca4"
   },
   {
+   "dia": 4,
+   "asistio": false,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "7a44ef0e-4f5b-43c1-a56d-6360bba6fca4"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "7a44ef0e-4f5b-43c1-a56d-6360bba6fca4"
+  },
+  {
    "dia": 1,
    "asistio": true,
    "capturada_en": "2026-09-07T18:30:00-06:00",
@@ -8177,6 +8011,20 @@
    "dia": 3,
    "asistio": true,
    "capturada_en": "2026-09-09T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "86210250-d005-4cc5-af53-e2c5f4e9dca7"
+  },
+  {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "86210250-d005-4cc5-af53-e2c5f4e9dca7"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
    "capturada_por": "instructor.ficticio",
    "inscripcion_id": "86210250-d005-4cc5-af53-e2c5f4e9dca7"
   },
@@ -8205,6 +8053,20 @@
    "dia": 3,
    "asistio": true,
    "capturada_en": "2026-09-09T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "c11d911f-f5fe-400b-ab62-33e39232e393"
+  },
+  {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "c11d911f-f5fe-400b-ab62-33e39232e393"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
    "capturada_por": "instructor.ficticio",
    "inscripcion_id": "c11d911f-f5fe-400b-ab62-33e39232e393"
   },
@@ -8254,6 +8116,20 @@
    "dia": 3,
    "asistio": true,
    "capturada_en": "2026-09-09T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "f4a7e773-2fd6-42a3-a4c6-a6551c52a2e8"
+  },
+  {
+   "dia": 4,
+   "asistio": true,
+   "capturada_en": "2026-09-10T18:30:00-06:00",
+   "capturada_por": "instructor.ficticio",
+   "inscripcion_id": "f4a7e773-2fd6-42a3-a4c6-a6551c52a2e8"
+  },
+  {
+   "dia": 5,
+   "asistio": true,
+   "capturada_en": "2026-09-11T18:30:00-06:00",
    "capturada_por": "instructor.ficticio",
    "inscripcion_id": "f4a7e773-2fd6-42a3-a4c6-a6551c52a2e8"
   }
@@ -9799,27 +9675,27 @@
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "",
+   "nota": "Sólo si cambió desde tu trámite anterior.",
    "orden": 1,
    "modalidad": "renovacion",
    "requisito": "identificacion_oficial",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "",
+   "nota": "Sólo si cambió desde tu trámite anterior.",
    "orden": 2,
    "modalidad": "renovacion",
    "requisito": "curp",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "",
+   "nota": "Sólo si cambió desde tu trámite anterior.",
    "orden": 3,
    "modalidad": "renovacion",
    "requisito": "comprobante_domicilio",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "dictaminador"
   },
   {
@@ -9855,31 +9731,31 @@
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Se actualiza en cada renovación.",
+   "nota": "Sólo si actualizaste tus estudios.",
    "orden": 8,
    "modalidad": "renovacion",
    "requisito": "comprobante_estudios",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Se actualiza en cada renovación.",
+   "nota": "Sólo si actualizaste tu experiencia.",
    "orden": 9,
    "modalidad": "renovacion",
    "requisito": "curriculum_vitae",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Se actualiza en cada renovación.",
+   "nota": "Sólo si actualizaste tu experiencia.",
    "orden": 10,
    "modalidad": "renovacion",
    "requisito": "comprobantes_experiencia",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "dictaminador"
   },
   {
-   "nota": "Obligatorias sólo con carrera técnica.",
+   "nota": "Sólo si tienes constancias nuevas.",
    "orden": 11,
    "modalidad": "renovacion",
    "requisito": "constancias_capacitacion",
@@ -9927,27 +9803,27 @@
    "tipo_acreditacion": "poda"
   },
   {
-   "nota": "",
+   "nota": "Sólo si cambió desde tu trámite anterior.",
    "orden": 1,
    "modalidad": "renovacion",
    "requisito": "identificacion_oficial",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "poda"
   },
   {
-   "nota": "",
+   "nota": "Sólo si cambió desde tu trámite anterior.",
    "orden": 2,
    "modalidad": "renovacion",
    "requisito": "curp",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "poda"
   },
   {
-   "nota": "",
+   "nota": "Sólo si cambió desde tu trámite anterior.",
    "orden": 3,
    "modalidad": "renovacion",
    "requisito": "comprobante_domicilio",
-   "obligatorio": true,
+   "obligatorio": false,
    "tipo_acreditacion": "poda"
   },
   {
@@ -10012,7 +9888,7 @@
    "nombre": "Rosa Modelo Ejemplo",
    "numero": "DT-2026-K107",
    "vence_en": "2027-01-09",
-   "situacion": "No vigente",
+   "situacion": "Vigente",
    "emitida_en": "2026-01-10"
   },
   {

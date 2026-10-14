@@ -42,7 +42,7 @@ Requiere Node 18+ y un PostgreSQL 13+ **de pruebas** (no hace falta PostGIS).
 
 ```sh
 npm run esquema                                    # regenera tablas y documentación desde db/esquema.json
-PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 54 pruebas
+PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, 61 pruebas
 ```
 
 `probar-base` se niega a correr sobre una base cuyo nombre no contenga «prueba», y se detiene en el primer
@@ -52,7 +52,7 @@ paso que falle.
 
 - Un esquema propio, `apd`, con su cuenta de servicio `apd_api`. No lee ni copia `territorio`; no usa PostGIS.
 - Las cuentas del personal de la Secretaría, en `acceso`, con el recurso `apd` [pendiente de confirmar con el SIA].
-- Espacio para documentos: de 5 a 10 GB al año.
+- Espacio para documentos: de 10 a 20 GB al año (archivos de hasta 5 MB).
 
 ## Datos ficticios
 

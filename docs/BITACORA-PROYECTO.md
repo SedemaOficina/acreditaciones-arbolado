@@ -30,3 +30,21 @@ Un renglón por bloque cerrado: qué se hizo, qué se verificó, qué se elimin�
   [pendiente] definir el procedimiento con constancia.
 
 **Eliminado**: el parámetro `entorno` de la tabla de parámetros, sustituido por `apd.entorno()` (motivo arriba).
+
+## 2026-10-14 · Bloque 2 · Correcciones de la validación del mapa del trámite
+
+Liber marcó 46 de las 48 reglas en el mapa del trámite: 25 correctas, 11 por corregir y 10 con duda.
+
+**Corregido en la base**
+- Cursos: 5 días los nuevos y 1 día las renovaciones; asistencia mínima provisional 4 de 5 y 1 de 1.
+- Calificación mínima de poda: 8.0 (antes 7.0).
+- La poda vigente del dictaminador se exige sólo al iniciar la solicitud; ya no al enviar ni al emitir.
+- La acreditación de dictaminador sigue vigente hasta su fecha aunque venza la de poda.
+- El instructor puede cambiar durante el curso, con constancia en la bitácora.
+- La calificación guarda su origen (captura o examen en línea), para el examen en salón de cómputo.
+- Documentos de hasta 5 MB. En renovaciones sólo son obligatorios la constancia fiscal y el pago.
+
+**Verificado**: instalación limpia, ficticios regenerados como `apd_api`, 61 de 61 pruebas.
+
+**Eliminado**: el parámetro `dictaminador_sigue_a_poda` y su lógica (la decisión R43 lo dejó sin uso); la
+comprobación de poda vigente al enviar y al emitir.
