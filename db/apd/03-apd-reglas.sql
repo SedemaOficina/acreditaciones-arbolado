@@ -142,11 +142,12 @@ END $$;
 CREATE TRIGGER organizacion_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.organizacion
   FOR EACH ROW EXECUTE FUNCTION apd.organizacion_normalizar();
 
--- La institución de la solicitud es del tipo de adscripción que la persona eligió (decisión 2026-10-15)
-CREATE FUNCTION apd.comprobar_adscripcion(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
+-- La institución es del tipo de adscripción que la persona eligió (decisiones 2026-10-15). La adscripción es de
+-- la persona (la cambia en «Mis datos»); cada solicitud guarda una copia al darse de alta y al enviarse.
+CREATE FUNCTION apd.comprobar_adscripcion(p_adscripcion text, p_organizacion uuid) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
-  IF s.organizacion_id IS NOT NULL
-     AND (SELECT o.tipo FROM apd.organizacion o WHERE o.id = s.organizacion_id) IS DISTINCT FROM s.adscripcion THEN
+  IF p_organizacion IS NOT NULL
+     AND (SELECT o.tipo FROM apd.organizacion o WHERE o.id = p_organizacion) IS DISTINCT FROM p_adscripcion THEN
     PERFORM apd.error('adscripcion_no_coincide', 'La institución elegida no es del tipo de adscripción indicado');
   END IF;
 END $$;
@@ -198,6 +199,7 @@ BEGIN
   NEW.segundo_apellido := apd.mayusculas(NEW.segundo_apellido);
   NEW.curp := upper(trim(NEW.curp));
   NEW.correo := lower(trim(NEW.correo));
+  PERFORM apd.comprobar_adscripcion(NEW.adscripcion, NEW.organizacion_id);
   NEW.creada_en := apd.ahora();
   NEW.numero_expediente := NULL;  -- se abre en el primer cotejo
   RETURN NEW;
@@ -216,6 +218,12 @@ BEGIN
   NEW.correo := lower(trim(NEW.correo));
   IF NEW.creada_en IS DISTINCT FROM OLD.creada_en OR NEW.es_ficticio IS DISTINCT FROM OLD.es_ficticio THEN
     PERFORM apd.error('campo_inmutable', 'La fecha de alta y la marca de dato de prueba no se cambian');
+  END IF;
+  IF (NEW.adscripcion, NEW.organizacion_id) IS DISTINCT FROM (OLD.adscripcion, OLD.organizacion_id) THEN
+    PERFORM apd.comprobar_adscripcion(NEW.adscripcion, NEW.organizacion_id);
+    PERFORM apd.registrar('adscripcion', 'solicitante', NEW.id::text,
+      concat_ws(' → ', coalesce(OLD.adscripcion, 'sin dato'), concat_ws(': ', NEW.adscripcion,
+        (SELECT o.nombre FROM apd.organizacion o WHERE o.id = NEW.organizacion_id))));
   END IF;
   IF OLD.numero_expediente IS NOT NULL AND NEW.numero_expediente IS DISTINCT FROM OLD.numero_expediente THEN
     PERFORM apd.error('expediente_fijo', 'El número de expediente no cambia');
@@ -459,7 +467,9 @@ BEGIN
     PERFORM apd.error('alta_fuera_de_borrador', 'Una solicitud nace como borrador');
   END IF;
   PERFORM apd.comprobar_elegibilidad(NEW);
-  PERFORM apd.comprobar_adscripcion(NEW);
+  -- Copia de la adscripción de la persona (se vuelve a copiar al enviar)
+  SELECT p.adscripcion, p.organizacion_id INTO NEW.adscripcion, NEW.organizacion_id
+    FROM apd.solicitante p WHERE p.id = NEW.solicitante_id;
   NEW.folio := 'APD-S-' || anio || '-' || lpad(apd.siguiente_folio('S', anio)::text, 5, '0');
   NEW.creada_en := apd.ahora();
   NEW.estado_desde := NEW.creada_en;
@@ -560,7 +570,6 @@ BEGIN
      OR NEW.es_ficticio <> OLD.es_ficticio THEN
     PERFORM apd.error('campo_inmutable', 'El folio, la persona y la fecha de alta de una solicitud no se cambian');
   END IF;
-  PERFORM apd.comprobar_adscripcion(NEW);
   IF OLD.estado NOT IN ('borrador', 'con_observaciones')
      AND (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id, NEW.adscripcion, NEW.organizacion_id,
           NEW.perfil_academico, NEW.carrera, NEW.anios_experiencia)
@@ -622,6 +631,12 @@ BEGIN
       -- Sin fotografía de frente no hay a quién reconocer en la cita (decisión 2026-10-14)
       IF NOT EXISTS (SELECT 1 FROM apd.fotografia f WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente) THEN
         PERFORM apd.error('sin_fotografia', 'Carga tu fotografía de frente antes de enviar la solicitud');
+      END IF;
+      -- La solicitud se va con la adscripción que la persona tiene hoy en «Mis datos»
+      SELECT p.adscripcion, p.organizacion_id INTO NEW.adscripcion, NEW.organizacion_id
+        FROM apd.solicitante p WHERE p.id = NEW.solicitante_id;
+      IF NEW.adscripcion IS NULL THEN
+        PERFORM apd.error('sin_adscripcion', 'Indica en «Mis datos» si trabajas para alguna empresa, institución o dependencia');
       END IF;
       IF NEW.enviada_en IS NULL THEN NEW.enviada_en := apd.ahora(); END IF;
     WHEN 'con_observaciones' THEN
@@ -1129,8 +1144,8 @@ CREATE VIEW apd.bandeja_demanda AS
          s.modalidad,
          concat_ws(' ', p.nombre, p.primer_apellido, p.segundo_apellido) AS nombre,
          o.id AS organizacion_id,
-         coalesce(o.nombre, 'Sin adscripción') AS organizacion,
-         coalesce(o.tipo, 'sin_adscripcion') AS organizacion_tipo,
+         coalesce(o.nombre, CASE s.adscripcion WHEN 'independiente' THEN 'Independiente' ELSE 'Sin adscripción' END) AS organizacion,
+         coalesce(o.tipo, s.adscripcion, 'sin_adscripcion') AS organizacion_tipo,
          s.lista_para_curso_en,
          apd.hoy() - (s.lista_para_curso_en AT TIME ZONE 'America/Mexico_City')::date AS dias_espera,
          a.vence_en AS vence_anterior,

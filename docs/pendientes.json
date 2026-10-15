@@ -474,6 +474,14 @@
       "desde": "2026-10-15",
       "titulo": "¿Dónde se ubican universidades y otras instituciones que no son dependencias (por ejemplo, la UNAM)?",
       "recomendacion": "Una privada va como «empresa, consultoría o particular»; una pública autónoma, como «dependencia federal» u «otra» con su nombre. Si son frecuentes, agregar un quinto tipo «Institución educativa»."
+    },
+    {
+      "id": "P55",
+      "grupo": "sia",
+      "bloquea": "etapa 3",
+      "desde": "2026-10-15",
+      "titulo": "Cambio de correo en «Mis datos» sin comprobar que el correo nuevo es de la persona",
+      "recomendacion": "Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio."
     }
   ],
   "resueltos": [
@@ -540,6 +548,21 @@
     {
       "titulo": "Mayúsculas en la cuenta",
       "como": "Nombre, apellidos y CURP se escriben y guardan en mayúsculas; correo y contraseña no cambian",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Mis datos",
+      "como": "Pantalla para consultar los datos ligados a la CURP y cambiar contacto, adscripción y, mientras no esté confirmada, la fotografía",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Sexo en datos generales",
+      "como": "Se toma de la CURP y se muestra de sólo lectura; no se pregunta aparte",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Personas independientes",
+      "como": "«No, soy independiente» es una respuesta explícita de la adscripción",
       "fecha": "2026-10-15"
     }
   ]

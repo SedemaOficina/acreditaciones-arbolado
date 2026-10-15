@@ -42,8 +42,8 @@ const FOTO = (persona, mime = 'image/jpeg') =>
 const COTEJO_PERSONA = `(SELECT solicitante_id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)`;
 // Una persona nueva sin fotografía, con una solicitud de poda nueva y todos sus documentos en línea
 const SIN_FOTO = `
-     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, contrasena_hash, es_ficticio)
-     VALUES ('00000000-0000-4000-a000-000000000011', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'x', true);
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000011', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
      INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
      VALUES ('00000000-0000-4000-a000-000000000012', '00000000-0000-4000-a000-000000000011', 'poda', 'nueva');
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
@@ -95,8 +95,8 @@ const casos = [
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad)
      SELECT solicitante_id, 'poda', 'nueva' FROM apd.solicitud WHERE id = ${BORRADOR};`],
   ['No se envía con documentos faltantes', { codigo: 'faltan_documentos' }, null, `
-     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, contrasena_hash, es_ficticio)
-     VALUES ('00000000-0000-4000-a000-000000000001', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'x', true);
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000001', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
      INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
      VALUES ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000001', 'poda', 'nueva');
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000002';`],
@@ -118,15 +118,15 @@ const casos = [
      UPDATE apd.solicitud SET factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL LIMIT 1)
       WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
   ['Nombre y apellidos se guardan en mayúsculas, con acentos y Ñ', 'ok', null, `
-     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, es_ficticio)
-     VALUES ('00000000-0000-4000-a000-000000000021', 'XAXX991231HNEXXX09', '  maría   josé ', 'peña', 'güemes', 'Caso@Ejemplo.local', '0000000099', 'x', true);
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000021', 'XAXX991231HNEXXX09', '  maría   josé ', 'peña', 'güemes', 'Caso@Ejemplo.local', '0000000099', 'independiente', 'x', true);
      DO $$ BEGIN ASSERT (SELECT (nombre, primer_apellido, segundo_apellido, correo) = ('MARÍA JOSÉ', 'PEÑA', 'GÜEMES', 'caso@ejemplo.local')
                           FROM apd.solicitante WHERE id = '00000000-0000-4000-a000-000000000021'); END $$;
      UPDATE apd.solicitante SET segundo_apellido = '' WHERE id = '00000000-0000-4000-a000-000000000021';
      DO $$ BEGIN ASSERT (SELECT segundo_apellido IS NULL FROM apd.solicitante WHERE id = '00000000-0000-4000-a000-000000000021'); END $$;`],
   ['Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO, sin acentos y con Ñ', 'ok', null, `
-     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, es_ficticio)
-     VALUES ('00000000-0000-4000-a000-000000000031', 'XAXX991231HNEXXX09', 'maría josé', 'peña', 'güemes', 'caso@ejemplo.local', '0000000099', 'x', true);
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000031', 'XAXX991231HNEXXX09', 'maría josé', 'peña', 'güemes', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
      INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
      VALUES ('00000000-0000-4000-a000-000000000032', '00000000-0000-4000-a000-000000000031', 'poda', 'nueva');
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
@@ -383,14 +383,14 @@ const casos = [
 
   // ── Cuentas ──
   ['No hay dos cuentas con la misma CURP', { sqlstate: '23505' }, null, `
-     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, contrasena_hash)
-     SELECT curp, 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'x' FROM apd.solicitante LIMIT 1;`],
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash)
+     SELECT curp, 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'independiente', 'x' FROM apd.solicitante LIMIT 1;`],
   ['Una CURP con formato inválido se rechaza', { sqlstate: '23514' }, null, `
-     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, contrasena_hash)
-     VALUES ('ABC123', 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'x');`],
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash)
+     VALUES ('ABC123', 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'independiente', 'x');`],
   ['Una CURP con dígito verificador incorrecto se rechaza, igual que en el formulario', { sqlstate: '23514' }, null, `
-     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, contrasena_hash)
-     VALUES ('XAXX991231HNEXXX01', 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'x');`],
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash)
+     VALUES ('XAXX991231HNEXXX01', 'Otra', 'Persona', 'otra@ejemplo.local', '0000000098', 'independiente', 'x');`],
   ['La persona no corrige su propia CURP', { codigo: 'curp_sin_motivo' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitante SET curp = 'XAXX991230HNEXXX08' WHERE id = ${PERSONA_VIGENTE};`],
@@ -398,12 +398,27 @@ const casos = [
      SELECT set_config('apd.motivo', 'Error de captura comprobado con la identificación', true);
      UPDATE apd.solicitante SET curp = 'XAXX991230HNEXXX08' WHERE id = ${PERSONA_VIGENTE};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'correccion_curp' AND detalle LIKE '%Error de captura%'); END $$;`],
-  ['La institución de una solicitud es del tipo de adscripción elegido', { codigo: 'adscripcion_no_coincide' }, null, `
-     UPDATE apd.solicitud SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'cfe') WHERE id = ${BORRADOR};`],
-  ['Quien dice estar adscrita lleva su institución', { sqlstate: '23514' }, null, `
-     UPDATE apd.solicitud SET adscripcion = 'privada', organizacion_id = NULL WHERE id = ${BORRADOR};`],
-  ['Adscrita a una alcaldía del catálogo se acepta', 'ok', null, `
-     UPDATE apd.solicitud SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = ${BORRADOR};`],
+  ['La institución es del tipo de adscripción elegido', { codigo: 'adscripcion_no_coincide' }, null, `
+     UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'cfe') WHERE id = ${PERSONA_VIGENTE};`],
+  ['Quien dice estar adscrita lleva su institución; la independiente no', { sqlstate: '23514' }, null, `
+     UPDATE apd.solicitante SET adscripcion = 'privada', organizacion_id = NULL WHERE id = ${PERSONA_VIGENTE};`],
+  ['La persona cambia su adscripción en «Mis datos» y queda en la bitácora', 'ok', null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = ${PERSONA_VIGENTE};
+     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'adscripcion' AND detalle LIKE '%alcaldia: Tlalpan'); END $$;`],
+  ['El sexo se toma de la CURP', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT bool_and(sexo = substr(curp, 11, 1)) FROM apd.solicitante); END $$;`],
+  ['La solicitud se envía con la adscripción que la persona tiene ese día, y la conserva', 'ok', null, `${SIN_FOTO}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${FOTO("'00000000-0000-4000-a000-000000000011'")}
+     UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = '00000000-0000-4000-a000-000000000011';
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000012';
+     UPDATE apd.solicitante SET adscripcion = 'independiente', organizacion_id = NULL WHERE id = '00000000-0000-4000-a000-000000000011';
+     DO $$ BEGIN ASSERT (SELECT adscripcion = 'alcaldia' FROM apd.solicitud WHERE id = '00000000-0000-4000-a000-000000000012'); END $$;`],
+  ['La adscripción de una solicitud no se cambia a mano: es copia de la de la persona', { sqlstate: '42501' }, null, `
+     UPDATE apd.solicitud SET adscripcion = 'independiente' WHERE id = ${BORRADOR};`],
+  ['Una cuenta activa siempre tiene adscripción (también «independiente»)', { sqlstate: '23514' }, null, `
+     UPDATE apd.solicitante SET adscripcion = NULL WHERE id = (SELECT id FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1);`],
   ['La misma institución escrita distinto no se duplica', { sqlstate: '23505' }, null, `
      INSERT INTO apd.organizacion (tipo, nombre) VALUES ('dependencia_federal', 'COMISION federal  de ELECTRICIDAD (cfe).');`],
 

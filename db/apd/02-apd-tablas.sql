@@ -126,6 +126,9 @@ CREATE TABLE apd.solicitante (
   nombre                     text          NOT NULL,
   primer_apellido            text          NOT NULL,
   segundo_apellido           text          NULL,
+  sexo                       text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED NOT NULL,
+  adscripcion                text          NULL,
+  organizacion_id            uuid          NULL,
   correo                     text          NOT NULL,
   telefono                   text          NOT NULL,
   numero_expediente          text          NULL,
@@ -142,6 +145,10 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp)),
   CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$'),
+  CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
+  CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente')),
+  CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL),
   CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar')),
   CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))
 );
@@ -152,6 +159,9 @@ COMMENT ON COLUMN apd.solicitante.curp IS 'CURP en mayúsculas; identificador ú
 COMMENT ON COLUMN apd.solicitante.nombre IS 'Nombre(s)';
 COMMENT ON COLUMN apd.solicitante.primer_apellido IS 'Primer apellido';
 COMMENT ON COLUMN apd.solicitante.segundo_apellido IS 'Segundo apellido, si lo hay';
+COMMENT ON COLUMN apd.solicitante.sexo IS 'H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada';
+COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar';
+COMMENT ON COLUMN apd.solicitante.organizacion_id IS 'Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente';
 COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas';
 COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos';
 COMMENT ON COLUMN apd.solicitante.numero_expediente IS 'Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
@@ -293,8 +303,8 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
   CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad),
   CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
-  CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
-  CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL)),
+  CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente')),
   CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id),
   CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')),
   CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL)),
@@ -316,8 +326,8 @@ COMMENT ON COLUMN apd.solicitud.folio IS 'Folio público; lo asigna la base (APD
 COMMENT ON COLUMN apd.solicitud.solicitante_id IS 'Persona solicitante';
 COMMENT ON COLUMN apd.solicitud.tipo_acreditacion IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.modalidad IS 'Curso solicitado';
-COMMENT ON COLUMN apd.solicitud.adscripcion IS 'Tipo de institución a la que está adscrita la persona: privada, dependencia_cdmx, alcaldia o dependencia_federal; vacía si no trabaja para nadie';
-COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Institución de adscripción, del catálogo; de su mismo tipo. Vacía sólo si no está adscrita';
+COMMENT ON COLUMN apd.solicitud.adscripcion IS 'Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal';
+COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Institución de adscripción al enviar (copia de la de su cuenta); vacía si es independiente';
 COMMENT ON COLUMN apd.solicitud.acreditacion_anterior_id IS 'Acreditación que se renueva; obligatoria en renovación';
 COMMENT ON COLUMN apd.solicitud.factura_rfc IS 'RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo';
 COMMENT ON COLUMN apd.solicitud.factura_razon_social IS 'Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo';

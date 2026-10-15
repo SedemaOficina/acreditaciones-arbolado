@@ -75,8 +75,51 @@
   function personaDeSesion(datos) {
     const s = leeSesion();
     if (!s) return null;
-    if (s.nueva) return Object.assign({ id: 'nueva', estado: 'activa' }, s.nueva);
-    return datos.solicitante.find((p) => p.id === s.id) || null;
+    // Lo que la persona cambió en «Mis datos» durante la prueba (s.datos) se aplica encima de lo guardado
+    if (s.nueva) return Object.assign({ id: 'nueva', estado: 'activa' }, s.nueva, s.datos || {});
+    const p = datos.solicitante.find((x) => x.id === s.id);
+    return p ? Object.assign({}, p, s.datos || {}) : null;
+  }
+
+  /* ----- Adscripción (decisiones 2026-10-15): es de la persona; cada solicitud copia la que tenga al enviarse ----- */
+  const ADSCRIPCIONES = {
+    independiente: 'Independiente', privada: 'Empresa, consultoría o particular',
+    dependencia_cdmx: 'Dependencia del Gobierno de la Ciudad de México', alcaldia: 'Alcaldía',
+    dependencia_federal: 'Dependencia del Gobierno Federal'
+  };
+  function nombreInstitucion(datos, p) {
+    if (p.organizacion_nombre) return p.organizacion_nombre;
+    const o = p.organizacion_id ? datos.organizacion.find((x) => x.id === p.organizacion_id) : null;
+    return o ? o.nombre : '';
+  }
+  function adscripcionTexto(datos, p) {
+    if (!p || !p.adscripcion) return '';
+    if (p.adscripcion === 'independiente') return 'Independiente: no trabajas para ninguna empresa, institución o dependencia.';
+    const nombre = nombreInstitucion(datos, p);
+    return `${ADSCRIPCIONES[p.adscripcion]}: ${nombre}${/\.$/.test(nombre) ? '' : '.'}`;
+  }
+  /* De las respuestas del formulario a {adscripcion, organizacion_id, organizacion_nombre}, como lo hará la API:
+     por clave si es una opción del catálogo, por nombre si se escribió (si no existe, la API la agrega). */
+  function adscripcionDe(datos, d) {
+    if (d.adscrito !== 'si') return { adscripcion: 'independiente', organizacion_id: null, organizacion_nombre: '' };
+    const porClave = (c) => datos.organizacion.find((o) => o.clave === c);
+    const porNombre = (n) => datos.organizacion.find((o) => o.nombre_normalizado === normaliza(n));
+    let o = null; let nombre = '';
+    if (d.tipo_adscripcion === 'privada') nombre = d.empresa_nombre;
+    else if (d.tipo_adscripcion === 'alcaldia') nombre = d.alcaldia;
+    else if (d.tipo_adscripcion === 'dependencia_federal') {
+      if (d.dependencia_federal === 'cfe') o = porClave('cfe'); else nombre = d.dependencia_federal_otra;
+    } else if (d.dependencia_cdmx === 'sedema') {
+      if (d.direccion_sedema && d.direccion_sedema !== 'otro') o = porClave(`sedema_${d.direccion_sedema}`);
+      else nombre = `SEDEMA · ${d.direccion_sedema_otra || ''}`;
+    } else if (d.dependencia_cdmx && d.dependencia_cdmx !== 'otro') o = porClave(d.dependencia_cdmx);
+    else nombre = d.dependencia_cdmx_otra;
+    o = o || (nombre ? porNombre(nombre) : null);
+    return { adscripcion: d.tipo_adscripcion, organizacion_id: o ? o.id : null, organizacion_nombre: o ? o.nombre : String(nombre || '').trim() };
+  }
+  /* Mismo criterio que apd.normalizar en la base: sin acentos, minúsculas, sólo letras, números y espacios. */
+  function normaliza(t) {
+    return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
   }
   function requiereSesion(datos) {
     const p = personaDeSesion(datos);
@@ -144,7 +187,11 @@
     salir.addEventListener('click', () => { cierraSesion(); global.location.href = 'index.html'; });
     contenedor.replaceChildren(
       el('p', { class: 'sesion-nombre', texto: nombreCompleto(persona) }),
-      el('div', { class: 'sesion-enlaces' }, [el('a', { class: 'btn-enlace', href: 'tramites.html', texto: 'Mis trámites' }), salir])
+      el('div', { class: 'sesion-enlaces' }, [
+        el('a', { class: 'btn-enlace', href: 'tramites.html', texto: 'Mis trámites' }),
+        el('a', { class: 'btn-enlace', href: 'datos.html', texto: 'Mis datos' }),
+        salir
+      ])
     );
   }
 
@@ -181,6 +228,6 @@
     cargar, fecha, fechaHora, sumaDias, sumaMeses,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, activa, limpia, opciones,
-    el, estado, datosLista, pintaSesion, pintaCorte
+    el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe
   };
 }(window));

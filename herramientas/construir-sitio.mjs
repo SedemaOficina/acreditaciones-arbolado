@@ -42,7 +42,7 @@ cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-vi
 // La hoja de la plantilla usa valores literales; aquí va su equivalente con los tokens del estándar
 cpSync(join(plantillaVersion, 'version-visible.formkit.css'), join(sitio, 'app/version-visible.css'));
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
-const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'verificar.html'];
+const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'datos.html', 'verificar.html'];
 for (const p of paginas) {
   const ruta = join(sitio, p);
   const html = readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${version}`);
@@ -110,5 +110,18 @@ const fin = '<!-- documentos:fin -->';
 const a = html.indexOf(inicio), b = html.indexOf(fin);
 if (a < 0 || b < 0) { console.error('Faltan los marcadores de documentos en sitio/solicitud.html'); process.exit(1); }
 writeFileSync(ruta, html.slice(0, a + inicio.length) + '\n' + bloques.join('\n') + '\n        ' + html.slice(b));
+
+// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mis datos»
+const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd();
+for (const p of ['cuenta.html', 'datos.html']) {
+  const r = join(sitio, p);
+  const h = readFileSync(r, 'utf8');
+  const ini = h.match(/^( *)<!-- adscripcion:inicio[^>]*-->/m);
+  const fin2 = h.indexOf('<!-- adscripcion:fin -->');
+  if (!ini || fin2 < 0) { console.error(`Faltan los marcadores de adscripción en sitio/${p}`); process.exit(1); }
+  const sangria = ini[1];
+  const dentro = fragmento.split('\n').map((l) => (l ? sangria + l : l)).join('\n');
+  writeFileSync(r, h.slice(0, ini.index + ini[0].length) + '\n' + dentro + '\n' + sangria + h.slice(fin2));
+}
 
 console.log(`sitio/ construido · versión ${version} · estándar ${cambios ? cambios[1] : '?'} · ${alcaldias.length} alcaldías · ${bloques.length} grupos de documentos`);

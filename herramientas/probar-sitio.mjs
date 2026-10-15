@@ -35,6 +35,8 @@ const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada
 
 // ── Personas para cada camino, elegidas de los datos (no fijadas a mano) ──
 const persona = (id) => datos.solicitante.find((p) => p.id === id);
+// Persona con cuenta activa y adscrita a una empresa: para «Mis datos»
+const CON_ORG = datos.solicitante.find((p) => p.estado === 'activa' && p.adscripcion === 'privada');
 const conObs = datos.solicitud.find((s) => s.estado === 'con_observaciones');
 const ultimaDe = (p, tipo) => datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === tipo).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];
 const tieneActiva = (p, tipo) => datos.solicitud.some((s) => s.solicitante_id === p.id && s.tipo_acreditacion === tipo && !FINALES.includes(s.estado));
@@ -116,6 +118,7 @@ async function llenaCuenta(page, p, curp = p.curp) {
   await page.fill('#telefono', '0000000077');
   await page.fill('#contrasena', 'una frase larga de prueba');
   await page.fill('#contrasena2', 'una frase larga de prueba');
+  await page.check('input[name="adscrito"][value="no"]', { force: true });
   await cargaFoto(page);
   await marcaCasillas(page);
 }
@@ -151,6 +154,24 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.inputValue('#nombre') === 'MARÍA JOSÉ' && await page.inputValue('#primer_apellido') === 'PEÑA' && await page.inputValue('#curp') === 'XAXX',
     t('cuenta: nombre, apellidos y CURP se escriben en mayúsculas al momento'));
   comprueba(await page.inputValue('#correo') === 'Nadia@Ejemplo.local', t('cuenta: el correo no se pasa a mayúsculas'));
+  await page.fill('#curp', NUEVA.curp); await page.press('#curp', 'Tab');
+  comprueba(['Mujer', 'Hombre'].includes(await page.inputValue('#sexo')), t(`cuenta: el sexo se toma de la CURP (${await page.inputValue('#sexo')})`));
+  // Adscripción: cada respuesta abre sólo su pregunta, y al cambiarla se oculta lo que dependía de ella
+  comprueba(!(await page.isVisible('[data-campo="tipo_adscripcion"]')), t('adscripción: el tipo no se pregunta hasta responder «Sí»'));
+  comprueba(/independiente/.test(await page.textContent('[data-campo="adscrito"]')), t('adscripción: «No, soy independiente» es una respuesta explícita'));
+  await page.check('input[name="adscrito"][value="si"]', { force: true });
+  await page.check('input[name="tipo_adscripcion"][value="dependencia_cdmx"]', { force: true });
+  await page.check('input[name="dependencia_cdmx"][value="sedema"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="direccion_sedema"]') && !(await page.isVisible('[data-campo="alcaldia"]')),
+    t('adscripción: SEDEMA pregunta su Dirección General y nada más'));
+  await page.click('[data-accion="enviar"]');
+  comprueba(await page.locator('[data-campo="direccion_sedema"] .err:not(:empty)').count() > 0, t('adscripción: sin Dirección General no se crea la cuenta'));
+  await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="alcaldia"]') && !(await page.isVisible('[data-campo="direccion_sedema"]')),
+    t('adscripción: al cambiar a alcaldía se oculta la Dirección General y aparece la lista de alcaldías'));
+  await page.check('input[name="adscrito"][value="no"]', { force: true });
+  comprueba(!(await page.isVisible('[data-campo="alcaldia"]')) && !(await page.isVisible('[data-campo="tipo_adscripcion"]')),
+    t('adscripción: con «No» se oculta todo lo que dependía de ella'));
   await page.setInputFiles('[data-campo="foto"] [data-archivos] > input[type="file"]:not([data-entrada-camara])', PDF);
   comprueba(await page.locator('[data-campo="foto"] [data-rechazos] *').count() > 0, t('cuenta: una fotografía en PDF se rechaza con su motivo'));
   // CURP escrita antes que la fecha: al cambiar la fecha se vuelve a comprobar (caso que reportó Liber)
@@ -201,22 +222,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForFunction(() => document.querySelector('input[name="tipo"][value="poda"]').checked);
   comprueba(await page.isDisabled('input[name="tipo"][value="dictaminador"]'), t('solicitud: dictaminador deshabilitado sin poda vigente, con su motivo'));
   comprueba(/solicitud nueva/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud: informa que le corresponde una solicitud nueva (no lo pregunta)'));
-  // Adscripción: cada respuesta abre sólo su pregunta, y al cambiarla se oculta lo que dependía de ella
-  comprueba(!(await page.isVisible('[data-campo="tipo_adscripcion"]')), t('adscripción: el tipo no se pregunta hasta responder «Sí»'));
-  await page.check('input[name="adscrito"][value="si"]', { force: true });
-  await page.check('input[name="tipo_adscripcion"][value="dependencia_cdmx"]', { force: true });
-  await page.check('input[name="dependencia_cdmx"][value="sedema"]', { force: true });
-  comprueba(await page.isVisible('[data-campo="direccion_sedema"]') && !(await page.isVisible('[data-campo="alcaldia"]')),
-    t('adscripción: SEDEMA pregunta su Dirección General y nada más'));
-  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
-  comprueba(await page.getAttribute('input[name="direccion_sedema"] >> nth=0', 'aria-invalid') === 'true' || await page.locator('[data-campo="direccion_sedema"] .err:not(:empty)').count() > 0,
-    t('adscripción: sin Dirección General no avanza'));
-  await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
-  comprueba(await page.isVisible('[data-campo="alcaldia"]') && !(await page.isVisible('[data-campo="direccion_sedema"]')),
-    t('adscripción: al cambiar a alcaldía se oculta la Dirección General y aparece la lista de alcaldías'));
-  await page.check('input[name="adscrito"][value="no"]', { force: true });
-  comprueba(!(await page.isVisible('[data-campo="alcaldia"]')) && !(await page.isVisible('[data-campo="tipo_adscripcion"]')),
-    t('adscripción: con «No» se oculta todo lo que dependía de ella'));
+  comprueba(/Independiente/.test(await page.textContent('[data-adscripcion-texto]')),
+    t('solicitud: muestra la adscripción de la persona con la que se enviará (se cambia en «Mis datos»)'));
   await siguiente(page);
   comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(await page.textContent('[data-ejemplo-archivo]')),
     t(`documentos: dice cómo se guardarán sus archivos (${await page.textContent('[data-ejemplo-archivo]')})`));
@@ -335,6 +342,27 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await captura(page, `09-verificar-${sufijo}`);
   await sinDesborde(page, t('verificar'));
 
+  // Mis datos: datos ligados a la CURP sólo de lectura; cambia su adscripción y se conserva
+  await page.evaluate(() => sessionStorage.clear());
+  await entra(page, CON_ORG.curp);
+  await page.goto(BASE + 'datos.html');
+  await page.waitForSelector('[data-identidad] .datos');
+  comprueba(/Sexo/.test(await page.textContent('[data-identidad]')) && await page.$('#curp') === null,
+    t('mis datos: muestra CURP y sexo sin dejarlos cambiar'));
+  comprueba(await page.isChecked('input[name="adscrito"][value="si"]') && await page.isChecked('input[name="tipo_adscripcion"][value="privada"]'),
+    t('mis datos: trae la adscripción vigente de la persona'));
+  await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
+  await page.fill('#alcaldia', 'Tlalpan'); await page.press('#alcaldia', 'Tab');
+  await captura(page, `14-mis-datos-${sufijo}`);
+  await sinDesborde(page, t('mis datos'));
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  comprueba(/Tlalpan/.test(await page.textContent('[data-acuse-folio]')), t('mis datos: guarda la nueva adscripción (Alcaldía · Tlalpan)'));
+  await page.goto(BASE + 'datos.html');
+  await page.waitForSelector('[data-identidad] .datos');
+  comprueba(await page.inputValue('#alcaldia') === 'Tlalpan', t('mis datos: al volver, la adscripción es la nueva'));
+  await page.evaluate(() => sessionStorage.clear());
+
   // Fallo de envío simulado
   await page.goto(BASE + 'cuenta.html?simular=error');
   await llenaCuenta(page, NUEVA);
@@ -386,7 +414,7 @@ async function accesibilidad(navegador) {
   const page = await navegador.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => sessionStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
-  const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html']];
+  const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html']];
   for (const [url, estado] of pantallas) {
     await page.goto(BASE + url);
     await page.waitForLoadState('networkidle');

@@ -214,3 +214,17 @@ accesibilidad sin hallazgos.
 
 **Verificado**: 98 de 98 pruebas de la base; 33 casos en el servidor; 114 comprobaciones del sitio,
 accesibilidad sin hallazgos; 59 campos correctos en el auditor.
+
+## 2026-10-15 · Bloque 15 · «Mis datos», sexo y adscripción de la persona
+
+- Pantalla nueva `datos.html` («Mis datos», enlazada en la cabecera de sesión): datos ligados a la CURP de sólo
+  lectura y, editables, correo, teléfono, adscripción y la fotografía mientras no esté confirmada.
+- La adscripción pasa a la persona: se pide al crear la cuenta y se cambia en «Mis datos»; la solicitud ya no la
+  pregunta, muestra con cuál se enviará. «No, soy independiente» es explícito. Un solo fragmento
+  (`herramientas/plantillas/adscripcion.html`) lo inserta `construir-sitio.mjs` en las dos pantallas.
+- Sexo: se toma de la CURP (campo de sólo lectura en la cuenta; columna generada `solicitante.sexo` en la base).
+- Base: `solicitante.adscripcion` y `organizacion_id` (obligatoria en cuentas activas; bitácora en cada cambio);
+  la solicitud la copia al alta y al envío y la API ya no la edita.
+
+**Verificado**: 102 de 102 pruebas de la base; 35 casos en el servidor; 131 comprobaciones del sitio,
+accesibilidad sin hallazgos (también en «Mis datos»); 74 campos correctos en el auditor.

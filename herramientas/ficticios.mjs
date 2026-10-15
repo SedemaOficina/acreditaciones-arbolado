@@ -98,8 +98,9 @@ function persona(clave, opciones = {}) {
 function alta(p, fecha) {
   en(fecha, '09:00');
   como(p.correo, 'solicitante');
-  emitir(`INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, es_ficticio)
-  VALUES (${q(p.id)}, ${q(p.curp)}, ${q(p.nombre)}, ${q(p.primer)}, ${q(p.segundo)}, ${q(p.correo)}, ${q(p.telefono)}, ${q(hashContrasena(p.clave))}, true)`);
+  // Al crear la cuenta indica su adscripción; independiente hasta que una solicitud diga otra (ver solicitud())
+  emitir(`INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+  VALUES (${q(p.id)}, ${q(p.curp)}, ${q(p.nombre)}, ${q(p.primer)}, ${q(p.segundo)}, ${q(p.correo)}, ${q(p.telefono)}, 'independiente', ${q(hashContrasena(p.clave))}, true)`);
   fotografia(p);
 }
 // Fotografía de frente, obligatoria al crear la cuenta (la carga la persona; se confirma en el cotejo)
@@ -120,7 +121,7 @@ function altaMigrada(p) {
 function activar(p, fecha) {
   en(fecha, '08:45');
   como(p.correo, 'solicitante');
-  emitir(`UPDATE apd.solicitante SET contrasena_hash = ${q(hashContrasena(p.clave))}, estado = 'activa' WHERE id = ${q(p.id)}`);
+  emitir(`UPDATE apd.solicitante SET contrasena_hash = ${q(hashContrasena(p.clave))}, estado = 'activa', adscripcion = 'independiente' WHERE id = ${q(p.id)}`);
   fotografia(p); // el formulario de la cuenta la pide también a quien viene del padrón
   p.sinActivar = false;
 }
@@ -147,9 +148,11 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   const perfil = tipo === 'dictaminador'
     ? { perfil: opciones.perfil || 'titulo', carrera: opciones.carrera || 'Biología', anios: opciones.anios ?? 4 }
     : { perfil: null, carrera: null, anios: null };
-  emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, adscripcion, organizacion_id, acreditacion_anterior_id,
+  // La adscripción es de la persona («Mis datos»); la solicitud la copia
+  if (opciones.org) emitir(`UPDATE apd.solicitante SET adscripcion = ${q(ORG[opciones.org].tipo)}, organizacion_id = ${orgId(opciones.org)} WHERE id = ${q(p.id)}`);
+  emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id,
     perfil_academico, carrera, anios_experiencia, es_ficticio)
-  VALUES (${q(s.id)}, ${q(p.id)}, ${q(tipo)}, ${q(modalidad)}, ${opciones.org ? q(ORG[opciones.org].tipo) : 'NULL'}, ${opciones.org ? orgId(opciones.org) : 'NULL'},
+  VALUES (${q(s.id)}, ${q(p.id)}, ${q(tipo)}, ${q(modalidad)},
     ${q(opciones.anterior)}, ${q(perfil.perfil)}, ${q(perfil.carrera)}, ${perfil.anios ?? 'NULL'}, true)`);
   // Documentos obligatorios que se cargan en línea, tomados del catálogo de la base (fuente única)
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)

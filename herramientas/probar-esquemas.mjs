@@ -22,7 +22,7 @@ const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalT
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar']) {
+for (const f of ['cuenta', 'datos', 'entrar', 'solicitud', 'verificar']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
@@ -69,7 +69,7 @@ function caso(nombre, form, datos, espera, archivos = []) {
 const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
 const curpNadia = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Nadia', primer: 'Ejemplo', segundo: 'Simulado' }, '1999-12-30', 'M', 'NE') + '0');
-const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', fecha_nacimiento: '1999-12-30', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', aviso: 'si', humano: 'si' };
+const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', fecha_nacimiento: '1999-12-30', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', adscrito: 'no', aviso: 'si', humano: 'si' };
 const foto = (nombre = 'foto.jpg', type = 'image/jpeg') => [{ nombre, size: 180000, type, campo: 'foto' }];
 caso('Cuenta completa con su fotografía se acepta', 'cuenta', cuenta, true, foto());
 caso('Cuenta sin fotografía de frente se rechaza', 'cuenta', cuenta, ['foto']);
@@ -88,7 +88,7 @@ caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso:
 
 // Solicitud: lo obligatorio depende del trámite elegido, con una sola condición por bloque
 const docs = (t, lista) => Object.fromEntries(lista.map((r) => [`doc_${t}_${r}`, `${r}.pdf`]));
-const base = { aviso: 'si', humano: 'si', adscrito: 'no' };
+const base = { aviso: 'si', humano: 'si' };
 const podaNueva = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
 caso('Solicitud poda nueva con sus 4 documentos se acepta', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, true, podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
 caso('Solicitud poda nueva sin documentos pide sólo los de poda nueva', 'solicitud', { ...base, tipo: 'poda' }, podaNueva.map((r) => `doc_poda_nueva_${r}`));
@@ -98,20 +98,23 @@ caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', perfil_academico: 'titulo', carrera: 'Biología', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
 
-// Adscripción: según el tipo, su pregunta; todo lo que depende de una respuesta se oculta con ella
-const docsPoda = docs('poda_nueva', podaNueva);
-const archivosPoda = podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`));
-const sol = (extra) => ({ ...base, tipo: 'poda', ...docsPoda, ...extra });
-caso('Adscrito sin decir el tipo se rechaza', 'solicitud', sol({ adscrito: 'si' }), ['tipo_adscripcion'], archivosPoda);
-caso('Empresa sin nombre se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'privada' }), ['empresa_nombre'], archivosPoda);
-caso('Empresa con su nombre se acepta', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'privada', empresa_nombre: 'Jardines Ejemplo del Norte, S.A. de C.V.' }), true, archivosPoda);
-caso('SEDEMA sin su Dirección General se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema' }), ['direccion_sedema'], archivosPoda);
-caso('SEDEMA con su Dirección General se acepta', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'dgcorenadr' }), true, archivosPoda);
-caso('Otra dependencia de la Ciudad sin su nombre se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'otro' }), ['dependencia_cdmx_otra'], archivosPoda);
-caso('Una alcaldía fuera del catálogo se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'Alcaldía Inventada' }), ['alcaldia'], archivosPoda);
-caso('Una alcaldía del catálogo se acepta, escrita sin acentos', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'tlahuac' }), true, archivosPoda);
-caso('CFE se acepta', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_federal', dependencia_federal: 'cfe' }), true, archivosPoda);
-caso('Sin adscripción, lo que dependía de ella no cuenta (se descarta)', 'solicitud', sol({ adscrito: 'no', tipo_adscripcion: 'alcaldia', alcaldia: 'Inventada' }), true, archivosPoda);
+// Adscripción (en la cuenta y en «Mis datos»): según el tipo, su pregunta; lo que depende de una respuesta se oculta con ella
+const conFoto = foto();
+const cta = (extra) => ({ ...cuenta, ...extra });
+caso('Cuenta: sin decir si trabaja para alguien se rechaza', 'cuenta', cta({ adscrito: '' }), ['adscrito'], conFoto);
+caso('Cuenta: adscrita sin decir el tipo se rechaza', 'cuenta', cta({ adscrito: 'si' }), ['tipo_adscripcion'], conFoto);
+caso('Cuenta: empresa sin nombre se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'privada' }), ['empresa_nombre'], conFoto);
+caso('Cuenta: empresa con su nombre se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'privada', empresa_nombre: 'Jardines Ejemplo del Norte, S.A. de C.V.' }), true, conFoto);
+caso('Cuenta: SEDEMA sin su Dirección General se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema' }), ['direccion_sedema'], conFoto);
+caso('Cuenta: SEDEMA con su Dirección General se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'dgcorenadr' }), true, conFoto);
+caso('Cuenta: otra dependencia de la Ciudad sin su nombre se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'otro' }), ['dependencia_cdmx_otra'], conFoto);
+caso('Cuenta: una alcaldía fuera del catálogo se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'Alcaldía Inventada' }), ['alcaldia'], conFoto);
+caso('Cuenta: una alcaldía del catálogo se acepta, escrita sin acentos', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'tlahuac' }), true, conFoto);
+caso('Cuenta: independiente, lo que dependía de la adscripción no cuenta (se descarta)', 'cuenta', cta({ adscrito: 'no', tipo_adscripcion: 'alcaldia', alcaldia: 'Inventada' }), true, conFoto);
+const misDatos = { correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', adscrito: 'si', tipo_adscripcion: 'dependencia_federal', dependencia_federal: 'cfe' };
+caso('Mis datos: cambio de adscripción a CFE se acepta, sin fotografía nueva', 'datos', misDatos, true);
+caso('Mis datos: otra dependencia federal sin su nombre se rechaza', 'datos', { ...misDatos, dependencia_federal: 'otro' }, ['dependencia_federal_otra']);
+caso('Mis datos: la CURP o el nombre no se cambian aquí (campo no declarado)', 'datos', { ...misDatos, curp: curpNadia }, ['curp']);
 
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);

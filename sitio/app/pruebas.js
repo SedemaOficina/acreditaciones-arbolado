@@ -96,6 +96,7 @@
       pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
       adjuntaFoto(form.querySelector('[data-campo="foto"]'));
+      elige('adscrito', 'no');
     } else if (pagina === 'entrar.html') {
       const p = datos.solicitante.find((x) => x.estado === 'activa');
       pon('curp', p.curp); pon('contrasena', APD.CONTRASENA_FICTICIA);
@@ -103,7 +104,6 @@
       pon('numero', datos.verificacion_publica[0].numero);
     } else if (pagina === 'solicitud.html') {
       if (!form.querySelector('input[name="tipo"]:checked')) elige('tipo');
-      if (!form.querySelector('input[name="adscrito"]:checked')) elige('adscrito', 'no');
       elige('perfil_academico', 'titulo'); pon('carrera', 'Biología'); pon('anios_experiencia', '3');
       for (const c of form.querySelectorAll('[data-campo^="doc_"]')) if (visible(c)) adjunta(c);
     }
@@ -197,7 +197,7 @@
     }
     hijos.push(seccion('Pantallas', [el('ul', { class: 'menu-pruebas-lista' }, [
       ['index.html', 'Inicio'], ['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'],
-      ['solicitud.html', 'Solicitud'], ['verificar.html', 'Verificar una acreditación']
+      ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud'], ['verificar.html', 'Verificar una acreditación']
     ].map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))]));
     hijos.push(estado);
     for (const h of hijos) if (h) dialogo.append(h);

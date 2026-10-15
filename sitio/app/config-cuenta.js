@@ -12,6 +12,9 @@
    identidad: la identidad la confirma la identificación oficial en el
    cotejo presencial y, si se decide, la consulta a RENAPO [pendiente].
 
+   Adscripción: la API la convierte con el mismo criterio que APD.adscripcionDe (clave del catálogo o nombre
+   escrito) y la guarda en apd.solicitante. El sexo no se recibe: la base lo toma de la CURP.
+
    Respuestas del servidor que la pantalla ya contempla:
      · CURP con cuenta activa      → rechazo con mensaje (no se crea otra);
      · CURP del padrón migrado     → si el nombre es el del registro, se activa esa cuenta y se
@@ -43,10 +46,11 @@ window.FORMKIT_OPCIONES = {
                 || !igual(d.segundo_apellido || '', existente.segundo_apellido || '')) {
               return mal({ mensaje: 'Tu nombre no coincide con el registro anterior de la Secretaría para esta CURP. Acude a la Secretaría para aclararlo.' });
             }
-            APD.guardaSesion({ id: existente.id });
+            APD.guardaSesion({ id: existente.id, datos: APD.adscripcionDe(datos, d) });
           } else {
             // Sólo lo necesario para la pantalla (el nombre); nada más se guarda en el navegador.
-            APD.guardaSesion({ nueva: { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null } });
+            APD.guardaSesion({ nueva: { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null,
+              curp: d.curp, sexo: d.curp[10], correo: d.correo, telefono: d.telefono, ...APD.adscripcionDe(datos, d) } });
           }
           ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
         }).catch(mal);

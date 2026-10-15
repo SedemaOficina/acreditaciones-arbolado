@@ -67,6 +67,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P28 | Espacio para archivos (de 10 a 20 GB al año) y dónde | Misma reunión con el SIA. | etapa 3 |
 | P29 | Conexión del examen en línea: cuenta propia o API del módulo | Por la API del módulo, para que la calificación pase por las mismas reglas y la misma bitácora que la captura del instructor. | no |
 | P30 | Formato exacto de la contraseña derivada que usa el esquema acceso | Pedirlo al SIA para usar el mismo; hoy los ficticios usan scrypt con los parámetros documentados. | etapa 3 |
+| P55 | Cambio de correo en «Mis datos» sin comprobar que el correo nuevo es de la persona | Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio. | etapa 3 |
 
 ## Unidad de Transparencia (datos personales)
 
@@ -119,3 +120,6 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Adscripción | Sí/No, tipo y la pregunta de cada tipo (empresa, dependencia de la Ciudad con Dirección General en la SEDEMA, alcaldía, dependencia federal) | 15/10/2026 |
 | Nombre de los archivos | Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO; el original se conserva aparte | 15/10/2026 |
 | Mayúsculas en la cuenta | Nombre, apellidos y CURP se escriben y guardan en mayúsculas; correo y contraseña no cambian | 15/10/2026 |
+| Mis datos | Pantalla para consultar los datos ligados a la CURP y cambiar contacto, adscripción y, mientras no esté confirmada, la fotografía | 15/10/2026 |
+| Sexo en datos generales | Se toma de la CURP y se muestra de sólo lectura; no se pregunta aparte | 15/10/2026 |
+| Personas independientes | «No, soy independiente» es una respuesta explícita de la adscripción | 15/10/2026 |

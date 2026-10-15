@@ -1,0 +1,104 @@
+<!-- Adscripción (decisiones 2026-10-15): es de la persona. Se pide al crear la cuenta y se cambia en «Mis datos»;
+     cada solicitud guarda la que tenía al enviarse. Primero si trabaja para alguien («No» = independiente); luego
+     el tipo y, según el tipo, la pregunta que corresponde. Sirve para integrar grupos por institución y para la
+     estadística de la demanda. Este bloque es un fragmento compartido: herramientas/plantillas/adscripcion.html,
+     lo inserta construir-sitio.mjs en cuenta.html y datos.html.
+     Las condiciones van en envolturas anidadas para que, al cambiar una respuesta, se oculte todo lo que
+     dependía de ella (el núcleo no encadena condiciones entre campos hermanos; P52).
+     La API convierte las respuestas en adscripción e institución del catálogo apd.organizacion (app/apd.js, adscripcionDe). -->
+<fieldset class="grupo" data-campo="adscrito" data-requerido data-uso="Saber si la persona trabaja para una empresa, institución o dependencia, para integrar grupos por institución.">
+  <legend class="etiqueta">¿Trabajas para alguna empresa, institución o dependencia?</legend>
+  <p class="ayuda">Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».</p>
+  <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+  <div class="opciones-cortas">
+    <label class="opcion opcion-corta"><input class="opcion-input" type="radio" name="adscrito" autocomplete="off" value="si"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Sí</span></label>
+    <label class="opcion opcion-corta"><input class="opcion-input" type="radio" name="adscrito" autocomplete="off" value="no"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>No, soy independiente</span></label>
+  </div>
+</fieldset>
+
+<div data-si="adscrito=si">
+<fieldset class="grupo" data-campo="tipo_adscripcion" data-requerido data-uso="Clasificar la institución a la que está adscrita la persona y hacer la pregunta que le corresponde.">
+  <legend class="etiqueta">¿De qué tipo es?</legend>
+  <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+  <div class="opciones">
+      <label class="opcion"><input class="opcion-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="privada"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Empresa, consultoría o particular</span><span class="opcion-desc">Persona moral o física: empresas, consultoras o trabajo para un particular.</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="dependencia_cdmx"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dependencia del Gobierno de la Ciudad de México</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="alcaldia"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Alcaldía</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="dependencia_federal"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dependencia del Gobierno Federal</span><span class="opcion-desc">Por ejemplo, la CFE.</span></label>
+  </div>
+</fieldset>
+
+<!-- Puede ser el nombre de otra persona (quien la contrata): sensible y sin autocompletar. -->
+<div class="campo" data-campo="empresa_nombre" data-si="tipo_adscripcion=privada" data-requerido data-sensible
+     data-finalidad="Integrar grupos por institución y registrar a quién presta sus servicios la persona acreditada." data-uso="Nombre de la empresa, consultoría o persona física para la que trabaja.">
+  <label class="etiqueta" for="empresa_nombre">Nombre de la empresa, consultoría o persona física</label>
+  <p class="ayuda">El nombre o la razón social, tal como aparece en su constancia de situación fiscal.</p>
+  <!-- autocomplete off: es el nombre de otra persona o empresa, no de quien llena. -->
+  <input class="control" id="empresa_nombre" name="empresa_nombre" type="text" maxlength="160" autocomplete="off">
+</div>
+
+<div data-si="tipo_adscripcion=dependencia_cdmx">
+  <fieldset class="grupo" data-campo="dependencia_cdmx" data-requerido data-uso="Identificar la dependencia de la Ciudad de México para integrar grupos.">
+    <legend class="etiqueta">¿A qué dependencia del Gobierno de la Ciudad de México perteneces?</legend>
+  <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+    <div class="opciones">
+      <label class="opcion"><input class="opcion-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="sobse"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Secretaría de Obras y Servicios (SOBSE)</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="sedema"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Secretaría del Medio Ambiente (SEDEMA)</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="paot"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="otro"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Otra</span></label>
+    </div>
+  </fieldset>
+  <div class="campo" data-campo="dependencia_cdmx_otra" data-si="dependencia_cdmx=otro" data-otro-de="dependencia_cdmx" data-requerido data-uso="Identificar una dependencia que no está en la lista.">
+    <label class="etiqueta" for="dependencia_cdmx_otra">Nombre de la dependencia</label>
+    <!-- autocomplete off: es el nombre de una dependencia; el navegador no tiene nada que proponer. -->
+    <input class="control" id="dependencia_cdmx_otra" name="dependencia_cdmx_otra" type="text" maxlength="160" autocomplete="off">
+  </div>
+  <!-- Si es la SEDEMA, la Dirección General (decisión 2026-10-15). -->
+  <div data-si="dependencia_cdmx=sedema">
+    <fieldset class="grupo" data-campo="direccion_sedema" data-requerido data-uso="Identificar la Dirección General de la SEDEMA para integrar grupos.">
+      <legend class="etiqueta">¿A qué Dirección General de la SEDEMA perteneces?</legend>
+      <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+      <div class="opciones">
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgeira"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)</span></label>
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgzcfs"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)</span></label>
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgsanpava"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)</span></label>
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcpca"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)</span></label>
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgiva"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dirección General de Vigilancia Ambiental (DGIVA)</span></label>
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcorenadr"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)</span></label>
+        <label class="opcion"><input class="opcion-input" type="radio" name="direccion_sedema" autocomplete="off" value="otro"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Otra área de la Secretaría</span></label>
+      </div>
+    </fieldset>
+    <div class="campo" data-campo="direccion_sedema_otra" data-si="direccion_sedema=otro" data-otro-de="direccion_sedema" data-requerido data-uso="Identificar un área de la SEDEMA que no está en la lista.">
+      <label class="etiqueta" for="direccion_sedema_otra">Nombre del área</label>
+      <!-- autocomplete off: es el nombre de un área de la Secretaría; el navegador no tiene nada que proponer. -->
+      <input class="control" id="direccion_sedema_otra" name="direccion_sedema_otra" type="text" maxlength="160" autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<!-- Catálogo cerrado de las 16 alcaldías: sale de apd.organizacion (datos/catalogos.js). -->
+<div class="campo" data-campo="alcaldia" data-si="tipo_adscripcion=alcaldia" data-requerido data-uso="Identificar la alcaldía para integrar grupos.">
+  <label class="etiqueta" for="alcaldia">¿En qué alcaldía trabajas?</label>
+  <p class="ayuda">Escribe las primeras letras y elígela de la lista.</p>
+  <div class="combo" data-combo data-catalogo="alcaldias">
+    <input class="control" id="alcaldia" name="alcaldia" type="text" maxlength="60" autocomplete="off">
+    <ul class="combo-lista" hidden></ul>
+  </div>
+</div>
+
+<div data-si="tipo_adscripcion=dependencia_federal">
+  <fieldset class="grupo" data-campo="dependencia_federal" data-requerido data-uso="Identificar la dependencia federal para integrar grupos.">
+    <legend class="etiqueta">¿A qué dependencia del Gobierno Federal perteneces?</legend>
+  <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+    <div class="opciones">
+      <label class="opcion"><input class="opcion-input" type="radio" name="dependencia_federal" autocomplete="off" value="cfe"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Comisión Federal de Electricidad (CFE)</span></label>
+      <label class="opcion"><input class="opcion-input" type="radio" name="dependencia_federal" autocomplete="off" value="otro"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Otra</span></label>
+    </div>
+  </fieldset>
+  <div class="campo" data-campo="dependencia_federal_otra" data-si="dependencia_federal=otro" data-otro-de="dependencia_federal" data-requerido data-uso="Identificar una dependencia que no está en la lista.">
+    <label class="etiqueta" for="dependencia_federal_otra">Nombre de la dependencia</label>
+    <!-- autocomplete off: es el nombre de una dependencia; el navegador no tiene nada que proponer. -->
+    <input class="control" id="dependencia_federal_otra" name="dependencia_federal_otra" type="text" maxlength="160" autocomplete="off">
+  </div>
+</div>
+</div>

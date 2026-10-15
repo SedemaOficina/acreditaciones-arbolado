@@ -21,7 +21,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Paso | Lo mueve | La base exige |
 |---|---|---|
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
-| → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador; fotografía de frente de la persona. La elegibilidad no se vuelve a comprobar |
+| → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador; fotografía de frente de la persona; adscripción de la persona, que se copia a la solicitud. La elegibilidad no se vuelve a comprobar |
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada |
 | → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la persona confirmada por el personal (o tomada ahí). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
@@ -89,8 +89,11 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Nombre de los archivos** (`apd.nombre_de_archivo`): al cargarse, cada documento y fotografía se guarda como
   `TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext` (el tipo sale de `requisito.nombre_archivo`; si falta, del nombre del
   requisito). El nombre original se conserva en `nombre_original`. Ninguno de los dos se cambia después.
-- **Adscripción**: la solicitud guarda el tipo (`adscripcion`) y la institución (`organizacion_id`, del catálogo);
-  van juntas o ninguna, y la institución es del tipo elegido. El catálogo trae las 16 alcaldías, SOBSE, SEDEMA
+- **Adscripción**: es de la persona (`solicitante.adscripcion` y `organizacion_id`); toda cuenta activa la tiene
+  (`independiente` incluido) y cada cambio queda en la bitácora. La solicitud la copia al darse de alta y en cada
+  envío (`sin_adscripcion` si falta); después no se edita. La institución es del tipo elegido y no hay institución
+  si es independiente.
+- **Sexo**: `solicitante.sexo` se calcula de la CURP (columna generada); no se captura. El catálogo trae las 16 alcaldías, SOBSE, SEDEMA
   con sus Direcciones Generales, PAOT y CFE; los nombres escritos se agregan sin duplicar.
 - **Fotografía de la persona** (`apd.fotografia`): una vigente por persona, sólo JPG o PNG. La persona la carga
   al crear su cuenta y la cambia mientras nadie la confirme; en el cotejo la confirma el personal (con su
@@ -106,7 +109,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 98 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 102 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y

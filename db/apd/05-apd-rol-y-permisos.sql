@@ -41,7 +41,7 @@ GRANT UPDATE (tipo, nombre, activa) ON apd.organizacion TO apd_api;
 
 -- Cuentas y sesiones de solicitantes
 GRANT SELECT, INSERT ON apd.solicitante TO apd_api;
-GRANT UPDATE (curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, estado,
+GRANT UPDATE (curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, organizacion_id, contrasena_hash, estado,
               intentos_fallidos, bloqueada_hasta, debe_cambiar_contrasena) ON apd.solicitante TO apd_api;
 GRANT SELECT, INSERT, DELETE ON apd.sesion_solicitante TO apd_api;
 GRANT UPDATE (cerrada_en) ON apd.sesion_solicitante TO apd_api;
@@ -51,7 +51,7 @@ GRANT UPDATE (estado, vigente) ON apd.fotografia TO apd_api;
 
 -- Trámite
 GRANT SELECT, INSERT ON apd.solicitud TO apd_api;
-GRANT UPDATE (tipo_acreditacion, modalidad, adscripcion, organizacion_id, acreditacion_anterior_id,
+GRANT UPDATE (tipo_acreditacion, modalidad, acreditacion_anterior_id,
               factura_rfc, factura_razon_social, factura_folio_fiscal,
               perfil_academico, carrera, anios_experiencia, estado, cita_en, motivo_cierre)
   ON apd.solicitud TO apd_api;
