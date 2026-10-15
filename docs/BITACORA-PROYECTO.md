@@ -239,3 +239,12 @@ accesibilidad sin hallazgos (también en «Mis datos»); 74 campos correctos en 
 
 **Verificado**: 104 de 104 pruebas de la base; 36 casos en el servidor; 137 comprobaciones del sitio,
 accesibilidad sin hallazgos.
+
+## 2026-10-15 · Bloque 17 · Preguntas de opción como lista
+
+- Se compararon cuatro estilos (tarjetas en rejilla, lista con botón de opción visible, botón de opción clásico
+  y lista desplegable) en una página de prueba con los estilos reales. Liber eligió la lista (`opciones-lista` del
+  estándar): una opción por renglón, con el círculo visible, en todas las preguntas, también el Sí/No.
+- `app/apd.css` agrega el estado deshabilitado que esa variante no trae (P56).
+
+**Verificado**: 137 comprobaciones del sitio, accesibilidad sin hallazgos; auditor de CSS y de campos correctos.

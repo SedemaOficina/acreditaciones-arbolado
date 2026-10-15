@@ -80,3 +80,10 @@
   .menu-inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Preguntas de opción (decisión 2026-10-15): lista con el botón de opción visible (variante opciones-lista del
+   estándar) en lugar de tarjetas en rejilla. El estándar no le da estado deshabilitado a esa variante: se agrega
+   igual que el de las tarjetas (p. ej., «Dictaminador técnico» sin poda vigente, con su motivo). */
+.opcion-fila:has(.opcion-fila-input:disabled) { opacity: var(--op-inactivo); cursor: not-allowed; }
+.opcion-fila:has(.opcion-fila-input:disabled):hover { border-color: var(--borde); }
+

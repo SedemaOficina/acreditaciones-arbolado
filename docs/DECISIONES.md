@@ -15,6 +15,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | El trámite es siempre individual. Pertenecer a una organización es un atributo de la solicitud que sirve para agrupar la demanda; las organizaciones no inscriben a su personal, no pagan en conjunto y no tienen enlace con cuenta | Liber Saltijeral |
 | 2026-10-14 | Volumen esperado: 1,000 solicitudes al año | Liber Saltijeral |
 | 2026-10-14 | Documentos de hasta 5 MB cada uno (antes 2 MB) (mapa, R12) | Liber Saltijeral |
+| 2026-10-15 | Las preguntas de opción se muestran como lista, una opción por renglón y con el botón de opción visible (variante `opciones-lista` del estándar), en lugar de tarjetas en rejilla, que confundían. Aplica a todo el sistema, también al Sí/No. Se eligió entre cuatro estilos | Liber Saltijeral |
 | 2026-10-15 | Los documentos que carga la persona se aceptan sólo en PDF (antes también JPG y PNG). Las fotografías siguen siendo imagen. A quien tenga una foto del documento se le sugiere convertirla con el escáner de su teléfono | Liber Saltijeral |
 | 2026-10-15 | El requisito de la CURP y el campo de CURP de la cuenta llevan el enlace oficial para obtenerla: https://www.gob.mx/curp/ | Liber Saltijeral |
 

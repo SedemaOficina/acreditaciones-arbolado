@@ -482,6 +482,14 @@
       "desde": "2026-10-15",
       "titulo": "Cambio de correo en «Mis datos» sin comprobar que el correo nuevo es de la persona",
       "recomendacion": "Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio."
+    },
+    {
+      "id": "P56",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-15",
+      "titulo": "Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado",
+      "recomendacion": "Hacer de opciones-lista la forma por omisión de las preguntas de una sola respuesta, dejar la rejilla para casos con pocas opciones muy visuales y agregar a opciones-lista su estado deshabilitado."
     }
   ],
   "resueltos": [
@@ -573,6 +581,11 @@
     {
       "titulo": "Enlace para obtener la CURP",
       "como": "gob.mx/curp en el requisito, en la lista de requisitos y en el campo CURP de la cuenta",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Estilo de las preguntas de opción",
+      "como": "Lista con el botón de opción visible, una por renglón (opciones-lista), en todo el sistema",
       "fecha": "2026-10-15"
     }
   ]

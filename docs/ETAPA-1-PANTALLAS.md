@@ -104,6 +104,7 @@ rechazan). En la etapa 3 la API:
 | Validaciones cruzadas | No se repiten si cambia el otro dato y el campo que las declara no tenía error | `app/cuenta.js` vuelve a validar la CURP al cambiar nombre, apellidos o fecha |
 | Plantilla de versión del SIA | `version-visible.css` usa valores literales y no pasa el auditor | Hoja equivalente con tokens |
 | `validar.mjs` | Exige en `datos` un valor para un campo obligatorio de archivos, pero el navegador no lo manda ahí (el módulo los declara fuera de datos): una solicitud real con archivos obligatorios se rechazaría (P46) | La API pone en `datos` el número de archivos recibidos de cada campo antes de validar; `probar-esquemas.mjs` lo hace igual |
+| `opciones` | En escritorio las tarjetas van en rejilla (varias por renglón) y sin el botón de opción visible: en preguntas de una sola respuesta confunden. La variante `opciones-lista` no tiene estado deshabilitado (P56) | Todo el sistema usa `opciones-lista`; el deshabilitado va en `app/apd.css` |
 | Núcleo | Las condiciones no se encadenan entre campos hermanos: si se oculta una pregunta, la que dependía de su respuesta sigue visible (el servidor sí las encadena) (P52) | Envolturas `data-si` anidadas en la adscripción |
 | Núcleo + `archivos` | El núcleo pone `aria-required` en el botón de la zona de carga, que no lo admite (axe: aria-allowed-attr) (P47) | `app/apd.js` lo quita sólo de ese botón |
 

@@ -102,6 +102,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P46 | validar.mjs exige en «datos» los campos de archivos que el navegador no manda ahí | Reportarlo al estándar. Mientras, la API pone en «datos» el número de archivos recibidos de cada campo antes de validar (así lo prueba probar-esquemas.mjs). | etapa 3 |
 | P47 | El núcleo pone aria-required en el botón de la zona de carga, que no lo admite | Reportarlo al estándar; el proyecto lo quita sólo de ese botón (app/apd.js). | no |
 | P52 | Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí) | Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas. | no |
+| P56 | Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado | Hacer de opciones-lista la forma por omisión de las preguntas de una sola respuesta, dejar la rejilla para casos con pocas opciones muy visuales y agregar a opciones-lista su estado deshabilitado. | no |
 
 ## Resueltos
 
@@ -125,3 +126,4 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Personas independientes | «No, soy independiente» es una respuesta explícita de la adscripción | 15/10/2026 |
 | Formato de los documentos | Sólo PDF en lo que carga la persona; las fotografías siguen siendo imagen | 15/10/2026 |
 | Enlace para obtener la CURP | gob.mx/curp en el requisito, en la lista de requisitos y en el campo CURP de la cuenta | 15/10/2026 |
+| Estilo de las preguntas de opción | Lista con el botón de opción visible, una por renglón (opciones-lista), en todo el sistema | 15/10/2026 |
