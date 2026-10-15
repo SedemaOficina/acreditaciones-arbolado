@@ -9,7 +9,7 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | Página | Forma | Qué hace | Módulos del estándar |
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
-| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay), fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, tooltip, modal, copiar, acuse |
+| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, tooltip, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. Caja de personas de ejemplo (sólo versión de prueba) | identificadores |
 | `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado, qué sigue, cita con datos de pago y aviso de llevar la identificación para confirmar la fotografía, expediente de la persona, grupo, observaciones, asistencia y calificación, lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
 | `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), organización (combo abierto), perfil del dictaminador · **Documentos** (generados del catálogo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
@@ -109,13 +109,13 @@ rechazan). En la etapa 3 la API:
 
 Automática (Chromium 390 × 844 táctil y 1280 × 900):
 
-- `herramientas/probar-sitio.mjs`: **98 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
+- `herramientas/probar-sitio.mjs`: **102 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
   solicitud de poda nueva, renovación, dictaminador nueva con perfil y 8 documentos, corrección de observaciones
   (sólo lo observado es obligatorio), grupo asignado, error de acceso, verificación vigente y no vigente,
   fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas; sin errores de consola ni desborde horizontal; **axe-core sin hallazgos** en 8 pantallas.
 - `auditar-campos.mjs`: 50 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
 - `auditor-css.mjs` sobre `apd.css` y `version-visible.css`: 0 hallazgos.
-- `probar-esquemas.mjs`: 23 de 23. `probar-base.sh`: 92 de 92.
+- `probar-esquemas.mjs`: 23 de 23. `probar-base.sh`: 93 de 93.
 - Capturas en `verificacion/capturas/` (10 pantallas × 2 anchos).
 
 Lista para personas (`docs/08` del estándar, sección 2) — **pendiente**, no se pudo hacer en el entorno de construcción:

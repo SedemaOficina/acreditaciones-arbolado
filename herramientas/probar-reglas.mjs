@@ -117,6 +117,13 @@ const casos = [
   ['Un folio fiscal no se repite en dos solicitudes', { sqlstate: '23505' }, null, `
      UPDATE apd.solicitud SET factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL LIMIT 1)
       WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
+  ['Nombre y apellidos se guardan en mayúsculas, con acentos y Ñ', 'ok', null, `
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000021', 'XAXX991231HNEXXX09', '  maría   josé ', 'peña', 'güemes', 'Caso@Ejemplo.local', '0000000099', 'x', true);
+     DO $$ BEGIN ASSERT (SELECT (nombre, primer_apellido, segundo_apellido, correo) = ('MARÍA JOSÉ', 'PEÑA', 'GÜEMES', 'caso@ejemplo.local')
+                          FROM apd.solicitante WHERE id = '00000000-0000-4000-a000-000000000021'); END $$;
+     UPDATE apd.solicitante SET segundo_apellido = '' WHERE id = '00000000-0000-4000-a000-000000000021';
+     DO $$ BEGIN ASSERT (SELECT segundo_apellido IS NULL FROM apd.solicitante WHERE id = '00000000-0000-4000-a000-000000000021'); END $$;`],
   // ── Fotografía de frente de la persona (decisión 2026-10-14) ──
   ['Sin fotografía de frente no se envía la solicitud', { codigo: 'sin_fotografia' }, null, `${SIN_FOTO}
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);

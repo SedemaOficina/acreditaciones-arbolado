@@ -76,6 +76,8 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
   en su primer cotejo; uno por CURP), referencia de pago (provisional: el folio sin guiones, al validar con cita), `APD-G-AAAA-NNN` (grupo), `PD-AAAA-NNNN` y
   `DT-AAAA-NNNN` (acreditaciones emitidas en el sistema; las migradas conservan el suyo). El de la
   acreditación es provisional: Liber definirá su formato.
+- **Nombre y apellidos** se guardan en mayúsculas (`apd.mayusculas`: con acentos, diéresis y Ñ aunque el
+  servidor no tenga configuración regional en español), sin espacios de más; el correo, en minúsculas.
 - **CURP**: estructura, clave de entidad y dígito verificador, con las mismas reglas que el Estándar de
   formularios del SIA (`apd.curp_valida`). La base no acepta una CURP que el formulario rechazaría.
 - **Bitácora**: cada alta y cambio de estado queda con quién, cuándo y desde dónde. No se edita ni se borra,
@@ -98,7 +100,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 92 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 93 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y

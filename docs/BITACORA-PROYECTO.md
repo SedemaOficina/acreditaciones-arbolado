@@ -187,3 +187,15 @@ opciones «Trámite».
 
 **Verificado**: 92 de 92 pruebas de la base; 23 casos en el servidor; 98 comprobaciones del sitio,
 accesibilidad sin hallazgos; 50 campos correctos en el auditor.
+
+## 2026-10-15 · Bloque 13 · Mayúsculas en la cuenta
+
+- «Crea tu cuenta» escribe en mayúsculas el nombre, los apellidos y la CURP mientras la persona teclea,
+  conservando el cursor (`app/cuenta.js`). Correo y contraseña no cambian.
+- La base los guarda igual: `apd.mayusculas()` en el alta y en cada cambio de la persona, con acentos y Ñ
+  aunque la configuración regional del servidor no sea española. Los datos ficticios quedan en mayúsculas.
+- Documento aparte para corregir el Estándar de formularios: «Fallas del Estándar de formularios del SIA»
+  (13 hallazgos, con dónde están, cómo se reproducen y qué corregir).
+
+**Verificado**: 93 de 93 pruebas de la base; 23 casos en el servidor; 102 comprobaciones del sitio,
+accesibilidad sin hallazgos.

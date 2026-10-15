@@ -162,8 +162,18 @@ BEGIN
   RETURN n;
 END $$;
 
+-- Nombre y apellidos en mayúsculas (decisión 2026-10-15, Liber), con acentos, diéresis y Ñ también en una base
+-- cuyo idioma no las conozca (upper() depende de la configuración regional del servidor). Espacios repetidos fuera.
+CREATE FUNCTION apd.mayusculas(t text) RETURNS text
+  LANGUAGE sql IMMUTABLE AS $f$
+  SELECT nullif(upper(translate(regexp_replace(trim(t), '\s+', ' ', 'g'), 'áéíóúüñàèìòù', 'ÁÉÍÓÚÜÑÀÈÌÒÙ')), '')
+$f$;
+
 CREATE FUNCTION apd.solicitante_alta() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  NEW.nombre := apd.mayusculas(NEW.nombre);
+  NEW.primer_apellido := apd.mayusculas(NEW.primer_apellido);
+  NEW.segundo_apellido := apd.mayusculas(NEW.segundo_apellido);
   NEW.curp := upper(trim(NEW.curp));
   NEW.correo := lower(trim(NEW.correo));
   NEW.creada_en := apd.ahora();
@@ -177,6 +187,9 @@ CREATE TRIGGER solicitante_alta BEFORE INSERT ON apd.solicitante
 -- cuentas, 2026-10-14). Quien solicita no la cambia: si se equivocó, lo pide a la Secretaría.
 CREATE FUNCTION apd.solicitante_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  NEW.nombre := apd.mayusculas(NEW.nombre);
+  NEW.primer_apellido := apd.mayusculas(NEW.primer_apellido);
+  NEW.segundo_apellido := apd.mayusculas(NEW.segundo_apellido);
   NEW.curp := upper(trim(NEW.curp));
   NEW.correo := lower(trim(NEW.correo));
   IF NEW.creada_en IS DISTINCT FROM OLD.creada_en OR NEW.es_ficticio IS DISTINCT FROM OLD.es_ficticio THEN
