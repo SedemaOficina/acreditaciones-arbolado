@@ -1,0 +1,379 @@
+<title>Pendientes de acreditaciones</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+/* Tablero de decisiones: pendientes agrupados por quién decide; cada uno con mi recomendación, tu marca y tu respuesta.
+   Mismo sistema visual que el «Mapa del trámite»: son piezas del mismo expediente. */
+:root {
+  --guinda: #9D2148; --guinda-suave: #F6E9EE; --dorado: #B28E5C; --dorado-suave: #F7F0E6;
+  --fondo: #FBFAF9; --superficie: #FFFFFF; --tinta: #1F2224; --tinta-2: #55585A;
+  --linea: #E2DEDB; --linea-fuerte: #C9C3BF;
+  --ok: #1E6B45; --ok-suave: #E4F2EA; --otra: #2F5A8F; --otra-suave: #E6EEF8;
+  --duda: #8A5A00; --duda-suave: #FCF1DA; --hecho: #55585A; --hecho-suave: #EEEDEC;
+  --foco: #9D2148; --sobre-guinda: #FFFFFF;
+  --f-titulo: "Cabin", "Segoe UI", system-ui, sans-serif;
+  --f-cuerpo: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-dato: "Roboto Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --guinda: #E07A9A; --guinda-suave: #3A1B26; --dorado: #D4B07E; --dorado-suave: #33291C;
+    --fondo: #141516; --superficie: #1C1E20; --tinta: #ECEDEE; --tinta-2: #A9ADB0;
+    --linea: #2E3134; --linea-fuerte: #44484C; --ok: #6FCF97; --ok-suave: #16301F; --otra: #8DB4E8; --otra-suave: #18263A;
+    --duda: #F2C063; --duda-suave: #33270F; --hecho: #A9ADB0; --hecho-suave: #26292B; --foco: #E07A9A; --sobre-guinda: #141516;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --guinda: #E07A9A; --guinda-suave: #3A1B26; --dorado: #D4B07E; --dorado-suave: #33291C;
+  --fondo: #141516; --superficie: #1C1E20; --tinta: #ECEDEE; --tinta-2: #A9ADB0;
+  --linea: #2E3134; --linea-fuerte: #44484C; --ok: #6FCF97; --ok-suave: #16301F; --otra: #8DB4E8; --otra-suave: #18263A;
+  --duda: #F2C063; --duda-suave: #33270F; --hecho: #A9ADB0; --hecho-suave: #26292B; --foco: #E07A9A; --sobre-guinda: #141516;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--fondo); color: var(--tinta); font: 400 15px/1.55 var(--f-cuerpo);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+.envoltura { max-width: 1040px; margin: 0 auto; display: grid; gap: 32px; }
+h1, h2, h3 { font-family: var(--f-titulo); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); font-weight: 700; line-height: 1.15; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+p { margin: 0; }
+:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.etiqueta { font: 600 0.72rem/1 var(--f-titulo); letter-spacing: 0.09em; text-transform: uppercase; color: var(--tinta-2); }
+.aviso { font-size: 0.86rem; color: var(--tinta-2); }
+
+.cabeza { padding-top: 28px; padding-bottom: 20px; border-bottom: 3px solid var(--guinda); display: grid; gap: 14px; }
+.cabeza .bajada { color: var(--tinta-2); max-width: 70ch; }
+.avance { display: flex; flex-wrap: wrap; gap: 8px; }
+.cifra { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border: 1px solid var(--linea-fuerte); border-radius: 999px; background: var(--superficie); font-variant-numeric: tabular-nums; font-size: 0.86rem; }
+.cifra b { font: 700 1.05rem/1 var(--f-titulo); }
+.cifra.acepto b { color: var(--ok); } .cifra.otra b { color: var(--otra); } .cifra.duda b { color: var(--duda); } .cifra.resuelto b { color: var(--hecho); }
+.guardado { font-size: 0.82rem; color: var(--tinta-2); }
+
+.controles { display: grid; gap: 10px; }
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; }
+.filtro { font: 500 0.82rem/1 var(--f-cuerpo); padding: 8px 12px; min-height: 36px; border-radius: 999px; border: 1px solid var(--linea-fuerte); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+.filtro[aria-pressed="true"] { background: var(--tinta); color: var(--fondo); border-color: var(--tinta); }
+.filtro .n { font-variant-numeric: tabular-nums; opacity: 0.75; margin-left: 4px; }
+
+.grupo { display: grid; gap: 12px; scroll-margin-top: 16px; }
+.grupo-cabeza { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px solid var(--linea-fuerte); }
+.grupo-cabeza .nota { font-size: 0.85rem; color: var(--tinta-2); }
+.lista { display: grid; gap: 10px; }
+
+.pend { display: grid; grid-template-columns: 56px 1fr; gap: 6px 14px; padding: 14px 16px; background: var(--superficie); border: 1px solid var(--linea); border-left: 4px solid var(--linea-fuerte); }
+.pend[data-marca="acepto"] { border-left-color: var(--ok); }
+.pend[data-marca="otra"] { border-left-color: var(--otra); }
+.pend[data-marca="duda"] { border-left-color: var(--duda); }
+.pend[data-marca="resuelto"] { border-left-color: var(--hecho); background: var(--hecho-suave); }
+.pend .id { font: 700 0.85rem/1.5 var(--f-dato); color: var(--guinda); }
+.pend .cuerpo { min-width: 0; display: grid; gap: 8px; }
+.pend .titulo { font-weight: 500; max-width: 75ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.78rem; color: var(--tinta-2); }
+.chip { display: inline-flex; padding: 2px 8px; border-radius: 4px; font: 500 0.74rem/1.5 var(--f-cuerpo); border: 1px solid var(--linea-fuerte); background: var(--fondo); color: var(--tinta-2); white-space: nowrap; }
+.chip.datos { background: var(--guinda-suave); color: var(--guinda); border-color: color-mix(in srgb, var(--guinda) 30%, transparent); }
+.reco { display: grid; gap: 2px; padding: 10px 12px; background: var(--dorado-suave); border-radius: var(--r); max-width: 78ch; }
+.reco .etiqueta { color: color-mix(in srgb, var(--dorado) 70%, var(--tinta)); }
+.marcas { display: flex; flex-wrap: wrap; gap: 6px; }
+.marca { font: 500 0.8rem/1 var(--f-cuerpo); padding: 8px 12px; min-height: 36px; border-radius: var(--r); border: 1px solid var(--linea-fuerte); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+.marca[data-v="acepto"][aria-pressed="true"] { background: var(--ok-suave); border-color: var(--ok); color: var(--ok); }
+.marca[data-v="otra"][aria-pressed="true"] { background: var(--otra-suave); border-color: var(--otra); color: var(--otra); }
+.marca[data-v="duda"][aria-pressed="true"] { background: var(--duda-suave); border-color: var(--duda); color: var(--duda); }
+.marca[data-v="resuelto"][aria-pressed="true"] { background: var(--hecho-suave); border-color: var(--hecho); color: var(--tinta); }
+.nota-lbl { font-size: 0.78rem; color: var(--tinta-2); }
+textarea, input[type="text"], select { width: 100%; font: 400 0.88rem/1.45 var(--f-cuerpo); padding: 8px 10px; border-radius: var(--r); border: 1px solid var(--linea-fuerte); background: var(--fondo); color: var(--tinta); }
+textarea { min-height: 60px; resize: vertical; }
+@media (max-width: 560px) { .pend { grid-template-columns: 1fr; } }
+
+.panel { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--linea); background: var(--superficie); border-radius: var(--r); }
+.form-nuevo { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+.form-nuevo .ancho { grid-column: 1 / -1; }
+.form-nuevo label { display: grid; gap: 4px; font-size: 0.82rem; color: var(--tinta-2); }
+@media (max-width: 560px) { .form-nuevo { grid-template-columns: 1fr; } }
+.boton { font: 600 0.88rem/1 var(--f-titulo); padding: 11px 16px; min-height: 44px; border-radius: var(--r); border: 1px solid var(--guinda); background: var(--guinda); color: var(--sobre-guinda); cursor: pointer; justify-self: start; }
+.boton-sec { font: 500 0.8rem/1 var(--f-cuerpo); padding: 8px 12px; min-height: 36px; border-radius: var(--r); border: 1px solid var(--linea-fuerte); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+.nuevos { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.nuevo { display: flex; gap: 10px; align-items: start; justify-content: space-between; padding: 10px 12px; border: 1px dashed var(--linea-fuerte); border-radius: var(--r); }
+.nuevo .texto { min-width: 0; display: grid; gap: 4px; }
+.tabla-env { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--r); background: var(--superficie); }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: top; }
+th { font: 600 0.75rem/1.3 var(--f-titulo); letter-spacing: 0.04em; text-transform: uppercase; color: var(--tinta-2); background: var(--fondo); }
+tbody tr:last-child td { border-bottom: 0; }
+.resumen-txt { min-height: 120px; font: 400 0.8rem/1.45 var(--f-dato); }
+</style>
+
+<div class="envoltura">
+  <header class="cabeza">
+    <span class="etiqueta">Sistema de Acreditaciones de Poda y Dictaminación · versión de prueba 0.1</span>
+    <h1>Pendientes del sistema</h1>
+    <p class="bajada">Todo lo que falta decidir o hacer, agrupado por quién lo decide. Cada pendiente trae mi recomendación. Márcalo y, si decides otra cosa o tienes duda, escribe tu respuesta: yo la leo y la aplico en la base, las pantallas y los documentos.</p>
+    <div class="avance" id="avance" aria-live="polite"></div>
+    <p class="guardado" id="guardado">Conectando para guardar tus marcas…</p>
+  </header>
+
+  <section class="controles" aria-label="Filtros">
+    <div class="filtros" role="group" aria-label="Por estado" id="filtros-estado"></div>
+    <div class="filtros" role="group" aria-label="Por quién decide" id="filtros-grupo"></div>
+  </section>
+
+  <div id="grupos" style="display:grid;gap:28px"></div>
+
+  <section class="panel" aria-labelledby="t-nuevo">
+    <h2 id="t-nuevo">Agregar un pendiente</h2>
+    <p class="aviso">Lo que agregues aquí queda guardado y le asigno número la próxima vez que actualice el tablero.</p>
+    <form class="form-nuevo" id="form-nuevo">
+      <label class="ancho" for="nuevo-texto">Qué falta decidir o hacer
+        <textarea id="nuevo-texto" required></textarea>
+      </label>
+      <label for="nuevo-grupo">Quién lo decide
+        <select id="nuevo-grupo"></select>
+      </label>
+      <label for="nuevo-bloquea">Desde cuándo hace falta
+        <select id="nuevo-bloquea">
+          <option value="no">No bloquea</option>
+          <option value="etapa 1">Etapa 1</option>
+          <option value="etapa 2">Etapa 2</option>
+          <option value="etapa 3">Etapa 3</option>
+          <option value="datos reales">Antes del primer dato real</option>
+          <option value="SIA">Antes de pasar al SIA</option>
+        </select>
+      </label>
+      <button class="boton ancho" type="submit" id="nuevo-guardar">Agregar pendiente</button>
+    </form>
+    <ul class="nuevos" id="nuevos"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="t-resueltos">
+    <h2 id="t-resueltos">Resueltos</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Tema</th><th>Cómo quedó</th><th>Fecha</th></tr></thead>
+      <tbody id="resueltos"></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-resumen">
+    <h2 id="t-resumen">Resumen de tus respuestas</h2>
+    <p class="aviso">Tus marcas se guardan en esta página y yo las leo cuando me pidas aplicarlas. Si prefieres, copia el resumen y pégalo en la conversación.</p>
+    <button class="boton" id="copiar" type="button">Copiar resumen</button>
+    <label class="nota-lbl" for="resumen">Resumen</label>
+    <textarea class="resumen-txt" id="resumen" readonly></textarea>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // Generado por herramientas/generar-pendientes.mjs desde docs/pendientes.json. No se edita a mano.
+  var DATOS = /*DATOS*/null;
+
+  var MARCAS = { acepto: 'Acepto la recomendación', otra: 'Decido otra cosa', duda: 'Tengo duda', resuelto: 'Ya está resuelto' };
+  var FILTROS = [['todos', 'Todos'], ['sin_marcar', 'Sin marcar'], ['acepto', 'Aceptados'], ['otra', 'Otra decisión'], ['duda', 'Con duda'], ['resuelto', 'Resueltos'], ['datos', 'Antes de datos reales']];
+  var estado = {}, nuevos = [], db = null, filtroEstado = 'todos', filtroGrupo = 'todos';
+  var aviso = document.getElementById('guardado');
+  var nombreGrupo = {};
+  DATOS.grupos.forEach(function (g) { nombreGrupo[g.id] = g.nombre; });
+
+  function el(tag, attrs, hijos) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'text') e.textContent = attrs[k]; else if (k === 'class') e.className = attrs[k]; else e.setAttribute(k, attrs[k]);
+    });
+    (hijos || []).forEach(function (h) { if (h) e.appendChild(h); });
+    return e;
+  }
+  function fecha(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso; }
+
+  function pasa(p) {
+    var m = (estado[p.id] || {}).marca || '';
+    if (filtroGrupo !== 'todos' && p.grupo !== filtroGrupo) return false;
+    if (filtroEstado === 'todos') return true;
+    if (filtroEstado === 'sin_marcar') return !m;
+    if (filtroEstado === 'datos') return p.bloquea === 'datos reales';
+    return m === filtroEstado;
+  }
+
+  function pintarFiltros() {
+    var fe = document.getElementById('filtros-estado'); fe.textContent = '';
+    FILTROS.forEach(function (f) {
+      var b = el('button', { class: 'filtro', type: 'button', 'aria-pressed': String(filtroEstado === f[0]), text: f[1] });
+      b.addEventListener('click', function () { filtroEstado = f[0]; pintarFiltros(); pintarGrupos(); });
+      fe.appendChild(b);
+    });
+    var fg = document.getElementById('filtros-grupo'); fg.textContent = '';
+    [{ id: 'todos', nombre: 'Todos los responsables' }].concat(DATOS.grupos).forEach(function (g) {
+      var n = g.id === 'todos' ? DATOS.pendientes.length : DATOS.pendientes.filter(function (p) { return p.grupo === g.id; }).length;
+      var b = el('button', { class: 'filtro', type: 'button', 'aria-pressed': String(filtroGrupo === g.id) }, [document.createTextNode(g.nombre), el('span', { class: 'n', text: String(n) })]);
+      b.addEventListener('click', function () { filtroGrupo = g.id; pintarFiltros(); pintarGrupos(); });
+      fg.appendChild(b);
+    });
+  }
+
+  function tarjeta(p) {
+    var s = estado[p.id] || {};
+    var art = el('article', { class: 'pend', id: 'pend-' + p.id, 'data-marca': s.marca || '' });
+    var marcas = el('div', { class: 'marcas', role: 'group', 'aria-label': 'Respuesta a ' + p.id });
+    Object.keys(MARCAS).forEach(function (k) {
+      var b = el('button', { class: 'marca', type: 'button', 'data-v': k, 'aria-pressed': String(s.marca === k), text: MARCAS[k] });
+      b.addEventListener('click', function () {
+        var nueva = (estado[p.id] || {}).marca === k ? '' : k;
+        guardar(p.id, { marca: nueva, nota: (estado[p.id] || {}).nota || '' });
+        pintarGrupos(); pintarAvance();
+        var vuelta = document.querySelector('#pend-' + p.id + ' .marca[data-v="' + k + '"]');
+        if (vuelta) vuelta.focus({ preventScroll: true });
+      });
+      marcas.appendChild(b);
+    });
+    var idNota = 'nota-' + p.id;
+    var nota = el('textarea', { id: idNota, placeholder: s.marca === 'otra' ? 'Qué decides' : 'Tu respuesta, decisión o duda (opcional)' });
+    nota.value = s.nota || '';
+    var t;
+    nota.addEventListener('input', function () {
+      clearTimeout(t);
+      t = setTimeout(function () { guardar(p.id, { marca: (estado[p.id] || {}).marca || '', nota: nota.value }); pintarResumen(); }, 900);
+    });
+    art.appendChild(el('span', { class: 'id', text: p.id }));
+    art.appendChild(el('div', { class: 'cuerpo' }, [
+      el('p', { class: 'titulo', text: p.titulo }),
+      el('div', { class: 'meta' }, [
+        el('span', { class: 'chip' + (p.bloquea === 'datos reales' ? ' datos' : ''), text: p.bloquea === 'no' ? 'No bloquea' : 'Hace falta: ' + p.bloquea }),
+        el('span', { text: 'Desde ' + fecha(p.desde) })
+      ]),
+      el('div', { class: 'reco' }, [el('span', { class: 'etiqueta', text: 'Recomendación' }), el('p', { text: p.recomendacion })]),
+      marcas,
+      el('label', { class: 'nota-lbl', for: idNota, text: 'Tu respuesta' }),
+      nota
+    ]));
+    return art;
+  }
+
+  function pintarGrupos() {
+    var c = document.getElementById('grupos'); c.textContent = '';
+    DATOS.grupos.forEach(function (g) {
+      var lista = DATOS.pendientes.filter(function (p) { return p.grupo === g.id && pasa(p); });
+      if (!lista.length) return;
+      var sec = el('section', { class: 'grupo', 'aria-labelledby': 'g-' + g.id }, [
+        el('div', { class: 'grupo-cabeza' }, [el('h2', { id: 'g-' + g.id, text: g.nombre }), el('span', { class: 'nota', text: g.nota })])
+      ]);
+      var l = el('div', { class: 'lista' });
+      lista.forEach(function (p) { l.appendChild(tarjeta(p)); });
+      sec.appendChild(l);
+      c.appendChild(sec);
+    });
+    if (!c.children.length) c.appendChild(el('p', { class: 'aviso', text: 'Ningún pendiente con este filtro.' }));
+  }
+
+  function pintarAvance() {
+    var c = { acepto: 0, otra: 0, duda: 0, resuelto: 0 };
+    DATOS.pendientes.forEach(function (p) { var m = (estado[p.id] || {}).marca; if (c[m] !== undefined) c[m]++; });
+    var sin = DATOS.pendientes.length - c.acepto - c.otra - c.duda - c.resuelto;
+    var a = document.getElementById('avance'); a.textContent = '';
+    [['', sin, 'sin marcar'], ['acepto', c.acepto, 'aceptados'], ['otra', c.otra, 'otra decisión'], ['duda', c.duda, 'con duda'], ['resuelto', c.resuelto, 'resueltos'], ['', nuevos.length, 'nuevos']].forEach(function (x) {
+      a.appendChild(el('span', { class: 'cifra ' + x[0] }, [el('b', { text: String(x[1]) }), document.createTextNode(x[2])]));
+    });
+    pintarResumen();
+  }
+
+  function pintarResumen() {
+    var lineas = [];
+    DATOS.pendientes.forEach(function (p) {
+      var s = estado[p.id] || {};
+      if (!s.marca && !s.nota) return;
+      lineas.push((s.marca ? MARCAS[s.marca].toUpperCase() : 'NOTA') + ' · ' + p.id + ': ' + p.titulo + (s.nota ? '\n   → ' + s.nota : ''));
+    });
+    nuevos.forEach(function (n) { lineas.push('NUEVO · ' + (nombreGrupo[n.grupo] || n.grupo) + ' · ' + n.bloquea + ': ' + n.texto); });
+    document.getElementById('resumen').value = lineas.length ? lineas.join('\n\n') : 'Todavía no marcas ni agregas nada.';
+  }
+
+  function pintarNuevos() {
+    var u = document.getElementById('nuevos'); u.textContent = '';
+    nuevos.forEach(function (n) {
+      var quitar = el('button', { class: 'boton-sec', type: 'button', text: 'Quitar' });
+      quitar.addEventListener('click', function () {
+        if (!db) return;
+        db.collection('pendientes_nuevos').doc(n.id).delete().catch(function () { aviso.textContent = 'No se pudo quitar. Vuelve a intentarlo.'; });
+      });
+      u.appendChild(el('li', { class: 'nuevo' }, [
+        el('div', { class: 'texto' }, [el('p', { text: n.texto }), el('span', { class: 'chip', text: (nombreGrupo[n.grupo] || n.grupo) + ' · ' + (n.bloquea === 'no' ? 'no bloquea' : n.bloquea) })]),
+        db ? quitar : null
+      ]));
+    });
+    pintarAvance();
+  }
+
+  // ── Guardado ──
+  var cola = {}, escribiendo = {};
+  function guardar(id, valor) {
+    estado[id] = valor;
+    if (!db) { aviso.textContent = 'En esta vista tus marcas no se guardan: copia el resumen antes de cerrar.'; return; }
+    cola[id] = valor; escribir(id);
+  }
+  function escribir(id) {
+    if (escribiendo[id]) return;
+    var v = cola[id]; delete cola[id];
+    escribiendo[id] = true;
+    aviso.textContent = 'Guardando…';
+    db.doc('pendientes_marcas/' + id).set({ marca: v.marca, nota: v.nota, actualizado_en: new Date().toISOString() })
+      .then(function () { aviso.textContent = 'Marcas guardadas.'; })
+      .catch(function () { aviso.textContent = 'No se pudo guardar la última marca. Vuelve a intentarlo en un momento.'; })
+      .then(function () { escribiendo[id] = false; if (cola[id]) escribir(id); });
+  }
+
+  var sel = document.getElementById('nuevo-grupo');
+  DATOS.grupos.forEach(function (g) { sel.appendChild(el('option', { value: g.id, text: g.nombre })); });
+  document.getElementById('form-nuevo').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var texto = document.getElementById('nuevo-texto').value.trim();
+    if (!texto) return;
+    var dato = { texto: texto, grupo: sel.value, bloquea: document.getElementById('nuevo-bloquea').value, creado_en: new Date().toISOString() };
+    if (!db) { nuevos.push(dato); pintarNuevos(); aviso.textContent = 'En esta vista no se guarda: copia el resumen antes de cerrar.'; document.getElementById('nuevo-texto').value = ''; return; }
+    var b = document.getElementById('nuevo-guardar'); b.disabled = true;
+    db.collection('pendientes_nuevos').add(dato)
+      .then(function () { document.getElementById('nuevo-texto').value = ''; aviso.textContent = 'Pendiente agregado.'; })
+      .catch(function () { aviso.textContent = 'No se pudo agregar. Vuelve a intentarlo.'; })
+      .then(function () { b.disabled = false; });
+  });
+
+  document.getElementById('copiar').addEventListener('click', function () {
+    var t = document.getElementById('resumen');
+    var hecho = function () { document.getElementById('copiar').textContent = 'Resumen copiado'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t.value).then(hecho, function () { t.focus(); t.select(); });
+    else { t.focus(); t.select(); }
+  });
+
+  var tb = document.getElementById('resueltos');
+  DATOS.resueltos.forEach(function (r) { tb.appendChild(el('tr', {}, [el('td', { text: r.titulo }), el('td', { text: r.como }), el('td', { text: fecha(r.fecha) })])); });
+
+  pintarFiltros(); pintarGrupos(); pintarNuevos();
+
+  if (window.claude && typeof window.claude.use === 'function') {
+    window.claude.use('db').then(function (d) {
+      if (!d) { aviso.textContent = 'En esta vista tus marcas no se guardan: copia el resumen antes de cerrar.'; return; }
+      db = d;
+      aviso.textContent = 'Tus marcas se guardan al tocarlas.';
+      db.collection('pendientes_marcas').onSnapshot(function (snap) {
+        snap.docs.forEach(function (doc) {
+          var v = doc.data() || {};
+          if (!cola[doc.id] && !escribiendo[doc.id]) estado[doc.id] = { marca: v.marca || '', nota: v.nota || '' };
+        });
+        var activo = document.activeElement;
+        if (!(activo && activo.tagName === 'TEXTAREA' && activo.id.indexOf('nota-') === 0)) pintarGrupos();
+        pintarAvance();
+      }, function () { aviso.textContent = 'Se perdió la conexión con el guardado. Recarga la página.'; });
+      db.collection('pendientes_nuevos').onSnapshot(function (snap) {
+        nuevos = snap.docs.map(function (doc) { var v = doc.data() || {}; return { id: doc.id, texto: v.texto || '', grupo: v.grupo || '', bloquea: v.bloquea || 'no' }; });
+        pintarNuevos();
+      }, function () {});
+    });
+  } else {
+    aviso.textContent = 'En esta vista tus marcas no se guardan: copia el resumen antes de cerrar.';
+  }
+})();
+</script>

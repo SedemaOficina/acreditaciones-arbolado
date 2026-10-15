@@ -1,108 +1,106 @@
 # Pendientes
 
-Un solo lugar para todo lo que falta decidir, confirmar o hacer. Cada pendiente tiene un número fijo
-(P01, P02…) que no se reutiliza. Cuando se resuelve, pasa a «Resueltos» con la fecha y cómo quedó; la decisión
-se anota además en `docs/DECISIONES.md`.
+Generado por `herramientas/generar-pendientes.mjs` desde `docs/pendientes.json` (la fuente: se edita ahí). El
+mismo contenido está en el tablero «Pendientes del sistema», donde se marca cada uno y se responde. Cada
+pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resueltos» y la decisión se anota en
+`docs/DECISIONES.md`.
 
-Actualizado: 14/10/2026. Copia de lectura en el proyecto de Claude («SISTEMA DE ACREDITACIONES…»); la fuente es
-este archivo del repositorio.
-
-**Bloquea** dice desde qué momento hace falta resolverlo: *datos reales* = antes del primer dato real;
-*SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa etapa; *no* = se puede avanzar sin él.
+Actualizado: 14/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
+primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa etapa; *no* = se puede avanzar.
 
 ## Dirección de Infraestructura Verde (contenido del trámite)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P01 | Experiencia mínima de pasantes: el borrador dice 5 años en la tabla y 2 en las disposiciones | datos reales | 14/10 |
-| P02 | Plazo para atender observaciones y para presentarse a la cita; al vencer, la solicitud se cierra «concluida sin atender» | datos reales | 14/10 |
-| P03 | Uso del comprobante de domicilio (el procedimiento no dice para qué se pide): justificarlo o retirarlo | datos reales | 14/10 |
-| P04 | Check list del cotejo (anexo), Anexo 1 de carreras afines, secciones «Del pago» y «Del curso» del borrador | etapa 2 | 14/10 |
-| P05 | Si las constancias de capacitación se piden también a quien tiene título | datos reales | 14/10 |
-| P06 | Confirmar que no se admite una solicitud nueva si la persona ya tiene una del mismo tipo vigente o renovable (propuesta R07) | no | 14/10 |
-| P07 | Procedimiento para corregir una calificación mal capturada (hoy el resultado es inapelable y no se modifica) | etapa 2 | 14/10 |
-| P08 | Revisión de la Dirección Jurídica a la redacción «el resultado de la evaluación será inapelable» | datos reales | 14/10 |
-| P09 | Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona | etapa 2 | 14/10 |
-| P10 | Lugar, días y horario de entrega de acreditaciones (parámetro `entrega_lugar`) | datos reales | 14/10 |
+| P01 | Experiencia mínima de pasantes: el borrador dice 5 años en la tabla y 2 en las disposiciones | Dos años para los tres perfiles universitarios (título, 100 % de créditos y pasante) y cinco para carrera técnica. Es lo que dicen las disposiciones específicas; la tabla parece ser la que tiene el error. | datos reales |
+| P02 | Plazo para atender observaciones y para presentarse a la cita | 30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra. | datos reales |
+| P03 | Uso del comprobante de domicilio: el procedimiento no dice para qué se pide | Retirarlo. Es un dato personal sin uso declarado y nada del trámite depende del domicilio. Si la Dirección lo quiere para notificar, que lo declare así en los lineamientos y en el aviso de privacidad. | datos reales |
+| P04 | Check list del cotejo, Anexo 1 de carreras afines y secciones «Del pago» y «Del curso» del borrador | Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener. | etapa 2 |
+| P05 | Si las constancias de capacitación se piden también a quien tiene título | Sí, a todos los perfiles en dictaminador nueva, como ya está en la base (R11). Una regla igual para todos es más fácil de revisar y de explicar. | datos reales |
+| P06 | No admitir una solicitud nueva si la persona ya tiene una del mismo tipo vigente o renovable (R07) | Mantener la regla: con una acreditación vigente o todavía renovable corresponde renovar. Evita dos acreditaciones del mismo tipo para la misma persona. | no |
+| P07 | Cómo corregir una calificación mal capturada (hoy el resultado es inapelable y no se modifica) | Distinguir el examen de la captura. El resultado del examen es inapelable; un error de captura se corrige sólo antes de emitir, con el perfil de administración, con motivo y en la bitácora. | etapa 2 |
+| P08 | Revisión jurídica de la redacción «el resultado de la evaluación será inapelable» | Enviarla a la Dirección Jurídica junto con la regla de P07, para que la redacción deje claro que lo inapelable es la evaluación y no un error de captura. | datos reales |
+| P09 | Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona | Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites». | etapa 2 |
+| P10 | Lugar, días y horario de entrega de acreditaciones | Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P11 | Formato del folio de la acreditación (hoy provisional PD-AAAA-NNNN y DT-AAAA-NNNN) | datos reales | 14/10 |
-| P12 | Formato del número de expediente (hoy provisional EXP-AAAA-NNNN) | datos reales | 14/10 |
-| P13 | Quién restablece las contraseñas de solicitantes y por qué medio, si el SIA no da correo | etapa 3 | 14/10 |
-| P14 | Titularidad al activar una cuenta del registro de Kobo: hoy se exige CURP coherente con nombre y fecha, y el nombre del registro. ¿Basta? | etapa 3 | 14/10 |
-| P15 | Si se contrasta la CURP con el servicio de consulta de RENAPO (hoy: formato, dígito y coherencia con nombre, apellidos y fecha) | no | 14/10 |
+| P11 | Formato del folio de la acreditación (hoy provisional PD-AAAA-NNNN y DT-AAAA-NNNN) | Conservarlo: distingue tipo y año a simple vista, es consecutivo sin huecos y cabe en una credencial. Las migradas de Kobo conservan su número. | datos reales |
+| P12 | Formato del número de expediente (hoy provisional EXP-AAAA-NNNN) | Conservarlo, con el año en que se abrió el expediente. Como es uno por persona, el número no cambia aunque haga trámites en otros años. | datos reales |
+| P13 | Quién restablece las contraseñas de solicitantes y por qué medio, si el SIA no da correo | El personal de revisión genera una contraseña temporal de un solo uso después de verificar la identidad (CURP e identificación), y la persona la cambia al entrar. La base ya tiene la marca para obligar el cambio. | etapa 3 |
+| P14 | Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? | Sí basta para abrir la cuenta, porque nadie llega a un curso sin presentar su identificación oficial en el cotejo. | etapa 3 |
+| P15 | Contrastar la CURP con el servicio de consulta de RENAPO | Hacerlo sólo si el SIA ya tiene acceso al servicio. No bloquea: el cotejo presencial ya confirma la identidad. | no |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P16 | Monto vigente de cada curso (poda nueva, poda renovación, dictaminador nueva, dictaminador renovación) y la publicación de la Gaceta que lo fija. Lo captura el personal; hoy hay montos **ficticios** | datos reales | 14/10 |
-| P17 | Referencia bancaria o línea de captura definitiva (hoy provisional: el folio sin guiones) | datos reales | 14/10 |
-| P18 | Banco, cuenta o CLABE y forma de pago (parámetro `pago_instrucciones`) | datos reales | 14/10 |
-| P19 | Concepto exacto de cada derecho (hoy concepto provisional por curso) | datos reales | 14/10 |
+| P16 | Monto vigente de cada curso y la publicación de la Gaceta que lo fija (hoy hay montos ficticios) | Pedir a la Dirección o a Finanzas el artículo y los montos vigentes de los cuatro conceptos. El personal los captura en la base con la publicación y la fecha desde la que aplican. | datos reales |
+| P17 | Referencia bancaria o línea de captura definitiva (hoy: el folio sin guiones) | Preferir la línea de captura de la Tesorería, que identifica el pago sola. Si no hay forma de generarla desde el sistema, conservar el folio como referencia. | datos reales |
+| P18 | Banco, cuenta o CLABE y forma de pago | Que Finanzas lo defina por escrito; el personal lo captura en el parámetro de instrucciones de pago y se muestra con la cita. | datos reales |
+| P19 | Concepto exacto de cada derecho (hoy provisional por curso) | Tomarlo textual de la misma publicación que fija el monto (P16), para que el concepto de la persona y el de la factura coincidan. | datos reales |
 
 ## Registro de Kobo (migración)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P20 | Formato del registro histórico de Kobo para la migración | etapa 2 | 14/10 |
-| P21 | Qué documentos carga en su primera renovación quien viene de Kobo sin archivos en el sistema | etapa 2 | 14/10 |
-| P22 | Si Kobo tenía números de expediente físico que deban conservarse | etapa 2 | 14/10 |
+| P20 | Formato del registro histórico de Kobo para la migración | Una exportación en CSV o Excel con CURP, nombre, apellidos, tipo, número, fecha de emisión y de vencimiento. Con un archivo de muestra armo la carga y sus validaciones. | etapa 2 |
+| P21 | Qué documentos carga en su primera renovación quien viene de Kobo sin archivos | Los de una solicitud nueva sin la parte técnica: identificación, CURP, comprobante de domicilio (si se mantiene, P03) y constancia fiscal. En dictaminador, también estudios y currículum, porque el sistema no tiene nada de esa persona. | etapa 2 |
+| P22 | Si Kobo tenía números de expediente físico que deban conservarse | Si existen, se migran a la persona con su número original y no se abre otro. Si no, se abre en su primer cotejo, como a todos. | etapa 2 |
 
-## SIA (preguntas abiertas, detalle en `docs/DECISIONES-SIA.md`)
+## SIA (preguntas abiertas)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P23 | **Servicio de correo institucional** para confirmar cuentas, recuperar contraseñas y avisar observaciones, cita, resultado y entrega | etapa 3 | 14/10 |
-| P24 | Siglas `apd` libres para esquema, cuenta y ruta | SIA | 14/10 |
-| P25 | Dónde se publica la aplicación y la ruta de su API | SIA | 14/10 |
-| P26 | Límite de subida de la API (se necesitan al menos 5 MB por archivo) | etapa 3 | 14/10 |
-| P27 | Cuentas del personal en `acceso`, recurso `apd`, con cinco perfiles | etapa 2 | 14/10 |
-| P28 | Espacio para archivos (de 10 a 20 GB al año) y dónde | etapa 3 | 14/10 |
-| P29 | Conexión del examen en línea: cuenta de servicio propia o API del módulo | no | 14/10 |
-| P30 | Formato exacto de la contraseña derivada que usa el esquema `acceso`, para usar el mismo | etapa 3 | 14/10 |
+| P23 | Servicio de correo institucional para cuentas, contraseñas y avisos | Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre. | etapa 3 |
+| P24 | Siglas apd libres para esquema, cuenta y ruta | Confirmarlo en la misma reunión con el SIA que P23 a P30; las preguntas ya están redactadas en DECISIONES-SIA. | SIA |
+| P25 | Dónde se publica la aplicación y la ruta de su API | Misma reunión con el SIA. | SIA |
+| P26 | Límite de subida de la API (se necesitan al menos 5 MB por archivo) | Misma reunión con el SIA. Si el límite es menor, bajar el tamaño máximo es un parámetro de la base. | etapa 3 |
+| P27 | Cuentas del personal en acceso, recurso apd, con cinco perfiles | Misma reunión con el SIA. Los perfiles: revisión, cotejo, instructor, emisión y consulta. | etapa 2 |
+| P28 | Espacio para archivos (de 10 a 20 GB al año) y dónde | Misma reunión con el SIA. | etapa 3 |
+| P29 | Conexión del examen en línea: cuenta propia o API del módulo | Por la API del módulo, para que la calificación pase por las mismas reglas y la misma bitácora que la captura del instructor. | no |
+| P30 | Formato exacto de la contraseña derivada que usa el esquema acceso | Pedirlo al SIA para usar el mismo; hoy los ficticios usan scrypt con los parámetros documentados. | etapa 3 |
 
-## Unidad de Transparencia
+## Unidad de Transparencia (datos personales)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P31 | Aviso de privacidad (cuenta, solicitud, verificación pública) con sus fundamentos; hoy `[Art. __, fracc. __]` | datos reales | 14/10 |
-| P32 | Revisión del inventario de datos personales de los formularios | datos reales | 14/10 |
+| P31 | Aviso de privacidad de cuenta, solicitud y verificación pública, con sus fundamentos | Enviar a la Unidad de Transparencia los tres textos simplificados que ya están en las pantallas, con la lista de datos y su finalidad (P32). | datos reales |
+| P32 | Revisión del inventario de datos personales de los formularios | Te preparo la tabla de datos personales (campo, uso, finalidad, sensible) que sale de los propios formularios, para enviarla con el aviso. | datos reales |
 
-## Verificación (lista de cierre del Estándar de formularios)
+## Verificación (lista de cierre del estándar)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P33 | Probar en iPhone y Android reales, con red limitada; cámara al cargar documentos | etapa 1 | 14/10 |
-| P34 | Recorrido sólo con teclado y con lector de pantalla real (NVDA, VoiceOver, TalkBack) | etapa 1 | 14/10 |
-| P35 | Probar en Firefox y Safari; alto contraste; impresión del acuse | etapa 1 | 14/10 |
-| P36 | Casilla «Verificado en móvil y en escritorio» con nombre y fecha de quien probó | etapa 1 | 14/10 |
+| P33 | Probar en iPhone y Android reales, con red limitada, y la cámara al cargar documentos | Una sesión de una hora con un iPhone y un Android recorriendo el menú de pruebas. Te preparo la lista de pasos. | etapa 1 |
+| P34 | Recorrido sólo con teclado y con lector de pantalla real | En la misma sesión: VoiceOver en el iPhone y TalkBack en el Android; teclado en una computadora. | etapa 1 |
+| P35 | Probar en Firefox y Safari, alto contraste e impresión del acuse | En la misma sesión, con una computadora. | etapa 1 |
+| P36 | Casilla «Verificado en móvil y en escritorio» con nombre y fecha | La firma quien haga la sesión de P33 a P35; con eso se cierra la etapa 1. | etapa 1 |
 
-## Estándar de formularios (hallazgos para reportar a su repositorio)
+## Estándar de formularios (hallazgos para su repositorio)
 
-| # | Pendiente | Bloquea | Desde |
+| # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P37 | `combo` no acepta el catálogo como `{filas, fuente, corte}` aunque su documentación lo dice | no | 14/10 |
-| P38 | `esquema-desde-html.mjs` sólo toma el `data-si` más cercano cuando hay condiciones anidadas | no | 14/10 |
-| P39 | `archivos` dice «Hasta 1 archivos» | no | 14/10 |
-| P40 | `numero` no valida un `step` menor que 1 | no | 14/10 |
-| P41 | No hay forma de marcar en un campo un error que devuelve el servidor | no | 14/10 |
-| P42 | No hay «mostrar contraseña» | no | 14/10 |
-| P43 | No hay validación cruzada de CURP contra nombre y apellidos (se hizo en el proyecto) | no | 14/10 |
-| P44 | Una cruzada no se vuelve a comprobar si cambia el otro dato y el campo que la declara no tenía error (se resolvió en el proyecto con `app/cuenta.js`) | no | 14/10 |
-| P45 | La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS | no | 14/10 |
+| P37 | combo no acepta el catálogo como {filas, fuente, corte} aunque su documentación lo dice | Reportarlo al repositorio del estándar. Te preparo el texto de los nueve reportes (P37 a P45) en un solo documento. | no |
+| P38 | esquema-desde-html.mjs sólo toma el data-si más cercano con condiciones anidadas | Reportarlo; afecta a cualquier formulario con condiciones anidadas. | no |
+| P39 | archivos dice «Hasta 1 archivos» | Reportarlo; es un ajuste de texto. | no |
+| P40 | numero no valida un step menor que 1 | Reportarlo. | no |
+| P41 | No hay forma de marcar en un campo un error que devuelve el servidor | Reportarlo; todos los formularios con servidor lo necesitan (por ejemplo, «esta CURP ya tiene cuenta»). | no |
+| P42 | No hay «mostrar contraseña» | Proponerlo como mejora del estándar. | no |
+| P43 | No hay validación cruzada de CURP contra nombre y apellidos | Proponer que el estándar adopte las tres cruzadas de este proyecto. | no |
+| P44 | Una cruzada no se vuelve a comprobar si cambia el otro dato | Reportarlo; el proyecto lo resolvió por su cuenta y el estándar debería hacerlo en el núcleo. | no |
+| P45 | La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS | Reportarlo y proponer la hoja con tokens que hizo este proyecto. | no |
 
 ## Resueltos
 
-| # | Pendiente | Cómo quedó | Fecha |
-|---|---|---|---|
-| — | Factura y RFC | La persona sólo carga su constancia fiscal; el personal captura RFC, razón social y folio fiscal al cargar la factura | 14/10 |
-| — | Expediente físico | Uno por CURP, abierto en el primer cotejo y compartido por todos sus trámites | 14/10 |
-| — | Firma de recibido | Acuse impreso, firmado y escaneado; sin él no se registra la entrega | 14/10 |
-| — | Monto del pago | Configurable por el personal, distinto por curso, con la publicación de la Gaceta y su fecha; quien ya tiene cita conserva el monto que se le indicó. Falta el monto real (P16) | 14/10 |
-| — | Persona sin segundo apellido | Pregunta «¿Tienes segundo apellido?»; con «No», la CURP debe llevar X en su lugar | 14/10 |
-| — | CURP que no marcaba error | Al cambiar nombre, apellidos o fecha con la CURP ya escrita, la CURP se vuelve a comprobar al momento | 14/10 |
-| — | Documentos de renovación | Se actualizan los vencidos o no vigentes y los de estudios o experiencia que la persona quiera; constancia fiscal y factura obligatorias | 14/10 |
+| Tema | Cómo quedó | Fecha |
+|---|---|---|
+| Factura y RFC | La persona sólo carga su constancia fiscal; el personal captura RFC, razón social y folio fiscal al cargar la factura | 14/10/2026 |
+| Expediente físico | Uno por CURP, abierto en el primer cotejo y compartido por todos sus trámites | 14/10/2026 |
+| Firma de recibido | Acuse impreso, firmado y escaneado; sin él no se registra la entrega | 14/10/2026 |
+| Monto del pago | Configurable por el personal, distinto por curso, con la publicación de la Gaceta y su fecha; quien ya tiene cita conserva el monto que se le indicó. Falta el monto real (P16) | 14/10/2026 |
+| Persona sin segundo apellido | Pregunta «¿Tienes segundo apellido?»; con «No», la CURP debe llevar X en su lugar | 14/10/2026 |
+| CURP que no marcaba error | Al cambiar nombre, apellidos o fecha con la CURP ya escrita, la CURP se vuelve a comprobar al momento | 14/10/2026 |
+| Documentos de renovación | Se actualizan los vencidos o no vigentes y los de estudios o experiencia que la persona quiera; constancia fiscal y factura obligatorias | 14/10/2026 |

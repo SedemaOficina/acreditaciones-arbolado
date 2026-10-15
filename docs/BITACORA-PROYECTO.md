@@ -137,3 +137,15 @@ en teléfono y escritorio, con accesibilidad (axe) sin hallazgos.
 - **`docs/PENDIENTES.md`**: 45 pendientes numerados por responsable, y los resueltos.
 
 **Verificado**: 82 de 82 pruebas de la base; 21 casos en el servidor; 92 comprobaciones del sitio.
+
+## 2026-10-14 · Bloque 9 · Tablero de pendientes
+
+- Los pendientes pasan a una sola fuente, `docs/pendientes.json`, con una recomendación en cada uno.
+  `herramientas/generar-pendientes.mjs` genera `docs/PENDIENTES.md` y la página del tablero.
+- Tablero «Pendientes del sistema» (artefacto privado de Liber): por pendiente, «Acepto la recomendación»,
+  «Decido otra cosa», «Tengo duda» o «Ya está resuelto», con su respuesta; además, agregar pendientes nuevos.
+  Las marcas viven en el guardado del artefacto (`pendientes_marcas`, `pendientes_nuevos`); al aplicarlas se
+  actualiza `docs/pendientes.json` y se vuelve a generar todo.
+
+**Verificado**: el tablero sin desborde a 390 y 1280 px, claro y oscuro, sin errores; una escritura, lectura y
+borrado de prueba en su guardado.
