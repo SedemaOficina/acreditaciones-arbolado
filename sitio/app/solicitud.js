@@ -1,9 +1,10 @@
 /* solicitud.js · Lo que el formulario de solicitud ajusta según la persona (se carga después del núcleo
    y los módulos del estándar):
-     · qué trámite puede hacer hoy —acreditación y modalidad en un solo campo— (APD.opciones, mismo
-       criterio que la base); lo que no aplica queda deshabilitado con su motivo, nunca oculto;
+     · qué acreditación puede pedir hoy (APD.opciones, mismo criterio que la base); si no puede, la opción
+       queda deshabilitada con su motivo. Si es nueva o renovación no se pregunta: se informa y se guarda en
+       el campo auxiliar «tramite», del que dependen los documentos;
      · la acreditación que se renueva (sólo lectura);
-     · al continuar un borrador o corregir observaciones (?folio=…): el trámite fijo, lo que
+     · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, lo que
        hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de ser obligatorios.
    La base vuelve a comprobar todo al enviar. */
 (function () {
@@ -46,41 +47,45 @@
     if (ayuda) ayuda.prepend(el('strong', { texto: `${texto} ` }));
   }
 
-  /* Por qué una opción no aplica a la persona (texto junto a la opción deshabilitada). */
-  function motivo(o, modalidad) {
-    if (!o.disponible) return o.motivo;
-    return modalidad === 'nueva'
-      ? `Tu acreditación ${o.anterior} está en periodo de renovación: te corresponde renovarla.`
-      : 'No tienes una acreditación de este tipo que se pueda renovar.';
+  /* El curso que corresponde (tipo + nueva o renovación) va en el campo auxiliar «tramite»: de él dependen
+     los documentos. Se informa a la persona; no se le pregunta. */
+  function ponTramite(tipo, modalidad, anterior, datos) {
+    ponValor('tramite', tipo && modalidad ? `${tipo}_${modalidad}` : '');
+    ponValor('anterior', anterior || '');
+    const caja = document.querySelector('[data-modalidad-info]');
+    if (!tipo || !modalidad) { caja.hidden = true; return; }
+    const c = APD.curso(datos, tipo, modalidad);
+    const dias = c ? `${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}` : '';
+    document.querySelector('[data-modalidad-texto]').textContent = modalidad === 'renovacion'
+      ? `Te corresponde la renovación de tu acreditación ${anterior}. Curso de ${dias}.`
+      : `Te corresponde una solicitud nueva: es tu primera vez o tu acreditación anterior venció hace más de un año. Curso de ${dias}.`;
+    caja.hidden = false;
   }
 
   function nueva(datos, persona) {
     const sesion = APD.leeSesion() || {};
     const op = APD.opciones(datos, persona, sesion.solicitudes || []);
-    const disponibles = [];
-    for (const r of radios('tramite')) {
-      const [tipo, modalidad] = r.value.split('_');
-      const o = op[tipo];
-      const desc = form.querySelector(`[data-desc-tramite="${r.value}"]`);
-      if (o.disponible && o.modalidad === modalidad) {
-        disponibles.push(r.value);
-        if (desc) desc.textContent = o.anterior ? `Renuevas la acreditación ${o.anterior}.` : (tipo === 'dictaminador' ? 'Curso completo. Pide además tu perfil académico y tu experiencia.' : 'Curso completo, para quien la solicita por primera vez.');
-      } else {
-        r.disabled = true;
-        if (desc) desc.textContent = motivo(o, modalidad);
-      }
-    }
+    const disponibles = ['poda', 'dictaminador'].filter((t) => op[t].disponible);
     if (!disponibles.length) return sinOpciones(['poda', 'dictaminador'].map((t) => `${APD.TIPOS[t]}: ${op[t].motivo}`));
 
+    // Sólo se deshabilita lo que de verdad no se puede pedir hoy, con su motivo
+    for (const r of radios('tipo')) {
+      if (op[r.value].disponible) continue;
+      r.disabled = true;
+      const desc = form.querySelector(`[data-desc-tipo="${r.value}"]`);
+      if (desc) desc.textContent = op[r.value].motivo;
+    }
     const alCambiar = () => {
-      const r = radios('tramite').find((x) => x.checked);
-      ponValor('anterior', r ? op[r.value.split('_')[0]].anterior || '' : '');
+      const r = radios('tipo').find((x) => x.checked);
+      if (!r) return ponTramite('', '', '', datos);
+      ponTramite(r.value, op[r.value].modalidad, op[r.value].anterior, datos);
     };
-    for (const r of radios('tramite')) r.addEventListener('change', alCambiar);
+    for (const r of radios('tipo')) r.addEventListener('change', alCambiar);
 
     const pedido = new URLSearchParams(location.search).get('tipo');
-    const inicial = disponibles.find((v) => v.startsWith(`${pedido}_`)) || (disponibles.length === 1 ? disponibles[0] : null);
-    if (inicial) { const r = radios('tramite').find((x) => x.value === inicial); r.checked = true; avisa(r); alCambiar(); }
+    const inicial = disponibles.includes(pedido) ? pedido : disponibles.length === 1 ? disponibles[0] : null;
+    if (inicial) { const r = radios('tipo').find((x) => x.value === inicial); r.checked = true; avisa(r); }
+    alCambiar();
   }
 
   function continua(datos, persona, folio) {
@@ -88,10 +93,10 @@
     if (!s || !['borrador', 'con_observaciones'].includes(s.estado)) {
       return sinOpciones([`No encontramos la solicitud ${folio} entre tus trámites, o ya no se puede modificar.`]);
     }
-    document.querySelector('[data-bajada-tramite]').textContent = `Continúas la solicitud ${s.folio}. El trámite ya no cambia.`;
-    fija('tramite', `${s.tipo_acreditacion}_${s.modalidad}`);
+    document.querySelector('[data-bajada-tramite]').textContent = `Continúas la solicitud ${s.folio}. La acreditación ya no cambia.`;
+    fija('tipo', s.tipo_acreditacion);
     const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
-    ponValor('anterior', ant ? ant.numero : '');
+    ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
     const org = s.organizacion_id ? datos.organizacion.find((o) => o.id === s.organizacion_id) : null;
     ponValor('organizacion', org ? org.nombre : '');
     if (s.tipo_acreditacion === 'dictaminador') {

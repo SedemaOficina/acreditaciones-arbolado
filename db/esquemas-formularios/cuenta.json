@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-14T23:59:52.267Z",
+  "generado": "2026-10-15T00:28:57.855Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -28,22 +28,10 @@
       },
       "autocomplete": "family-name"
     },
-    "tiene_segundo_apellido": {
-      "etiqueta": "¿Tienes segundo apellido?",
-      "tipo": "opcion",
-      "requerido": true,
-      "sensible": false,
-      "uso": "Saber si la CURP se comprueba con un segundo apellido.",
-      "atributos": {},
-      "opciones": [
-        "si",
-        "no"
-      ]
-    },
     "segundo_apellido": {
       "etiqueta": "Segundo apellido",
       "tipo": "texto",
-      "requerido": true,
+      "requerido": false,
       "formato": "nombre",
       "sensible": true,
       "uso": "Nombre que aparece en el expediente y en la acreditación.",
@@ -51,12 +39,16 @@
       "atributos": {
         "maxlength": "80"
       },
-      "autocomplete": "off",
-      "si": {
-        "campo": "tiene_segundo_apellido",
-        "valores": [
-          "si"
-        ]
+      "autocomplete": "off"
+    },
+    "sin_segundo_apellido": {
+      "etiqueta": "sin_segundo_apellido",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página.",
+      "atributos": {
+        "auxiliar": ""
       }
     },
     "fecha_nacimiento": {
@@ -94,7 +86,7 @@
             "nombre": "nombre",
             "primer": "primer_apellido",
             "segundo": "segundo_apellido",
-            "tiene": "tiene_segundo_apellido"
+            "sin": "sin_segundo_apellido"
           },
           "nivel": "error"
         },
@@ -106,7 +98,7 @@
             "nombre": "nombre",
             "primer": "primer_apellido",
             "segundo": "segundo_apellido",
-            "tiene": "tiene_segundo_apellido"
+            "sin": "sin_segundo_apellido"
           },
           "nivel": "error"
         },
@@ -118,7 +110,7 @@
             "nombre": "nombre",
             "primer": "primer_apellido",
             "segundo": "segundo_apellido",
-            "tiene": "tiene_segundo_apellido"
+            "sin": "sin_segundo_apellido"
           },
           "nivel": "error"
         },
@@ -130,7 +122,7 @@
             "nombre": "nombre",
             "primer": "primer_apellido",
             "segundo": "segundo_apellido",
-            "tiene": "tiene_segundo_apellido"
+            "sin": "sin_segundo_apellido"
           },
           "nivel": "error"
         }

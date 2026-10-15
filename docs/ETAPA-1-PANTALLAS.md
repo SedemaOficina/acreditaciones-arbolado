@@ -9,10 +9,10 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | Página | Forma | Qué hace | Módulos del estándar |
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
-| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, «¿Tienes segundo apellido?» y el segundo si lo hay, fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, tooltip, modal, copiar, acuse |
+| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay), fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, tooltip, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. Caja de personas de ejemplo (sólo versión de prueba) | identificadores |
 | `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado, qué sigue, cita con datos de pago, expediente de la persona, grupo, observaciones, asistencia y calificación, lista para recoger, motivo de cierre) | — |
-| `solicitud.html` | Por pasos (3) | **Trámite** (un solo campo con las 4 combinaciones; lo que no aplica, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), organización (combo abierto), perfil del dictaminador · **Documentos** (generados del catálogo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
+| `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), organización (combo abierto), perfil del dictaminador · **Documentos** (generados del catálogo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
 | `verificar.html` | Una página | Verificación pública por número de acreditación: nombre, tipo, fechas y «Vigente / No vigente» | identificadores |
 
 Textos de estado: una sola fuente en `sitio/app/apd.js` (`ESTADOS`, `VIGENCIA`). Ejemplo: `validada_en_linea`
@@ -75,9 +75,10 @@ rechazan). En la etapa 3 la API:
 
 ## 5. Decisiones técnicas de esta etapa
 
-1. **Trámite en un solo campo** (`poda_nueva`, `poda_renovacion`, `dictaminador_nueva`, `dictaminador_renovacion`).
-   Con dos campos y condiciones anidadas, el esquema del servidor sólo leía la condición más cercana y pedía
-   documentos de otro curso. Con uno, navegador y servidor aplican la misma condición.
+1. **Una sola pregunta: la acreditación.** Si es nueva o renovación lo decide el historial y se informa. El curso
+   que corresponde va en un campo auxiliar `tramite` (módulo propio `app/auxiliar.js`, que no viaja al servidor)
+   y de él dependen los documentos con una sola condición, porque el esquema del servidor no combina condiciones
+   anidadas (P38). El servidor calcula `tramite` por su cuenta.
 2. **CURP con dígito verificador también en la base** (`apd.curp_valida`): estructura, entidad y dígito, igual
    que el estándar. Las CURP ficticias pasaron a `XAXX…NEXXX0d`, válidas en formato. 71 de 71 pruebas de la base.
 3. **Contraseña ficticia** `Prueba-ficticia-2026`: la anterior tenía 11 caracteres y el estándar pide 12.
@@ -97,7 +98,8 @@ rechazan). En la etapa 3 la API:
 | Núcleo | No hay forma prevista de marcar en un campo un error que devuelve el servidor (CURP ya registrada) | Se muestra en el aviso de envío |
 | Catálogo | No hay «mostrar contraseña» | Sin cambio; se propone para el estándar |
 | Validaciones cruzadas | No hay una de CURP contra nombre y apellidos (sólo fecha, sexo y entidad) | Cruzadas propias en `app/curp-nombre.js`; se propone llevarlas al estándar |
-| Validaciones cruzadas | Un rol vacío (segundo apellido) impide que corra la cruzada | Pregunta «¿Tienes segundo apellido?» y una cruzada para el «No» (X en las posiciones 3 y 15) |
+| Validaciones cruzadas | Un rol vacío (segundo apellido) impide que corra la cruzada | Campo auxiliar `sin_segundo_apellido` que calcula la página (y el servidor) y una cruzada que exige X en las posiciones 3 y 15 |
+| Núcleo | No lee controles ocultos (`type="hidden"`) | Módulo propio `auxiliar` con el contrato de módulos del estándar |
 | Validaciones cruzadas | No se repiten si cambia el otro dato y el campo que las declara no tenía error | `app/cuenta.js` vuelve a validar la CURP al cambiar nombre, apellidos o fecha |
 | Plantilla de versión del SIA | `version-visible.css` usa valores literales y no pasa el auditor | Hoja equivalente con tokens |
 

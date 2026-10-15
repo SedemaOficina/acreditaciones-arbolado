@@ -149,3 +149,16 @@ en teléfono y escritorio, con accesibilidad (axe) sin hallazgos.
 
 **Verificado**: el tablero sin desborde a 390 y 1280 px, claro y oscuro, sin errores; una escritura, lectura y
 borrado de prueba en su guardado.
+
+## 2026-10-14 · Bloque 10 · Menos preguntas: segundo apellido y tipo de trámite
+
+- Se quitó «¿Tienes segundo apellido?»: si el campo queda vacío, la CURP debe llevar X en su lugar. Lo indica
+  un campo auxiliar que calcula la página (`sin_segundo_apellido`) y que el servidor calcula por su cuenta.
+- La solicitud pregunta sólo la acreditación (poda y derribo o dictaminador técnico). Nueva o renovación se
+  informa según el historial. El curso que corresponde va en el campo auxiliar `tramite`.
+- Módulo propio `app/auxiliar.js` (contrato de módulos del estándar): el núcleo no lee controles ocultos.
+
+**Verificado**: 21 casos en el servidor; 92 comprobaciones del sitio, accesibilidad sin hallazgos.
+
+**Eliminado**: la pregunta «¿Tienes segundo apellido?» y la cruzada sobre su respuesta; el campo de cuatro
+opciones «Trámite».

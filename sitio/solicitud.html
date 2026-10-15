@@ -44,30 +44,37 @@
 
   <div class="barra-fija" data-con-formulario>
     <div data-barra="Avance de la solicitud"></div>
-    <p class="recordatorio" data-recordatorio="tramite" hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="recordatorio-texto">Estás solicitando: <strong data-recordatorio-texto></strong></span></p>
+    <p class="recordatorio" data-recordatorio="tipo" hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="recordatorio-texto">Estás solicitando: <strong data-recordatorio-texto></strong></span></p>
   </div>
 
   <form id="formulario" data-formkit action="#" method="post">
 
+    <!-- Curso que corresponde (tipo + nueva o renovación). No es una pregunta: lo calcula app/solicitud.js a
+         partir del tipo elegido y del historial, y de él dependen los documentos. El servidor lo calcula por su
+         cuenta. Va fuera de los pasos para no aparecer en la revisión. -->
+    <div class="solo-lector" aria-hidden="true" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página.">
+      <input type="hidden" id="tramite" name="tramite" value="">
+    </div>
+
     <!-- Paso 1 · Trámite -->
     <section class="tarjeta" data-paso data-titulo="Trámite" hidden>
-      <h2 class="titulo-paso">¿Qué trámite vas a hacer?</h2>
-      <p class="bajada" data-bajada-tramite>Según tus acreditaciones anteriores, el sistema te indica si te corresponde una solicitud nueva o una renovación.</p>
+      <h2 class="titulo-paso">¿Qué acreditación solicitas?</h2>
+      <p class="bajada" data-bajada-tramite>Elige la acreditación. Si es tu primera vez o una renovación lo sabe el sistema por tu historial; te lo indica al elegir.</p>
       <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
 
-      <!-- Un solo campo para acreditación y modalidad: así cada condición depende de una sola respuesta y el
-           esquema del servidor (esquema-desde-html.mjs) la reproduce igual que el navegador. El servidor lo
-           separa en tipo_acreditacion y modalidad. -->
-      <fieldset class="grupo" data-campo="tramite" data-requerido data-uso="Definir la acreditación, el curso y los documentos que corresponden a la solicitud.">
-        <legend class="etiqueta">Trámite</legend>
-        <p class="ayuda">Sólo puedes elegir lo que corresponde a tu historial; en las demás opciones verás por qué no aplican.</p>
+      <fieldset class="grupo" data-campo="tipo" data-requerido data-uso="Definir la acreditación, el curso y los documentos que corresponden a la solicitud.">
+        <legend class="etiqueta">Acreditación que solicitas</legend>
         <div class="opciones">
-          <label class="opcion"><input class="opcion-input" type="radio" name="tramite" value="poda_nueva"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Poda y derribo · solicitud nueva</span><span class="opcion-desc" data-desc-tramite="poda_nueva"></span></label>
-          <label class="opcion"><input class="opcion-input" type="radio" name="tramite" value="poda_renovacion"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Poda y derribo · renovación</span><span class="opcion-desc" data-desc-tramite="poda_renovacion"></span></label>
-          <label class="opcion"><input class="opcion-input" type="radio" name="tramite" value="dictaminador_nueva"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dictaminador técnico · solicitud nueva</span><span class="opcion-desc" data-desc-tramite="dictaminador_nueva"></span></label>
-          <label class="opcion"><input class="opcion-input" type="radio" name="tramite" value="dictaminador_renovacion"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dictaminador técnico · renovación</span><span class="opcion-desc" data-desc-tramite="dictaminador_renovacion"></span></label>
+          <label class="opcion"><input class="opcion-input" type="radio" name="tipo" value="poda"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Poda y derribo</span><span class="opcion-desc" data-desc-tipo="poda">Para podar y derribar árboles en la vía pública y en áreas verdes.</span></label>
+          <label class="opcion"><input class="opcion-input" type="radio" name="tipo" value="dictaminador"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dictaminador técnico</span><span class="opcion-desc" data-desc-tipo="dictaminador">Para emitir dictámenes técnicos de arbolado. Necesitas tener vigente la de poda y derribo.</span></label>
         </div>
       </fieldset>
+
+      <!-- Si es nueva o renovación no se pregunta: lo decide el historial de la persona y aquí sólo se informa. -->
+      <div class="aviso" data-modalidad-info aria-live="polite" hidden>
+        <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
+        <p class="aviso-texto" data-modalidad-texto></p>
+      </div>
 
       <div class="campo" data-campo="anterior" data-si="tramite=poda_renovacion|dictaminador_renovacion" data-uso="Ligar la renovación con la acreditación que se renueva.">
         <label class="etiqueta" for="anterior">Acreditación que renuevas</label>
@@ -84,7 +91,7 @@
         </div>
       </div>
 
-      <div data-si="tramite=dictaminador_nueva|dictaminador_renovacion">
+      <div data-si="tipo=dictaminador">
         <h3 class="titulo-bloque">Tu perfil</h3>
         <fieldset class="grupo" data-campo="perfil_academico" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Definir la experiencia mínima y los documentos de estudios que se piden.">
           <legend class="etiqueta">Estudios</legend>
@@ -606,6 +613,7 @@
 <script src="formkit/modulos/acuse/acuse.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
+<script src="app/auxiliar.js?v=0.1"></script>
 <script src="app/solicitud.js?v=0.1"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/pruebas.js?v=0.1"></script>

@@ -31,7 +31,8 @@ window.FORMKIT_OPCIONES = {
           const sesion = APD.leeSesion() || {};
           const propias = sesion.solicitudes || [];
           const d = payload.datos;
-          const [tipo, modalidad] = d.tramite.split('_'); // el servidor lo separa igual
+          // El curso no viaja (campo auxiliar): el servidor lo determina del tipo y del historial
+          const [tipo, modalidad] = document.getElementById('tramite').value.split('_');
           const continua = new URLSearchParams(location.search).get('folio');
           const ahora = new Date().toISOString();
           let folio = continua;

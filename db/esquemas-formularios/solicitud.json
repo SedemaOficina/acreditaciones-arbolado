@@ -1,19 +1,27 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-14T23:59:52.375Z",
+  "generado": "2026-10-15T00:28:57.989Z",
   "campos": {
     "tramite": {
-      "etiqueta": "Trámite",
+      "etiqueta": "tramite",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Mostrar los documentos del curso que corresponde; lo calcula la página.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "tipo": {
+      "etiqueta": "Acreditación que solicitas",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
       "uso": "Definir la acreditación, el curso y los documentos que corresponden a la solicitud.",
       "atributos": {},
       "opciones": [
-        "poda_nueva",
-        "poda_renovacion",
-        "dictaminador_nueva",
-        "dictaminador_renovacion"
+        "poda",
+        "dictaminador"
       ]
     },
     "anterior": {
@@ -61,10 +69,9 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "tramite",
+        "campo": "tipo",
         "valores": [
-          "dictaminador_nueva",
-          "dictaminador_renovacion"
+          "dictaminador"
         ]
       }
     },
@@ -80,10 +87,9 @@
       },
       "autocomplete": "off",
       "si": {
-        "campo": "tramite",
+        "campo": "tipo",
         "valores": [
-          "dictaminador_nueva",
-          "dictaminador_renovacion"
+          "dictaminador"
         ]
       }
     },
@@ -102,10 +108,9 @@
       },
       "autocomplete": "off",
       "si": {
-        "campo": "tramite",
+        "campo": "tipo",
         "valores": [
-          "dictaminador_nueva",
-          "dictaminador_renovacion"
+          "dictaminador"
         ]
       }
     },

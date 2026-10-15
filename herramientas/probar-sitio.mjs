@@ -86,8 +86,7 @@ async function cargaObligatorios(page) {
 async function llenaCuenta(page, p, curp = p.curp) {
   await page.fill('#nombre', p.nombre);
   await page.fill('#primer_apellido', p.primer_apellido);
-  await page.check(`input[name="tiene_segundo_apellido"][value="${p.segundo_apellido ? 'si' : 'no'}"]`, { force: true });
-  if (p.segundo_apellido) await page.fill('#segundo_apellido', p.segundo_apellido);
+  await page.fill('#segundo_apellido', p.segundo_apellido || '');
   await page.fill('#fecha_nacimiento', p.nacimiento || nacimientoDe(p));
   await page.fill('#curp', curp);
   await page.fill('#correo', 'nadia@ejemplo.local');
@@ -141,12 +140,12 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-accion="enviar"]');
   comprueba(await page.getAttribute('#curp', 'aria-invalid') === 'true' && /no corresponde|no coincide/.test(await page.textContent('[data-campo="curp"] .err')),
     t('cuenta: una CURP ajena no corresponde con el nombre y se rechaza'));
-  // Sin segundo apellido: no queda atrapada; si su CURP sí lo tiene, se le dice que lo escriba
+  // Segundo apellido vacío con una CURP que sí lo tiene: se le dice que lo escriba (sin preguntarlo)
   await page.fill('#curp', NUEVA.curp);
-  await page.check('input[name="tiene_segundo_apellido"][value="no"]', { force: true });
+  await page.fill('#segundo_apellido', '');
+  await page.press('#segundo_apellido', 'Tab');
   await page.click('[data-accion="enviar"]');
-  comprueba(/segundo apellido/.test(await page.textContent('[data-campo="curp"] .err')), t('cuenta: «sin segundo apellido» con una CURP que sí lo tiene se rechaza con su motivo'));
-  await page.check('input[name="tiene_segundo_apellido"][value="si"]', { force: true });
+  comprueba(/segundo apellido/.test(await page.textContent('[data-campo="curp"] .err')), t('cuenta: segundo apellido vacío con una CURP que sí lo tiene se rechaza con su motivo'));
   await page.fill('#segundo_apellido', NUEVA.segundo_apellido);
   // Nombre correcto pero otra fecha de nacimiento
   await page.fill('#curp', NUEVA.curp);
@@ -166,9 +165,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 
   // Persona nueva: sólo puede pedir poda nueva; dictaminador deshabilitado con su motivo
   await page.click('[data-nueva] a');
-  await page.waitForFunction(() => document.querySelector('input[name="tramite"][value="poda_nueva"]').checked);
-  comprueba(await page.isDisabled('input[name="tramite"][value="dictaminador_nueva"]'), t('solicitud: dictaminador deshabilitado sin poda vigente'));
-  comprueba(await page.isDisabled('input[name="tramite"][value="poda_renovacion"]'), t('solicitud: renovación deshabilitada sin acreditación'));
+  await page.waitForFunction(() => document.querySelector('input[name="tipo"][value="poda"]').checked);
+  comprueba(await page.isDisabled('input[name="tipo"][value="dictaminador"]'), t('solicitud: dictaminador deshabilitado sin poda vigente, con su motivo'));
+  comprueba(/solicitud nueva/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud: informa que le corresponde una solicitud nueva (no lo pregunta)'));
   await siguiente(page);
   const n = await cargaObligatorios(page);
   comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
@@ -211,9 +210,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await sinDesborde(page, t('mis trámites'));
   comprueba(await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() >= 1, t('mis trámites: botón «Renovar» en la acreditación renovable'));
   await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).first().click();
-  await page.waitForFunction(() => document.querySelector('input[name="tramite"][value="poda_renovacion"]').checked);
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_renovacion');
   comprueba(/^PD-/.test(await page.inputValue('#anterior')), t('solicitud renovación: acreditación anterior en sólo lectura'));
-  comprueba(await page.isDisabled('input[name="tramite"][value="poda_nueva"]'), t('solicitud renovación: «nueva» deshabilitada'));
+  comprueba(/renovación de tu acreditación PD-/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud renovación: informa qué acreditación renueva'));
   await siguiente(page);
   await cargaObligatorios(page);
   await siguiente(page);
@@ -226,7 +225,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   // Dictaminador nueva: perfil y sus documentos
   await entra(page, paraDictaminador.curp);
   await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
-  await page.waitForFunction(() => document.querySelector('input[name="tramite"][value="dictaminador_nueva"]').checked);
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'dictaminador_nueva');
   await siguiente(page);
   comprueba(await page.isVisible('[data-campo="perfil_academico"]'), t('dictaminador: sin perfil no avanza'));
   await page.check('input[name="perfil_academico"][value="titulo"]', { force: true });
@@ -249,7 +248,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await entra(page, persona(conObs.solicitante_id).curp);
   comprueba(await page.locator('[data-solicitudes] .aviso').count() > 0, t('mis trámites: observaciones visibles'));
   await page.click(`a[href="solicitud.html?folio=${conObs.folio}"]`);
-  await page.waitForFunction(() => document.querySelector('input[name="tramite"]:checked'));
+  await page.waitForFunction(() => document.querySelector('input[name="tipo"]:checked'));
   await siguiente(page);
   comprueba(await page.isVisible('[data-observaciones]'), t('corregir: observaciones arriba de los documentos'));
   const obligatorios = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).length);

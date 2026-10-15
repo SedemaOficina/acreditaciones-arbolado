@@ -101,6 +101,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Expediente físico | Uno por CURP, abierto en el primer cotejo y compartido por todos sus trámites | 14/10/2026 |
 | Firma de recibido | Acuse impreso, firmado y escaneado; sin él no se registra la entrega | 14/10/2026 |
 | Monto del pago | Configurable por el personal, distinto por curso, con la publicación de la Gaceta y su fecha; quien ya tiene cita conserva el monto que se le indicó. Falta el monto real (P16) | 14/10/2026 |
-| Persona sin segundo apellido | Pregunta «¿Tienes segundo apellido?»; con «No», la CURP debe llevar X en su lugar | 14/10/2026 |
+| Persona sin segundo apellido | Sin pregunta extra: si el segundo apellido se deja vacío, la CURP debe llevar X en su lugar; si la CURP indica que sí hay, se le pide escribirlo | 14/10/2026 |
 | CURP que no marcaba error | Al cambiar nombre, apellidos o fecha con la CURP ya escrita, la CURP se vuelve a comprobar al momento | 14/10/2026 |
 | Documentos de renovación | Se actualizan los vencidos o no vigentes y los de estudios o experiencia que la persona quiera; constancia fiscal y factura obligatorias | 14/10/2026 |
+| Primera pregunta de la solicitud | Sólo se pregunta la acreditación (poda y derribo o dictaminador técnico); si es nueva o renovación lo decide el historial y se informa, no se pregunta | 14/10/2026 |

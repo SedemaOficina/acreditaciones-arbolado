@@ -25,7 +25,9 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Instructores: personal de la Secretaría; capturan asistencia por día y calificación | Liber Saltijeral |
 | 2026-10-14 | El instructor de un grupo puede variar, también durante el curso; cada día queda quién capturó la asistencia (mapa, R26) | Liber Saltijeral |
 | 2026-10-14 | Al crear la cuenta se pide la fecha de nacimiento y el sistema comprueba que la CURP corresponda al nombre, a los apellidos y a esa fecha, además de su dígito verificador, para evitar CURP ajenas. Comprueba coherencia, no identidad: la identidad la confirma la identificación oficial en el cotejo. La fecha no se guarda aparte (ya está en la CURP) | Liber Saltijeral |
-| 2026-10-14 | La cuenta pregunta «¿Tienes segundo apellido?»: con «Sí» se escribe y se compara con la CURP; con «No», la CURP debe llevar X en su lugar. Nadie queda sin comprobar ni atrapado. La CURP se vuelve a comprobar al momento si se cambia el nombre, los apellidos o la fecha después de escribirla | Liber Saltijeral |
+| ~~2026-10-14~~ | ~~La cuenta pregunta «¿Tienes segundo apellido?»~~ Sustituida | Liber Saltijeral |
+| 2026-10-14 | No se pregunta si hay segundo apellido: si se deja vacío, la CURP debe llevar X en su lugar (si la CURP indica que sí hay, se pide escribirlo). Nadie queda sin comprobar ni atrapado. La CURP se vuelve a comprobar al momento si se cambia el nombre, los apellidos o la fecha después de escribirla | Liber Saltijeral |
+| 2026-10-14 | La solicitud pregunta sólo la acreditación (poda y derribo o dictaminador técnico). Si es nueva o renovación lo decide el historial de la persona y se le informa; no se pregunta. Sólo se deshabilita lo que no puede pedir, con su motivo | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 

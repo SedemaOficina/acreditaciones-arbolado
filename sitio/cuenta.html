@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="formkit/css/tokens.css">
 <link rel="stylesheet" href="formkit/css/base.css">
 <link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
 <link rel="stylesheet" href="formkit/modulos/tooltip/tooltip.css">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
 <link rel="stylesheet" href="formkit/modulos/acuse/acuse.css">
@@ -48,20 +47,17 @@
       <input class="control" id="primer_apellido" name="primer_apellido" type="text" maxlength="80" autocomplete="family-name">
     </div>
 
-    <fieldset class="grupo" data-campo="tiene_segundo_apellido" data-requerido data-uso="Saber si la CURP se comprueba con un segundo apellido.">
-      <legend class="etiqueta">¿Tienes segundo apellido?</legend>
-      <p class="ayuda">Como aparece en tu CURP. Si no tienes, tu CURP lleva una X en su lugar.</p>
-      <div class="opciones-cortas">
-        <label class="opcion opcion-corta"><input class="opcion-input" type="radio" name="tiene_segundo_apellido" value="si"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Sí</span></label>
-        <label class="opcion opcion-corta"><input class="opcion-input" type="radio" name="tiene_segundo_apellido" value="no"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>No</span></label>
-      </div>
-    </fieldset>
-
-    <div class="campo" data-campo="segundo_apellido" data-si="tiene_segundo_apellido=si" data-formato="nombre" data-requerido data-sensible
+    <div class="campo" data-campo="segundo_apellido" data-formato="nombre" data-sensible
          data-finalidad="Identificar a la persona en su expediente y en la acreditación que se emita." data-uso="Nombre que aparece en el expediente y en la acreditación.">
       <label class="etiqueta" for="segundo_apellido">Segundo apellido</label>
+      <p class="ayuda">Si no tienes, déjalo vacío: tu CURP lleva una X en su lugar y así se comprueba.</p>
       <!-- autocomplete off: los navegadores no distinguen el segundo apellido; family-name ya llena el primero. -->
       <input class="control" id="segundo_apellido" name="segundo_apellido" type="text" maxlength="80" autocomplete="off">
+    </div>
+    <!-- No es una pregunta: lo llena app/cuenta.js («si» cuando el segundo apellido está vacío) para que la
+         CURP se compruebe también sin segundo apellido. El servidor lo calcula por su cuenta, no lo recibe. -->
+    <div class="solo-lector" aria-hidden="true" data-campo="sin_segundo_apellido" data-auxiliar data-uso="Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página.">
+      <input type="hidden" id="sin_segundo_apellido" name="sin_segundo_apellido" value="si">
     </div>
 
     <div class="campo" data-campo="fecha_nacimiento" data-formato="fecha" data-requerido data-no-futura data-sensible
@@ -75,7 +71,7 @@
          (curp-nombre, curp-segundo-apellido y curp-sin-segundo-apellido, propias: app/curp-nombre.js). -->
     <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
          data-cruzada="curp-fecha curp-nombre curp-segundo-apellido curp-sin-segundo-apellido"
-         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido tiene=tiene_segundo_apellido"
+         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido sin=sin_segundo_apellido"
          data-finalidad="Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona." data-uso="Identificador único de la cuenta y llave del historial de acreditaciones.">
       <label class="etiqueta" for="curp">CURP
         <span class="tooltip" data-tooltip>
@@ -183,6 +179,7 @@
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>
+<script src="app/auxiliar.js?v=0.1"></script>
 <script src="app/cuenta.js?v=0.1"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/pruebas.js?v=0.1"></script>
