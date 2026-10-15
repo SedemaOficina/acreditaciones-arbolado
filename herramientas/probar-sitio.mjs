@@ -13,6 +13,7 @@ import { chromium } from 'playwright';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deflateSync } from 'node:zlib';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = (process.argv[2] || 'http://localhost:8765/').replace(/\/?$/, '/');
@@ -52,6 +53,22 @@ const vigente = datos.verificacion_publica.find((v) => v.situacion === 'Vigente'
 const noVigente = datos.verificacion_publica.find((v) => v.situacion !== 'Vigente');
 
 const PDF = { name: 'documento.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% documento ficticio de prueba\n%%EOF\n') };
+// Fotografía ficticia: un PNG gris de 400 × 500 px (el estándar pide al menos 320 × 240), hecho aquí mismo
+function pngFicticio(ancho = 400, alto = 500) {
+  const crc = (b) => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xEDB88320 & -(c & 1)); } return ~c >>> 0; };
+  const bloque = (tipo, datos) => {
+    const t = Buffer.from(tipo, 'ascii'); const l = Buffer.alloc(4); l.writeUInt32BE(datos.length);
+    const c = Buffer.alloc(4); c.writeUInt32BE(crc(Buffer.concat([t, datos]))); return Buffer.concat([l, t, datos, c]);
+  };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(ancho, 0); ihdr.writeUInt32BE(alto, 4); ihdr[8] = 8; ihdr[9] = 0;
+  const filas = Buffer.alloc((ancho + 1) * alto, 0x9a); for (let y = 0; y < alto; y++) filas[y * (ancho + 1)] = 0;
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]), bloque('IHDR', ihdr), bloque('IDAT', deflateSync(filas)), bloque('IEND', Buffer.alloc(0))]);
+}
+const FOTO = { name: 'foto-ficticia.png', mimeType: 'image/png', buffer: pngFicticio() };
+async function cargaFoto(page) {
+  await page.setInputFiles('[data-campo="foto"] [data-archivos] > input[type="file"]:not([data-entrada-camara])', FOTO);
+  await page.waitForSelector('[data-campo="foto"] .lista-arch li[data-estado="listo"]');
+}
 
 let fallas = 0;
 const bien = (m) => console.log(`BIEN  ${m}`);
@@ -94,6 +111,7 @@ async function llenaCuenta(page, p, curp = p.curp) {
   await page.fill('#telefono', '0000000077');
   await page.fill('#contrasena', 'una frase larga de prueba');
   await page.fill('#contrasena2', 'una frase larga de prueba');
+  await cargaFoto(page);
   await marcaCasillas(page);
 }
 async function marcaCasillas(page) {
@@ -120,6 +138,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'cuenta.html');
   await page.click('[data-accion="enviar"]');
   comprueba(await page.locator('.resumen-errores, [aria-invalid="true"]').count() > 0, t('cuenta: enviar vacío muestra los errores'));
+  comprueba(((await page.textContent('[data-campo="foto"] .err')) || '').length > 0, t('cuenta: sin fotografía de frente no se crea la cuenta'));
+  comprueba(await page.getAttribute('[data-campo="foto"] [data-entrada-camara]', 'capture') === 'user', t('cuenta: en el teléfono la cámara que se abre es la frontal'));
+  await page.setInputFiles('[data-campo="foto"] [data-archivos] > input[type="file"]:not([data-entrada-camara])', PDF);
+  comprueba(await page.locator('[data-campo="foto"] [data-rechazos] *').count() > 0, t('cuenta: una fotografía en PDF se rechaza con su motivo'));
   // CURP escrita antes que la fecha: al cambiar la fecha se vuelve a comprobar (caso que reportó Liber)
   await page.goto(BASE + 'cuenta.html');
   await page.fill('#nombre', NUEVA.nombre);
@@ -318,6 +340,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('.menu-pruebas-boton');
   await page.click('dialog.menu-pruebas >> text=Llenar con datos ficticios');
   await page.click('dialog.menu-pruebas >> text=Cerrar');
+  await page.waitForSelector('[data-campo="foto"] .lista-arch li[data-estado="listo"]');
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
   bien(t('menú de pruebas: «Llenar con datos ficticios» crea una cuenta válida'));

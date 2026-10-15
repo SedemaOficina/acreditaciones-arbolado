@@ -22,6 +22,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P08 | Revisión jurídica de la redacción «el resultado de la evaluación será inapelable» | Enviarla a la Dirección Jurídica junto con la regla de P07, para que la redacción deje claro que lo inapelable es la evaluación y no un error de captura. | datos reales |
 | P09 | Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona | Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites». | etapa 2 |
 | P10 | Lugar, días y horario de entrega de acreditaciones | Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente. | datos reales |
+| P48 | ¿La credencial se imprime en el lugar de entrega? | Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento. | etapa 2 |
+| P49 | Especificación de la foto de la credencial y diseño de la credencial | Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
@@ -32,6 +34,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P13 | Quién restablece las contraseñas de solicitantes y por qué medio, si el SIA no da correo | El personal de revisión genera una contraseña temporal de un solo uso después de verificar la identidad (CURP e identificación), y la persona la cambia al entrar. La base ya tiene la marca para obligar el cambio. | etapa 3 |
 | P14 | Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? | Sí basta para abrir la cuenta, porque nadie llega a un curso sin presentar su identificación oficial en el cotejo. | etapa 3 |
 | P15 | Contrastar la CURP con el servicio de consulta de RENAPO | Hacerlo sólo si el SIA ya tiene acceso al servicio. No bloquea: el cotejo presencial ya confirma la identidad. | no |
+| P51 | ¿La verificación pública muestra la foto de la credencial? | No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física. | no |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
 
@@ -69,6 +72,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 |---|---|---|---|
 | P31 | Aviso de privacidad de cuenta, solicitud y verificación pública, con sus fundamentos | Enviar a la Unidad de Transparencia los tres textos simplificados que ya están en las pantallas, con la lista de datos y su finalidad (P32). | datos reales |
 | P32 | Revisión del inventario de datos personales de los formularios | Te preparo la tabla de datos personales (campo, uso, finalidad, sensible) que sale de los propios formularios, para enviarla con el aviso. | datos reales |
+| P50 | Tratamiento de las fotografías en el aviso de privacidad | Declarar las dos fotografías (cuenta y credencial), su finalidad y su conservación. Se usan para que una persona reconozca a otra; no se aplica reconocimiento facial automático. Fundamento: [Art. __, fracc. __]. | datos reales |
 
 ## Verificación (lista de cierre del estándar)
 
@@ -92,6 +96,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P43 | No hay validación cruzada de CURP contra nombre y apellidos | Proponer que el estándar adopte las tres cruzadas de este proyecto. | no |
 | P44 | Una cruzada no se vuelve a comprobar si cambia el otro dato | Reportarlo; el proyecto lo resolvió por su cuenta y el estándar debería hacerlo en el núcleo. | no |
 | P45 | La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS | Reportarlo y proponer la hoja con tokens que hizo este proyecto. | no |
+| P46 | validar.mjs exige en «datos» los campos de archivos que el navegador no manda ahí | Reportarlo al estándar. Mientras, la API pone en «datos» el número de archivos recibidos de cada campo antes de validar (así lo prueba probar-esquemas.mjs). | etapa 3 |
+| P47 | El núcleo pone aria-required en el botón de la zona de carga, que no lo admite | Reportarlo al estándar; el proyecto lo quita sólo de ese botón (app/apd.js). | no |
 
 ## Resueltos
 
@@ -105,3 +111,5 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | CURP que no marcaba error | Al cambiar nombre, apellidos o fecha con la CURP ya escrita, la CURP se vuelve a comprobar al momento | 14/10/2026 |
 | Documentos de renovación | Se actualizan los vencidos o no vigentes y los de estudios o experiencia que la persona quiera; constancia fiscal y factura obligatorias | 14/10/2026 |
 | Primera pregunta de la solicitud | Sólo se pregunta la acreditación (poda y derribo o dictaminador técnico); si es nueva o renovación lo decide el historial y se informa, no se pregunta | 14/10/2026 |
+| Fotografía de la persona | Obligatoria al crear la cuenta; el personal la confirma en el cotejo o toma una nueva ahí; sin ella no se envía la solicitud ni se concluye el cotejo | 14/10/2026 |
+| Credencial y comprobante de recepción | Al entregar se toma en el lugar la foto que lleva la credencial y la persona firma el comprobante de recepción; el personal carga los dos antes de registrar la entrega | 14/10/2026 |

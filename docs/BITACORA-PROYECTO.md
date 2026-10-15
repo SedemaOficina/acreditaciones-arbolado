@@ -168,3 +168,22 @@ opciones «Trámite».
 - `herramientas/construir-artefacto.mjs` arma desde `sitio/` una copia para publicarse como artefacto «Acreditaciones
   de arbolado» (la página principal abre `inicio.html`, porque el artefacto reserva `index.html`). Se vuelve a
   publicar cada vez que se publica GitHub Pages.
+
+## 2026-10-14 · Bloque 12 · Fotografía de la persona y credencial
+
+- «Crea tu cuenta» pide una fotografía de frente, obligatoria (JPG o PNG, 5 MB; en el teléfono abre la cámara
+  frontal). Sirve para reconocer a la persona en el cotejo, el curso y el examen.
+- Base: tabla `apd.fotografia` (una vigente por persona; las anteriores se conservan). Sin fotografía no se
+  envía una solicitud; sin fotografía confirmada por el personal no se concluye el cotejo; en el cotejo el
+  personal puede tomar una nueva, que queda confirmada; ya confirmada, la persona no la cambia.
+- Entrega: credencial y comprobante de recepción. Nuevo requisito `foto_credencial` (momento «entrega», sólo
+  imagen), tomada en el lugar; con el comprobante firmado, condición para registrar la entrega. El requisito
+  `acuse_entrega` se llama ahora «Comprobante de recepción firmado».
+- Cada requisito declara sus formatos (`apd.requisito.formatos`); la base rechaza un formato no admitido.
+- Textos: inicio, aviso de privacidad, cita (llevar identificación para confirmar la fotografía) y entrega.
+- Menú de pruebas: «Llenar con datos ficticios» adjunta una fotografía ficticia dibujada en el navegador.
+- Dos hallazgos para el estándar: `validar.mjs` y los campos de archivos (P46) y `aria-required` en la zona de
+  carga (P47).
+
+**Verificado**: 92 de 92 pruebas de la base; 23 casos en el servidor; 98 comprobaciones del sitio,
+accesibilidad sin hallazgos; 50 campos correctos en el auditor.

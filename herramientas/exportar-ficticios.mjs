@@ -28,6 +28,7 @@ const TABLAS = {
   requisito_curso: 'tipo_acreditacion, modalidad, orden',
   organizacion: 'nombre',
   solicitante: 'curp',
+  fotografia: 'solicitante_id, cargada_en',
   acreditacion: 'numero',
   solicitud: 'folio',
   revision: 'solicitud_id, revisada_en',

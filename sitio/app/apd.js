@@ -164,6 +164,13 @@
     cont.innerHTML = global.FORMKIT_ICONOS;
     document.body.prepend(cont);
   }
+  /* Hallazgo para el estándar (P47): el núcleo pone aria-required="true" en todos los controles de un campo
+     obligatorio, también en el botón de la zona de carga, y un botón no admite ese atributo (axe:
+     aria-allowed-attr). Se quita sólo ahí; lo obligatorio ya lo dicen el asterisco y el mensaje de error. */
+  new MutationObserver((cambios) => {
+    for (const c of cambios) if (c.target.matches && c.target.matches('button.zona-carga[aria-required]')) c.target.removeAttribute('aria-required');
+  }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['aria-required'] });
+
   document.addEventListener('DOMContentLoaded', () => {
     ponIconos();
     cargar().then(pintaCorte).catch(() => { /* sin datos: cada pantalla lo dice en su lugar */ });

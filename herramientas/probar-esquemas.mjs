@@ -47,8 +47,17 @@ function comoServidor(form, datos) {
   }
   return d;
 }
+// El navegador no manda los campos de archivos en `datos` (el módulo los declara fuera de datos), pero
+// validar.mjs exige un valor en `datos` para un campo obligatorio de archivos. Como lo hará la API: lo que
+// venga en `datos` para esos campos se descarta y se pone el número de archivos recibidos de cada uno.
+function conArchivos(form, datos, archivos) {
+  const d = { ...datos };
+  for (const [n, c] of Object.entries(esquema[form].campos || {})) if (c.tipo === 'archivos') delete d[n];
+  for (const a of archivos) d[a.campo] = String(archivos.filter((x) => x.campo === a.campo).length);
+  return d;
+}
 function caso(nombre, form, datos, espera, archivos = []) {
-  const r = validaPayload({ datos: comoServidor(form, datos), archivos, meta }, esquema[form], { config });
+  const r = validaPayload({ datos: conArchivos(form, comoServidor(form, datos), archivos), archivos, meta }, esquema[form], { config });
   const campos = r.errores.map((e) => e.campo);
   const ok = espera === true ? r.ok : !r.ok && espera.every((c) => campos.includes(c)) && campos.every((c) => espera.includes(c));
   console.log(`${ok ? 'BIEN' : 'MAL '}  ${nombre}${ok ? '' : ` → ${JSON.stringify([...new Set(campos)])}`}`);
@@ -59,18 +68,21 @@ const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
 const curpNadia = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Nadia', primer: 'Ejemplo', segundo: 'Simulado' }, '1999-12-30', 'M', 'NE') + '0');
 const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', fecha_nacimiento: '1999-12-30', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', aviso: 'si', humano: 'si' };
-caso('Cuenta completa se acepta', 'cuenta', cuenta, true);
-caso('Cuenta: CURP con dígito incorrecto y correo sin confirmar se rechazan', 'cuenta', { ...cuenta, curp: curpNadia.slice(0, 17) + ((Number(curpNadia[17]) + 1) % 10), correo2: 'otra@ejemplo.local' }, ['curp', 'correo2']);
-caso('Cuenta: una CURP ajena (de otro nombre) se rechaza', 'cuenta', { ...cuenta, nombre: 'Pedro', primer_apellido: 'López' }, ['curp']);
-caso('Cuenta: otro segundo apellido se rechaza', 'cuenta', { ...cuenta, segundo_apellido: 'Muestra' }, ['curp']);
+const foto = (nombre = 'foto.jpg', type = 'image/jpeg') => [{ nombre, size: 180000, type, campo: 'foto' }];
+caso('Cuenta completa con su fotografía se acepta', 'cuenta', cuenta, true, foto());
+caso('Cuenta sin fotografía de frente se rechaza', 'cuenta', cuenta, ['foto']);
+caso('Cuenta con la fotografía en PDF se rechaza', 'cuenta', cuenta, ['foto'], foto('foto.pdf', 'application/pdf'));
+caso('Cuenta: CURP con dígito incorrecto y correo sin confirmar se rechazan', 'cuenta', { ...cuenta, curp: curpNadia.slice(0, 17) + ((Number(curpNadia[17]) + 1) % 10), correo2: 'otra@ejemplo.local' }, ['curp', 'correo2'], foto());
+caso('Cuenta: una CURP ajena (de otro nombre) se rechaza', 'cuenta', { ...cuenta, nombre: 'Pedro', primer_apellido: 'López' }, ['curp'], foto());
+caso('Cuenta: otro segundo apellido se rechaza', 'cuenta', { ...cuenta, segundo_apellido: 'Muestra' }, ['curp'], foto());
 const curpUriel = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Uriel', primer: 'Ejemplo', segundo: '' }, '1988-04-09', 'H', 'NE') + '0');
-caso('Cuenta sin segundo apellido se acepta', 'cuenta', { ...cuenta, nombre: 'Uriel', segundo_apellido: '', fecha_nacimiento: '1988-04-09', curp: curpUriel }, true);
-caso('Cuenta: dejar vacío el segundo apellido con una CURP que sí lo tiene se rechaza', 'cuenta', { ...cuenta, segundo_apellido: '' }, ['curp']);
-caso('Cuenta: el campo auxiliar enviado por el navegador no cuenta (lo calcula el servidor)', 'cuenta', { ...cuenta, segundo_apellido: '', sin_segundo_apellido: '' }, ['curp']);
-caso('Cuenta: otra fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '1999-12-31' }, ['curp']);
-caso('Cuenta: sin fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '' }, ['fecha_nacimiento']);
-caso('Cuenta: contraseña corta se rechaza', 'cuenta', { ...cuenta, contrasena: 'corta', contrasena2: 'corta' }, ['contrasena', 'contrasena2']);
-caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso: '' }, ['aviso']);
+caso('Cuenta sin segundo apellido se acepta', 'cuenta', { ...cuenta, nombre: 'Uriel', segundo_apellido: '', fecha_nacimiento: '1988-04-09', curp: curpUriel }, true, foto());
+caso('Cuenta: dejar vacío el segundo apellido con una CURP que sí lo tiene se rechaza', 'cuenta', { ...cuenta, segundo_apellido: '' }, ['curp'], foto());
+caso('Cuenta: el campo auxiliar enviado por el navegador no cuenta (lo calcula el servidor)', 'cuenta', { ...cuenta, segundo_apellido: '', sin_segundo_apellido: '' }, ['curp'], foto());
+caso('Cuenta: otra fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '1999-12-31' }, ['curp'], foto());
+caso('Cuenta: sin fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '' }, ['fecha_nacimiento'], foto());
+caso('Cuenta: contraseña corta se rechaza', 'cuenta', { ...cuenta, contrasena: 'corta', contrasena2: 'corta' }, ['contrasena', 'contrasena2'], foto());
+caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso: '' }, ['aviso'], foto());
 
 // Solicitud: lo obligatorio depende del trámite elegido, con una sola condición por bloque
 const docs = (t, lista) => Object.fromEntries(lista.map((r) => [`doc_${t}_${r}`, `${r}.pdf`]));

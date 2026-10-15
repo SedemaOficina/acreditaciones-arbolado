@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-15T00:28:57.855Z",
+  "generado": "2026-10-15T04:58:09.513Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -127,6 +127,20 @@
           "nivel": "error"
         }
       ]
+    },
+    "foto": {
+      "etiqueta": "Fotografía de frente",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.",
+      "finalidad": "Reconocer a la persona en la cita de cotejo, en el curso y en el examen.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off"
     },
     "correo": {
       "etiqueta": "Correo electrónico",

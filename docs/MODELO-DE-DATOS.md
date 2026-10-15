@@ -12,7 +12,8 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`requisito`](#requisito) — Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
 - [`organizacion`](#organizacion) — Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.
-- [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+- [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+- [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
 - [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
 - [`solicitud`](#solicitud) — Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
@@ -80,7 +81,8 @@ Catálogo de requisitos. Un requisito es un documento que se carga o un registro
 | `nombre` | `text` | Sí | Nombre visible |
 | `descripcion` | `text` | Sí | Características que debe cumplir (por omisión: `''`) |
 | `forma` | `text` | Sí | documento: se carga un archivo; registro: el sistema lo comprueba en el padrón |
-| `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (acuse firmado) |
+| `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial) |
+| `formatos` | `text[]` | Sí | Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen (por omisión: `ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[]`) |
 | `activo` | `boolean` | Sí | Si se pide en solicitudes nuevas (por omisión: `true`) |
 
 Restricciones e índices:
@@ -88,6 +90,7 @@ Restricciones e índices:
 - `CONSTRAINT requisito_pk PRIMARY KEY (clave)`
 - `CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))`
 - `CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))`
+- `CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])`
 
 ## requisito_curso
 
@@ -129,7 +132,7 @@ Restricciones e índices:
 
 ## solicitante
 
-Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
@@ -160,6 +163,39 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))`
 - `CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))`
 - `CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)`
+
+## fotografia
+
+Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
+| `solicitante_id` | `uuid` | Sí | Persona |
+| `archivo_clave` | `text` | Sí | Clave exacta en el almacén, con sello propio |
+| `tipo_mime` | `text` | Sí | image/jpeg o image/png |
+| `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
+| `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
+| `origen` | `text` | Sí | en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base |
+| `estado` | `text` | Sí | pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó (por omisión: `'pendiente'`) |
+| `vigente` | `boolean` | Sí | Es la última fotografía de la persona (por omisión: `true`) |
+| `cargada_en` | `timestamptz` | Sí | Carga (por omisión: `now()`) |
+| `cargada_por` | `text` | Sí | Quién la cargó: la persona o la cuenta del personal; lo pone la base (por omisión: `''`) |
+| `confirmada_por` | `text` | No | Cuenta del personal que la confirmó (acceso) |
+| `confirmada_en` | `timestamptz` | No | Confirmación |
+
+Restricciones e índices:
+
+- `CONSTRAINT fotografia_pk PRIMARY KEY (id)`
+- `CONSTRAINT fotografia_archivo_uk UNIQUE (archivo_clave)`
+- `CONSTRAINT fotografia_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
+- `CONSTRAINT fotografia_mime_ck CHECK (tipo_mime IN ('image/jpeg', 'image/png'))`
+- `CONSTRAINT fotografia_tamano_ck CHECK (tamano_bytes > 0)`
+- `CONSTRAINT fotografia_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')`
+- `CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo'))`
+- `CONSTRAINT fotografia_estado_ck CHECK (estado IN ('pendiente', 'confirmada'))`
+- `CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))`
+- `CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente`
 
 ## sesion_solicitante
 

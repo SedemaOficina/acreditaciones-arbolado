@@ -28,7 +28,7 @@
           .sort((a, b) => a.orden - b.orden);
         const lista = el('ul', { class: 'lista-obs' }, filas.map((rc) => {
           const r = requisito[rc.requisito];
-          const cuando = r.momento === 'cotejo' ? ' Se entrega en la cita de cotejo.' : '';
+          const cuando = { cotejo: ' Se entrega en la cita de cotejo.', entrega: ' Se hace al recoger tu credencial.' }[r.momento] || '';
           const nota = APD.limpia(rc.nota) ? ` ${APD.limpia(rc.nota)}` : '';
           return el('li', {}, [
             el('strong', { texto: r.nombre + (rc.obligatorio ? '' : ' (si aplica)') }),

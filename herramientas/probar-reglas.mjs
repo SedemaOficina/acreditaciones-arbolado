@@ -33,6 +33,24 @@ const DOC_PEQUENO = (sol, req, tam = 1000) =>
   `INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
    VALUES (${sol}, '${req}', 'prueba/' || gen_random_uuid(), 'x.pdf', 'application/pdf', ${tam}, repeat('a', 64));`;
 
+const FOTO_DOC = (sol, mime = 'image/jpeg') =>
+  `INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+   VALUES (${sol}, 'foto_credencial', 'prueba/' || gen_random_uuid(), 'f.jpg', '${mime}', 1000, repeat('b', 64));`;
+const FOTO = (persona, mime = 'image/jpeg') =>
+  `INSERT INTO apd.fotografia (solicitante_id, archivo_clave, tipo_mime, tamano_bytes, sha256)
+   VALUES (${persona}, 'prueba/' || gen_random_uuid(), '${mime}', 1000, repeat('c', 64));`;
+const COTEJO_PERSONA = `(SELECT solicitante_id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)`;
+// Una persona nueva sin fotografía, con una solicitud de poda nueva y todos sus documentos en línea
+const SIN_FOTO = `
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000011', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'x', true);
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
+     VALUES ('00000000-0000-4000-a000-000000000012', '00000000-0000-4000-a000-000000000011', 'poda', 'nueva');
+     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+     SELECT '00000000-0000-4000-a000-000000000012', rc.requisito, 'prueba/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1000, repeat('a', 64)
+       FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+      WHERE rc.tipo_acreditacion = 'poda' AND rc.modalidad = 'nueva' AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'en_linea';`;
+
 const casos = [
   // ── Vigencia con fechas movidas (PD-2025-K101 se emitió el 25/10/2025 y vence el 24/10/2026) ──
   ['Vigente el día anterior a la ventana', 'ok', null, `DO $$ BEGIN
@@ -87,7 +105,7 @@ const casos = [
   ['La persona solicitante no carga la factura: la carga el personal', { codigo: 'carga_de_personal' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}`],
-  ['Sólo se aceptan PDF, JPG o PNG', { sqlstate: '23514' }, null, `
+  ['Sólo se aceptan los formatos del requisito (PDF, JPG o PNG)', { codigo: 'formato_no_admitido' }, null, `
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
      VALUES ((SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1), 'factura_pago', 'prueba/x', 'x.xml', 'application/xml', 1000, repeat('a', 64));`],
   ['Sin RFC, razón social y folio fiscal no se concluye el cotejo', { codigo: 'sin_datos_factura' }, null, `
@@ -99,8 +117,45 @@ const casos = [
   ['Un folio fiscal no se repite en dos solicitudes', { sqlstate: '23505' }, null, `
      UPDATE apd.solicitud SET factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL LIMIT 1)
       WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
-  ['Con factura y sus datos entra a la bandeja y la persona recibe su expediente consecutivo', 'ok', null, `
+  // ── Fotografía de frente de la persona (decisión 2026-10-14) ──
+  ['Sin fotografía de frente no se envía la solicitud', { codigo: 'sin_fotografia' }, null, `${SIN_FOTO}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000012';`],
+  ['Con su fotografía la solicitud se envía y la foto queda por confirmar', 'ok', null, `${SIN_FOTO}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${FOTO("'00000000-0000-4000-a000-000000000011'")}
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000012';
+     DO $$ BEGIN ASSERT (SELECT origen = 'en_linea' AND estado = 'pendiente' AND confirmada_por IS NULL FROM apd.fotografia
+                          WHERE solicitante_id = '00000000-0000-4000-a000-000000000011' AND vigente); END $$;`],
+  ['La fotografía sólo se admite como imagen', { sqlstate: '23514' }, null, FOTO(COTEJO_PERSONA, 'application/pdf')],
+  ['Mientras nadie la confirma, la persona cambia su foto y la anterior queda guardada', 'ok', null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${FOTO(COTEJO_PERSONA)}
+     DO $$ BEGIN
+       ASSERT (SELECT count(*) FROM apd.fotografia WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente) = 1;
+       ASSERT (SELECT count(*) FROM apd.fotografia WHERE solicitante_id = ${COTEJO_PERSONA} AND NOT vigente) >= 1;
+     END $$;`],
+  ['La persona no confirma su propia fotografía', { codigo: 'foto_de_personal' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente;`],
+  ['Una fotografía no se cambia: se carga otra', { sqlstate: '42501' }, null, `
+     UPDATE apd.fotografia SET archivo_clave = 'otra' WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente;`],
+  ['Sin fotografía confirmada no se concluye el cotejo', { codigo: 'foto_sin_confirmar' }, null, `
      ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
+     UPDATE apd.solicitud SET factura_rfc = 'XAXX010101000', factura_razon_social = 'Persona de prueba',
+       factura_folio_fiscal = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', estado = 'lista_para_curso'
+      WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
+  ['Confirmada en el cotejo, la persona ya no cambia su foto', { codigo: 'foto_confirmada' }, null, `
+     UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente;
+     DO $$ BEGIN ASSERT (SELECT confirmada_por = 'prueba.automatica' AND confirmada_en IS NOT NULL FROM apd.fotografia
+                          WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente); END $$;
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${FOTO(COTEJO_PERSONA)}`],
+  ['Con factura, sus datos y la foto tomada en el cotejo entra a la bandeja y la persona recibe su expediente consecutivo', 'ok', null, `
+     ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
+     ${FOTO(COTEJO_PERSONA)}
+     DO $$ BEGIN ASSERT (SELECT origen = 'cotejo' AND estado = 'confirmada' FROM apd.fotografia
+                          WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente); END $$;
      CREATE TEMP TABLE s AS SELECT id, solicitante_id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1;
      DO $$ BEGIN ASSERT (SELECT numero_expediente IS NULL FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM s)); END $$;
      UPDATE apd.solicitud SET factura_rfc = 'xaxx010101000', factura_razon_social = 'Persona de prueba',
@@ -282,13 +337,20 @@ const casos = [
      SELECT solicitante_id, 'poda', id FROM apd.solicitud WHERE id = ${BORRADOR};`],
   ['Una acreditación emitida no se modifica', { sqlstate: '42501' }, null, `
      UPDATE apd.acreditacion SET vence_en = vence_en + 30 WHERE numero = 'PD-2026-0001';`],
-  ['Sin acuse de entrega firmado no se registra la entrega', { codigo: 'sin_acuse_entrega' }, null, `
+  ['Sin la fotografía de la credencial no se registra la entrega', { codigo: 'sin_foto_credencial' }, null, `
      UPDATE apd.acreditacion SET entregada_en = apd.hoy() WHERE origen = 'sistema' AND entregada_en IS NULL AND numero LIKE 'PD-2026-%';`],
-  ['La persona solicitante no carga el acuse de entrega', { codigo: 'carga_de_personal' }, null, `
+  ['La fotografía de la credencial sólo se admite como imagen', { codigo: 'formato_no_admitido' }, null,
+     FOTO_DOC("(SELECT solicitud_id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL LIMIT 1)", 'application/pdf')],
+  ['Con la foto pero sin comprobante de recepción firmado no se registra la entrega', { codigo: 'sin_acuse_entrega' }, null, `
+     CREATE TEMP TABLE a AS SELECT id, solicitud_id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL LIMIT 1;
+     ${FOTO_DOC("(SELECT solicitud_id FROM a)")}
+     UPDATE apd.acreditacion SET entregada_en = apd.hoy() WHERE id = (SELECT id FROM a);`],
+  ['La persona solicitante no carga el comprobante de recepción', { codigo: 'carga_de_personal' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      ${DOC_PEQUENO("(SELECT solicitud_id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL LIMIT 1)", 'acuse_entrega')}`],
-  ['Con el acuse firmado se registra la entrega', 'ok', null, `
+  ['Con la foto de la credencial y el comprobante firmado se registra la entrega', 'ok', null, `
      CREATE TEMP TABLE a AS SELECT id, solicitud_id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL LIMIT 1;
+     ${FOTO_DOC("(SELECT solicitud_id FROM a)")}
      ${DOC_PEQUENO("(SELECT solicitud_id FROM a)", 'acuse_entrega')}
      UPDATE apd.acreditacion SET entregada_en = apd.hoy() WHERE id = (SELECT id FROM a);
      DO $$ BEGIN ASSERT (SELECT entregada_en IS NOT NULL FROM apd.acreditacion WHERE id = (SELECT id FROM a)); END $$;`],

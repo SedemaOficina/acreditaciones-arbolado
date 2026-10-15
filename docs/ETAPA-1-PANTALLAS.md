@@ -9,9 +9,9 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | Página | Forma | Qué hace | Módulos del estándar |
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
-| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay), fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, tooltip, modal, copiar, acuse |
+| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay), fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, tooltip, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. Caja de personas de ejemplo (sólo versión de prueba) | identificadores |
-| `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado, qué sigue, cita con datos de pago, expediente de la persona, grupo, observaciones, asistencia y calificación, lista para recoger, motivo de cierre) | — |
+| `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado, qué sigue, cita con datos de pago y aviso de llevar la identificación para confirmar la fotografía, expediente de la persona, grupo, observaciones, asistencia y calificación, lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
 | `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), organización (combo abierto), perfil del dictaminador · **Documentos** (generados del catálogo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
 | `verificar.html` | Una página | Verificación pública por número de acreditación: nombre, tipo, fechas y «Vigente / No vigente» | identificadores |
 
@@ -22,7 +22,7 @@ se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
 
 `app/pruebas.js`, en todas las pantallas: botón fijo «Menú de pruebas» que abre un panel para entrar como
 cualquier persona ficticia (una por situación) o como persona nueva, desactivar o activar las preguntas
-obligatorias (los formatos y las comprobaciones de la CURP siguen), llenar el formulario con datos ficticios,
+obligatorias (los formatos y las comprobaciones de la CURP siguen), llenar el formulario con datos ficticios (en la cuenta, con una fotografía ficticia dibujada en el navegador),
 saltar a cualquier paso de la solicitud, simular fallo, límite o envío lento, e ir a cualquier pantalla. No
 aparece si `VERSION` no es 0.N; al pasar al SIA se quita de las páginas con el acceso simulado.
 
@@ -61,7 +61,7 @@ node herramientas/probar-esquemas.mjs <ruta-al-estandar>
 ```
 
 Regenera `db/esquemas-formularios/<formulario>.json` con `herramientas/esquema-desde-html.mjs` del estándar
-y prueba 21 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
+y prueba 23 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; cuenta sin fotografía o con la fotografía en PDF, CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
 confirmaciones distintas, contraseña corta, documentos faltantes por trámite y valores fuera de rango se
 rechazan). En la etapa 3 la API:
 
@@ -102,25 +102,27 @@ rechazan). En la etapa 3 la API:
 | Núcleo | No lee controles ocultos (`type="hidden"`) | Módulo propio `auxiliar` con el contrato de módulos del estándar |
 | Validaciones cruzadas | No se repiten si cambia el otro dato y el campo que las declara no tenía error | `app/cuenta.js` vuelve a validar la CURP al cambiar nombre, apellidos o fecha |
 | Plantilla de versión del SIA | `version-visible.css` usa valores literales y no pasa el auditor | Hoja equivalente con tokens |
+| `validar.mjs` | Exige en `datos` un valor para un campo obligatorio de archivos, pero el navegador no lo manda ahí (el módulo los declara fuera de datos): una solicitud real con archivos obligatorios se rechazaría (P46) | La API pone en `datos` el número de archivos recibidos de cada campo antes de validar; `probar-esquemas.mjs` lo hace igual |
+| Núcleo + `archivos` | El núcleo pone `aria-required` en el botón de la zona de carga, que no lo admite (axe: aria-allowed-attr) (P47) | `app/apd.js` lo quita sólo de ese botón |
 
 ## 7. Verificación
 
 Automática (Chromium 390 × 844 táctil y 1280 × 900):
 
-- `herramientas/probar-sitio.mjs`: **92 comprobaciones correctas** — inicio, cuenta nueva, cuenta del registro de Kobo,
+- `herramientas/probar-sitio.mjs`: **98 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
   solicitud de poda nueva, renovación, dictaminador nueva con perfil y 8 documentos, corrección de observaciones
   (sólo lo observado es obligatorio), grupo asignado, error de acceso, verificación vigente y no vigente,
   fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas; sin errores de consola ni desborde horizontal; **axe-core sin hallazgos** en 8 pantallas.
-- `auditar-campos.mjs`: 48 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
+- `auditar-campos.mjs`: 50 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
 - `auditor-css.mjs` sobre `apd.css` y `version-visible.css`: 0 hallazgos.
-- `probar-esquemas.mjs`: 21 de 21. `probar-base.sh`: 82 de 82.
+- `probar-esquemas.mjs`: 23 de 23. `probar-base.sh`: 92 de 92.
 - Capturas en `verificacion/capturas/` (10 pantallas × 2 anchos).
 
 Lista para personas (`docs/08` del estándar, sección 2) — **pendiente**, no se pudo hacer en el entorno de construcción:
 
 - [ ] Recorrido sólo con teclado.
 - [ ] Lector de pantalla real (NVDA, VoiceOver, TalkBack).
-- [ ] iPhone y Android reales, con red limitada; cámara en la carga de documentos.
+- [ ] iPhone y Android reales, con red limitada; cámara en la carga de documentos y cámara frontal en la fotografía de la cuenta.
 - [ ] Firefox y Safari (`:has()`, `<dialog>`).
 - [ ] Alto contraste forzado; impresión del acuse.
 - [ ] Contenido revisado por la Dirección (etiquetas, «qué sigue», ningún plazo prometido).

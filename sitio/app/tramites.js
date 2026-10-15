@@ -70,7 +70,8 @@
           APD.datosLista([['Concepto', c.pago_concepto], ['Monto', monto || 'Pendiente: lo confirma la Gaceta Oficial'], ['Referencia', s.pago_referencia]]),
           s.pago_monto == null && c.pago_fundamento ? el('p', { class: 'texto-gris', texto: c.pago_fundamento }) : null,
           APD.limpia(instrucciones) ? el('p', { texto: APD.limpia(instrucciones) }) : el('p', { class: 'pendiente', texto: 'Pendiente: banco, cuenta y forma de pago.' }),
-          el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' })
+          el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' }),
+          el('p', { texto: 'Lleva también tu identificación oficial: con ella se confirma que la fotografía de tu cuenta es tuya. Si no se ve bien, ahí te toman otra.' })
         ])
       ]));
     }
@@ -114,7 +115,7 @@
         if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
         else {
           const lugar = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
-          sigue = `Tu acreditación está lista desde el ${fecha(a.emitida_en)}. Recógela en persona con tu identificación oficial; al recibirla firmas un acuse.`;
+          sigue = `Tu acreditación está lista desde el ${fecha(a.emitida_en)}. Recógela en persona con tu identificación oficial. Ahí te toman la fotografía que lleva tu credencial y, al recibirla, firmas el comprobante de recepción.`;
           extra.push(APD.limpia(lugar) ? el('p', { texto: APD.limpia(lugar) }) : el('p', { class: 'pendiente', texto: 'Pendiente: lugar, días y horario de entrega.' }));
         }
       }

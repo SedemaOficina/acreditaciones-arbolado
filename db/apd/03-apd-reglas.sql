@@ -197,6 +197,75 @@ END $$;
 CREATE TRIGGER solicitante_cambio BEFORE UPDATE ON apd.solicitante
   FOR EACH ROW EXECUTE FUNCTION apd.solicitante_cambio();
 
+-- Fotografía de frente de la persona (decisión 2026-10-14, Liber): obligatoria al crear la cuenta; sirve
+-- para reconocerla en el cotejo, el curso y el examen. La persona la cambia mientras nadie la haya
+-- confirmado; en el cotejo el personal la confirma contra la identificación oficial o toma una nueva, que
+-- queda confirmada al cargarse. Una carga nueva sustituye a la anterior sin borrarla.
+CREATE FUNCTION apd.fotografia_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE de_personal boolean := apd.contexto('usuario_tipo') = 'personal';
+BEGIN
+  IF NOT de_personal AND EXISTS (SELECT 1 FROM apd.fotografia f
+                                  WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente AND f.estado = 'confirmada') THEN
+    PERFORM apd.error('foto_confirmada', 'La Secretaría ya confirmó tu fotografía; si hay que cambiarla, se toma en tu próxima cita');
+  END IF;
+  IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
+    PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
+      round(apd.parametro_texto('tamano_maximo_archivo_bytes')::numeric / 1048576, 1)));
+  END IF;
+  UPDATE apd.fotografia SET vigente = false WHERE solicitante_id = NEW.solicitante_id AND vigente;
+  NEW.vigente := true;
+  NEW.cargada_en := apd.ahora();
+  NEW.cargada_por := apd.contexto('usuario');
+  IF de_personal THEN
+    -- La toma el personal en la cita, frente a la persona: queda confirmada
+    NEW.origen := 'cotejo';
+    NEW.estado := 'confirmada';
+    NEW.confirmada_por := NEW.cargada_por;
+    NEW.confirmada_en := NEW.cargada_en;
+  ELSE
+    NEW.origen := 'en_linea';
+    NEW.estado := 'pendiente';
+    NEW.confirmada_por := NULL;
+    NEW.confirmada_en := NULL;
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER fotografia_alta BEFORE INSERT ON apd.fotografia
+  FOR EACH ROW EXECUTE FUNCTION apd.fotografia_alta();
+
+CREATE FUNCTION apd.fotografia_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (NEW.solicitante_id, NEW.archivo_clave, NEW.tipo_mime, NEW.tamano_bytes, NEW.sha256, NEW.origen,
+      NEW.cargada_en, NEW.cargada_por)
+     IS DISTINCT FROM
+     (OLD.solicitante_id, OLD.archivo_clave, OLD.tipo_mime, OLD.tamano_bytes, OLD.sha256, OLD.origen,
+      OLD.cargada_en, OLD.cargada_por) THEN
+    PERFORM apd.error('foto_inmutable', 'Una fotografía cargada no se modifica: se carga una nueva');
+  END IF;
+  IF NEW.vigente AND NOT OLD.vigente THEN
+    PERFORM apd.error('foto_inmutable', 'Una fotografía sustituida no vuelve a ser la vigente');
+  END IF;
+  IF NEW.estado IS DISTINCT FROM OLD.estado THEN
+    IF OLD.estado = 'confirmada' THEN
+      PERFORM apd.error('foto_confirmada', 'Una fotografía confirmada no se desconfirma: se toma una nueva');
+    END IF;
+    IF NOT OLD.vigente THEN
+      PERFORM apd.error('foto_sustituida', 'Sólo se confirma la fotografía vigente');
+    END IF;
+    IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('usuario') = '' THEN
+      PERFORM apd.error('foto_de_personal', 'La fotografía la confirma el personal de la Secretaría, en persona');
+    END IF;
+    NEW.confirmada_por := apd.contexto('usuario');
+    NEW.confirmada_en := apd.ahora();
+    PERFORM apd.registrar('foto_confirmada', 'solicitante', NEW.solicitante_id::text, 'Fotografía confirmada en persona');
+  ELSIF (NEW.confirmada_por, NEW.confirmada_en) IS DISTINCT FROM (OLD.confirmada_por, OLD.confirmada_en) THEN
+    PERFORM apd.error('foto_inmutable', 'La confirmación de la fotografía no se edita');
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER fotografia_cambio BEFORE UPDATE ON apd.fotografia
+  FOR EACH ROW EXECUTE FUNCTION apd.fotografia_cambio();
+
 -- ───────────────────────────── Vigencia de acreditaciones ─────────────────────────────
 -- Decisiones de vigencia y renovación (2026-10-14):
 --   · un año desde la emisión, sin efecto retroactivo; el último día vigente es el anterior al aniversario;
@@ -305,6 +374,7 @@ CREATE TRIGGER acreditacion_emitida AFTER INSERT ON apd.acreditacion
 
 -- Una acreditación emitida no se edita: sólo se registra, una vez, la entrega.
 CREATE FUNCTION apd.acreditacion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE falta text;
 BEGIN
   IF (NEW.numero, NEW.solicitante_id, NEW.tipo_acreditacion, NEW.solicitud_id, NEW.emitida_en, NEW.vence_en,
       NEW.origen, NEW.folio_origen, NEW.es_ficticio)
@@ -320,12 +390,22 @@ BEGIN
     IF NEW.entregada_en > apd.hoy() THEN
       PERFORM apd.error('entrega_futura', 'La entrega no puede registrarse con fecha futura');
     END IF;
-    -- Firma de recibido (decisión 2026-10-14): el sistema imprime el acuse, la persona lo firma y el
-    -- personal carga el PDF firmado antes de marcar la entrega. Las migradas se entregaron fuera del sistema.
-    IF NEW.origen = 'sistema' AND NOT EXISTS (
-         SELECT 1 FROM apd.documento d JOIN apd.requisito r ON r.clave = d.requisito
-          WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND r.momento = 'entrega') THEN
-      PERFORM apd.error('sin_acuse_entrega', 'Carga el acuse de entrega firmado antes de registrar la entrega');
+    -- Al entregar (decisiones 2026-10-14): se toma en el lugar la fotografía que lleva la credencial y la
+    -- persona firma el comprobante de recepción que imprime el sistema; el personal carga los dos antes de
+    -- marcar la entrega. Las migradas se entregaron fuera del sistema.
+    IF NEW.origen = 'sistema' THEN
+      SELECT rc.requisito INTO falta
+        FROM apd.solicitud s
+        JOIN apd.requisito_curso rc ON rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
+        JOIN apd.requisito r ON r.clave = rc.requisito
+       WHERE s.id = NEW.solicitud_id AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'entrega'
+         AND NOT EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = s.id AND d.requisito = rc.requisito AND d.vigente)
+       ORDER BY rc.orden LIMIT 1;
+      IF falta = 'foto_credencial' THEN
+        PERFORM apd.error('sin_foto_credencial', 'Carga la fotografía tomada para la credencial antes de registrar la entrega');
+      ELSIF falta IS NOT NULL THEN
+        PERFORM apd.error('sin_acuse_entrega', 'Carga el comprobante de recepción firmado antes de registrar la entrega');
+      END IF;
     END IF;
     PERFORM apd.registrar('entrega', 'acreditacion', NEW.id::text, format('%s entregada el %s', NEW.numero, NEW.entregada_en));
   END IF;
@@ -501,6 +581,10 @@ BEGIN
   CASE NEW.estado
     WHEN 'enviada' THEN
       PERFORM apd.comprobar_envio(NEW);
+      -- Sin fotografía de frente no hay a quién reconocer en la cita (decisión 2026-10-14)
+      IF NOT EXISTS (SELECT 1 FROM apd.fotografia f WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente) THEN
+        PERFORM apd.error('sin_fotografia', 'Carga tu fotografía de frente antes de enviar la solicitud');
+      END IF;
       IF NEW.enviada_en IS NULL THEN NEW.enviada_en := apd.ahora(); END IF;
     WHEN 'con_observaciones' THEN
       IF OLD.estado = 'enviada' AND ultima IS DISTINCT FROM 'con_observaciones' THEN
@@ -540,6 +624,11 @@ BEGIN
       IF OLD.estado = 'validada_en_linea' AND (coalesce(NEW.factura_rfc, '') = '' OR coalesce(trim(NEW.factura_razon_social), '') = ''
                                               OR coalesce(NEW.factura_folio_fiscal, '') = '') THEN
         PERFORM apd.error('sin_datos_factura', 'Captura el RFC, el nombre o razón social y el folio fiscal de la factura');
+      END IF;
+      -- En el cotejo el personal confirma que la fotografía es de quien se presentó, o toma una nueva
+      IF OLD.estado = 'validada_en_linea' AND NOT EXISTS (
+           SELECT 1 FROM apd.fotografia f WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente AND f.estado = 'confirmada') THEN
+        PERFORM apd.error('foto_sin_confirmar', 'Confirma que la fotografía corresponde a la persona, o tómale una nueva, para concluir el cotejo');
       END IF;
       -- El expediente físico es de la persona: se abre en su primer cotejo y lo usan todos sus trámites
       IF OLD.estado = 'validada_en_linea' THEN PERFORM apd.asignar_expediente(NEW.solicitante_id); END IF;
@@ -628,9 +717,10 @@ CREATE FUNCTION apd.documento_alta() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   s apd.solicitud;
   momento text;
+  formatos text[];
 BEGIN
   SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id;
-  SELECT r.momento INTO momento FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+  SELECT r.momento, r.formatos INTO momento, formatos FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
    WHERE rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
      AND rc.requisito = NEW.requisito AND r.forma = 'documento';
   IF momento IS NULL THEN
@@ -642,10 +732,15 @@ BEGIN
   IF momento = 'cotejo' AND s.estado <> 'validada_en_linea' THEN
     PERFORM apd.error('carga_fuera_de_turno', 'Este documento se carga en la cita presencial');
   END IF;
-  -- El acuse de entrega firmado se carga cuando la acreditación está emitida y todavía no se entrega
+  -- El comprobante de recepción y la foto de la credencial se cargan cuando la acreditación está emitida
+  -- y todavía no se entrega
   IF momento = 'entrega' AND (s.estado <> 'acreditada' OR NOT EXISTS (
        SELECT 1 FROM apd.acreditacion a WHERE a.solicitud_id = s.id AND a.entregada_en IS NULL)) THEN
-    PERFORM apd.error('carga_fuera_de_turno', 'El acuse de entrega se carga al entregar la acreditación');
+    PERFORM apd.error('carga_fuera_de_turno', 'Este documento se carga al entregar la acreditación');
+  END IF;
+  -- Una fotografía sólo se admite como imagen
+  IF NOT NEW.tipo_mime = ANY (formatos) THEN
+    PERFORM apd.error('formato_no_admitido', 'Ese tipo de archivo no se admite para este documento');
   END IF;
   IF momento IN ('cotejo', 'entrega') AND apd.contexto('usuario_tipo') <> 'personal' THEN
     PERFORM apd.error('carga_de_personal', 'Este documento lo carga el personal de la Secretaría');

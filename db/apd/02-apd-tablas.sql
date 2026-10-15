@@ -60,17 +60,20 @@ CREATE TABLE apd.requisito (
   descripcion                text          NOT NULL DEFAULT '',
   forma                      text          NOT NULL,
   momento                    text          NOT NULL,
+  formatos                   text[]        NOT NULL DEFAULT ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[],
   activo                     boolean       NOT NULL DEFAULT true,
   CONSTRAINT requisito_pk PRIMARY KEY (clave),
   CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro')),
-  CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))
+  CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega')),
+  CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])
 );
 COMMENT ON TABLE apd.requisito IS 'Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.';
 COMMENT ON COLUMN apd.requisito.clave IS 'Identificador corto';
 COMMENT ON COLUMN apd.requisito.nombre IS 'Nombre visible';
 COMMENT ON COLUMN apd.requisito.descripcion IS 'Características que debe cumplir';
 COMMENT ON COLUMN apd.requisito.forma IS 'documento: se carga un archivo; registro: el sistema lo comprueba en el padrón';
-COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (acuse firmado)';
+COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial)';
+COMMENT ON COLUMN apd.requisito.formatos IS 'Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen';
 COMMENT ON COLUMN apd.requisito.activo IS 'Si se pide en solicitudes nuevas';
 
 CREATE TABLE apd.requisito_curso (
@@ -137,7 +140,7 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))
 );
 CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre);
-COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
+COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
 COMMENT ON COLUMN apd.solicitante.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitante.curp IS 'CURP en mayúsculas; identificador único de la cuenta';
 COMMENT ON COLUMN apd.solicitante.nombre IS 'Nombre(s)';
@@ -153,6 +156,46 @@ COMMENT ON COLUMN apd.solicitante.bloqueada_hasta IS 'Fin del bloqueo por intent
 COMMENT ON COLUMN apd.solicitante.debe_cambiar_contrasena IS 'Tiene una contraseña temporal de un solo uso';
 COMMENT ON COLUMN apd.solicitante.creada_en IS 'Alta de la cuenta';
 COMMENT ON COLUMN apd.solicitante.es_ficticio IS 'Dato de prueba';
+
+CREATE TABLE apd.fotografia (
+  id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
+  solicitante_id             uuid          NOT NULL,
+  archivo_clave              text          NOT NULL,
+  tipo_mime                  text          NOT NULL,
+  tamano_bytes               integer       NOT NULL,
+  sha256                     text          NOT NULL,
+  origen                     text          NOT NULL,
+  estado                     text          NOT NULL DEFAULT 'pendiente',
+  vigente                    boolean       NOT NULL DEFAULT true,
+  cargada_en                 timestamptz   NOT NULL DEFAULT now(),
+  cargada_por                text          NOT NULL DEFAULT '',
+  confirmada_por             text          NULL,
+  confirmada_en              timestamptz   NULL,
+  CONSTRAINT fotografia_pk PRIMARY KEY (id),
+  CONSTRAINT fotografia_archivo_uk UNIQUE (archivo_clave),
+  CONSTRAINT fotografia_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
+  CONSTRAINT fotografia_mime_ck CHECK (tipo_mime IN ('image/jpeg', 'image/png')),
+  CONSTRAINT fotografia_tamano_ck CHECK (tamano_bytes > 0),
+  CONSTRAINT fotografia_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$'),
+  CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo')),
+  CONSTRAINT fotografia_estado_ck CHECK (estado IN ('pendiente', 'confirmada')),
+  CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))
+);
+CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente;
+COMMENT ON TABLE apd.fotografia IS 'Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.';
+COMMENT ON COLUMN apd.fotografia.id IS 'Identificador interno';
+COMMENT ON COLUMN apd.fotografia.solicitante_id IS 'Persona';
+COMMENT ON COLUMN apd.fotografia.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
+COMMENT ON COLUMN apd.fotografia.tipo_mime IS 'image/jpeg o image/png';
+COMMENT ON COLUMN apd.fotografia.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
+COMMENT ON COLUMN apd.fotografia.sha256 IS 'Suma del archivo, para comprobar el almacén';
+COMMENT ON COLUMN apd.fotografia.origen IS 'en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base';
+COMMENT ON COLUMN apd.fotografia.estado IS 'pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó';
+COMMENT ON COLUMN apd.fotografia.vigente IS 'Es la última fotografía de la persona';
+COMMENT ON COLUMN apd.fotografia.cargada_en IS 'Carga';
+COMMENT ON COLUMN apd.fotografia.cargada_por IS 'Quién la cargó: la persona o la cuenta del personal; lo pone la base';
+COMMENT ON COLUMN apd.fotografia.confirmada_por IS 'Cuenta del personal que la confirmó (acceso)';
+COMMENT ON COLUMN apd.fotografia.confirmada_en IS 'Confirmación';
 
 CREATE TABLE apd.sesion_solicitante (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),

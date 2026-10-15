@@ -53,6 +53,27 @@
     input.files = dt.files;
     avisa(input);
   }
+  /* Fotografía ficticia: una silueta dibujada en el navegador, 480 × 600 px (no es la foto de nadie). */
+  function adjuntaFoto(campo) {
+    const input = campo && campo.querySelector('[data-archivos] > input[type="file"]:not([data-entrada-camara])');
+    if (!input || campo.querySelector('.lista-arch li')) return;
+    const token = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const lienzo = document.createElement('canvas');
+    lienzo.width = 480; lienzo.height = 600;
+    const g = lienzo.getContext('2d');
+    g.fillStyle = token('--fondo'); g.fillRect(0, 0, 480, 600);
+    g.fillStyle = token('--gris-cl');
+    g.beginPath(); g.arc(240, 230, 110, 0, 2 * Math.PI); g.fill();
+    g.beginPath(); g.ellipse(240, 600, 200, 190, 0, Math.PI, 2 * Math.PI); g.fill();
+    g.fillStyle = token('--guinda'); g.font = '24px sans-serif'; g.textAlign = 'center';
+    g.fillText('Fotografía ficticia', 240, 40);
+    lienzo.toBlob((blob) => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([blob], 'foto-ficticia.png', { type: 'image/png' }));
+      input.files = dt.files;
+      avisa(input);
+    }, 'image/png');
+  }
   const visible = (e) => e.offsetParent !== null;
   const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
   const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
@@ -74,6 +95,7 @@
       pon('fecha_nacimiento', p.fecha); pon('curp', p.curp);
       pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
+      adjuntaFoto(form.querySelector('[data-campo="foto"]'));
     } else if (pagina === 'entrar.html') {
       const p = datos.solicitante.find((x) => x.estado === 'activa');
       pon('curp', p.curp); pon('contrasena', APD.CONTRASENA_FICTICIA);

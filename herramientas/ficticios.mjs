@@ -98,6 +98,13 @@ function alta(p, fecha) {
   como(p.correo, 'solicitante');
   emitir(`INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, es_ficticio)
   VALUES (${q(p.id)}, ${q(p.curp)}, ${q(p.nombre)}, ${q(p.primer)}, ${q(p.segundo)}, ${q(p.correo)}, ${q(p.telefono)}, ${q(hashContrasena(p.clave))}, true)`);
+  fotografia(p);
+}
+// Fotografía de frente, obligatoria al crear la cuenta (la carga la persona; se confirma en el cotejo)
+function fotografia(p, version = 1) {
+  emitir(`INSERT INTO apd.fotografia (id, solicitante_id, archivo_clave, tipo_mime, tamano_bytes, sha256)
+  VALUES (${q(uuid(`foto:${p.id}:${version}`))}, ${q(p.id)}, ${q(`ficticio/personas/${p.id}/foto-${version}.jpg`)}, 'image/jpeg', 184320,
+    encode(sha256(convert_to(${q(p.id + 'foto' + version)}, 'UTF8')), 'hex'))`);
 }
 
 // Persona del padrón migrado: existe sin contraseña hasta que se registra con su CURP
@@ -112,6 +119,7 @@ function activar(p, fecha) {
   en(fecha, '08:45');
   como(p.correo, 'solicitante');
   emitir(`UPDATE apd.solicitante SET contrasena_hash = ${q(hashContrasena(p.clave))}, estado = 'activa' WHERE id = ${q(p.id)}`);
+  fotografia(p); // el formulario de la cuenta la pide también a quien viene del padrón
   p.sinActivar = false;
 }
 
@@ -196,6 +204,8 @@ function cotejar(s, fecha) {
   const razon = s.org ? ORG[s.org].nombre : `${s.persona.nombre} ${s.persona.primer}`;
   const h = createHash('md5').update('folio-fiscal:' + s.id).digest('hex').toUpperCase();
   const folio = `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+  // Frente a la persona y su identificación, el personal confirma su fotografía (una vez por persona)
+  emitir(`UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = ${q(s.persona.id)} AND vigente AND estado = 'pendiente'`);
   emitir(`UPDATE apd.solicitud SET factura_rfc = ${q(rfc)}, factura_razon_social = ${q(razon)}, factura_folio_fiscal = ${q(folio)},
     estado = 'lista_para_curso' WHERE id = ${q(s.id)}`);
 }
@@ -260,7 +270,11 @@ function emitirAcreditacion(s, fecha) {
 function entregar(s, fecha) {
   en(fecha, '12:00');
   como(EMISION, 'personal');
-  // Firma de recibido: el personal carga el acuse firmado y escaneado, y después marca la entrega
+  // En el lugar: fotografía para la credencial; luego firma de recibido (el personal carga el comprobante
+  // firmado y escaneado) y después marca la entrega
+  emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+  VALUES (${q(uuid(`foto-credencial:${s.id}`))}, ${q(s.id)}, 'foto_credencial', ${q(`ficticio/${s.id}/foto-credencial.jpg`)}, 'foto-credencial.jpg', 'image/jpeg', 210400,
+    encode(sha256(convert_to(${q(s.id + 'foto-credencial')}, 'UTF8')), 'hex'))`);
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
   VALUES (${q(uuid(`acuse:${s.id}`))}, ${q(s.id)}, 'acuse_entrega', ${q(`ficticio/${s.id}/acuse-entrega.pdf`)}, 'acuse-entrega.pdf', 'application/pdf', 152300,
     encode(sha256(convert_to(${q(s.id + 'acuse')}, 'UTF8')), 'hex'))`);

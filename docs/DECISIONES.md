@@ -28,6 +28,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | ~~2026-10-14~~ | ~~La cuenta pregunta «¿Tienes segundo apellido?»~~ Sustituida | Liber Saltijeral |
 | 2026-10-14 | No se pregunta si hay segundo apellido: si se deja vacío, la CURP debe llevar X en su lugar (si la CURP indica que sí hay, se pide escribirlo). Nadie queda sin comprobar ni atrapado. La CURP se vuelve a comprobar al momento si se cambia el nombre, los apellidos o la fecha después de escribirla | Liber Saltijeral |
 | 2026-10-14 | La solicitud pregunta sólo la acreditación (poda y derribo o dictaminador técnico). Si es nueva o renovación lo decide el historial de la persona y se le informa; no se pregunta. Sólo se deshabilita lo que no puede pedir, con su motivo | Liber Saltijeral |
+| 2026-10-14 | Al crear la cuenta se pide una fotografía de frente, obligatoria (JPG o PNG, hasta 5 MB; en el teléfono puede tomarse con la cámara frontal). Sirve para reconocer a la persona en el cotejo, el curso y el examen. Se pide también a quien activa una cuenta del registro de Kobo. Sin fotografía no se envía una solicitud. Mientras nadie la confirma, la persona puede cambiarla; las anteriores se conservan | Liber Saltijeral |
+| 2026-10-14 | En la cita de cotejo el personal confirma, contra la identificación oficial, que la fotografía es de quien se presentó; si no se parece o no sirve, le toma una nueva ahí, que queda confirmada. Sin fotografía confirmada no se concluye el cotejo. Ya confirmada, la persona no la cambia: se toma otra en su próxima cita. La solicitud no se regresa con observaciones por la fotografía (propuesta de Claude) | Propuesta |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
@@ -90,6 +92,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Para tramitar dictaminador (nueva o renovación) se exige acreditación de poda vigente **al iniciar la solicitud**. No se vuelve a comprobar al enviar ni al emitir (mapa, R05 y R39) | Liber Saltijeral |
 | 2026-10-14 | Si la acreditación de poda vence, la de dictaminador sigue vigente hasta su propia fecha (mapa, R43). Se retiró el parámetro `dictaminador_sigue_a_poda` | Liber Saltijeral |
 | 2026-10-14 | Firma de recibido: al entregar, el sistema imprime un acuse con folio, la persona lo firma y el personal carga el PDF escaneado; sin acuse no se registra la entrega. Queda en el expediente físico y en el digital | Liber Saltijeral |
+| 2026-10-14 | Al emitir una acreditación se entregan a la persona una **credencial** y un **comprobante de recepción** (el acuse firmado de la decisión anterior). En el lugar de entrega se le toma una fotografía, que es la que lleva la credencial; el personal la carga en el sistema (sólo imagen) junto con el comprobante firmado. Sin las dos no se registra la entrega. No sustituye a la fotografía de la cuenta | Liber Saltijeral |
 | 2026-10-14 | Avisos: la persona ve en «Mis trámites» su resultado (aprobada o no, con asistencia y calificación) y, ya emitida, que su acreditación está lista para recoger, con lugar y horario. El aviso por correo depende del servicio del SIA. Lugar y horario de entrega: **pendientes** | Liber Saltijeral |
 | 2026-10-14 | La acreditación se emite con la fecha del día de emisión, no del curso ni del examen. Liber definirá el formato del folio; el actual (PD-AAAA-NNNN, DT-AAAA-NNNN) es provisional (mapa, R38) | Liber Saltijeral |
 
@@ -115,6 +118,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 16 | Expediente por solicitud o sin regla | Un expediente por persona (CURP) para todos sus trámites, abierto en su primer cotejo |
 | 17 | Sin datos de pago antes de la cita | Al asignar la cita se dan concepto, monto y referencia; el comprobante se presenta en el cotejo |
 | 18 | La entrega no deja constancia | Acuse de entrega firmado por la persona, escaneado y cargado por la Secretaría |
+| 20 | No se menciona la fotografía de la persona ni la credencial | Fotografía de frente al crear la cuenta, confirmada en el cotejo; credencial con fotografía tomada al entregarla, y comprobante de recepción firmado |
 | 19 | Quien no aprueba el examen: sin regla | Trámite nuevo completo, incluido el pago de derechos |
 
 ## Pendientes

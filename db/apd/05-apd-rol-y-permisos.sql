@@ -33,7 +33,7 @@ GRANT UPDATE (nombre, dias_duracion, dias_minimos_asistencia, calificacion_minim
               pago_concepto, pago_monto, pago_fundamento, pago_vigente_desde)
   ON apd.curso TO apd_api;
 GRANT SELECT, INSERT ON apd.requisito TO apd_api;
-GRANT UPDATE (nombre, descripcion, activo) ON apd.requisito TO apd_api;
+GRANT UPDATE (nombre, descripcion, formatos, activo) ON apd.requisito TO apd_api;
 GRANT SELECT, INSERT, DELETE ON apd.requisito_curso TO apd_api;
 GRANT UPDATE (orden, obligatorio, nota) ON apd.requisito_curso TO apd_api;
 GRANT SELECT, INSERT ON apd.organizacion TO apd_api;
@@ -45,6 +45,9 @@ GRANT UPDATE (curp, nombre, primer_apellido, segundo_apellido, correo, telefono,
               intentos_fallidos, bloqueada_hasta, debe_cambiar_contrasena) ON apd.solicitante TO apd_api;
 GRANT SELECT, INSERT, DELETE ON apd.sesion_solicitante TO apd_api;
 GRANT UPDATE (cerrada_en) ON apd.sesion_solicitante TO apd_api;
+-- Fotografía de frente: no se borra; la confirmación sólo cambia estado (y la sustitución, vigente)
+GRANT SELECT, INSERT ON apd.fotografia TO apd_api;
+GRANT UPDATE (estado, vigente) ON apd.fotografia TO apd_api;
 
 -- Trámite
 GRANT SELECT, INSERT ON apd.solicitud TO apd_api;

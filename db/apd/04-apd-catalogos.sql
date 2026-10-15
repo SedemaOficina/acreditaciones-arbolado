@@ -53,8 +53,15 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
    'Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF.', 'documento', 'en_linea'),
   ('constancias_capacitacion', 'Constancias de capacitación especializada',
    'Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador.', 'documento', 'en_linea'),
-  ('acuse_entrega', 'Acuse de entrega firmado',
-   'El sistema lo imprime al entregar la acreditación; la persona lo firma y el personal carga el PDF escaneado.', 'documento', 'entrega');
+  ('acuse_entrega', 'Comprobante de recepción firmado',
+   'El sistema lo imprime al entregar la credencial; la persona lo firma y el personal carga el PDF escaneado.', 'documento', 'entrega');
+
+-- Fotografía de la credencial (decisión 2026-10-14, Liber): se toma en el lugar al entregar y es la que
+-- se imprime en la credencial. Sólo imagen. No sustituye a la fotografía de la cuenta (apd.fotografia).
+INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento, formatos) VALUES
+  ('foto_credencial', 'Fotografía de la credencial',
+   'La toma el personal de la Secretaría en el lugar de entrega; es la que se imprime en la credencial. [pendiente] fondo, tamaño y encuadre.',
+   'documento', 'entrega', ARRAY['image/jpeg', 'image/png']);
 
 -- Qué pide cada curso (corrección R46, confirmada por Liber el 2026-10-14): en una renovación sólo es
 -- obligatorio lo que cambia en cada trámite (la constancia fiscal y la factura del pago); se actualizan los
@@ -94,7 +101,11 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'renovacion', 'curriculum_vitae',            9, false, 'Sólo si actualizaste tu experiencia.'),
   ('dictaminador', 'renovacion', 'comprobantes_experiencia',   10, false, 'Sólo si actualizaste tu experiencia.'),
   ('dictaminador', 'renovacion', 'constancias_capacitacion',   11, false, 'Sólo si tienes constancias nuevas.'),
-  -- Firma de recibido al entregar la acreditación (decisión 2026-10-14)
+  -- Al entregar (decisiones 2026-10-14): fotografía para la credencial, tomada en el lugar, y firma de recibido
+  ('poda', 'nueva',              'foto_credencial',            89, true,  ''),
+  ('poda', 'renovacion',         'foto_credencial',            89, true,  ''),
+  ('dictaminador', 'nueva',      'foto_credencial',            89, true,  ''),
+  ('dictaminador', 'renovacion', 'foto_credencial',            89, true,  ''),
   ('poda', 'nueva',              'acuse_entrega',              90, true,  ''),
   ('poda', 'renovacion',         'acuse_entrega',              90, true,  ''),
   ('dictaminador', 'nueva',      'acuse_entrega',              90, true,  ''),

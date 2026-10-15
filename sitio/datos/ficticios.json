@@ -1024,6 +1024,106 @@
    "usuario_tipo": "personal"
   },
   {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "75329da4-21e1-4f10-a07d-213a7ffda09a",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "75ba2751-9798-44db-ac72-842d5c1b0c3f",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "7cfb2a2d-d797-42d4-a53c-94758ea964a9",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "90c0ea92-100b-499c-aea9-ec9f2cbbc0f5",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "94586179-43d4-4d00-af2a-848d1860a484",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "af0df2ec-006a-4fc4-a275-2f711aed3532",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "b758208c-1561-4de7-a555-ca182e501e14",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "c16b4c47-728c-4910-a5b9-efe26efe0d46",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "c37c7829-b41c-4d37-a7d0-44d2628cb21e",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-18T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-08-20T09:00:00-06:00",
    "accion": "alta",
    "detalle": "APD-G-2026-001 · poda nueva · combinado · cupo 5-25",
@@ -1254,6 +1354,16 @@
    "usuario_tipo": "personal"
   },
   {
+   "fecha": "2026-08-21T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "5ec69233-0cd1-4157-a23c-adfb1acda361",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-08-25T09:30:00-06:00",
    "accion": "alta",
    "detalle": "APD-S-2026-00011 · poda renovacion",
@@ -1327,6 +1437,16 @@
    "fecha": "2026-09-01T10:30:00-06:00",
    "accion": "expediente",
    "detalle": "Abre el expediente EXP-2026-0011",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "5ea01eb2-de13-462a-a4ca-4667ef0a8b3c",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-01T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "5ea01eb2-de13-462a-a4ca-4667ef0a8b3c",
@@ -2064,6 +2184,16 @@
    "usuario_tipo": "personal"
   },
   {
+   "fecha": "2026-09-23T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-09-23T17:00:00-06:00",
    "accion": "estado",
    "detalle": "con_observaciones → concluida_sin_atender · Las observaciones no se atendieron en el plazo [pendiente: plazo de la Dirección].",
@@ -2524,6 +2654,116 @@
    "usuario_tipo": "personal"
   },
   {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "08193753-7b69-4ee7-a162-3e4eb14ebfc0",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "0efcf35f-4b5a-41fa-a1a5-294fc26a2732",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "19e97f98-8eb5-4f5e-ab8e-942a038df7db",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "2ffbc313-3a83-4728-a21d-b952eb9efbf6",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "42a4a0dd-6906-434c-ad6e-2f7b7090c018",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "4de12634-5f50-414f-a9cc-ebb97a1b3a92",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "5bb60068-0ca4-4d84-ad08-9901a54cceb7",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "60237a0f-dc58-4eea-afe1-2c7ad8f09217",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "6295db4a-f71f-4277-a0f4-3010922a9003",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "8eae0ed1-fca7-4ed0-a315-d6361c87c422",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-30T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "c52ae32f-f47f-480b-aa40-d3940ce006d4",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-10-01T09:00:00-06:00",
    "accion": "alta",
    "detalle": "APD-G-2026-003 · poda nueva · especifico · cupo 5-25",
@@ -2944,6 +3184,16 @@
    "usuario_tipo": "personal"
   },
   {
+   "fecha": "2026-10-05T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "67cf436a-a0ce-4d00-ae82-d0b40d575058",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-10-05T11:00:00-06:00",
    "accion": "estado",
    "detalle": "borrador → enviada",
@@ -3127,6 +3377,76 @@
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
    "detalle": "Abre el expediente EXP-2026-0029",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "eda1b6b4-6960-4da1-a106-f775cf1679e1",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "39310c7d-1b11-43f6-a11c-af0d874eed33",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "751cf4e1-256e-4484-a6e2-63d2235bb70b",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "a2666a5a-0277-4583-a442-a5c27731ee36",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "b0533310-0bda-4e7b-af42-3cd15c73f2d6",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "b4911a5b-1aa9-4e14-a874-b7cd82282c1a",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "eda1b6b4-6960-4da1-a106-f775cf1679e1",
@@ -3344,6 +3664,16 @@
    "usuario_tipo": "personal"
   },
   {
+   "fecha": "2026-10-08T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "a5f29365-181a-4c92-a268-4a4029c2c9f5",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-10-08T12:00:00-06:00",
    "accion": "estado",
    "detalle": "enviada → con_observaciones",
@@ -3387,6 +3717,16 @@
    "fecha": "2026-10-09T10:30:00-06:00",
    "accion": "expediente",
    "detalle": "Abre el expediente EXP-2026-0015",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-09T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
@@ -3637,6 +3977,26 @@
    "fecha": "2026-10-13T10:30:00-06:00",
    "accion": "expediente",
    "detalle": "Abre el expediente EXP-2026-0035",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "7eee6731-4ea8-4916-a078-800b1ca7e703",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-13T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
+   "entidad": "solicitante",
+   "usuario": "cotejo.ficticio",
+   "entidad_id": "05bb32ae-8d1a-4c3e-a47a-5c8860aee092",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-13T10:30:00-06:00",
+   "accion": "foto_confirmada",
+   "detalle": "Fotografía confirmada en persona",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "7eee6731-4ea8-4916-a078-800b1ca7e703",
@@ -5108,6 +5468,23 @@
    "nombre_original": "factura.pdf"
   },
   {
+   "id": "388e10ce-37ee-4e26-a7d4-ce393605ad56",
+   "estado": "aceptado",
+   "sha256": "28ec8132119c57ebecb9d89450852afa4ebe8ffb586a81e3bf7a97cdbd9fc5ef",
+   "vigente": true,
+   "requisito": "foto_credencial",
+   "tipo_mime": "image/jpeg",
+   "cargado_en": "2026-09-22T12:00:00-06:00",
+   "cargado_por": "emision.ficticia",
+   "observacion": "",
+   "revisado_en": "2026-09-22T12:00:00-06:00",
+   "revisado_por": "emision.ficticia",
+   "solicitud_id": "4f024511-6131-4de3-adc7-53295f3154bc",
+   "tamano_bytes": 210400,
+   "archivo_clave": "ficticio/4f024511-6131-4de3-adc7-53295f3154bc/foto-credencial.jpg",
+   "nombre_original": "foto-credencial.jpg"
+  },
+  {
    "id": "6e121fc1-ca83-7f7e-5379-8d09d75bf25b",
    "estado": "aceptado",
    "sha256": "8dc92fed555daa21f12c0387731ab6c940c791e8b71a07466e23c53be7248cfb",
@@ -5208,6 +5585,23 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/5687c62e-b19c-4470-a017-98e1749fa2a6/factura.pdf",
    "nombre_original": "factura.pdf"
+  },
+  {
+   "id": "bf3672e4-f7e3-40c7-a074-cfca563a1276",
+   "estado": "aceptado",
+   "sha256": "e1b358ccbc3e00929a954bdfdb46d321cce7fb52a036c730a369de3693e72021",
+   "vigente": true,
+   "requisito": "foto_credencial",
+   "tipo_mime": "image/jpeg",
+   "cargado_en": "2026-09-22T12:00:00-06:00",
+   "cargado_por": "emision.ficticia",
+   "observacion": "",
+   "revisado_en": "2026-09-22T12:00:00-06:00",
+   "revisado_por": "emision.ficticia",
+   "solicitud_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
+   "tamano_bytes": 210400,
+   "archivo_clave": "ficticio/5687c62e-b19c-4470-a017-98e1749fa2a6/foto-credencial.jpg",
+   "nombre_original": "foto-credencial.jpg"
   },
   {
    "id": "eea84289-3720-1241-c1f1-242f28d9ceb6",
@@ -5720,6 +6114,23 @@
    "nombre_original": "factura.pdf"
   },
   {
+   "id": "fa14a27e-0d0a-4c64-a890-e712ddc29cd9",
+   "estado": "aceptado",
+   "sha256": "f51b697b7be29ec20aef586c07e2c475d7619cc8fff02a05875ecc97001d67af",
+   "vigente": true,
+   "requisito": "foto_credencial",
+   "tipo_mime": "image/jpeg",
+   "cargado_en": "2026-09-22T12:00:00-06:00",
+   "cargado_por": "emision.ficticia",
+   "observacion": "",
+   "revisado_en": "2026-09-22T12:00:00-06:00",
+   "revisado_por": "emision.ficticia",
+   "solicitud_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
+   "tamano_bytes": 210400,
+   "archivo_clave": "ficticio/7b7f0039-8490-4d6a-a1d6-7d410e52356a/foto-credencial.jpg",
+   "nombre_original": "foto-credencial.jpg"
+  },
+  {
    "id": "ef9541f1-0940-2b36-7a72-0f208c257d57",
    "estado": "aceptado",
    "sha256": "f2d47e8c3a3f8a24a51e121e60c7b0e7119e2ad38725869380bc58cf2b6d1786",
@@ -6230,6 +6641,23 @@
    "nombre_original": "factura.pdf"
   },
   {
+   "id": "26e8da8d-1790-4af0-ab75-6cfbe24ae4b7",
+   "estado": "aceptado",
+   "sha256": "5366fe0e093005af0202d6e5bdc54a0f5cc776462278b71cd4901ed3202e527e",
+   "vigente": true,
+   "requisito": "foto_credencial",
+   "tipo_mime": "image/jpeg",
+   "cargado_en": "2026-09-22T12:00:00-06:00",
+   "cargado_por": "emision.ficticia",
+   "observacion": "",
+   "revisado_en": "2026-09-22T12:00:00-06:00",
+   "revisado_por": "emision.ficticia",
+   "solicitud_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
+   "tamano_bytes": 210400,
+   "archivo_clave": "ficticio/8c6f2e74-cdb4-4211-a15d-725ae6118989/foto-credencial.jpg",
+   "nombre_original": "foto-credencial.jpg"
+  },
+  {
    "id": "198def66-ccc0-e481-5fec-22b732a83503",
    "estado": "aceptado",
    "sha256": "6b5ec9913b858ac1508cc4328ed0088e19ec7e21b8f1687e89e0690fe0908b28",
@@ -6619,6 +7047,23 @@
    "tamano_bytes": 84211,
    "archivo_clave": "ficticio/94f1487a-3e47-4361-a972-7555eba72d13/factura.pdf",
    "nombre_original": "factura.pdf"
+  },
+  {
+   "id": "32d80455-0805-4c55-a32b-8b8a483019f8",
+   "estado": "aceptado",
+   "sha256": "45c6c91b7547833919833abbd3cf8daae4fb7df1b95a75508cfa65bce79a07ce",
+   "vigente": true,
+   "requisito": "foto_credencial",
+   "tipo_mime": "image/jpeg",
+   "cargado_en": "2026-09-22T12:00:00-06:00",
+   "cargado_por": "emision.ficticia",
+   "observacion": "",
+   "revisado_en": "2026-09-22T12:00:00-06:00",
+   "revisado_por": "emision.ficticia",
+   "solicitud_id": "94f1487a-3e47-4361-a972-7555eba72d13",
+   "tamano_bytes": 210400,
+   "archivo_clave": "ficticio/94f1487a-3e47-4361-a972-7555eba72d13/foto-credencial.jpg",
+   "nombre_original": "foto-credencial.jpg"
   },
   {
    "id": "7827e64a-bf17-eeab-6e58-02fce17da7c6",
@@ -7658,6 +8103,23 @@
    "nombre_original": "factura.pdf"
   },
   {
+   "id": "916cd161-d306-43e3-af6d-3013b8d72ec5",
+   "estado": "aceptado",
+   "sha256": "a113c9289821574ab3e3ce7b1db87bc285032bf8d82c4041519e9283bf95088c",
+   "vigente": true,
+   "requisito": "foto_credencial",
+   "tipo_mime": "image/jpeg",
+   "cargado_en": "2026-09-22T12:00:00-06:00",
+   "cargado_por": "emision.ficticia",
+   "observacion": "",
+   "revisado_en": "2026-09-22T12:00:00-06:00",
+   "revisado_por": "emision.ficticia",
+   "solicitud_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
+   "tamano_bytes": 210400,
+   "archivo_clave": "ficticio/ed83f05d-3263-4d18-a45a-334339907b5b/foto-credencial.jpg",
+   "nombre_original": "foto-credencial.jpg"
+  },
+  {
    "id": "a2908106-a9ba-1634-e07f-1598cbf3d5e4",
    "estado": "aceptado",
    "sha256": "77a0e12dc1375f374ed3d3168708b4b608fb78f8e3a3ddb69cc7d6a6c42873b2",
@@ -7950,9 +8412,14 @@
    "clave": "acuse_entrega",
    "forma": "documento",
    "activo": true,
-   "nombre": "Acuse de entrega firmado",
+   "nombre": "Comprobante de recepción firmado",
    "momento": "entrega",
-   "descripcion": "El sistema lo imprime al entregar la acreditación; la persona lo firma y el personal carga el PDF escaneado."
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
+   "descripcion": "El sistema lo imprime al entregar la credencial; la persona lo firma y el personal carga el PDF escaneado."
   },
   {
    "clave": "comprobante_domicilio",
@@ -7960,6 +8427,11 @@
    "activo": true,
    "nombre": "Comprobante de domicilio",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. [pendiente] la Dirección debe declarar su uso."
   },
   {
@@ -7968,6 +8440,11 @@
    "activo": true,
    "nombre": "Comprobante de estudios",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "Título, cédula profesional, carta de pasante vigente, constancia de 100 % de créditos o certificado de carrera técnica."
   },
   {
@@ -7976,6 +8453,11 @@
    "activo": true,
    "nombre": "Comprobantes de experiencia",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF."
   },
   {
@@ -7984,6 +8466,11 @@
    "activo": true,
    "nombre": "Constancia de situación fiscal",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos."
   },
   {
@@ -7992,6 +8479,11 @@
    "activo": true,
    "nombre": "Constancias de capacitación especializada",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador."
   },
   {
@@ -8000,6 +8492,11 @@
    "activo": true,
    "nombre": "Clave Única de Registro de Población (CURP)",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "En formato actualizado."
   },
   {
@@ -8008,6 +8505,11 @@
    "activo": true,
    "nombre": "Currículum vitae",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico."
   },
   {
@@ -8016,6 +8518,11 @@
    "activo": true,
    "nombre": "Acreditación de dictaminador a renovar",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "El sistema la comprueba en su padrón."
   },
   {
@@ -8024,7 +8531,24 @@
    "activo": true,
    "nombre": "Factura del pago de derechos",
    "momento": "cotejo",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "La emite la Secretaría en la cita presencial, después de verificar el pago. Su personal carga el PDF y captura RFC, nombre o razón social y folio fiscal. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente]."
+  },
+  {
+   "clave": "foto_credencial",
+   "forma": "documento",
+   "activo": true,
+   "nombre": "Fotografía de la credencial",
+   "momento": "entrega",
+   "formatos": [
+    "image/jpeg",
+    "image/png"
+   ],
+   "descripcion": "La toma el personal de la Secretaría en el lugar de entrega; es la que se imprime en la credencial. [pendiente] fondo, tamaño y encuadre."
   },
   {
    "clave": "identificacion_oficial",
@@ -8032,6 +8556,11 @@
    "activo": true,
    "nombre": "Identificación oficial",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional."
   },
   {
@@ -8040,6 +8569,11 @@
    "activo": true,
    "nombre": "Acreditación de poda y derribo a renovar",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "El sistema la comprueba en su padrón."
   },
   {
@@ -8048,6 +8582,11 @@
    "activo": true,
    "nombre": "Acreditación de poda y derribo vigente",
    "momento": "en_linea",
+   "formatos": [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+   ],
    "descripcion": "El sistema comprueba en su padrón que esté vigente al iniciar la solicitud."
   }
  ],
@@ -9671,6 +10210,683 @@
    "inscripcion_id": "f4a7e773-2fd6-42a3-a4c6-a6551c52a2e8"
   }
  ],
+ "fotografia": [
+  {
+   "id": "ae4939ee-a3bc-4c3d-adbb-c37de1194e44",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "d8ca3b434f5c979a8933cb3b144a8d6d9e1aed45cdaf0148b54fe135ade0a4f0",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-05T09:00:00-06:00",
+   "cargada_por": "persona41@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/05bb32ae-8d1a-4c3e-a47a-5c8860aee092/foto-1.jpg",
+   "confirmada_en": "2026-10-13T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "05bb32ae-8d1a-4c3e-a47a-5c8860aee092"
+  },
+  {
+   "id": "aad964ce-8212-45b9-a386-ad397381ef2f",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "ca44073660c63eb634213d87e3aa4bbfc90c341940f1292a013b13f35c023487",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-14T09:00:00-06:00",
+   "cargada_por": "persona45@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/061e78f9-f0bd-46c0-a3e5-a51800e8e919/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "061e78f9-f0bd-46c0-a3e5-a51800e8e919"
+  },
+  {
+   "id": "e1d0fae3-5db4-45ec-a4e7-fb135eca7cac",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "ef8ca13bdf5497cce8579b345ce4ffd9ac8a6dec649527e2adde774e4efe921a",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona29@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/08193753-7b69-4ee7-a162-3e4eb14ebfc0/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "08193753-7b69-4ee7-a162-3e4eb14ebfc0"
+  },
+  {
+   "id": "c2c76161-6e6c-4014-a507-6487eabd453f",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "974089d16ef685fd151ffb6f853781cdc0329e78d1df6c6b13b8161f0635de25",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-28T09:00:00-06:00",
+   "cargada_por": "persona37@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4"
+  },
+  {
+   "id": "15881c4d-ff8e-4c68-a81f-25d33447faf3",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "cf44e83e70fb87c9a3a4e423011523c74150b2e153c5f734d51c8a80599fe8fc",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona24@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/0efcf35f-4b5a-41fa-a1a5-294fc26a2732/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "0efcf35f-4b5a-41fa-a1a5-294fc26a2732"
+  },
+  {
+   "id": "7f2137c4-e400-411d-ae37-74626a50f325",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "be1056e612e81a9be2949e19ddec1dcd0fc4d3d9afd3de08861bfcbc859984e4",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona30@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/19e97f98-8eb5-4f5e-ab8e-942a038df7db/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "19e97f98-8eb5-4f5e-ab8e-942a038df7db"
+  },
+  {
+   "id": "cd52e26a-c348-4efa-ad09-80b48cb0da23",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "4462e6275954975ba8d894c13bd3486a7e0760a52f657e819ffccdd8857680b5",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona28@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/2ffbc313-3a83-4728-a21d-b952eb9efbf6/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "2ffbc313-3a83-4728-a21d-b952eb9efbf6"
+  },
+  {
+   "id": "35f2b316-9600-40d7-a8b6-1bf400cdd39e",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "a872111f8bb35f9bfdfea24ef1a1fa3d20aa523553c174256cfcb42ec79252f3",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-28T09:00:00-06:00",
+   "cargada_por": "persona36@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/39310c7d-1b11-43f6-a11c-af0d874eed33/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "39310c7d-1b11-43f6-a11c-af0d874eed33"
+  },
+  {
+   "id": "5fa98a07-f8c8-4599-a07b-6c2041e10c05",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "6da28e179029caba1c7f41e548c30b638151a2b915b08999be4ff28e9130c0cd",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-02T09:00:00-06:00",
+   "cargada_por": "persona42@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/3a939f55-5357-4d4b-a426-7c5408f01b7c/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "3a939f55-5357-4d4b-a426-7c5408f01b7c"
+  },
+  {
+   "id": "364cf8a8-f9cd-44ef-a642-ff2952ff0912",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "e408815e69b247357dc51b91bafdc903c9c3d58afb8dbb39e66870c0c98403ba",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-05T08:45:00-06:00",
+   "cargada_por": "persona20@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/422dd046-f04f-4a15-a7c6-a0ae14fe22b8/foto-1.jpg",
+   "confirmada_en": "2026-10-09T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8"
+  },
+  {
+   "id": "90ef59d4-9df2-4a0c-a9f1-9bb2e44ab777",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "4b88f63e833ccdbe4d22e2f99301f5623ce1936361eeff20cd349f0df447c34d",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona32@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/42a4a0dd-6906-434c-ad6e-2f7b7090c018/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "42a4a0dd-6906-434c-ad6e-2f7b7090c018"
+  },
+  {
+   "id": "db73d779-149b-4639-a445-33da62df3940",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "254e97a58cfea7e5b14a4fa9d8e283a2353413e5c13a85ada8ceb0ab2eae598d",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-14T08:45:00-06:00",
+   "cargada_por": "persona19@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/46125d2f-4c2b-4879-a2a9-92ff953a7a16/foto-1.jpg",
+   "confirmada_en": "2026-09-23T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16"
+  },
+  {
+   "id": "80f9a08c-7242-48dc-a10a-abf6e587346a",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "ca45df6278fd3cf5588f2e18de36b47d66214dd307614eab510d335676cb7620",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona22@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/4de12634-5f50-414f-a9cc-ebb97a1b3a92/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "4de12634-5f50-414f-a9cc-ebb97a1b3a92"
+  },
+  {
+   "id": "18726ac2-c731-4f34-a9e7-077c01eb5008",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "4902871818326f3acbb6eb11011270b8d40e72b2be4d0d8e2286139cf3b865f9",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona25@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/5bb60068-0ca4-4d84-ad08-9901a54cceb7/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "5bb60068-0ca4-4d84-ad08-9901a54cceb7"
+  },
+  {
+   "id": "f12f5f27-2f6e-42b9-ac29-460299c565ec",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "4df0a8a05dcc80dd48d06d955b49d53bff880b4add4fab0e5512c0d56c7470eb",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-25T08:45:00-06:00",
+   "cargada_por": "persona13@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/5ea01eb2-de13-462a-a4ca-4667ef0a8b3c/foto-1.jpg",
+   "confirmada_en": "2026-09-01T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "5ea01eb2-de13-462a-a4ca-4667ef0a8b3c"
+  },
+  {
+   "id": "0acb3ff2-756c-4c0a-afad-b645de23b15b",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "5ab4e348d37616030a8e0e336c7783960fd6430f9e0041bc360d5e7d9ed2ab1a",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-05T09:00:00-06:00",
+   "cargada_por": "persona39@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/5ec69233-0cd1-4157-a23c-adfb1acda361/foto-1.jpg",
+   "confirmada_en": "2026-08-21T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "5ec69233-0cd1-4157-a23c-adfb1acda361"
+  },
+  {
+   "id": "810108f4-5cdc-4922-a35e-98b835e1f958",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "67c4f7903cf67186cb8a7e04ab235bb72eaf10bdf92a919ac0416bfac3ed848d",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona23@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/60237a0f-dc58-4eea-afe1-2c7ad8f09217/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "60237a0f-dc58-4eea-afe1-2c7ad8f09217"
+  },
+  {
+   "id": "f3964213-ea5e-4e2f-a9be-e42da9b487aa",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "393c39301b78bfa0016938353e38a489bbce4903a69551a1b9c48af7031bf019",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona26@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/6295db4a-f71f-4277-a0f4-3010922a9003/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "6295db4a-f71f-4277-a0f4-3010922a9003"
+  },
+  {
+   "id": "00c2ac49-9ef2-4314-a387-fbddc62dd0ff",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "35439dc0e19ba6f290656eca106181a946548882743bb1ac340ea0c9dea1d8cc",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-01T08:45:00-06:00",
+   "cargada_por": "persona14@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/67cf436a-a0ce-4d00-ae82-d0b40d575058/foto-1.jpg",
+   "confirmada_en": "2026-10-05T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "67cf436a-a0ce-4d00-ae82-d0b40d575058"
+  },
+  {
+   "id": "dca2ddff-525c-4af3-a6a3-3e7083a2d88a",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "5e66ef469ad0a41b99054f997ef06d96040bf0864457e1a6290bab1e6d8bad2a",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-01T08:45:00-06:00",
+   "cargada_por": "persona18@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/751cf4e1-256e-4484-a6e2-63d2235bb70b/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "751cf4e1-256e-4484-a6e2-63d2235bb70b"
+  },
+  {
+   "id": "d7c4a51c-e83e-4a12-aff3-f708dac21bd3",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "f1ed252bc85a28cd637e326e850c55995446dffa1e35ca4dd9b19b9cd351930f",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona04@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/75329da4-21e1-4f10-a07d-213a7ffda09a/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "75329da4-21e1-4f10-a07d-213a7ffda09a"
+  },
+  {
+   "id": "eb8e8ab0-b195-40df-a84e-b70fc1bdd336",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "12cc3656eaa9fb65b14b82770825d9ed978f58131ac4bf3b26896737ed059f96",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona01@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/75ba2751-9798-44db-ac72-842d5c1b0c3f/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "75ba2751-9798-44db-ac72-842d5c1b0c3f"
+  },
+  {
+   "id": "44f00a52-e3ec-45d2-afef-68102bedd2c8",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "5d51f7ce287e0a706f4d6d6264333714e3dfd21b257f75fddb2fd2061556faf5",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona07@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/7cfb2a2d-d797-42d4-a53c-94758ea964a9/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "7cfb2a2d-d797-42d4-a53c-94758ea964a9"
+  },
+  {
+   "id": "fe715444-bf00-4e30-a4a3-9363721306a5",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "146a4450253240c568ffa933b7d41372aecf65615fc7d6b20d27050d461ba07d",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-05T09:00:00-06:00",
+   "cargada_por": "persona40@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/7eee6731-4ea8-4916-a078-800b1ca7e703/foto-1.jpg",
+   "confirmada_en": "2026-10-13T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "7eee6731-4ea8-4916-a078-800b1ca7e703"
+  },
+  {
+   "id": "2578a619-2cfd-4460-a84d-af90faee08bd",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "a7952fc5aa1aef69f2d011aaa327f664a8a753060c83e3dcdc75a4901ced41d9",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-07-20T09:00:00-06:00",
+   "cargada_por": "persona47@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/8116fc20-d786-47f6-afa6-801a10f085b9/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "8116fc20-d786-47f6-afa6-801a10f085b9"
+  },
+  {
+   "id": "855e26f1-a981-43b4-ac2a-b480320f1913",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "182bf644a4579f37d405e0529a05d60e58b355e96158ed37dbf89504664188ce",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-06T08:45:00-06:00",
+   "cargada_por": "persona21@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/84a21dbf-161e-4044-a213-f660eeb0b14c/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "84a21dbf-161e-4044-a213-f660eeb0b14c"
+  },
+  {
+   "id": "5da5e205-09b3-4491-a60e-829d6276ff7e",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "64432e1984bd8d811a61e6322492d90faf06184ab6e4436b8d618192b3884270",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona31@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/8eae0ed1-fca7-4ed0-a315-d6361c87c422/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "8eae0ed1-fca7-4ed0-a315-d6361c87c422"
+  },
+  {
+   "id": "21117fc3-5e8c-4382-a92d-04e044038580",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "84ebb3bb6321510e507f1099b7f3a436f57e2131d56fbb74447e315c56b31b51",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona06@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/90c0ea92-100b-499c-aea9-ec9f2cbbc0f5/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "90c0ea92-100b-499c-aea9-ec9f2cbbc0f5"
+  },
+  {
+   "id": "548015a8-186d-461c-a936-ce8f58f68e5a",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "f6a71f654ed84e6cf7e1f3b0c251ae994f3cc9d6f1ef81a5c508fb2e92da9b66",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona05@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/94586179-43d4-4d00-af2a-848d1860a484/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "94586179-43d4-4d00-af2a-848d1860a484"
+  },
+  {
+   "id": "9a40d35a-1145-4521-a387-9d93fcc811ed",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "81f9d4a7de175477d094e0e0901a2ea17b0cbcd60e86e74277933704733c698d",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-28T09:00:00-06:00",
+   "cargada_por": "persona33@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/a2666a5a-0277-4583-a442-a5c27731ee36/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "a2666a5a-0277-4583-a442-a5c27731ee36"
+  },
+  {
+   "id": "82855725-4fed-4a50-a8f8-8259f41ad474",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "53309c7bb1e7e676fd62fdffb0fa97570dbb65a8f6afc266dd800452117586c5",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-01T09:00:00-06:00",
+   "cargada_por": "persona46@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/a5c6cde4-4c27-4fed-a850-77b3217bd4fa/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "a5c6cde4-4c27-4fed-a850-77b3217bd4fa"
+  },
+  {
+   "id": "ce8155da-a222-4961-a73f-ab6abbc473e3",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "cc258dc082a9f8997b3cd42947a4c412bc719a2b26ff96d67a7f920feb9a55bf",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-07T08:45:00-06:00",
+   "cargada_por": "persona15@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/a5f29365-181a-4c92-a268-4a4029c2c9f5/foto-1.jpg",
+   "confirmada_en": "2026-10-08T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "a5f29365-181a-4c92-a268-4a4029c2c9f5"
+  },
+  {
+   "id": "bf27d991-b25c-4cf6-af38-267051864db1",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "67062700dcc07ea1480125e34c6a153c131fd022d8c3dfe809102ab7efd22638",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-13T08:45:00-06:00",
+   "cargada_por": "persona16@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/a615e119-b885-4a9a-ae16-386dc9efaef8/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "a615e119-b885-4a9a-ae16-386dc9efaef8"
+  },
+  {
+   "id": "359c0f21-c8b8-41e2-a495-c9395cd11aea",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "c1d7cdb9a45cc9825673ae0f0eae1df8543704e5656206463c14d9d482e1644d",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona03@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/af0df2ec-006a-4fc4-a275-2f711aed3532/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "af0df2ec-006a-4fc4-a275-2f711aed3532"
+  },
+  {
+   "id": "94b429e0-dff8-414c-aa92-77bbd1aea92f",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "79545de4d679d875e995cdc5c894cf664614472401c3d7e5e805cbe1d98d5e69",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-28T09:00:00-06:00",
+   "cargada_por": "persona35@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/b0533310-0bda-4e7b-af42-3cd15c73f2d6/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "b0533310-0bda-4e7b-af42-3cd15c73f2d6"
+  },
+  {
+   "id": "047619a1-4224-4c04-aebf-a4bec85d4131",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "604717015ac4339e125123d940a4f02fbb0bde438b09751287345f1f8c54c25f",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-28T09:00:00-06:00",
+   "cargada_por": "persona38@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/b4911a5b-1aa9-4e14-a874-b7cd82282c1a/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "b4911a5b-1aa9-4e14-a874-b7cd82282c1a"
+  },
+  {
+   "id": "b3263dd3-6bf5-49cc-a8d1-74964717d587",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "15172c7825ce530090a61419a5e2aad371a889c3402bfe03b4721945123f978e",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-07T09:00:00-06:00",
+   "cargada_por": "persona44@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/b67eb5d7-c863-4900-a9d0-e4f3719bca06/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "b67eb5d7-c863-4900-a9d0-e4f3719bca06"
+  },
+  {
+   "id": "aa6af60d-fffc-41a4-a70e-9f08780c6cdf",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "bade21c00bc8b2d79357f5ec3d33740f775826cb82c0edf8920d6d6addf20768",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona10@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/b758208c-1561-4de7-a555-ca182e501e14/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "b758208c-1561-4de7-a555-ca182e501e14"
+  },
+  {
+   "id": "c2edc959-9e76-4baa-a66a-cacd64846ee7",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "6a1f1a00146d78d3e80faf6b0354e58c0cabd96e3f9de42b178214d804c2f053",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona09@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/c16b4c47-728c-4910-a5b9-efe26efe0d46/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "c16b4c47-728c-4910-a5b9-efe26efe0d46"
+  },
+  {
+   "id": "ae6a3284-6f7e-4498-ae79-ec28e61df4cb",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "8329b69a5b311d4c187770f5a04d690f6b7f6e791997336b3ec17d53b1a77258",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona02@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/c37c7829-b41c-4d37-a7d0-44d2628cb21e/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "c37c7829-b41c-4d37-a7d0-44d2628cb21e"
+  },
+  {
+   "id": "a9c57286-c218-4e6b-a4cd-9891339b01a4",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "73c658d4daa14107ec00696ed969592ae483cc63c5ddbf933d89127b2abcb9b3",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-21T09:00:00-06:00",
+   "cargada_por": "persona27@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/c52ae32f-f47f-480b-aa40-d3940ce006d4/foto-1.jpg",
+   "confirmada_en": "2026-09-30T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "c52ae32f-f47f-480b-aa40-d3940ce006d4"
+  },
+  {
+   "id": "14992b88-450a-40b1-aff2-59cd746d31f5",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "d3d4f147b66a14859703bbe9041c94923fc81060357bc5e7f5fe964f259e8107",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-06T09:00:00-06:00",
+   "cargada_por": "persona43@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/c5f9d9aa-c874-46d3-a037-9d273f6aa2e5/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "c5f9d9aa-c874-46d3-a037-9d273f6aa2e5"
+  },
+  {
+   "id": "82466941-9da7-41b8-ab39-83ca494b74b0",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "ace941838f88b0fe24915cf2b7f8e8f663a7cd74bd80a3ba844b2d1351a7ad93",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-08-03T09:00:00-06:00",
+   "cargada_por": "persona08@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/e3ab3c6d-4b36-48eb-adbd-b0d002923d93/foto-1.jpg",
+   "confirmada_en": "2026-08-18T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93"
+  },
+  {
+   "id": "d05306ed-506b-4306-aa0d-99c431200303",
+   "estado": "confirmada",
+   "origen": "en_linea",
+   "sha256": "16c65b7753e352d1dfd234bd159509543a9a1e3701baf973ab06bf85ad09d829",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-28T09:00:00-06:00",
+   "cargada_por": "persona34@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/eda1b6b4-6960-4da1-a106-f775cf1679e1/foto-1.jpg",
+   "confirmada_en": "2026-10-06T10:30:00-06:00",
+   "confirmada_por": "cotejo.ficticio",
+   "solicitante_id": "eda1b6b4-6960-4da1-a106-f775cf1679e1"
+  },
+  {
+   "id": "911831f2-d1b1-443d-a02e-f970ca6d473a",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "3df7a975e0d40af3e59bea94865fead39e18968d4e3fbb73d13bc36362b0a77f",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-10-12T08:45:00-06:00",
+   "cargada_por": "persona12@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/f6e48496-1699-4b15-af4a-e4270249e05f/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "solicitante_id": "f6e48496-1699-4b15-af4a-e4270249e05f"
+  }
+ ],
  "inscripcion": [
   {
    "id": "21d68ea6-4238-4749-a6bd-f7b272c48608",
@@ -11276,6 +12492,14 @@
   },
   {
    "nota": "",
+   "orden": 89,
+   "modalidad": "nueva",
+   "requisito": "foto_credencial",
+   "obligatorio": true,
+   "tipo_acreditacion": "dictaminador"
+  },
+  {
+   "nota": "",
    "orden": 90,
    "modalidad": "nueva",
    "requisito": "acuse_entrega",
@@ -11372,6 +12596,14 @@
   },
   {
    "nota": "",
+   "orden": 89,
+   "modalidad": "renovacion",
+   "requisito": "foto_credencial",
+   "obligatorio": true,
+   "tipo_acreditacion": "dictaminador"
+  },
+  {
+   "nota": "",
    "orden": 90,
    "modalidad": "renovacion",
    "requisito": "acuse_entrega",
@@ -11415,6 +12647,14 @@
    "orden": 5,
    "modalidad": "nueva",
    "requisito": "factura_pago",
+   "obligatorio": true,
+   "tipo_acreditacion": "poda"
+  },
+  {
+   "nota": "",
+   "orden": 89,
+   "modalidad": "nueva",
+   "requisito": "foto_credencial",
    "obligatorio": true,
    "tipo_acreditacion": "poda"
   },
@@ -11471,6 +12711,14 @@
    "orden": 6,
    "modalidad": "renovacion",
    "requisito": "poda_anterior",
+   "obligatorio": true,
+   "tipo_acreditacion": "poda"
+  },
+  {
+   "nota": "",
+   "orden": 89,
+   "modalidad": "renovacion",
+   "requisito": "foto_credencial",
    "obligatorio": true,
    "tipo_acreditacion": "poda"
   },

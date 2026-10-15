@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
 <link rel="stylesheet" href="formkit/modulos/acuse/acuse.css">
 <link rel="stylesheet" href="formkit/modulos/copiar/copiar.css">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
 <link rel="stylesheet" href="app/version-visible.css?v=0.1">
 <link rel="stylesheet" href="app/apd.css?v=0.1">
 </head>
@@ -32,7 +33,7 @@
 
   <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
     <h2 class="titulo-paso">Crea tu cuenta</h2>
-    <p class="bajada">Una cuenta por persona, ligada a tu CURP. Escribe tus datos tal como aparecen en ella: el sistema comprueba que la CURP corresponda a tu nombre y a tu fecha de nacimiento. Si ya tuviste una acreditación de la Secretaría, al crear tu cuenta la verás en tu historial.</p>
+    <p class="bajada">Una cuenta por persona, ligada a tu CURP. Escribe tus datos tal como aparecen en ella: el sistema comprueba que la CURP corresponda a tu nombre y a tu fecha de nacimiento. Ten a la mano una fotografía de frente o tómala con tu teléfono. Si ya tuviste una acreditación de la Secretaría, al crear tu cuenta la verás en tu historial.</p>
     <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
 
     <div class="campo" data-campo="nombre" data-formato="nombre" data-requerido data-sensible
@@ -82,6 +83,28 @@
       <p class="ayuda">Debe corresponder a tu nombre, tus apellidos y tu fecha de nacimiento. Con ella entras a tu cuenta; si te equivocas, sólo la Secretaría la corrige.</p>
       <!-- autocomplete off: el navegador no tiene un valor de autocompletado para la CURP; se escribe cada vez. -->
       <input class="control" id="curp" name="curp" type="text" maxlength="18" autocomplete="off" spellcheck="false">
+    </div>
+
+    <!-- Fotografía de frente (decisión 2026-10-14): obligatoria. No es la de la credencial, que se toma al entregarla.
+         Sólo imagen; en el teléfono, la cámara frontal (capture="user"). La ubicación de la foto no viaja (EXIF desactivado). -->
+    <div class="campo" data-campo="foto" data-requerido data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
+         data-finalidad="Reconocer a la persona en la cita de cotejo, en el curso y en el examen." data-uso="Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.">
+      <span class="etiqueta" id="et-foto">Fotografía de frente</span>
+      <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Con ella te reconocen en la cita, el curso y el examen. La foto de tu credencial es otra: te la toman cuando la recoges.</p>
+      <div data-archivos>
+        <button type="button" class="zona-carga" aria-describedby="ay-foto">
+          <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+          <span class="zona-carga-texto">Elegir fotografía</span>
+          <span class="zona-carga-limite" data-limite-texto></span>
+        </button>
+        <button type="button" class="btn btn-secundario zona-camara" data-camara hidden>Tomar fotografía</button>
+        <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+        <input type="file" hidden autocomplete="off">
+        <!-- autocomplete off: es la cámara frontal del teléfono; no hay nada que proponer. -->
+        <input type="file" accept="image/*" capture="user" hidden data-entrada-camara autocomplete="off">
+        <div data-rechazos></div>
+        <ul class="lista-arch"></ul>
+      </div>
     </div>
 
     <div class="fila">
@@ -163,7 +186,7 @@
 
 <dialog class="dialogo" id="dialogo-privacidad" aria-labelledby="titulo-privacidad">
   <h2 class="titulo-bloque dialogo-titulo" id="titulo-privacidad">Aviso de privacidad simplificado</h2>
-  <p class="priv-parrafo">La Secretaría del Medio Ambiente recaba tu nombre, CURP, correo y teléfono para crear tu cuenta, tramitar tu acreditación, avisarte el avance y llevar el padrón de personas acreditadas.</p>
+  <p class="priv-parrafo">La Secretaría del Medio Ambiente recaba tu nombre, CURP, fotografía de frente, correo y teléfono para crear tu cuenta, tramitar tu acreditación, reconocerte en la cita, el curso y el examen, avisarte el avance y llevar el padrón de personas acreditadas. Al entregarte la credencial te toma otra fotografía, que es la que se imprime en ella.</p>
   <p class="priv-parrafo">Fundamento: <span class="pendiente">[Art. __, fracc. __]</span>. Pendiente: lo completa la Unidad de Transparencia.</p>
   <div class="dialogo-cierre"><button type="button" class="btn btn-primario" data-cierra-dialogo>Cerrar</button></div>
 </dialog>
@@ -178,6 +201,7 @@
 <script src="formkit/modulos/tooltip/tooltip.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
+<script src="formkit/modulos/archivos/archivos.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>
 <script src="app/auxiliar.js?v=0.1"></script>
 <script src="app/cuenta.js?v=0.1"></script>

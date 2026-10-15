@@ -21,9 +21,9 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Paso | Lo mueve | La base exige |
 |---|---|---|
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
-| → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador. La elegibilidad no se vuelve a comprobar |
+| → enviada | Persona solicitante | Documentos obligatorios en línea; perfil académico si es dictaminador; fotografía de frente de la persona. La elegibilidad no se vuelve a comprobar |
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada |
-| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados. Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
+| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la persona confirmada por el personal (o tomada ahí). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
@@ -80,8 +80,14 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
   formularios del SIA (`apd.curp_valida`). La base no acepta una CURP que el formulario rechazaría.
 - **Bitácora**: cada alta y cambio de estado queda con quién, cuándo y desde dónde. No se edita ni se borra,
   ni siquiera por la administración.
-- **Documentos**: los de la solicitud los carga la persona; los de la cita (la factura en PDF) y el acuse de
-  entrega firmado los carga el personal y quedan aceptados. Sin acuse no se registra la entrega. Sólo PDF, JPG o PNG, de hasta 5 MB.
+- **Documentos**: los de la solicitud los carga la persona; los de la cita (la factura en PDF) y los de la
+  entrega (la fotografía de la credencial, tomada en el lugar, y el comprobante de recepción firmado) los carga
+  el personal y quedan aceptados. Sin los dos no se registra la entrega. Cada requisito dice qué formatos
+  admite (PDF, JPG o PNG; la fotografía, sólo imagen), de hasta 5 MB.
+- **Fotografía de la persona** (`apd.fotografia`): una vigente por persona, sólo JPG o PNG. La persona la carga
+  al crear su cuenta y la cambia mientras nadie la confirme; en el cotejo la confirma el personal (con su
+  usuario y fecha, en la bitácora) o toma una nueva, que queda confirmada. Ya confirmada, sólo el personal
+  carga otra. No se modifica ni se borra: la nueva sustituye a la anterior.
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
   anterior sin borrarlo.
 - **La hora** sale de `apd.ahora()`. Sólo en una base de pruebas se puede simular; en producción, simularla
@@ -92,7 +98,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 82 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 92 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y
