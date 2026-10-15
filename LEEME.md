@@ -65,6 +65,7 @@ npm run probar-esquemas -- <ruta-al-estandar>       # esquemas del servidor y su
 (cd sitio && python3 -m http.server 8765) &         # cualquier servidor estático
 AXE=<ruta-al-estandar>/vendor/axe-core/axe.min.js npm run probar-sitio   # teléfono y escritorio, consola, accesibilidad, capturas
 bash herramientas/publicar-sitio.sh                 # gh-pages = sitio/ (después del commit en main)
+node herramientas/construir-artefacto.mjs <carpeta> # la misma versión de prueba como artefacto de Claude
 ```
 
 ## Lo que este proyecto toca del SIA

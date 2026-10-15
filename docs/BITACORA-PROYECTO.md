@@ -162,3 +162,9 @@ borrado de prueba en su guardado.
 
 **Eliminado**: la pregunta «¿Tienes segundo apellido?» y la cruzada sobre su respuesta; el campo de cuatro
 opciones «Trámite».
+
+## 2026-10-14 · Bloque 11 · Versión de prueba dentro de Claude
+
+- `herramientas/construir-artefacto.mjs` arma desde `sitio/` una copia para publicarse como artefacto «Acreditaciones
+  de arbolado» (la página principal abre `inicio.html`, porque el artefacto reserva `index.html`). Se vuelve a
+  publicar cada vez que se publica GitHub Pages.
