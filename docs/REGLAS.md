@@ -85,7 +85,8 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Documentos**: los de la solicitud los carga la persona; los de la cita (la factura en PDF) y los de la
   entrega (la fotografía de la credencial, tomada en el lugar, y el comprobante de recepción firmado) los carga
   el personal y quedan aceptados. Sin los dos no se registra la entrega. Cada requisito dice qué formatos
-  admite (PDF, JPG o PNG; la fotografía, sólo imagen), de hasta 5 MB.
+  admite (`requisito.formatos`): los documentos, sólo PDF; las fotografías, sólo JPG o PNG; hasta 5 MB. Un
+  requisito puede llevar el enlace oficial para obtenerlo (`enlace`, `enlace_texto`; hoy, la CURP en gob.mx).
 - **Nombre de los archivos** (`apd.nombre_de_archivo`): al cargarse, cada documento y fotografía se guarda como
   `TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext` (el tipo sale de `requisito.nombre_archivo`; si falta, del nombre del
   requisito). El nombre original se conserva en `nombre_original`. Ninguno de los dos se cambia después.
@@ -109,7 +110,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 102 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 104 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y

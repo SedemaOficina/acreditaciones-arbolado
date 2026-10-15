@@ -564,6 +564,16 @@
       "titulo": "Personas independientes",
       "como": "«No, soy independiente» es una respuesta explícita de la adscripción",
       "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Formato de los documentos",
+      "como": "Sólo PDF en lo que carga la persona; las fotografías siguen siendo imagen",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Enlace para obtener la CURP",
+      "como": "gob.mx/curp en el requisito, en la lista de requisitos y en el campo CURP de la cuenta",
+      "fecha": "2026-10-15"
     }
   ]
 }

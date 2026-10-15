@@ -131,14 +131,19 @@ const casos = [
      VALUES ('00000000-0000-4000-a000-000000000032', '00000000-0000-4000-a000-000000000031', 'poda', 'nueva');
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
      VALUES ('00000000-0000-4000-a000-000000000032', 'curp', 'prueba/curp', 'escaneo 0042 final.PDF', 'application/pdf', 1000, repeat('a', 64)),
-            ('00000000-0000-4000-a000-000000000032', 'identificacion_oficial', 'prueba/ine', 'IMG_2231.jpeg', 'image/jpeg', 1000, repeat('a', 64));
+            ('00000000-0000-4000-a000-000000000032', 'identificacion_oficial', 'prueba/ine', 'INE escaneada.pdf', 'application/pdf', 1000, repeat('a', 64));
      ${FOTO("'00000000-0000-4000-a000-000000000031'", 'image/png')}
      DO $$ BEGIN
        ASSERT (SELECT nombre_archivo FROM apd.documento WHERE archivo_clave = 'prueba/curp') = 'CURP_MARIA JOSE PEÑA GUEMES.pdf';
-       ASSERT (SELECT nombre_archivo FROM apd.documento WHERE archivo_clave = 'prueba/ine') = 'IDENTIFICACION OFICIAL_MARIA JOSE PEÑA GUEMES.jpg';
+       ASSERT (SELECT nombre_archivo FROM apd.documento WHERE archivo_clave = 'prueba/ine') = 'IDENTIFICACION OFICIAL_MARIA JOSE PEÑA GUEMES.pdf';
        ASSERT (SELECT nombre_original FROM apd.documento WHERE archivo_clave = 'prueba/curp') = 'escaneo 0042 final.PDF';
        ASSERT (SELECT nombre_archivo FROM apd.fotografia WHERE solicitante_id = '00000000-0000-4000-a000-000000000031') = 'FOTOGRAFIA_MARIA JOSE PEÑA GUEMES.png';
      END $$;`],
+  ['Los documentos que carga la persona sólo se aceptan en PDF', { codigo: 'formato_no_admitido' }, null, `
+     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+     VALUES (${BORRADOR}, 'curp', 'prueba/foto-curp', 'curp.jpg', 'image/jpeg', 1000, repeat('a', 64));`],
+  ['La CURP trae el enlace oficial para obtenerla', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT enlace = 'https://www.gob.mx/curp/' FROM apd.requisito WHERE clave = 'curp'); END $$;`],
   ['El nombre con que se guardó un archivo no se cambia', { sqlstate: '42501' }, null, `
      UPDATE apd.documento SET nombre_archivo = 'otro.pdf' WHERE solicitud_id = ${BORRADOR};`],
   // ── Fotografía de frente de la persona (decisión 2026-10-14) ──

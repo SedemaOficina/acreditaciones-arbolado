@@ -60,12 +60,15 @@ CREATE TABLE apd.requisito (
   descripcion                text          NOT NULL DEFAULT '',
   forma                      text          NOT NULL,
   momento                    text          NOT NULL,
+  enlace                     text          NULL,
+  enlace_texto               text          NULL,
   nombre_archivo             text          NULL,
   formatos                   text[]        NOT NULL DEFAULT ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[],
   activo                     boolean       NOT NULL DEFAULT true,
   CONSTRAINT requisito_pk PRIMARY KEY (clave),
   CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro')),
   CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega')),
+  CONSTRAINT requisito_enlace_ck CHECK ((enlace IS NULL) = (enlace_texto IS NULL) AND (enlace IS NULL OR enlace ~ '^https://')),
   CONSTRAINT requisito_nombre_archivo_ck CHECK (nombre_archivo IS NULL OR nombre_archivo ~ '^[A-Z0-9Ñ ]+$'),
   CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])
 );
@@ -75,6 +78,8 @@ COMMENT ON COLUMN apd.requisito.nombre IS 'Nombre visible';
 COMMENT ON COLUMN apd.requisito.descripcion IS 'Características que debe cumplir';
 COMMENT ON COLUMN apd.requisito.forma IS 'documento: se carga un archivo; registro: el sistema lo comprueba en el padrón';
 COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial)';
+COMMENT ON COLUMN apd.requisito.enlace IS 'Dirección oficial donde la persona obtiene el documento (por ejemplo, la CURP en gob.mx); se muestra con el requisito';
+COMMENT ON COLUMN apd.requisito.enlace_texto IS 'Texto del enlace';
 COMMENT ON COLUMN apd.requisito.nombre_archivo IS 'Tipo de documento con que se nombra el archivo guardado (por ejemplo CURP o IDENTIFICACION OFICIAL), en mayúsculas y sin acentos; si está vacío se usa el nombre del requisito';
 COMMENT ON COLUMN apd.requisito.formatos IS 'Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen';
 COMMENT ON COLUMN apd.requisito.activo IS 'Si se pide en solicitudes nuevas';

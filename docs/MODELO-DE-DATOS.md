@@ -82,6 +82,8 @@ Catálogo de requisitos. Un requisito es un documento que se carga o un registro
 | `descripcion` | `text` | Sí | Características que debe cumplir (por omisión: `''`) |
 | `forma` | `text` | Sí | documento: se carga un archivo; registro: el sistema lo comprueba en el padrón |
 | `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial) |
+| `enlace` | `text` | No | Dirección oficial donde la persona obtiene el documento (por ejemplo, la CURP en gob.mx); se muestra con el requisito |
+| `enlace_texto` | `text` | No | Texto del enlace |
 | `nombre_archivo` | `text` | No | Tipo de documento con que se nombra el archivo guardado (por ejemplo CURP o IDENTIFICACION OFICIAL), en mayúsculas y sin acentos; si está vacío se usa el nombre del requisito |
 | `formatos` | `text[]` | Sí | Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen (por omisión: `ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[]`) |
 | `activo` | `boolean` | Sí | Si se pide en solicitudes nuevas (por omisión: `true`) |
@@ -91,6 +93,7 @@ Restricciones e índices:
 - `CONSTRAINT requisito_pk PRIMARY KEY (clave)`
 - `CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))`
 - `CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))`
+- `CONSTRAINT requisito_enlace_ck CHECK ((enlace IS NULL) = (enlace_texto IS NULL) AND (enlace IS NULL OR enlace ~ '^https://'))`
 - `CONSTRAINT requisito_nombre_archivo_ck CHECK (nombre_archivo IS NULL OR nombre_archivo ~ '^[A-Z0-9Ñ ]+$')`
 - `CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])`
 

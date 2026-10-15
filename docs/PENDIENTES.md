@@ -123,3 +123,5 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Mis datos | Pantalla para consultar los datos ligados a la CURP y cambiar contacto, adscripción y, mientras no esté confirmada, la fotografía | 15/10/2026 |
 | Sexo en datos generales | Se toma de la CURP y se muestra de sólo lectura; no se pregunta aparte | 15/10/2026 |
 | Personas independientes | «No, soy independiente» es una respuesta explícita de la adscripción | 15/10/2026 |
+| Formato de los documentos | Sólo PDF en lo que carga la persona; las fotografías siguen siendo imagen | 15/10/2026 |
+| Enlace para obtener la CURP | gob.mx/curp en el requisito, en la lista de requisitos y en el campo CURP de la cuenta | 15/10/2026 |

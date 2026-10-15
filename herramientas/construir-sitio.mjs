@@ -71,6 +71,11 @@ window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
 const limpia = (t) => String(t || '').replace(/\s*\[pendiente[^\]]*\][^.]*\.?/gi, '').trim();
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const requisito = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
+// Formatos de cada requisito, de la base (los que carga la persona: sólo PDF, decisión 2026-10-15)
+const EXT = { 'application/pdf': ['pdf'], 'image/jpeg': ['jpg', 'jpeg'], 'image/png': ['png'] };
+const extensionesDe = (r) => (r.formatos || ['application/pdf']).flatMap((m) => EXT[m] || []).join(',');
+// Dónde obtener el documento (p. ej. la CURP en gob.mx): se abre en otra pestaña y lo dice
+const enlaceDe = (r) => (r.enlace ? ` <a href="${esc(r.enlace)}" target="_blank" rel="noopener">${esc(r.enlace_texto)}<span class="solo-lector"> (se abre en otra pestaña)</span></a>.` : '');
 const cursos = [['poda', 'nueva'], ['poda', 'renovacion'], ['dictaminador', 'nueva'], ['dictaminador', 'renovacion']];
 const bloques = [];
 for (const [tipo, modalidad] of cursos) {
@@ -81,10 +86,10 @@ for (const [tipo, modalidad] of cursos) {
     const r = requisito[rc.requisito];
     const nombre = `doc_${tipo}_${modalidad}_${rc.requisito}`;
     const nota = limpia(rc.nota) ? ` ${limpia(rc.nota)}` : '';
-    return `          <div class="campo" data-campo="${nombre}"${rc.obligatorio ? ' data-requerido' : ''} data-max="1" data-extensiones="pdf,jpg,jpeg,png" data-mb="5"
+    return `          <div class="campo" data-campo="${nombre}"${rc.obligatorio ? ' data-requerido' : ''} data-max="1" data-extensiones="${extensionesDe(r)}" data-mb="5"
                data-uso="Comprobar el requisito «${esc(r.nombre)}» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-${nombre}">${esc(r.nombre)}${rc.obligatorio ? '' : ' (si aplica)'}</span>
-            <p class="ayuda" id="ay-${nombre}">${esc(limpia(r.descripcion))}${esc(nota)}</p>
+            <p class="ayuda" id="ay-${nombre}">${esc(limpia(r.descripcion))}${esc(nota)}${enlaceDe(r)}</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-${nombre}">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>

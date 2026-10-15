@@ -12,7 +12,7 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento, CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), sexo (tomado de la CURP, sólo lectura), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, adscripción (fragmento compartido con «Mis datos»), contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, opciones, otro, combo, tooltip, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. Caja de personas de ejemplo (sólo versión de prueba) | identificadores |
 | `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado, qué sigue, cita con datos de pago y aviso de llevar la identificación para confirmar la fotografía, expediente de la persona, grupo, observaciones, asistencia y calificación, lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
-| `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), la adscripción con que se enviará (se cambia en «Mis datos»), perfil del dictaminador · **Documentos** (generados del catálogo; avisa con qué nombre se guarda cada archivo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
+| `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), la adscripción con que se enviará (se cambia en «Mis datos»), perfil del dictaminador · **Documentos** (generados del catálogo; sólo PDF; la CURP con su enlace a gob.mx; avisa con qué nombre se guarda cada archivo) · **Revisión**, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
 | `datos.html` | Una página | «Mis datos»: nombre, CURP, fecha de nacimiento, sexo y expediente de sólo lectura (los corrige la Secretaría); correo (con confirmación), teléfono, adscripción (¿trabajas para alguien? —«No, soy independiente»—; tipo; según el tipo: nombre de la empresa, dependencia de la Ciudad y Dirección General si es la SEDEMA, alcaldía o dependencia federal) y, mientras no esté confirmada, cambiar la fotografía. `?volver=` regresa a la solicitud | opciones, otro, combo, archivos, acuse |
 | `verificar.html` | Una página | Verificación pública por número de acreditación: nombre, tipo, fechas y «Vigente / No vigente» | identificadores |
 
@@ -48,7 +48,7 @@ Orden de carga en cada página (contrato del estándar):
 | `app/curp-nombre.js` | Validaciones cruzadas propias `curp-nombre`, `curp-segundo-apellido` y `curp-sin-segundo-apellido` (iniciales y consonantes de la CURP contra nombre y apellidos). Se cargan antes de la configuración; el servidor las usa con `validaPayload(…, { config })` |
 | `app/config-cuenta.js` | Suma las cruzadas propias (`FORMKIT_CONFIG.cruzadas`). Envío simulado: CURP con cuenta → rechazo con motivo; CURP del registro de Kobo → activa y muestra historial; nueva → cuenta |
 | `app/config-entrar.js` | Acceso simulado (contraseña ficticia común) y regreso a la pantalla pedida |
-| `app/config-solicitud.js` | `archivos`: 5 MB, PDF/JPG/PNG, 1 por documento (parámetro de la base y tipos de `apd.documento`). Envío simulado con folio `APD-S-AAAA-NNNNN` |
+| `app/config-solicitud.js` | `archivos`: 5 MB, sólo PDF, 1 por documento (parámetro de la base y `apd.requisito.formatos`). Envío simulado con folio `APD-S-AAAA-NNNNN` |
 | `app/config-verificar.js` | Consulta a la vista `apd.verificacion_publica` |
 | `datos/catalogos.js` | Las 16 alcaldías (generado del catálogo inicial de la base) |
 
@@ -62,7 +62,7 @@ node herramientas/probar-esquemas.mjs <ruta-al-estandar>
 ```
 
 Regenera `db/esquemas-formularios/<formulario>.json` con `herramientas/esquema-desde-html.mjs` del estándar
-y prueba 35 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; cuenta sin fotografía o con la fotografía en PDF, CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
+y prueba 36 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; cuenta sin fotografía o con la fotografía en PDF, CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
 confirmaciones distintas, contraseña corta, documentos faltantes por trámite y valores fuera de rango se
 rechazan). En la etapa 3 la API:
 
@@ -111,13 +111,13 @@ rechazan). En la etapa 3 la API:
 
 Automática (Chromium 390 × 844 táctil y 1280 × 900):
 
-- `herramientas/probar-sitio.mjs`: **131 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
+- `herramientas/probar-sitio.mjs`: **137 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
   solicitud de poda nueva, renovación, dictaminador nueva con perfil y 8 documentos, corrección de observaciones
   (sólo lo observado es obligatorio), grupo asignado, error de acceso, verificación vigente y no vigente,
   fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas; sin errores de consola ni desborde horizontal; **axe-core sin hallazgos** en 8 pantallas.
 - `auditar-campos.mjs`: 74 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
 - `auditor-css.mjs` sobre `apd.css` y `version-visible.css`: 0 hallazgos.
-- `probar-esquemas.mjs`: 35 de 35. `probar-base.sh`: 102 de 102.
+- `probar-esquemas.mjs`: 36 de 36. `probar-base.sh`: 104 de 104.
 - Capturas en `verificacion/capturas/` (10 pantallas × 2 anchos).
 
 Lista para personas (`docs/08` del estándar, sección 2) — **pendiente**, no se pudo hacer en el entorno de construcción:

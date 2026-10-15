@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-15T14:51:04.377Z",
+  "generado": "2026-10-15T20:20:46.087Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -110,7 +110,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -130,7 +130,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -150,7 +150,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -170,7 +170,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -190,7 +190,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -210,7 +210,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -230,7 +230,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -250,7 +250,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -270,7 +270,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -290,7 +290,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -310,7 +310,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -330,7 +330,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -350,7 +350,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -370,7 +370,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -390,7 +390,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -410,7 +410,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -430,7 +430,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -450,7 +450,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -470,7 +470,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -490,7 +490,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -510,7 +510,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -530,7 +530,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -550,7 +550,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",
@@ -570,7 +570,7 @@
       "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
       "atributos": {
         "max": "1",
-        "extensiones": "pdf,jpg,jpeg,png",
+        "extensiones": "pdf",
         "mb": "5"
       },
       "autocomplete": "off",

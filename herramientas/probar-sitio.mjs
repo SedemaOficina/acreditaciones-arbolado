@@ -225,6 +225,11 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/Independiente/.test(await page.textContent('[data-adscripcion-texto]')),
     t('solicitud: muestra la adscripción de la persona con la que se enviará (se cambia en «Mis datos»)'));
   await siguiente(page);
+  comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
+    t('documentos: la CURP trae el enlace oficial para obtenerla'));
+  comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"]', 'data-extensiones') === 'pdf', t('documentos: sólo se aceptan en PDF'));
+  await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', FOTO);
+  comprueba(await page.locator('[data-campo="doc_poda_nueva_curp"] [data-rechazos] *').count() > 0, t('documentos: una imagen se rechaza con su motivo'));
   comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(await page.textContent('[data-ejemplo-archivo]')),
     t(`documentos: dice cómo se guardarán sus archivos (${await page.textContent('[data-ejemplo-archivo]')})`));
   const n = await cargaObligatorios(page);

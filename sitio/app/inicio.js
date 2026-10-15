@@ -32,7 +32,11 @@
           const nota = APD.limpia(rc.nota) ? ` ${APD.limpia(rc.nota)}` : '';
           return el('li', {}, [
             el('strong', { texto: r.nombre + (rc.obligatorio ? '' : ' (si aplica)') }),
-            document.createTextNode(`. ${APD.limpia(r.descripcion)}${nota}${cuando}`)
+            document.createTextNode(`. ${APD.limpia(r.descripcion)}${nota}${cuando}`),
+            // Dónde obtenerlo (p. ej. la CURP en gob.mx), en otra pestaña
+            r.enlace ? document.createTextNode(' ') : null,
+            r.enlace ? el('a', { href: r.enlace, target: '_blank', rel: 'noopener' }, [document.createTextNode(r.enlace_texto), el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })]) : null,
+            r.enlace ? document.createTextNode('.') : null
           ]);
         }));
         const curso = c ? el('p', { class: 'texto-gris', texto: `Curso de ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; asistencia mínima de ${c.dias_minimos_asistencia} ${c.dias_minimos_asistencia === 1 ? 'día' : 'días'}; calificación mínima del examen: ${Number(c.calificacion_minima).toFixed(1)}. Pago de derechos: ${c.pago_monto != null ? Number(c.pago_monto).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : 'pendiente de la Gaceta Oficial'}.` }) : null;

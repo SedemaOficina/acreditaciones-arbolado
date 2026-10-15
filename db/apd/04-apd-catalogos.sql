@@ -158,3 +158,12 @@ UPDATE apd.requisito SET nombre_archivo = v.nombre_archivo
                ('foto_credencial',             'FOTOGRAFIA CREDENCIAL'),
                ('acuse_entrega',               'COMPROBANTE DE RECEPCION')) AS v (clave, nombre_archivo)
  WHERE apd.requisito.clave = v.clave;
+
+-- Los documentos que carga la persona al solicitar, sólo en PDF (decisión 2026-10-15, Liber). Las fotografías siguen
+-- siendo imagen y la factura y el comprobante de recepción ya eran PDF.
+UPDATE apd.requisito SET formatos = ARRAY['application/pdf'] WHERE forma = 'documento' AND momento = 'en_linea';
+UPDATE apd.requisito SET formatos = ARRAY['application/pdf'] WHERE clave IN ('factura_pago', 'acuse_entrega');
+
+-- Dónde se obtiene un documento (decisión 2026-10-15, Liber): la CURP se consulta y descarga en gob.mx.
+UPDATE apd.requisito SET enlace = 'https://www.gob.mx/curp/', enlace_texto = 'Consulta y descarga tu CURP en gob.mx'
+ WHERE clave = 'curp';

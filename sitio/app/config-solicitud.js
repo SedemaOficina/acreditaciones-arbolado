@@ -4,7 +4,7 @@
    Se carga ANTES que el núcleo. Sólo lo que cambia respecto de
    validaciones.config.js:
      · archivos: 5 MB por archivo (parámetro tamano_maximo_archivo_bytes de
-       la base) y sólo PDF, JPG y PNG (los tipos que admite apd.documento).
+       la base) y sólo PDF (apd.requisito.formatos de lo que carga la persona; decisión 2026-10-15).
    El catálogo de alcaldías lo da datos/catalogos.js (generado de apd.organizacion).
 
    Adscripción (decisiones 2026-10-15). La API convierte las respuestas en solicitud.adscripcion y
@@ -28,7 +28,7 @@
    ?simular=error | limite | lento muestra cada pantalla de fallo.
    ========================================================= */
 window.FORMKIT_CONFIG = {
-  archivos: { mb: 5, extensiones: ['pdf', 'jpg', 'jpeg', 'png'], max: 1 }
+  archivos: { mb: 5, extensiones: ['pdf'], max: 1 }
 };
 
 window.FORMKIT_OPCIONES = {

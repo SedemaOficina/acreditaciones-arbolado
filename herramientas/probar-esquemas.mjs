@@ -91,6 +91,8 @@ const docs = (t, lista) => Object.fromEntries(lista.map((r) => [`doc_${t}_${r}`,
 const base = { aviso: 'si', humano: 'si' };
 const podaNueva = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
 caso('Solicitud poda nueva con sus 4 documentos se acepta', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, true, podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
+caso('Solicitud con un documento en JPG se rechaza: sólo PDF', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, ['doc_poda_nueva_curp'],
+  podaNueva.map((r) => (r === 'curp' ? { nombre: 'curp.jpg', size: 200000, type: 'image/jpeg', campo: 'doc_poda_nueva_curp' } : pdf(`doc_poda_nueva_${r}`))));
 caso('Solicitud poda nueva sin documentos pide sólo los de poda nueva', 'solicitud', { ...base, tipo: 'poda' }, podaNueva.map((r) => `doc_poda_nueva_${r}`));
 caso('Solicitud dictaminador nueva sin perfil ni documentos pide perfil y sus 8 documentos', 'solicitud', { ...base, tipo: 'dictaminador' },
   ['perfil_academico', 'carrera', 'anios_experiencia', ...['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia', 'constancias_capacitacion'].map((r) => `doc_dictaminador_nueva_${r}`)]);

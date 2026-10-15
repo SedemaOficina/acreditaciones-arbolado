@@ -185,7 +185,7 @@ function recargar(s, fecha, requisito) {
   en(fecha, '18:00');
   como(s.persona.correo, 'solicitante');
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
-  VALUES (${q(uuid(`doc2:${s.id}:${requisito}`))}, ${q(s.id)}, ${q(requisito)}, ${q(`ficticio/${s.id}/${requisito}-v2.jpg`)}, ${q(requisito + '-corregido.jpg')}, 'image/jpeg', 642118,
+  VALUES (${q(uuid(`doc2:${s.id}:${requisito}`))}, ${q(s.id)}, ${q(requisito)}, ${q(`ficticio/${s.id}/${requisito}-v2.pdf`)}, ${q(requisito + '-corregido.pdf')}, 'application/pdf', 642118,
     encode(sha256(convert_to(${q(s.id + requisito + 'v2')}, 'UTF8')), 'hex'))`);
 }
 

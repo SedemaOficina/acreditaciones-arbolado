@@ -228,3 +228,14 @@ accesibilidad sin hallazgos; 59 campos correctos en el auditor.
 
 **Verificado**: 102 de 102 pruebas de la base; 35 casos en el servidor; 131 comprobaciones del sitio,
 accesibilidad sin hallazgos (también en «Mis datos»); 74 campos correctos en el auditor.
+
+## 2026-10-15 · Bloque 16 · Documentos sólo en PDF y enlace a la CURP
+
+- Lo que carga la persona en la solicitud se acepta sólo en PDF: `requisito.formatos` en la base, `data-extensiones`
+  generado de ahí y la configuración del formulario. La pantalla sugiere convertir una foto con el escáner del
+  teléfono. Las fotografías siguen siendo imagen.
+- Enlace oficial para obtener la CURP (gob.mx/curp) en el requisito (columnas `enlace` y `enlace_texto`), en la
+  lista de requisitos del inicio y en el campo CURP de «Crea tu cuenta»; se abre en otra pestaña y lo dice.
+
+**Verificado**: 104 de 104 pruebas de la base; 36 casos en el servidor; 137 comprobaciones del sitio,
+accesibilidad sin hallazgos.
