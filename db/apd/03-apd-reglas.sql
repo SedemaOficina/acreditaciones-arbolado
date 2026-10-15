@@ -142,6 +142,15 @@ END $$;
 CREATE TRIGGER organizacion_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.organizacion
   FOR EACH ROW EXECUTE FUNCTION apd.organizacion_normalizar();
 
+-- La institución de la solicitud es del tipo de adscripción que la persona eligió (decisión 2026-10-15)
+CREATE FUNCTION apd.comprobar_adscripcion(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  IF s.organizacion_id IS NOT NULL
+     AND (SELECT o.tipo FROM apd.organizacion o WHERE o.id = s.organizacion_id) IS DISTINCT FROM s.adscripcion THEN
+    PERFORM apd.error('adscripcion_no_coincide', 'La institución elegida no es del tipo de adscripción indicado');
+  END IF;
+END $$;
+
 -- ───────────────────────────── Cuentas de solicitantes ─────────────────────────────
 
 -- Expediente físico: uno por persona (por CURP), para todos sus trámites (decisión 2026-10-14, Liber).
@@ -167,6 +176,19 @@ END $$;
 CREATE FUNCTION apd.mayusculas(t text) RETURNS text
   LANGUAGE sql IMMUTABLE AS $f$
   SELECT nullif(upper(translate(regexp_replace(trim(t), '\s+', ' ', 'g'), 'áéíóúüñàèìòù', 'ÁÉÍÓÚÜÑÀÈÌÒÙ')), '')
+$f$;
+
+-- Nombre con que se guarda un archivo (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext,
+-- p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Mayúsculas sin acentos (la Ñ se conserva) y sin caracteres que un
+-- sistema de archivos no admite. Se fija al cargar: si después se corrige el nombre, el archivo conserva el suyo.
+CREATE FUNCTION apd.nombre_de_archivo(p_tipo text, p_persona uuid, p_mime text) RETURNS text
+  LANGUAGE sql STABLE AS $f$
+  SELECT regexp_replace(
+           translate(upper(p_tipo || '_' || concat_ws(' ', s.nombre, s.primer_apellido, s.segundo_apellido)),
+                     'ÁÉÍÓÚÜÀÈÌÒÙáéíóúüñ', 'AEIOUUAEIOUAEIOUUÑ'),
+           '[\\/:*?"<>|]', '', 'g')
+         || CASE p_mime WHEN 'application/pdf' THEN '.pdf' WHEN 'image/png' THEN '.png' ELSE '.jpg' END
+    FROM apd.solicitante s WHERE s.id = p_persona
 $f$;
 
 CREATE FUNCTION apd.solicitante_alta() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -227,6 +249,7 @@ BEGIN
   END IF;
   UPDATE apd.fotografia SET vigente = false WHERE solicitante_id = NEW.solicitante_id AND vigente;
   NEW.vigente := true;
+  NEW.nombre_archivo := apd.nombre_de_archivo('FOTOGRAFIA', NEW.solicitante_id, NEW.tipo_mime);
   NEW.cargada_en := apd.ahora();
   NEW.cargada_por := apd.contexto('usuario');
   IF de_personal THEN
@@ -248,10 +271,10 @@ CREATE TRIGGER fotografia_alta BEFORE INSERT ON apd.fotografia
 
 CREATE FUNCTION apd.fotografia_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-  IF (NEW.solicitante_id, NEW.archivo_clave, NEW.tipo_mime, NEW.tamano_bytes, NEW.sha256, NEW.origen,
+  IF (NEW.solicitante_id, NEW.archivo_clave, NEW.nombre_archivo, NEW.tipo_mime, NEW.tamano_bytes, NEW.sha256, NEW.origen,
       NEW.cargada_en, NEW.cargada_por)
      IS DISTINCT FROM
-     (OLD.solicitante_id, OLD.archivo_clave, OLD.tipo_mime, OLD.tamano_bytes, OLD.sha256, OLD.origen,
+     (OLD.solicitante_id, OLD.archivo_clave, OLD.nombre_archivo, OLD.tipo_mime, OLD.tamano_bytes, OLD.sha256, OLD.origen,
       OLD.cargada_en, OLD.cargada_por) THEN
     PERFORM apd.error('foto_inmutable', 'Una fotografía cargada no se modifica: se carga una nueva');
   END IF;
@@ -436,6 +459,7 @@ BEGIN
     PERFORM apd.error('alta_fuera_de_borrador', 'Una solicitud nace como borrador');
   END IF;
   PERFORM apd.comprobar_elegibilidad(NEW);
+  PERFORM apd.comprobar_adscripcion(NEW);
   NEW.folio := 'APD-S-' || anio || '-' || lpad(apd.siguiente_folio('S', anio)::text, 5, '0');
   NEW.creada_en := apd.ahora();
   NEW.estado_desde := NEW.creada_en;
@@ -536,11 +560,12 @@ BEGIN
      OR NEW.es_ficticio <> OLD.es_ficticio THEN
     PERFORM apd.error('campo_inmutable', 'El folio, la persona y la fecha de alta de una solicitud no se cambian');
   END IF;
+  PERFORM apd.comprobar_adscripcion(NEW);
   IF OLD.estado NOT IN ('borrador', 'con_observaciones')
-     AND (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id, NEW.organizacion_id,
+     AND (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id, NEW.adscripcion, NEW.organizacion_id,
           NEW.perfil_academico, NEW.carrera, NEW.anios_experiencia)
          IS DISTINCT FROM
-         (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id, OLD.organizacion_id,
+         (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id, OLD.adscripcion, OLD.organizacion_id,
           OLD.perfil_academico, OLD.carrera, OLD.anios_experiencia) THEN
     PERFORM apd.error('solicitud_cerrada', 'Los datos de la solicitud sólo se cambian en borrador o con observaciones');
   END IF;
@@ -762,6 +787,10 @@ BEGIN
     PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
       round(apd.parametro_texto('tamano_maximo_archivo_bytes')::numeric / 1048576, 1)));
   END IF;
+  -- Se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext, sin importar cómo lo nombró quien lo cargó
+  NEW.nombre_archivo := apd.nombre_de_archivo(
+    (SELECT coalesce(r.nombre_archivo, translate(upper(r.nombre), 'ÁÉÍÓÚÜ', 'AEIOUU')) FROM apd.requisito r WHERE r.clave = NEW.requisito),
+    s.solicitante_id, NEW.tipo_mime);
   -- La carga nueva sustituye a la anterior sin borrarla
   UPDATE apd.documento SET vigente = false WHERE solicitud_id = NEW.solicitud_id AND requisito = NEW.requisito AND vigente;
   NEW.vigente := true;
@@ -785,11 +814,11 @@ CREATE TRIGGER documento_alta BEFORE INSERT ON apd.documento
 
 CREATE FUNCTION apd.documento_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-  IF (NEW.solicitud_id, NEW.requisito, NEW.archivo_clave, NEW.nombre_original, NEW.tipo_mime, NEW.tamano_bytes,
-      NEW.sha256, NEW.cargado_en)
+  IF (NEW.solicitud_id, NEW.requisito, NEW.archivo_clave, NEW.nombre_original, NEW.nombre_archivo, NEW.tipo_mime,
+      NEW.tamano_bytes, NEW.sha256, NEW.cargado_en)
      IS DISTINCT FROM
-     (OLD.solicitud_id, OLD.requisito, OLD.archivo_clave, OLD.nombre_original, OLD.tipo_mime, OLD.tamano_bytes,
-      OLD.sha256, OLD.cargado_en) THEN
+     (OLD.solicitud_id, OLD.requisito, OLD.archivo_clave, OLD.nombre_original, OLD.nombre_archivo, OLD.tipo_mime,
+      OLD.tamano_bytes, OLD.sha256, OLD.cargado_en) THEN
     PERFORM apd.error('documento_inmutable', 'Un documento cargado no se modifica: se carga uno nuevo');
   END IF;
   IF NEW.vigente AND NOT OLD.vigente THEN
@@ -1100,8 +1129,8 @@ CREATE VIEW apd.bandeja_demanda AS
          s.modalidad,
          concat_ws(' ', p.nombre, p.primer_apellido, p.segundo_apellido) AS nombre,
          o.id AS organizacion_id,
-         coalesce(o.nombre, 'Particular') AS organizacion,
-         coalesce(o.tipo, 'particular') AS organizacion_tipo,
+         coalesce(o.nombre, 'Sin adscripción') AS organizacion,
+         coalesce(o.tipo, 'sin_adscripcion') AS organizacion_tipo,
          s.lista_para_curso_en,
          apd.hoy() - (s.lista_para_curso_en AT TIME ZONE 'America/Mexico_City')::date AS dias_espera,
          a.vence_en AS vence_anterior,

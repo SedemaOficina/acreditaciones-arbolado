@@ -60,11 +60,13 @@ CREATE TABLE apd.requisito (
   descripcion                text          NOT NULL DEFAULT '',
   forma                      text          NOT NULL,
   momento                    text          NOT NULL,
+  nombre_archivo             text          NULL,
   formatos                   text[]        NOT NULL DEFAULT ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[],
   activo                     boolean       NOT NULL DEFAULT true,
   CONSTRAINT requisito_pk PRIMARY KEY (clave),
   CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro')),
   CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega')),
+  CONSTRAINT requisito_nombre_archivo_ck CHECK (nombre_archivo IS NULL OR nombre_archivo ~ '^[A-Z0-9Ñ ]+$'),
   CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])
 );
 COMMENT ON TABLE apd.requisito IS 'Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.';
@@ -73,6 +75,7 @@ COMMENT ON COLUMN apd.requisito.nombre IS 'Nombre visible';
 COMMENT ON COLUMN apd.requisito.descripcion IS 'Características que debe cumplir';
 COMMENT ON COLUMN apd.requisito.forma IS 'documento: se carga un archivo; registro: el sistema lo comprueba en el padrón';
 COMMENT ON COLUMN apd.requisito.momento IS 'en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial)';
+COMMENT ON COLUMN apd.requisito.nombre_archivo IS 'Tipo de documento con que se nombra el archivo guardado (por ejemplo CURP o IDENTIFICACION OFICIAL), en mayúsculas y sin acentos; si está vacío se usa el nombre del requisito';
 COMMENT ON COLUMN apd.requisito.formatos IS 'Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen';
 COMMENT ON COLUMN apd.requisito.activo IS 'Si se pide en solicitudes nuevas';
 
@@ -98,17 +101,20 @@ COMMENT ON COLUMN apd.requisito_curso.nota IS 'Indicación particular de este cu
 CREATE TABLE apd.organizacion (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
   tipo                       text          NOT NULL,
+  clave                      text          NULL,
   nombre                     text          NOT NULL,
   nombre_normalizado         text          NOT NULL,
   activa                     boolean       NOT NULL DEFAULT true,
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT organizacion_pk PRIMARY KEY (id),
-  CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('empresa', 'alcaldia', 'dependencia_publica', 'institucion_academica', 'otra')),
+  CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT organizacion_clave_uk UNIQUE (clave),
   CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)
 );
-COMMENT ON TABLE apd.organizacion IS 'Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.';
+COMMENT ON TABLE apd.organizacion IS 'Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.';
 COMMENT ON COLUMN apd.organizacion.id IS 'Identificador interno';
-COMMENT ON COLUMN apd.organizacion.tipo IS 'empresa, alcaldia, dependencia_publica, institucion_academica u otra';
+COMMENT ON COLUMN apd.organizacion.tipo IS 'privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia o dependencia_federal';
+COMMENT ON COLUMN apd.organizacion.clave IS 'Clave estable de las que el formulario ofrece como opción (sobse, sedema, paot, cfe, una por alcaldía); vacía en las que se agregan escritas';
 COMMENT ON COLUMN apd.organizacion.nombre IS 'Nombre oficial';
 COMMENT ON COLUMN apd.organizacion.nombre_normalizado IS 'Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.»';
 COMMENT ON COLUMN apd.organizacion.activa IS 'Si aparece al solicitar';
@@ -164,6 +170,7 @@ CREATE TABLE apd.fotografia (
   tipo_mime                  text          NOT NULL,
   tamano_bytes               integer       NOT NULL,
   sha256                     text          NOT NULL,
+  nombre_archivo             text          NOT NULL DEFAULT '',
   origen                     text          NOT NULL,
   estado                     text          NOT NULL DEFAULT 'pendiente',
   vigente                    boolean       NOT NULL DEFAULT true,
@@ -189,6 +196,7 @@ COMMENT ON COLUMN apd.fotografia.archivo_clave IS 'Clave exacta en el almacén, 
 COMMENT ON COLUMN apd.fotografia.tipo_mime IS 'image/jpeg o image/png';
 COMMENT ON COLUMN apd.fotografia.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.fotografia.sha256 IS 'Suma del archivo, para comprobar el almacén';
+COMMENT ON COLUMN apd.fotografia.nombre_archivo IS 'Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla';
 COMMENT ON COLUMN apd.fotografia.origen IS 'en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base';
 COMMENT ON COLUMN apd.fotografia.estado IS 'pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó';
 COMMENT ON COLUMN apd.fotografia.vigente IS 'Es la última fotografía de la persona';
@@ -258,6 +266,7 @@ CREATE TABLE apd.solicitud (
   solicitante_id             uuid          NOT NULL,
   tipo_acreditacion          text          NOT NULL,
   modalidad                  text          NOT NULL,
+  adscripcion                text          NULL,
   organizacion_id            uuid          NULL,
   acreditacion_anterior_id   uuid          NULL,
   factura_rfc                text          NULL,
@@ -284,6 +293,8 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
   CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad),
   CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
+  CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL)),
   CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id),
   CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')),
   CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL)),
@@ -305,7 +316,8 @@ COMMENT ON COLUMN apd.solicitud.folio IS 'Folio público; lo asigna la base (APD
 COMMENT ON COLUMN apd.solicitud.solicitante_id IS 'Persona solicitante';
 COMMENT ON COLUMN apd.solicitud.tipo_acreditacion IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.modalidad IS 'Curso solicitado';
-COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Organización de procedencia; vacía para particulares';
+COMMENT ON COLUMN apd.solicitud.adscripcion IS 'Tipo de institución a la que está adscrita la persona: privada, dependencia_cdmx, alcaldia o dependencia_federal; vacía si no trabaja para nadie';
+COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Institución de adscripción, del catálogo; de su mismo tipo. Vacía sólo si no está adscrita';
 COMMENT ON COLUMN apd.solicitud.acreditacion_anterior_id IS 'Acreditación que se renueva; obligatoria en renovación';
 COMMENT ON COLUMN apd.solicitud.factura_rfc IS 'RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo';
 COMMENT ON COLUMN apd.solicitud.factura_razon_social IS 'Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo';
@@ -351,6 +363,7 @@ CREATE TABLE apd.documento (
   requisito                  text          NOT NULL,
   archivo_clave              text          NOT NULL,
   nombre_original            text          NOT NULL,
+  nombre_archivo             text          NOT NULL DEFAULT '',
   tipo_mime                  text          NOT NULL,
   tamano_bytes               integer       NOT NULL,
   sha256                     text          NOT NULL,
@@ -378,6 +391,7 @@ COMMENT ON COLUMN apd.documento.solicitud_id IS 'Solicitud';
 COMMENT ON COLUMN apd.documento.requisito IS 'Requisito que atiende';
 COMMENT ON COLUMN apd.documento.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
 COMMENT ON COLUMN apd.documento.nombre_original IS 'Nombre con que se cargó';
+COMMENT ON COLUMN apd.documento.nombre_archivo IS 'Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_JUAN RAMIREZ OSORIO.pdf). Lo pone la base al cargarlo';
 COMMENT ON COLUMN apd.documento.tipo_mime IS 'application/pdf, image/jpeg o image/png';
 COMMENT ON COLUMN apd.documento.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.documento.sha256 IS 'Suma del archivo, para comprobar el almacén';

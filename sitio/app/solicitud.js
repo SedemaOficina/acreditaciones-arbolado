@@ -4,8 +4,11 @@
        queda deshabilitada con su motivo. Si es nueva o renovación no se pregunta: se informa y se guarda en
        el campo auxiliar «tramite», del que dependen los documentos;
      · la acreditación que se renueva (sólo lectura);
-     · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, lo que
-       hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de ser obligatorios.
+     · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, la adscripción ya
+       capturada, lo que hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de
+       ser obligatorios;
+     · el ejemplo de cómo se guardan sus archivos, con su nombre (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo hace
+       la base al cargarlos, apd.nombre_de_archivo).
    La base vuelve a comprobar todo al enviar. */
 (function () {
   'use strict';
@@ -23,6 +26,40 @@
     const elegido = radios(nombre).find((r) => r.checked);
     if (elegido) avisa(elegido);
   }
+  /* Marca una opción sin bloquear las demás: la persona puede cambiarla. */
+  function marca(nombre, valor) {
+    const r = radios(nombre).find((x) => x.value === valor);
+    if (r && !r.checked) { r.checked = true; avisa(r); }
+  }
+
+  /* De la institución guardada a las preguntas de adscripción (lo inverso de lo que hace el servidor). */
+  function ponAdscripcion(s, datos) {
+    const org = s.organizacion_id ? datos.organizacion.find((o) => o.id === s.organizacion_id) : null;
+    if (!s.adscripcion || !org) { marca('adscrito', 'no'); return; }
+    marca('adscrito', 'si');
+    marca('tipo_adscripcion', s.adscripcion);
+    const clave = org.clave || '';
+    if (s.adscripcion === 'privada') ponValor('empresa_nombre', org.nombre);
+    else if (s.adscripcion === 'alcaldia') ponValor('alcaldia', org.nombre);
+    else if (s.adscripcion === 'dependencia_federal') {
+      if (clave === 'cfe') marca('dependencia_federal', 'cfe');
+      else { marca('dependencia_federal', 'otro'); ponValor('dependencia_federal_otra', org.nombre); }
+    } else if (['sobse', 'sedema', 'paot'].includes(clave)) marca('dependencia_cdmx', clave);
+    else if (clave.startsWith('sedema_') || org.nombre.startsWith('SEDEMA · ')) {
+      marca('dependencia_cdmx', 'sedema');
+      if (clave) marca('direccion_sedema', clave.replace('sedema_', ''));
+      else { marca('direccion_sedema', 'otro'); ponValor('direccion_sedema_otra', org.nombre.replace('SEDEMA · ', '')); }
+    } else { marca('dependencia_cdmx', 'otro'); ponValor('dependencia_cdmx_otra', org.nombre); }
+  }
+
+  /* Ejemplo del nombre con que se guardan sus archivos: mayúsculas sin acentos; la Ñ se conserva. */
+  function ejemploArchivo(persona) {
+    const nombre = APD.nombreCompleto(persona).toLocaleUpperCase('es-MX')
+      .replace(/Ñ/g, '\u0001').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0001/g, 'Ñ');
+    const caja = document.querySelector('[data-ejemplo-archivo]');
+    if (caja && nombre) caja.textContent = `CURP_${nombre}.pdf`;
+  }
+
   function ponValor(id, valor) {
     const c = document.getElementById(id);
     if (!c) return;
@@ -97,8 +134,7 @@
     fija('tipo', s.tipo_acreditacion);
     const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
     ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
-    const org = s.organizacion_id ? datos.organizacion.find((o) => o.id === s.organizacion_id) : null;
-    ponValor('organizacion', org ? org.nombre : '');
+    ponAdscripcion(s, datos);
     if (s.tipo_acreditacion === 'dictaminador') {
       if (s.perfil_academico) fija('perfil_academico', s.perfil_academico);
       for (const r of radios('perfil_academico')) r.disabled = false;
@@ -124,6 +160,7 @@
     const persona = APD.requiereSesion(datos);
     if (!persona) return;
     APD.pintaSesion(document.querySelector('[data-sesion]'), persona);
+    ejemploArchivo(persona);
     const folio = new URLSearchParams(location.search).get('folio');
     if (folio) continua(datos, persona, folio); else nueva(datos, persona);
   }).catch(() => sinOpciones(['No se pudo cargar tu información. Intenta de nuevo más tarde.']));

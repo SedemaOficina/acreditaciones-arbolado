@@ -33,7 +33,7 @@ GRANT UPDATE (nombre, dias_duracion, dias_minimos_asistencia, calificacion_minim
               pago_concepto, pago_monto, pago_fundamento, pago_vigente_desde)
   ON apd.curso TO apd_api;
 GRANT SELECT, INSERT ON apd.requisito TO apd_api;
-GRANT UPDATE (nombre, descripcion, formatos, activo) ON apd.requisito TO apd_api;
+GRANT UPDATE (nombre, descripcion, nombre_archivo, formatos, activo) ON apd.requisito TO apd_api;
 GRANT SELECT, INSERT, DELETE ON apd.requisito_curso TO apd_api;
 GRANT UPDATE (orden, obligatorio, nota) ON apd.requisito_curso TO apd_api;
 GRANT SELECT, INSERT ON apd.organizacion TO apd_api;
@@ -51,7 +51,7 @@ GRANT UPDATE (estado, vigente) ON apd.fotografia TO apd_api;
 
 -- Trámite
 GRANT SELECT, INSERT ON apd.solicitud TO apd_api;
-GRANT UPDATE (tipo_acreditacion, modalidad, organizacion_id, acreditacion_anterior_id,
+GRANT UPDATE (tipo_acreditacion, modalidad, adscripcion, organizacion_id, acreditacion_anterior_id,
               factura_rfc, factura_razon_social, factura_folio_fiscal,
               perfil_academico, carrera, anios_experiencia, estado, cita_en, motivo_cierre)
   ON apd.solicitud TO apd_api;

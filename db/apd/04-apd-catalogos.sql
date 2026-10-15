@@ -110,3 +110,51 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('poda', 'renovacion',         'acuse_entrega',              90, true,  ''),
   ('dictaminador', 'nueva',      'acuse_entrega',              90, true,  ''),
   ('dictaminador', 'renovacion', 'acuse_entrega',              90, true,  '');
+
+-- Instituciones que el formulario ofrece por nombre (decisión 2026-10-15, Liber): las dependencias de la Ciudad
+-- y federales de la lista, y las 16 alcaldías de la Ciudad de México. Las demás las agrega la base cuando una
+-- persona escribe un nombre nuevo («Otra» o el nombre de su empresa). La clave es la que manda el formulario. En la
+-- SEDEMA se registra la Dirección General (sedema_<siglas>); un área que no está en la lista entra como «SEDEMA · <nombre>».
+INSERT INTO apd.organizacion (tipo, clave, nombre) VALUES
+  ('dependencia_cdmx',    'sobse',  'Secretaría de Obras y Servicios (SOBSE)'),
+  ('dependencia_cdmx',    'sedema', 'Secretaría del Medio Ambiente (SEDEMA)'),
+  ('dependencia_cdmx',    'sedema_dgeira', 'SEDEMA · Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)'),
+  ('dependencia_cdmx',    'sedema_dgzcfs', 'SEDEMA · Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)'),
+  ('dependencia_cdmx',    'sedema_dgsanpava', 'SEDEMA · Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)'),
+  ('dependencia_cdmx',    'sedema_dgcpca', 'SEDEMA · Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)'),
+  ('dependencia_cdmx',    'sedema_dgiva', 'SEDEMA · Dirección General de Vigilancia Ambiental (DGIVA)'),
+  ('dependencia_cdmx',    'sedema_dgcorenadr', 'SEDEMA · Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)'),
+  ('dependencia_cdmx',    'paot',   'Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)'),
+  ('dependencia_federal', 'cfe',    'Comisión Federal de Electricidad (CFE)'),
+  ('alcaldia', 'alvaro_obregon',      'Álvaro Obregón'),
+  ('alcaldia', 'azcapotzalco',        'Azcapotzalco'),
+  ('alcaldia', 'benito_juarez',       'Benito Juárez'),
+  ('alcaldia', 'coyoacan',            'Coyoacán'),
+  ('alcaldia', 'cuajimalpa',          'Cuajimalpa de Morelos'),
+  ('alcaldia', 'cuauhtemoc',          'Cuauhtémoc'),
+  ('alcaldia', 'gustavo_a_madero',    'Gustavo A. Madero'),
+  ('alcaldia', 'iztacalco',           'Iztacalco'),
+  ('alcaldia', 'iztapalapa',          'Iztapalapa'),
+  ('alcaldia', 'magdalena_contreras', 'La Magdalena Contreras'),
+  ('alcaldia', 'miguel_hidalgo',      'Miguel Hidalgo'),
+  ('alcaldia', 'milpa_alta',          'Milpa Alta'),
+  ('alcaldia', 'tlahuac',             'Tláhuac'),
+  ('alcaldia', 'tlalpan',             'Tlalpan'),
+  ('alcaldia', 'venustiano_carranza', 'Venustiano Carranza'),
+  ('alcaldia', 'xochimilco',          'Xochimilco');
+
+-- Cómo se nombra el archivo guardado de cada documento (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE
+-- COMPLETO, p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Un requisito nuevo sin este dato usa su nombre en mayúsculas.
+UPDATE apd.requisito SET nombre_archivo = v.nombre_archivo
+  FROM (VALUES ('identificacion_oficial',      'IDENTIFICACION OFICIAL'),
+               ('curp',                        'CURP'),
+               ('comprobante_domicilio',       'COMPROBANTE DE DOMICILIO'),
+               ('constancia_situacion_fiscal', 'CONSTANCIA DE SITUACION FISCAL'),
+               ('factura_pago',                'FACTURA'),
+               ('comprobante_estudios',        'COMPROBANTE DE ESTUDIOS'),
+               ('curriculum_vitae',            'CURRICULUM VITAE'),
+               ('comprobantes_experiencia',    'COMPROBANTES DE EXPERIENCIA'),
+               ('constancias_capacitacion',    'CONSTANCIAS DE CAPACITACION'),
+               ('foto_credencial',             'FOTOGRAFIA CREDENCIAL'),
+               ('acuse_entrega',               'COMPROBANTE DE RECEPCION')) AS v (clave, nombre_archivo)
+ WHERE apd.requisito.clave = v.clave;

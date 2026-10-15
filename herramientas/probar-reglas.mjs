@@ -124,6 +124,23 @@ const casos = [
                           FROM apd.solicitante WHERE id = '00000000-0000-4000-a000-000000000021'); END $$;
      UPDATE apd.solicitante SET segundo_apellido = '' WHERE id = '00000000-0000-4000-a000-000000000021';
      DO $$ BEGIN ASSERT (SELECT segundo_apellido IS NULL FROM apd.solicitante WHERE id = '00000000-0000-4000-a000-000000000021'); END $$;`],
+  ['Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO, sin acentos y con Ñ', 'ok', null, `
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000031', 'XAXX991231HNEXXX09', 'maría josé', 'peña', 'güemes', 'caso@ejemplo.local', '0000000099', 'x', true);
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
+     VALUES ('00000000-0000-4000-a000-000000000032', '00000000-0000-4000-a000-000000000031', 'poda', 'nueva');
+     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+     VALUES ('00000000-0000-4000-a000-000000000032', 'curp', 'prueba/curp', 'escaneo 0042 final.PDF', 'application/pdf', 1000, repeat('a', 64)),
+            ('00000000-0000-4000-a000-000000000032', 'identificacion_oficial', 'prueba/ine', 'IMG_2231.jpeg', 'image/jpeg', 1000, repeat('a', 64));
+     ${FOTO("'00000000-0000-4000-a000-000000000031'", 'image/png')}
+     DO $$ BEGIN
+       ASSERT (SELECT nombre_archivo FROM apd.documento WHERE archivo_clave = 'prueba/curp') = 'CURP_MARIA JOSE PEÑA GUEMES.pdf';
+       ASSERT (SELECT nombre_archivo FROM apd.documento WHERE archivo_clave = 'prueba/ine') = 'IDENTIFICACION OFICIAL_MARIA JOSE PEÑA GUEMES.jpg';
+       ASSERT (SELECT nombre_original FROM apd.documento WHERE archivo_clave = 'prueba/curp') = 'escaneo 0042 final.PDF';
+       ASSERT (SELECT nombre_archivo FROM apd.fotografia WHERE solicitante_id = '00000000-0000-4000-a000-000000000031') = 'FOTOGRAFIA_MARIA JOSE PEÑA GUEMES.png';
+     END $$;`],
+  ['El nombre con que se guardó un archivo no se cambia', { sqlstate: '42501' }, null, `
+     UPDATE apd.documento SET nombre_archivo = 'otro.pdf' WHERE solicitud_id = ${BORRADOR};`],
   // ── Fotografía de frente de la persona (decisión 2026-10-14) ──
   ['Sin fotografía de frente no se envía la solicitud', { codigo: 'sin_fotografia' }, null, `${SIN_FOTO}
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
@@ -249,7 +266,7 @@ const casos = [
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id) VALUES (${LISTA_DICT}, ${GRUPO_INTEGRACION});`],
   ['Un grupo específico sólo admite a su organización', { codigo: 'otra_organizacion' }, null, `
      INSERT INTO apd.grupo (id, tipo_acreditacion, modalidad, integracion, organizacion_id)
-     VALUES ('00000000-0000-4000-a000-000000000011', 'poda', 'nueva', 'especifico', (SELECT id FROM apd.organizacion WHERE nombre_normalizado LIKE 'alcaldia de prueba%'));
+     VALUES ('00000000-0000-4000-a000-000000000011', 'poda', 'nueva', 'especifico', (SELECT id FROM apd.organizacion WHERE clave = 'iztapalapa'));
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, '00000000-0000-4000-a000-000000000011' FROM apd.bandeja_demanda
       WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' AND organizacion LIKE 'Jardines%' LIMIT 1;`],
@@ -381,8 +398,14 @@ const casos = [
      SELECT set_config('apd.motivo', 'Error de captura comprobado con la identificación', true);
      UPDATE apd.solicitante SET curp = 'XAXX991230HNEXXX08' WHERE id = ${PERSONA_VIGENTE};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'correccion_curp' AND detalle LIKE '%Error de captura%'); END $$;`],
-  ['«C.F.E.» y «CFE» son la misma organización', { sqlstate: '23505' }, null, `
-     INSERT INTO apd.organizacion (tipo, nombre) VALUES ('dependencia_publica', 'DEPENDENCIA de prueba  de ENERGIA.');`],
+  ['La institución de una solicitud es del tipo de adscripción elegido', { codigo: 'adscripcion_no_coincide' }, null, `
+     UPDATE apd.solicitud SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'cfe') WHERE id = ${BORRADOR};`],
+  ['Quien dice estar adscrita lleva su institución', { sqlstate: '23514' }, null, `
+     UPDATE apd.solicitud SET adscripcion = 'privada', organizacion_id = NULL WHERE id = ${BORRADOR};`],
+  ['Adscrita a una alcaldía del catálogo se acepta', 'ok', null, `
+     UPDATE apd.solicitud SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = ${BORRADOR};`],
+  ['La misma institución escrita distinto no se duplica', { sqlstate: '23505' }, null, `
+     INSERT INTO apd.organizacion (tipo, nombre) VALUES ('dependencia_federal', 'COMISION federal  de ELECTRICIDAD (cfe).');`],
 
   // ── Permisos de la cuenta del servicio y bitácora ──
   ['La cuenta no edita la bitácora', { sqlstate: '42501' }, null, `UPDATE apd.bitacora SET detalle = 'x';`],

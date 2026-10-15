@@ -56,8 +56,10 @@ function conArchivos(form, datos, archivos) {
   for (const a of archivos) d[a.campo] = String(archivos.filter((x) => x.campo === a.campo).length);
   return d;
 }
+// El catálogo cerrado de alcaldías, como lo tendrá la API (el mismo que genera construir-sitio.mjs)
+const catalogos = { alcaldias: JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8')).organizacion.filter((o) => o.tipo === 'alcaldia' && o.clave).map((o) => o.nombre) };
 function caso(nombre, form, datos, espera, archivos = []) {
-  const r = validaPayload({ datos: conArchivos(form, comoServidor(form, datos), archivos), archivos, meta }, esquema[form], { config });
+  const r = validaPayload({ datos: conArchivos(form, comoServidor(form, datos), archivos), archivos, meta }, esquema[form], { config, catalogos });
   const campos = r.errores.map((e) => e.campo);
   const ok = espera === true ? r.ok : !r.ok && espera.every((c) => campos.includes(c)) && campos.every((c) => espera.includes(c));
   console.log(`${ok ? 'BIEN' : 'MAL '}  ${nombre}${ok ? '' : ` → ${JSON.stringify([...new Set(campos)])}`}`);
@@ -86,7 +88,7 @@ caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso:
 
 // Solicitud: lo obligatorio depende del trámite elegido, con una sola condición por bloque
 const docs = (t, lista) => Object.fromEntries(lista.map((r) => [`doc_${t}_${r}`, `${r}.pdf`]));
-const base = { aviso: 'si', humano: 'si' };
+const base = { aviso: 'si', humano: 'si', adscrito: 'no' };
 const podaNueva = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
 caso('Solicitud poda nueva con sus 4 documentos se acepta', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, true, podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
 caso('Solicitud poda nueva sin documentos pide sólo los de poda nueva', 'solicitud', { ...base, tipo: 'poda' }, podaNueva.map((r) => `doc_poda_nueva_${r}`));
@@ -95,6 +97,21 @@ caso('Solicitud dictaminador nueva sin perfil ni documentos pide perfil y sus 8 
 caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (lo demás es «si aplica»)', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106' }, ['doc_poda_renovacion_constancia_situacion_fiscal']);
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', perfil_academico: 'titulo', carrera: 'Biología', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
+
+// Adscripción: según el tipo, su pregunta; todo lo que depende de una respuesta se oculta con ella
+const docsPoda = docs('poda_nueva', podaNueva);
+const archivosPoda = podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`));
+const sol = (extra) => ({ ...base, tipo: 'poda', ...docsPoda, ...extra });
+caso('Adscrito sin decir el tipo se rechaza', 'solicitud', sol({ adscrito: 'si' }), ['tipo_adscripcion'], archivosPoda);
+caso('Empresa sin nombre se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'privada' }), ['empresa_nombre'], archivosPoda);
+caso('Empresa con su nombre se acepta', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'privada', empresa_nombre: 'Jardines Ejemplo del Norte, S.A. de C.V.' }), true, archivosPoda);
+caso('SEDEMA sin su Dirección General se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema' }), ['direccion_sedema'], archivosPoda);
+caso('SEDEMA con su Dirección General se acepta', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'dgcorenadr' }), true, archivosPoda);
+caso('Otra dependencia de la Ciudad sin su nombre se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'otro' }), ['dependencia_cdmx_otra'], archivosPoda);
+caso('Una alcaldía fuera del catálogo se rechaza', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'Alcaldía Inventada' }), ['alcaldia'], archivosPoda);
+caso('Una alcaldía del catálogo se acepta, escrita sin acentos', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'tlahuac' }), true, archivosPoda);
+caso('CFE se acepta', 'solicitud', sol({ adscrito: 'si', tipo_adscripcion: 'dependencia_federal', dependencia_federal: 'cfe' }), true, archivosPoda);
+caso('Sin adscripción, lo que dependía de ella no cuenta (se descarta)', 'solicitud', sol({ adscrito: 'no', tipo_adscripcion: 'alcaldia', alcaldia: 'Inventada' }), true, archivosPoda);
 
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);

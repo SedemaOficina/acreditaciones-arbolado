@@ -20,7 +20,7 @@ if (!estandar || !existsSync(join(estandar, 'codigo/manifiesto.json'))) {
 const sitio = join(raiz, 'sitio');
 
 // 1 · Estándar: núcleo y sólo los módulos que usa el sitio, en su forma original
-const MODULOS = ['opciones', 'combo', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon'];
+const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
 for (const d of ['css', 'js', 'fuentes', 'iconos', 'imagenes']) cpSync(join(estandar, 'codigo', d), join(destino, d), { recursive: true });
@@ -53,14 +53,15 @@ for (const p of paginas) {
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 mkdirSync(join(sitio, 'datos'), { recursive: true });
 cpSync(join(raiz, 'datos/ficticios.json'), join(sitio, 'datos/ficticios.json'));
-const organizaciones = datos.organizacion.filter((o) => o.activa).map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
-// Arreglo simple: el módulo combo 1.0.0 sólo lee arreglos (su docs/06 dice que también acepta
-// {filas, fuente, corte, es_ficticio}, pero combo.js no lo implementa; reportado al estándar).
+// Catálogo cerrado de alcaldías (las 16 del catálogo inicial de la base, con clave). Arreglo simple: el módulo combo
+// 1.0.0 sólo lee arreglos (su docs/06 dice que también acepta {filas, fuente, corte, es_ficticio}, pero combo.js
+// no lo implementa; reportado al estándar, P37).
+const alcaldias = datos.organizacion.filter((o) => o.activa && o.tipo === 'alcaldia' && o.clave).map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
 writeFileSync(join(sitio, 'datos/catalogos.js'), `/* Generado por herramientas/construir-sitio.mjs desde datos/ficticios.json. No se edita a mano.
-   Catálogo de organizaciones FICTICIO. Fuente: apd.organizacion (datos ficticios), corte ${datos.fecha_corte}.
-   En producción lo sirve la base. */
+   Alcaldías de la Ciudad de México. Fuente: catálogo inicial de apd.organizacion (db/apd/04-apd-catalogos.sql),
+   corte ${datos.fecha_corte}. En producción lo sirve la base. */
 window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
-  organizaciones: ${JSON.stringify(organizaciones)}
+  alcaldias: ${JSON.stringify(alcaldias)}
 });
 `);
 
@@ -110,4 +111,4 @@ const a = html.indexOf(inicio), b = html.indexOf(fin);
 if (a < 0 || b < 0) { console.error('Faltan los marcadores de documentos en sitio/solicitud.html'); process.exit(1); }
 writeFileSync(ruta, html.slice(0, a + inicio.length) + '\n' + bloques.join('\n') + '\n        ' + html.slice(b));
 
-console.log(`sitio/ construido · versión ${version} · estándar ${cambios ? cambios[1] : '?'} · ${organizaciones.length} organizaciones · ${bloques.length} grupos de documentos`);
+console.log(`sitio/ construido · versión ${version} · estándar ${cambios ? cambios[1] : '?'} · ${alcaldias.length} alcaldías · ${bloques.length} grupos de documentos`);

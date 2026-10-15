@@ -11,7 +11,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`curso`](#curso) — Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asistencia mínima, calificación mínima y cupos vigentes; un grupo copia los cupos al crearse.
 - [`requisito`](#requisito) — Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
-- [`organizacion`](#organizacion) — Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.
+- [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
 - [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 - [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
@@ -82,6 +82,7 @@ Catálogo de requisitos. Un requisito es un documento que se carga o un registro
 | `descripcion` | `text` | Sí | Características que debe cumplir (por omisión: `''`) |
 | `forma` | `text` | Sí | documento: se carga un archivo; registro: el sistema lo comprueba en el padrón |
 | `momento` | `text` | Sí | en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial) |
+| `nombre_archivo` | `text` | No | Tipo de documento con que se nombra el archivo guardado (por ejemplo CURP o IDENTIFICACION OFICIAL), en mayúsculas y sin acentos; si está vacío se usa el nombre del requisito |
 | `formatos` | `text[]` | Sí | Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen (por omisión: `ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[]`) |
 | `activo` | `boolean` | Sí | Si se pide en solicitudes nuevas (por omisión: `true`) |
 
@@ -90,6 +91,7 @@ Restricciones e índices:
 - `CONSTRAINT requisito_pk PRIMARY KEY (clave)`
 - `CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))`
 - `CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))`
+- `CONSTRAINT requisito_nombre_archivo_ck CHECK (nombre_archivo IS NULL OR nombre_archivo ~ '^[A-Z0-9Ñ ]+$')`
 - `CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])`
 
 ## requisito_curso
@@ -113,12 +115,13 @@ Restricciones e índices:
 
 ## organizacion
 
-Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.
+Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
-| `tipo` | `text` | Sí | empresa, alcaldia, dependencia_publica, institucion_academica u otra |
+| `tipo` | `text` | Sí | privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia o dependencia_federal |
+| `clave` | `text` | No | Clave estable de las que el formulario ofrece como opción (sobse, sedema, paot, cfe, una por alcaldía); vacía en las que se agregan escritas |
 | `nombre` | `text` | Sí | Nombre oficial |
 | `nombre_normalizado` | `text` | Sí | Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.» |
 | `activa` | `boolean` | Sí | Si aparece al solicitar (por omisión: `true`) |
@@ -127,7 +130,8 @@ Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, 
 Restricciones e índices:
 
 - `CONSTRAINT organizacion_pk PRIMARY KEY (id)`
-- `CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('empresa', 'alcaldia', 'dependencia_publica', 'institucion_academica', 'otra'))`
+- `CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))`
+- `CONSTRAINT organizacion_clave_uk UNIQUE (clave)`
 - `CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)`
 
 ## solicitante
@@ -176,6 +180,7 @@ Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en e
 | `tipo_mime` | `text` | Sí | image/jpeg o image/png |
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
+| `nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla (por omisión: `''`) |
 | `origen` | `text` | Sí | en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base |
 | `estado` | `text` | Sí | pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó (por omisión: `'pendiente'`) |
 | `vigente` | `boolean` | Sí | Es la última fotografía de la persona (por omisión: `true`) |
@@ -258,7 +263,8 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `solicitante_id` | `uuid` | Sí | Persona solicitante |
 | `tipo_acreditacion` | `text` | Sí | Curso solicitado |
 | `modalidad` | `text` | Sí | Curso solicitado |
-| `organizacion_id` | `uuid` | No | Organización de procedencia; vacía para particulares |
+| `adscripcion` | `text` | No | Tipo de institución a la que está adscrita la persona: privada, dependencia_cdmx, alcaldia o dependencia_federal; vacía si no trabaja para nadie |
+| `organizacion_id` | `uuid` | No | Institución de adscripción, del catálogo; de su mismo tipo. Vacía sólo si no está adscrita |
 | `acreditacion_anterior_id` | `uuid` | No | Acreditación que se renueva; obligatoria en renovación |
 | `factura_rfc` | `text` | No | RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo |
 | `factura_razon_social` | `text` | No | Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo |
@@ -287,6 +293,8 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
 - `CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)`
 - `CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`
+- `CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))`
+- `CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL))`
 - `CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)`
 - `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))`
 - `CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))`
@@ -333,6 +341,7 @@ Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo pub
 | `requisito` | `text` | Sí | Requisito que atiende |
 | `archivo_clave` | `text` | Sí | Clave exacta en el almacén, con sello propio |
 | `nombre_original` | `text` | Sí | Nombre con que se cargó |
+| `nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_JUAN RAMIREZ OSORIO.pdf). Lo pone la base al cargarlo (por omisión: `''`) |
 | `tipo_mime` | `text` | Sí | application/pdf, image/jpeg o image/png |
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |

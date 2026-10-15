@@ -38,6 +38,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 
 | Fecha | Decisión | Quién |
 |---|---|---|
+| 2026-10-15 | Cada archivo cargado se guarda con el nombre TIPO DE DOCUMENTO_NOMBRE COMPLETO DEL INTERESADO (p. ej. CURP_JUAN RAMIREZ OSORIO.pdf), sin importar cómo lo nombró la persona; el nombre original se conserva aparte. Mayúsculas sin acentos; la Ñ se conserva. Igual para la fotografía (FOTOGRAFIA_…) y los documentos que carga el personal (FACTURA_…, COMPROBANTE DE RECEPCION_…) | Liber Saltijeral |
 | 2026-10-14 | Las constancias de capacitación sólo se piden para dictaminador, y ahí son obligatorias en la solicitud nueva (mapa, R11). [pendiente] confirmar que también aplican a quien tiene título | Liber Saltijeral |
 
 ## Cotejo presencial
@@ -68,6 +69,9 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Cupo mínimo 5 y máximo 25, para los cuatro cursos, editables por la administración. Cada grupo copia los cupos vigentes al crearse (mapa, R23 y R24) | Liber Saltijeral |
 | 2026-10-14 | **Ningún grupo abre con menos del mínimo.** Sin excepción | Liber Saltijeral |
 | 2026-10-14 | Los grupos pueden ser específicos (una organización) o combinados | Liber Saltijeral |
+| 2026-10-15 | Adscripción en lugar de «Organización con la que trabajas»: primero «¿Trabajas para alguna empresa, institución o dependencia?» (Sí/No); si sí, el tipo: empresa, consultoría o particular (persona moral o física); dependencia del Gobierno de la Ciudad de México; alcaldía; dependencia del Gobierno Federal. Según el tipo: nombre o razón social como en su constancia de situación fiscal; SOBSE, SEDEMA, PAOT u otra; una de las 16 alcaldías; CFE u otra. Todas obligatorias | Liber Saltijeral |
+| 2026-10-15 | Si es la SEDEMA, se pregunta la Dirección General: DGEIRA, DGZCFS, DGSANPAVA, DGCPCA, DGIVA o DGCORENADR. Se agregó «Otra área de la Secretaría» con su nombre, para que nadie quede sin opción (propuesta de Claude) | Liber Saltijeral / Propuesta |
+| 2026-10-15 | Pregunta en tú y sin «adscrito/adscrita», por lenguaje claro y neutro: «¿Trabajas para alguna empresa, institución o dependencia?» (propuesta de Claude) | Propuesta |
 | 2026-10-14 | Los cursos se imparten en instalaciones de la Secretaría; no hay sede externa | Liber Saltijeral |
 | 2026-10-14 | Alerta de prioridad a los 31 días de espera sin grupo. En los cursos de renovación, la bandeja ordena por fecha de vencimiento | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~Asistencia mínima: dictaminador 4 de 5; poda provisionalmente 3 de 3~~ Sustituida al cambiar la duración | Liber Saltijeral |

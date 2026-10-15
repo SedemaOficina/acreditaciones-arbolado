@@ -103,6 +103,7 @@
       pon('numero', datos.verificacion_publica[0].numero);
     } else if (pagina === 'solicitud.html') {
       if (!form.querySelector('input[name="tipo"]:checked')) elige('tipo');
+      if (!form.querySelector('input[name="adscrito"]:checked')) elige('adscrito', 'no');
       elige('perfil_academico', 'titulo'); pon('carrera', 'Biología'); pon('anios_experiencia', '3');
       for (const c of form.querySelectorAll('[data-campo^="doc_"]')) if (visible(c)) adjunta(c);
     }

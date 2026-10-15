@@ -199,3 +199,18 @@ accesibilidad sin hallazgos; 50 campos correctos en el auditor.
 
 **Verificado**: 93 de 93 pruebas de la base; 23 casos en el servidor; 102 comprobaciones del sitio,
 accesibilidad sin hallazgos.
+
+## 2026-10-15 · Bloque 14 · Adscripción y nombre de los archivos
+
+- «Organización con la que trabajas» se sustituye por la adscripción: Sí/No, tipo (empresa, consultoría o
+  particular; dependencia de la Ciudad; alcaldía; dependencia federal) y la pregunta de cada tipo, con
+  Dirección General si es la SEDEMA. «Otra» con su nombre en cada lista (módulo `otro` del estándar).
+- Base: `solicitud.adscripcion`; `organizacion.tipo` con los cuatro tipos y `organizacion.clave`; catálogo inicial
+  con las 16 alcaldías, SOBSE, SEDEMA y sus seis Direcciones Generales, PAOT y CFE. La institución debe ser del
+  tipo elegido (`adscripcion_no_coincide`).
+- Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (`apd.nombre_de_archivo`), también la
+  fotografía; el nombre original se conserva. La pantalla de documentos lo avisa con el nombre de la persona.
+- Hallazgo para el estándar: las condiciones no se encadenan entre campos hermanos en el navegador (P52).
+
+**Verificado**: 98 de 98 pruebas de la base; 33 casos en el servidor; 114 comprobaciones del sitio,
+accesibilidad sin hallazgos; 59 campos correctos en el auditor.

@@ -86,6 +86,12 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
   entrega (la fotografía de la credencial, tomada en el lugar, y el comprobante de recepción firmado) los carga
   el personal y quedan aceptados. Sin los dos no se registra la entrega. Cada requisito dice qué formatos
   admite (PDF, JPG o PNG; la fotografía, sólo imagen), de hasta 5 MB.
+- **Nombre de los archivos** (`apd.nombre_de_archivo`): al cargarse, cada documento y fotografía se guarda como
+  `TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext` (el tipo sale de `requisito.nombre_archivo`; si falta, del nombre del
+  requisito). El nombre original se conserva en `nombre_original`. Ninguno de los dos se cambia después.
+- **Adscripción**: la solicitud guarda el tipo (`adscripcion`) y la institución (`organizacion_id`, del catálogo);
+  van juntas o ninguna, y la institución es del tipo elegido. El catálogo trae las 16 alcaldías, SOBSE, SEDEMA
+  con sus Direcciones Generales, PAOT y CFE; los nombres escritos se agregan sin duplicar.
 - **Fotografía de la persona** (`apd.fotografia`): una vigente por persona, sólo JPG o PNG. La persona la carga
   al crear su cuenta y la cambia mientras nadie la confirme; en el cotejo la confirma el personal (con su
   usuario y fecha, en la bitácora) o toma una nueva, que queda confirmada. Ya confirmada, sólo el personal
@@ -100,7 +106,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 93 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 98 casos con fechas
 movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y

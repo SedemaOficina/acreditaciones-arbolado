@@ -49,14 +49,16 @@ const COTEJO = 'cotejo.ficticio';
 const EMISION = 'emision.ficticia';
 const INSTRUCTOR = 'instructor.ficticio';
 
-// ── Catálogo de organizaciones ───────────────────────────────────────────
+// ── Instituciones de adscripción ─────────────────────────────────────────
+// Las empresas son ficticias y se agregan aquí; alcaldía y dependencias son del catálogo inicial (04), por su clave.
 const ORG = {
-  norte:    { tipo: 'empresa', nombre: 'Jardines Ejemplo del Norte, S.A. de C.V.' },
-  paisajes: { tipo: 'empresa', nombre: 'Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos' },
-  oriente:  { tipo: 'alcaldia', nombre: 'Alcaldía de Prueba Oriente' },
-  energia:  { tipo: 'dependencia_publica', nombre: 'Dependencia de Prueba de Energía' },
-  uni:      { tipo: 'institucion_academica', nombre: 'Universidad de Prueba' }
+  norte:    { tipo: 'privada', nombre: 'Jardines Ejemplo del Norte, S.A. de C.V.' },
+  paisajes: { tipo: 'privada', nombre: 'Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos' },
+  oriente:  { tipo: 'alcaldia', clave: 'iztapalapa', nombre: 'Iztapalapa' },
+  energia:  { tipo: 'dependencia_federal', clave: 'cfe', nombre: 'Comisión Federal de Electricidad (CFE)' },
+  uni:      { tipo: 'dependencia_cdmx', clave: 'sedema_dgcorenadr', nombre: 'SEDEMA · Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)' }
 };
+const orgId = (k) => (ORG[k].clave ? `(SELECT id FROM apd.organizacion WHERE clave = ${q(ORG[k].clave)})` : q(uuid('org:' + k)));
 
 // ── Personas ─────────────────────────────────────────────────────────────
 const NOMBRES = ['Ana', 'Bruno', 'Carla', 'Diego', 'Elena', 'Fabián', 'Gloria', 'Héctor', 'Irene', 'Jorge', 'Karla',
@@ -145,9 +147,9 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   const perfil = tipo === 'dictaminador'
     ? { perfil: opciones.perfil || 'titulo', carrera: opciones.carrera || 'Biología', anios: opciones.anios ?? 4 }
     : { perfil: null, carrera: null, anios: null };
-  emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, organizacion_id, acreditacion_anterior_id,
+  emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, adscripcion, organizacion_id, acreditacion_anterior_id,
     perfil_academico, carrera, anios_experiencia, es_ficticio)
-  VALUES (${q(s.id)}, ${q(p.id)}, ${q(tipo)}, ${q(modalidad)}, ${opciones.org ? q(uuid('org:' + opciones.org)) : 'NULL'},
+  VALUES (${q(s.id)}, ${q(p.id)}, ${q(tipo)}, ${q(modalidad)}, ${opciones.org ? q(ORG[opciones.org].tipo) : 'NULL'}, ${opciones.org ? orgId(opciones.org) : 'NULL'},
     ${q(opciones.anterior)}, ${q(perfil.perfil)}, ${q(perfil.carrera)}, ${perfil.anios ?? 'NULL'}, true)`);
   // Documentos obligatorios que se cargan en línea, tomados del catálogo de la base (fuente única)
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
@@ -228,7 +230,7 @@ function grupo(clave, tipo, modalidad, fecha, org = null) {
   en(fecha, '09:00');
   como(COTEJO, 'personal');
   emitir(`INSERT INTO apd.grupo (id, tipo_acreditacion, modalidad, integracion, organizacion_id, es_ficticio)
-  VALUES (${q(g.id)}, ${q(tipo)}, ${q(modalidad)}, ${org ? "'especifico'" : "'combinado'"}, ${org ? q(uuid('org:' + org)) : 'NULL'}, true)`);
+  VALUES (${q(g.id)}, ${q(tipo)}, ${q(modalidad)}, ${org ? "'especifico'" : "'combinado'"}, ${org ? orgId(org) : 'NULL'}, true)`);
   return g;
 }
 function inscribir(g, lista, fecha) {
@@ -292,6 +294,7 @@ emitir(`-- Expedientes ficticios generados por herramientas/ficticios.mjs. Corte
 en('2026-07-01', '06:00');
 como('migracion-kobo', 'migracion');
 for (const [clave, o] of Object.entries(ORG)) {
+  if (o.clave) continue; // del catálogo inicial
   emitir(`INSERT INTO apd.organizacion (id, tipo, nombre, es_ficticio) VALUES (${q(uuid('org:' + clave))}, ${q(o.tipo)}, ${q(o.nombre)}, true)`);
 }
 

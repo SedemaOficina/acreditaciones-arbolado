@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-14",
+  "actualizado": "2026-10-15",
   "grupos": [
     {
       "id": "direccion",
@@ -450,6 +450,30 @@
       "desde": "2026-10-14",
       "titulo": "¿La verificación pública muestra la foto de la credencial?",
       "recomendacion": "No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física."
+    },
+    {
+      "id": "P52",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-15",
+      "titulo": "Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí)",
+      "recomendacion": "Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas."
+    },
+    {
+      "id": "P53",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-15",
+      "titulo": "¿La lista de Direcciones Generales de la SEDEMA está completa?",
+      "recomendacion": "Confirmarla con la Dirección; se agregó «Otra área de la Secretaría» con su nombre para que nadie quede sin opción. Lo que se escriba ahí muestra qué falta en la lista."
+    },
+    {
+      "id": "P54",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-15",
+      "titulo": "¿Dónde se ubican universidades y otras instituciones que no son dependencias (por ejemplo, la UNAM)?",
+      "recomendacion": "Una privada va como «empresa, consultoría o particular»; una pública autónoma, como «dependencia federal» u «otra» con su nombre. Si son frecuentes, agregar un quinto tipo «Institución educativa»."
     }
   ],
   "resueltos": [
@@ -502,6 +526,21 @@
       "titulo": "Credencial y comprobante de recepción",
       "como": "Al entregar se toma en el lugar la foto que lleva la credencial y la persona firma el comprobante de recepción; el personal carga los dos antes de registrar la entrega",
       "fecha": "2026-10-14"
+    },
+    {
+      "titulo": "Adscripción",
+      "como": "Sí/No, tipo y la pregunta de cada tipo (empresa, dependencia de la Ciudad con Dirección General en la SEDEMA, alcaldía, dependencia federal)",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Nombre de los archivos",
+      "como": "Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO; el original se conserva aparte",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Mayúsculas en la cuenta",
+      "como": "Nombre, apellidos y CURP se escriben y guardan en mayúsculas; correo y contraseña no cambian",
+      "fecha": "2026-10-15"
     }
   ]
 }

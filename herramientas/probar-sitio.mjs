@@ -91,7 +91,12 @@ async function entra(page, curp) {
   await page.waitForSelector('[data-solicitudes] .ficha, [data-solicitudes] .vacio');
 }
 const pasoVisible = 'section[data-paso]:not([hidden])';
-async function siguiente(page) { await page.click(`${pasoVisible} [data-accion="siguiente"]`); }
+async function siguiente(page) {
+  // La adscripción es obligatoria en el primer paso; donde la prueba no la revisa, se responde «No»
+  const sinAdscripcion = await page.$(`${pasoVisible} [data-campo="adscrito"]:not(:has(input:checked))`);
+  if (sinAdscripcion) await page.check('input[name="adscrito"][value="no"]', { force: true });
+  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
+}
 async function cargaObligatorios(page) {
   const nombres = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo));
   for (const n of nombres) {
@@ -196,7 +201,25 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForFunction(() => document.querySelector('input[name="tipo"][value="poda"]').checked);
   comprueba(await page.isDisabled('input[name="tipo"][value="dictaminador"]'), t('solicitud: dictaminador deshabilitado sin poda vigente, con su motivo'));
   comprueba(/solicitud nueva/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud: informa que le corresponde una solicitud nueva (no lo pregunta)'));
+  // Adscripción: cada respuesta abre sólo su pregunta, y al cambiarla se oculta lo que dependía de ella
+  comprueba(!(await page.isVisible('[data-campo="tipo_adscripcion"]')), t('adscripción: el tipo no se pregunta hasta responder «Sí»'));
+  await page.check('input[name="adscrito"][value="si"]', { force: true });
+  await page.check('input[name="tipo_adscripcion"][value="dependencia_cdmx"]', { force: true });
+  await page.check('input[name="dependencia_cdmx"][value="sedema"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="direccion_sedema"]') && !(await page.isVisible('[data-campo="alcaldia"]')),
+    t('adscripción: SEDEMA pregunta su Dirección General y nada más'));
+  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
+  comprueba(await page.getAttribute('input[name="direccion_sedema"] >> nth=0', 'aria-invalid') === 'true' || await page.locator('[data-campo="direccion_sedema"] .err:not(:empty)').count() > 0,
+    t('adscripción: sin Dirección General no avanza'));
+  await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="alcaldia"]') && !(await page.isVisible('[data-campo="direccion_sedema"]')),
+    t('adscripción: al cambiar a alcaldía se oculta la Dirección General y aparece la lista de alcaldías'));
+  await page.check('input[name="adscrito"][value="no"]', { force: true });
+  comprueba(!(await page.isVisible('[data-campo="alcaldia"]')) && !(await page.isVisible('[data-campo="tipo_adscripcion"]')),
+    t('adscripción: con «No» se oculta todo lo que dependía de ella'));
   await siguiente(page);
+  comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(await page.textContent('[data-ejemplo-archivo]')),
+    t(`documentos: dice cómo se guardarán sus archivos (${await page.textContent('[data-ejemplo-archivo]')})`));
   const n = await cargaObligatorios(page);
   comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
   await captura(page, `03-solicitud-documentos-${sufijo}`);

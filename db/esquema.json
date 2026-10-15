@@ -54,6 +54,7 @@
         { "nombre": "descripcion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Características que debe cumplir" },
         { "nombre": "forma", "tipo": "text", "nulo": false, "descripcion": "documento: se carga un archivo; registro: el sistema lo comprueba en el padrón" },
         { "nombre": "momento", "tipo": "text", "nulo": false, "descripcion": "en_linea: lo carga la persona al solicitar; cotejo: lo carga el personal de la Secretaría en la cita presencial; entrega: lo carga el personal al entregar la acreditación (comprobante de recepción firmado y fotografía de la credencial)" },
+        { "nombre": "nombre_archivo", "tipo": "text", "nulo": true, "descripcion": "Tipo de documento con que se nombra el archivo guardado (por ejemplo CURP o IDENTIFICACION OFICIAL), en mayúsculas y sin acentos; si está vacío se usa el nombre del requisito" },
         { "nombre": "formatos", "tipo": "text[]", "nulo": false, "defecto": "ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[]", "descripcion": "Tipos de archivo que admite: PDF, JPG o PNG; una fotografía sólo admite imagen" },
         { "nombre": "activo", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si se pide en solicitudes nuevas" }
       ],
@@ -61,6 +62,7 @@
         "CONSTRAINT requisito_pk PRIMARY KEY (clave)",
         "CONSTRAINT requisito_forma_ck CHECK (forma IN ('documento', 'registro'))",
         "CONSTRAINT requisito_momento_ck CHECK (momento IN ('en_linea', 'cotejo', 'entrega'))",
+        "CONSTRAINT requisito_nombre_archivo_ck CHECK (nombre_archivo IS NULL OR nombre_archivo ~ '^[A-Z0-9Ñ ]+$')",
         "CONSTRAINT requisito_formatos_ck CHECK (cardinality(formatos) > 0 AND formatos <@ ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[])"
       ]
     },
@@ -83,10 +85,11 @@
     },
     {
       "nombre": "organizacion",
-      "descripcion": "Catálogo de organizaciones de procedencia (empresas, alcaldías, dependencias, instituciones). Sirve para agrupar la demanda; no inscribe ni paga.",
+      "descripcion": "Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
-        { "nombre": "tipo", "tipo": "text", "nulo": false, "descripcion": "empresa, alcaldia, dependencia_publica, institucion_academica u otra" },
+        { "nombre": "tipo", "tipo": "text", "nulo": false, "descripcion": "privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia o dependencia_federal" },
+        { "nombre": "clave", "tipo": "text", "nulo": true, "descripcion": "Clave estable de las que el formulario ofrece como opción (sobse, sedema, paot, cfe, una por alcaldía); vacía en las que se agregan escritas" },
         { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre oficial" },
         { "nombre": "nombre_normalizado", "tipo": "text", "nulo": false, "descripcion": "Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.»" },
         { "nombre": "activa", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si aparece al solicitar" },
@@ -94,7 +97,8 @@
       ],
       "restricciones": [
         "CONSTRAINT organizacion_pk PRIMARY KEY (id)",
-        "CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('empresa', 'alcaldia', 'dependencia_publica', 'institucion_academica', 'otra'))",
+        "CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))",
+        "CONSTRAINT organizacion_clave_uk UNIQUE (clave)",
         "CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)"
       ]
     },
@@ -142,6 +146,7 @@
         { "nombre": "tipo_mime", "tipo": "text", "nulo": false, "descripcion": "image/jpeg o image/png" },
         { "nombre": "tamano_bytes", "tipo": "integer", "nulo": false, "descripcion": "Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes" },
         { "nombre": "sha256", "tipo": "text", "nulo": false, "descripcion": "Suma del archivo, para comprobar el almacén" },
+        { "nombre": "nombre_archivo", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla" },
         { "nombre": "origen", "tipo": "text", "nulo": false, "descripcion": "en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'pendiente'", "descripcion": "pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó" },
         { "nombre": "vigente", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Es la última fotografía de la persona" },
@@ -224,7 +229,8 @@
         { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Persona solicitante" },
         { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
         { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
-        { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Organización de procedencia; vacía para particulares" },
+        { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Tipo de institución a la que está adscrita la persona: privada, dependencia_cdmx, alcaldia o dependencia_federal; vacía si no trabaja para nadie" },
+        { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Institución de adscripción, del catálogo; de su mismo tipo. Vacía sólo si no está adscrita" },
         { "nombre": "acreditacion_anterior_id", "tipo": "uuid", "nulo": true, "descripcion": "Acreditación que se renueva; obligatoria en renovación" },
         { "nombre": "factura_rfc", "tipo": "text", "nulo": true, "descripcion": "RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo" },
         { "nombre": "factura_razon_social", "tipo": "text", "nulo": true, "descripcion": "Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo" },
@@ -252,6 +258,8 @@
         "CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)",
         "CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
         "CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
+        "CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))",
+        "CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL))",
         "CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)",
         "CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))",
         "CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))",
@@ -299,6 +307,7 @@
         { "nombre": "requisito", "tipo": "text", "nulo": false, "descripcion": "Requisito que atiende" },
         { "nombre": "archivo_clave", "tipo": "text", "nulo": false, "descripcion": "Clave exacta en el almacén, con sello propio" },
         { "nombre": "nombre_original", "tipo": "text", "nulo": false, "descripcion": "Nombre con que se cargó" },
+        { "nombre": "nombre_archivo", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_JUAN RAMIREZ OSORIO.pdf). Lo pone la base al cargarlo" },
         { "nombre": "tipo_mime", "tipo": "text", "nulo": false, "descripcion": "application/pdf, image/jpeg o image/png" },
         { "nombre": "tamano_bytes", "tipo": "integer", "nulo": false, "descripcion": "Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes" },
         { "nombre": "sha256", "tipo": "text", "nulo": false, "descripcion": "Suma del archivo, para comprobar el almacén" },

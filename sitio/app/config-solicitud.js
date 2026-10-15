@@ -5,7 +5,18 @@
    validaciones.config.js:
      · archivos: 5 MB por archivo (parámetro tamano_maximo_archivo_bytes de
        la base) y sólo PDF, JPG y PNG (los tipos que admite apd.documento).
-   El catálogo de organizaciones lo da datos/catalogos.js (generado).
+   El catálogo de alcaldías lo da datos/catalogos.js (generado de apd.organizacion).
+
+   Adscripción (decisiones 2026-10-15). La API convierte las respuestas en solicitud.adscripcion y
+   solicitud.organizacion_id (catálogo apd.organizacion, buscado por clave o, si es un nombre escrito, por
+   nombre normalizado; si no existe, lo agrega con su tipo):
+     · adscrito = no                                   → sin adscripción ni institución;
+     · privada + empresa_nombre                        → institución «privada» con ese nombre;
+     · dependencia_cdmx = sobse | paot                 → la de esa clave;
+     · dependencia_cdmx = sedema + direccion_sedema    → clave sedema_<siglas>; «otro» → «SEDEMA · <nombre>»;
+     · dependencia_cdmx = otro + dependencia_cdmx_otra → institución con ese nombre;
+     · alcaldia                                        → la de ese nombre (catálogo cerrado);
+     · dependencia_federal = cfe | otro (+ nombre)     → la de clave cfe o la del nombre escrito.
 
    El envío es una SIMULACIÓN: asigna un folio con la forma de la base
    (APD-S-AAAA-NNNNN) y no guarda nada fuera de esta pestaña. En la etapa 3

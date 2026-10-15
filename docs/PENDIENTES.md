@@ -5,7 +5,7 @@ mismo contenido está en el tablero «Pendientes del sistema», donde se marca c
 pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resueltos» y la decisión se anota en
 `docs/DECISIONES.md`.
 
-Actualizado: 14/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
+Actualizado: 15/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
 primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa etapa; *no* = se puede avanzar.
 
 ## Dirección de Infraestructura Verde (contenido del trámite)
@@ -24,6 +24,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P10 | Lugar, días y horario de entrega de acreditaciones | Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente. | datos reales |
 | P48 | ¿La credencial se imprime en el lugar de entrega? | Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento. | etapa 2 |
 | P49 | Especificación de la foto de la credencial y diseño de la credencial | Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. | datos reales |
+| P53 | ¿La lista de Direcciones Generales de la SEDEMA está completa? | Confirmarla con la Dirección; se agregó «Otra área de la Secretaría» con su nombre para que nadie quede sin opción. Lo que se escriba ahí muestra qué falta en la lista. | datos reales |
+| P54 | ¿Dónde se ubican universidades y otras instituciones que no son dependencias (por ejemplo, la UNAM)? | Una privada va como «empresa, consultoría o particular»; una pública autónoma, como «dependencia federal» u «otra» con su nombre. Si son frecuentes, agregar un quinto tipo «Institución educativa». | no |
 
 ## Liber (formatos y definiciones del sistema)
 
@@ -98,6 +100,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P45 | La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS | Reportarlo y proponer la hoja con tokens que hizo este proyecto. | no |
 | P46 | validar.mjs exige en «datos» los campos de archivos que el navegador no manda ahí | Reportarlo al estándar. Mientras, la API pone en «datos» el número de archivos recibidos de cada campo antes de validar (así lo prueba probar-esquemas.mjs). | etapa 3 |
 | P47 | El núcleo pone aria-required en el botón de la zona de carga, que no lo admite | Reportarlo al estándar; el proyecto lo quita sólo de ese botón (app/apd.js). | no |
+| P52 | Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí) | Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas. | no |
 
 ## Resueltos
 
@@ -113,3 +116,6 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Primera pregunta de la solicitud | Sólo se pregunta la acreditación (poda y derribo o dictaminador técnico); si es nueva o renovación lo decide el historial y se informa, no se pregunta | 14/10/2026 |
 | Fotografía de la persona | Obligatoria al crear la cuenta; el personal la confirma en el cotejo o toma una nueva ahí; sin ella no se envía la solicitud ni se concluye el cotejo | 14/10/2026 |
 | Credencial y comprobante de recepción | Al entregar se toma en el lugar la foto que lleva la credencial y la persona firma el comprobante de recepción; el personal carga los dos antes de registrar la entrega | 14/10/2026 |
+| Adscripción | Sí/No, tipo y la pregunta de cada tipo (empresa, dependencia de la Ciudad con Dirección General en la SEDEMA, alcaldía, dependencia federal) | 15/10/2026 |
+| Nombre de los archivos | Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO; el original se conserva aparte | 15/10/2026 |
+| Mayúsculas en la cuenta | Nombre, apellidos y CURP se escriben y guardan en mayúsculas; correo y contraseña no cambian | 15/10/2026 |
