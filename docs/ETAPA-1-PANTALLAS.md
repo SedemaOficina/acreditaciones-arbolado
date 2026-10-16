@@ -1,6 +1,6 @@
 # Etapa 1 · Pantallas de la persona solicitante
 
-Versión de prueba 0.1, con datos ficticios. Construida con el **Estándar de formularios del SIA v1.0.0**
+Versión de prueba 0.N (sube con cada publicación; ver `docs/VERSIONES.md`), con datos ficticios. Construida con el **Estándar de formularios del SIA v1.0.0**
 (`SedemaOficina/estandar-formularios`), sin modificarlo. Ninguna pantalla guarda nada fuera de la pestaña:
 el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.json` hasta la etapa 3.
 
@@ -24,7 +24,10 @@ se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
 `app/pruebas.js`, en todas las pantallas: botón fijo «Menú de pruebas» que abre un panel para entrar como
 cualquier persona ficticia (una por situación) o como persona nueva, desactivar o activar las preguntas
 obligatorias (los formatos y las comprobaciones de la CURP siguen), llenar el formulario con datos ficticios (en la cuenta, con una fotografía ficticia dibujada en el navegador),
-saltar a cualquier paso de la solicitud, simular fallo, límite o envío lento, e ir a cualquier pantalla. No
+saltar a cualquier paso de la solicitud, simular fallo, límite o envío lento, e ir a cualquier pantalla.
+También pone la página en modo de prueba: los **datos internos** (`data-interno`: lo que calcula el sistema y la
+persona no ve, como el sexo tomado de la CURP o los campos auxiliares `sin_segundo_apellido` y `tramite`) se
+muestran en un recuadro amarillo con su nota y su valor; sin este archivo, en producción, quedan ocultos. No
 aparece si `VERSION` no es 0.N; al pasar al SIA se quita de las páginas con el acceso simulado.
 
 ## 2. Archivos del estándar que se copian

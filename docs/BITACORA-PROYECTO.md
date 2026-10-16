@@ -248,3 +248,14 @@ accesibilidad sin hallazgos.
 - `app/apd.css` agrega el estado deshabilitado que esa variante no trae (P56).
 
 **Verificado**: 137 comprobaciones del sitio, accesibilidad sin hallazgos; auditor de CSS y de campos correctos.
+
+## 2026-10-15 · Bloque 18 · Datos internos y número de versión por publicación
+
+- `data-interno`: el sexo (cuenta y «Mis datos») y los auxiliares `sin_segundo_apellido` y `tramite` no se muestran
+  a la persona. En la versión de prueba (`app/pruebas.js` pone `.modo-pruebas`) salen en un recuadro amarillo
+  con su nota («en producción no se muestra…») y, los auxiliares, con su valor al momento.
+- `herramientas/nueva-version.mjs`, llamado por `publicar-sitio.sh`: sube 0.N → 0.N+1, actualiza el `?v=` de las
+  páginas y anota en `docs/VERSIONES.md` el número, la fecha y qué cambió. La 0.2 es la primera con este esquema.
+
+**Verificado**: 141 comprobaciones del sitio (también que en producción el sexo queda oculto), accesibilidad sin
+hallazgos; auditor de CSS y de campos correctos.

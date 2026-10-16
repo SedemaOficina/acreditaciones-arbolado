@@ -21,6 +21,33 @@
   const esPrueba = Boolean(document.querySelector('.entorno-pruebas'));
   if (!esPrueba) return;
 
+  /* 0. Datos internos ([data-interno]): lo que calcula el sistema y va a la base no lo ve la persona; aquí se
+        muestra en amarillo con su nota y, si es un campo oculto, con su valor al momento. */
+  document.documentElement.classList.add('modo-pruebas');
+  function refrescaInternos() {
+    for (const o of document.querySelectorAll('[data-interno-valor]')) {
+      const i = o.closest('[data-interno]').querySelector('input[type="hidden"]');
+      const v = i && i.value ? i.value : '(vacío)';
+      if (o.textContent !== v) o.textContent = v; // sin cambio no se toca: el observador no se vuelve a disparar
+    }
+  }
+  function marcaInternos() {
+    for (const caja of document.querySelectorAll('[data-interno]')) {
+      if (caja.querySelector(':scope > .nota-interna')) continue;
+      if (caja.querySelector('input[type="hidden"]')) {
+        caja.prepend(APD.el('p', { class: 'etiqueta', texto: caja.dataset.internoEtiqueta || caja.dataset.campo || 'Dato interno' }));
+        caja.append(APD.el('output', { class: 'interno-valor', 'data-interno-valor': '' }));
+      }
+      caja.append(APD.el('p', { class: 'nota-interna', texto: `Sólo en la versión de prueba; en producción no se muestra. ${caja.dataset.interno}` }));
+    }
+    refrescaInternos();
+  }
+  let pendiente = 0;
+  new MutationObserver(() => { clearTimeout(pendiente); pendiente = setTimeout(marcaInternos, 50); })
+    .observe(document.documentElement, { childList: true, subtree: true });
+  for (const ev of ['input', 'change']) document.addEventListener(ev, () => setTimeout(refrescaInternos));
+  document.addEventListener('DOMContentLoaded', marcaInternos);
+
   const lee = () => { try { return window.sessionStorage.getItem(CLAVE) === 'si'; } catch (e) { return false; } };
   const escribe = (v) => { try { window.sessionStorage.setItem(CLAVE, v ? 'si' : ''); } catch (e) { /* sin almacenamiento: no se recuerda */ } };
   const pagina = (location.pathname.split('/').pop() || 'index.html');

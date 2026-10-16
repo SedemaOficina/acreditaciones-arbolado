@@ -68,9 +68,10 @@
       ['Nombre', APD.nombreCompleto(p)],
       ['CURP', curp],
       ['Fecha de nacimiento', curp ? APD.fecha(nacimientoDe(curp)) : ''],
-      ['Sexo', SEXO[p.sexo || curp[10]] || ''],
       ['Expediente', p.numero_expediente || '']
-    ]));
+    ]), // El sexo es dato interno (se toma de la CURP): la persona no lo ve; en la versión de prueba sale en amarillo
+    el('div', { 'data-interno': 'Lo calcula el sistema con la CURP (posición 11). Se guarda en la base: apd.solicitante.sexo.' },
+      [APD.datosLista([['Sexo', SEXO[p.sexo || curp[10]] || '']])]));
     pon('correo', p.correo); pon('correo2', p.correo); pon('telefono', p.telefono);
     ponAdscripcion(datos, p);
     pintaFoto(datos, p);

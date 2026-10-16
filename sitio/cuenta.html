@@ -59,7 +59,8 @@
     </div>
     <!-- No es una pregunta: lo llena app/cuenta.js («si» cuando el segundo apellido está vacío) para que la
          CURP se compruebe también sin segundo apellido. El servidor lo calcula por su cuenta, no lo recibe. -->
-    <div class="solo-lector" aria-hidden="true" data-campo="sin_segundo_apellido" data-auxiliar data-uso="Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página.">
+    <div class="solo-lector" aria-hidden="true" data-campo="sin_segundo_apellido" data-auxiliar data-uso="Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página."
+         data-interno="Lo calcula la página: «si» cuando el segundo apellido queda vacío. Sirve para comprobar la CURP; no se guarda en la base." data-interno-etiqueta="Sin segundo apellido (calculado)">
       <input type="hidden" id="sin_segundo_apellido" name="sin_segundo_apellido" value="si">
     </div>
 
@@ -88,8 +89,8 @@
     </div>
 
     <!-- Sexo (decisión 2026-10-15): se toma de la CURP (posición 11), como pide el estándar; no se pregunta aparte.
-         La base lo calcula igual (apd.solicitante.sexo). -->
-    <div class="campo" data-campo="sexo" data-sensible data-finalidad="Estadística de la población acreditada por sexo." data-uso="Derivado de la CURP; no se pide por separado.">
+         La base lo calcula igual (apd.solicitante.sexo). Dato interno: la persona no lo ve (data-interno). -->
+    <div class="campo" data-campo="sexo" data-interno="Lo calcula el sistema con la CURP (posición 11). Se guarda en la base: apd.solicitante.sexo." data-sensible data-finalidad="Estadística de la población acreditada por sexo." data-uso="Derivado de la CURP; no se pide por separado.">
       <label class="etiqueta" for="sexo">Sexo</label>
       <p class="ayuda">Se toma de tu CURP.</p>
       <!-- autocomplete off: es de sólo lectura y se llena desde la CURP. -->

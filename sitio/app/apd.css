@@ -87,3 +87,14 @@
 .opcion-fila:has(.opcion-fila-input:disabled) { opacity: var(--op-inactivo); cursor: not-allowed; }
 .opcion-fila:has(.opcion-fila-input:disabled):hover { border-color: var(--borde); }
 
+/* Datos internos (decisión 2026-10-15): los que calcula el sistema y van a la base, como el sexo tomado de la CURP,
+   no los ve la persona. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
+   nota, para revisarlos; al pasar al SIA se quita pruebas.js y quedan ocultos. */
+[data-interno] { display: none; }
+.modo-pruebas [data-interno] {
+  display: block; position: static; width: auto; height: auto; margin: 0 0 var(--e-5); overflow: visible; clip: auto;
+  white-space: normal; padding: var(--e-3); background: var(--pend-bg); border: var(--b-1) dashed var(--pend); border-radius: var(--r-caja);
+}
+.nota-interna { margin: var(--e-2) 0 0; font-size: var(--t-sm); color: var(--pend-txt); }
+.interno-valor { display: block; font-family: var(--fuente-mono); color: var(--texto); }
+

@@ -9,7 +9,7 @@ Sustituye por completo el uso de Kobo ToolBox. Se construye para instalarse en e
 Ambiental (SIA) de la Secretaría del Medio Ambiente, siguiendo `docs/GUIA-PROYECTOS-SIA.md` desde el
 principio.
 
-**Versión de prueba 0.1** (archivo `VERSION`). Todos los datos de este repositorio son **ficticios**.
+**Versión de prueba 0.N** (archivo `VERSION`): sube con cada publicación y se ve abajo de cada pantalla; el historial está en `docs/VERSIONES.md`. Todos los datos de este repositorio son **ficticios**.
 
 ## Estado
 

@@ -156,6 +156,16 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.inputValue('#correo') === 'Nadia@Ejemplo.local', t('cuenta: el correo no se pasa a mayúsculas'));
   await page.fill('#curp', NUEVA.curp); await page.press('#curp', 'Tab');
   comprueba(['Mujer', 'Hombre'].includes(await page.inputValue('#sexo')), t(`cuenta: el sexo se toma de la CURP (${await page.inputValue('#sexo')})`));
+  // Datos internos: en la versión de prueba se ven en amarillo con su nota; sin el modo de prueba, no se ven
+  comprueba(await page.isVisible('[data-campo="sexo"] .nota-interna') && await page.isVisible('[data-campo="sin_segundo_apellido"] [data-interno-valor]'),
+    t('datos internos: en la versión de prueba el sexo y el auxiliar se ven con su nota'));
+  const ocultoEnProduccion = await page.evaluate(() => {
+    document.documentElement.classList.remove('modo-pruebas');
+    const r = getComputedStyle(document.querySelector('[data-campo="sexo"]')).display === 'none';
+    document.documentElement.classList.add('modo-pruebas');
+    return r;
+  });
+  comprueba(ocultoEnProduccion, t('datos internos: sin el modo de prueba (producción) el sexo no se muestra'));
   // Adscripción: cada respuesta abre sólo su pregunta, y al cambiarla se oculta lo que dependía de ella
   comprueba(!(await page.isVisible('[data-campo="tipo_adscripcion"]')), t('adscripción: el tipo no se pregunta hasta responder «Sí»'));
   comprueba(/independiente/.test(await page.textContent('[data-campo="adscrito"]')), t('adscripción: «No, soy independiente» es una respuesta explícita'));
