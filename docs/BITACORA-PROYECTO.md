@@ -360,3 +360,6 @@ auditor de CSS y de campos correctos.
 
 **Verificado**: esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos; auditor de CSS y de
 campos correctos.
+- Adscripción: las opciones de «¿De qué tipo es?», dependencia de la Ciudad, dependencia federal e institución educativa
+  en dos columnas (`.opciones-en-linea`); las preguntas siguen una debajo de otra porque dependen de la anterior. La lista
+  de Direcciones Generales queda una por renglón por sus nombres largos.
