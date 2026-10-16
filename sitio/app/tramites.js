@@ -54,7 +54,7 @@
 
     if (s.estado === 'validada_en_linea' && s.cita_en) pares.push(['Cita de cotejo', fechaHora(s.cita_en)]);
     // El expediente físico es de la persona y lo comparten todos sus trámites; se abre en el primer cotejo
-    if (persona.numero_expediente && !['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'cancelada', 'concluida_sin_atender'].includes(s.estado)) {
+    if (persona.numero_expediente && !['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'cancelada', 'concluida_sin_atender', 'rechazada'].includes(s.estado)) {
       pares.push(['Número de expediente', persona.numero_expediente]);
     }
 
@@ -133,7 +133,7 @@
     if (s.estado === 'aprobada') sigue = 'Aprobaste el examen. La Secretaría emite tu acreditación; aquí verás cuándo puedes recogerla.';
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
-    if (s.motivo_cierre) pares.push(['Motivo', APD.limpia(s.motivo_cierre)]);
+    if (s.motivo_cierre) pares.push([s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo', APD.limpia(s.motivo_cierre)]);
 
     const acciones = [];
     if (['borrador', 'con_observaciones'].includes(s.estado)) {

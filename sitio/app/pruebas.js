@@ -226,7 +226,8 @@
     }
     hijos.push(seccion('Pantallas', [el('ul', { class: 'menu-pruebas-lista' }, [
       ['index.html', 'Inicio'], ['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'],
-      ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud'], ['verificar.html', 'Verificar una acreditación']
+      ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud'], ['verificar.html', 'Verificar una acreditación'],
+      ['revision.html', 'Personal · Revisión documental']
     ].map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))]));
     hijos.push(estado);
     for (const h of hijos) if (h) dialogo.append(h);

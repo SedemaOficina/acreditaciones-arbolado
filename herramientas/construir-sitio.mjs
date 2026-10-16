@@ -20,7 +20,7 @@ if (!estandar || !existsSync(join(estandar, 'codigo/manifiesto.json'))) {
 const sitio = join(raiz, 'sitio');
 
 // 1 · Estándar: núcleo y sólo los módulos que usa el sitio, en su forma original
-const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon'];
+const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
 for (const d of ['css', 'js', 'fuentes', 'iconos', 'imagenes']) cpSync(join(estandar, 'codigo', d), join(destino, d), { recursive: true });
@@ -42,7 +42,7 @@ cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-vi
 // La hoja de la plantilla usa valores literales; aquí va su equivalente con los tokens del estándar
 cpSync(join(plantillaVersion, 'version-visible.formkit.css'), join(sitio, 'app/version-visible.css'));
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
-const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'datos.html', 'verificar.html'];
+const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html'];
 for (const p of paginas) {
   const ruta = join(sitio, p);
   const html = readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${version}`);
@@ -123,6 +123,65 @@ const a = html.indexOf(inicio), b = html.indexOf(fin);
 if (a < 0 || b < 0) { console.error('Faltan los marcadores de documentos en sitio/solicitud.html'); process.exit(1); }
 writeFileSync(ruta, html.slice(0, a + inicio.length) + '\n' + bloques.join('\n') + '\n        ' + html.slice(b));
 
+// 4b · Revisión documental del personal (etapa 2): un bloque por requisito que se carga en línea, en el orden del
+// catálogo. Se revisa sólo si la solicitud lo tiene cargado y no se rechaza por perfil: lo dice revisar_<requisito>,
+// que calculan la página y el servidor (una sola condición por campo, P38).
+// Motivos frecuentes de observación (decisión 2026-10-16; la Dirección puede ajustarlos).
+const MOTIVOS = ['No se lee completo', 'Está vencido', 'No corresponde al requisito', 'Falta una página', 'No coincide con el nombre de la cuenta'];
+const enLinea = [...new Map(datos.requisito_curso
+  .filter((rc) => requisito[rc.requisito].forma === 'documento' && requisito[rc.requisito].momento === 'en_linea')
+  .sort((x, y) => x.orden - y.orden)
+  .map((rc) => [rc.requisito, requisito[rc.requisito]])).values()];
+const revisionDocs = enLinea.map((r) => {
+  const k = r.clave;
+  return `        <div data-si="revisar_${k}=si">
+          <article class="doc-revision" data-doc="${k}">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">${esc(r.nombre)}</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <details class="doc-vista">
+              <summary>Ver documento</summary>
+              <div class="visor-hoja" data-doc-visor>
+                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <p>Aquí se ve el documento.</p>
+                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
+              </div>
+            </details>
+            <fieldset class="grupo" data-campo="decision_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_${k}">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para ${esc(r.nombre)}">
+${MOTIVOS.map((m) => `                <button type="button" class="sugerencia" data-sugerencia="${esc(m)}">${esc(m)}</button>`).join('\n')}
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>`;
+});
+const auxiliares = enLinea.map((r) => `      <div class="solo-lector" aria-hidden="true" data-campo="revisar_${r.clave}" data-auxiliar data-uso="Pedir la revisión de «${esc(r.nombre)}» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_${r.clave}" name="revisar_${r.clave}" value="no"></div>`);
+{
+  const r = join(sitio, 'revisar.html');
+  let h = readFileSync(r, 'utf8');
+  for (const [marca, contenido] of [['revision-documentos', revisionDocs.join('\n')], ['revision-auxiliares', auxiliares.join('\n')]]) {
+    const ini = h.match(new RegExp(`^( *)<!-- ${marca}:inicio[^>]*-->`, 'm'));
+    const f = h.indexOf(`<!-- ${marca}:fin -->`);
+    if (!ini || f < 0) { console.error(`Faltan los marcadores ${marca} en sitio/revisar.html`); process.exit(1); }
+    h = h.slice(0, ini.index + ini[0].length) + '\n' + contenido + '\n' + ini[1] + h.slice(f);
+  }
+  writeFileSync(r, h);
+}
+
 // 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mis datos»
 const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd()
   .replace(/^( *)<!-- alcaldias:opciones -->$/m, (_, s) => alcaldias.map((o) => `${s}<option value="${esc(o.clave)}">${esc(o.nombre)}</option>`).join('\n'));
@@ -137,4 +196,4 @@ for (const p of ['cuenta.html', 'datos.html']) {
   writeFileSync(r, h.slice(0, ini.index + ini[0].length) + '\n' + dentro + '\n' + sangria + h.slice(fin2));
 }
 
-console.log(`sitio/ construido · versión ${version} · estándar ${cambios ? cambios[1] : '?'} · ${alcaldias.length} alcaldías · ${bloques.length} grupos de documentos`);
+console.log(`sitio/ construido · versión ${version} · estándar ${cambios ? cambios[1] : '?'} · ${alcaldias.length} alcaldías · ${bloques.length} grupos de documentos · ${enLinea.length} documentos en la revisión`);

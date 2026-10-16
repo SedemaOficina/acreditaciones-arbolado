@@ -22,7 +22,7 @@ const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalT
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-for (const f of ['cuenta', 'datos', 'entrar', 'solicitud', 'verificar']) {
+for (const f of ['cuenta', 'datos', 'entrar', 'solicitud', 'verificar', 'revisar']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
@@ -45,8 +45,23 @@ function comoServidor(form, datos) {
     if (d.tipo) d.tramite = `${d.tipo}_${d._modalidad || 'nueva'}`;
     delete d._modalidad;
   }
+  // Revisión documental del personal (etapa 2): el servidor calcula los auxiliares con la base (perfil de la
+  // solicitud y documentos cargados) y con las decisiones recibidas, igual que app/revisar.js. El caso indica
+  // el perfil en `_perfil` y los documentos cargados en `_cargados`.
+  if (form === 'revisar') {
+    const perfil = d._perfil || 'no_aplica';
+    const cargados = d._cargados || [];
+    delete d._perfil; delete d._cargados;
+    const rechazo = (perfil === 'por_clasificar' && d.clasificacion === 'no_afin') || (perfil === 'no_cumple' && d.comprobante_confirma === 'si');
+    d.perfil_revision = perfil;
+    for (const k of REQUISITOS_EN_LINEA) d[`revisar_${k}`] = !rechazo && cargados.includes(k) ? 'si' : 'no';
+    const decisiones = cargados.map((k) => d[`decision_${k}`]);
+    const perfilListo = perfil === 'por_clasificar' ? Boolean(d.clasificacion) : perfil === 'no_cumple' ? Boolean(d.comprobante_confirma) : true;
+    d.resultado = rechazo ? 'rechazada' : decisiones.includes('con_observacion') ? 'con_observaciones' : decisiones.every(Boolean) && perfilListo ? 'validada' : '';
+  }
   return d;
 }
+const REQUISITOS_EN_LINEA = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia'];
 // El navegador no manda los campos de archivos en `datos` (el módulo los declara fuera de datos), pero
 // validar.mjs exige un valor en `datos` para un campo obligatorio de archivos. Como lo hará la API: lo que
 // venga en `datos` para esos campos se descarta y se pone el número de archivos recibidos de cada uno.
@@ -133,6 +148,26 @@ const misDatos = { correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local'
 caso('Mis datos: cambio de adscripción a CFE se acepta, sin fotografía nueva', 'datos', misDatos, true);
 caso('Mis datos: otra dependencia federal sin su nombre se rechaza', 'datos', { ...misDatos, dependencia_federal: 'otro' }, ['dependencia_federal_otra']);
 caso('Mis datos: la CURP o el nombre no se cambian aquí (campo no declarado)', 'datos', { ...misDatos, curp: curpNadia }, ['curp']);
+
+// Revisión documental (personal): validar, observar o rechazar, con lo que cada resultado pide
+const PODA = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
+const DICT = REQUISITOS_EN_LINEA;
+const acepta = (lista) => Object.fromEntries(lista.map((k) => [`decision_${k}`, 'aceptado']));
+const cita = { cita_fecha: '2026-10-21', cita_hora: '10:00', cita_sede: 'sede_prueba' };
+caso('Revisión: poda con todo aceptado y su cita se valida', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita }, true);
+caso('Revisión: validar sin cita se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA) }, ['cita_fecha', 'cita_hora', 'cita_sede']);
+caso('Revisión: una hora que no existe se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '25:00' }, ['cita_hora']);
+caso('Revisión: un documento sin decidir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA.slice(1)) }, ['decision_identificacion_oficial']);
+caso('Revisión: observar un documento sin decir qué corregir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), decision_curp: 'con_observacion' }, ['observacion_curp']);
+caso('Revisión: con una observación no se pide la cita', 'revisar', { _cargados: PODA, ...acepta(PODA), decision_curp: 'con_observacion', observacion_curp: 'No se lee completo.' }, true);
+caso('Revisión: un documento que no está cargado no se revisa (renovación)', 'revisar', { _cargados: ['constancia_situacion_fiscal'], ...acepta(['constancia_situacion_fiscal']), ...cita }, true);
+caso('Revisión: carrera por clasificar sin clasificar se rechaza', 'revisar', { _perfil: 'por_clasificar', _cargados: DICT, ...acepta(DICT), ...cita }, ['clasificacion']);
+caso('Revisión: carrera afín con todo aceptado se valida', 'revisar', { _perfil: 'por_clasificar', _cargados: DICT, clasificacion: 'afin', ...acepta(DICT), ...cita }, true);
+caso('Revisión: carrera no afín se rechaza sin revisar documentos, pero con motivo', 'revisar', { _perfil: 'por_clasificar', _cargados: DICT, clasificacion: 'no_afin' }, ['motivo_rechazo']);
+caso('Revisión: carrera no afín con su motivo se rechaza', 'revisar', { _perfil: 'por_clasificar', _cargados: DICT, clasificacion: 'no_afin', motivo_rechazo: 'La carrera no es afín al manejo del arbolado.' }, true);
+caso('Revisión: perfil que no cumple sin decidir con el comprobante se rechaza', 'revisar', { _perfil: 'no_cumple', _cargados: DICT, ...acepta(DICT), ...cita }, ['comprobante_confirma']);
+caso('Revisión: el comprobante muestra otro grado → se observa el comprobante', 'revisar', { _perfil: 'no_cumple', _cargados: DICT, comprobante_confirma: 'no', ...acepta(DICT), decision_comprobante_estudios: 'con_observacion', observacion_comprobante_estudios: 'Su comprobante muestra carta de pasante.' }, true);
+caso('Revisión: una clasificación que no existe se rechaza', 'revisar', { _perfil: 'por_clasificar', _cargados: DICT, clasificacion: 'principal', ...acepta(DICT), ...cita }, ['clasificacion']);
 
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);

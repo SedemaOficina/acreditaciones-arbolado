@@ -29,6 +29,19 @@ const GRUPO_EN_CURSO = `(SELECT id FROM apd.grupo WHERE estado = 'en_curso' LIMI
 const BORRADOR = `(SELECT id FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1)`;
 const ENVIADA = `(SELECT id FROM apd.solicitud WHERE estado = 'enviada' ORDER BY folio LIMIT 1)`;
 const DICT_OBS = `(SELECT id FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1)`;
+const POR_CLASIFICAR = `(SELECT id FROM apd.solicitud WHERE estado = 'enviada' AND perfil_academico = 'por_clasificar' ORDER BY folio LIMIT 1)`;
+const PODA_ENVIADA = `(SELECT id FROM apd.solicitud WHERE estado = 'enviada' AND tipo_acreditacion = 'poda' ORDER BY folio LIMIT 1)`;
+// Deja la solicitud lista para validar: documentos aceptados y cita
+const LISTA_PARA_VALIDAR = (sol) => `
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${sol} AND vigente;
+     UPDATE apd.solicitud SET cita_en = '2026-10-21 10:00-06' WHERE id = ${sol};`;
+// La solicitud de dictaminador con observaciones, corregida a licenciatura trunca y reenviada por la persona
+const TRUNCA_ENVIADA = `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'trunco', carrera = 'Biología' WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};
+     SELECT set_config('apd.usuario_tipo', 'personal', true);
+     CREATE TEMP TABLE caso AS SELECT id FROM apd.solicitud WHERE estado = 'enviada' AND perfil_academico = 'no_cumple' ORDER BY folio LIMIT 1;`;
 const LISTA_DICT = `(SELECT solicitud_id FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1)`;
 const DOC_PEQUENO = (sol, req, tam = 1000) =>
   `INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
@@ -462,6 +475,53 @@ const casos = [
      UPDATE apd.solicitud SET nivel_estudios = 'maestria', estatus_estudios = 'en_curso', carrera = 'Ingeniería Forestal' WHERE id = ${DICT_OBS};
      DO $$ BEGIN ASSERT (SELECT perfil_academico = 'licenciatura_afin' AND experiencia_minima = 2
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
+  // Revisión documental del dictaminador (decisiones 2026-10-16): clasificar la carrera, validar, rechazar
+  ['Con la carrera sin clasificar no se valida', { codigo: 'carrera_sin_clasificar' }, null, `${LISTA_PARA_VALIDAR(POR_CLASIFICAR)}
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${POR_CLASIFICAR}, 'validada', 'prueba.automatica');`],
+  ['La persona solicitante no clasifica carreras', { codigo: 'clasificacion_sin_permiso' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.carrera SET grupo = 'afin' WHERE nombre = 'Ingeniería Ambiental';`],
+  ['Al clasificar la carrera como afín, la solicitud pide 2 años, se valida y queda en la bitácora', 'ok', null, `
+     CREATE TEMP TABLE caso AS SELECT ${POR_CLASIFICAR} AS id;
+     UPDATE apd.carrera SET grupo = 'afin' WHERE nombre = 'Ingeniería Ambiental';
+     DO $$ BEGIN
+       ASSERT (SELECT perfil_academico = 'licenciatura_afin' AND experiencia_minima = 2 FROM apd.solicitud WHERE id = (SELECT id FROM caso));
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'clasificar' AND detalle = 'Ingeniería Ambiental: sin clasificar → afin'); END $$;
+     ${LISTA_PARA_VALIDAR('(SELECT id FROM caso)')}
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) SELECT id, 'validada', 'prueba.automatica' FROM caso;
+     DO $$ BEGIN ASSERT (SELECT estado = 'validada_en_linea' FROM apd.solicitud WHERE id = (SELECT id FROM caso)); END $$;`],
+  ['Carrera clasificada como no afín: se rechaza con su motivo, que lee la persona', 'ok', null, `
+     CREATE TEMP TABLE caso AS SELECT ${POR_CLASIFICAR} AS id;
+     UPDATE apd.carrera SET grupo = 'no_afin' WHERE nombre = 'Ingeniería Ambiental';
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor)
+       SELECT id, 'rechazada', 'La carrera no es afín al manejo del arbolado.', 'prueba.automatica' FROM caso;
+     DO $$ BEGIN
+       ASSERT (SELECT estado = 'rechazada' AND motivo_cierre = 'La carrera no es afín al manejo del arbolado.' FROM apd.solicitud WHERE id = (SELECT id FROM caso));
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'estado' AND detalle LIKE 'enviada → rechazada%'); END $$;`],
+  ['Un rechazo sin motivo no se registra', { codigo: 'rechazo_sin_motivo' }, null, `
+     UPDATE apd.carrera SET grupo = 'no_afin' WHERE nombre = 'Ingeniería Ambiental';
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${POR_CLASIFICAR}, 'rechazada', 'prueba.automatica');`],
+  ['Una solicitud cuyo perfil cumple no se rechaza', { codigo: 'rechazo_sin_causa' }, null, `
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${PODA_ENVIADA}, 'rechazada', 'x', 'prueba.automatica');`],
+  ['Con la carrera sin clasificar tampoco se rechaza: primero se clasifica', { codigo: 'rechazo_sin_causa' }, null, `
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${POR_CLASIFICAR}, 'rechazada', 'x', 'prueba.automatica');`],
+  ['Licenciatura trunca confirmada por el comprobante: no se valida', { codigo: 'perfil_no_cumple' }, null, `${TRUNCA_ENVIADA}
+     ${LISTA_PARA_VALIDAR('(SELECT id FROM caso)')}
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) SELECT id, 'validada', 'prueba.automatica' FROM caso;`],
+  ['Licenciatura trunca confirmada por el comprobante: se rechaza, y la persona puede iniciar otra solicitud', 'ok', null, `${TRUNCA_ENVIADA}
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor)
+       SELECT id, 'rechazada', 'El comprobante confirma que la licenciatura no se concluyó.', 'prueba.automatica' FROM caso;
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad)
+       SELECT solicitante_id, 'dictaminador', 'nueva' FROM apd.solicitud WHERE id = (SELECT id FROM caso);`],
+  ['El comprobante muestra otro grado: regresa con observaciones y la persona corrige sus estudios', 'ok', null, `${TRUNCA_ENVIADA}
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Su comprobante es una carta de pasante: corrija la situación de sus estudios.',
+            revisado_por = 'prueba.automatica' WHERE solicitud_id = (SELECT id FROM caso) AND requisito = 'comprobante_estudios' AND vigente;
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) SELECT id, 'con_observaciones', 'prueba.automatica' FROM caso;
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET estatus_estudios = 'concluido' WHERE id = (SELECT id FROM caso);
+     DO $$ BEGIN ASSERT (SELECT estado = 'con_observaciones' AND perfil_academico = 'pasante' AND experiencia_minima = 5
+                           FROM apd.solicitud WHERE id = (SELECT id FROM caso)); END $$;`],
   ['Una persona de la UNAM queda adscrita a una institución educativa', 'ok', null, `
      UPDATE apd.solicitante SET adscripcion = 'educativa', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'unam') WHERE id = ${PERSONA_VIGENTE};`],
   ['Una institución educativa nueva se registra con su tipo', 'ok', null, `

@@ -334,7 +334,7 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa')),
   CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente')),
   CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id),
-  CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')),
+  CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada')),
   CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL)),
   CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal),
   CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$'),
@@ -345,9 +345,9 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IN ('licenciatura_afin', 'disciplina_afin', 'pasante', 'tecnica', 'por_clasificar', 'no_cumple')),
   CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND anios_experiencia IS NULL)),
   CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70),
-  CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender') OR length(trim(coalesce(motivo_cierre, ''))) > 0)
+  CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender', 'rechazada') OR length(trim(coalesce(motivo_cierre, ''))) > 0)
 );
-CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender');
+CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada');
 CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en);
 CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id);
 CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id);
@@ -377,7 +377,7 @@ COMMENT ON COLUMN apd.solicitud.cita_en IS 'Cita para el cotejo presencial';
 COMMENT ON COLUMN apd.solicitud.pago_monto IS 'Monto que se le indicó a la persona al darle su cita: el vigente en ese momento. Un cambio de costo posterior no lo altera. Vacío si aún no había monto capturado';
 COMMENT ON COLUMN apd.solicitud.pago_referencia IS 'Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura';
 COMMENT ON COLUMN apd.solicitud.lista_para_curso_en IS 'Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad';
-COMMENT ON COLUMN apd.solicitud.motivo_cierre IS 'Motivo de cancelación o conclusión sin atender';
+COMMENT ON COLUMN apd.solicitud.motivo_cierre IS 'Motivo de cancelación, conclusión sin atender o rechazo';
 COMMENT ON COLUMN apd.solicitud.folio_origen IS 'Folio en Kobo, para las migradas';
 COMMENT ON COLUMN apd.solicitud.creada_en IS 'Alta';
 COMMENT ON COLUMN apd.solicitud.es_ficticio IS 'Dato de prueba';
@@ -391,14 +391,14 @@ CREATE TABLE apd.revision (
   revisada_en                timestamptz   NOT NULL DEFAULT now(),
   CONSTRAINT revision_pk PRIMARY KEY (id),
   CONSTRAINT revision_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
-  CONSTRAINT revision_resultado_ck CHECK (resultado IN ('con_observaciones', 'validada'))
+  CONSTRAINT revision_resultado_ck CHECK (resultado IN ('con_observaciones', 'validada', 'rechazada'))
 );
 CREATE INDEX revision_solicitud ON apd.revision (solicitud_id, revisada_en);
 COMMENT ON TABLE apd.revision IS 'Cada ronda de revisión documental en línea, con su resultado. Permite contar cuántas vueltas dio un expediente.';
 COMMENT ON COLUMN apd.revision.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.revision.solicitud_id IS 'Solicitud revisada';
-COMMENT ON COLUMN apd.revision.resultado IS 'con_observaciones o validada';
-COMMENT ON COLUMN apd.revision.observacion_general IS 'Indicaciones para la persona solicitante';
+COMMENT ON COLUMN apd.revision.resultado IS 'con_observaciones, validada o rechazada (perfil que no cumple)';
+COMMENT ON COLUMN apd.revision.observacion_general IS 'Indicaciones para la persona solicitante; en un rechazo, el motivo (obligatorio)';
 COMMENT ON COLUMN apd.revision.revisor IS 'Cuenta del personal (acceso)';
 COMMENT ON COLUMN apd.revision.revisada_en IS 'Fecha de la revisión';
 

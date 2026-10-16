@@ -363,3 +363,21 @@ campos correctos.
 - Adscripción: las opciones de «¿De qué tipo es?», dependencia de la Ciudad, dependencia federal e institución educativa
   en dos columnas (`.opciones-en-linea`); las preguntas siguen una debajo de otra porque dependen de la anterior. La lista
   de Direcciones Generales queda una por renglón por sus nombres largos.
+
+## 2026-10-16 · Bloque 28 · Etapa 2: revisión documental del personal
+
+- Maqueta aprobada por Liber (artefacto «Maqueta · Revisión documental», `maquetas/etapa2-revision/`) con sus ajustes:
+  búsqueda y filtros, «Folio de la solicitud», filtros plegados en teléfono, rechazo de la carrera no afín y opción C.
+- Base: estado `rechazada` (solicitud) y resultado `rechazada` (revisión) con motivo obligatorio; sólo por perfil de
+  dictaminador que no cumple. No se valida con la carrera sin clasificar ni con un perfil que no cumple. La clasificación
+  de carreras es del personal, queda en la bitácora y recalcula las solicitudes abiertas (P62). 10 casos nuevos de
+  reglas (127).
+- Ficticios: una solicitud reenviada con su corrección, un dictaminador con licenciatura trunca y uno rechazado.
+- Sitio: `revision.html` (bandeja, con el módulo tabla del estándar) y `revisar.html` (revisión), en usted, con acceso
+  simulado del personal (`app/personal.js`). La revisión es un formulario del estándar: los documentos y sus decisiones se
+  generan del catálogo (`construir-sitio.mjs`), con auxiliares `perfil_revision`, `revisar_<requisito>` y `resultado`
+  (una sola condición por campo, P38). Rechazar pide confirmación (`FormKit.confirma`). «Mis trámites» muestra la
+  solicitud rechazada con su motivo.
+- Esquema del servidor de la revisión con 14 casos (61 en total); 265 comprobaciones del sitio, con accesibilidad de
+  la bandeja, la revisión, la revisión con errores y el rechazo.
+

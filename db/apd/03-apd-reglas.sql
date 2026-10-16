@@ -156,6 +156,32 @@ END $$;
 CREATE TRIGGER carrera_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.carrera
   FOR EACH ROW EXECUTE FUNCTION apd.carrera_normalizar();
 
+-- La Secretaría clasifica en la revisión documental las carreras que escriben las personas (P62, decisión 2026-10-15):
+-- sólo el personal, y queda en la bitácora. Al clasificarla, las solicitudes abiertas con esa carrera recalculan su
+-- perfil y su experiencia mínima; las aceptadas (principal, afín o disciplina afín) se sugieren desde entonces.
+CREATE FUNCTION apd.carrera_clasificar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.grupo IS DISTINCT FROM OLD.grupo AND apd.contexto('usuario_tipo') <> 'personal' THEN
+    PERFORM apd.error('clasificacion_sin_permiso', 'Sólo el personal de la Secretaría clasifica las carreras');
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER carrera_clasificar BEFORE UPDATE OF grupo ON apd.carrera
+  FOR EACH ROW EXECUTE FUNCTION apd.carrera_clasificar();
+
+CREATE FUNCTION apd.carrera_clasificada() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.grupo IS DISTINCT FROM OLD.grupo THEN
+    PERFORM apd.registrar('clasificar', 'carrera', NEW.id::text,
+      format('%s: %s → %s', NEW.nombre, coalesce(OLD.grupo, 'sin clasificar'), coalesce(NEW.grupo, 'sin clasificar')));
+    UPDATE apd.solicitud SET carrera = carrera
+     WHERE carrera_id = NEW.id AND estado IN ('borrador', 'enviada', 'con_observaciones');
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER carrera_clasificada AFTER UPDATE OF grupo ON apd.carrera
+  FOR EACH ROW EXECUTE FUNCTION apd.carrera_clasificada();
+
 -- Perfil académico del dictaminador según los lineamientos (decisión 2026-10-15, Liber):
 --   a) licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín → 2 años;
 --   c) carta de pasante, carrera técnica o disciplina afín → 5 años.
@@ -695,7 +721,7 @@ BEGIN
 
   permitidas := CASE OLD.estado
     WHEN 'borrador'          THEN ARRAY['enviada', 'cancelada']
-    WHEN 'enviada'           THEN ARRAY['con_observaciones', 'validada_en_linea', 'cancelada']
+    WHEN 'enviada'           THEN ARRAY['con_observaciones', 'validada_en_linea', 'rechazada', 'cancelada']
     WHEN 'con_observaciones' THEN ARRAY['enviada', 'cancelada', 'concluida_sin_atender']
     WHEN 'validada_en_linea' THEN ARRAY['lista_para_curso', 'con_observaciones', 'cancelada', 'concluida_sin_atender']
     WHEN 'lista_para_curso'  THEN ARRAY['inscrita', 'cancelada']
@@ -744,6 +770,19 @@ BEGIN
       END IF;
       IF NEW.cita_en IS NULL THEN
         PERFORM apd.error('sin_cita', 'Para validar hay que asignar la cita de cotejo');
+      END IF;
+      -- Dictaminador: el perfil tiene que estar resuelto. Se calcula aquí porque el disparador del perfil corre
+      -- después que éste. Con la carrera sin clasificar, primero se clasifica; si no cumple, se rechaza o se regresa
+      -- con observaciones cuando el comprobante muestra otro grado (decisión 2026-10-16, Liber).
+      IF NEW.tipo_acreditacion = 'dictaminador' THEN
+        CASE apd.perfil_academico(NEW.nivel_estudios, NEW.estatus_estudios,
+               (SELECT grupo FROM apd.carrera WHERE nombre_normalizado = apd.normalizar(NEW.carrera)))
+          WHEN 'por_clasificar' THEN
+            PERFORM apd.error('carrera_sin_clasificar', 'Clasifique la carrera antes de validar la solicitud');
+          WHEN 'no_cumple' THEN
+            PERFORM apd.error('perfil_no_cumple', 'El perfil no cumple: rechace la solicitud o regrésela con observaciones');
+          ELSE NULL;
+        END CASE;
       END IF;
       -- Con la cita, la persona recibe los datos para pagar: concepto y monto del curso, y su referencia.
       -- Formato provisional (folio sin guiones) [pendiente: referencia o línea de captura que defina Finanzas].
@@ -797,6 +836,17 @@ BEGIN
       IF NOT EXISTS (SELECT 1 FROM apd.acreditacion a WHERE a.solicitud_id = NEW.id) THEN
         PERFORM apd.error('sin_acreditacion', 'Una solicitud queda acreditada al emitir la acreditación');
       END IF;
+    WHEN 'rechazada' THEN
+      -- Sólo con una revisión de rechazo, y sólo por perfil de dictaminador que no cumple (decisión 2026-10-16, Liber):
+      -- carrera no afín, o estudios que el comprobante confirma por debajo de lo que pide el lineamiento
+      IF ultima IS DISTINCT FROM 'rechazada' THEN
+        PERFORM apd.error('sin_revision', 'El rechazo se registra con una revisión');
+      END IF;
+      IF NEW.tipo_acreditacion <> 'dictaminador'
+         OR apd.perfil_academico(NEW.nivel_estudios, NEW.estatus_estudios,
+              (SELECT grupo FROM apd.carrera WHERE nombre_normalizado = apd.normalizar(NEW.carrera))) IS DISTINCT FROM 'no_cumple' THEN
+        PERFORM apd.error('rechazo_sin_causa', 'Sólo se rechaza una solicitud de dictaminador cuyo perfil no cumple');
+      END IF;
     WHEN 'cancelada', 'concluida_sin_atender' THEN
       NULL; -- el motivo lo exige la restricción solicitud_cierre_ck
     ELSE
@@ -836,6 +886,9 @@ BEGIN
      AND NOT EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND d.estado = 'con_observacion') THEN
     PERFORM apd.error('observaciones_vacias', 'Indica qué debe corregirse');
   END IF;
+  IF NEW.resultado = 'rechazada' AND trim(NEW.observacion_general) = '' THEN
+    PERFORM apd.error('rechazo_sin_motivo', 'Escriba el motivo del rechazo: la persona lo leerá');
+  END IF;
   NEW.revisada_en := apd.ahora();
   RETURN NEW;
 END $$;
@@ -846,7 +899,9 @@ CREATE TRIGGER revision_alta BEFORE INSERT ON apd.revision
 CREATE FUNCTION apd.revision_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   UPDATE apd.solicitud
-     SET estado = CASE NEW.resultado WHEN 'validada' THEN 'validada_en_linea' ELSE 'con_observaciones' END
+     SET estado = CASE NEW.resultado WHEN 'validada' THEN 'validada_en_linea' WHEN 'rechazada' THEN 'rechazada'
+                                     ELSE 'con_observaciones' END,
+         motivo_cierre = CASE NEW.resultado WHEN 'rechazada' THEN NEW.observacion_general ELSE motivo_cierre END
    WHERE id = NEW.solicitud_id;
   RETURN NULL;
 END $$;

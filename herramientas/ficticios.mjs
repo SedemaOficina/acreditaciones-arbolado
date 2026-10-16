@@ -201,6 +201,13 @@ function validar(s, fecha, cita) {
   emitir(`INSERT INTO apd.revision (id, solicitud_id, resultado, revisor) VALUES (${q(uuid(`rev:${s.id}:${fecha}`))}, ${q(s.id)}, 'validada', ${q(REVISION)})`);
 }
 
+// Rechazo por perfil de dictaminador que no cumple, con su motivo (decisión 2026-10-16)
+function rechazar(s, fecha, texto) {
+  en(fecha, '13:30');
+  como(REVISION, 'personal');
+  emitir(`INSERT INTO apd.revision (id, solicitud_id, resultado, observacion_general, revisor) VALUES (${q(uuid(`rev:${s.id}:${fecha}`))}, ${q(s.id)}, 'rechazada', ${q(texto)}, ${q(REVISION)})`);
+}
+
 function cotejar(s, fecha) {
   en(fecha, '10:30');
   como(COTEJO, 'personal');
@@ -516,6 +523,28 @@ const sAbandono = solicitud('sin-atender', abandono, 'poda', 'nueva', { fecha: '
 enviar(sAbandono, '2026-07-21');
 observar(sAbandono, '2026-07-23', 'identificacion_oficial', 'La imagen de la identificación no es legible.');
 cerrar(sAbandono, '2026-09-23', 'concluida_sin_atender', 'Las observaciones no se atendieron en el plazo [pendiente: plazo de la Dirección].');
+
+// 7 · Bandeja de revisión documental (etapa 2): una reenviada con su corrección y un dictaminador con licenciatura trunca
+const reenvia = persona('reenviada');
+alta(reenvia, '2026-10-01');
+const sReenvia = solicitud('reenviada', reenvia, 'poda', 'nueva', { fecha: '2026-10-01', org: 'norte' });
+enviar(sReenvia, '2026-10-01');
+observar(sReenvia, '2026-10-05', 'comprobante_domicilio', 'El comprobante de domicilio tiene más de tres meses de antigüedad.');
+recargar(sReenvia, '2026-10-08', 'comprobante_domicilio');
+enviar(sReenvia, '2026-10-08', '19:00');
+
+const dictTrunca = persona('dictaminador-trunca');
+altaMigrada(dictTrunca);
+migrar(dictTrunca, 'poda', '2026-02-16');
+const sDictTrunca = solicitud('dict-trunca', dictTrunca, 'dictaminador', 'nueva', { fecha: '2026-10-13', estatus: 'trunco', carrera: 'Biología', anios: 6 });
+enviar(sDictTrunca, '2026-10-13');
+
+const dictRechazo = persona('dictaminador-rechazado');
+altaMigrada(dictRechazo);
+migrar(dictRechazo, 'poda', '2026-01-19');
+const sDictRechazo = solicitud('dict-rechazado', dictRechazo, 'dictaminador', 'nueva', { fecha: '2026-10-02', nivel: 'preparatoria', anios: 9 });
+enviar(sDictRechazo, '2026-10-02');
+rechazar(sDictRechazo, '2026-10-07', 'Su comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios.');
 
 en(CORTE, '20:00');
 emitir(`SELECT set_config('apd.ahora_simulado', '', false)`);

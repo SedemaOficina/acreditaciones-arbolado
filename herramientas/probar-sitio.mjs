@@ -31,7 +31,7 @@ const otroDigito = (c) => c.slice(0, 17) + String((Number(c[17]) + 1) % 10);
 // Fecha de nacimiento de una persona ficticia: está en su CURP (homoclave 0 = nacida antes de 2000)
 const nacimientoDe = (p) => `19${p.curp.slice(4, 6)}-${p.curp.slice(6, 8)}-${p.curp.slice(8, 10)}`;
 const CONTRASENA = 'Prueba-ficticia-2026';
-const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'];
+const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada'];
 
 // ── Personas para cada camino, elegidas de los datos (no fijadas a mano) ──
 const persona = (id) => datos.solicitante.find((p) => p.id === id);
@@ -505,6 +505,124 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 
 }
 
+// ── Etapa 2 · pantallas del personal: bandeja y revisión documental (decisiones 2026-10-16) ──
+const enviadas = datos.solicitud.filter((s) => s.estado === 'enviada');
+const porClasificar = enviadas.find((s) => s.perfil_academico === 'por_clasificar');
+const noCumple = enviadas.find((s) => s.perfil_academico === 'no_cumple');
+const reenviada = enviadas.find((s) => datos.revision.some((r) => r.solicitud_id === s.id));
+const rechazada = datos.solicitud.find((s) => s.estado === 'rechazada');
+async function personal(navegador, ancho, alto, sufijo) {
+  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const page = await contexto.newPage();
+  const errores = [];
+  page.on('console', (m) => { if (m.type() === 'error') errores.push(`${page.url()} · ${m.text()}`); });
+  page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`));
+  const t = (m) => `[${sufijo}] personal: ${m}`;
+  comprueba(Boolean(porClasificar && noCumple && reenviada && rechazada), t('hay ficticios de carrera por clasificar, perfil que no cumple, reenviada y rechazada'));
+  const visibles = () => page.$$eval('[data-filas] tr:not([hidden])', (f) => f.map((x) => x.dataset.folio));
+
+  // Bandeja
+  await page.goto(BASE + 'revision.html');
+  await page.waitForSelector('[data-filas] tr');
+  const folios = await visibles();
+  comprueba(folios.length === enviadas.length, t(`la bandeja muestra las ${enviadas.length} solicitudes enviadas`));
+  const orden = [...enviadas].sort((a, b) => a.estado_desde.localeCompare(b.estado_desde)).map((x) => x.folio);
+  comprueba(folios.join() === orden.join(), t('la bandeja va de la que más espera a la más reciente'));
+  comprueba(/Folio de la solicitud/.test(await page.textContent('thead')), t('la columna se llama «Folio de la solicitud»'));
+  const fila = (f) => page.locator(`[data-filas] tr[data-folio="${f}"]`);
+  comprueba(/Carrera por clasificar/.test(await fila(porClasificar.folio).textContent()), t('señala la carrera por clasificar'));
+  comprueba(/Podría no cumplir el perfil/.test(await fila(noCumple.folio).textContent()), t('señala el perfil que podría no cumplir'));
+  comprueba(/2\.ª \(reenviada\)/.test(await fila(reenviada.folio).textContent()) && /documento corregido/.test(await fila(reenviada.folio).textContent()), t('señala la reenviada y lo que corrigió'));
+  const pB = datos.solicitante.find((x) => x.id === porClasificar.solicitante_id);
+  for (const [q, nombre] of [[pB.curp.toLowerCase(), 'CURP'], [porClasificar.folio.slice(-5), 'folio'], [pB.nombre.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(), 'nombre sin acentos']]) {
+    await page.fill('#buscar', q);
+    comprueba((await visibles()).includes(porClasificar.folio), t(`la búsqueda encuentra por ${nombre}`));
+  }
+  if (pB.numero_expediente) { await page.fill('#buscar', pB.numero_expediente); comprueba((await visibles()).join() === porClasificar.folio, t('la búsqueda encuentra por número de expediente')); }
+  await page.fill('#buscar', 'zzzz');
+  comprueba(await page.isVisible('[data-tabla-vacia]'), t('sin coincidencias lo dice'));
+  await page.fill('#buscar', '');
+  if (ancho < 760) {
+    comprueba(!(await page.isVisible('#f_tipo')), t('en teléfono los filtros quedan plegados'));
+    await page.click('[data-filtrar]');
+  }
+  await page.selectOption('#f_tipo', 'dictaminador');
+  comprueba((await visibles()).every((f) => datos.solicitud.find((x) => x.folio === f).tipo_acreditacion === 'dictaminador'), t('filtra por acreditación'));
+  if (ancho < 760) comprueba(/1 activo/.test(await page.textContent('[data-filtrar]')), t('«Filtrar» dice cuántos filtros están activos'));
+  await page.selectOption('#f_tipo', '');
+  await page.selectOption('#f_modalidad', 'renovacion');
+  comprueba((await visibles()).every((f) => datos.solicitud.find((x) => x.folio === f).modalidad === 'renovacion'), t('filtra renovaciones'));
+  await page.selectOption('#f_modalidad', '');
+  await page.selectOption('#f_vuelta', 'reenviada');
+  comprueba((await visibles()).join() === reenviada.folio, t('filtra las reenviadas'));
+  await sinDesborde(page, t('bandeja'));
+  await captura(page, `40-personal-bandeja-${sufijo}`);
+
+  // Carrera por clasificar: afín → todo aceptado → validar con cita
+  await page.goto(BASE + `revisar.html?folio=${porClasificar.folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  await page.click('[data-accion="enviar"]');
+  comprueba(await page.locator('[aria-invalid="true"]').count() > 0, t('registrar sin decidir muestra lo que falta'));
+  await page.check('input[name="clasificacion"][value="afin"]');
+  comprueba(/2 años/.test(await page.textContent('[data-minimo]')), t('al clasificar como afín se piden 2 años'));
+  for (const d of datos.documento.filter((x) => x.solicitud_id === porClasificar.id && x.vigente)) await page.check(`input[name="decision_${d.requisito}"][value="aceptado"]`);
+  comprueba(await page.textContent('[data-accion="enviar"]') === 'Validar y asignar la cita', t('con todo aceptado, la acción es validar'));
+  await page.fill('#cita_fecha', '2026-10-21'); await page.fill('#cita_hora', '10:00'); await page.selectOption('#cita_sede', 'sede_prueba');
+  await captura(page, `41-personal-validar-${sufijo}`);
+  // Tras una captura de página completa, Chromium sin ventana desplaza la página al enfocar: se enfoca antes de pulsar
+  await page.focus('[data-accion="enviar"]');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])');
+  comprueba(/validada/.test(await page.textContent('[data-hecho-titulo]')), t('valida y asigna la cita'));
+
+  // Perfil que no cumple, opción C: el comprobante muestra otro grado → se observa el comprobante
+  await page.goto(BASE + `revisar.html?folio=${noCumple.folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  await page.check('input[name="comprobante_confirma"][value="no"]');
+  comprueba(await page.isChecked('input[name="decision_comprobante_estudios"][value="con_observacion"]') && (await page.inputValue('#observacion_comprobante_estudios')).length > 20,
+    t('si el comprobante muestra otro grado, se observa el comprobante con un texto propuesto'));
+  comprueba(await page.textContent('[data-accion="enviar"]') === 'Enviar observaciones a la persona', t('con una observación, la acción es enviar observaciones'));
+  // … o lo confirma → rechazo con motivo y confirmación
+  await page.check('input[name="comprobante_confirma"][value="si"]');
+  comprueba(await page.textContent('[data-accion="enviar"]') === 'Rechazar la solicitud' && !(await page.isVisible('input[name="decision_curp"]')),
+    t('si el comprobante lo confirma, se rechaza sin revisar los documentos'));
+  comprueba(/licenciatura trunca|preparatoria|secundaria|primaria/i.test(await page.inputValue('#motivo_rechazo')), t('el motivo del rechazo viene propuesto'));
+  await captura(page, `42-personal-rechazo-${sufijo}`);
+  await page.focus('[data-accion="enviar"]');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('dialog[role="alertdialog"]');
+  await page.click('dialog [data-r="no"]');
+  comprueba(await page.isVisible('#formulario'), t('cancelar la confirmación no rechaza'));
+  await page.click('[data-accion="enviar"]');
+  await page.click('dialog [data-r="si"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])');
+  comprueba(/rechazada/.test(await page.textContent('[data-hecho-titulo]')), t('rechaza al confirmar'));
+
+  // Reenviada: vueltas anteriores y documento corregido
+  await page.goto(BASE + `revisar.html?folio=${reenviada.folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  comprueba(await page.isVisible('[data-anteriores]') && await page.locator('.doc-corregido').count() >= 1, t('la reenviada muestra la revisión anterior y lo corregido'));
+  comprueba(!(await page.isVisible('[data-perfil]')), t('en poda no hay bloque de perfil'));
+  await page.check('input[name="decision_curp"][value="con_observacion"]');
+  await page.click('[data-campo="observacion_curp"] [data-sugerencia]');
+  comprueba(/\.$/.test(await page.inputValue('#observacion_curp')), t('un motivo frecuente se agrega a la observación'));
+  await sinDesborde(page, t('revisión'));
+
+  // La bandeja ya no muestra lo revisado en la prueba
+  await page.goto(BASE + 'revision.html');
+  await page.waitForSelector('[data-revisadas]:not([hidden])');
+  comprueba(!(await visibles()).includes(porClasificar.folio), t('lo revisado sale de la bandeja en esta pestaña'));
+
+  // La persona ve el rechazo con su motivo
+  const pR = datos.solicitante.find((x) => x.id === rechazada.solicitante_id);
+  await entra(page, pR.curp);
+  const f = await page.locator('[data-solicitudes] .ficha', { hasText: 'Rechazada' }).textContent();
+  comprueba(/Motivo del rechazo/.test(f) && /solicitud nueva/.test(f), t('«Mis trámites» muestra la solicitud rechazada con su motivo'));
+
+  comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await contexto.close();
+}
+
 // CHROMIUM: ruta a un Chromium ya instalado, si no coincide con la versión que espera Playwright
 // Accesibilidad con axe-core (el del Estándar: AXE=<ruta>/vendor/axe-core/axe.min.js). Sin AXE, se omite y se dice.
 async function accesibilidad(navegador) {
@@ -513,11 +631,13 @@ async function accesibilidad(navegador) {
   const page = await navegador.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => sessionStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
-  const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html']];
+  const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
+    ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo']];
   for (const [url, estado] of pantallas) {
     await page.goto(BASE + url);
     await page.waitForLoadState('networkidle');
-    if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
+    if (estado === 'rechazo') await page.check('input[name="comprobante_confirma"][value="si"]');
+    else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.addScriptTag({ content: axe });
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
       .violations.map((x) => `${x.id} (${x.nodes.length})`));
@@ -530,6 +650,8 @@ const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath:
 try {
   await recorrido(navegador, 390, 844, 'telefono');
   await recorrido(navegador, 1280, 900, 'escritorio');
+  await personal(navegador, 390, 844, 'telefono');
+  await personal(navegador, 1280, 900, 'escritorio');
   await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);

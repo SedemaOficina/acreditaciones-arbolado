@@ -11,7 +11,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Desde | Hacia |
 |---|---|
 | `borrador` | `enviada`, `cancelada` |
-| `enviada` | `con_observaciones`, `validada_en_linea`, `cancelada` |
+| `enviada` | `con_observaciones`, `validada_en_linea`, `rechazada`, `cancelada` |
 | `con_observaciones` | `enviada`, `cancelada`, `concluida_sin_atender` |
 | `validada_en_linea` | `lista_para_curso`, `con_observaciones` (el cotejo no coincide), `cancelada`, `concluida_sin_atender` |
 | `lista_para_curso` | `inscrita`, `cancelada` |
@@ -22,7 +22,9 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 |---|---|---|
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
 | → enviada | Persona solicitante | Documentos obligatorios en línea; estudios en los dos tipos (nivel y, con licenciatura o posgrado, carrera y situación: `faltan_estudios`); en dictaminador, la experiencia mínima de su perfil (`experiencia_insuficiente`; un perfil que no cumple sí se envía y lo revisa el personal); fotografía de frente de la persona; adscripción de la persona, que se copia a la solicitud. La elegibilidad no se vuelve a comprobar |
-| → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada |
+| → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada; en dictaminador, la carrera clasificada (`carrera_sin_clasificar`) y un perfil que cumple (`perfil_no_cumple`). Las observaciones necesitan un texto general o un documento observado |
+| → rechazada | Revisión (revisión con resultado `rechazada`) | Sólo dictaminador cuyo perfil no cumple (`rechazo_sin_causa`): carrera clasificada como no afín, o estudios que el comprobante confirma por debajo del lineamiento. Motivo obligatorio (`rechazo_sin_motivo`), que se copia a `motivo_cierre`. Es final: la persona puede iniciar otra solicitud |
+| Clasificar una carrera | Personal (`apd.carrera.grupo`) | Sólo el personal (`clasificacion_sin_permiso`); queda en la bitácora y las solicitudes abiertas con esa carrera recalculan perfil y experiencia mínima |
 | → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la persona confirmada por el personal (o tomada ahí). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |

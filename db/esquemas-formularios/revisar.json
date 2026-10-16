@@ -1,0 +1,491 @@
+{
+  "formulario": "revisar.html",
+  "generado": "2026-10-16T15:43:04.804Z",
+  "campos": {
+    "perfil_revision": {
+      "etiqueta": "perfil_revision",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Mostrar la pregunta de perfil que corresponde: carrera por clasificar o perfil que podría no cumplir; lo calculan la página y el servidor con apd.perfil_academico.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "resultado": {
+      "etiqueta": "resultado",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Mostrar los datos que pide el resultado (cita, mensaje o motivo); lo calculan la página y el servidor con las decisiones.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_identificacion_oficial": {
+      "etiqueta": "revisar_identificacion_oficial",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Identificación oficial» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_curp": {
+      "etiqueta": "revisar_curp",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Clave Única de Registro de Población (CURP)» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_comprobante_domicilio": {
+      "etiqueta": "revisar_comprobante_domicilio",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Comprobante de domicilio» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_constancia_situacion_fiscal": {
+      "etiqueta": "revisar_constancia_situacion_fiscal",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Constancia de situación fiscal» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_comprobante_estudios": {
+      "etiqueta": "revisar_comprobante_estudios",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Comprobante de estudios» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_curriculum_vitae": {
+      "etiqueta": "revisar_curriculum_vitae",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Currículum vitae» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "revisar_comprobantes_experiencia": {
+      "etiqueta": "revisar_comprobantes_experiencia",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la revisión de «Comprobantes de experiencia» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "clasificacion": {
+      "etiqueta": "¿Cómo se clasifica la carrera?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Clasificar la carrera en el catálogo (apd.carrera.grupo); de ella depende la experiencia mínima.",
+      "atributos": {},
+      "opciones": [
+        "afin",
+        "disciplina_afin",
+        "no_afin"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "perfil_revision",
+        "valores": [
+          "por_clasificar"
+        ]
+      }
+    },
+    "comprobante_confirma": {
+      "etiqueta": "¿El comprobante de estudios confirma lo que declaró la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Decidir, con el comprobante de estudios, si la solicitud se rechaza o regresa para corregir el grado declarado.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "perfil_revision",
+        "valores": [
+          "no_cumple"
+        ]
+      }
+    },
+    "decision_identificacion_oficial": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Identificación oficial» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_identificacion_oficial",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_identificacion_oficial": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_identificacion_oficial",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "decision_curp": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Clave Única de Registro de Población (CURP)» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_curp",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_curp": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_curp",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "decision_comprobante_domicilio": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Comprobante de domicilio» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_comprobante_domicilio",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_comprobante_domicilio": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_comprobante_domicilio",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "decision_constancia_situacion_fiscal": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Constancia de situación fiscal» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_constancia_situacion_fiscal",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_constancia_situacion_fiscal": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_constancia_situacion_fiscal",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "decision_comprobante_estudios": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Comprobante de estudios» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_comprobante_estudios",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_comprobante_estudios": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_comprobante_estudios",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "decision_curriculum_vitae": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Currículum vitae» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_curriculum_vitae",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_curriculum_vitae": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_curriculum_vitae",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "decision_comprobantes_experiencia": {
+      "etiqueta": "¿El documento cumple?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Comprobantes de experiencia» cumple el requisito (apd.documento.estado).",
+      "atributos": {},
+      "opciones": [
+        "aceptado",
+        "con_observacion"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "revisar_comprobantes_experiencia",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "observacion_comprobantes_experiencia": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision_comprobantes_experiencia",
+        "valores": [
+          "con_observacion"
+        ]
+      }
+    },
+    "cita_fecha": {
+      "etiqueta": "Fecha de la cita",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha",
+      "sensible": false,
+      "uso": "Fijar el día de la cita de cotejo (apd.solicitud.cita_en).",
+      "atributos": {},
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "validada"
+        ]
+      }
+    },
+    "cita_hora": {
+      "etiqueta": "Hora",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "hora",
+      "sensible": false,
+      "uso": "Fijar la hora de la cita de cotejo (apd.solicitud.cita_en).",
+      "atributos": {
+        "maxlength": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "validada"
+        ]
+      }
+    },
+    "cita_sede": {
+      "etiqueta": "Lugar de la cita",
+      "tipo": "select",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Indicar a la persona dónde es su cita.",
+      "atributos": {},
+      "opciones": [
+        "sede_prueba"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "validada"
+        ]
+      }
+    },
+    "mensaje_general": {
+      "etiqueta": "Mensaje para la persona (opcional)",
+      "tipo": "textarea",
+      "requerido": false,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Indicación general para la persona, además de las observaciones de cada documento (apd.revision.observacion_general).",
+      "atributos": {
+        "maxlength": "600"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "con_observaciones"
+        ]
+      }
+    },
+    "motivo_rechazo": {
+      "etiqueta": "Motivo del rechazo",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Explicar a la persona por qué se rechaza su solicitud; se le muestra tal cual (apd.revision.observacion_general y apd.solicitud.motivo_cierre).",
+      "atributos": {
+        "minlength": "20",
+        "maxlength": "600"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "rechazada"
+        ]
+      }
+    }
+  },
+  "repetibles": []
+}

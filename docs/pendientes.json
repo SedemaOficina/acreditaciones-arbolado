@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-15",
+  "actualizado": "2026-10-16",
   "grupos": [
     {
       "id": "direccion",
@@ -49,7 +49,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Plazo para atender observaciones y para presentarse a la cita",
-      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra."
+      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba)."
     },
     {
       "id": "P03",
@@ -97,7 +97,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
       "titulo": "Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona",
-      "recomendacion": "Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites»."
+      "recomendacion": "Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites». Mientras, la revisión documental ofrece una sede de prueba; al definir el catálogo se agrega a la base la sede de la cita (hoy sólo guarda la fecha y hora)."
     },
     {
       "id": "P10",
@@ -241,7 +241,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
       "titulo": "Cuentas del personal en acceso, recurso apd, con cinco perfiles",
-      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión, cotejo, instructor, emisión y consulta."
+      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión, cotejo, instructor, emisión y consulta. Mientras, las pantallas del personal entran con un perfil ficticio de revisión documental."
     },
     {
       "id": "P28",
@@ -476,20 +476,36 @@
       "recomendacion": "Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente."
     },
     {
-      "id": "P62",
-      "grupo": "sia",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-15",
-      "titulo": "Pantalla del personal para clasificar carreras en la revisión documental",
-      "recomendacion": "En la revisión documental, la carrera sin clasificar se marca como aceptada (afín o disciplina afín) o no afín; al aceptarla entra al catálogo y se sugiere a las siguientes personas. La base ya recalcula el perfil al clasificarla."
-    },
-    {
       "id": "P63",
       "grupo": "liber",
       "bloquea": "datos reales",
       "desde": "2026-10-15",
       "titulo": "Verificar los requisitos que aparecen en la página de inicio",
       "recomendacion": "Revisar contra los lineamientos la lista de requisitos por acreditación y modalidad que muestra index.html (sale del catálogo apd.requisito y apd.requisito_curso); lo que se corrija se cambia en el catálogo y se refleja en inicio, solicitud y documentos."
+    },
+    {
+      "id": "P64",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-16",
+      "titulo": "Motivos frecuentes de observación y quién fija la fecha de la cita",
+      "recomendacion": "Confirmar los cinco motivos que ofrece la revisión (no se lee completo, está vencido, no corresponde al requisito, falta una página, no coincide con el nombre de la cuenta) y si la fecha de la cita la elige quien revisa (como está) o se toma de un calendario de citas disponibles por sede."
+    },
+    {
+      "id": "P65",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-16",
+      "titulo": "El módulo chips sólo sugiere del historial; no admite una lista fija de sugerencias",
+      "recomendacion": "Proponer en chips una lista fija declarada en el HTML (data-chips-fijos) para respuestas frecuentes conocidas, como los motivos de observación. Mientras, la revisión usa botones propios (.sugerencia) con los tokens del estándar."
+    },
+    {
+      "id": "P66",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-16",
+      "titulo": "Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto",
+      "recomendacion": "Reportarlo: alternar con :nth-child no cuenta las filas ocultas; y una columna cuyo encabezado es sólo para lector de pantalla no debería mostrar su rótulo en la vista de fichas."
     }
   ],
   "resueltos": [
@@ -621,6 +637,11 @@
     {
       "titulo": "Constancias de capacitación (P05)",
       "como": "ya no se piden por separado; van entre los comprobantes de experiencia",
+      "fecha": "2026-10-16"
+    },
+    {
+      "titulo": "Clasificar carreras en la revisión documental (P62)",
+      "como": "en la revisión del dictaminador se clasifica la carrera (afín, disciplina afín o no afín); la base lo registra en la bitácora y recalcula las solicitudes abiertas",
       "fecha": "2026-10-16"
     }
   ]

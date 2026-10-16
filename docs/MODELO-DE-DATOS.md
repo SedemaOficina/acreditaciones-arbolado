@@ -313,7 +313,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `pago_monto` | `numeric(10,2)` | No | Monto que se le indicó a la persona al darle su cita: el vigente en ese momento. Un cambio de costo posterior no lo altera. Vacío si aún no había monto capturado |
 | `pago_referencia` | `text` | No | Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura |
 | `lista_para_curso_en` | `timestamptz` | No | Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad |
-| `motivo_cierre` | `text` | No | Motivo de cancelación o conclusión sin atender |
+| `motivo_cierre` | `text` | No | Motivo de cancelación, conclusión sin atender o rechazo |
 | `folio_origen` | `text` | No | Folio en Kobo, para las migradas |
 | `creada_en` | `timestamptz` | Sí | Alta (por omisión: `now()`) |
 | `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
@@ -330,7 +330,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
 - `CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))`
 - `CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)`
-- `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))`
+- `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada'))`
 - `CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))`
 - `CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal)`
 - `CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')`
@@ -341,8 +341,8 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IN ('licenciatura_afin', 'disciplina_afin', 'pasante', 'tecnica', 'por_clasificar', 'no_cumple'))`
 - `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND anios_experiencia IS NULL))`
 - `CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70)`
-- `CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender') OR length(trim(coalesce(motivo_cierre, ''))) > 0)`
-- `CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')`
+- `CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender', 'rechazada') OR length(trim(coalesce(motivo_cierre, ''))) > 0)`
+- `CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada')`
 - `CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en)`
 - `CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id)`
 - `CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id)`
@@ -355,8 +355,8 @@ Cada ronda de revisión documental en línea, con su resultado. Permite contar c
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
 | `solicitud_id` | `uuid` | Sí | Solicitud revisada |
-| `resultado` | `text` | Sí | con_observaciones o validada |
-| `observacion_general` | `text` | Sí | Indicaciones para la persona solicitante (por omisión: `''`) |
+| `resultado` | `text` | Sí | con_observaciones, validada o rechazada (perfil que no cumple) |
+| `observacion_general` | `text` | Sí | Indicaciones para la persona solicitante; en un rechazo, el motivo (obligatorio) (por omisión: `''`) |
 | `revisor` | `text` | Sí | Cuenta del personal (acceso) |
 | `revisada_en` | `timestamptz` | Sí | Fecha de la revisión (por omisión: `now()`) |
 
@@ -364,7 +364,7 @@ Restricciones e índices:
 
 - `CONSTRAINT revision_pk PRIMARY KEY (id)`
 - `CONSTRAINT revision_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
-- `CONSTRAINT revision_resultado_ck CHECK (resultado IN ('con_observaciones', 'validada'))`
+- `CONSTRAINT revision_resultado_ck CHECK (resultado IN ('con_observaciones', 'validada', 'rechazada'))`
 - `CREATE INDEX revision_solicitud ON apd.revision (solicitud_id, revisada_en)`
 
 ## documento

@@ -5,24 +5,25 @@ mismo contenido está en el tablero «Pendientes del sistema», donde se marca c
 pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resueltos» y la decisión se anota en
 `docs/DECISIONES.md`.
 
-Actualizado: 15/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
+Actualizado: 16/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
 primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa etapa; *no* = se puede avanzar.
 
 ## Dirección de Infraestructura Verde (contenido del trámite)
 
 | # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P02 | Plazo para atender observaciones y para presentarse a la cita | 30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra. | datos reales |
+| P02 | Plazo para atender observaciones y para presentarse a la cita | 30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba). | datos reales |
 | P03 | Uso del comprobante de domicilio: el procedimiento no dice para qué se pide | Retirarlo. Es un dato personal sin uso declarado y nada del trámite depende del domicilio. Si la Dirección lo quiere para notificar, que lo declare así en los lineamientos y en el aviso de privacidad. | datos reales |
 | P04 | Check list del cotejo y secciones «Del pago» y «Del curso» del borrador | Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener. (El Anexo 1 de carreras afines ya no se necesita: la carrera la valida el personal.) | etapa 2 |
 | P06 | No admitir una solicitud nueva si la persona ya tiene una del mismo tipo vigente o renovable (R07) | Mantener la regla: con una acreditación vigente o todavía renovable corresponde renovar. Evita dos acreditaciones del mismo tipo para la misma persona. | no |
 | P07 | Cómo corregir una calificación mal capturada (hoy el resultado es inapelable y no se modifica) | Distinguir el examen de la captura. El resultado del examen es inapelable; un error de captura se corrige sólo antes de emitir, con el perfil de administración, con motivo y en la bitácora. | etapa 2 |
 | P08 | Revisión jurídica de la redacción «el resultado de la evaluación será inapelable» | Enviarla a la Dirección Jurídica junto con la regla de P07, para que la redacción deje claro que lo inapelable es la evaluación y no un error de captura. | datos reales |
-| P09 | Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona | Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites». | etapa 2 |
+| P09 | Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona | Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites». Mientras, la revisión documental ofrece una sede de prueba; al definir el catálogo se agrega a la base la sede de la cita (hoy sólo guarda la fecha y hora). | etapa 2 |
 | P10 | Lugar, días y horario de entrega de acreditaciones | Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente. | datos reales |
 | P48 | ¿La credencial se imprime en el lugar de entrega? | Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento. | etapa 2 |
 | P49 | Especificación de la foto de la credencial y diseño de la credencial | Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. | datos reales |
 | P57 | Hora de entrada al curso | Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base. | datos reales |
+| P64 | Motivos frecuentes de observación y quién fija la fecha de la cita | Confirmar los cinco motivos que ofrece la revisión (no se lee completo, está vencido, no corresponde al requisito, falta una página, no coincide con el nombre de la cuenta) y si la fecha de la cita la elige quien revisa (como está) o se toma de un calendario de citas disponibles por sede. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
@@ -61,12 +62,11 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P24 | Siglas apd libres para esquema, cuenta y ruta | Confirmarlo en la misma reunión con el SIA que P23 a P30; las preguntas ya están redactadas en DECISIONES-SIA. | SIA |
 | P25 | Dónde se publica la aplicación y la ruta de su API | Misma reunión con el SIA. | SIA |
 | P26 | Límite de subida de la API (se necesitan al menos 5 MB por archivo) | Misma reunión con el SIA. Si el límite es menor, bajar el tamaño máximo es un parámetro de la base. | etapa 3 |
-| P27 | Cuentas del personal en acceso, recurso apd, con cinco perfiles | Misma reunión con el SIA. Los perfiles: revisión, cotejo, instructor, emisión y consulta. | etapa 2 |
+| P27 | Cuentas del personal en acceso, recurso apd, con cinco perfiles | Misma reunión con el SIA. Los perfiles: revisión, cotejo, instructor, emisión y consulta. Mientras, las pantallas del personal entran con un perfil ficticio de revisión documental. | etapa 2 |
 | P28 | Espacio para archivos (de 10 a 20 GB al año) y dónde | Misma reunión con el SIA. | etapa 3 |
 | P29 | Conexión del examen en línea: cuenta propia o API del módulo | Por la API del módulo, para que la calificación pase por las mismas reglas y la misma bitácora que la captura del instructor. | no |
 | P30 | Formato exacto de la contraseña derivada que usa el esquema acceso | Pedirlo al SIA para usar el mismo; hoy los ficticios usan scrypt con los parámetros documentados. | etapa 3 |
 | P55 | Cambio de correo en «Mis datos» sin comprobar que el correo nuevo es de la persona | Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio. | etapa 3 |
-| P62 | Pantalla del personal para clasificar carreras en la revisión documental | En la revisión documental, la carrera sin clasificar se marca como aceptada (afín o disciplina afín) o no afín; al aceptarla entra al catálogo y se sugiere a las siguientes personas. La base ya recalcula el perfil al clasificarla. | etapa 2 |
 
 ## Unidad de Transparencia (datos personales)
 
@@ -103,6 +103,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P52 | Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí) | Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas. | no |
 | P56 | Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado | Hacer de opciones-lista la forma por omisión de las preguntas de una sola respuesta, dejar la rejilla para casos con pocas opciones muy visuales y agregar a opciones-lista su estado deshabilitado. | no |
 | P61 | El mínimo de un número no puede depender de otra respuesta | Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente. | no |
+| P65 | El módulo chips sólo sugiere del historial; no admite una lista fija de sugerencias | Proponer en chips una lista fija declarada en el HTML (data-chips-fijos) para respuestas frecuentes conocidas, como los motivos de observación. Mientras, la revisión usa botones propios (.sugerencia) con los tokens del estándar. | no |
+| P66 | Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto | Reportarlo: alternar con :nth-child no cuenta las filas ocultas; y una columna cuyo encabezado es sólo para lector de pantalla no debería mostrar su rótulo en la vista de fichas. | no |
 
 ## Resueltos
 
@@ -134,3 +136,4 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Reglas del perfil de dictaminador (P60) | Confirmadas por Liber: licenciatura titulada; posgrado cuenta en su área; lo que no cumple se envía y lo decide el personal | 15/10/2026 |
 | Experiencia mínima de pasantes (P01) | 5 años, según el apartado académico que dio Liber | 16/10/2026 |
 | Constancias de capacitación (P05) | ya no se piden por separado; van entre los comprobantes de experiencia | 16/10/2026 |
+| Clasificar carreras en la revisión documental (P62) | en la revisión del dictaminador se clasifica la carrera (afín, disciplina afín o no afín); la base lo registra en la bitácora y recalcula las solicitudes abiertas | 16/10/2026 |
