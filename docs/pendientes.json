@@ -514,6 +514,14 @@
       "desde": "2026-10-16",
       "titulo": "Dirección del Vivero Nezahualcóyotl y referencias para llegar",
       "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega."
+    },
+    {
+      "id": "P69",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-16",
+      "titulo": "Ventanas de horario para las citas de cotejo en el Vivero Nezahualcóyotl",
+      "recomendacion": "Preguntar qué días y en qué horario se atienden citas, cuánto dura cada una y cuántas personas caben por franja (por ejemplo, de lunes a viernes, de 9:00 a 14:00, en bloques de 30 minutos). Con eso la revisión sólo ofrece horas dentro de las ventanas, avisa si una franja ya está llena y puede proponer la primera libre (se liga a P64). Mientras, la hora se escribe libre."
     }
   ],
   "resueltos": [

@@ -24,6 +24,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P57 | Hora de entrada al curso | Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base. | datos reales |
 | P64 | Motivos frecuentes de observación y quién fija la fecha de la cita | Confirmar los cinco motivos que ofrece la revisión (no se lee completo, está vencido, no corresponde al requisito, falta una página, no coincide con el nombre de la cuenta) y si la fecha de la cita la elige quien revisa (como está) o se toma de un calendario de citas disponibles en el Vivero Nezahualcóyotl. | datos reales |
 | P68 | Dirección del Vivero Nezahualcóyotl y referencias para llegar | Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega. | datos reales |
+| P69 | Ventanas de horario para las citas de cotejo en el Vivero Nezahualcóyotl | Preguntar qué días y en qué horario se atienden citas, cuánto dura cada una y cuántas personas caben por franja (por ejemplo, de lunes a viernes, de 9:00 a 14:00, en bloques de 30 minutos). Con eso la revisión sólo ofrece horas dentro de las ventanas, avisa si una franja ya está llena y puede proponer la primera libre (se liga a P64). Mientras, la hora se escribe libre. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
