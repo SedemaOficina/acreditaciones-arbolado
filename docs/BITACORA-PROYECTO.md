@@ -335,3 +335,5 @@ auditor de CSS y de campos correctos.
   la ayuda de la carrera pide escribir la del posgrado.
 - Un perfil que no cumple ya no impide enviar: la base deja de rechazar con `perfil_no_cumple` y el formulario advierte
   (en ámbar) que la Secretaría lo revisará. P60 resuelto.
+- Lo que decide el personal (carrera por clasificar o no cumple) pide 5 años de experiencia; sólo carrera principal o
+  afín baja a 2. La indicación de escribir la carrera del posgrado sólo aparece con maestría o doctorado.

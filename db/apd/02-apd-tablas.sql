@@ -368,7 +368,7 @@ COMMENT ON COLUMN apd.solicitud.carrera IS 'Con licenciatura o posgrado, en poda
 COMMENT ON COLUMN apd.solicitud.carrera_id IS 'Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo)';
 COMMENT ON COLUMN apd.solicitud.estatus_estudios IS 'Con licenciatura o posgrado, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado)';
 COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple. No impide enviar: el personal lo revisa en la revisión documental';
-COMMENT ON COLUMN apd.solicitud.experiencia_minima IS 'Años de experiencia que pide el perfil (2 o 5); la calcula la base. Vacía si el perfil está por clasificar o no cumple';
+COMMENT ON COLUMN apd.solicitud.experiencia_minima IS 'Años de experiencia que pide el perfil; la calcula la base: 2 con licenciatura o posgrado en carrera principal o afín; 5 en todo lo demás, también cuando lo decide el personal (por clasificar o no cumple)';
 COMMENT ON COLUMN apd.solicitud.anios_experiencia IS 'Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban';
 COMMENT ON COLUMN apd.solicitud.estado IS 'Ver apd.transicion_solicitud()';
 COMMENT ON COLUMN apd.solicitud.estado_desde IS 'Desde cuándo está en el estado actual; lo pone la base';

@@ -340,7 +340,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.locator('[data-campo="anios_experiencia"] .err:not(:empty)').count() > 0, t('perfil: con menos experiencia de la que pide el perfil no avanza'));
   await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
   comprueba(/dos años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: titulado en Biología, dos años'));
+  comprueba(!(await page.isVisible('[data-ayuda-posgrado]')), t('carrera: con licenciatura no muestra la indicación del posgrado'));
   await page.selectOption('#nivel_estudios', 'maestria');
+  comprueba(await page.isVisible('[data-ayuda-posgrado]'), t('carrera: con maestría pide escribir la carrera del posgrado'));
   await page.fill('#carrera', 'Ciencias Forestales');
   comprueba(/dos años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: posgrado en un área afín, dos años'));
   await page.selectOption('#nivel_estudios', 'licenciatura');

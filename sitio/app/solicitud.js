@@ -161,17 +161,18 @@
     const valor = (n) => { const r = radios(n).find((x) => x.checked); return r ? r.value : ''; };
     const nivel = document.getElementById('nivel_estudios').value;
     const superior = APD.SUPERIORES.includes(nivel);
+    // La indicación de escribir la carrera del posgrado sólo con maestría o doctorado
+    document.querySelector('[data-ayuda-posgrado]').hidden = !['maestria', 'doctorado'].includes(nivel);
     const p = APD.perfilAcademico(datos, nivel, superior ? valor('estatus_estudios') : '', superior ? document.getElementById('carrera').value : '');
     const anios = document.getElementById('anios_experiencia');
     anios.setAttribute('min', p && p.minimo ? String(p.minimo) : '0');
     document.querySelector('[data-perfil-no-cumple]').hidden = !(p && p.perfil === 'no_cumple');
     const texto = document.querySelector('[data-experiencia-minima]');
     if (!texto.dataset.original) texto.dataset.original = texto.textContent;
-    texto.textContent = p && p.minimo
-      ? `Con tu perfil se piden al menos ${p.minimo === 2 ? 'dos' : 'cinco'} años.`
-      : p && p.perfil === 'por_clasificar'
-        ? 'La Secretaría confirmará en la revisión documental si tu carrera es afín (dos años de experiencia) o disciplina afín (cinco).'
-        : texto.dataset.original;
+    texto.textContent = !p ? texto.dataset.original
+      : p.perfil === 'por_clasificar'
+        ? 'Se piden al menos cinco años: la Secretaría revisará tu carrera en la revisión documental.'
+        : `Con tu perfil se piden al menos ${p.minimo === 2 ? 'dos' : 'cinco'} años.`;
     const interno = document.querySelector('[data-interno-texto]');
     if (interno) interno.dataset.internoTexto = p ? `${p.perfil} (${TEXTO_PERFIL[p.perfil]}) · experiencia mínima: ${p.minimo ? `${p.minimo} años` : '—'}` : '';
   }

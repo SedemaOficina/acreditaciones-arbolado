@@ -181,7 +181,9 @@ CREATE FUNCTION apd.perfil_academico(p_nivel text, p_estatus text, p_grupo text)
 $$;
 CREATE FUNCTION apd.experiencia_minima(p_perfil text) RETURNS numeric
   LANGUAGE sql IMMUTABLE AS $$
-  SELECT CASE p_perfil WHEN 'licenciatura_afin' THEN 2 WHEN 'disciplina_afin' THEN 5 WHEN 'pasante' THEN 5 WHEN 'tecnica' THEN 5 END::numeric
+  -- Sólo la licenciatura (o posgrado) en carrera principal o afín baja a 2 años; todo lo demás, incluido lo que decide el
+  -- personal (por clasificar o no cumple), pide 5 (decisión 2026-10-15, Liber)
+  SELECT CASE WHEN p_perfil IS NULL THEN NULL WHEN p_perfil = 'licenciatura_afin' THEN 2 ELSE 5 END::numeric
 $$;
 
 -- La base completa los estudios (poda y dictaminador, decisión 2026-10-15): liga la carrera al catálogo (si la escrita

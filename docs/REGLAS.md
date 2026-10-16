@@ -93,7 +93,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Perfil del dictaminador** (`apd.perfil_academico`, `apd.experiencia_minima`): con nivel, situación de los estudios y
   grupo de la carrera (`apd.carrera`) la base calcula el perfil y la experiencia mínima: licenciatura titulada en carrera
   principal o afín, 2 años; carta de pasante, carrera técnica o disciplina afín, 5. Un posgrado cuenta como licenciatura
-  titulada en su área aunque la licenciatura sea de otra (p. ej. Química con maestría en Ciencias Forestales: 2 años). Hasta preparatoria, licenciatura en curso o trunca, o carrera no afín: «no cumple», que no impide enviar: lo decide el personal en la revisión documental. En poda se guardan nivel, carrera y situación, sin perfil (no hay estudios mínimos). Una carrera
+  titulada en su área aunque la licenciatura sea de otra (p. ej. Química con maestría en Ciencias Forestales: 2 años). Hasta preparatoria, licenciatura en curso o trunca, o carrera no afín: «no cumple», que no impide enviar: lo decide el personal en la revisión documental. Lo que decide el personal (por clasificar o no cumple) pide 5 años. En poda se guardan nivel, carrera y situación, sin perfil (no hay estudios mínimos). Una carrera
   escrita que no está en el catálogo se agrega sin grupo («por clasificar»); al clasificarla, el perfil se recalcula.
 - **Adscripción**: es de la persona (`solicitante.adscripcion` y `organizacion_id`); toda cuenta activa la tiene
   (`independiente` incluido) y cada cambio queda en la bitácora. La solicitud la copia al darse de alta y en cada

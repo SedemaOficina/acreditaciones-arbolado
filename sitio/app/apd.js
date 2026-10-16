@@ -142,7 +142,7 @@
       else if (nivel === 'licenciatura' && estatus === 'concluido') perfil = 'pasante';
       else perfil = ['principal', 'afin'].includes(grupo) ? 'licenciatura_afin' : 'disciplina_afin';
     }
-    return { perfil, minimo: MINIMOS[perfil] || null };
+    return { perfil, minimo: MINIMOS[perfil] || 5 }; // lo que decide el personal también pide 5 (decisión 2026-10-15)
   }
   function requiereSesion(datos) {
     const p = personaDeSesion(datos);

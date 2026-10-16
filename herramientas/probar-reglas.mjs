@@ -432,7 +432,7 @@ const casos = [
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Con preparatoria no se guardan carrera ni situación, y no cumple el perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'preparatoria', estatus_estudios = 'titulado', carrera = 'Biología' WHERE id = ${DICT_OBS};
-     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL
+     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima = 5
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Poda: se guardan nivel, carrera y situación, sin perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', carrera = 'Biología', estatus_estudios = 'titulado' WHERE id = ${BORRADOR};
@@ -451,7 +451,7 @@ const casos = [
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Una carrera escrita nueva se agrega sin grupo; al clasificarla la Secretaría, el perfil se actualiza', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'titulado', carrera = 'Gestión  Ambiental Urbana' WHERE id = ${DICT_OBS};
-     DO $$ BEGIN ASSERT (SELECT s.perfil_academico = 'por_clasificar' AND s.experiencia_minima IS NULL AND c.grupo IS NULL AND c.nombre = 'Gestión Ambiental Urbana'
+     DO $$ BEGIN ASSERT (SELECT s.perfil_academico = 'por_clasificar' AND s.experiencia_minima = 5 AND c.grupo IS NULL AND c.nombre = 'Gestión Ambiental Urbana'
                            FROM apd.solicitud s JOIN apd.carrera c ON c.id = s.carrera_id
                           WHERE s.estado = 'con_observaciones' AND s.tipo_acreditacion = 'dictaminador' ORDER BY s.folio LIMIT 1); END $$;
      UPDATE apd.carrera SET grupo = 'disciplina_afin' WHERE nombre = 'Gestión Ambiental Urbana';
