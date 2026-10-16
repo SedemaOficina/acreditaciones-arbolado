@@ -118,7 +118,7 @@
       <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
         <div class="campo" data-campo="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
           <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
-          <p class="ayuda">Escríbela como aparece en tu título o constancia; al escribir te sugerimos las ya registradas. Si tienes posgrado, la carrera más relacionada con el arbolado.</p>
+          <p class="ayuda">Escríbela como aparece en tu título o constancia; al escribir te sugerimos las ya registradas. Si tienes maestría o doctorado, escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.</p>
           <div class="combo" data-combo data-catalogo="carreras" data-libre>
             <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
             <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
@@ -139,9 +139,9 @@
       <div data-si="tipo=dictaminador">
         <!-- Lo que calcula la base con las respuestas; la persona ve la experiencia que se le pide (abajo). -->
         <div data-interno="Lo calcula la base con el nivel, la situación de los estudios y el grupo de la carrera (apd.perfil_academico). Se guarda en apd.solicitud.perfil_academico y experiencia_minima." data-interno-etiqueta="Perfil y experiencia mínima (calculados)" data-interno-texto=""></div>
-        <div class="aviso aviso-bloqueo" data-perfil-no-cumple hidden>
-          <svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg>
-          <div class="aviso-texto"><p>Con estos estudios no cumples el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, o carrera técnica. La solicitud no se podrá enviar.</p></div>
+        <div class="aviso aviso-advertencia" data-perfil-no-cumple hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+          <div class="aviso-texto"><p>Con estos estudios podrías no cumplir el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, posgrado en un área afín, o carrera técnica. Puedes enviar tu solicitud: la Secretaría la revisará con tus documentos.</p></div>
         </div>
         <div class="campo" data-campo="anios_experiencia" data-formato="numero" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.">
           <label class="etiqueta" for="anios_experiencia">Experiencia en manejo de arbolado</label>

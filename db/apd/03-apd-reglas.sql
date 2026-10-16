@@ -159,8 +159,10 @@ CREATE TRIGGER carrera_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.carre
 -- Perfil académico del dictaminador según los lineamientos (decisión 2026-10-15, Liber):
 --   a) licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín → 2 años;
 --   c) carta de pasante, carrera técnica o disciplina afín → 5 años.
--- Un posgrado (maestría o doctorado) cuenta como licenciatura titulada en su carrera, porque para cursarlo se
--- pide el título [supuesto por confirmar, P60]. Hasta preparatoria, o licenciatura en curso o trunca, no cumple.
+-- «Con licenciatura» es titulada; concluida sin título es carta de pasante. Un posgrado (maestría o doctorado, aun en
+-- curso) cuenta como licenciatura titulada en su área, aunque la licenciatura sea de otra (p. ej. Química con
+-- maestría en Ciencias Forestales: 2 años) (confirmado por Liber, 2026-10-15). Hasta preparatoria, o licenciatura en
+-- curso o trunca: «no_cumple», que no impide enviar; lo resuelve el personal en la revisión documental.
 -- Una carrera sin clasificar deja el perfil «por_clasificar»: lo resuelve la Secretaría en la revisión documental.
 CREATE FUNCTION apd.perfil_academico(p_nivel text, p_estatus text, p_grupo text) RETURNS text
   LANGUAGE sql IMMUTABLE AS $$
@@ -623,9 +625,8 @@ BEGIN
     -- Se calcula aquí, no se lee de la columna: el disparador del perfil corre después que el de cambio
     perfil := apd.perfil_academico(s.nivel_estudios, s.estatus_estudios,
                 (SELECT grupo FROM apd.carrera WHERE nombre_normalizado = apd.normalizar(s.carrera)));
-    IF perfil = 'no_cumple' THEN
-      PERFORM apd.error('perfil_no_cumple', 'Con los estudios que indicaste no cumples el perfil que piden los lineamientos para dictaminar');
-    END IF;
+    -- Un perfil que no cumple (hasta preparatoria, licenciatura en curso o trunca, carrera no afín) SÍ se envía: lo
+    -- revisa y decide el personal en la revisión documental (decisión 2026-10-15, Liber)
     IF s.anios_experiencia < apd.experiencia_minima(perfil) THEN
       PERFORM apd.error('experiencia_insuficiente', format('Tu perfil pide al menos %s años de experiencia en manejo de arbolado', apd.experiencia_minima(perfil)));
     END IF;

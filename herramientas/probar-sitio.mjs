@@ -340,6 +340,11 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.locator('[data-campo="anios_experiencia"] .err:not(:empty)').count() > 0, t('perfil: con menos experiencia de la que pide el perfil no avanza'));
   await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
   comprueba(/dos años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: titulado en Biología, dos años'));
+  await page.selectOption('#nivel_estudios', 'maestria');
+  await page.fill('#carrera', 'Ciencias Forestales');
+  comprueba(/dos años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: posgrado en un área afín, dos años'));
+  await page.selectOption('#nivel_estudios', 'licenciatura');
+  await page.fill('#carrera', 'Biología');
   const calculado = await page.waitForFunction(() => /licenciatura_afin/.test(document.querySelector('[data-interno-texto] [data-interno-valor]').textContent), null, { timeout: 3000 }).then(() => true, () => false);
   comprueba(calculado, t('perfil: en pruebas, el perfil calculado se ve en amarillo'));
   await captura(page, `10-dictaminador-perfil-${sufijo}`);

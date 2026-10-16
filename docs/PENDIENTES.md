@@ -36,7 +36,6 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P14 | Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? | Sí basta para abrir la cuenta, porque nadie llega a un curso sin presentar su identificación oficial en el cotejo. | etapa 3 |
 | P15 | Contrastar la CURP con el servicio de consulta de RENAPO | Hacerlo sólo si el SIA ya tiene acceso al servicio. No bloquea: el cotejo presencial ya confirma la identidad. | no |
 | P51 | ¿La verificación pública muestra la foto de la credencial? | No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física. | no |
-| P60 | Reglas supuestas del perfil de dictaminador | Confirmar: (1) «con licenciatura» quiere decir titulada; concluida sin título cuenta como carta de pasante (5 años); (2) un posgrado cuenta como licenciatura titulada; (3) con preparatoria o menos, o licenciatura en curso o trunca, no cumple y la solicitud no se envía; (4) la carta de pasante sólo vale en carrera principal, afín o disciplina afín. | no |
 | P63 | Verificar los requisitos que aparecen en la página de inicio | Revisar contra los lineamientos la lista de requisitos por acreditación y modalidad que muestra index.html (sale del catálogo apd.requisito y apd.requisito_curso); lo que se corrija se cambia en el catálogo y se refleja en inicio, solicitud y documentos. | datos reales |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
@@ -134,3 +133,4 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Universidades e instituciones educativas en la adscripción (P54) | Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre | 15/10/2026 |
 | Nombres de los identificadores (P58) | «Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema | 15/10/2026 |
 | Catálogo de carreras afines (P59) | No habrá catálogo de afines: campo abierto que valida el personal en la revisión documental; el catálogo crece con las carreras aceptadas de manera explícita | 15/10/2026 |
+| Reglas del perfil de dictaminador (P60) | Confirmadas por Liber: licenciatura titulada; posgrado cuenta en su área; lo que no cumple se envía y lo decide el personal | 15/10/2026 |

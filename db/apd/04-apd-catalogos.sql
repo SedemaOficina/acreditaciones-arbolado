@@ -149,7 +149,8 @@ INSERT INTO apd.carrera (nombre, grupo) VALUES
   ('Biología',                         'principal'),
   ('Ingeniería Forestal',              'principal'),
   ('Ingeniería Agrónoma',              'principal'),
-  ('Agronomía',                        'principal');
+  ('Agronomía',                        'principal'),
+  ('Ciencias Forestales',              'afin');      -- posgrado afín (ejemplo de Liber, 2026-10-15)
 
 -- Cómo se nombra el archivo guardado de cada documento (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE
 -- COMPLETO, p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Un requisito nuevo sin este dato usa su nombre en mayúsculas.

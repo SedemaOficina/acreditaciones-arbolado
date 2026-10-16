@@ -421,9 +421,15 @@ const casos = [
   ['Con carta de pasante se piden 5 años: con menos no se envía', { codigo: 'experiencia_insuficiente' }, null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'concluido', carrera = 'Biología', anios_experiencia = 3 WHERE id = ${DICT_OBS};
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
-  ['Licenciatura trunca no cumple el perfil y no se envía', { codigo: 'perfil_no_cumple' }, null, `
+  ['Licenciatura trunca queda «no cumple», pero se envía: la revisa el personal', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'trunco', carrera = 'Biología' WHERE id = ${DICT_OBS};
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT perfil_academico = 'no_cumple' AND estado = 'enviada' FROM apd.solicitud WHERE folio =
+       (SELECT folio FROM apd.solicitud WHERE tipo_acreditacion = 'dictaminador' AND perfil_academico = 'no_cumple' ORDER BY folio LIMIT 1)); END $$;`],
+  ['Licenciatura no afín con maestría en un área afín pide 2 años', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'maestria', estatus_estudios = 'titulado', carrera = 'Ciencias Forestales' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT perfil_academico = 'licenciatura_afin' AND experiencia_minima = 2
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Con preparatoria no se guardan carrera ni situación, y no cumple el perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'preparatoria', estatus_estudios = 'titulado', carrera = 'Biología' WHERE id = ${DICT_OBS};
      DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL

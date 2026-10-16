@@ -10,7 +10,8 @@
      · en la revisión, el nombre con que se guarda cada documento (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo pone la
        base al cargarlos, apd.nombre_de_archivo) y, debajo, el archivo que subió;
      · estudios (poda y dictaminador); en dictaminador, con nivel, carrera y situación, la experiencia que se le pide (APD.perfilAcademico,
-       mismo cálculo que la base). Fija el mínimo del campo de experiencia y avisa si no cumple el perfil.
+       mismo cálculo que la base). Fija el mínimo del campo de experiencia y advierte si podría no cumplir el perfil
+       (se envía igual: lo revisa el personal).
    La base vuelve a comprobar todo al enviar. */
 (function () {
   'use strict';
@@ -154,7 +155,7 @@
   const TEXTO_PERFIL = {
     licenciatura_afin: 'licenciatura titulada en una carrera de las que piden los lineamientos o afín',
     disciplina_afin: 'licenciatura en una disciplina afín', pasante: 'carta de pasante', tecnica: 'carrera técnica',
-    por_clasificar: 'carrera por clasificar: la Secretaría confirma si es afín en la revisión documental', no_cumple: 'no cumple el perfil'
+    por_clasificar: 'carrera por clasificar: la Secretaría confirma si es afín en la revisión documental', no_cumple: 'podría no cumplir el perfil: lo revisa el personal'
   };
   function experiencia(datos) {
     const valor = (n) => { const r = radios(n).find((x) => x.checked); return r ? r.value : ''; };

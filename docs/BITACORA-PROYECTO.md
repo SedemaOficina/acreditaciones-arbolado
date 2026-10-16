@@ -328,3 +328,10 @@ auditor de CSS y de campos correctos.
   comprobantes de experiencia. Dictaminador nueva queda con 7 documentos.
 - Comprobante de estudios y comprobantes de experiencia piden escanear todos los documentos en un solo PDF.
 - Se quita de la ayuda del nivel de estudios la nota sobre poda y dictaminador.
+
+## 2026-10-15 · Bloque 25 · Reglas del perfil confirmadas
+
+- Posgrado en un área afín cuenta aunque la licenciatura sea de otra: «Ciencias Forestales» entra al catálogo como afín y
+  la ayuda de la carrera pide escribir la del posgrado.
+- Un perfil que no cumple ya no impide enviar: la base deja de rechazar con `perfil_no_cumple` y el formulario advierte
+  (en ámbar) que la Secretaría lo revisará. P60 resuelto.

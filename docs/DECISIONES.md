@@ -53,7 +53,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-15 | En los documentos no se avisa del renombrado: lo hace el sistema. El nombre nuevo se muestra sólo en la revisión, con el archivo que subió la persona debajo | Liber Saltijeral |
 | 2026-10-15 | En poda no se piden años de experiencia ni estudios mínimos | Liber Saltijeral |
 | 2026-10-15 | Se quita el requisito «Constancias de capacitación especializada» del dictaminador: basta con los comprobantes de experiencia (las constancias de capacitación pueden ir entre ellos). En comprobante de estudios y comprobantes de experiencia se indica escanear todos los documentos en un solo PDF | Liber Saltijeral |
-| 2026-10-15 | Supuestos del perfil por confirmar (P60): un posgrado cuenta como licenciatura titulada; «con licenciatura» quiere decir titulada (concluida sin título = carta de pasante); con preparatoria o menos, o licenciatura en curso o trunca, la solicitud no se envía | Propuesta |
+| ~~2026-10-15~~ | ~~Supuestos del perfil por confirmar (P60)~~ Confirmados y ajustados abajo | Propuesta |
+| 2026-10-15 | Perfil del dictaminador, confirmado: «con licenciatura» es titulada, y concluida sin título equivale a carta de pasante (5 años). Un posgrado cuenta como licenciatura titulada, aunque esté en curso, y vale el área del posgrado aunque la licenciatura sea de otra (p. ej. Química con maestría o doctorado en Ciencias Forestales: 2 años). Con preparatoria o menos, o licenciatura en curso o trunca, la solicitud sí se envía: la revisa y decide el personal | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 

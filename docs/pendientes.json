@@ -484,14 +484,6 @@
       "recomendacion": "Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
     },
     {
-      "id": "P60",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-15",
-      "titulo": "Reglas supuestas del perfil de dictaminador",
-      "recomendacion": "Confirmar: (1) «con licenciatura» quiere decir titulada; concluida sin título cuenta como carta de pasante (5 años); (2) un posgrado cuenta como licenciatura titulada; (3) con preparatoria o menos, o licenciatura en curso o trunca, no cumple y la solicitud no se envía; (4) la carta de pasante sólo vale en carrera principal, afín o disciplina afín."
-    },
-    {
       "id": "P61",
       "grupo": "estandar",
       "bloquea": "no",
@@ -630,6 +622,11 @@
     {
       "titulo": "Catálogo de carreras afines (P59)",
       "como": "No habrá catálogo de afines: campo abierto que valida el personal en la revisión documental; el catálogo crece con las carreras aceptadas de manera explícita",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Reglas del perfil de dictaminador (P60)",
+      "como": "Confirmadas por Liber: licenciatura titulada; posgrado cuenta en su área; lo que no cumple se envía y lo decide el personal",
       "fecha": "2026-10-15"
     }
   ]
