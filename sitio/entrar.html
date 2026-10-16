@@ -53,16 +53,8 @@
     <p class="texto-gris">¿Olvidaste tu contraseña? <span class="pendiente">Pendiente: definir quién atiende la recuperación del acceso y por qué medio.</span></p>
   </form>
 
-  <section class="pruebas" aria-labelledby="t-pruebas">
-    <h2 class="pruebas-titulo" id="t-pruebas">Sólo en la versión de prueba: personas de ejemplo</h2>
-    <p>Todas son ficticias y su contraseña es <span class="mono" data-contrasena-ficticia></span>. Elige una para llenar el formulario con sus datos; después presiona «Entrar».</p>
-    <ul class="pruebas-lista" data-ejemplos></ul>
-    <p>Personal de la Secretaría (acceso simulado, perfil de revisión documental): <a href="revision.html">Solicitudes por revisar</a>.</p>
-    <div data-ejemplos-migradas-caja hidden>
-      <p>Del registro anterior, todavía sin cuenta: para ver cómo se activa, <a href="cuenta.html">crea la cuenta</a> con una de estas CURP.</p>
-      <ul class="lista-obs" data-ejemplos-migradas></ul>
-    </div>
-  </section>
+  <!-- Sólo en la versión de prueba: todo lo de prueba (escoger un caso, llenar el formulario) está en el menú de pruebas. -->
+  <p class="nota-prueba">Versión de prueba: todas las personas de ejemplo tienen la contraseña <span class="mono" data-contrasena-ficticia></span>. Para escoger una, abre el «Menú de pruebas».</p>
 </main>
 
 <footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
@@ -78,6 +70,8 @@
 <script src="formkit/modulos/identificadores/identificadores.js"></script>
 <script src="app/entrar.js?v=0.19"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/archivos-prueba.js?v=0.19"></script>
+<script src="app/casos-prueba.js?v=0.19"></script>
 <script src="app/pruebas.js?v=0.19"></script>
 <script src="app/version-visible.js?v=0.19"></script>
 </body>

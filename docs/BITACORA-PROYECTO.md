@@ -433,3 +433,29 @@ campos correctos.
 
 - Decisión de Liber: al emitir los lineamientos no se pide el comprobante de domicilio (no se utiliza); hoy la norma lo
   exige, así que el sistema lo sigue pidiendo. P03, DECISIONES (corrección 13) y mapa (R13) actualizados.
+
+## 2026-10-16 · Bloque 35 · Fecha de nacimiento con escritura guiada
+
+- Liber: el campo de fecha del navegador estaba bien por cómo se escribía (dd/mm/aaaa, pasando solo al mes y al año);
+  lo que sobraba era el calendario.
+- `app/fecha-dma.js`: escritura guiada en el navegador. Al completar el día o el mes pone la diagonal y pasa al siguiente;
+  un primer dígito que no puede iniciar un día (4 a 9) o un mes (2 a 9) se completa con cero; una diagonal tras un solo
+  dígito lo cierra. Al borrar o al editar en medio no reacomoda nada. Funciona igual en teléfono (teclado numérico, sin
+  diagonal) y en computadora. El campo muestra «dd/mm/aaaa» como guía; la etiqueta y la ayuda siguen aparte.
+- Comprobaciones nuevas: «3012» + «1999» tecleados dan 30/12/1999; «4» da 04/; borrar no reacomoda.
+
+## 2026-10-16 · Bloque 36 · Menú de pruebas reorganizado
+
+- Liber: el menú repetía cosas y confundía. Maqueta (`maquetas/menu-pruebas/`) con lo que confundía y la propuesta;
+  aprobada.
+- `app/pruebas.js` en cinco bloques: estás como · en esta pantalla · entrar como · ir a otra pantalla · ajustes de la
+  prueba. «En esta pantalla» sólo ofrece lo que aplica (la bandeja del personal ya no ofrece llenar ni simular el envío).
+- `app/casos-prueba.js`: 20 casos con nombre en cinco grupos, más el personal; cada uno busca su persona en los ficticios.
+  Lo usan «Entrar como» y, en «Entrar», «Llenar CURP y contraseña».
+- «Entrar» pierde la caja de personas de ejemplo (`app/entrar.js` sólo pone la contraseña). Las CURP del registro anterior
+  pasan al menú de «Crear cuenta»: «Llenar con su CURP».
+- «Empezar de cero»: cierra la sesión, borra lo guardado en la pestaña (`apd.*`) y en IndexedDB, y lleva al inicio.
+- `archivos-prueba.js` y `casos-prueba.js` se cargan en todas las páginas, junto a `pruebas.js`.
+- Comprobaciones nuevas: orden de los bloques, todos los casos con persona, entrar con un caso desde «Entrar», el personal
+  sin «En esta pantalla», «Empezar de cero», cuenta del registro anterior desde el menú; axe con el menú abierto en tres
+  pantallas (311 comprobaciones).

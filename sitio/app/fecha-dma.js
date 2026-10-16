@@ -58,7 +58,41 @@
     }
   };
 
-  global.APD_FECHA = { partes, iso };
+  /* Escritura guiada (sólo navegador), como el campo de fecha del navegador pero sin calendario: al completar el
+     día pasa al mes y al completar el mes pasa al año, poniendo las diagonales solo. Un primer dígito que no puede
+     empezar un día de dos cifras (4 a 9) o un mes (2 a 9) se completa con cero: «4» → «04/». Escribir una diagonal
+     (o punto, guion o espacio) tras un solo dígito también lo cierra: «3/» → «03/». Al borrar no se reacomoda nada,
+     y si se edita en medio del texto tampoco, para no mover el cursor. */
+  function guia(texto) {
+    const seg = ['', '', ''];
+    const cerrado = [false, false];
+    let i = 0;
+    for (const c of String(texto)) {
+      if (/\d/.test(c)) {
+        if (i < 2 && cerrado[i]) i++;
+        if (i === 2) { if (seg[2].length < 4) seg[2] += c; continue; }
+        seg[i] += c;
+        if (seg[i].length === 1 && Number(c) > (i === 0 ? 3 : 1)) seg[i] = '0' + c;
+        if (seg[i].length === 2) cerrado[i] = true;
+      } else if (/[/.\- ]/.test(c) && i < 2 && seg[i].length === 1) {
+        seg[i] = '0' + seg[i]; cerrado[i] = true;
+      }
+    }
+    return seg[0] + (cerrado[0] ? '/' : '') + seg[1] + (cerrado[1] ? '/' : '') + seg[2];
+  }
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    // En captura: el valor queda acomodado antes de que el núcleo del estándar lo lea
+    document.addEventListener('input', (e) => {
+      const c = e.target;
+      if (!c || !c.closest || !c.closest('[data-formato="fecha-dma"]') || c.tagName !== 'INPUT') return;
+      if (e.inputType && e.inputType.startsWith('delete')) return;
+      if (c.selectionStart !== c.value.length) return;
+      const v = guia(c.value);
+      if (v !== c.value) { c.value = v; c.setSelectionRange(v.length, v.length); }
+    }, true);
+  }
+
+  global.APD_FECHA = { partes, iso, guia };
   global.APD_FORMATOS = Object.assign(global.APD_FORMATOS || {}, FORMATOS);
   global.APD_CRUZADAS = Object.assign(global.APD_CRUZADAS || {}, CRUZADAS);
 }(typeof window !== 'undefined' ? window : globalThis));

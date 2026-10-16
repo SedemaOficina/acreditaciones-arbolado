@@ -10,7 +10,7 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
 | `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento (escrita como día/mes/año, sin calendario: formato propio `fecha-dma`, P70), CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), sexo (tomado de la CURP, sólo lectura), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, adscripción (fragmento compartido con «Mis datos»), contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, opciones, otro, combo, tooltip, modal, copiar, acuse |
-| `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. Caja de personas de ejemplo (sólo versión de prueba) | identificadores |
+| `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. En la versión de prueba, una línea con la contraseña de las personas de ejemplo; escogerlas se hace desde el menú de pruebas | identificadores |
 | `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado —«En revisión documental»…—, qué sigue, cita con datos de pago —concepto, monto y referencia en amarillo «por confirmar»— y aviso de llevar la identificación para confirmar la fotografía, folio de la solicitud, expediente de la persona, con grupo: preséntate el, el curso termina el, sede; observaciones; asistencia y calificación mientras es el resultado; acreditación emitida: folio, inicio y fin de vigencia; lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
 | `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), la adscripción con que se enviará (se cambia en «Mis datos»), estudios en los dos tipos (último nivel en lista desplegable → con licenciatura o posgrado, carrera con autocompletado y situación del grado); en dictaminador, además, experiencia, con el mínimo que pide su perfil y aviso si no cumple · **Documentos** (generados del catálogo; sólo PDF; la CURP con su enlace a gob.mx) · **Revisión** (cada documento con su nombre nuevo y, debajo, el archivo que subió), declaración bajo protesta de decir verdad, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
 | `datos.html` | Una página | «Mis datos»: nombre, CURP, fecha de nacimiento, sexo y expediente de sólo lectura (los corrige la Secretaría); correo (con confirmación), teléfono, adscripción (¿trabajas para alguien? —«No, soy independiente»—; tipo; según el tipo: nombre de la empresa, dependencia de la Ciudad y Dirección General si es la SEDEMA —lista cerrada—, alcaldía —las 16 en orden alfabético—, dependencia federal o institución educativa —UNAM u otra—; el nombre de la empresa se autocompleta con las registradas y admite nuevas) y, mientras no esté confirmada, cambiar la fotografía. `?volver=` regresa a la solicitud | opciones, otro, combo, archivos, acuse |
@@ -21,10 +21,23 @@ se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
 
 ### Menú de pruebas (sólo versión 0.N)
 
-`app/pruebas.js`, en todas las pantallas: botón fijo «Menú de pruebas» que abre un panel para entrar como
-cualquier persona ficticia (una por situación) o como persona nueva, desactivar o activar las preguntas
-obligatorias (los formatos y las comprobaciones de la CURP siguen), llenar el formulario con datos ficticios (en la cuenta, con una fotografía ficticia dibujada en el navegador),
-saltar a cualquier paso de la solicitud, simular fallo, límite o envío lento, e ir a cualquier pantalla.
+`app/pruebas.js`, en todas las pantallas: botón fijo «Menú de pruebas» con cinco bloques, siempre en el mismo orden
+(maqueta aprobada el 2026-10-16, `maquetas/menu-pruebas/`):
+
+1. **Estás como**: quién eres (persona, persona nueva, personal o nadie), qué caso es y en qué pantalla estás; «Salir».
+2. **En esta pantalla**, sólo lo que aplica (si nada aplica, no aparece): llenar con datos ficticios (cuenta —con una
+   fotografía ficticia dibujada en el navegador—, solicitud y verificar); crear la cuenta de alguien del registro
+   anterior con su CURP (cuenta); llenar CURP y contraseña con un caso (entrar); ir al paso (solicitud); cómo responde el
+   envío —normal, falla, límite, lento— (cuenta, mis datos, entrar y solicitud).
+3. **Entrar como**: los casos de prueba con nombre de `app/casos-prueba.js`, agrupados por etapa (sin trámite, solicitud
+   en curso, renovación, solicitud terminada, personal), con una línea de qué se puede probar. Cada caso busca en los
+   ficticios la primera persona que lo cumple; la prueba del sitio comprueba que todos la encuentran.
+4. **Ir a otra pantalla**: agrupadas en público, persona solicitante y personal.
+5. **Ajustes de la prueba**: preguntas obligatorias (los formatos y las comprobaciones de la CURP siguen), lo guardado
+   en este navegador (solicitudes enviadas con sus documentos y revisiones) con «Borrar lo guardado», y «Empezar de cero»
+   (cierra la sesión, borra lo guardado, activa las obligatorias y lleva al inicio).
+
+En «Entrar» ya no hay caja de personas de ejemplo: sólo una línea con su contraseña.
 También pone la página en modo de prueba: los **datos internos** (`data-interno`: lo que calcula el sistema, se guarda
 en la base y la persona no ve, como el sexo tomado de la CURP o el curso que corresponde, `tramite`; lo que sólo usa
 la página, como `sin_segundo_apellido`, no se muestra) se

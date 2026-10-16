@@ -69,9 +69,9 @@
     <div class="campo" data-campo="fecha_nacimiento" data-formato="fecha-dma" data-requerido data-no-futura data-sensible
          data-finalidad="Comprobar que la CURP corresponde a quien crea la cuenta." data-uso="Comprobar la CURP; no se guarda aparte porque ya está en ella.">
       <label class="etiqueta" for="fecha_nacimiento">Fecha de nacimiento</label>
-      <p class="ayuda" id="ay-fecha_nacimiento">Día, mes y año. Ejemplo: 23/07/1985</p>
-      <!-- Se escribe, sin calendario (decisión 2026-10-16): formato propio fecha-dma (app/fecha-dma.js). -->
-      <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="text" inputmode="numeric" maxlength="10" autocomplete="bday" aria-describedby="ay-fecha_nacimiento">
+      <p class="ayuda" id="ay-fecha_nacimiento">Escribe día, mes y año; las diagonales se ponen solas. Ejemplo: 23/07/1985</p>
+      <!-- Se escribe, sin calendario (decisión 2026-10-16): formato propio fecha-dma con escritura guiada que pasa sola al mes y al año (app/fecha-dma.js). El placeholder sólo recuerda el orden; la etiqueta y la ayuda van aparte. -->
+      <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="bday" aria-describedby="ay-fecha_nacimiento">
     </div>
 
     <!-- Cuatro validaciones cruzadas: la fecha (curp-fecha, del estándar) y el nombre y los apellidos
@@ -364,6 +364,8 @@
 <script src="app/auxiliar.js?v=0.19"></script>
 <script src="app/cuenta.js?v=0.19"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/archivos-prueba.js?v=0.19"></script>
+<script src="app/casos-prueba.js?v=0.19"></script>
 <script src="app/pruebas.js?v=0.19"></script>
 <script src="app/version-visible.js?v=0.19"></script>
 </body>

@@ -1,15 +1,18 @@
 /* =========================================================
    pruebas.js · Menú de pruebas (sólo en la versión de prueba)
 
-   Un botón fijo abre un panel para revisar las pantallas rápido:
-     · entrar como cualquier persona ficticia (una por situación del trámite)
-       o como persona nueva, y salir;
-     · activar o desactivar las preguntas obligatorias (para avanzar sin
-       llenar); los formatos y las validaciones cruzadas siguen activos;
-     · llenar el formulario de la pantalla con datos ficticios;
-     · saltar a cualquier paso de la solicitud;
-     · simular un fallo de envío, el límite o un envío lento;
-     · ir a cualquier pantalla.
+   Un botón fijo abre un panel con cinco bloques, siempre en el mismo orden
+   (maqueta aprobada el 2026-10-16, maquetas/menu-pruebas/):
+     1. Estás como: quién eres, qué caso es y en qué pantalla estás; «Salir».
+     2. En esta pantalla: sólo lo que sirve aquí (llenar con datos ficticios,
+        ir al paso, cómo responde el envío, llenar «Entrar» con un caso,
+        crear la cuenta con una CURP del registro anterior). Si nada aplica,
+        el bloque no aparece.
+     3. Entrar como: los casos de prueba con nombre (app/casos-prueba.js),
+        agrupados por etapa del trámite, y el personal de la Secretaría.
+     4. Ir a otra pantalla: agrupadas por quién la usa.
+     5. Ajustes de la prueba: preguntas obligatorias, lo guardado en este
+        navegador y «Empezar de cero».
 
    Sólo aparece si la página tiene la franja de entorno de pruebas y el
    archivo VERSION es 0.N. Desaparece al pasar al SIA (versión 1): ahí se
@@ -116,6 +119,28 @@
     return p;
   }
 
+  /* Fecha de nacimiento dentro de la CURP, como día/mes/año */
+  function fechaDeCurp(curp) {
+    const siglo = /\d/.test(curp[16]) ? '19' : '20';
+    return `${curp.slice(8, 10)}/${curp.slice(6, 8)}/${siglo}${curp.slice(4, 6)}`;
+  }
+  /* Cuenta de una persona del registro anterior: sus datos del padrón y lo demás ficticio */
+  function llenaMigrada(m) {
+    pon('nombre', m.nombre); pon('primer_apellido', m.primer_apellido); pon('segundo_apellido', m.segundo_apellido || '');
+    pon('fecha_nacimiento', fechaDeCurp(m.curp)); pon('curp', m.curp);
+    pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
+    pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
+    adjuntaFoto(form.querySelector('[data-campo="foto"]'));
+    elige('adscrito', 'no');
+    marca('aviso'); marca('humano');
+    return `Formulario llenado con la CURP de ${APD.nombreCompleto(m)}. Presiona «Crear cuenta» para ver cómo se activa.`;
+  }
+  /* «Entrar» con un caso: llena CURP y contraseña y deja presionar «Entrar» */
+  function llenaEntrar(p) {
+    pon('curp', p.curp); pon('contrasena', APD.CONTRASENA_FICTICIA);
+    return `CURP y contraseña de ${APD.nombreCompleto(p)}. Presiona «Entrar».`;
+  }
+
   function llena(datos) {
     if (!form) return 'Esta pantalla no tiene formulario.';
     if (pagina === 'cuenta.html') {
@@ -126,9 +151,6 @@
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
       adjuntaFoto(form.querySelector('[data-campo="foto"]'));
       elige('adscrito', 'no');
-    } else if (pagina === 'entrar.html') {
-      const p = datos.solicitante.find((x) => x.estado === 'activa');
-      pon('curp', p.curp); pon('contrasena', APD.CONTRASENA_FICTICIA);
     } else if (pagina === 'verificar.html') {
       pon('numero', datos.verificacion_publica[0].numero);
     } else if (pagina === 'solicitud.html') {
@@ -157,91 +179,193 @@
 
   /* ----- El panel ----- */
   const { el } = APD;
+  const PANTALLAS = [
+    ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación']]],
+    ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud']]],
+    ['Personal', [['revision.html', 'Solicitudes por revisar']]]
+  ];
+  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
+  const DEL_PERSONAL = ['revision.html', 'revisar.html'];
+  const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
+  const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
+  const PREFIJO = 'apd.';                                                      // todo lo que guarda el sitio en la pestaña
+
+  /* Lo guardado en este navegador: solicitudes enviadas en la prueba (IndexedDB) y revisiones de esta pestaña */
+  function guardado() {
+    let revisiones = 0;
+    try { revisiones = Object.keys(JSON.parse(window.sessionStorage.getItem('apd.personal.revisiones') || '{}')).length; } catch (e) { /* sin almacenamiento */ }
+    const envios = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve([]) : APD_ARCHIVOS_PRUEBA.solicitudes();
+    return envios.then((l) => ({ envios: l.length, revisiones }));
+  }
+  function textoGuardado({ envios, revisiones }) {
+    const partes = [];
+    if (envios) partes.push(envios === 1 ? '1 solicitud enviada con sus documentos' : `${envios} solicitudes enviadas con sus documentos`);
+    if (revisiones) partes.push(revisiones === 1 ? '1 revisión' : `${revisiones} revisiones`);
+    return partes.length ? partes.join(' y ') : 'nada';
+  }
+  function borraPestana() {
+    try {
+      for (const k of Object.keys(window.sessionStorage)) if (k.startsWith(PREFIJO)) window.sessionStorage.removeItem(k);
+    } catch (e) { /* sin almacenamiento: nada que borrar */ }
+  }
+
   function panel(datos) {
     const dialogo = el('dialog', { class: 'menu-pruebas', 'aria-labelledby': 'menu-pruebas-titulo' });
     const estado = el('p', { class: 'menu-pruebas-estado', role: 'status' });
     const di = (t) => { estado.textContent = t; };
-    const seccion = (titulo, hijos) => el('section', { class: 'menu-pruebas-seccion' }, [el('h3', { class: 'menu-pruebas-subtitulo', texto: titulo }), ...hijos]);
+    const seccion = (titulo, hijos) => el('section', { class: 'menu-pruebas-seccion' }, [el('h3', { class: 'menu-pruebas-subtitulo', texto: titulo }), ...hijos.filter(Boolean)]);
     const boton = (texto, accion, clase = 'btn btn-secundario') => { const b = el('button', { type: 'button', class: clase, texto }); b.addEventListener('click', accion); return b; };
+    const acciones = (...b) => el('div', { class: 'menu-pruebas-acciones' }, b.filter(Boolean));
+    const ayuda = (texto) => el('p', { class: 'menu-pruebas-ayuda', texto });
+    const rotulo = (texto) => el('p', { class: 'menu-pruebas-rotulo', texto });
+    const grupos = APD_CASOS_PRUEBA.lista(datos);
+    const casos = grupos.flatMap((g) => g.casos);
 
-    // Personas: una por situación, como la caja de «Entrar»
-    const opciones = [el('option', { value: '', texto: 'Elige una opción' }), el('option', { value: 'nueva', texto: 'Persona nueva, sin trámites' })];
-    const vistas = new Set();
-    for (const p of datos.solicitante.filter((x) => x.estado === 'activa')) {
-      const s = APD.solicitudesDe(datos, p)[0];
-      const a = APD.acreditacionesDe(datos, p)[0];
-      const clave = s ? `s:${s.estado}:${s.tipo_acreditacion}` : a ? `a:${APD.situacion(datos, a)}` : 'sin';
-      if (vistas.has(clave)) continue;
-      vistas.add(clave);
-      const texto = s ? `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.ESTADOS[s.estado].texto}` : a ? `${APD.TIPOS[a.tipo_acreditacion]} · ${APD.VIGENCIA[APD.situacion(datos, a)].texto}` : 'Sin trámites';
-      opciones.push(el('option', { value: p.id, texto: `${texto} — ${APD.nombreCompleto(p)}` }));
-    }
-    const select = el('select', { class: 'control control-select', id: 'menu-pruebas-persona' }, opciones);
+    /* 1 · Estás como */
     const sesion = APD.leeSesion();
-    const quien = sesion ? (sesion.nueva ? 'una persona nueva' : APD.nombreCompleto(datos.solicitante.find((p) => p.id === sesion.id) || { nombre: '—' })) : 'nadie';
+    const enPersonal = DEL_PERSONAL.includes(pagina);
+    const persona = sesion && sesion.id ? datos.solicitante.find((p) => p.id === sesion.id) : null;
+    const actual = enPersonal ? casos.find((c) => c.clave === 'personal')
+      : sesion && sesion.nueva ? casos.find((c) => c.clave === 'nueva')
+        : persona ? casos.find((c) => c.persona && c.persona.id === persona.id) : null;
+    const quien = enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, revisión documental`
+      : sesion && sesion.nueva ? 'una persona nueva · persona solicitante'
+        : persona ? `${APD.nombreCompleto(persona)} · persona solicitante` : 'nadie (sin sesión)';
+    const ahora = el('div', { class: 'menu-pruebas-ahora' }, [
+      el('div', { class: 'menu-pruebas-fila' }, [
+        el('p', {}, [el('strong', { texto: 'Estás como: ' }), document.createTextNode(quien)]),
+        enPersonal || sesion ? boton('Salir', () => { APD.cierraSesion(); location.href = 'index.html'; }, 'btn-enlace') : null
+      ].filter(Boolean)),
+      ayuda([actual && actual.clave !== 'personal' ? `Caso: ${actual.texto}.` : '', `Pantalla: ${NOMBRES[pagina] || pagina}.`].filter(Boolean).join(' '))
+    ]);
 
-    const interruptor = el('button', { type: 'button', class: 'btn btn-secundario', 'aria-pressed': sinObligatorias ? 'true' : 'false',
-      texto: sinObligatorias ? 'Activar las preguntas obligatorias' : 'Desactivar las preguntas obligatorias' });
-    interruptor.addEventListener('click', () => { escribe(!sinObligatorias); location.reload(); });
+    /* 2 · En esta pantalla: sólo lo que aplica */
+    const aqui = [];
+    if (form && LLENA.includes(pagina)) aqui.push(acciones(boton('Llenar con datos ficticios', () => di(llena(datos)))));
+    if (form && pagina === 'cuenta.html') {
+      const migradas = APD_CASOS_PRUEBA.migradas(datos);
+      if (migradas.length) {
+        const sel = el('select', { class: 'control control-select', id: 'menu-pruebas-migrada' },
+          [el('option', { value: '', texto: 'Elige una persona' }), ...migradas.map((m) => {
+            const acs = APD.acreditacionesDe(datos, m).map((a) => `${APD.TIPOS[a.tipo_acreditacion]} ${APD.VIGENCIA[APD.situacion(datos, a)].texto.toLowerCase()}`).join('; ');
+            return el('option', { value: m.id, texto: `${APD.nombreCompleto(m)} — ${acs}` });
+          })]);
+        aqui.push(el('div', { class: 'menu-pruebas-campo' }, [
+          el('label', { class: 'etiqueta', for: 'menu-pruebas-migrada', texto: 'Crear la cuenta de alguien del registro anterior' }),
+          el('div', { class: 'select' }, [sel])
+        ]), acciones(boton('Llenar con su CURP', () => {
+          const m = migradas.find((x) => x.id === sel.value);
+          di(m ? llenaMigrada(m) : 'Elige una persona.');
+        })), ayuda('Todavía no tienen cuenta: al crearla con su CURP se activa y se ven sus acreditaciones anteriores.'));
+      }
+    }
+    if (form && pagina === 'entrar.html') {
+      const sel = selectCasos('menu-pruebas-llenar', grupos, (c) => c.persona, '');
+      aqui.push(el('div', { class: 'menu-pruebas-campo' }, [
+        el('label', { class: 'etiqueta', for: 'menu-pruebas-llenar', texto: 'Llenar con un caso de prueba' }),
+        el('div', { class: 'select' }, [sel])
+      ]), acciones(boton('Llenar CURP y contraseña', () => {
+        const c = casos.find((x) => x.clave === sel.value);
+        di(c ? llenaEntrar(c.persona) : 'Elige un caso.');
+      })), ayuda('Llena el formulario y te deja presionar «Entrar», para probar la pantalla misma. Para entrar directo, usa «Entrar como».'));
+    }
+    if (form && form.querySelector('section[data-paso]')) {
+      const pasos = Array.from(form.querySelectorAll('section[data-paso]'));
+      aqui.push(rotulo('Ir al paso'), acciones(...pasos.map((p, k) =>
+        boton(`${k + 1}. ${p.dataset.titulo}`, async () => { const m = await irAlPaso(k); if (m) di(m); else dialogo.close(); }))));
+    }
+    if (form && ENVIO.includes(pagina)) {
+      const modo = new URLSearchParams(location.search).get('simular') || '';
+      const url = (m) => { const u = new URL(location.href); if (m) u.searchParams.set('simular', m); else u.searchParams.delete('simular'); return u.pathname.split('/').pop() + u.search; };
+      aqui.push(rotulo('Cómo responde el envío'), el('ul', { class: 'menu-pruebas-envio' }, [
+        ['Normal', ''], ['Falla', 'error'], ['Límite de envíos', 'limite'], ['Lento', 'lento']
+      ].map(([t, m]) => el('li', {}, [el('a', { href: url(m), texto: t, 'aria-current': m === modo ? 'true' : null })]))));
+    }
+
+    /* 3 · Entrar como */
+    const elegir = selectCasos('menu-pruebas-persona', grupos, () => true, actual ? actual.clave : '');
+    const queProbar = ayuda('');
+    const describe = () => { const c = casos.find((x) => x.clave === elegir.value); queProbar.textContent = c ? `Qué puedes probar: ${c.prueba}` : ''; queProbar.hidden = !c; };
+    elegir.addEventListener('change', describe);
+    describe();
+    queProbar.classList.add('menu-pruebas-caso');
+
+    /* 5 · Ajustes de la prueba */
+    const conRequeridas = Boolean(form && form.querySelector('[data-requerido], [required]'));
+    const interruptor = conRequeridas || sinObligatorias ? el('div', { class: 'menu-pruebas-ajuste' }, [
+      el('p', {}, [el('strong', { texto: 'Preguntas obligatorias: ' }), document.createTextNode(sinObligatorias ? 'desactivadas' : 'activadas')]),
+      ayuda('Desactívalas para avanzar sin llenar; los formatos y la CURP se siguen revisando.'),
+      acciones((() => {
+        const b = boton(sinObligatorias ? 'Activar las preguntas obligatorias' : 'Desactivar las preguntas obligatorias', () => { escribe(!sinObligatorias); location.reload(); });
+        b.setAttribute('aria-pressed', sinObligatorias ? 'true' : 'false');
+        return b;
+      })())
+    ]) : null;
+    const cuenta = el('p', {}, [el('strong', { texto: 'Guardado en este navegador: ' }), el('span', { 'data-guardado': '', texto: '…' })]);
+    const borrar = boton('Borrar lo guardado', () => {
+      const docs = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve() : APD_ARCHIVOS_PRUEBA.borraTodo();
+      try { window.sessionStorage.removeItem('apd.personal.revisiones'); } catch (e) { /* sin almacenamiento */ }
+      docs.then(() => { di('Se borró lo guardado en este navegador.'); pintaGuardado(); }, () => di('No se pudo borrar.'));
+    });
+    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.envios && !g.revisiones; }); }
+    pintaGuardado();
 
     const hijos = [
       el('div', { class: 'menu-pruebas-cabeza' }, [
         el('h2', { class: 'titulo-bloque', id: 'menu-pruebas-titulo', texto: 'Menú de pruebas' }),
         boton('Cerrar', () => dialogo.close(), 'btn-enlace')
       ]),
-      el('p', { class: 'texto-gris', texto: 'Sólo existe en la versión de prueba. Todo es ficticio y nada sale de esta pestaña.' }),
-      seccion('Persona', [
-        el('p', { texto: `Sesión actual: ${quien}.` }),
+      ahora,
+      aqui.length ? seccion('En esta pantalla', aqui) : null,
+      seccion('Entrar como', [
         el('div', { class: 'menu-pruebas-campo' }, [
-          el('label', { class: 'etiqueta', for: 'menu-pruebas-persona', texto: 'Entrar como' }),
-          el('div', { class: 'select' }, [select])
+          el('label', { class: 'etiqueta', for: 'menu-pruebas-persona', texto: 'Caso de prueba' }),
+          el('div', { class: 'select' }, [elegir])
         ]),
-        el('div', { class: 'menu-pruebas-acciones' }, [
-          boton('Entrar como esta persona', () => {
-            if (!select.value) return di('Elige una persona.');
-            APD.guardaSesion(select.value === 'nueva' ? { nueva: { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado' } } : { id: select.value });
-            location.href = 'tramites.html';
-          }),
-          boton('Salir', () => { APD.cierraSesion(); location.href = 'index.html'; })
-        ])
+        queProbar,
+        acciones(boton('Entrar', () => {
+          const c = casos.find((x) => x.clave === elegir.value);
+          if (!c) return di('Elige un caso.');
+          if (c.clave === 'personal') { location.href = 'revision.html'; return; }
+          APD.guardaSesion(c.clave === 'nueva' ? { nueva: { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado' } } : { id: c.persona.id });
+          location.href = 'tramites.html';
+        }))
       ]),
-      seccion('Formulario de esta pantalla', [
-        el('p', { texto: sinObligatorias ? 'Preguntas obligatorias: desactivadas.' : 'Preguntas obligatorias: activadas.' }),
-        el('div', { class: 'menu-pruebas-acciones' }, [
-          interruptor,
-          form ? boton('Llenar con datos ficticios', () => di(llena(datos))) : null
-        ])
-      ])
+      seccion('Ir a otra pantalla', [el('div', { class: 'menu-pruebas-grupos' }, PANTALLAS.map(([grupo, lista]) => el('div', {}, [
+        el('h4', { class: 'menu-pruebas-grupo', texto: grupo }),
+        el('ul', { class: 'menu-pruebas-lista' }, lista.map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))
+      ])))]),
+      seccion('Ajustes de la prueba', [
+        ayuda('Valen en todas las pantallas mientras tengas abierta esta pestaña.'),
+        interruptor,
+        el('div', { class: 'menu-pruebas-ajuste' }, [cuenta, acciones(borrar)]),
+        acciones(boton('Empezar de cero', () => {
+          const docs = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve() : APD_ARCHIVOS_PRUEBA.borraTodo();
+          borraPestana();
+          docs.catch(() => {}).then(() => { location.href = 'index.html'; });
+        })),
+        ayuda('«Empezar de cero» cierra la sesión, borra lo guardado, activa las preguntas obligatorias y te lleva al inicio.')
+      ]),
+      estado
     ];
-    if (form && form.querySelector('section[data-paso]')) {
-      const pasos = Array.from(form.querySelectorAll('section[data-paso]'));
-      hijos.push(seccion('Ir al paso', [el('div', { class: 'menu-pruebas-acciones' }, pasos.map((p, k) =>
-        boton(`${k + 1}. ${p.dataset.titulo}`, async () => { const m = await irAlPaso(k); if (m) di(m); else dialogo.close(); })))]));
-    }
-    if (form) {
-      const url = (modo) => { const u = new URL(location.href); if (modo) u.searchParams.set('simular', modo); else u.searchParams.delete('simular'); return u.pathname.split('/').pop() + u.search; };
-      hijos.push(seccion('Simular el envío', [el('ul', { class: 'menu-pruebas-lista' }, [
-        ['Envío normal', ''], ['Falla el envío', 'error'], ['Límite de envíos', 'limite'], ['Envío lento', 'lento']
-      ].map(([t, m]) => el('li', {}, [el('a', { href: url(m), texto: t })])))]));
-    }
-    if (typeof APD_ARCHIVOS_PRUEBA !== 'undefined') {
-      hijos.push(seccion('Documentos cargados en este navegador', [
-        el('p', { texto: 'Lo que se envía en la versión de prueba se guarda sólo en este navegador, para verlo en la revisión del personal.' }),
-        el('div', { class: 'menu-pruebas-acciones' }, [boton('Borrar los documentos de prueba', () => {
-          APD_ARCHIVOS_PRUEBA.borraTodo().then(() => di('Se borraron los documentos de prueba de este navegador.'), () => di('No se pudieron borrar.'));
-        })])
-      ]));
-    }
-    hijos.push(seccion('Pantallas', [el('ul', { class: 'menu-pruebas-lista' }, [
-      ['index.html', 'Inicio'], ['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'],
-      ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud'], ['verificar.html', 'Verificar una acreditación'],
-      ['revision.html', 'Personal · Revisión documental']
-    ].map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))]));
-    hijos.push(estado);
     for (const h of hijos) if (h) dialogo.append(h);
     return dialogo;
   }
 
+  /* Lista de casos agrupada (optgroup por etapa); «filtra» decide qué casos se ofrecen */
+  function selectCasos(id, grupos, filtra, elegido) {
+    const opciones = [el('option', { value: '', texto: 'Elige un caso' })];
+    for (const g of grupos) {
+      const casos = g.casos.filter(filtra);
+      if (!casos.length) continue;
+      const og = el('optgroup', { label: g.grupo });
+      for (const c of casos) og.append(el('option', { value: c.clave, texto: c.persona ? `${c.texto} — ${APD.nombreCompleto(c.persona)}` : c.texto, selected: c.clave === elegido ? '' : null }));
+      opciones.push(og);
+    }
+    return el('select', { class: 'control control-select', id }, opciones);
+  }
+  /* Nombre de quien revisa: el perfil ficticio del personal (personal.js sólo se carga en sus pantallas) */
+  function APD_PERSONAL_NOMBRE() { return typeof APD_PERSONAL !== 'undefined' ? APD_PERSONAL.REVISORA.nombre : 'María Ejemplo Revisora'; }
   function monta() {
     fetch('VERSION', { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((v) => {
       if (!/^0\./.test(v.trim())) return;

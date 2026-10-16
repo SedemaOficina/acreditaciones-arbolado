@@ -22,6 +22,7 @@ if (CAPTURAS) mkdirSync(CAPTURAS, { recursive: true });
 
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 await import('../sitio/app/curp-nombre.js'); // la misma regla nombre ↔ CURP del formulario
+await import('../sitio/app/casos-prueba.js'); // los casos de prueba del menú (se comprueba que todos encuentran persona)
 const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
 // Persona nueva ficticia, con CURP coherente con su nombre y su fecha de nacimiento
@@ -217,6 +218,18 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.fill('#fecha_nacimiento', '31/02/1999');
   await page.press('#fecha_nacimiento', 'Tab');
   comprueba(/fecha real/.test(await page.textContent('[data-campo="fecha_nacimiento"] .err')), t('cuenta: una fecha que no existe se rechaza'));
+  // Escritura guiada: al teclear pasa sola al mes y al año, como el campo de fecha del navegador
+  await page.fill('#fecha_nacimiento', '');
+  await page.locator('#fecha_nacimiento').pressSequentially('3012');
+  const aMedias = await page.inputValue('#fecha_nacimiento');
+  await page.locator('#fecha_nacimiento').pressSequentially('1999');
+  comprueba(aMedias === '30/12/' && await page.inputValue('#fecha_nacimiento') === '30/12/1999', t('cuenta: al teclear la fecha, las diagonales se ponen solas (30/12/1999)'));
+  await page.fill('#fecha_nacimiento', '');
+  await page.locator('#fecha_nacimiento').pressSequentially('4');
+  comprueba(await page.inputValue('#fecha_nacimiento') === '04/', t('cuenta: un día que empieza con 4 pasa solo al mes (04/)'));
+  await page.press('#fecha_nacimiento', 'Backspace');
+  await page.press('#fecha_nacimiento', 'Backspace');
+  comprueba(await page.inputValue('#fecha_nacimiento') === '0', t('cuenta: al borrar no se reacomoda la fecha'));
   await page.goto(BASE + 'cuenta.html');
   // CURP con dígito incorrecto: el formulario la rechaza, igual que la base
   await llenaCuenta(page, NUEVA, otroDigito(NUEVA.curp));
@@ -445,15 +458,20 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('[data-estado-envio]:not([hidden])');
   bien(t('cuenta: el fallo de envío se avisa y la captura se conserva'));
 
-  // Menú de pruebas: sin obligatorias se avanza vacío hasta la revisión; se vuelve a activar
+  // Menú de pruebas: cinco bloques; sin obligatorias se avanza vacío hasta la revisión; se vuelve a activar
   await page.goto(BASE + 'solicitud.html');
   await page.click('.menu-pruebas-boton');
   comprueba(await page.isVisible('dialog.menu-pruebas'), t('menú de pruebas: se abre'));
+  comprueba(await page.locator('dialog.menu-pruebas h3').allTextContents().then((l) => l.join('|')) === 'En esta pantalla|Entrar como|Ir a otra pantalla|Ajustes de la prueba',
+    t('menú de pruebas: bloques en orden (en esta pantalla, entrar como, ir a otra pantalla, ajustes)'));
+  const opcionesCasos = await page.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean));
+  comprueba(APD_CASOS_PRUEBA.claves().every((k) => opcionesCasos.includes(k)), t(`menú de pruebas: los ${APD_CASOS_PRUEBA.claves().length} casos encuentran persona en los ficticios`));
   await page.selectOption('#menu-pruebas-persona', 'nueva');
-  await page.click('dialog.menu-pruebas >> text=Entrar como esta persona');
+  await page.click('dialog.menu-pruebas >> button:text-is("Entrar")');
   await page.waitForURL(/tramites\.html/);
   await page.goto(BASE + 'solicitud.html');
   await page.click('.menu-pruebas-boton');
+  comprueba(/una persona nueva/.test(await page.textContent('.menu-pruebas-ahora')), t('menú de pruebas: dice con quién estás'));
   await page.click('dialog.menu-pruebas >> text=Desactivar las preguntas obligatorias');
   await page.waitForLoadState('load');
   await page.waitForSelector('.menu-pruebas-boton');
@@ -462,12 +480,48 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('dialog.menu-pruebas >> text=3. Revisión');
   await page.waitForSelector('section[data-paso][data-revision]:not([hidden])');
   bien(t('menú de pruebas: salta al paso de revisión sin llenar'));
-  await captura(page, `11-menu-pruebas-${sufijo}`);
   await page.click('.menu-pruebas-boton');
+  await captura(page, `11-menu-pruebas-${sufijo}`);
   await page.click('dialog.menu-pruebas >> text=Activar las preguntas obligatorias');
   await page.waitForLoadState('load');
   await page.waitForSelector('.menu-pruebas-boton');
   comprueba(await page.locator('form [data-requerido]').count() > 0, t('menú de pruebas: preguntas obligatorias activadas de nuevo'));
+  // Entrar: la caja de personas de ejemplo ya no está; el menú llena CURP y contraseña con un caso
+  await page.goto(BASE + 'entrar.html');
+  comprueba(await page.locator('[data-ejemplos], section.pruebas').count() === 0 && /Prueba-ficticia-2026/.test(await page.textContent('.nota-prueba')),
+    t('entrar: sin caja de pruebas; sólo la contraseña de las personas de ejemplo'));
+  await page.click('.menu-pruebas-boton');
+  await page.selectOption('#menu-pruebas-llenar', 'obs-poda');
+  await page.click('dialog.menu-pruebas >> text=Llenar CURP y contraseña');
+  await page.click('dialog.menu-pruebas >> text=Cerrar');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForURL(/tramites\.html/);
+  comprueba(/con observaciones/i.test(await page.textContent('[data-solicitudes]')), t('menú de pruebas: en «Entrar», un caso llena CURP y contraseña y entra'));
+  // Personal: «Entrar como» lleva a la bandeja; ahí no hay «En esta pantalla» (los filtros no se llenan ni se envían)
+  await page.click('.menu-pruebas-boton');
+  await page.selectOption('#menu-pruebas-persona', 'personal');
+  await page.click('dialog.menu-pruebas >> button:text-is("Entrar")');
+  await page.waitForURL(/revision\.html/);
+  await page.click('.menu-pruebas-boton');
+  const bloquesPersonal = await page.locator('dialog.menu-pruebas h3').allTextContents();
+  comprueba(!bloquesPersonal.includes('En esta pantalla') && /personal/.test(await page.textContent('.menu-pruebas-ahora')),
+    t('menú de pruebas: en la bandeja del personal no ofrece llenar ni simular el envío'));
+  await page.click('dialog.menu-pruebas >> text=Empezar de cero');
+  await page.waitForURL(/index\.html|\/$/);
+  comprueba(await page.evaluate(() => Object.keys(sessionStorage).filter((k) => k.startsWith('apd.')).length === 0), t('menú de pruebas: «Empezar de cero» limpia la sesión y lo guardado'));
+  // Crear cuenta: «Llenar con su CURP» crea la cuenta de alguien del registro anterior
+  await page.goto(BASE + 'cuenta.html');
+  await page.click('.menu-pruebas-boton');
+  const migrada = datos.solicitante.find((p) => p.estado === 'sin_activar' && p.id !== renovable.id);
+  await page.selectOption('#menu-pruebas-migrada', migrada.id);
+  await page.click('dialog.menu-pruebas >> text=Llenar con su CURP');
+  await page.click('dialog.menu-pruebas >> text=Cerrar');
+  await page.waitForSelector('[data-campo="foto"] .lista-arch li[data-estado="listo"]');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  comprueba(await page.isVisible('[data-cuenta-historial]'), t('menú de pruebas: crea la cuenta de alguien del registro anterior con su CURP'));
+  await page.goto(BASE + 'index.html');
+  await page.evaluate(() => sessionStorage.clear());
   await page.goto(BASE + 'cuenta.html');
   await page.click('.menu-pruebas-boton');
   await page.click('dialog.menu-pruebas >> text=Llenar con datos ficticios');
@@ -706,11 +760,13 @@ async function accesibilidad(navegador) {
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => sessionStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
-    ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor']];
+    ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
+    ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
   for (const [url, estado] of pantallas) {
     await page.goto(BASE + url);
     await page.waitForLoadState('networkidle');
     if (estado === 'rechazo') await page.check('input[name="comprobante_confirma"][value="si"]');
+    else if (estado === 'menú de pruebas') { await page.click('.menu-pruebas-boton'); await page.waitForSelector('dialog.menu-pruebas[open] [data-guardado]'); }
     else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.addScriptTag({ content: axe });

@@ -11,7 +11,7 @@ sitio con sus pruebas (decisiones del 2026-10-16). Acceso simulado mientras no h
 | Revisar una solicitud | `sitio/revisar.html?folio=…` · `app/revisar.js` | Datos de la persona y de la solicitud, revisiones anteriores, perfil del dictaminador, documentos (aceptar u observar, con motivos frecuentes) y resultado: validar con cita, enviar observaciones o rechazar (con confirmación) |
 | Lo común | `app/personal.js` | Perfil ficticio de revisión, cabecera del personal, espera y vuelta de cada solicitud, decisiones de la prueba en la pestaña |
 
-En «Entrar» (caja de pruebas) y en el menú de pruebas hay un enlace a la bandeja.
+En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva a la bandeja; también está en «Ir a otra pantalla».
 
 ## 2. Reglas de la revisión
 
