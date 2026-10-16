@@ -401,3 +401,10 @@ campos correctos.
   cita, sede del curso y dónde recoger la acreditación, con la dirección en amarillo «por confirmar».
 - Esquema del servidor sin `cita_sede`; 275 comprobaciones del sitio.
 
+## 2026-10-16 · Bloque 31 · Avanzar al siguiente documento al aceptar
+
+- Pedido de Liber: al aceptar un documento, el visor cambia al siguiente. `app/revisar.js` busca el siguiente documento sin
+  decidir (y vuelve al principio si quedó alguno atrás), lo abre en el visor en computadora, lo trae a la vista en la lista
+  y lo anuncia al lector de pantalla; con todo decidido, baja al resultado. No mueve el foco ni avanza al observar, ni con
+  las marcas que pone la página (opción C). Comprobación nueva en el sitio (276).
+

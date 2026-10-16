@@ -224,6 +224,7 @@
       APD_VISOR.abre(archivos[k], boton);
     }
     const global_visor = () => typeof APD_VISOR !== 'undefined';
+    const global_matchMedia = (q) => window.matchMedia(q).matches;
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-ver]');
       if (b) ver(b.dataset.ver, b);
@@ -304,6 +305,29 @@
     if (primero && global_visor() && APD_VISOR.enComputadora()) ver(primero, null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
+
+    /* Al aceptar un documento, se pasa al siguiente sin decidir (decisión 2026-10-16): en computadora el visor lo muestra
+       y la lista lo trae a la vista; con todo decidido, se va al resultado. Sólo con una decisión de quien revisa (no con
+       las que marca la página) y sólo al aceptar: al observar hay que escribir qué corregir. */
+    const suave = global_matchMedia('(prefers-reduced-motion: reduce)') ? 'auto' : 'smooth';
+    form.addEventListener('change', (e) => {
+      const r = e.target;
+      if (!e.isTrusted || !r.name || !r.name.startsWith('decision_') || r.value !== 'aceptado') return;
+      const actual = r.name.replace('decision_', '');
+      const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k] && document.getElementById(`revisar_${k}`).value === 'si');
+      const pendiente = (k) => !elegido(`decision_${k}`);
+      const i = orden.indexOf(actual);
+      const siguiente = orden.slice(i + 1).find(pendiente) || orden.slice(0, i).find(pendiente);
+      if (!siguiente) {
+        $('#t-resultado').scrollIntoView({ behavior: suave, block: 'start' });
+        FormKit.anuncia('Todos los documentos están revisados. Sigue el resultado de la revisión.');
+        return;
+      }
+      const art = $(`[data-doc="${siguiente}"]`, form);
+      if (global_visor() && APD_VISOR.enComputadora()) ver(siguiente, null);
+      art.scrollIntoView({ behavior: suave, block: 'start' });
+      FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
+    });
     recalcula();
   }).catch(() => falla('No se pudo cargar la solicitud. Intente de nuevo más tarde.'));
 }());

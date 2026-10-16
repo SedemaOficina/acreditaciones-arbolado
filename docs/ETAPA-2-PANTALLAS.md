@@ -29,7 +29,8 @@ En «Entrar» (caja de pruebas) y en el menú de pruebas hay un enlace a la band
 `app/visor.js` muestra todas las hojas del PDF con pdf.js (copiado en `vendor/pdfjs/`, sin CDN): contador de hoja,
 acercar y alejar, ajustar al ancho, girar y abrir en otra pestaña. En computadora (≥1024 px) queda fijo a la derecha y
 abre de entrada el primer documento (el comprobante de estudios si hay que decidir el perfil); en pantalla chica se abre a
-pantalla completa. PDF ficticios: `herramientas/documentos-ficticios.py`.
+pantalla completa. Al aceptar un documento, el visor y la lista pasan al siguiente sin decidir; con todo decidido, la
+página baja al resultado. PDF ficticios: `herramientas/documentos-ficticios.py`.
 
 ## 3. Formulario y servidor
 

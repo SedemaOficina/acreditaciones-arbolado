@@ -590,6 +590,12 @@ async function personal(navegador, ancho, alto, sufijo) {
   comprueba(await page.locator('[aria-invalid="true"]').count() > 0, t('registrar sin decidir muestra lo que falta'));
   await page.check('input[name="clasificacion"][value="afin"]');
   comprueba(/2 años/.test(await page.textContent('[data-minimo]')), t('al clasificar como afín se piden 2 años'));
+  // Al aceptar un documento se pasa al siguiente sin decidir: en computadora, el visor lo muestra (decisión 2026-10-16)
+  await page.check('input[name="decision_comprobante_estudios"][value="aceptado"]');
+  if (ancho >= 1024) {
+    await page.waitForFunction(() => document.querySelector('[data-visor-titulo]').textContent === 'Currículum vitae');
+    comprueba(await page.locator('[data-doc="curriculum_vitae"][data-viendo]').count() === 1, t('al aceptar, el visor pasa al siguiente documento sin decidir'));
+  }
   for (const d of datos.documento.filter((x) => x.solicitud_id === porClasificar.id && x.vigente)) await page.check(`input[name="decision_${d.requisito}"][value="aceptado"]`);
   comprueba(await page.textContent('[data-accion="enviar"]') === 'Validar y asignar la cita', t('con todo aceptado, la acción es validar'));
   await page.fill('#cita_fecha', '2026-10-21'); await page.fill('#cita_hora', '10:00');
