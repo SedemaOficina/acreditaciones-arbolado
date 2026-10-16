@@ -10,16 +10,18 @@ body { background: var(--fondo); }
 
 /* Selector de pantallas (sólo maqueta) */
 .maqueta-pasos { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-5); }
-.maqueta-pasos button, .filtro, .chip {
+.maqueta-pasos button, .chip {
   font: inherit; font-size: var(--t-sm); min-height: var(--objetivo-min); padding: var(--e-1) var(--e-4);
   border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); background: var(--blanco); color: var(--texto); cursor: pointer;
 }
-.maqueta-pasos button[aria-pressed="true"], .filtro[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--blanco); }
-.maqueta-pasos button:focus-visible, .filtro:focus-visible, .chip:focus-visible, .doc-item:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+.maqueta-pasos button[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--blanco); }
+.maqueta-pasos button:focus-visible, .chip:focus-visible, .doc-item:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
 
 /* Bandeja */
-.filtros { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block: var(--e-4); }
-.cuenta { font-variant-numeric: tabular-nums; font-weight: var(--peso-fuerte); margin-inline-start: var(--e-1); }
+.filtros-bandeja { display: grid; gap: 0 var(--e-4); margin-block-start: var(--e-4); }
+@media (min-width: 760px) { .filtros-bandeja { grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); align-items: end; } }
+.resumen-filtro { color: var(--gris); font-size: var(--t-sm); margin-block: 0 var(--e-3); }
+.fila-vacia td { color: var(--gris); }
 /* Bandeja: en teléfono cada renglón es una ficha; desde 760px, tabla */
 .tabla-bandeja { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
 .tabla-bandeja thead { position: absolute; inline-size: var(--b-1); block-size: var(--b-1); overflow: hidden; clip-path: inset(50%); }
@@ -74,3 +76,5 @@ body { background: var(--fondo); }
 .plegable-maqueta summary { cursor: pointer; font-weight: var(--peso-medio); display: flex; gap: var(--e-2); align-items: center; }
 .visor-nota { font-size: var(--t-sm); color: var(--gris-cl); }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
+.tabla-bandeja tr[hidden] { display: none; }
+.fila-vacia td::before { content: none; }

@@ -37,13 +37,26 @@
     <h2 class="titulo-paso" id="t-bandeja">Solicitudes por revisar</h2>
     <p class="bajada">Ordenadas por antigüedad: la que más tiempo lleva esperando va primero. Las reenviadas con correcciones se distinguen por su número de vuelta.</p>
 
-    <div class="filtros" role="group" aria-label="Filtrar la bandeja">
-      <button type="button" class="filtro" aria-pressed="true">Todas <span class="cuenta">6</span></button>
-      <button type="button" class="filtro" aria-pressed="false">Nuevas <span class="cuenta">4</span></button>
-      <button type="button" class="filtro" aria-pressed="false">Reenviadas <span class="cuenta">2</span></button>
-      <button type="button" class="filtro" aria-pressed="false">Poda y derribo <span class="cuenta">4</span></button>
-      <button type="button" class="filtro" aria-pressed="false">Dictaminador <span class="cuenta">2</span></button>
+    <!-- Filtros: búsqueda por nombre o folio, tipo de acreditación, si es nueva o renovación, y vuelta de revisión -->
+    <div class="filtros-bandeja" role="search" aria-label="Buscar y filtrar la bandeja">
+      <div class="campo campo-busqueda">
+        <label class="etiqueta" for="f-buscar">Buscar por nombre o folio</label>
+        <input class="control" id="f-buscar" type="search" autocomplete="off" placeholder="">
+      </div>
+      <div class="campo">
+        <label class="etiqueta" for="f-tipo">Acreditación</label>
+        <div class="select"><select class="control control-select" id="f-tipo"><option value="">Todas</option><option value="poda">Poda y derribo</option><option value="dictaminador">Dictaminador técnico</option></select></div>
+      </div>
+      <div class="campo">
+        <label class="etiqueta" for="f-modalidad">Nueva o renovación</label>
+        <div class="select"><select class="control control-select" id="f-modalidad"><option value="">Todas</option><option value="nueva">Nuevas</option><option value="renovacion">Renovaciones</option></select></div>
+      </div>
+      <div class="campo">
+        <label class="etiqueta" for="f-vuelta">Vuelta de revisión</label>
+        <div class="select"><select class="control control-select" id="f-vuelta"><option value="">Todas</option><option value="primera">Primera vez</option><option value="reenviada">Reenviadas</option></select></div>
+      </div>
     </div>
+    <p class="resumen-filtro" aria-live="polite" data-cuenta>Se muestran las 6 solicitudes.</p>
 
     <div class="tabla-envoltura">
       <table class="tabla-bandeja">
@@ -52,30 +65,31 @@
           <tr><th scope="col">Folio</th><th scope="col">Persona</th><th scope="col">Acreditación</th><th scope="col">Enviada</th><th scope="col">Espera</th><th scope="col">Vuelta</th><th scope="col">A revisar con atención</th><th scope="col"><span class="solo-lector">Acción</span></th></tr>
         </thead>
         <tbody>
-          <tr>
+          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="reenviada">
             <td class="mono">APD-S-2026-00007</td><td>KARLA EJEMPLO SIMULADO</td><td>Poda y derribo · nueva</td><td>02/10/2026</td><td><span class="estado" data-tono="error">12 días</span></td><td>2.ª (reenviada)</td><td>2 documentos corregidos</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr class="fila-destacada">
+          <tr data-tipo="dictaminador" data-modalidad="nueva" data-vuelta="primera" class="fila-destacada">
             <td class="mono">APD-S-2026-00020</td><td>BRUNO MUESTRA FICTICIO</td><td>Dictaminador técnico · nueva</td><td>10/10/2026</td><td><span class="estado" data-tono="pend">4 días</span></td><td>1.ª</td><td><span class="estado" data-tono="pend">Carrera por clasificar</span></td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr>
+          <tr data-tipo="poda" data-modalidad="renovacion" data-vuelta="primera">
             <td class="mono">APD-S-2026-00014</td><td>LUIS SIMULADO PRUEBA</td><td>Poda y derribo · renovación</td><td>12/10/2026</td><td><span class="estado">2 días</span></td><td>1.ª</td><td>—</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr>
+          <tr data-tipo="dictaminador" data-modalidad="nueva" data-vuelta="primera">
             <td class="mono">APD-S-2026-00041</td><td>TERESA FICTICIA MUESTRA</td><td>Dictaminador técnico · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>1.ª</td><td><span class="estado" data-tono="error">Podría no cumplir el perfil</span></td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr>
+          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="reenviada">
             <td class="mono">APD-S-2026-00042</td><td>RAÚL EJEMPLO DATOS</td><td>Poda y derribo · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>2.ª (reenviada)</td><td>1 documento corregido</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr>
+          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="primera">
             <td class="mono">APD-S-2026-00044</td><td>ULISES PRUEBA SIMULADO</td><td>Poda y derribo · nueva</td><td>14/10/2026</td><td><span class="estado">Hoy</span></td><td>1.ª</td><td>—</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
+          <tr class="fila-vacia" data-vacia hidden><td colspan="8">Ninguna solicitud coincide con la búsqueda. Revise el nombre o el folio, o quite algún filtro.</td></tr>
         </tbody>
       </table>
     </div>
@@ -130,7 +144,7 @@
         <div class="opciones-lista">
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="afin"><span><span class="opcion-nombre">Carrera afín</span><span class="opcion-desc">Se piden 2 años de experiencia, como Biología o Ingeniería Forestal.</span></span></label>
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="disciplina_afin"><span><span class="opcion-nombre">Disciplina afín</span><span class="opcion-desc">Se piden 5 años de experiencia.</span></span></label>
-          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="no_afin"><span><span class="opcion-nombre">No afín</span><span class="opcion-desc">No cumple el perfil: la solicitud regresa con observaciones.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="no_afin"><span><span class="opcion-nombre">No afín</span><span class="opcion-desc">No cumple el perfil: la solicitud se rechaza.</span></span></label>
         </div>
       </fieldset>
     </div>
@@ -205,10 +219,22 @@
         </div>
       </div>
 
+      <div data-si-rechazar hidden>
+        <div class="aviso aviso-bloqueo">
+          <svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg>
+          <div class="aviso-texto"><p><strong>La solicitud se rechazará</strong> porque la carrera no es afín al manejo del arbolado. No hace falta revisar los demás documentos. La persona puede presentar una solicitud nueva si cuenta con otro grado de estudios.</p></div>
+        </div>
+        <div class="campo">
+          <label class="etiqueta" for="motivo-rechazo">Motivo del rechazo<span class="marca-oblig" aria-hidden="true">*</span></label>
+          <p class="ayuda">La persona lo leerá tal como lo escriba.</p>
+          <textarea class="control" id="motivo-rechazo" rows="3" maxlength="600" required>La carrera Ingeniería Ambiental no es afín al manejo del arbolado, como lo pide el lineamiento [Art. __, fracc. __] para la acreditación de dictaminador técnico.</textarea>
+        </div>
+      </div>
+
       <div class="acciones">
         <button type="button" class="btn btn-primario" data-accion-final disabled>Revise todos los documentos</button>
       </div>
-      <p class="ayuda nota-maqueta">Queda en la bitácora quién revisó, cuándo y qué decidió en cada documento.</p>
+      <p class="ayuda nota-maqueta">Antes de rechazar se pide confirmar. Queda en la bitácora quién revisó, cuándo y qué decidió en cada documento.</p>
     </div>
 
   </section>
@@ -222,7 +248,7 @@
   // Iconos del estándar (en el sitio los inserta el núcleo) y etiquetas de columna para la vista de teléfono
   document.body.insertAdjacentHTML('afterbegin', window.FORMKIT_ICONOS || '');
   const cols = [...document.querySelectorAll('.tabla-bandeja thead th')].map((th) => th.textContent.trim());
-  document.querySelectorAll('.tabla-bandeja tbody tr').forEach((tr) => [...tr.children].forEach((td, i) => { td.dataset.etq = cols[i]; }));
+  document.querySelectorAll('.tabla-bandeja tbody tr[data-tipo]').forEach((tr) => [...tr.children].forEach((td, i) => { td.dataset.etq = cols[i]; }));
   const docs = [
     ['Identificación oficial', 'IDENTIFICACION OFICIAL', 'identificacion_oficial.pdf', '941 KB'],
     ['CURP', 'CURP', 'curp.pdf', '730 KB'],
@@ -255,13 +281,17 @@
     const obs = estado.filter((e) => e.decision === 'con_observacion').length;
     $('[data-resumen]').textContent = `${hechos} de ${docs.length} documentos revisados` + (obs ? ` · ${obs} con observación.` : '.');
     const clas = document.querySelector('input[name="clasificacion"]:checked');
+    const rechazar = !!clas && clas.value === 'no_afin';
     const todos = hechos === docs.length && clas;
-    const observar = obs > 0 || (clas && clas.value === 'no_afin');
+    const observar = obs > 0;
     const btn = $('[data-accion-final]');
-    btn.disabled = !todos;
-    btn.textContent = !todos ? (clas ? 'Revise todos los documentos' : 'Revise los documentos y clasifique la carrera') : observar ? 'Enviar observaciones a la persona' : 'Validar y asignar la cita';
-    $('[data-si-validar]').hidden = !(todos && !observar);
-    $('[data-si-observar]').hidden = !(todos && observar);
+    btn.disabled = !(todos || rechazar);
+    btn.classList.toggle('btn-primario', !rechazar);
+    btn.classList.toggle('btn-peligro', rechazar);
+    btn.textContent = rechazar ? 'Rechazar la solicitud' : !todos ? (clas ? 'Revise todos los documentos' : 'Revise los documentos y clasifique la carrera') : observar ? 'Enviar observaciones a la persona' : 'Validar y asignar la cita';
+    $('[data-si-rechazar]').hidden = !rechazar;
+    $('[data-si-validar]').hidden = rechazar || !(todos && !observar);
+    $('[data-si-observar]').hidden = rechazar || !(todos && observar);
   }
   function guarda() {
     const d = document.querySelector('input[name="decision"]:checked');
@@ -286,7 +316,7 @@
   }));
   $('[data-siguiente]').addEventListener('click', () => { guarda(); actual = Math.min(actual + 1, docs.length - 1); muestra(); });
   document.querySelectorAll('input[name="clasificacion"]').forEach((r) => r.addEventListener('change', () => {
-    $('[data-minimo]').textContent = r.value === 'afin' ? '2 años (carrera afín)' : r.value === 'disciplina_afin' ? '5 años (disciplina afín)' : 'No cumple el perfil';
+    $('[data-minimo]').textContent = r.value === 'afin' ? '2 años (carrera afín)' : r.value === 'disciplina_afin' ? '5 años (disciplina afín)' : 'No cumple el perfil: se rechaza';
     pintaLista();
   }));
 
@@ -298,9 +328,21 @@
   }
   document.querySelectorAll('[data-vista]').forEach((b) => b.addEventListener('click', () => ir(b.dataset.vista)));
   document.querySelectorAll('[data-ir]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); ir(a.dataset.ir); }));
-  document.querySelectorAll('.filtro').forEach((f) => f.addEventListener('click', () => {
-    document.querySelectorAll('.filtro').forEach((x) => x.setAttribute('aria-pressed', String(x === f)));
-  }));
+  // Filtros de la bandeja
+  const filasB = [...document.querySelectorAll('.tabla-bandeja tbody tr[data-tipo]')];
+  const norm = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+  function filtra() {
+    const q = norm($('#f-buscar').value), tipo = $('#f-tipo').value, mod = $('#f-modalidad').value, vta = $('#f-vuelta').value;
+    let n = 0;
+    filasB.forEach((tr) => {
+      const texto = norm(tr.cells[0].textContent + ' ' + tr.cells[1].textContent);
+      const ve = (!q || texto.includes(q)) && (!tipo || tr.dataset.tipo === tipo) && (!mod || tr.dataset.modalidad === mod) && (!vta || tr.dataset.vuelta === vta);
+      tr.hidden = !ve; if (ve) n += 1;
+    });
+    $('[data-vacia]').hidden = n > 0;
+    $('[data-cuenta]').textContent = n === filasB.length ? `Se muestran las ${n} solicitudes.` : `Se muestran ${n} de ${filasB.length} solicitudes.`;
+  }
+  ['#f-buscar', '#f-tipo', '#f-modalidad', '#f-vuelta'].forEach((sel) => $(sel).addEventListener('input', filtra));
   muestra();
 })();
 </script>
