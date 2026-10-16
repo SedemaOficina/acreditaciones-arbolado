@@ -23,6 +23,13 @@ En «Entrar» (caja de pruebas) y en el menú de pruebas hay un enlace a la band
   regresa a la persona (mensaje general opcional); con todo aceptado, se valida con fecha, hora y lugar de la cita.
 - La base vuelve a aplicar todo: ver `docs/REGLAS.md` («→ rechazada», «Clasificar una carrera»).
 
+## 2 bis. Visor de documentos
+
+`app/visor.js` muestra todas las hojas del PDF con pdf.js (copiado en `vendor/pdfjs/`, sin CDN): contador de hoja,
+acercar y alejar, ajustar al ancho, girar y abrir en otra pestaña. En computadora (≥1024 px) queda fijo a la derecha y
+abre de entrada el primer documento (el comprobante de estudios si hay que decidir el perfil); en pantalla chica se abre a
+pantalla completa. PDF ficticios: `herramientas/documentos-ficticios.py`.
+
 ## 3. Formulario y servidor
 
 La revisión es un formulario del estándar que arranca a mano (`data-formkit="manual"`) cuando la página ya calculó sus
@@ -37,6 +44,6 @@ prueba con el cálculo de los auxiliares que hará la API (14 casos).
 
 - Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); catálogo de sedes y su columna (P09);
   motivos frecuentes y quién fija la fecha (P64).
-- Visor de documentos: en la prueba no hay archivos reales (etapa 3).
+- Visor de documentos: en la prueba muestra un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
 - Siguientes pantallas: citas de cotejo, grupos y asistencia, calificación, emisión y entrega.
-- Hallazgos del estándar: P65 (chips con lista fija) y P66 (tabla filtrada y columna de acción en teléfono).
+- Hallazgos del estándar: P65 (chips con lista fija), P66 (tabla filtrada y columna de acción en teléfono) y P67 (no hay visor de documentos).

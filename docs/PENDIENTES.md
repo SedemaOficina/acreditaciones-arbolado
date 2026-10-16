@@ -105,6 +105,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P61 | El mínimo de un número no puede depender de otra respuesta | Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente. | no |
 | P65 | El módulo chips sólo sugiere del historial; no admite una lista fija de sugerencias | Proponer en chips una lista fija declarada en el HTML (data-chips-fijos) para respuestas frecuentes conocidas, como los motivos de observación. Mientras, la revisión usa botones propios (.sugerencia) con los tokens del estándar. | no |
 | P66 | Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto | Reportarlo: alternar con :nth-child no cuenta las filas ocultas; y una columna cuyo encabezado es sólo para lector de pantalla no debería mostrar su rótulo en la vista de fichas. | no |
+| P67 | El estándar no tiene visor de documentos para revisar lo que se carga | Proponer un módulo «visor» (todas las hojas, contador, acercar, girar, abrir en otra pestaña; fijo junto al formulario en computadora y a pantalla completa en teléfono) con pdf.js incluido en el paquete, a partir de app/visor.js de este proyecto. | no |
 
 ## Resueltos
 

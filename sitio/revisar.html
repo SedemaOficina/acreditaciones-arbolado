@@ -25,7 +25,7 @@
   </div>
 </header>
 
-<main class="pagina pagina-ancha" id="contenido">
+<main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
   <p><a class="btn-atras" href="revision.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Solicitudes por revisar</a></p>
   <p class="bajada" data-cargando>Cargando la solicitud…</p>
@@ -48,6 +48,7 @@
 
   <!-- La revisión: una sola acción principal, que cambia con lo revisado (validar, observar o rechazar).
        Arranca a mano (data-formkit="manual") cuando la página ya calculó los campos auxiliares. -->
+  <div class="revision-area">
   <form id="formulario" data-formkit="manual" action="#" method="post" hidden>
     <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
 
@@ -111,14 +112,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver documento<span class="solo-lector">: Identificación oficial</span></button></p>
             <fieldset class="grupo" data-campo="decision_identificacion_oficial" data-requerido data-uso="Registrar si «Identificación oficial» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -149,14 +143,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver documento<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
             <fieldset class="grupo" data-campo="decision_curp" data-requerido data-uso="Registrar si «Clave Única de Registro de Población (CURP)» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -187,14 +174,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver documento<span class="solo-lector">: Comprobante de domicilio</span></button></p>
             <fieldset class="grupo" data-campo="decision_comprobante_domicilio" data-requerido data-uso="Registrar si «Comprobante de domicilio» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -225,14 +205,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver documento<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
             <fieldset class="grupo" data-campo="decision_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -263,14 +236,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver documento<span class="solo-lector">: Comprobante de estudios</span></button></p>
             <fieldset class="grupo" data-campo="decision_comprobante_estudios" data-requerido data-uso="Registrar si «Comprobante de estudios» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -301,14 +267,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver documento<span class="solo-lector">: Currículum vitae</span></button></p>
             <fieldset class="grupo" data-campo="decision_curriculum_vitae" data-requerido data-uso="Registrar si «Currículum vitae» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -339,14 +298,7 @@
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver documento<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
             <fieldset class="grupo" data-campo="decision_comprobantes_experiencia" data-requerido data-uso="Registrar si «Comprobantes de experiencia» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -433,6 +385,31 @@
     </section>
   </form>
 
+  <!-- Visor del documento: todas las hojas. En computadora queda fijo a la derecha; en pantalla chica se abre a
+       pantalla completa (app/visor.js). -->
+  <dialog class="visor" data-visor aria-labelledby="visor-titulo">
+    <div class="visor-cabeza">
+      <div class="visor-nombre">
+        <h3 class="visor-titulo" id="visor-titulo" data-visor-titulo>Documento</h3>
+        <p class="visor-archivo mono" data-visor-archivo></p>
+      </div>
+      <button type="button" class="btn-enlace visor-cerrar" data-visor-accion="cerrar">Cerrar</button>
+    </div>
+    <div class="visor-barra" role="toolbar" aria-label="Herramientas del visor">
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="alejar" aria-label="Alejar"><span class="visor-paso" aria-hidden="true">−</span></button>
+      <output class="visor-zoom" data-visor-zoom aria-live="polite">100 %</output>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="acercar" aria-label="Acercar"><span class="visor-paso" aria-hidden="true">+</span></button>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="ajustar">Ajustar al ancho</button>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="girar">Girar</button>
+      <a class="btn-enlace visor-abrir" data-visor-abrir href="#" target="_blank" rel="noopener">Abrir en otra pestaña<svg class="icono icono-sm" aria-hidden="true"><use href="#i-externo"></use></svg><span class="solo-lector"> (se abre en otra pestaña)</span></a>
+    </div>
+    <p class="visor-pagina" data-visor-pagina aria-live="polite"></p>
+    <p class="aviso visor-aviso" data-visor-aviso hidden></p>
+    <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
+    <p class="visor-nota"><span class="pendiente">Versión de prueba: todas las solicitudes muestran el mismo documento ficticio por requisito.</span></p>
+  </dialog>
+  </div>
+
   <!-- Después de registrar: lo que pasó y qué sigue para la persona -->
   <section class="tarjeta" data-hecho hidden tabindex="-1" aria-labelledby="t-hecho">
     <h2 class="titulo-paso" id="t-hecho" data-hecho-titulo></h2>
@@ -456,6 +433,7 @@
 <script src="formkit/js/formkit.core.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="app/auxiliar.js?v=0.14"></script>
+<script src="app/visor.js?v=0.14"></script>
 <script src="app/revisar.js?v=0.14"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/pruebas.js?v=0.14"></script>

@@ -49,10 +49,31 @@ for (const p of paginas) {
   writeFileSync(ruta, html);
 }
 
+// 2b · Visor de documentos de la revisión (decisión 2026-10-16): pdf.js, copiado del paquete fijado en package.json
+// (sin CDN). Sólo lo que usa el visor: la biblioteca, su trabajador y las fuentes estándar de los PDF.
+const pdfjs = join(raiz, 'node_modules/pdfjs-dist');
+if (!existsSync(pdfjs)) { console.error('Falta pdfjs-dist: corre npm install'); process.exit(1); }
+const vendor = join(sitio, 'vendor/pdfjs');
+rmSync(vendor, { recursive: true, force: true });
+mkdirSync(vendor, { recursive: true });
+for (const f of ['pdf.min.mjs', 'pdf.worker.min.mjs']) cpSync(join(pdfjs, 'build', f), join(vendor, f));
+cpSync(join(pdfjs, 'standard_fonts'), join(vendor, 'standard_fonts'), { recursive: true });
+cpSync(join(pdfjs, 'LICENSE'), join(vendor, 'LICENSE'));
+const versionPdfjs = JSON.parse(readFileSync(join(pdfjs, 'package.json'), 'utf8')).version;
+writeFileSync(join(vendor, 'LEEME.md'), `# pdf.js ${versionPdfjs} (copia)
+
+Copia sin cambios de \`pdfjs-dist@${versionPdfjs}\` (Mozilla, licencia Apache 2.0, ver LICENSE). La genera
+\`herramientas/construir-sitio.mjs\` desde node_modules; no se edita aquí. La usa \`app/visor.js\` para mostrar todas las
+hojas de un documento en la revisión documental.
+`);
+
 // 3 · Datos ficticios y catálogos para el formulario
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 mkdirSync(join(sitio, 'datos'), { recursive: true });
 cpSync(join(raiz, 'datos/ficticios.json'), join(sitio, 'datos/ficticios.json'));
+// Documentos ficticios de varias hojas para el visor (herramientas/documentos-ficticios.py)
+rmSync(join(sitio, 'datos/documentos'), { recursive: true, force: true });
+cpSync(join(raiz, 'datos/documentos'), join(sitio, 'datos/documentos'), { recursive: true });
 // Las 16 alcaldías (catálogo inicial de la base, con clave), en orden alfabético: van como opciones de la lista
 // desplegable del fragmento de adscripción (abajo). Empresas ya registradas (tipo privada): catálogo del combo abierto.
 // Arreglo simple: el módulo combo 1.0.0 sólo lee arreglos (P37).
@@ -141,14 +162,7 @@ const revisionDocs = enLinea.map((r) => {
               <span class="estado" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <details class="doc-vista">
-              <summary>Ver documento</summary>
-              <div class="visor-hoja" data-doc-visor>
-                <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <p>Aquí se ve el documento.</p>
-                <p class="pendiente">Pendiente: en la versión de prueba no hay archivos reales; se conecta al guardar archivos en la etapa 3.</p>
-              </div>
-            </details>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
             <fieldset class="grupo" data-campo="decision_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->

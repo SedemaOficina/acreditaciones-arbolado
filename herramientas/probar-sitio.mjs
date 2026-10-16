@@ -561,6 +561,30 @@ async function personal(navegador, ancho, alto, sufijo) {
   // Carrera por clasificar: afín → todo aceptado → validar con cita
   await page.goto(BASE + `revisar.html?folio=${porClasificar.folio}`);
   await page.waitForSelector('#formulario:not([hidden])');
+  // Visor (decisión 2026-10-16): todas las hojas; en computadora, fijo a la derecha y abierto de entrada con el comprobante
+  // de estudios cuando hay que decidir el perfil; en pantalla chica, a pantalla completa al pedirlo
+  const hojasDe = { comprobante_estudios: 2, comprobantes_experiencia: 5, curp: 1 };
+  if (ancho >= 1024) {
+    await page.waitForSelector('.visor-lienzo');
+    comprueba(await page.isVisible('[data-visor]') && await page.textContent('[data-visor-titulo]') === 'Comprobante de estudios'
+      && await page.locator('.visor-lienzo').count() === hojasDe.comprobante_estudios, t('el visor abre el comprobante de estudios con todas sus hojas'));
+    comprueba(await page.evaluate(() => document.activeElement === document.body), t('abrir el visor no quita el foco'));
+    await page.click('[data-ver="comprobantes_experiencia"]');
+    await page.waitForFunction((n) => document.querySelectorAll('.visor-lienzo').length === n, hojasDe.comprobantes_experiencia);
+    comprueba(await page.textContent('[data-visor-pagina]') === 'Hoja 1 de 5', t('el visor dice en qué hoja va'));
+    await page.click('[data-visor-accion="acercar"]');
+    await page.waitForFunction(() => document.querySelector('[data-visor-zoom]').textContent === '125 %');
+    comprueba(await page.getAttribute('[data-visor-hojas]', 'data-zoom') === '125', t('el visor acerca'));
+    await captura(page, `43-personal-visor-${sufijo}`);
+  } else {
+    comprueba(!(await page.isVisible('[data-visor]')), t('en pantalla chica el visor no ocupa lugar hasta pedirlo'));
+    await page.click('[data-ver="curp"]');
+    await page.waitForSelector('.visor-lienzo');
+    comprueba(await page.evaluate(() => document.querySelector('[data-visor]').matches(':modal')), t('en pantalla chica el visor se abre a pantalla completa'));
+    await captura(page, `43-personal-visor-${sufijo}`);
+    await page.keyboard.press('Escape');
+    comprueba(await page.evaluate(() => document.activeElement.dataset.ver === 'curp'), t('al cerrar el visor, el foco vuelve a «Ver documento»'));
+  }
   await page.click('[data-accion="enviar"]');
   comprueba(await page.locator('[aria-invalid="true"]').count() > 0, t('registrar sin decidir muestra lo que falta'));
   await page.check('input[name="clasificacion"][value="afin"]');
@@ -632,11 +656,12 @@ async function accesibilidad(navegador) {
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => sessionStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
-    ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo']];
+    ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor']];
   for (const [url, estado] of pantallas) {
     await page.goto(BASE + url);
     await page.waitForLoadState('networkidle');
     if (estado === 'rechazo') await page.check('input[name="comprobante_confirma"][value="si"]');
+    else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.addScriptTag({ content: axe });
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
@@ -651,7 +676,7 @@ try {
   await recorrido(navegador, 390, 844, 'telefono');
   await recorrido(navegador, 1280, 900, 'escritorio');
   await personal(navegador, 390, 844, 'telefono');
-  await personal(navegador, 1280, 900, 'escritorio');
+  await personal(navegador, 1440, 900, 'escritorio');
   await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);

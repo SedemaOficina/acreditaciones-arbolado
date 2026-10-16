@@ -134,11 +134,15 @@
     }
 
     /* ----- Documentos ----- */
+    // En la prueba, cada requisito tiene un PDF ficticio de varias hojas (herramientas/documentos-ficticios.py); en la
+    // etapa 3 la API entrega el archivo de esta solicitud.
+    const archivos = {};
     for (const art of $$('[data-doc]', form)) {
       const k = art.dataset.doc;
       const d = docs.find((x) => x.requisito === k);
       if (!d) continue;
       const nombre = d.nombre_archivo || APD.nombreDeArchivo((req[k] && req[k].nombre_archivo) || k.toUpperCase(), p, d.nombre_original);
+      archivos[k] = { url: `datos/documentos/${k}.pdf`, titulo: req[k] ? req[k].nombre : k, archivo: nombre };
       const peso = d.tamano_bytes >= 1048576 ? `${(d.tamano_bytes / 1048576).toFixed(1)} MB` : `${Math.round(d.tamano_bytes / 1024)} KB`;
       $('[data-doc-archivo]', art).replaceChildren(...[
         el('span', { class: 'mono', texto: nombre }),
@@ -213,6 +217,18 @@
       boton.classList.toggle('btn-peligro', r.clase === 'btn-peligro');
     }
 
+    /* Ver documento: en el visor, con todas sus hojas; el documento que se ve queda señalado en la lista */
+    function ver(k, boton) {
+      if (!archivos[k] || !global_visor()) return;
+      for (const a of $$('[data-doc]', form)) a.toggleAttribute('data-viendo', a.dataset.doc === k);
+      APD_VISOR.abre(archivos[k], boton);
+    }
+    const global_visor = () => typeof APD_VISOR !== 'undefined';
+    form.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-ver]');
+      if (b) ver(b.dataset.ver, b);
+    });
+
     /* Motivos frecuentes: se agregan al texto de la observación, que quien revisa completa */
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-sugerencia]');
@@ -280,6 +296,11 @@
       return true;
     };
 
+    // En computadora el visor abre de entrada el primer documento
+    // (si hay que decidir el perfil, el comprobante de estudios, que es con lo que se decide)
+    const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k]);
+    const primero = ['por_clasificar', 'no_cumple'].includes(perfil) && archivos.comprobante_estudios ? 'comprobante_estudios' : orden[0];
+    if (primero && global_visor() && APD_VISOR.enComputadora()) ver(primero, null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
     recalcula();

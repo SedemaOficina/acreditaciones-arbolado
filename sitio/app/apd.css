@@ -161,3 +161,42 @@
 .sugerencia:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
 .acciones-izq { justify-content: flex-start; }
+
+/* ───── Visor de documentos de la revisión (decisión 2026-10-16): todas las hojas; fijo a la derecha en computadora ───── */
+.pagina-amplia { max-width: calc(var(--ancho-pagina) * 1.6); }
+.revision-area { display: grid; gap: var(--e-5); }
+.doc-revision[data-viendo] { padding-inline: var(--e-3); border-inline-start: var(--b-4) solid var(--guinda); background: var(--fondo); }
+.visor {
+  inline-size: 100%; max-inline-size: none; block-size: 100dvh; max-block-size: none; margin: 0; padding: var(--e-4);
+  border: 0; background: var(--blanco); color: var(--texto); flex-direction: column; gap: var(--e-2);
+}
+.visor[open] { display: flex; }
+.visor::backdrop { background: var(--velo); }
+.visor-cabeza { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
+.visor-nombre { min-inline-size: 0; }
+.visor-titulo { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.visor-archivo { margin: 0; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+.visor-barra { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.visor-zoom { min-inline-size: var(--e-9); text-align: center; font-variant-numeric: tabular-nums; font-size: var(--t-sm); }
+.visor-abrir { display: inline-flex; align-items: center; gap: var(--e-1); margin-inline-start: auto; }
+.visor-pagina { margin: 0; font-size: var(--t-sm); font-weight: var(--peso-medio); color: var(--gris); }
+.visor-hojas { flex: 1 1 auto; min-block-size: 0; overflow: auto; padding: var(--e-3); background: var(--linea); border-radius: var(--r-ctrl); }
+.visor-hojas:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+.visor-hoja-pdf { margin: 0 0 var(--e-4); }
+.visor-lienzo { display: block; inline-size: 100%; block-size: auto; margin-inline: auto; background: var(--blanco); box-shadow: var(--sombra-hoja); }
+.visor-hojas[data-zoom="50"] .visor-lienzo { inline-size: 50%; }
+.visor-hojas[data-zoom="75"] .visor-lienzo { inline-size: 75%; }
+.visor-hojas[data-zoom="125"] .visor-lienzo { inline-size: 125%; }
+.visor-hojas[data-zoom="150"] .visor-lienzo { inline-size: 150%; }
+.visor-hojas[data-zoom="200"] .visor-lienzo { inline-size: 200%; }
+.visor-hojas[data-zoom="300"] .visor-lienzo { inline-size: 300%; }
+.visor-pie { margin-block-start: var(--e-1); text-align: center; font-size: var(--t-xs); color: var(--texto); }
+.visor-nota { margin: 0; font-size: var(--t-xs); }
+@media (min-width: 1024px) {
+  .revision-area { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; }
+  .visor { position: sticky; inset-block-start: var(--e-3); block-size: calc(100dvh - var(--e-6)); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+  .visor-cerrar { display: none; }
+}
+/* En la barra del visor los botones son del tamaño de su texto, también en teléfono */
+.visor-barra .btn { width: auto; min-inline-size: var(--objetivo-min); }
+.visor-paso { font-size: var(--t-lg); line-height: 1; }

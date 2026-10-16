@@ -381,3 +381,14 @@ campos correctos.
 - Esquema del servidor de la revisión con 14 casos (61 en total); 265 comprobaciones del sitio, con accesibilidad de
   la bandeja, la revisión, la revisión con errores y el rechazo.
 
+## 2026-10-16 · Bloque 29 · Visor de documentos de la revisión
+
+- Pedido de Liber: ver todas las hojas del documento al revisar; el módulo del personal se usa casi siempre en computadora.
+- `app/visor.js` con pdf.js 4.10.38 (`pdfjs-dist` fijado en package.json; `construir-sitio.mjs` copia la biblioteca, su
+  trabajador y las fuentes estándar a `sitio/vendor/pdfjs/`, sin CDN). Todas las hojas una debajo de otra, «Hoja N de M»,
+  acercar/alejar, ajustar al ancho, girar y abrir en otra pestaña. En computadora (≥1024 px) queda fijo a la derecha y abre
+  de entrada el primer documento sin quitar el foco; en pantalla chica es un diálogo a pantalla completa (Escape devuelve
+  el foco a «Ver documento»). El documento que se ve se señala en la lista.
+- `herramientas/documentos-ficticios.py`: un PDF ficticio por requisito, de 1 a 5 hojas (`datos/documentos/`).
+- 273 comprobaciones del sitio (8 nuevas del visor) y accesibilidad con el visor abierto, sin hallazgos.
+

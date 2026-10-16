@@ -506,6 +506,14 @@
       "desde": "2026-10-16",
       "titulo": "Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto",
       "recomendacion": "Reportarlo: alternar con :nth-child no cuenta las filas ocultas; y una columna cuyo encabezado es sólo para lector de pantalla no debería mostrar su rótulo en la vista de fichas."
+    },
+    {
+      "id": "P67",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-16",
+      "titulo": "El estándar no tiene visor de documentos para revisar lo que se carga",
+      "recomendacion": "Proponer un módulo «visor» (todas las hojas, contador, acercar, girar, abrir en otra pestaña; fijo junto al formulario en computadora y a pantalla completa en teléfono) con pdf.js incluido en el paquete, a partir de app/visor.js de este proyecto."
     }
   ],
   "resueltos": [
