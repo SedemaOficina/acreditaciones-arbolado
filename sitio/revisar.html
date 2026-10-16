@@ -16,7 +16,7 @@
 </head>
 <body>
 <a class="salto" href="#contenido">Ir al contenido</a>
-<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada se guarda · fecha simulada: <span data-corte></span></aside>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
 
 <header class="cabecera">
   <div class="cabecera-int">
@@ -399,7 +399,7 @@
     <p class="visor-pagina" data-visor-pagina aria-live="polite"></p>
     <p class="aviso visor-aviso" data-visor-aviso hidden></p>
     <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
-    <p class="visor-nota"><span class="pendiente">Versión de prueba: todas las solicitudes muestran el mismo documento ficticio por requisito.</span></p>
+    <p class="visor-nota"><span class="pendiente" data-visor-nota>Versión de prueba.</span></p>
   </dialog>
   </div>
 
@@ -420,6 +420,8 @@
 </footer>
 
 <script src="app/apd.js?v=0.17"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.17"></script>
 <script src="app/personal.js?v=0.17"></script>
 <script src="formkit/js/validaciones.config.js"></script>
 <script src="formkit/js/iconos.js"></script>

@@ -29,7 +29,7 @@
 
   const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
 
-  APD.cargar().then((datos) => {
+  APD.cargar().then(P.datosConPrueba).then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'revision');
     $('[data-umbral-ambar]').textContent = P.UMBRAL.ambar;
     $('[data-umbral-rojo]').textContent = P.UMBRAL.rojo;

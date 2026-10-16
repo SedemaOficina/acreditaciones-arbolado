@@ -58,6 +58,7 @@
     if (s.perfil_academico === 'no_cumple') lista.push(['Podría no cumplir el perfil', 'error']);
     const c = corregidos(datos, s).length;
     if (c) lista.push([c === 1 ? '1 documento corregido' : `${c} documentos corregidos`, '']);
+    if (datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.blob)) lista.push(['Archivos cargados en este navegador', 'ok']);
     return lista;
   }
 
@@ -74,5 +75,41 @@
     );
   }
 
-  global.APD_PERSONAL = { REVISORA, UMBRAL, revisiones, guardaRevision, dias, espera, vuelta, corregidos, senales, pintaSesion };
+  /* Versión de prueba: los datos ficticios más lo que se envió en este navegador (app/archivos-prueba.js), con la misma
+     forma que la base. Una solicitud nueva entra como enviada, con su persona y sus documentos; un reenvío de una
+     solicitud ficticia la vuelve a poner en revisión con los documentos corregidos como carga vigente. */
+  function datosConPrueba(datos) {
+    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve(datos);
+    return APD_ARCHIVOS_PRUEBA.solicitudes().then((registros) => Promise.all(registros.map((r) =>
+      APD_ARCHIVOS_PRUEBA.documentos(r.folio).then((docs) => ({ r, docs }))))).then((lista) => {
+      if (!lista.length) return datos;
+      const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice() });
+      for (const { r, docs } of lista) {
+        let s = d.solicitud.find((x) => x.folio === r.folio);
+        if (s) {
+          s = Object.assign({}, s, { estado: 'enviada', estado_desde: r.estado_desde });
+          d.solicitud[d.solicitud.findIndex((x) => x.folio === r.folio)] = s;
+        } else {
+          const persona = d.solicitante.find((x) => x.id && x.id === r.persona.id) || Object.assign({ id: `prueba:${r.folio}` }, r.persona);
+          if (!d.solicitante.includes(persona)) d.solicitante.push(persona);
+          const perfil = r.tipo_acreditacion === 'dictaminador' ? APD.perfilAcademico(datos, r.nivel_estudios, r.estatus_estudios, r.carrera) : null;
+          s = { id: `prueba:${r.folio}`, folio: r.folio, solicitante_id: persona.id, estado: 'enviada', estado_desde: r.estado_desde,
+            enviada_en: r.enviada_en, creada_en: r.enviada_en, tipo_acreditacion: r.tipo_acreditacion, modalidad: r.modalidad,
+            nivel_estudios: r.nivel_estudios, carrera: r.carrera, estatus_estudios: r.estatus_estudios, anios_experiencia: r.anios_experiencia,
+            perfil_academico: perfil ? perfil.perfil : null, experiencia_minima: perfil ? perfil.minimo : null,
+            adscripcion: r.persona.adscripcion, organizacion_id: r.persona.organizacion_id, organizacion_nombre: r.persona.organizacion_nombre,
+            acreditacion_anterior_id: null };
+          d.solicitud.push(s);
+        }
+        for (const a of docs) {
+          d.documento = d.documento.map((x) => (x.solicitud_id === s.id && x.requisito === a.requisito && x.vigente ? Object.assign({}, x, { vigente: false }) : x));
+          d.documento.push({ solicitud_id: s.id, requisito: a.requisito, vigente: true, estado: 'pendiente', cargado_en: a.cargado_en,
+            nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob });
+        }
+      }
+      return d;
+    }).catch(() => datos);
+  }
+
+  global.APD_PERSONAL = { datosConPrueba, REVISORA, UMBRAL, revisiones, guardaRevision, dias, espera, vuelta, corregidos, senales, pintaSesion };
 }(window));

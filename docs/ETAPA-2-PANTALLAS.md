@@ -32,6 +32,10 @@ abre de entrada el primer documento (el comprobante de estudios si hay que decid
 pantalla completa. Al aceptar un documento, el visor y la lista pasan al siguiente sin decidir; con todo decidido, la
 página baja al resultado. PDF ficticios: `herramientas/documentos-ficticios.py`.
 
+Prueba sin servidor: lo que se envía o reenvía en la solicitud se guarda sólo en ese navegador (`app/archivos-prueba.js`,
+IndexedDB) y la bandeja y la revisión lo suman a los ficticios (`APD_PERSONAL.datosConPrueba`); el visor muestra el
+archivo real. Se quita en la etapa 3 junto con el acceso simulado.
+
 ## 3. Formulario y servidor
 
 La revisión es un formulario del estándar que arranca a mano (`data-formkit="manual"`) cuando la página ya calculó sus
@@ -46,6 +50,6 @@ prueba con el cálculo de los auxiliares que hará la API (14 casos).
 
 - Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); dirección del Vivero Nezahualcóyotl (P68);
   motivos frecuentes y quién fija la fecha (P64).
-- Visor de documentos: en la prueba muestra un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
+- Visor de documentos: en la prueba muestra el archivo cargado en el navegador o un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
 - Siguientes pantallas: citas de cotejo, grupos y asistencia, calificación, emisión y entrega.
 - Hallazgos del estándar: P65 (chips con lista fija), P66 (tabla filtrada y columna de acción en teléfono) y P67 (no hay visor de documentos).

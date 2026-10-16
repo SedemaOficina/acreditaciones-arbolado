@@ -35,6 +35,8 @@ window.FORMKIT_CONFIG = {
   archivos: { mb: 5, extensiones: ['pdf'], max: 1 }
 };
 
+const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
+
 window.FORMKIT_OPCIONES = {
   enviar(payload, { signal }) {
     const modo = new URLSearchParams(location.search).get('simular');
@@ -60,7 +62,24 @@ window.FORMKIT_OPCIONES = {
           }
           sesion.solicitudes = propias;
           APD.guardaSesion(sesion);
-          ok({ folio, fecha: ahora });
+          // Versión de prueba: los archivos reales y un resumen de la solicitud se guardan sólo en este navegador, para
+          // verlos en la revisión del personal (app/archivos-prueba.js). Si el navegador no lo permite, el envío sigue igual.
+          const prefijo = `doc_${tipo}_${modalidad}_`;
+          const archivos = (payload.archivos || []).filter((a) => a.campo.startsWith(prefijo) && a.blob)
+            .map((a) => ({ requisito: a.campo.slice(prefijo.length), blob: a.blob, nombre: a.nombre, tipo: a.tipo, size: a.size }));
+          const previa = continua ? datos.solicitud.find((x) => x.folio === continua) : null;
+          const p = APD.personaDeSesion(datos) || {};
+          const registro = {
+            folio, existente: Boolean(previa), tipo_acreditacion: tipo, modalidad,
+            enviada_en: previa ? previa.enviada_en : ahora, estado_desde: ahora,
+            nivel_estudios: d.nivel_estudios || null, carrera: d.carrera || null, estatus_estudios: d.estatus_estudios || null,
+            anios_experiencia: d.anios_experiencia ? Number(d.anios_experiencia) : null,
+            persona: { id: p.id, nombre: p.nombre, primer_apellido: p.primer_apellido, segundo_apellido: p.segundo_apellido || null, curp: p.curp,
+              correo: p.correo, telefono: p.telefono, adscripcion: p.adscripcion, organizacion_id: p.organizacion_id || null,
+              organizacion_nombre: p.organizacion_nombre || '', numero_expediente: p.numero_expediente || null }
+          };
+          const guarda = global_archivos() ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).catch(() => {}) : Promise.resolve();
+          guarda.then(() => ok({ folio, fecha: ahora }));
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });

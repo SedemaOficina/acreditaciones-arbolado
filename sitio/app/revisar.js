@@ -55,7 +55,7 @@
     $('[data-cargando]').textContent = texto;
   }
 
-  APD.cargar().then((datos) => {
+  APD.cargar().then(P.datosConPrueba).then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'revision');
     const s = datos.solicitud.find((x) => x.folio === folio);
     if (!s) return falla('No se encontró esa solicitud. Vuelva a la bandeja y elíjala de nuevo.');
@@ -142,7 +142,10 @@
       const d = docs.find((x) => x.requisito === k);
       if (!d) continue;
       const nombre = d.nombre_archivo || APD.nombreDeArchivo((req[k] && req[k].nombre_archivo) || k.toUpperCase(), p, d.nombre_original);
-      archivos[k] = { url: `datos/documentos/${k}.pdf`, titulo: req[k] ? req[k].nombre : k, archivo: nombre };
+      // Un archivo cargado en este navegador (versión de prueba) se ve tal cual; si no, el PDF ficticio del requisito
+      archivos[k] = d.blob
+        ? { url: URL.createObjectURL(d.blob), titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
+        : { url: `datos/documentos/${k}.pdf`, titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
       const peso = d.tamano_bytes >= 1048576 ? `${(d.tamano_bytes / 1048576).toFixed(1)} MB` : `${Math.round(d.tamano_bytes / 1024)} KB`;
       $('[data-doc-archivo]', art).replaceChildren(...[
         el('span', { class: 'mono', texto: nombre }),

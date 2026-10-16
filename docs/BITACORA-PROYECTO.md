@@ -408,3 +408,14 @@ campos correctos.
   y lo anuncia al lector de pantalla; con todo decidido, baja al resultado. No mueve el foco ni avanza al observar, ni con
   las marcas que pone la página (opción C). Comprobación nueva en el sitio (276).
 
+## 2026-10-16 · Bloque 32 · Documentos reales en la prueba, sin servidor
+
+- Pedido de Liber: cargar un documento real en la prueba y verlo en la revisión aunque no haya servidor.
+- `app/archivos-prueba.js` (IndexedDB, sólo en este navegador): al enviar o reenviar una solicitud se guardan sus archivos y
+  un resumen (persona, estudios, curso). `APD_PERSONAL.datosConPrueba` los suma a los ficticios con la forma de la base: una
+  solicitud nueva entra a la bandeja como enviada; un reenvío vuelve a revisión con lo corregido como carga vigente.
+- Revisión: el visor abre el archivo real (enlace del navegador) con su nombre original; la nota dice si es el archivo
+  cargado o el ficticio. Solicitud: aviso en el paso de documentos. Menú de pruebas: «Borrar los documentos de prueba».
+- Comprobación de punta a punta en teléfono y escritorio: se envía un dictaminador con un PDF de tres hojas, llega a la
+  bandeja señalado y el visor lo muestra (280 comprobaciones).
+

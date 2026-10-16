@@ -101,11 +101,13 @@
     else if (!d.open) d.showModal();
   }
 
-  async function abre({ url, titulo, archivo }, boton) {
+  async function abre({ url, titulo, archivo, nota }, boton) {
     origen = boton || null;
     $('[data-visor-titulo]').textContent = titulo;
     $('[data-visor-archivo]').textContent = archivo || '';
     $('[data-visor-abrir]').href = url;
+    const n = $('[data-visor-nota]');
+    if (n && nota) n.textContent = nota;
     abreDialogo();
     if (url === estado.url && estado.doc) return;
     if (observador) observador.disconnect();

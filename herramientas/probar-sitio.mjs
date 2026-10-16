@@ -650,6 +650,39 @@ async function personal(navegador, ancho, alto, sufijo) {
   const f = await page.locator('[data-solicitudes] .ficha', { hasText: 'Rechazada' }).textContent();
   comprueba(/Motivo del rechazo/.test(f) && /solicitud nueva/.test(f), t('«Mis trámites» muestra la solicitud rechazada con su motivo'));
 
+  // Versión de prueba sin servidor: lo que la persona carga en este navegador se ve en la revisión (decisión 2026-10-16).
+  // Se envía una solicitud de dictaminador con un PDF real de tres hojas y se revisa con ese mismo archivo.
+  const real = { name: 'constancia-escaneada.pdf', mimeType: 'application/pdf', buffer: readFileSync(new URL('../datos/documentos/constancia_situacion_fiscal.pdf', import.meta.url)) };
+  await entra(page, paraDictaminador.curp);
+  await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'dictaminador_nueva');
+  await page.selectOption('#nivel_estudios', 'licenciatura');
+  await page.fill('#carrera', 'Biología');
+  await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+  await page.fill('#anios_experiencia', '3');
+  await siguiente(page);
+  const campos = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo));
+  for (const n of campos) {
+    await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, real);
+    await page.waitForSelector(`[data-campo="${n}"] .lista-arch li`);
+  }
+  await siguiente(page);
+  await marcaCasillas(page);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  const folioReal = await page.evaluate(() => JSON.parse(sessionStorage.getItem('apd.sesion')).solicitudes[0].folio);
+  await page.goto(BASE + 'revision.html');
+  await page.waitForSelector(`[data-filas] tr[data-folio="${folioReal}"]`);
+  comprueba(/Archivos cargados en este navegador/.test(await page.textContent(`[data-filas] tr[data-folio="${folioReal}"]`)),
+    t('la solicitud enviada en este navegador llega a la bandeja, señalada'));
+  await page.goto(BASE + `revisar.html?folio=${folioReal}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  await page.click('[data-ver="curp"]');
+  await page.waitForFunction(() => document.querySelectorAll('.visor-lienzo').length === 3);
+  comprueba(/se cargó en este navegador/.test(await page.textContent('[data-visor-nota]')) && /constancia-escaneada\.pdf/.test(await page.textContent('[data-doc="curp"] [data-doc-archivo]')),
+    t('el visor muestra el archivo real que se cargó, con sus tres hojas'));
+  await captura(page, `44-personal-archivo-real-${sufijo}`);
+
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await contexto.close();
 }

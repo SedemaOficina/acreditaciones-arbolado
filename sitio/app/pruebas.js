@@ -224,6 +224,14 @@
         ['Envío normal', ''], ['Falla el envío', 'error'], ['Límite de envíos', 'limite'], ['Envío lento', 'lento']
       ].map(([t, m]) => el('li', {}, [el('a', { href: url(m), texto: t })])))]));
     }
+    if (typeof APD_ARCHIVOS_PRUEBA !== 'undefined') {
+      hijos.push(seccion('Documentos cargados en este navegador', [
+        el('p', { texto: 'Lo que se envía en la versión de prueba se guarda sólo en este navegador, para verlo en la revisión del personal.' }),
+        el('div', { class: 'menu-pruebas-acciones' }, [boton('Borrar los documentos de prueba', () => {
+          APD_ARCHIVOS_PRUEBA.borraTodo().then(() => di('Se borraron los documentos de prueba de este navegador.'), () => di('No se pudieron borrar.'));
+        })])
+      ]));
+    }
     hijos.push(seccion('Pantallas', [el('ul', { class: 'menu-pruebas-lista' }, [
       ['index.html', 'Inicio'], ['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'],
       ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud'], ['verificar.html', 'Verificar una acreditación'],
