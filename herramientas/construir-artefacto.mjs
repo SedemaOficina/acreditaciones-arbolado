@@ -23,6 +23,14 @@ for (const f of todos(salida)) {
   const n = t.replace(/(["'])index\.html\1/g, '$1inicio.html$1');
   if (n !== t) writeFileSync(f, n);
 }
+// El artefacto no admite bytes de control en los archivos de texto (pdf.js los trae dentro de cadenas, p. ej. ESC):
+// se escriben como \xNN, que dentro de una cadena o expresión regular de JavaScript significa lo mismo.
+for (const f of todos(salida)) {
+  if (!['.js', '.mjs'].includes(extname(f))) continue;
+  const t = readFileSync(f, 'utf8');
+  const n = t.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, (c) => '\\x' + c.charCodeAt(0).toString(16).padStart(2, '0'));
+  if (n !== t) writeFileSync(f, n);
+}
 const version = readFileSync(join(raiz, 'VERSION'), 'utf8').trim();
 writeFileSync(join(salida, 'artefacto.html'), `<title>Acreditaciones de arbolado</title>
 <meta name="claude:viewport-fit-sides" content="cover">
