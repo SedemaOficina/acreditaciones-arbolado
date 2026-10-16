@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.6 | 15/10/26, 8:03 p.m. | Nivel de estudios en lista desplegable; carrera y situación sólo con licenciatura o posgrado, en los dos tipos |
 | 0.5 | 15/10/26, 7:49 p.m. | Estudios en poda y dictaminador; situación del último grado sólo en dictaminador |
 | 0.4 | 15/10/26, 7:40 p.m. | Perfil del dictaminador en tres preguntas con experiencia mínima calculada; nombres de archivo a la vista; identificadores |
 | 0.3 | 15/10/26, 7:19 p.m. | Adscripción con institución educativa y empresas registradas; fichas de «Mis solicitudes» por estado; nombre del archivo en pruebas |
