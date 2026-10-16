@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.13 | 16/10/26, 8:10 a.m. | Adscripción: opciones cortas en dos columnas |
 | 0.12 | 16/10/26, 8:02 a.m. | Estilo de formularios: secciones, columnas para datos hermanos, ayudas por bloque y respuestas cortas en línea |
 | 0.11 | 15/10/26, 8:35 p.m. | Mínimo de 5 años cuando el perfil lo decide el personal; indicación de posgrado sólo con maestría o doctorado |
 | 0.10 | 15/10/26, 8:26 p.m. | Perfil del dictaminador: posgrado afín cuenta; lo que no cumple se envía y lo revisa el personal |
