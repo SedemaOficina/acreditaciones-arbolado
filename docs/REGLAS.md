@@ -56,6 +56,8 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 
 ## Grupos
 
+Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `sede` (Vivero Nezahualcóyotl) si no se indica otra; la cita de cotejo y la entrega también son ahí.
+
 | Paso | La base exige |
 |---|---|
 | Alta | Curso activo. Copia los cupos vigentes del curso (hoy 5 a 25) |

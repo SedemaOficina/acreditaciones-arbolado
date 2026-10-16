@@ -52,7 +52,10 @@
     const extra = [];
     const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad);
 
-    if (s.estado === 'validada_en_linea' && s.cita_en) pares.push(['Cita de cotejo', fechaHora(s.cita_en)]);
+    const lugar = APD.sede(datos);
+    // Dónde: la sede única; mientras no se confirme la dirección, se marca en amarillo
+    const sedeTexto = (nombre) => [lugar.direccion ? `${nombre}, ${lugar.direccion}` : nombre, lugar.direccion ? null : 'dirección y referencias para llegar.'];
+    if (s.estado === 'validada_en_linea' && s.cita_en) pares.push(['Cita de cotejo', fechaHora(s.cita_en)], ['Lugar de la cita', ...sedeTexto(lugar.nombre)]);
     // El expediente físico es de la persona y lo comparten todos sus trámites; se abre en el primer cotejo
     if (persona.numero_expediente && !['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'cancelada', 'concluida_sin_atender', 'rechazada'].includes(s.estado)) {
       pares.push(['Número de expediente', persona.numero_expediente]);
@@ -87,7 +90,7 @@
     if (g && g.grupo && s.estado === 'inscrita') {
       if (g.grupo.fecha_inicio) {
         const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
-        pares.unshift(['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Sede', g.grupo.sede]);
+        pares.unshift(['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Sede', ...sedeTexto(g.grupo.sede)]);
         pares.push(['Grupo', g.grupo.folio]);
         sigue = c ? `Tu curso dura ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; necesitas asistir al menos ${c.dias_minimos_asistencia} para presentar el examen.` : sigue;
       } else {
@@ -124,9 +127,10 @@
         pares.unshift(['Número de acreditación', a.numero], ['Inicio de vigencia', fecha(a.emitida_en)], ['Fin de vigencia', fecha(a.vence_en)]);
         if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
         else {
-          const lugar = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
+          const entrega = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
           sigue = `Tu acreditación está lista desde el ${fecha(a.emitida_en)}. Recógela en persona con tu identificación oficial. Ahí te toman la fotografía que lleva tu credencial y, al recibirla, firmas el comprobante de recepción.`;
-          extra.push(APD.limpia(lugar) ? el('p', { texto: APD.limpia(lugar) }) : el('p', { class: 'pendiente', texto: 'Pendiente: lugar, días y horario de entrega.' }));
+          pares.push(['Dónde recogerla', ...sedeTexto(lugar.nombre)]);
+          extra.push(APD.limpia(entrega) ? el('p', { texto: APD.limpia(entrega) }) : el('p', { class: 'pendiente', texto: 'Pendiente: días y horario de entrega.' }));
         }
       }
     }

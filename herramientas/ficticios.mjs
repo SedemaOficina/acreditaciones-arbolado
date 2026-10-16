@@ -255,7 +255,7 @@ function inscribir(g, lista, fecha) {
 function programar(g, fecha, inicio) {
   en(fecha, '16:00');
   como(COTEJO, 'personal');
-  emitir(`UPDATE apd.grupo SET instructor = ${q(INSTRUCTOR)}, sede = 'Aula de capacitación de la Secretaría (sede de prueba)', fecha_inicio = ${q(inicio)} WHERE id = ${q(g.id)}`);
+  emitir(`UPDATE apd.grupo SET instructor = ${q(INSTRUCTOR)}, fecha_inicio = ${q(inicio)} WHERE id = ${q(g.id)}`);
   emitir(`UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${q(g.id)}`);
 }
 function estadoGrupo(g, fecha, estado, motivo = null) {

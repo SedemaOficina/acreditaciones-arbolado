@@ -494,8 +494,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   const conCita = personaCon('validada_en_linea');
   if (conCita) {
     await entra(page, conCita.curp);
-    comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 3,
-      t('mis solicitudes: concepto, monto y referencia del pago se marcan en amarillo, por confirmar'));
+    comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 4,
+      t('mis solicitudes: concepto, monto y referencia del pago, y la dirección de la sede, se marcan en amarillo, por confirmar'));
+    comprueba(/Lugar de la cita\s*Vivero Nezahualcóyotl/.test(await page.textContent('[data-solicitudes]')), t('mis solicitudes: la cita es en el Vivero Nezahualcóyotl'));
     await page.click('[data-sesion] button');
   }
   comprueba(Boolean(emitida && conGrupo && conCita), t('mis solicitudes: hay ficticios para revisar las tres fichas'));
@@ -591,7 +592,7 @@ async function personal(navegador, ancho, alto, sufijo) {
   comprueba(/2 años/.test(await page.textContent('[data-minimo]')), t('al clasificar como afín se piden 2 años'));
   for (const d of datos.documento.filter((x) => x.solicitud_id === porClasificar.id && x.vigente)) await page.check(`input[name="decision_${d.requisito}"][value="aceptado"]`);
   comprueba(await page.textContent('[data-accion="enviar"]') === 'Validar y asignar la cita', t('con todo aceptado, la acción es validar'));
-  await page.fill('#cita_fecha', '2026-10-21'); await page.fill('#cita_hora', '10:00'); await page.selectOption('#cita_sede', 'sede_prueba');
+  await page.fill('#cita_fecha', '2026-10-21'); await page.fill('#cita_hora', '10:00');
   await captura(page, `41-personal-validar-${sufijo}`);
   // Tras una captura de página completa, Chromium sin ventana desplaza la página al enfocar: se enfoca antes de pulsar
   await page.focus('[data-accion="enviar"]');

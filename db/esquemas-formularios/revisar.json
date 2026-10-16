@@ -1,6 +1,6 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-16T16:26:06.902Z",
+  "generado": "2026-10-16T16:34:34.518Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
@@ -423,24 +423,6 @@
       "atributos": {
         "maxlength": "5"
       },
-      "autocomplete": "off",
-      "si": {
-        "campo": "resultado",
-        "valores": [
-          "validada"
-        ]
-      }
-    },
-    "cita_sede": {
-      "etiqueta": "Lugar de la cita",
-      "tipo": "select",
-      "requerido": true,
-      "sensible": false,
-      "uso": "Indicar a la persona dónde es su cita.",
-      "atributos": {},
-      "opciones": [
-        "sede_prueba"
-      ],
       "autocomplete": "off",
       "si": {
         "campo": "resultado",

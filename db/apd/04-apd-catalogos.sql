@@ -14,8 +14,12 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).'),
   ('pago_instrucciones', '[pendiente] Banco, cuenta o CLABE y forma de pago: los define la Secretaría de Administración y Finanzas.',
    'Cómo pagar los derechos; se muestra a la persona con su cita y su referencia (decisión 2026-10-14).'),
-  ('entrega_lugar', '[pendiente] Lugar, días y horario de entrega de acreditaciones.',
-   'Dónde y cuándo se recoge la acreditación emitida; se muestra a la persona (decisión 2026-10-14).');
+  ('entrega_lugar', '[pendiente] Días y horario de entrega de acreditaciones.',
+   'Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14).'),
+  ('sede', 'Vivero Nezahualcóyotl',
+   'Lugar único de la cita de cotejo, del curso y de la entrega de acreditaciones (decisión 2026-10-16, Liber).'),
+  ('sede_direccion', '[pendiente] Dirección y referencias para llegar al Vivero Nezahualcóyotl.',
+   'Cómo llegar a la sede; se muestra a la persona con la cita, el grupo y la entrega.');
 
 -- Cupos 5–25 iguales para los cuatro cursos (corrección R23 y R24, 2026-10-14; antes 10–25).
 -- Duración (corrección R31): 5 días la primera vez y 1 día la renovación, en poda y en dictaminador.

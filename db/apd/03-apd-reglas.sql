@@ -1018,6 +1018,8 @@ BEGIN
   END IF;
   NEW.cupo_minimo := c.cupo_minimo;
   NEW.cupo_maximo := c.cupo_maximo;
+  -- Todos los cursos son en la sede única (Vivero Nezahualcóyotl, decisión 2026-10-16), salvo que se indique otra
+  NEW.sede := coalesce(nullif(trim(NEW.sede), ''), apd.parametro_texto('sede'));
   NEW.folio := 'APD-G-' || anio || '-' || lpad(apd.siguiente_folio('G', anio)::text, 3, '0');
   NEW.creado_en := apd.ahora();
   NEW.estado_desde := NEW.creado_en;

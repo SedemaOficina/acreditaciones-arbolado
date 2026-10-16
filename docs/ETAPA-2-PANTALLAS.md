@@ -20,7 +20,8 @@ En «Entrar» (caja de pruebas) y en el menú de pruebas hay un enlace a la band
   lo confirma, se rechaza; si muestra otro grado, se observa el comprobante de estudios (la página lo marca con un
   texto propuesto) y la persona corrige su grado.
 - Si no se rechaza, cada documento cargado se acepta u observa (observar pide qué corregir). Con alguna observación,
-  regresa a la persona (mensaje general opcional); con todo aceptado, se valida con fecha, hora y lugar de la cita.
+  regresa a la persona (mensaje general opcional); con todo aceptado, se valida con fecha y hora de la cita, que siempre
+  es en el Vivero Nezahualcóyotl (sede única).
 - La base vuelve a aplicar todo: ver `docs/REGLAS.md` («→ rechazada», «Clasificar una carrera»).
 
 ## 2 bis. Visor de documentos
@@ -42,7 +43,7 @@ prueba con el cálculo de los auxiliares que hará la API (14 casos).
 
 ## 4. Lo que falta
 
-- Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); catálogo de sedes y su columna (P09);
+- Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); dirección del Vivero Nezahualcóyotl (P68);
   motivos frecuentes y quién fija la fecha (P64).
 - Visor de documentos: en la prueba muestra un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
 - Siguientes pantallas: citas de cotejo, grupos y asistencia, calificación, emisión y entrega.

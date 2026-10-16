@@ -167,6 +167,12 @@
   function acreditacionesDe(datos, persona) { return deTabla(datos, 'acreditacion', 'solicitante_id', persona.id).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en)); }
   function situacion(datos, acreditacion) { return datos.estado_acreditacion[acreditacion.numero]; }
   function parametro(datos, clave) { const p = datos.parametro.find((x) => x.clave === clave); return p ? Number(p.valor) : null; }
+  /* Sede única de la cita, el curso y la entrega (parámetros sede y sede_direccion de la base, decisión 2026-10-16).
+     La dirección vacía (aún «[pendiente]») se muestra como «por confirmar». */
+  function sede(datos) {
+    const valor = (c) => (datos.parametro.find((x) => x.clave === c) || {}).valor || '';
+    return { nombre: valor('sede'), direccion: limpia(valor('sede_direccion')) };
+  }
   function curso(datos, tipo, modalidad) { return datos.curso.find((c) => c.tipo_acreditacion === tipo && c.modalidad === modalidad); }
   function activa(solicitud) { return !FINALES.includes(solicitud.estado); }
   /* Las marcas internas de los catálogos y los motivos («[pendiente: …]») son para la Secretaría, no para la persona. */
@@ -267,7 +273,7 @@
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, fecha, fechaHora, sumaDias, sumaMeses,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
-    solicitudesDe, acreditacionesDe, situacion, parametro, curso, activa, limpia, opciones,
+    solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
     perfilAcademico, SUPERIORES
   };

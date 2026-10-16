@@ -239,7 +239,8 @@
       t.focus();
     });
 
-    // La cita: desde el día siguiente al de hoy (fecha simulada del corte)
+    // La cita es en la sede única; se elige el día, desde el siguiente al de hoy (fecha simulada del corte)
+    for (const n of $$('[data-sede]')) n.textContent = APD.sede(datos).nombre;
     const manana = APD.sumaDias(datos.fecha_corte, 1);
     document.getElementById('cita_fecha').setAttribute('min', manana);
 
@@ -270,7 +271,7 @@
           rechazada: 'La solicitud quedó rechazada'
         };
         const textos = {
-          validada: `${nombre} recibe su cita de cotejo para el ${fecha(d.cita_fecha)} a las ${d.cita_hora}, con los datos para pagar.`,
+          validada: `${nombre} recibe su cita de cotejo en el ${APD.sede(datos).nombre} para el ${fecha(d.cita_fecha)} a las ${d.cita_hora}, con los datos para pagar.`,
           con_observaciones: `${nombre} ve en «Mis trámites» lo que debe corregir y puede reenviar su solicitud. Volverá a esta bandeja como reenviada.`,
           rechazada: `${nombre} ve en «Mis trámites» que su solicitud fue rechazada y el motivo. Puede iniciar una solicitud nueva.`
         };

@@ -344,15 +344,8 @@
             <input class="control control-corto" id="cita_hora" name="cita_hora" type="text" inputmode="numeric" maxlength="5" autocomplete="off">
           </div>
         </div>
-        <div class="campo" data-campo="cita_sede" data-requerido data-uso="Indicar a la persona dónde es su cita.">
-          <label class="etiqueta" for="cita_sede">Lugar de la cita</label>
-          <p class="ayuda"><span class="pendiente">Pendiente: el catálogo de sedes lo define la Dirección (P09); mientras, hay una sede de prueba y la base todavía no la guarda.</span></p>
-          <!-- autocomplete off: catálogo de sedes de la Secretaría. -->
-          <div class="select control-medio"><select class="control control-select" id="cita_sede" name="cita_sede" autocomplete="off">
-            <option value="">Elija el lugar</option>
-            <option value="sede_prueba">Oficinas de la Secretaría (sede de prueba)</option>
-          </select></div>
-        </div>
+        <!-- Lugar fijo: todas las citas, cursos y entregas son en la sede única (decisión 2026-10-16); no se elige. -->
+        <p class="ayuda">La cita es en el <strong data-sede></strong>, como todas las citas de cotejo, los cursos y las entregas.</p>
       </div>
 
       <div data-si="resultado=con_observaciones">

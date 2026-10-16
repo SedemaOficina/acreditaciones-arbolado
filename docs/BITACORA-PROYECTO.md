@@ -392,3 +392,12 @@ campos correctos.
 - `herramientas/documentos-ficticios.py`: un PDF ficticio por requisito, de 1 a 5 hojas (`datos/documentos/`).
 - 273 comprobaciones del sitio (8 nuevas del visor) y accesibilidad con el visor abierto, sin hallazgos.
 
+## 2026-10-16 · Bloque 30 · Sede única: Vivero Nezahualcóyotl
+
+- Decisión de Liber: la cita, el curso y la entrega son siempre en el Vivero Nezahualcóyotl.
+- Base: parámetros `sede` y `sede_direccion` (la dirección queda «[pendiente]»); `entrega_lugar` sólo guarda días y horario;
+  un grupo nuevo toma la sede sola (caso de reglas nuevo, 128).
+- Revisión: se quitó la lista «Lugar de la cita»; la pantalla dice que la cita es en el Vivero. «Mis trámites»: lugar de la
+  cita, sede del curso y dónde recoger la acreditación, con la dirección en amarillo «por confirmar».
+- Esquema del servidor sin `cita_sede`; 275 comprobaciones del sitio.
+

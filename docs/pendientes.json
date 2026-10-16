@@ -92,20 +92,12 @@
       "recomendacion": "Enviarla a la Dirección Jurídica junto con la regla de P07, para que la redacción deje claro que lo inapelable es la evaluación y no un error de captura."
     },
     {
-      "id": "P09",
-      "grupo": "direccion",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-14",
-      "titulo": "Lugar de la cita de cotejo y sede del curso: cómo se informa a la persona",
-      "recomendacion": "Un catálogo de sedes de la Secretaría en la base (nombre, dirección y referencias). Se elige la sede al asignar la cita y al confirmar el grupo, y la persona la ve en «Mis trámites». Mientras, la revisión documental ofrece una sede de prueba; al definir el catálogo se agrega a la base la sede de la cita (hoy sólo guarda la fecha y hora)."
-    },
-    {
       "id": "P10",
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-14",
-      "titulo": "Lugar, días y horario de entrega de acreditaciones",
-      "recomendacion": "Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente."
+      "titulo": "Días y horario de entrega de acreditaciones",
+      "recomendacion": "El lugar ya está decidido: el Vivero Nezahualcóyotl. Falta definir días y horario de entrega; se capturan en el parámetro entrega_lugar y se muestran en «Mis trámites»."
     },
     {
       "id": "P11",
@@ -489,7 +481,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-16",
       "titulo": "Motivos frecuentes de observación y quién fija la fecha de la cita",
-      "recomendacion": "Confirmar los cinco motivos que ofrece la revisión (no se lee completo, está vencido, no corresponde al requisito, falta una página, no coincide con el nombre de la cuenta) y si la fecha de la cita la elige quien revisa (como está) o se toma de un calendario de citas disponibles por sede."
+      "recomendacion": "Confirmar los cinco motivos que ofrece la revisión (no se lee completo, está vencido, no corresponde al requisito, falta una página, no coincide con el nombre de la cuenta) y si la fecha de la cita la elige quien revisa (como está) o se toma de un calendario de citas disponibles en el Vivero Nezahualcóyotl."
     },
     {
       "id": "P65",
@@ -514,6 +506,14 @@
       "desde": "2026-10-16",
       "titulo": "El estándar no tiene visor de documentos para revisar lo que se carga",
       "recomendacion": "Proponer un módulo «visor» (todas las hojas, contador, acercar, girar, abrir en otra pestaña; fijo junto al formulario en computadora y a pantalla completa en teléfono) con pdf.js incluido en el paquete, a partir de app/visor.js de este proyecto."
+    },
+    {
+      "id": "P68",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-16",
+      "titulo": "Dirección del Vivero Nezahualcóyotl y referencias para llegar",
+      "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega."
     }
   ],
   "resueltos": [
@@ -650,6 +650,11 @@
     {
       "titulo": "Clasificar carreras en la revisión documental (P62)",
       "como": "en la revisión del dictaminador se clasifica la carrera (afín, disciplina afín o no afín); la base lo registra en la bitácora y recalcula las solicitudes abiertas",
+      "fecha": "2026-10-16"
+    },
+    {
+      "titulo": "Lugar de la cita y sede del curso (P09)",
+      "como": "Sede única: la cita, el curso y la entrega son siempre en el Vivero Nezahualcóyotl; no hay catálogo de sedes",
       "fecha": "2026-10-16"
     }
   ]

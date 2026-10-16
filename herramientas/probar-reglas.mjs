@@ -279,6 +279,9 @@ const casos = [
      DO $$ BEGIN ASSERT (SELECT cupo_maximo FROM apd.grupo WHERE id = '00000000-0000-4000-a000-000000000010') = 2; END $$;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id) SELECT solicitud_id, '00000000-0000-4000-a000-000000000010'
        FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 3;`],
+  ['Un grupo nuevo es en la sede única, el Vivero Nezahualcóyotl (decisión 2026-10-16)', 'ok', null, `
+     INSERT INTO apd.grupo (id, tipo_acreditacion, modalidad, integracion) VALUES ('00000000-0000-4000-a000-000000000013', 'poda', 'nueva', 'combinado');
+     DO $$ BEGIN ASSERT (SELECT sede FROM apd.grupo WHERE id = '00000000-0000-4000-a000-000000000013') = 'Vivero Nezahualcóyotl'; END $$;`],
   ['Los cupos de un grupo creado no cambian', { sqlstate: '42501' }, null, `
      UPDATE apd.grupo SET cupo_minimo = 1 WHERE id = ${GRUPO_INTEGRACION};`],
   ['No se inscribe a alguien de otro curso', { codigo: 'otro_curso' }, null, `
