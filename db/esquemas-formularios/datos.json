@@ -1,6 +1,6 @@
 {
   "formulario": "datos.html",
-  "generado": "2026-10-15T20:38:50.471Z",
+  "generado": "2026-10-16T01:02:19.002Z",
   "campos": {
     "correo": {
       "etiqueta": "Correo electrónico",
@@ -72,7 +72,8 @@
         "privada",
         "dependencia_cdmx",
         "alcaldia",
-        "dependencia_federal"
+        "dependencia_federal",
+        "educativa"
       ],
       "autocomplete": "off",
       "si": {
@@ -84,7 +85,7 @@
     },
     "empresa_nombre": {
       "etiqueta": "Nombre de la empresa, consultoría o persona física",
-      "tipo": "texto",
+      "tipo": "combo",
       "requerido": true,
       "sensible": true,
       "uso": "Nombre de la empresa, consultoría o persona física para la que trabaja.",
@@ -92,6 +93,8 @@
       "atributos": {
         "maxlength": "160"
       },
+      "cerrado": false,
+      "catalogo": "empresas",
       "autocomplete": "off",
       "si": {
         "campo": "tipo_adscripcion",
@@ -152,8 +155,7 @@
         "dgsanpava",
         "dgcpca",
         "dgiva",
-        "dgcorenadr",
-        "otro"
+        "dgcorenadr"
       ],
       "autocomplete": "off",
       "si": {
@@ -163,35 +165,31 @@
         ]
       }
     },
-    "direccion_sedema_otra": {
-      "etiqueta": "Nombre del área",
-      "tipo": "texto",
-      "requerido": true,
-      "sensible": false,
-      "uso": "Identificar un área de la SEDEMA que no está en la lista.",
-      "atributos": {
-        "maxlength": "160",
-        "otroDe": "direccion_sedema"
-      },
-      "autocomplete": "off",
-      "si": {
-        "campo": "direccion_sedema",
-        "valores": [
-          "otro"
-        ]
-      }
-    },
     "alcaldia": {
       "etiqueta": "¿En qué alcaldía trabajas?",
-      "tipo": "combo",
+      "tipo": "select",
       "requerido": true,
       "sensible": false,
       "uso": "Identificar la alcaldía para integrar grupos.",
-      "atributos": {
-        "maxlength": "60"
-      },
-      "cerrado": true,
-      "catalogo": "alcaldias",
+      "atributos": {},
+      "opciones": [
+        "alvaro_obregon",
+        "azcapotzalco",
+        "benito_juarez",
+        "coyoacan",
+        "cuajimalpa",
+        "cuauhtemoc",
+        "gustavo_a_madero",
+        "iztacalco",
+        "iztapalapa",
+        "magdalena_contreras",
+        "miguel_hidalgo",
+        "milpa_alta",
+        "tlahuac",
+        "tlalpan",
+        "venustiano_carranza",
+        "xochimilco"
+      ],
       "autocomplete": "off",
       "si": {
         "campo": "tipo_adscripcion",
@@ -232,6 +230,43 @@
       "autocomplete": "off",
       "si": {
         "campo": "dependencia_federal",
+        "valores": [
+          "otro"
+        ]
+      }
+    },
+    "institucion_educativa": {
+      "etiqueta": "¿A qué institución educativa perteneces?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar la institución educativa para integrar grupos.",
+      "atributos": {},
+      "opciones": [
+        "unam",
+        "otro"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "tipo_adscripcion",
+        "valores": [
+          "educativa"
+        ]
+      }
+    },
+    "institucion_educativa_otra": {
+      "etiqueta": "Nombre de la institución",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar una institución educativa que no está en la lista.",
+      "atributos": {
+        "maxlength": "160",
+        "otroDe": "institucion_educativa"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "institucion_educativa",
         "valores": [
           "otro"
         ]

@@ -259,3 +259,24 @@ accesibilidad sin hallazgos.
 
 **Verificado**: 141 comprobaciones del sitio (también que en producción el sexo queda oculto), accesibilidad sin
 hallazgos; auditor de CSS y de campos correctos.
+
+## 2026-10-15 · Bloque 19 · Sólo los datos internos que se guardan
+
+- «Sin segundo apellido» deja de mostrarse en la versión de prueba: no se guarda en la base. En amarillo quedan sólo
+  los calculados que sí se guardan: el sexo y el curso que corresponde.
+
+## 2026-10-15 · Bloque 20 · Adscripción ampliada y fichas de «Mis solicitudes»
+
+- Adscripción: tipo «Institución educativa» (UNAM u otra con su nombre; `educativa` en la base y UNAM en el
+  catálogo); el nombre de la empresa es un `combo` con las registradas que admite nombres nuevos; la Dirección General
+  de la SEDEMA ya no tiene «otra área»; la alcaldía es una lista desplegable con las 16 en orden alfabético (el valor
+  es la clave del catálogo). «Escríbela de nuevo» pasa a «Confirma tu contraseña».
+- Documentos: en la versión de prueba, cada archivo cargado dice en amarillo «Se guardará como: CURP_…pdf», el
+  mismo cálculo que `apd.nombre_de_archivo`.
+- «Mis solicitudes»: «En revisión documental»; «Folio de la solicitud» y «Folio de la acreditación»; con grupo,
+  «Preséntate el», «El curso termina el» y sede (sin duración ni folio de grupo al frente); acreditación emitida,
+  folio, inicio y fin de vigencia, sin datos del curso; concepto, monto, referencia y hora de entrada «por confirmar»
+  en amarillo.
+
+**Verificado**: 106 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
+auditor de CSS y de campos correctos.

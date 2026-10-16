@@ -57,7 +57,8 @@ function conArchivos(form, datos, archivos) {
   return d;
 }
 // El catálogo cerrado de alcaldías, como lo tendrá la API (el mismo que genera construir-sitio.mjs)
-const catalogos = { alcaldias: JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8')).organizacion.filter((o) => o.tipo === 'alcaldia' && o.clave).map((o) => o.nombre) };
+const orgs = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8')).organizacion;
+const catalogos = { empresas: orgs.filter((o) => o.tipo === 'privada').map((o) => o.nombre) };
 function caso(nombre, form, datos, espera, archivos = []) {
   const r = validaPayload({ datos: conArchivos(form, comoServidor(form, datos), archivos), archivos, meta }, esquema[form], { config, catalogos });
   const campos = r.errores.map((e) => e.campo);
@@ -111,7 +112,11 @@ caso('Cuenta: SEDEMA sin su Dirección General se rechaza', 'cuenta', cta({ adsc
 caso('Cuenta: SEDEMA con su Dirección General se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'dgcorenadr' }), true, conFoto);
 caso('Cuenta: otra dependencia de la Ciudad sin su nombre se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'otro' }), ['dependencia_cdmx_otra'], conFoto);
 caso('Cuenta: una alcaldía fuera del catálogo se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'Alcaldía Inventada' }), ['alcaldia'], conFoto);
-caso('Cuenta: una alcaldía del catálogo se acepta, escrita sin acentos', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'tlahuac' }), true, conFoto);
+caso('Cuenta: una alcaldía de la lista se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'tlahuac' }), true, conFoto);
+caso('Cuenta: institución educativa sin decir cuál se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa' }), ['institucion_educativa'], conFoto);
+caso('Cuenta: UNAM se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'unam' }), true, conFoto);
+caso('Cuenta: otra institución educativa sin su nombre se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'otro' }), ['institucion_educativa_otra'], conFoto);
+caso('Cuenta: la Dirección General «otro» ya no existe y se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'otro' }), ['direccion_sedema'], conFoto);
 caso('Cuenta: independiente, lo que dependía de la adscripción no cuenta (se descarta)', 'cuenta', cta({ adscrito: 'no', tipo_adscripcion: 'alcaldia', alcaldia: 'Inventada' }), true, conFoto);
 const misDatos = { correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', adscrito: 'si', tipo_adscripcion: 'dependencia_federal', dependencia_federal: 'cfe' };
 caso('Mis datos: cambio de adscripción a CFE se acepta, sin fotografía nueva', 'datos', misDatos, true);

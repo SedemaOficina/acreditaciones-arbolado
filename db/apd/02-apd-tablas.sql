@@ -112,13 +112,13 @@ CREATE TABLE apd.organizacion (
   activa                     boolean       NOT NULL DEFAULT true,
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT organizacion_pk PRIMARY KEY (id),
-  CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa')),
   CONSTRAINT organizacion_clave_uk UNIQUE (clave),
   CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)
 );
-COMMENT ON TABLE apd.organizacion IS 'Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.';
+COMMENT ON TABLE apd.organizacion IS 'Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.';
 COMMENT ON COLUMN apd.organizacion.id IS 'Identificador interno';
-COMMENT ON COLUMN apd.organizacion.tipo IS 'privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia o dependencia_federal';
+COMMENT ON COLUMN apd.organizacion.tipo IS 'privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia, dependencia_federal o educativa';
 COMMENT ON COLUMN apd.organizacion.clave IS 'Clave estable de las que el formulario ofrece como opción (sobse, sedema, paot, cfe, una por alcaldía); vacía en las que se agregan escritas';
 COMMENT ON COLUMN apd.organizacion.nombre IS 'Nombre oficial';
 COMMENT ON COLUMN apd.organizacion.nombre_normalizado IS 'Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.»';
@@ -151,7 +151,7 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
   CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$'),
   CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
-  CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa')),
   CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente')),
   CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL),
   CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar')),
@@ -165,7 +165,7 @@ COMMENT ON COLUMN apd.solicitante.nombre IS 'Nombre(s)';
 COMMENT ON COLUMN apd.solicitante.primer_apellido IS 'Primer apellido';
 COMMENT ON COLUMN apd.solicitante.segundo_apellido IS 'Segundo apellido, si lo hay';
 COMMENT ON COLUMN apd.solicitante.sexo IS 'H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada';
-COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar';
+COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar';
 COMMENT ON COLUMN apd.solicitante.organizacion_id IS 'Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente';
 COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas';
 COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos';
@@ -308,7 +308,7 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
   CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad),
   CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
-  CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal')),
+  CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa')),
   CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente')),
   CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id),
   CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')),
@@ -331,7 +331,7 @@ COMMENT ON COLUMN apd.solicitud.folio IS 'Folio público; lo asigna la base (APD
 COMMENT ON COLUMN apd.solicitud.solicitante_id IS 'Persona solicitante';
 COMMENT ON COLUMN apd.solicitud.tipo_acreditacion IS 'Curso solicitado';
 COMMENT ON COLUMN apd.solicitud.modalidad IS 'Curso solicitado';
-COMMENT ON COLUMN apd.solicitud.adscripcion IS 'Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal';
+COMMENT ON COLUMN apd.solicitud.adscripcion IS 'Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa';
 COMMENT ON COLUMN apd.solicitud.organizacion_id IS 'Institución de adscripción al enviar (copia de la de su cuenta); vacía si es independiente';
 COMMENT ON COLUMN apd.solicitud.acreditacion_anterior_id IS 'Acreditación que se renueva; obligatoria en renovación';
 COMMENT ON COLUMN apd.solicitud.factura_rfc IS 'RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo';

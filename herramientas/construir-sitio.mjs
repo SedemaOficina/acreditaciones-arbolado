@@ -53,15 +53,16 @@ for (const p of paginas) {
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 mkdirSync(join(sitio, 'datos'), { recursive: true });
 cpSync(join(raiz, 'datos/ficticios.json'), join(sitio, 'datos/ficticios.json'));
-// Catálogo cerrado de alcaldías (las 16 del catálogo inicial de la base, con clave). Arreglo simple: el módulo combo
-// 1.0.0 sólo lee arreglos (su docs/06 dice que también acepta {filas, fuente, corte, es_ficticio}, pero combo.js
-// no lo implementa; reportado al estándar, P37).
-const alcaldias = datos.organizacion.filter((o) => o.activa && o.tipo === 'alcaldia' && o.clave).map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
+// Las 16 alcaldías (catálogo inicial de la base, con clave), en orden alfabético: van como opciones de la lista
+// desplegable del fragmento de adscripción (abajo). Empresas ya registradas (tipo privada): catálogo del combo abierto.
+// Arreglo simple: el módulo combo 1.0.0 sólo lee arreglos (P37).
+const alcaldias = datos.organizacion.filter((o) => o.activa && o.tipo === 'alcaldia' && o.clave).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+const empresas = datos.organizacion.filter((o) => o.activa && o.tipo === 'privada').map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
 writeFileSync(join(sitio, 'datos/catalogos.js'), `/* Generado por herramientas/construir-sitio.mjs desde datos/ficticios.json. No se edita a mano.
-   Alcaldías de la Ciudad de México. Fuente: catálogo inicial de apd.organizacion (db/apd/04-apd-catalogos.sql),
-   corte ${datos.fecha_corte}. En producción lo sirve la base. */
+   Empresas, consultorías y particulares ya registrados (apd.organizacion, tipo privada; FICTICIOS), corte
+   ${datos.fecha_corte}. En producción lo sirve la base. */
 window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
-  alcaldias: ${JSON.stringify(alcaldias)}
+  empresas: ${JSON.stringify(empresas)}
 });
 `);
 
@@ -101,6 +102,8 @@ for (const [tipo, modalidad] of cursos) {
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
+            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
+            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="${esc(r.nombre_archivo || limpia(r.nombre).toUpperCase())}"></div>
           </div>`;
   });
   // Una sola condición por bloque (sin anidar): el esquema del servidor sólo lee el data-si más cercano
@@ -117,7 +120,8 @@ if (a < 0 || b < 0) { console.error('Faltan los marcadores de documentos en siti
 writeFileSync(ruta, html.slice(0, a + inicio.length) + '\n' + bloques.join('\n') + '\n        ' + html.slice(b));
 
 // 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mis datos»
-const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd();
+const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd()
+  .replace(/^( *)<!-- alcaldias:opciones -->$/m, (_, s) => alcaldias.map((o) => `${s}<option value="${esc(o.clave)}">${esc(o.nombre)}</option>`).join('\n'));
 for (const p of ['cuenta.html', 'datos.html']) {
   const r = join(sitio, p);
   const h = readFileSync(r, 'utf8');

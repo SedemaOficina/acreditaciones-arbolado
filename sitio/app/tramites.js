@@ -3,7 +3,7 @@
    Lee los datos ficticios exportados por la base; en la etapa 3 los da GET /apd/mis-tramites. */
 (function () {
   'use strict';
-  const { el, estado, datosLista, fecha, fechaHora } = APD;
+  const { el, estado, datosLista, fecha, fechaHora, sumaDias } = APD;
 
   function fichaAcreditacion(datos, a, op) {
     const sit = APD.situacion(datos, a);
@@ -48,7 +48,7 @@
   function fichaSolicitud(datos, s, persona) {
     const e = APD.ESTADOS[s.estado] || { texto: s.estado, tono: '', sigue: '' };
     let sigue = e.sigue;
-    const pares = [['Folio', s.folio], ['Enviada el', fechaHora(s.enviada_en)]];
+    const pares = [['Folio de la solicitud', s.folio], ['Enviada el', fechaHora(s.enviada_en)]];
     const extra = [];
     const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad);
 
@@ -67,7 +67,11 @@
       extra.push(el('div', { class: 'aviso' }, [
         el('div', { class: 'aviso-texto' }, [
           el('p', {}, [el('strong', { texto: 'Datos para tu pago' })]),
-          APD.datosLista([['Concepto', c.pago_concepto], ['Monto', monto || 'Pendiente: lo confirma la Gaceta Oficial'], ['Referencia', s.pago_referencia]]),
+          APD.datosLista([
+            ['Concepto', c.pago_concepto, 'texto oficial del concepto de pago.'],
+            ['Monto', monto || 'Sin monto', 'lo fija la Gaceta Oficial.'],
+            ['Referencia', s.pago_referencia, 'formato de la referencia de pago.']
+          ]),
           s.pago_monto == null && c.pago_fundamento ? el('p', { class: 'texto-gris', texto: c.pago_fundamento }) : null,
           APD.limpia(instrucciones) ? el('p', { texto: APD.limpia(instrucciones) }) : el('p', { class: 'pendiente', texto: 'Pendiente: banco, cuenta y forma de pago.' }),
           el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' }),
@@ -76,14 +80,18 @@
       ]));
     }
 
+    // Con grupo: lo que la persona necesita para asistir (cuándo se presenta, cuándo termina y dónde).
+    // Los días del curso son consecutivos, como los cuenta la base al capturar asistencia (fecha_inicio + día - 1).
+    // Terminado el curso (aprobada, acreditada…), la sede y las fechas del curso ya no se muestran.
     const g = grupoDe(datos, s);
-    if (g && g.grupo) {
-      pares.push(['Grupo', g.grupo.folio]);
+    if (g && g.grupo && s.estado === 'inscrita') {
       if (g.grupo.fecha_inicio) {
-        pares.push(['Inicia el', fecha(g.grupo.fecha_inicio)]);
-        if (c) pares.push(['Duración', `${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}`]);
-        pares.push(['Sede', g.grupo.sede]);
-      } else if (s.estado === 'inscrita') {
+        const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
+        pares.unshift(['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Sede', g.grupo.sede]);
+        pares.push(['Grupo', g.grupo.folio]);
+        sigue = c ? `Tu curso dura ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; necesitas asistir al menos ${c.dias_minimos_asistencia} para presentar el examen.` : sigue;
+      } else {
+        pares.push(['Grupo', g.grupo.folio]);
         sigue = 'Tu grupo se está integrando. La Secretaría te avisará la fecha y la sede cuando se confirme.';
       }
     }
@@ -102,7 +110,8 @@
     }
 
     const ins = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
-    if (ins && c && ['aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen'].includes(s.estado)) {
+    // El resultado del curso se muestra mientras es lo último que pasó; con la acreditación emitida ya no aporta
+    if (ins && c && ['aprobada', 'no_acreditada', 'sin_derecho_examen'].includes(s.estado)) {
       const dias = datos.asistencia.filter((a) => a.inscripcion_id === ins.id && a.asistio).length;
       pares.push(['Asistencia', `${dias} de ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'} (mínimo ${c.dias_minimos_asistencia})`]);
       const ex = datos.examen.find((x) => x.inscripcion_id === ins.id);
@@ -111,7 +120,8 @@
     if (s.estado === 'acreditada') {
       const a = datos.acreditacion.find((x) => x.solicitud_id === s.id);
       if (a) {
-        pares.push(['Acreditación', a.numero]);
+        // Lo que importa de una acreditación emitida: su número y su vigencia; va primero
+        pares.unshift(['Folio de la acreditación', a.numero], ['Inicio de vigencia', fecha(a.emitida_en)], ['Fin de vigencia', fecha(a.vence_en)]);
         if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
         else {
           const lugar = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
@@ -155,7 +165,7 @@
       ? acs.map((a) => fichaAcreditacion(datos, a, op))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes acreditaciones.' })]));
 
-    // Lo reenviado en esta pestaña (simulación) aparece como «En revisión»
+    // Lo reenviado en esta pestaña (simulación) aparece como «En revisión documental»
     const reenviadas = sesion.reenviadas || [];
     const sols = extras.concat(APD.solicitudesDe(datos, persona)
       .map((s) => (reenviadas.includes(s.folio) ? Object.assign({}, s, { estado: 'enviada' }) : s)));

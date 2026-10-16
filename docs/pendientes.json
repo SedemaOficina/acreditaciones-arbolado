@@ -460,22 +460,6 @@
       "recomendacion": "Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas."
     },
     {
-      "id": "P53",
-      "grupo": "direccion",
-      "bloquea": "datos reales",
-      "desde": "2026-10-15",
-      "titulo": "¿La lista de Direcciones Generales de la SEDEMA está completa?",
-      "recomendacion": "Confirmarla con la Dirección; se agregó «Otra área de la Secretaría» con su nombre para que nadie quede sin opción. Lo que se escriba ahí muestra qué falta en la lista."
-    },
-    {
-      "id": "P54",
-      "grupo": "direccion",
-      "bloquea": "no",
-      "desde": "2026-10-15",
-      "titulo": "¿Dónde se ubican universidades y otras instituciones que no son dependencias (por ejemplo, la UNAM)?",
-      "recomendacion": "Una privada va como «empresa, consultoría o particular»; una pública autónoma, como «dependencia federal» u «otra» con su nombre. Si son frecuentes, agregar un quinto tipo «Institución educativa»."
-    },
-    {
       "id": "P55",
       "grupo": "sia",
       "bloquea": "etapa 3",
@@ -490,6 +474,22 @@
       "desde": "2026-10-15",
       "titulo": "Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado",
       "recomendacion": "Hacer de opciones-lista la forma por omisión de las preguntas de una sola respuesta, dejar la rejilla para casos con pocas opciones muy visuales y agregar a opciones-lista su estado deshabilitado."
+    },
+    {
+      "id": "P57",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-15",
+      "titulo": "Hora de entrada al curso y si los días del curso son consecutivos",
+      "recomendacion": "Confirmar la hora de entrada (se muestra «por confirmar») y si el curso corre en días consecutivos, como hoy lo cuenta la base, o sólo en días hábiles; en ese caso, guardar el calendario del grupo."
+    },
+    {
+      "id": "P58",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-15",
+      "titulo": "Nombres de los tres identificadores: folio de la solicitud, expediente y acreditación",
+      "recomendacion": "Propuesta: «Folio de la solicitud», «Número de expediente» y «Número de acreditación»; hoy se muestran «Folio de la solicitud», «Expediente» y «Folio de la acreditación». Confirmar con cuál aparece en la credencial impresa."
     }
   ],
   "resueltos": [
@@ -586,6 +586,16 @@
     {
       "titulo": "Estilo de las preguntas de opción",
       "como": "Lista con el botón de opción visible, una por renglón (opciones-lista), en todo el sistema",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Lista de Direcciones Generales de la SEDEMA (P53)",
+      "como": "Lista cerrada de seis Direcciones Generales; se quitó «Otra área de la Secretaría» por indicación de Liber",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Universidades e instituciones educativas en la adscripción (P54)",
+      "como": "Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre",
       "fecha": "2026-10-15"
     }
   ]

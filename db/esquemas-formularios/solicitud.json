@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-15T20:38:50.569Z",
+  "generado": "2026-10-16T01:02:19.099Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -9,7 +9,9 @@
       "sensible": false,
       "uso": "Mostrar los documentos del curso que corresponde; lo calcula la página.",
       "atributos": {
-        "auxiliar": ""
+        "auxiliar": "",
+        "interno": "Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad.",
+        "internoEtiqueta": "Curso que corresponde (calculado)"
       }
     },
     "tipo": {

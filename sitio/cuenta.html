@@ -59,8 +59,7 @@
     </div>
     <!-- No es una pregunta: lo llena app/cuenta.js («si» cuando el segundo apellido está vacío) para que la
          CURP se compruebe también sin segundo apellido. El servidor lo calcula por su cuenta, no lo recibe. -->
-    <div class="solo-lector" aria-hidden="true" data-campo="sin_segundo_apellido" data-auxiliar data-uso="Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página."
-         data-interno="Lo calcula la página: «si» cuando el segundo apellido queda vacío. Sirve para comprobar la CURP; no se guarda en la base." data-interno-etiqueta="Sin segundo apellido (calculado)">
+    <div class="solo-lector" aria-hidden="true" data-campo="sin_segundo_apellido" data-auxiliar data-uso="Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página.">
       <input type="hidden" id="sin_segundo_apellido" name="sin_segundo_apellido" value="si">
     </div>
 
@@ -169,6 +168,7 @@
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="dependencia_cdmx"><span><span class="opcion-nombre">Dependencia del Gobierno de la Ciudad de México</span></span></label>
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="alcaldia"><span><span class="opcion-nombre">Alcaldía</span></span></label>
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="dependencia_federal"><span><span class="opcion-nombre">Dependencia del Gobierno Federal</span><span class="opcion-desc">Por ejemplo, la CFE.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="educativa"><span><span class="opcion-nombre">Institución educativa</span><span class="opcion-desc">Por ejemplo, la UNAM.</span></span></label>
       </div>
     </fieldset>
 
@@ -176,9 +176,13 @@
     <div class="campo" data-campo="empresa_nombre" data-si="tipo_adscripcion=privada" data-requerido data-sensible
          data-finalidad="Integrar grupos por institución y registrar a quién presta sus servicios la persona acreditada." data-uso="Nombre de la empresa, consultoría o persona física para la que trabaja.">
       <label class="etiqueta" for="empresa_nombre">Nombre de la empresa, consultoría o persona física</label>
-      <p class="ayuda">El nombre o la razón social, tal como aparece en su constancia de situación fiscal.</p>
-      <!-- autocomplete off: es el nombre de otra persona o empresa, no de quien llena. -->
-      <input class="control" id="empresa_nombre" name="empresa_nombre" type="text" maxlength="160" autocomplete="off">
+      <p class="ayuda">El nombre o la razón social, tal como aparece en su constancia de situación fiscal. Escribe las primeras letras: si ya está registrada, elígela de la lista; si no, escríbela completa.</p>
+      <!-- Combo abierto: catálogo de las ya registradas (apd.organizacion, tipo privada; datos/catalogos.js) y acepta
+           nombres nuevos, que la base agrega sin duplicar. autocomplete off: es el nombre de otra persona o empresa. -->
+      <div class="combo" data-combo data-catalogo="empresas" data-libre>
+        <input class="control" id="empresa_nombre" name="empresa_nombre" type="text" maxlength="160" autocomplete="off">
+        <ul class="combo-lista" hidden></ul>
+      </div>
     </div>
 
     <div data-si="tipo_adscripcion=dependencia_cdmx">
@@ -209,24 +213,36 @@
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcpca"><span><span class="opcion-nombre">Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgiva"><span><span class="opcion-nombre">Dirección General de Vigilancia Ambiental (DGIVA)</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcorenadr"><span><span class="opcion-nombre">Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="otro"><span><span class="opcion-nombre">Otra área de la Secretaría</span></span></label>
           </div>
         </fieldset>
-        <div class="campo" data-campo="direccion_sedema_otra" data-si="direccion_sedema=otro" data-otro-de="direccion_sedema" data-requerido data-uso="Identificar un área de la SEDEMA que no está en la lista.">
-          <label class="etiqueta" for="direccion_sedema_otra">Nombre del área</label>
-          <!-- autocomplete off: es el nombre de un área de la Secretaría; el navegador no tiene nada que proponer. -->
-          <input class="control" id="direccion_sedema_otra" name="direccion_sedema_otra" type="text" maxlength="160" autocomplete="off">
-        </div>
       </div>
     </div>
 
-    <!-- Catálogo cerrado de las 16 alcaldías: sale de apd.organizacion (datos/catalogos.js). -->
+    <!-- Las 16 alcaldías, a la vista y en orden alfabético (decisión 2026-10-15): lista desplegable cerrada. Las opciones
+         las escribe construir-sitio.mjs desde el catálogo inicial de apd.organizacion; el valor es su clave. -->
     <div class="campo" data-campo="alcaldia" data-si="tipo_adscripcion=alcaldia" data-requerido data-uso="Identificar la alcaldía para integrar grupos.">
       <label class="etiqueta" for="alcaldia">¿En qué alcaldía trabajas?</label>
-      <p class="ayuda">Escribe las primeras letras y elígela de la lista.</p>
-      <div class="combo" data-combo data-catalogo="alcaldias">
-        <input class="control" id="alcaldia" name="alcaldia" type="text" maxlength="60" autocomplete="off">
-        <ul class="combo-lista" hidden></ul>
+      <div class="select">
+        <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+        <select class="control control-select" id="alcaldia" name="alcaldia" autocomplete="off">
+          <option value="">Elige la alcaldía</option>
+          <option value="alvaro_obregon">Álvaro Obregón</option>
+          <option value="azcapotzalco">Azcapotzalco</option>
+          <option value="benito_juarez">Benito Juárez</option>
+          <option value="coyoacan">Coyoacán</option>
+          <option value="cuajimalpa">Cuajimalpa de Morelos</option>
+          <option value="cuauhtemoc">Cuauhtémoc</option>
+          <option value="gustavo_a_madero">Gustavo A. Madero</option>
+          <option value="iztacalco">Iztacalco</option>
+          <option value="iztapalapa">Iztapalapa</option>
+          <option value="magdalena_contreras">La Magdalena Contreras</option>
+          <option value="miguel_hidalgo">Miguel Hidalgo</option>
+          <option value="milpa_alta">Milpa Alta</option>
+          <option value="tlahuac">Tláhuac</option>
+          <option value="tlalpan">Tlalpan</option>
+          <option value="venustiano_carranza">Venustiano Carranza</option>
+          <option value="xochimilco">Xochimilco</option>
+        </select>
       </div>
     </div>
 
@@ -245,6 +261,22 @@
         <input class="control" id="dependencia_federal_otra" name="dependencia_federal_otra" type="text" maxlength="160" autocomplete="off">
       </div>
     </div>
+
+    <div data-si="tipo_adscripcion=educativa">
+      <fieldset class="grupo" data-campo="institucion_educativa" data-requerido data-uso="Identificar la institución educativa para integrar grupos.">
+        <legend class="etiqueta">¿A qué institución educativa perteneces?</legend>
+        <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+        <div class="opciones-lista">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="institucion_educativa" autocomplete="off" value="unam"><span><span class="opcion-nombre">Universidad Nacional Autónoma de México (UNAM)</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="institucion_educativa" autocomplete="off" value="otro"><span><span class="opcion-nombre">Otra</span></span></label>
+        </div>
+      </fieldset>
+      <div class="campo" data-campo="institucion_educativa_otra" data-si="institucion_educativa=otro" data-otro-de="institucion_educativa" data-requerido data-uso="Identificar una institución educativa que no está en la lista.">
+        <label class="etiqueta" for="institucion_educativa_otra">Nombre de la institución</label>
+        <!-- autocomplete off: es el nombre de una institución; el navegador no tiene nada que proponer. -->
+        <input class="control" id="institucion_educativa_otra" name="institucion_educativa_otra" type="text" maxlength="160" autocomplete="off">
+      </div>
+    </div>
     </div>
     <!-- adscripcion:fin -->
 
@@ -258,7 +290,7 @@
       </div>
       <div class="campo" data-campo="contrasena2" data-formato="contrasena" data-requerido data-sensible
            data-uso="Evitar errores de captura en la contraseña." data-cruzada="igual" data-cruzada-campos="original=contrasena confirmacion=contrasena2">
-        <label class="etiqueta" for="contrasena2">Escríbela de nuevo</label>
+        <label class="etiqueta" for="contrasena2">Confirma tu contraseña</label>
         <input class="control" id="contrasena2" name="contrasena2" type="password" minlength="12" autocomplete="new-password">
       </div>
     </div>

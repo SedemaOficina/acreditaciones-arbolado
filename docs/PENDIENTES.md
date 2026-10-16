@@ -24,8 +24,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P10 | Lugar, días y horario de entrega de acreditaciones | Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente. | datos reales |
 | P48 | ¿La credencial se imprime en el lugar de entrega? | Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento. | etapa 2 |
 | P49 | Especificación de la foto de la credencial y diseño de la credencial | Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. | datos reales |
-| P53 | ¿La lista de Direcciones Generales de la SEDEMA está completa? | Confirmarla con la Dirección; se agregó «Otra área de la Secretaría» con su nombre para que nadie quede sin opción. Lo que se escriba ahí muestra qué falta en la lista. | datos reales |
-| P54 | ¿Dónde se ubican universidades y otras instituciones que no son dependencias (por ejemplo, la UNAM)? | Una privada va como «empresa, consultoría o particular»; una pública autónoma, como «dependencia federal» u «otra» con su nombre. Si son frecuentes, agregar un quinto tipo «Institución educativa». | no |
+| P57 | Hora de entrada al curso y si los días del curso son consecutivos | Confirmar la hora de entrada (se muestra «por confirmar») y si el curso corre en días consecutivos, como hoy lo cuenta la base, o sólo en días hábiles; en ese caso, guardar el calendario del grupo. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
@@ -37,6 +36,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P14 | Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? | Sí basta para abrir la cuenta, porque nadie llega a un curso sin presentar su identificación oficial en el cotejo. | etapa 3 |
 | P15 | Contrastar la CURP con el servicio de consulta de RENAPO | Hacerlo sólo si el SIA ya tiene acceso al servicio. No bloquea: el cotejo presencial ya confirma la identidad. | no |
 | P51 | ¿La verificación pública muestra la foto de la credencial? | No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física. | no |
+| P58 | Nombres de los tres identificadores: folio de la solicitud, expediente y acreditación | Propuesta: «Folio de la solicitud», «Número de expediente» y «Número de acreditación»; hoy se muestran «Folio de la solicitud», «Expediente» y «Folio de la acreditación». Confirmar con cuál aparece en la credencial impresa. | no |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
 
@@ -127,3 +127,5 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Formato de los documentos | Sólo PDF en lo que carga la persona; las fotografías siguen siendo imagen | 15/10/2026 |
 | Enlace para obtener la CURP | gob.mx/curp en el requisito, en la lista de requisitos y en el campo CURP de la cuenta | 15/10/2026 |
 | Estilo de las preguntas de opción | Lista con el botón de opción visible, una por renglón (opciones-lista), en todo el sistema | 15/10/2026 |
+| Lista de Direcciones Generales de la SEDEMA (P53) | Lista cerrada de seis Direcciones Generales; se quitó «Otra área de la Secretaría» por indicación de Liber | 15/10/2026 |
+| Universidades e instituciones educativas en la adscripción (P54) | Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre | 15/10/2026 |

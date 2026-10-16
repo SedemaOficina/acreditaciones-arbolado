@@ -34,16 +34,17 @@
     const nombre = org ? org.nombre : (p.organizacion_nombre || '');
     const clave = org && org.clave ? org.clave : '';
     if (p.adscripcion === 'privada') pon('empresa_nombre', nombre);
-    else if (p.adscripcion === 'alcaldia') pon('alcaldia', nombre);
+    else if (p.adscripcion === 'alcaldia') pon('alcaldia', clave);
+    else if (p.adscripcion === 'educativa') {
+      if (clave === 'unam') marca('institucion_educativa', 'unam');
+      else { marca('institucion_educativa', 'otro'); pon('institucion_educativa_otra', nombre); }
+    }
     else if (p.adscripcion === 'dependencia_federal') {
       if (clave === 'cfe') marca('dependencia_federal', 'cfe');
       else { marca('dependencia_federal', 'otro'); pon('dependencia_federal_otra', nombre); }
     } else if (['sobse', 'sedema', 'paot'].includes(clave)) marca('dependencia_cdmx', clave);
-    else if (clave.startsWith('sedema_') || nombre.startsWith('SEDEMA · ')) {
-      marca('dependencia_cdmx', 'sedema');
-      if (clave) marca('direccion_sedema', clave.replace('sedema_', ''));
-      else { marca('direccion_sedema', 'otro'); pon('direccion_sedema_otra', nombre.replace('SEDEMA · ', '')); }
-    } else { marca('dependencia_cdmx', 'otro'); pon('dependencia_cdmx_otra', nombre); }
+    else if (clave.startsWith('sedema_')) { marca('dependencia_cdmx', 'sedema'); marca('direccion_sedema', clave.replace('sedema_', '')); }
+    else { marca('dependencia_cdmx', 'otro'); pon('dependencia_cdmx_otra', nombre); }
   }
 
   function pintaFoto(datos, p) {

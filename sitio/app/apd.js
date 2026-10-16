@@ -18,7 +18,7 @@
   /* Qué ve la persona en cada estado de su solicitud y qué sigue. */
   const ESTADOS = {
     borrador: { texto: 'Borrador', tono: 'pend', sigue: 'Termina de cargar tus documentos y envía tu solicitud.' },
-    enviada: { texto: 'En revisión', tono: '', sigue: 'La Secretaría revisa tus documentos.' },
+    enviada: { texto: 'En revisión documental', tono: '', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
     con_observaciones: { texto: 'Con observaciones', tono: 'pend', sigue: 'Corrige lo que se indica abajo y vuelve a enviar tu solicitud.' },
     validada_en_linea: { texto: 'Cita asignada', tono: 'pend', sigue: 'Acude a tu cita con los mismos documentos que cargaste, impresos, y con tu comprobante de pago.' },
     lista_para_curso: { texto: 'En espera de grupo', tono: '', sigue: 'Tu expediente está completo. La Secretaría te asignará un grupo de curso.' },
@@ -85,7 +85,7 @@
   const ADSCRIPCIONES = {
     independiente: 'Independiente', privada: 'Empresa, consultoría o particular',
     dependencia_cdmx: 'Dependencia del Gobierno de la Ciudad de México', alcaldia: 'Alcaldía',
-    dependencia_federal: 'Dependencia del Gobierno Federal'
+    dependencia_federal: 'Dependencia del Gobierno Federal', educativa: 'Institución educativa'
   };
   function nombreInstitucion(datos, p) {
     if (p.organizacion_nombre) return p.organizacion_nombre;
@@ -106,13 +106,13 @@
     const porNombre = (n) => datos.organizacion.find((o) => o.nombre_normalizado === normaliza(n));
     let o = null; let nombre = '';
     if (d.tipo_adscripcion === 'privada') nombre = d.empresa_nombre;
-    else if (d.tipo_adscripcion === 'alcaldia') nombre = d.alcaldia;
+    else if (d.tipo_adscripcion === 'alcaldia') o = porClave(d.alcaldia);
     else if (d.tipo_adscripcion === 'dependencia_federal') {
       if (d.dependencia_federal === 'cfe') o = porClave('cfe'); else nombre = d.dependencia_federal_otra;
-    } else if (d.dependencia_cdmx === 'sedema') {
-      if (d.direccion_sedema && d.direccion_sedema !== 'otro') o = porClave(`sedema_${d.direccion_sedema}`);
-      else nombre = `SEDEMA · ${d.direccion_sedema_otra || ''}`;
-    } else if (d.dependencia_cdmx && d.dependencia_cdmx !== 'otro') o = porClave(d.dependencia_cdmx);
+    } else if (d.tipo_adscripcion === 'educativa') {
+      if (d.institucion_educativa === 'unam') o = porClave('unam'); else nombre = d.institucion_educativa_otra;
+    } else if (d.dependencia_cdmx === 'sedema') o = porClave(`sedema_${d.direccion_sedema}`);
+    else if (d.dependencia_cdmx && d.dependencia_cdmx !== 'otro') o = porClave(d.dependencia_cdmx);
     else nombre = d.dependencia_cdmx_otra;
     o = o || (nombre ? porNombre(nombre) : null);
     return { adscripcion: d.tipo_adscripcion, organizacion_id: o ? o.id : null, organizacion_nombre: o ? o.nombre : String(nombre || '').trim() };
@@ -175,9 +175,16 @@
     return e;
   }
   function estado(texto, tono) { return el('span', { class: 'estado', 'data-tono': tono || null, texto }); }
+  /* Pares [etiqueta, valor, porConfirmar]: con el tercero, el valor se marca en amarillo (.pendiente del estándar)
+     con lo que falta confirmar; así se ve en cualquier versión hasta que la Secretaría lo confirme. */
   function datosLista(pares) {
-    return el('dl', { class: 'datos' }, pares.filter((p) => p[1]).map(([etq, valor]) =>
-      el('div', { class: 'datos-par' }, [el('dt', { class: 'datos-etq', texto: etq }), el('dd', { class: 'datos-valor', texto: valor })])));
+    return el('dl', { class: 'datos' }, pares.filter((p) => p[1]).map(([etq, valor, porConfirmar]) =>
+      el('div', { class: 'datos-par' }, [
+        el('dt', { class: 'datos-etq', texto: etq }),
+        porConfirmar
+          ? el('dd', { class: 'datos-valor datos-por-confirmar pendiente' }, [valor, el('span', { class: 'datos-nota', texto: `Por confirmar: ${porConfirmar}` })])
+          : el('dd', { class: 'datos-valor', texto: valor })
+      ])));
   }
 
   /* Cabecera de sesión en las pantallas con cuenta */

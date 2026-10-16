@@ -87,10 +87,13 @@
 .opcion-fila:has(.opcion-fila-input:disabled) { opacity: var(--op-inactivo); cursor: not-allowed; }
 .opcion-fila:has(.opcion-fila-input:disabled):hover { border-color: var(--borde); }
 
-/* Datos internos (decisión 2026-10-15): los que calcula el sistema y van a la base, como el sexo tomado de la CURP,
-   no los ve la persona. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
+/* Datos internos (decisión 2026-10-15): los que calcula el sistema y SE GUARDAN en la base, como el sexo tomado de
+   la CURP, no los ve la persona; los que sólo usa la página (p. ej. sin_segundo_apellido) no se marcan. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
    nota, para revisarlos; al pasar al SIA se quita pruebas.js y quedan ocultos. */
 [data-interno] { display: none; }
+/* Dato que se muestra a la persona pero aún no está confirmado (concepto, monto y referencia de pago) */
+.datos-por-confirmar { display: block; }
+.datos-nota { display: block; font-size: var(--t-sm); font-weight: var(--peso-normal); color: var(--pend-txt); }
 .modo-pruebas [data-interno] {
   display: block; position: static; width: auto; height: auto; margin: 0 0 var(--e-5); overflow: visible; clip: auto;
   white-space: normal; padding: var(--e-3); background: var(--pend-bg); border: var(--b-1) dashed var(--pend); border-radius: var(--r-caja);

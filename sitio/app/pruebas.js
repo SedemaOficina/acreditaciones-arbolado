@@ -25,16 +25,37 @@
         muestra en amarillo con su nota y, si es un campo oculto, con su valor al momento. */
   document.documentElement.classList.add('modo-pruebas');
   function refrescaInternos() {
+    refrescaNombres();
     for (const o of document.querySelectorAll('[data-interno-valor]')) {
+      if (o.closest('[data-nombre-archivo]')) continue;
       const i = o.closest('[data-interno]').querySelector('input[type="hidden"]');
       const v = i && i.value ? i.value : '(vacío)';
       if (o.textContent !== v) o.textContent = v; // sin cambio no se toca: el observador no se vuelve a disparar
     }
   }
+  /* Nombre con que se guardará cada archivo: el mismo cálculo que apd.nombre_de_archivo en la base
+     (TIPO_NOMBRE COMPLETO en mayúsculas, sin acentos salvo la Ñ, sin caracteres prohibidos). */
+  let persona = null;
+  APD.cargar().then((d) => { persona = APD.personaDeSesion(d); refrescaInternos(); }).catch(() => { /* sin datos: queda «(sin sesión)» */ });
+  const sinAcentos = (t) => t.replace(/[ÁÀ]/g, 'A').replace(/[ÉÈ]/g, 'E').replace(/[ÍÌ]/g, 'I').replace(/[ÓÒ]/g, 'O').replace(/[ÚÙÜ]/g, 'U');
+  function nombreDeArchivo(tipo, ext) {
+    if (!persona) return '(sin sesión)';
+    return sinAcentos(`${tipo}_${APD.nombreCompleto(persona)}`.toUpperCase()).replace(/[\\/:*?"<>|]/g, '') + ext;
+  }
+  function refrescaNombres() {
+    for (const caja of document.querySelectorAll('[data-nombre-archivo]')) {
+      const o = caja.querySelector('[data-interno-valor]');
+      if (!o) continue;
+      const a = caja.closest('.campo').querySelector('.arch:not([data-estado="error"]) .arch-nombre');
+      const ext = a ? (/\.(png|jpe?g)$/i.test(a.textContent) ? (/png$/i.test(a.textContent) ? '.png' : '.jpg') : '.pdf') : '';
+      const v = a ? nombreDeArchivo(caja.dataset.nombreArchivo, ext) : '(todavía no subes el archivo)';
+      if (o.textContent !== v) o.textContent = v;
+    }
+  }
   function marcaInternos() {
     for (const caja of document.querySelectorAll('[data-interno]')) {
       if (caja.querySelector(':scope > .nota-interna')) continue;
-      if (caja.querySelector('input[type="hidden"]')) {
+      if (caja.querySelector('input[type="hidden"]') || caja.hasAttribute('data-nombre-archivo')) {
         caja.prepend(APD.el('p', { class: 'etiqueta', texto: caja.dataset.internoEtiqueta || caja.dataset.campo || 'Dato interno' }));
         caja.append(APD.el('output', { class: 'interno-valor', 'data-interno-valor': '' }));
       }

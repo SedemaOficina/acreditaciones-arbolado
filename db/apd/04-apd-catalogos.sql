@@ -126,6 +126,7 @@ INSERT INTO apd.organizacion (tipo, clave, nombre) VALUES
   ('dependencia_cdmx',    'sedema_dgcorenadr', 'SEDEMA · Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)'),
   ('dependencia_cdmx',    'paot',   'Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)'),
   ('dependencia_federal', 'cfe',    'Comisión Federal de Electricidad (CFE)'),
+  ('educativa',           'unam',   'Universidad Nacional Autónoma de México (UNAM)'),
   ('alcaldia', 'alvaro_obregon',      'Álvaro Obregón'),
   ('alcaldia', 'azcapotzalco',        'Azcapotzalco'),
   ('alcaldia', 'benito_juarez',       'Benito Juárez'),

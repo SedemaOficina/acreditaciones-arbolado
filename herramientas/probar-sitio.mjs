@@ -157,8 +157,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.fill('#curp', NUEVA.curp); await page.press('#curp', 'Tab');
   comprueba(['Mujer', 'Hombre'].includes(await page.inputValue('#sexo')), t(`cuenta: el sexo se toma de la CURP (${await page.inputValue('#sexo')})`));
   // Datos internos: en la versión de prueba se ven en amarillo con su nota; sin el modo de prueba, no se ven
-  comprueba(await page.isVisible('[data-campo="sexo"] .nota-interna') && await page.isVisible('[data-campo="sin_segundo_apellido"] [data-interno-valor]'),
-    t('datos internos: en la versión de prueba el sexo y el auxiliar se ven con su nota'));
+  comprueba(await page.isVisible('[data-campo="sexo"] .nota-interna'), t('datos internos: en la versión de prueba el sexo se ve con su nota'));
+  comprueba(!(await page.isVisible('[data-campo="sin_segundo_apellido"] .nota-interna')), t('datos internos: lo que no se guarda en la base (sin segundo apellido) no se muestra'));
   const ocultoEnProduccion = await page.evaluate(() => {
     document.documentElement.classList.remove('modo-pruebas');
     const r = getComputedStyle(document.querySelector('[data-campo="sexo"]')).display === 'none';
@@ -174,6 +174,18 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.check('input[name="dependencia_cdmx"][value="sedema"]', { force: true });
   comprueba(await page.isVisible('[data-campo="direccion_sedema"]') && !(await page.isVisible('[data-campo="alcaldia"]')),
     t('adscripción: SEDEMA pregunta su Dirección General y nada más'));
+  comprueba(await page.locator('input[name="direccion_sedema"][value="otro"]').count() === 0, t('adscripción: la Dirección General es una lista cerrada (sin «otra área»)'));
+  comprueba(/^Confirma tu contraseña/.test(await page.textContent('label[for="contrasena2"]')), t('cuenta: la segunda contraseña dice «Confirma tu contraseña»'));
+  await page.check('input[name="tipo_adscripcion"][value="educativa"]', { force: true });
+  await page.check('input[name="institucion_educativa"][value="otro"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="institucion_educativa_otra"]') && await page.locator('input[name="institucion_educativa"][value="unam"]').count() === 1,
+    t('adscripción: institución educativa ofrece la UNAM y, si es otra, pide su nombre'));
+  await page.check('input[name="tipo_adscripcion"][value="privada"]', { force: true });
+  await page.fill('#empresa_nombre', 'jard');
+  await page.waitForTimeout(300);
+  const sugeridas = await page.locator('[data-campo="empresa_nombre"] .combo-lista li').count();
+  comprueba(sugeridas > 0, t(`adscripción: el nombre de la empresa sugiere las ya registradas (${sugeridas})`));
+  await page.check('input[name="tipo_adscripcion"][value="dependencia_cdmx"]', { force: true });
   await page.click('[data-accion="enviar"]');
   comprueba(await page.locator('[data-campo="direccion_sedema"] .err:not(:empty)').count() > 0, t('adscripción: sin Dirección General no se crea la cuenta'));
   await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
@@ -243,6 +255,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(await page.textContent('[data-ejemplo-archivo]')),
     t(`documentos: dice cómo se guardarán sus archivos (${await page.textContent('[data-ejemplo-archivo]')})`));
   const n = await cargaObligatorios(page);
+  const comoSeGuarda = await page.textContent('[data-campo="doc_poda_nueva_curp"] [data-nombre-archivo] [data-interno-valor]');
+  comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(comoSeGuarda) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] [data-nombre-archivo] .nota-interna'),
+    t(`documentos: en pruebas, cada archivo cargado dice en amarillo cómo se guardará (${comoSeGuarda})`));
   comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
   await captura(page, `03-solicitud-documentos-${sufijo}`);
   await siguiente(page);
@@ -255,7 +270,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await captura(page, `05-solicitud-acuse-${sufijo}`);
   await page.goto(BASE + 'tramites.html');
   await page.waitForSelector('[data-solicitudes] .ficha');
-  comprueba((await page.textContent('[data-solicitudes]')).includes(folio), t('mis trámites: aparece la solicitud enviada, «En revisión»'));
+  comprueba((await page.textContent('[data-solicitudes]')).includes(folio), t('mis trámites: aparece la solicitud enviada, «En revisión documental»'));
   await page.click('[data-sesion] button');
   await page.waitForURL(/index\.html/);
 
@@ -367,7 +382,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.isChecked('input[name="adscrito"][value="si"]') && await page.isChecked('input[name="tipo_adscripcion"][value="privada"]'),
     t('mis datos: trae la adscripción vigente de la persona'));
   await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
-  await page.fill('#alcaldia', 'Tlalpan'); await page.press('#alcaldia', 'Tab');
+  const alcaldias = await page.$$eval('#alcaldia option[value]:not([value=""])', (os) => os.map((o) => o.textContent));
+  comprueba(alcaldias.length === 16 && alcaldias.join('|') === [...alcaldias].sort((x, y) => x.localeCompare(y, 'es')).join('|'),
+    t('mis datos: las 16 alcaldías a la vista, en orden alfabético'));
+  await page.selectOption('#alcaldia', 'tlalpan');
   await captura(page, `14-mis-datos-${sufijo}`);
   await sinDesborde(page, t('mis datos'));
   await page.click('[data-accion="enviar"]');
@@ -375,7 +393,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/Tlalpan/.test(await page.textContent('[data-acuse-folio]')), t('mis datos: guarda la nueva adscripción (Alcaldía · Tlalpan)'));
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-identidad] .datos');
-  comprueba(await page.inputValue('#alcaldia') === 'Tlalpan', t('mis datos: al volver, la adscripción es la nueva'));
+  comprueba(await page.inputValue('#alcaldia') === 'tlalpan', t('mis datos: al volver, la adscripción es la nueva'));
   await page.evaluate(() => sessionStorage.clear());
 
   // Fallo de envío simulado
@@ -417,8 +435,42 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('[data-acuse]:not([hidden])');
   bien(t('menú de pruebas: «Llenar con datos ficticios» crea una cuenta válida'));
 
+  // Fichas de «Mis solicitudes»: cada estado muestra lo que le sirve a la persona
+  const personaCon = (estado, cond = () => true) => {
+    const sol = datos.solicitud.find((x) => x.estado === estado && cond(x));
+    return sol && datos.solicitante.find((p) => p.id === sol.solicitante_id && p.estado === 'activa');
+  };
+  const fichaDe = (texto) => page.locator('[data-solicitudes] .ficha', { hasText: texto }).first();
+  const emitida = personaCon('acreditada', (x) => datos.acreditacion.some((a) => a.solicitud_id === x.id));
+  if (emitida) {
+    await entra(page, emitida.curp);
+    const f = await fichaDe('Acreditación emitida').textContent();
+    comprueba(/Inicio de vigencia/.test(f) && /Fin de vigencia/.test(f) && /Folio de la acreditación/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f),
+      t('mis solicitudes: la acreditación emitida muestra su folio y vigencia, sin los datos del curso'));
+    await page.click('[data-sesion] button');
+  }
+  const conGrupo = personaCon('inscrita', (x) => datos.inscripcion.some((i) => i.solicitud_id === x.id && i.activa && datos.grupo.find((g) => g.id === i.grupo_id).fecha_inicio));
+  if (conGrupo) {
+    await entra(page, conGrupo.curp);
+    const ficha = fichaDe('Con grupo asignado');
+    const f = await ficha.textContent();
+    comprueba(/Preséntate el/.test(f) && /El curso termina el/.test(f) && /Sede/.test(f) && !/Duración|Inicia el/.test(f),
+      t('mis solicitudes: con grupo, dice cuándo presentarse, cuándo termina el curso y dónde'));
+    comprueba(await ficha.locator('.datos-por-confirmar', { hasText: 'hora de entrada' }).count() === 1, t('mis solicitudes: la hora de entrada se marca por confirmar'));
+    await page.click('[data-sesion] button');
+  }
+  const conCita = personaCon('validada_en_linea');
+  if (conCita) {
+    await entra(page, conCita.curp);
+    comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 3,
+      t('mis solicitudes: concepto, monto y referencia del pago se marcan en amarillo, por confirmar'));
+    await page.click('[data-sesion] button');
+  }
+  comprueba(Boolean(emitida && conGrupo && conCita), t('mis solicitudes: hay ficticios para revisar las tres fichas'));
+
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await contexto.close();
+
 }
 
 // CHROMIUM: ruta a un Chromium ya instalado, si no coincide con la versión que espera Playwright

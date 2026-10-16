@@ -88,10 +88,10 @@
     },
     {
       "nombre": "organizacion",
-      "descripcion": "Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.",
+      "descripcion": "Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
-        { "nombre": "tipo", "tipo": "text", "nulo": false, "descripcion": "privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia o dependencia_federal" },
+        { "nombre": "tipo", "tipo": "text", "nulo": false, "descripcion": "privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia, dependencia_federal o educativa" },
         { "nombre": "clave", "tipo": "text", "nulo": true, "descripcion": "Clave estable de las que el formulario ofrece como opción (sobse, sedema, paot, cfe, una por alcaldía); vacía en las que se agregan escritas" },
         { "nombre": "nombre", "tipo": "text", "nulo": false, "descripcion": "Nombre oficial" },
         { "nombre": "nombre_normalizado", "tipo": "text", "nulo": false, "descripcion": "Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.»" },
@@ -100,7 +100,7 @@
       ],
       "restricciones": [
         "CONSTRAINT organizacion_pk PRIMARY KEY (id)",
-        "CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))",
+        "CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))",
         "CONSTRAINT organizacion_clave_uk UNIQUE (clave)",
         "CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)"
       ]
@@ -115,7 +115,7 @@
         { "nombre": "primer_apellido", "tipo": "text", "nulo": false, "descripcion": "Primer apellido" },
         { "nombre": "segundo_apellido", "tipo": "text", "nulo": true, "descripcion": "Segundo apellido, si lo hay" },
         { "nombre": "sexo", "tipo": "text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED", "nulo": false, "descripcion": "H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada" },
-        { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar" },
+        { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar" },
         { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente" },
         { "nombre": "correo", "tipo": "text", "nulo": false, "descripcion": "Correo de contacto, en minúsculas" },
         { "nombre": "telefono", "tipo": "text", "nulo": false, "descripcion": "Teléfono de contacto, 10 dígitos" },
@@ -136,7 +136,7 @@
         "CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')",
         "CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')",
         "CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
-        "CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))",
+        "CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))",
         "CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))",
         "CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL)",
         "CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))",
@@ -239,7 +239,7 @@
         { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Persona solicitante" },
         { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
         { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso solicitado" },
-        { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal" },
+        { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa" },
         { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Institución de adscripción al enviar (copia de la de su cuenta); vacía si es independiente" },
         { "nombre": "acreditacion_anterior_id", "tipo": "uuid", "nulo": true, "descripcion": "Acreditación que se renueva; obligatoria en renovación" },
         { "nombre": "factura_rfc", "tipo": "text", "nulo": true, "descripcion": "RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo" },
@@ -268,7 +268,7 @@
         "CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)",
         "CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
         "CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
-        "CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))",
+        "CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))",
         "CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))",
         "CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)",
         "CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))",

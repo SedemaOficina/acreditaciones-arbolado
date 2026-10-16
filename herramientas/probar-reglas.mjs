@@ -411,6 +411,10 @@ const casos = [
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = ${PERSONA_VIGENTE};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'adscripcion' AND detalle LIKE '%alcaldia: Tlalpan'); END $$;`],
+  ['Una persona de la UNAM queda adscrita a una institución educativa', 'ok', null, `
+     UPDATE apd.solicitante SET adscripcion = 'educativa', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'unam') WHERE id = ${PERSONA_VIGENTE};`],
+  ['Una institución educativa nueva se registra con su tipo', 'ok', null, `
+     INSERT INTO apd.organizacion (tipo, nombre) VALUES ('educativa', 'Universidad Ejemplo del Valle');`],
   ['El sexo se toma de la CURP', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT bool_and(sexo = substr(curp, 11, 1)) FROM apd.solicitante); END $$;`],
   ['La solicitud se envía con la adscripción que la persona tiene ese día, y la conserva', 'ok', null, `${SIN_FOTO}

@@ -11,7 +11,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`curso`](#curso) — Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asistencia mínima, calificación mínima y cupos vigentes; un grupo copia los cupos al crearse.
 - [`requisito`](#requisito) — Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
-- [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
+- [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
 - [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 - [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
@@ -118,12 +118,12 @@ Restricciones e índices:
 
 ## organizacion
 
-Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA, PAOT, CFE) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
+Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
-| `tipo` | `text` | Sí | privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia o dependencia_federal |
+| `tipo` | `text` | Sí | privada (persona moral o física: empresa, consultoría o particular), dependencia_cdmx, alcaldia, dependencia_federal o educativa |
 | `clave` | `text` | No | Clave estable de las que el formulario ofrece como opción (sobse, sedema, paot, cfe, una por alcaldía); vacía en las que se agregan escritas |
 | `nombre` | `text` | Sí | Nombre oficial |
 | `nombre_normalizado` | `text` | Sí | Nombre sin acentos, en minúsculas y sin espacios dobles; lo calcula la base y evita duplicados como «CFE» y «C.F.E.» |
@@ -133,7 +133,7 @@ Catálogo de instituciones de adscripción: empresas, consultorías o particular
 Restricciones e índices:
 
 - `CONSTRAINT organizacion_pk PRIMARY KEY (id)`
-- `CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))`
+- `CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
 - `CONSTRAINT organizacion_clave_uk UNIQUE (clave)`
 - `CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)`
 
@@ -149,7 +149,7 @@ Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (ap
 | `primer_apellido` | `text` | Sí | Primer apellido |
 | `segundo_apellido` | `text` | No | Segundo apellido, si lo hay |
 | `sexo` | `text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED` | Sí | H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada |
-| `adscripcion` | `text` | No | Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar |
+| `adscripcion` | `text` | No | Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar |
 | `organizacion_id` | `uuid` | No | Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente |
 | `correo` | `text` | Sí | Correo de contacto, en minúsculas |
 | `telefono` | `text` | Sí | Teléfono de contacto, 10 dígitos |
@@ -171,7 +171,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$')`
 - `CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')`
 - `CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`
-- `CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))`
+- `CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
 - `CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))`
 - `CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL)`
 - `CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))`
@@ -273,7 +273,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `solicitante_id` | `uuid` | Sí | Persona solicitante |
 | `tipo_acreditacion` | `text` | Sí | Curso solicitado |
 | `modalidad` | `text` | Sí | Curso solicitado |
-| `adscripcion` | `text` | No | Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia o dependencia_federal |
+| `adscripcion` | `text` | No | Adscripción que la persona tenía al enviar la solicitud (copia de la de su cuenta; la pone la base en el alta y en cada envío): independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa |
 | `organizacion_id` | `uuid` | No | Institución de adscripción al enviar (copia de la de su cuenta); vacía si es independiente |
 | `acreditacion_anterior_id` | `uuid` | No | Acreditación que se renueva; obligatoria en renovación |
 | `factura_rfc` | `text` | No | RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo |
@@ -303,7 +303,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
 - `CONSTRAINT solicitud_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)`
 - `CONSTRAINT solicitud_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`
-- `CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal'))`
+- `CONSTRAINT solicitud_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
 - `CONSTRAINT solicitud_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))`
 - `CONSTRAINT solicitud_anterior_fk FOREIGN KEY (acreditacion_anterior_id) REFERENCES apd.acreditacion (id)`
 - `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender'))`

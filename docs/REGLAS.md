@@ -93,7 +93,8 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Adscripción**: es de la persona (`solicitante.adscripcion` y `organizacion_id`); toda cuenta activa la tiene
   (`independiente` incluido) y cada cambio queda en la bitácora. La solicitud la copia al darse de alta y en cada
   envío (`sin_adscripcion` si falta); después no se edita. La institución es del tipo elegido y no hay institución
-  si es independiente.
+  si es independiente. Tipos: `independiente`, `privada`, `dependencia_cdmx`, `alcaldia`, `dependencia_federal` y
+  `educativa` (UNAM en el catálogo; otras se agregan con su nombre).
 - **Sexo**: `solicitante.sexo` se calcula de la CURP (columna generada); no se captura. El catálogo trae las 16 alcaldías, SOBSE, SEDEMA
   con sus Direcciones Generales, PAOT y CFE; los nombres escritos se agregan sin duplicar.
 - **Fotografía de la persona** (`apd.fotografia`): una vigente por persona, sólo JPG o PNG. La persona la carga
