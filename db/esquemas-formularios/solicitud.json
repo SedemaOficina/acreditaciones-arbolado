@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-16T02:07:42.694Z",
+  "generado": "2026-10-16T02:17:59.665Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -445,27 +445,6 @@
         ]
       }
     },
-    "doc_dictaminador_nueva_constancias_capacitacion": {
-      "etiqueta": "Constancias de capacitación especializada",
-      "tipo": "archivos",
-      "requerido": true,
-      "sensible": true,
-      "uso": "Comprobar el requisito «Constancias de capacitación especializada» del trámite.",
-      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
-      "atributos": {
-        "max": "1",
-        "extensiones": "pdf",
-        "mb": "5",
-        "nombreArchivo": "CONSTANCIAS DE CAPACITACION"
-      },
-      "autocomplete": "off",
-      "si": {
-        "campo": "tramite",
-        "valores": [
-          "dictaminador_nueva"
-        ]
-      }
-    },
     "doc_dictaminador_renovacion_identificacion_oficial": {
       "etiqueta": "Identificación oficial (si aplica)",
       "tipo": "archivos",
@@ -604,27 +583,6 @@
         "extensiones": "pdf",
         "mb": "5",
         "nombreArchivo": "COMPROBANTES DE EXPERIENCIA"
-      },
-      "autocomplete": "off",
-      "si": {
-        "campo": "tramite",
-        "valores": [
-          "dictaminador_renovacion"
-        ]
-      }
-    },
-    "doc_dictaminador_renovacion_constancias_capacitacion": {
-      "etiqueta": "Constancias de capacitación especializada (si aplica)",
-      "tipo": "archivos",
-      "requerido": false,
-      "sensible": true,
-      "uso": "Comprobar el requisito «Constancias de capacitación especializada» del trámite.",
-      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
-      "atributos": {
-        "max": "1",
-        "extensiones": "pdf",
-        "mb": "5",
-        "nombreArchivo": "CONSTANCIAS DE CAPACITACION"
       },
       "autocomplete": "off",
       "si": {

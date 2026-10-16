@@ -117,7 +117,7 @@ rechazan). En la etapa 3 la API:
 Automática (Chromium 390 × 844 táctil y 1280 × 900):
 
 - `herramientas/probar-sitio.mjs`: **137 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
-  solicitud de poda nueva, renovación, dictaminador nueva con perfil y 8 documentos, corrección de observaciones
+  solicitud de poda nueva, renovación, dictaminador nueva con perfil y 7 documentos, corrección de observaciones
   (sólo lo observado es obligatorio), grupo asignado, error de acceso, verificación vigente y no vigente,
   fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas; sin errores de consola ni desborde horizontal; **axe-core sin hallazgos** en 8 pantallas.
 - `auditar-campos.mjs`: 74 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).

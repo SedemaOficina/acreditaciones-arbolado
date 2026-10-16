@@ -96,8 +96,8 @@ caso('Solicitud poda nueva con sus 4 documentos se acepta', 'solicitud', { ...ba
 caso('Solicitud con un documento en JPG se rechaza: sólo PDF', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, ['doc_poda_nueva_curp'],
   podaNueva.map((r) => (r === 'curp' ? { nombre: 'curp.jpg', size: 200000, type: 'image/jpeg', campo: 'doc_poda_nueva_curp' } : pdf(`doc_poda_nueva_${r}`))));
 caso('Solicitud poda nueva sin documentos pide sólo los de poda nueva', 'solicitud', { ...base, tipo: 'poda' }, podaNueva.map((r) => `doc_poda_nueva_${r}`));
-caso('Solicitud dictaminador nueva sin perfil ni documentos pide perfil y sus 8 documentos', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'dictaminador' },
-  ['nivel_estudios', 'anios_experiencia', ...['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia', 'constancias_capacitacion'].map((r) => `doc_dictaminador_nueva_${r}`)]);
+caso('Solicitud dictaminador nueva sin perfil ni documentos pide perfil y sus 7 documentos', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'dictaminador' },
+  ['nivel_estudios', 'anios_experiencia', ...['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia'].map((r) => `doc_dictaminador_nueva_${r}`)]);
 caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (lo demás es «si aplica»)', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106' }, ['doc_poda_renovacion_constancia_situacion_fiscal']);
 // Perfil del dictaminador: carrera y situación sólo desde licenciatura
 const dictRenov = { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', anios_experiencia: '3', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' };

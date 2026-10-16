@@ -98,7 +98,7 @@
       <h3 class="titulo-bloque">Tus estudios</h3>
       <div class="campo" data-campo="nivel_estudios" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si cumples el perfil y cuántos años de experiencia se piden.">
         <label class="etiqueta" for="nivel_estudios">¿Cuál es tu último nivel o grado de estudios?</label>
-        <p class="ayuda">El más alto que cursas o cursaste. Para poda y derribo no hay estudios mínimos: es un dato estadístico. Para dictaminador técnico es requisito.</p>
+        <p class="ayuda">El más alto que cursas o cursaste.</p>
         <div class="select">
           <!-- autocomplete off: el navegador no tiene un valor que proponer para el nivel de estudios. -->
           <select class="control control-select" id="nivel_estudios" name="nivel_estudios" autocomplete="off">
@@ -366,7 +366,7 @@
           <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_estudios" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
                data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobante_estudios">Comprobante de estudios</span>
-            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Si son varios documentos, escanéalos todos en un solo PDF.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobante_estudios">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -398,25 +398,9 @@
           <div class="campo" data-campo="doc_dictaminador_nueva_comprobantes_experiencia" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
                data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobantes_experiencia">Comprobantes de experiencia</span>
-            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF. Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas, registros o constancias de capacitación que acrediten la experiencia en manejo de arbolado urbano. Escanea todos tus comprobantes en un solo PDF. Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobantes_experiencia">
-                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <span class="zona-carga-texto">Elegir archivo</span>
-                <span class="zona-carga-limite" data-limite-texto></span>
-              </button>
-              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
-              <input type="file" hidden autocomplete="off">
-              <div data-rechazos></div>
-              <ul class="lista-arch"></ul>
-            </div>
-          </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_constancias_capacitacion" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIAS DE CAPACITACION"
-               data-uso="Comprobar el requisito «Constancias de capacitación especializada» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
-            <span class="etiqueta" id="et-doc_dictaminador_nueva_constancias_capacitacion">Constancias de capacitación especializada</span>
-            <p class="ayuda" id="ay-doc_dictaminador_nueva_constancias_capacitacion">Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador.</p>
-            <div data-archivos>
-              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_constancias_capacitacion">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
                 <span class="zona-carga-texto">Elegir archivo</span>
                 <span class="zona-carga-limite" data-limite-texto></span>
@@ -496,7 +480,7 @@
           <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_estudios" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
                data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobante_estudios">Comprobante de estudios (si aplica)</span>
-            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Sólo si actualizaste tus estudios.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Si son varios documentos, escanéalos todos en un solo PDF. Sólo si actualizaste tus estudios.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_comprobante_estudios">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -528,25 +512,9 @@
           <div class="campo" data-campo="doc_dictaminador_renovacion_comprobantes_experiencia" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
                data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobantes_experiencia">Comprobantes de experiencia (si aplica)</span>
-            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF. Sólo si actualizaste tu experiencia.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas, registros o constancias de capacitación que acrediten la experiencia en manejo de arbolado urbano. Escanea todos tus comprobantes en un solo PDF. Sólo si actualizaste tu experiencia.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_comprobantes_experiencia">
-                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-                <span class="zona-carga-texto">Elegir archivo</span>
-                <span class="zona-carga-limite" data-limite-texto></span>
-              </button>
-              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
-              <input type="file" hidden autocomplete="off">
-              <div data-rechazos></div>
-              <ul class="lista-arch"></ul>
-            </div>
-          </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_constancias_capacitacion" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIAS DE CAPACITACION"
-               data-uso="Comprobar el requisito «Constancias de capacitación especializada» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
-            <span class="etiqueta" id="et-doc_dictaminador_renovacion_constancias_capacitacion">Constancias de capacitación especializada (si aplica)</span>
-            <p class="ayuda" id="ay-doc_dictaminador_renovacion_constancias_capacitacion">Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador. Sólo si tienes constancias nuevas.</p>
-            <div data-archivos>
-              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_constancias_capacitacion">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
                 <span class="zona-carga-texto">Elegir archivo</span>
                 <span class="zona-carga-limite" data-limite-texto></span>

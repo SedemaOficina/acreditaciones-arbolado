@@ -77,7 +77,7 @@
         { "nombre": "modalidad", "tipo": "text", "nulo": false, "descripcion": "Curso" },
         { "nombre": "requisito", "tipo": "text", "nulo": false, "descripcion": "Requisito" },
         { "nombre": "orden", "tipo": "smallint", "nulo": false, "descripcion": "Orden en que se muestra" },
-        { "nombre": "obligatorio", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, constancias de capacitación sólo para carrera técnica) y los valora quien revisa" },
+        { "nombre": "obligatorio", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, los que sólo se actualizan en una renovación) y los valora quien revisa" },
         { "nombre": "nota", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Indicación particular de este curso para el requisito" }
       ],
       "restricciones": [

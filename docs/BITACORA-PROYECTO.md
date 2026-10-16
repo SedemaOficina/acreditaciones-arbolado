@@ -321,3 +321,10 @@ auditor de CSS y de campos correctos.
   clasificar carreras) para la etapa 2.
 - Sin aviso de renombrado en los documentos (ni la nota ni «Se guardará como»); el nombre nuevo queda sólo en la revisión.
 - Casilla obligatoria «Manifiesto bajo protesta de decir verdad…» antes del aviso de privacidad.
+
+## 2026-10-15 · Bloque 24 · Sin constancias de capacitación; un solo PDF por requisito
+
+- Fuera el requisito «Constancias de capacitación especializada» (dictaminador nueva y renovación): basta con los
+  comprobantes de experiencia. Dictaminador nueva queda con 7 documentos.
+- Comprobante de estudios y comprobantes de experiencia piden escanear todos los documentos en un solo PDF.
+- Se quita de la ayuda del nivel de estudios la nota sobre poda y dictaminador.

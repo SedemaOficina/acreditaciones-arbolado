@@ -108,7 +108,7 @@ Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un do
 | `modalidad` | `text` | Sí | Curso |
 | `requisito` | `text` | Sí | Requisito |
 | `orden` | `smallint` | Sí | Orden en que se muestra |
-| `obligatorio` | `boolean` | Sí | Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, constancias de capacitación sólo para carrera técnica) y los valora quien revisa (por omisión: `true`) |
+| `obligatorio` | `boolean` | Sí | Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, los que sólo se actualizan en una renovación) y los valora quien revisa (por omisión: `true`) |
 | `nota` | `text` | Sí | Indicación particular de este curso para el requisito (por omisión: `''`) |
 
 Restricciones e índices:

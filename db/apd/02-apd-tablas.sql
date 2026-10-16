@@ -100,7 +100,7 @@ COMMENT ON COLUMN apd.requisito_curso.tipo_acreditacion IS 'Curso';
 COMMENT ON COLUMN apd.requisito_curso.modalidad IS 'Curso';
 COMMENT ON COLUMN apd.requisito_curso.requisito IS 'Requisito';
 COMMENT ON COLUMN apd.requisito_curso.orden IS 'Orden en que se muestra';
-COMMENT ON COLUMN apd.requisito_curso.obligatorio IS 'Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, constancias de capacitación sólo para carrera técnica) y los valora quien revisa';
+COMMENT ON COLUMN apd.requisito_curso.obligatorio IS 'Si falta, la solicitud no se puede enviar. Los no obligatorios dependen del caso (por ejemplo, los que sólo se actualizan en una renovación) y los valora quien revisa';
 COMMENT ON COLUMN apd.requisito_curso.nota IS 'Indicación particular de este curso para el requisito';
 
 CREATE TABLE apd.organizacion (
