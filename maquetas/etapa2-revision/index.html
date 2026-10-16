@@ -1,0 +1,306 @@
+<title>Maqueta · Revisión documental</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- MAQUETA de la etapa 2 (pantallas del personal): revisión documental. Usa las hojas reales del sitio (estándar y
+     apd.css) y datos ficticios de datos/ficticios.json. No es funcional: sirve para aprobar la forma antes de construir. -->
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="app/apd.css">
+<link rel="stylesheet" href="maqueta.css">
+
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas maqueta-aviso" aria-label="Aviso de maqueta">Maqueta para aprobar · datos ficticios · los botones no guardan nada</aside>
+<header class="cabecera">
+  <div class="cabecera-int">
+    <span class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente"></span>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-ancha" id="contenido">
+  <div class="sesion personal-sesion">
+    <p class="sesion-nombre">María Ejemplo Revisora <span class="estado">Perfil: revisión documental</span></p>
+    <nav class="sesion-enlaces" aria-label="Secciones del personal">
+      <a href="#bandeja" data-ir="bandeja" aria-current="page">Revisión documental</a>
+      <span class="nav-futura">Citas de cotejo</span><span class="nav-futura">Grupos</span><span class="nav-futura">Emisión y entrega</span>
+    </nav>
+  </div>
+
+  <nav class="maqueta-pasos" aria-label="Pantallas de la maqueta">
+    <button type="button" data-vista="bandeja" aria-pressed="true">1 · Bandeja de revisión</button>
+    <button type="button" data-vista="revision" aria-pressed="false">2 · Revisar una solicitud</button>
+  </nav>
+
+  <!-- ═════════════ 1 · BANDEJA ═════════════ -->
+  <section class="tarjeta" id="bandeja" data-pantalla="bandeja" aria-labelledby="t-bandeja">
+    <h2 class="titulo-paso" id="t-bandeja">Solicitudes por revisar</h2>
+    <p class="bajada">Ordenadas por antigüedad: la que más tiempo lleva esperando va primero. Las reenviadas con correcciones se distinguen por su número de vuelta.</p>
+
+    <div class="filtros" role="group" aria-label="Filtrar la bandeja">
+      <button type="button" class="filtro" aria-pressed="true">Todas <span class="cuenta">6</span></button>
+      <button type="button" class="filtro" aria-pressed="false">Nuevas <span class="cuenta">4</span></button>
+      <button type="button" class="filtro" aria-pressed="false">Reenviadas <span class="cuenta">2</span></button>
+      <button type="button" class="filtro" aria-pressed="false">Poda y derribo <span class="cuenta">4</span></button>
+      <button type="button" class="filtro" aria-pressed="false">Dictaminador <span class="cuenta">2</span></button>
+    </div>
+
+    <div class="tabla-envoltura">
+      <table class="tabla-bandeja">
+        <caption class="solo-lector">Solicitudes enviadas en espera de revisión documental</caption>
+        <thead>
+          <tr><th scope="col">Folio</th><th scope="col">Persona</th><th scope="col">Acreditación</th><th scope="col">Enviada</th><th scope="col">Espera</th><th scope="col">Vuelta</th><th scope="col">A revisar con atención</th><th scope="col"><span class="solo-lector">Acción</span></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">APD-S-2026-00007</td><td>KARLA EJEMPLO SIMULADO</td><td>Poda y derribo · nueva</td><td>02/10/2026</td><td><span class="estado" data-tono="error">12 días</span></td><td>2.ª (reenviada)</td><td>2 documentos corregidos</td>
+            <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
+          </tr>
+          <tr class="fila-destacada">
+            <td class="mono">APD-S-2026-00020</td><td>BRUNO MUESTRA FICTICIO</td><td>Dictaminador técnico · nueva</td><td>10/10/2026</td><td><span class="estado" data-tono="pend">4 días</span></td><td>1.ª</td><td><span class="estado" data-tono="pend">Carrera por clasificar</span></td>
+            <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
+          </tr>
+          <tr>
+            <td class="mono">APD-S-2026-00014</td><td>LUIS SIMULADO PRUEBA</td><td>Poda y derribo · renovación</td><td>12/10/2026</td><td><span class="estado">2 días</span></td><td>1.ª</td><td>—</td>
+            <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
+          </tr>
+          <tr>
+            <td class="mono">APD-S-2026-00041</td><td>TERESA FICTICIA MUESTRA</td><td>Dictaminador técnico · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>1.ª</td><td><span class="estado" data-tono="error">Podría no cumplir el perfil</span></td>
+            <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
+          </tr>
+          <tr>
+            <td class="mono">APD-S-2026-00042</td><td>RAÚL EJEMPLO DATOS</td><td>Poda y derribo · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>2.ª (reenviada)</td><td>1 documento corregido</td>
+            <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
+          </tr>
+          <tr>
+            <td class="mono">APD-S-2026-00044</td><td>ULISES PRUEBA SIMULADO</td><td>Poda y derribo · nueva</td><td>14/10/2026</td><td><span class="estado">Hoy</span></td><td>1.ª</td><td>—</td>
+            <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="ayuda nota-maqueta">En teléfono, cada renglón pasa a una ficha. La espera se marca en ámbar desde 3 días y en rojo desde 10 <span class="pendiente">plazos por confirmar con la Dirección (P02)</span>.</p>
+  </section>
+
+  <!-- ═════════════ 2 · REVISIÓN ═════════════ -->
+  <section id="revision" data-pantalla="revision" hidden aria-labelledby="t-revision">
+    <p><a class="btn-atras" href="#bandeja" data-ir="bandeja"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Solicitudes por revisar</a></p>
+
+    <div class="tarjeta">
+      <div class="revision-cabeza">
+        <div>
+          <h2 class="titulo-paso" id="t-revision">Dictaminador técnico · solicitud nueva</h2>
+          <p class="bajada">Folio <strong class="mono">APD-S-2026-00020</strong> · enviada el 10/10/2026 · primera revisión</p>
+        </div>
+        <span class="estado">En revisión documental</span>
+      </div>
+
+      <div class="revision-persona">
+        <dl class="datos datos-dos-columnas">
+          <div class="datos-par"><dt class="datos-etq">Persona</dt><dd class="datos-valor">BRUNO MUESTRA FICTICIO</dd></div>
+          <div class="datos-par"><dt class="datos-etq">CURP</dt><dd class="datos-valor mono">MUFB710202HNESCR03</dd></div>
+          <div class="datos-par"><dt class="datos-etq">Número de expediente</dt><dd class="datos-valor mono">EXP-2026-0002</dd></div>
+          <div class="datos-par"><dt class="datos-etq">Adscripción</dt><dd class="datos-valor">Independiente</dd></div>
+          <div class="datos-par"><dt class="datos-etq">Poda y derribo</dt><dd class="datos-valor">PD-2026-0002, vigente hasta el 14/09/2027</dd></div>
+          <div class="datos-par"><dt class="datos-etq">Contacto</dt><dd class="datos-valor">persona02@ejemplo.local · 0000000002</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <details class="tarjeta plegable-maqueta">
+      <summary>Revisiones anteriores <span class="estado">Ninguna</span></summary>
+      <p class="ayuda">En una reenviada aquí se ven las observaciones de la vuelta anterior y qué documentos se cargaron de nuevo.</p>
+    </details>
+
+    <!-- Perfil del dictaminador: lo que declaró y lo que calcula la base; si la carrera no está clasificada, se clasifica aquí (P62) -->
+    <div class="tarjeta">
+      <h3 class="titulo-paso">Perfil del dictaminador</h3>
+      <dl class="datos datos-dos-columnas">
+        <div class="datos-par"><dt class="datos-etq">Último grado</dt><dd class="datos-valor">Maestría · titulado</dd></div>
+        <div class="datos-par"><dt class="datos-etq">Carrera</dt><dd class="datos-valor">Ingeniería Ambiental</dd></div>
+        <div class="datos-par"><dt class="datos-etq">Experiencia declarada</dt><dd class="datos-valor">5 años</dd></div>
+        <div class="datos-par"><dt class="datos-etq">Experiencia que se pide</dt><dd class="datos-valor" data-minimo>5 años, mientras la carrera no se clasifique</dd></div>
+      </dl>
+      <div class="aviso aviso-advertencia">
+        <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+        <div class="aviso-texto"><p><strong>«Ingeniería Ambiental» todavía no está clasificada.</strong> Con base en el comprobante de estudios, indique si es afín al manejo del arbolado. Al aceptarla, se agrega a la lista de carreras y se sugiere a las siguientes personas.</p></div>
+      </div>
+      <fieldset class="grupo" data-campo="clasificacion">
+        <legend class="etiqueta">¿Cómo se clasifica la carrera?</legend>
+        <div class="opciones-lista">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="afin"><span><span class="opcion-nombre">Carrera afín</span><span class="opcion-desc">Se piden 2 años de experiencia, como Biología o Ingeniería Forestal.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="disciplina_afin"><span><span class="opcion-nombre">Disciplina afín</span><span class="opcion-desc">Se piden 5 años de experiencia.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" value="no_afin"><span><span class="opcion-nombre">No afín</span><span class="opcion-desc">No cumple el perfil: la solicitud regresa con observaciones.</span></span></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Documentos: lista a la izquierda, vista del archivo a la derecha; cada uno se acepta o se observa con su motivo -->
+    <div class="tarjeta">
+      <h3 class="titulo-paso">Documentos</h3>
+      <p class="ayuda ayuda-bloque">Abra cada documento y acéptelo, u observe lo que debe corregir la persona. La observación se le muestra tal como la escriba.</p>
+      <div class="revision-documentos">
+        <ol class="docs-lista" data-docs></ol>
+        <div class="visor" aria-live="polite">
+          <div class="visor-cabeza">
+            <p class="visor-titulo" data-visor-titulo>Identificación oficial</p>
+            <p class="visor-archivo"><span class="mono" data-visor-nombre>IDENTIFICACION OFICIAL_BRUNO MUESTRA FICTICIO.pdf</span> · <span data-visor-original>Archivo que subió: identificacion_oficial.pdf</span></p>
+          </div>
+          <div class="visor-hoja" role="img" aria-label="Vista previa del documento (en la maqueta no hay archivo real)">
+            <svg class="icono visor-icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+            <p>Aquí se ve el PDF</p>
+            <p class="visor-nota">Con botón para abrirlo en otra pestaña y descargarlo.</p>
+          </div>
+          <div class="visor-decision">
+            <fieldset class="grupo">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-observacion hidden>
+              <label class="etiqueta" for="observacion">¿Qué debe corregir la persona?</label>
+              <p class="ayuda">Puede elegir un motivo frecuente y completarlo.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes">
+                <button type="button" class="chip">No se lee completo</button>
+                <button type="button" class="chip">Está vencido</button>
+                <button type="button" class="chip">No corresponde al requisito</button>
+                <button type="button" class="chip">Falta una página</button>
+                <button type="button" class="chip">No coincide con el nombre de la cuenta</button>
+              </div>
+              <textarea class="control" id="observacion" rows="3" maxlength="400"></textarea>
+            </div>
+            <div class="acciones acciones-izq">
+              <button type="button" class="btn btn-secundario" data-siguiente>Guardar y pasar al siguiente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado de la vuelta: una sola acción principal, que cambia según lo revisado -->
+    <div class="tarjeta" data-resultado>
+      <h3 class="titulo-paso">Resultado de la revisión</h3>
+      <p class="resumen-revision" data-resumen>0 de 7 documentos revisados.</p>
+
+      <div data-si-validar hidden>
+        <p class="ayuda ayuda-bloque">Todo está en orden. Al validar, la persona recibe su cita de cotejo y los datos para pagar.</p>
+        <div class="fila">
+          <div class="campo"><label class="etiqueta" for="cita-fecha">Fecha de la cita</label><input class="control" id="cita-fecha" type="date" value="2026-10-21"></div>
+          <div class="campo"><label class="etiqueta" for="cita-hora">Hora</label><input class="control" id="cita-hora" type="time" value="10:00"></div>
+        </div>
+        <div class="campo">
+          <label class="etiqueta" for="cita-sede">Lugar de la cita</label>
+          <p class="ayuda"><span class="pendiente">Catálogo de sedes por confirmar con la Dirección (P09)</span></p>
+          <div class="select control-medio"><select class="control control-select" id="cita-sede"><option>Oficinas de la Secretaría (sede de prueba)</option></select></div>
+        </div>
+      </div>
+
+      <div data-si-observar hidden>
+        <div class="campo">
+          <label class="etiqueta" for="obs-general">Mensaje para la persona (opcional)</label>
+          <p class="ayuda">Las observaciones de cada documento ya le llegan; aquí puede agregar una indicación general.</p>
+          <textarea class="control" id="obs-general" rows="2" maxlength="400"></textarea>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="button" class="btn btn-primario" data-accion-final disabled>Revise todos los documentos</button>
+      </div>
+      <p class="ayuda nota-maqueta">Queda en la bitácora quién revisó, cuándo y qué decidió en cada documento.</p>
+    </div>
+
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div></footer>
+
+<script src="formkit/js/iconos.js"></script>
+<script>
+(() => {
+  // Iconos del estándar (en el sitio los inserta el núcleo) y etiquetas de columna para la vista de teléfono
+  document.body.insertAdjacentHTML('afterbegin', window.FORMKIT_ICONOS || '');
+  const cols = [...document.querySelectorAll('.tabla-bandeja thead th')].map((th) => th.textContent.trim());
+  document.querySelectorAll('.tabla-bandeja tbody tr').forEach((tr) => [...tr.children].forEach((td, i) => { td.dataset.etq = cols[i]; }));
+  const docs = [
+    ['Identificación oficial', 'IDENTIFICACION OFICIAL', 'identificacion_oficial.pdf', '941 KB'],
+    ['CURP', 'CURP', 'curp.pdf', '730 KB'],
+    ['Comprobante de domicilio', 'COMPROBANTE DE DOMICILIO', 'comprobante_domicilio.pdf', '1.2 MB'],
+    ['Constancia de situación fiscal', 'CONSTANCIA DE SITUACION FISCAL', 'constancia_situacion_fiscal.pdf', '672 KB'],
+    ['Comprobante de estudios', 'COMPROBANTE DE ESTUDIOS', 'comprobante_estudios.pdf', '189 KB'],
+    ['Currículum vitae', 'CURRICULUM VITAE', 'curriculum_vitae.pdf', '340 KB'],
+    ['Comprobantes de experiencia', 'COMPROBANTES DE EXPERIENCIA', 'comprobantes_experiencia.pdf', '230 KB']
+  ];
+  const estado = docs.map(() => ({ decision: '', obs: '' }));
+  let actual = 0;
+  const $ = (s) => document.querySelector(s);
+  const lista = $('[data-docs]');
+  const TONO = { aceptado: ['ok', 'Aceptado'], con_observacion: ['error', 'Con observación'], '': ['', 'Por revisar'] };
+
+  function pintaLista() {
+    lista.replaceChildren(...docs.map(([nombre, , , peso], i) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'doc-item'; if (i === actual) b.setAttribute('aria-current', 'true');
+      const [tono, txt] = TONO[estado[i].decision];
+      b.innerHTML = `<span class="doc-nombre"></span><span class="doc-peso"></span><span class="estado"${tono ? ` data-tono="${tono}"` : ''}></span>`;
+      b.querySelector('.doc-nombre').textContent = nombre;
+      b.querySelector('.doc-peso').textContent = peso;
+      b.querySelector('.estado').textContent = txt;
+      b.addEventListener('click', () => { guarda(); actual = i; muestra(); });
+      li.append(b); return li;
+    }));
+    const hechos = estado.filter((e) => e.decision).length;
+    const obs = estado.filter((e) => e.decision === 'con_observacion').length;
+    $('[data-resumen]').textContent = `${hechos} de ${docs.length} documentos revisados` + (obs ? ` · ${obs} con observación.` : '.');
+    const clas = document.querySelector('input[name="clasificacion"]:checked');
+    const todos = hechos === docs.length && clas;
+    const observar = obs > 0 || (clas && clas.value === 'no_afin');
+    const btn = $('[data-accion-final]');
+    btn.disabled = !todos;
+    btn.textContent = !todos ? (clas ? 'Revise todos los documentos' : 'Revise los documentos y clasifique la carrera') : observar ? 'Enviar observaciones a la persona' : 'Validar y asignar la cita';
+    $('[data-si-validar]').hidden = !(todos && !observar);
+    $('[data-si-observar]').hidden = !(todos && observar);
+  }
+  function guarda() {
+    const d = document.querySelector('input[name="decision"]:checked');
+    estado[actual] = { decision: d ? d.value : '', obs: $('#observacion').value };
+  }
+  function muestra() {
+    const [nombre, tipo, original] = docs[actual];
+    $('[data-visor-titulo]').textContent = nombre;
+    $('[data-visor-nombre]').textContent = `${tipo}_BRUNO MUESTRA FICTICIO.pdf`;
+    $('[data-visor-original]').textContent = `Archivo que subió: ${original}`;
+    document.querySelectorAll('input[name="decision"]').forEach((r) => { r.checked = r.value === estado[actual].decision; });
+    $('#observacion').value = estado[actual].obs;
+    $('[data-observacion]').hidden = estado[actual].decision !== 'con_observacion';
+    pintaLista();
+  }
+  document.querySelectorAll('input[name="decision"]').forEach((r) => r.addEventListener('change', () => {
+    $('[data-observacion]').hidden = r.value !== 'con_observacion' || !r.checked;
+    guarda(); pintaLista();
+  }));
+  document.querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+    const t = $('#observacion'); t.value = t.value ? `${t.value} ${c.textContent}.` : `${c.textContent}.`; t.focus(); guarda();
+  }));
+  $('[data-siguiente]').addEventListener('click', () => { guarda(); actual = Math.min(actual + 1, docs.length - 1); muestra(); });
+  document.querySelectorAll('input[name="clasificacion"]').forEach((r) => r.addEventListener('change', () => {
+    $('[data-minimo]').textContent = r.value === 'afin' ? '2 años (carrera afín)' : r.value === 'disciplina_afin' ? '5 años (disciplina afín)' : 'No cumple el perfil';
+    pintaLista();
+  }));
+
+  // Navegación entre las dos pantallas de la maqueta
+  function ir(vista) {
+    document.querySelectorAll('[data-pantalla]').forEach((p) => { p.hidden = p.dataset.pantalla !== vista; });
+    document.querySelectorAll('[data-vista]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === vista)));
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('[data-vista]').forEach((b) => b.addEventListener('click', () => ir(b.dataset.vista)));
+  document.querySelectorAll('[data-ir]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); ir(a.dataset.ir); }));
+  document.querySelectorAll('.filtro').forEach((f) => f.addEventListener('click', () => {
+    document.querySelectorAll('.filtro').forEach((x) => x.setAttribute('aria-pressed', String(x === f)));
+  }));
+  muestra();
+})();
+</script>
