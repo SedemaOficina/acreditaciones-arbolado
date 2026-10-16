@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maqueta · Menú de pruebas</title>
+<!-- MAQUETA: reorganización del menú de pruebas. Usa las hojas reales del sitio y datos ficticios. No es funcional:
+     sirve para aprobar el orden y el contenido antes de reconstruir app/pruebas.js. -->
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="app/apd.css">
+<link rel="stylesheet" href="maqueta.css">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas maqueta-aviso" aria-label="Aviso de maqueta">Maqueta para aprobar · datos ficticios · los botones no hacen nada</aside>
+<header class="cabecera">
+  <div class="cabecera-int">
+    <span class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente"></span>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Menú de pruebas · propuesta de orden</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-ancha" id="contenido">
+  <nav class="maqueta-pasos" aria-label="Vistas de la maqueta">
+    <button type="button" data-ver="hoy" aria-pressed="true">Hoy: qué confunde</button>
+    <button type="button" data-ver="solicitud" aria-pressed="false">Propuesta · en «Solicitud»</button>
+    <button type="button" data-ver="entrar" aria-pressed="false">Propuesta · en «Entrar»</button>
+    <button type="button" data-ver="personal" aria-pressed="false">Propuesta · en el personal</button>
+  </nav>
+
+  <!-- ═════════════ HOY ═════════════ -->
+  <section class="maqueta-vista" data-vista="hoy" aria-label="El menú de hoy">
+    <div class="menu-pruebas maqueta-menu">
+      <div class="menu-pruebas-cabeza"><h2 class="titulo-bloque">Menú de pruebas</h2><span class="btn-enlace">Cerrar</span></div>
+      <p class="texto-gris">Sólo existe en la versión de prueba. Todo es ficticio y nada sale de esta pestaña.</p>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo"><span class="marca">1</span>Persona</h3>
+        <p>Sesión actual: ROSA SIMULADO MUESTRA.</p>
+        <div class="menu-pruebas-campo repetido"><span class="etiqueta">Entrar como</span><div class="select"><select class="control control-select" aria-label="Entrar como (hoy)"><option>Elige una opción</option></select></div></div>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Entrar como esta persona</span><span class="btn btn-secundario">Salir</span></div>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo"><span class="marca">3</span>Formulario de esta pantalla</h3>
+        <p>Preguntas obligatorias: activadas.</p>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Desactivar las preguntas obligatorias</span><span class="btn btn-secundario">Llenar con datos ficticios</span></div>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Ir al paso</h3>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">1. Tipo y estudios</span><span class="btn btn-secundario">2. Documentos</span><span class="btn btn-secundario">3. Revisión</span></div>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo"><span class="marca">4</span>Simular el envío</h3>
+        <ul class="menu-pruebas-lista"><li><a href="#hoy">Envío normal</a></li><li><a href="#hoy">Falla el envío</a></li><li><a href="#hoy">Límite de envíos</a></li><li><a href="#hoy">Envío lento</a></li></ul>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo"><span class="marca">3</span>Documentos cargados en este navegador</h3>
+        <p>Lo que se envía en la versión de prueba se guarda sólo en este navegador, para verlo en la revisión del personal.</p>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Borrar los documentos de prueba</span></div>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo"><span class="marca">5</span>Pantallas</h3>
+        <ul class="menu-pruebas-lista"><li><a href="#hoy">Inicio</a></li><li><a href="#hoy">Crear cuenta</a></li><li><a href="#hoy">Entrar</a></li><li><a href="#hoy">Mis trámites</a></li><li><a href="#hoy">Mis datos</a></li><li><a href="#hoy">Solicitud</a></li><li><a href="#hoy">Verificar una acreditación</a></li><li><a href="#hoy" class="repetido"><span class="marca">2</span>Personal · Revisión documental</a></li></ul>
+      </section>
+    </div>
+    <div class="maqueta-explica tarjeta">
+      <h2 class="titulo-paso">Lo que hoy confunde</h2>
+      <ol>
+        <li><strong>Dos lugares para escoger persona, con listas distintas.</strong> La caja amarilla de «Entrar» y «Entrar como» del menú hacen casi lo mismo (una llena el formulario, la otra entra directo) y agrupan distinto. Ninguna muestra los casos especiales: reenviada con correcciones, dictaminador con licenciatura trunca, renovación vencida que espera grupo…</li>
+        <li><strong>El personal no está en «Entrar como».</strong> Para revisar hay que bajar hasta «Pantallas».</li>
+        <li><strong>Revuelve lo de esta pantalla con lo de toda la prueba.</strong> Las preguntas obligatorias y los documentos guardados valen en todas las pantallas; «Llenar» e «Ir al paso» sólo en ésta.</li>
+        <li><strong>Ofrece lo que no aplica.</strong> En la bandeja del personal aparecen «Llenar» y «Simular el envío» (para el buscador), y el interruptor de obligatorias sale aunque la pantalla no tenga formulario.</li>
+        <li><strong>Las pantallas van en una sola lista</strong>, sin decir de quién es cada una (público, persona solicitante o personal).</li>
+        <li><strong>No hay forma de empezar de cero</strong>: salir, borrar documentos y decisiones de revisión y volver a activar las obligatorias se hace en tres lugares.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═════════════ PROPUESTA · SOLICITUD ═════════════ -->
+  <section class="maqueta-vista" data-vista="solicitud" aria-label="Propuesta en la solicitud" hidden>
+    <div class="menu-pruebas maqueta-menu">
+      <div class="menu-pruebas-cabeza"><h2 class="titulo-bloque">Menú de pruebas</h2><span class="btn-enlace">Cerrar</span></div>
+      <div class="mp-ahora">
+        <div class="mp-fila"><p><strong>Estás como:</strong> ROSA SIMULADO MUESTRA · persona solicitante</p><span class="btn-enlace">Salir</span></div>
+        <p class="mp-ayuda">Caso: poda y derribo con observaciones. Pantalla: Solicitud.</p>
+      </div>
+
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">En esta pantalla</h3>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Llenar con datos ficticios</span></div>
+        <p class="mp-rotulo">Ir al paso</p>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">1. Tipo y estudios</span><span class="btn btn-secundario">2. Documentos</span><span class="btn btn-secundario">3. Revisión</span></div>
+        <p class="mp-rotulo">Cómo responde el envío</p>
+        <div class="mp-envio"><a href="#solicitud" aria-current="true">Normal</a><a href="#solicitud">Falla</a><a href="#solicitud">Límite de envíos</a><a href="#solicitud">Lento</a></div>
+      </section>
+
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Entrar como</h3>
+        <div class="menu-pruebas-campo">
+          <label class="etiqueta" for="caso-s">Caso de prueba</label>
+          <div class="select"><select class="control control-select" id="caso-s" data-casos></select></div>
+        </div>
+        <p class="mp-caso" data-caso-texto>Qué puedes probar: corregir los documentos observados y reenviar; la solicitud vuelve a revisión como 2.ª vuelta.</p>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Entrar</span></div>
+      </section>
+
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Ir a otra pantalla</h3>
+        <div class="mp-grupos">
+          <div><h4>Público</h4><ul><li><a href="#solicitud">Inicio</a></li><li><a href="#solicitud">Verificar una acreditación</a></li></ul></div>
+          <div><h4>Persona solicitante</h4><ul><li><a href="#solicitud">Crear cuenta</a></li><li><a href="#solicitud">Entrar</a></li><li><a href="#solicitud">Mis trámites</a></li><li><a href="#solicitud">Mis datos</a></li><li><a href="#solicitud" aria-current="page">Solicitud</a></li></ul></div>
+          <div><h4>Personal</h4><ul><li><a href="#solicitud">Solicitudes por revisar</a></li></ul></div>
+        </div>
+      </section>
+
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Ajustes de la prueba</h3>
+        <p class="mp-ayuda">Valen en todas las pantallas mientras tengas abierta esta pestaña.</p>
+        <div class="mp-ajuste">
+          <p><strong>Preguntas obligatorias:</strong> activadas</p>
+          <p class="mp-ayuda">Desactívalas para avanzar sin llenar; los formatos y la CURP se siguen revisando.</p>
+          <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Desactivarlas</span></div>
+        </div>
+        <div class="mp-ajuste">
+          <p><strong>Guardado en este navegador:</strong> 1 solicitud enviada con sus documentos y 2 revisiones</p>
+          <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Borrar lo guardado</span></div>
+        </div>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Empezar de cero</span></div>
+        <p class="mp-ayuda">«Empezar de cero» cierra la sesión, borra lo guardado, activa las obligatorias y te lleva al inicio.</p>
+      </section>
+    </div>
+    <div class="maqueta-explica tarjeta">
+      <h2 class="titulo-paso">Cinco bloques, siempre en el mismo orden</h2>
+      <ol>
+        <li><strong>Estás como</strong>: quién eres, qué caso es y en qué pantalla estás, con «Salir» a la mano.</li>
+        <li><strong>En esta pantalla</strong>: sólo lo que sirve aquí. Si nada aplica, el bloque no aparece.</li>
+        <li><strong>Entrar como</strong>: un solo lugar para escoger persona. Casos con nombre, agrupados por etapa del trámite, con una línea de qué puedes probar. El personal también está aquí.</li>
+        <li><strong>Ir a otra pantalla</strong>: agrupadas por quién la usa.</li>
+        <li><strong>Ajustes de la prueba</strong>: lo que vale en todas las pantallas, y «Empezar de cero».</li>
+      </ol>
+      <p>«Simular el envío» queda como «Cómo responde el envío», con la opción actual marcada, y sólo en los formularios que envían algo.</p>
+    </div>
+  </section>
+
+  <!-- ═════════════ PROPUESTA · ENTRAR ═════════════ -->
+  <section class="maqueta-vista" data-vista="entrar" aria-label="Propuesta en Entrar" hidden>
+    <div class="mp-entrar">
+      <div class="tarjeta">
+        <h2 class="titulo-paso">Entra a tu cuenta</h2>
+        <p class="texto-gris">(El formulario de siempre: CURP, contraseña y «Entrar».)</p>
+        <p class="mp-nota-entrar">Versión de prueba: todas las personas de ejemplo tienen la contraseña <span class="mono">Prueba-ficticia-2026</span>. Para escoger una, abre el <strong>Menú de pruebas</strong>.</p>
+      </div>
+      <div class="menu-pruebas maqueta-menu">
+        <div class="menu-pruebas-cabeza"><h2 class="titulo-bloque">Menú de pruebas</h2><span class="btn-enlace">Cerrar</span></div>
+        <div class="mp-ahora"><div class="mp-fila"><p><strong>Estás como:</strong> nadie (sin sesión)</p></div><p class="mp-ayuda">Pantalla: Entrar.</p></div>
+        <section class="menu-pruebas-seccion">
+          <h3 class="menu-pruebas-subtitulo">En esta pantalla</h3>
+          <div class="menu-pruebas-campo">
+            <label class="etiqueta" for="caso-e">Llenar con un caso de prueba</label>
+            <div class="select"><select class="control control-select" id="caso-e" data-casos></select></div>
+          </div>
+          <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Llenar CURP y contraseña</span></div>
+          <p class="mp-ayuda">Llena el formulario y te deja presionar «Entrar», para probar la pantalla misma. Para entrar directo, usa «Entrar como».</p>
+        </section>
+        <section class="menu-pruebas-seccion"><h3 class="menu-pruebas-subtitulo">Entrar como</h3><p class="mp-ayuda">(La misma lista de casos.)</p></section>
+        <section class="menu-pruebas-seccion"><h3 class="menu-pruebas-subtitulo">Ir a otra pantalla</h3><p class="mp-ayuda">(Igual que en las demás pantallas.)</p></section>
+        <section class="menu-pruebas-seccion"><h3 class="menu-pruebas-subtitulo">Ajustes de la prueba</h3><p class="mp-ayuda">(Igual que en las demás pantallas.)</p></section>
+      </div>
+    </div>
+    <div class="maqueta-explica tarjeta">
+      <h2 class="titulo-paso">La caja amarilla de «Entrar» desaparece</h2>
+      <ul>
+        <li>En la página sólo queda una línea con la contraseña de las personas de ejemplo.</li>
+        <li>«Llenar con un caso de prueba» pasa al menú, en «En esta pantalla», con la misma lista de «Entrar como».</li>
+        <li>Las CURP del registro anterior (para ver cómo se activa una cuenta) pasan al menú de «Crear cuenta»: <em>Llenar con una CURP del registro anterior</em>.</li>
+        <li>El enlace del personal ya está en «Entrar como».</li>
+      </ul>
+      <p>Así hay un solo lugar para todo lo de prueba: el botón «Menú de pruebas», igual en todas las pantallas.</p>
+    </div>
+  </section>
+
+  <!-- ═════════════ PROPUESTA · PERSONAL ═════════════ -->
+  <section class="maqueta-vista" data-vista="personal" aria-label="Propuesta en el personal" hidden>
+    <div class="menu-pruebas maqueta-menu">
+      <div class="menu-pruebas-cabeza"><h2 class="titulo-bloque">Menú de pruebas</h2><span class="btn-enlace">Cerrar</span></div>
+      <div class="mp-ahora">
+        <div class="mp-fila"><p><strong>Estás como:</strong> MARÍA EJEMPLO REVISORA · personal, revisión documental</p><span class="btn-enlace">Salir</span></div>
+        <p class="mp-ayuda">Pantalla: Solicitudes por revisar.</p>
+      </div>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Entrar como</h3>
+        <div class="menu-pruebas-campo">
+          <label class="etiqueta" for="caso-p">Caso de prueba</label>
+          <div class="select"><select class="control control-select" id="caso-p" data-casos data-elegido="personal"></select></div>
+        </div>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Entrar</span></div>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Ir a otra pantalla</h3>
+        <div class="mp-grupos">
+          <div><h4>Público</h4><ul><li><a href="#personal">Inicio</a></li><li><a href="#personal">Verificar una acreditación</a></li></ul></div>
+          <div><h4>Persona solicitante</h4><ul><li><a href="#personal">Crear cuenta</a></li><li><a href="#personal">Entrar</a></li><li><a href="#personal">Mis trámites</a></li><li><a href="#personal">Mis datos</a></li><li><a href="#personal">Solicitud</a></li></ul></div>
+          <div><h4>Personal</h4><ul><li><a href="#personal" aria-current="page">Solicitudes por revisar</a></li></ul></div>
+        </div>
+      </section>
+      <section class="menu-pruebas-seccion">
+        <h3 class="menu-pruebas-subtitulo">Ajustes de la prueba</h3>
+        <div class="mp-ajuste">
+          <p><strong>Guardado en este navegador:</strong> 1 solicitud enviada con sus documentos y 2 revisiones</p>
+          <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Borrar lo guardado</span></div>
+        </div>
+        <div class="menu-pruebas-acciones"><span class="btn btn-secundario">Empezar de cero</span></div>
+      </section>
+    </div>
+    <div class="maqueta-explica tarjeta">
+      <h2 class="titulo-paso">En la bandeja, «En esta pantalla» no aparece</h2>
+      <ul>
+        <li>El buscador y los filtros no son un formulario que se llene o se envíe: no se ofrecen «Llenar» ni «Cómo responde el envío».</li>
+        <li>Las preguntas obligatorias tampoco aparecen: la bandeja no tiene ninguna. En «Revisar una solicitud» sí, porque decidir cada documento es obligatorio.</li>
+        <li>«Guardado en este navegador» suma lo que enviaste como persona y las decisiones que tomaste como personal, para borrarlo todo junto.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div></footer>
+
+<script>
+(() => {
+  // Casos de prueba propuestos: agrupados por etapa del trámite, con nombre y qué se puede probar
+  const CASOS = [
+    ['Sin trámite', [
+      ['nueva', 'Persona nueva, sin trámites', 'Hacer una solicitud desde cero.'],
+      ['vigente', 'Poda vigente, sin trámite — persona del registro anterior', 'Ver la acreditación vigente en «Mis trámites».'],
+      ['no-renovable', 'Poda vencida hace más de un año', 'Ver que ya no se renueva: se tramita como nueva.']
+    ]],
+    ['Solicitud en curso', [
+      ['borrador', 'Borrador sin enviar', 'Retomar una solicitud guardada.'],
+      ['enviada', 'Enviada, en revisión documental', 'Ver qué ve la persona mientras se revisa.'],
+      ['reenviada', 'Reenviada con correcciones (2.ª vuelta)', 'Ver la solicitud que vuelve a revisión con lo corregido.'],
+      ['obs-poda', 'Poda · con observaciones', 'Corregir los documentos observados y reenviar; la solicitud vuelve a revisión como 2.ª vuelta.'],
+      ['obs-dict', 'Dictaminador · con observaciones', 'Corregir el comprobante de estudios y el grado.'],
+      ['trunca', 'Dictaminador con licenciatura trunca, en revisión', 'Ver el aviso de perfil (la revisión puede rechazarla).'],
+      ['cita', 'Cita de cotejo asignada', 'Ver la fecha, la sede y los datos de pago.'],
+      ['espera', 'En espera de grupo', 'Ver qué sigue después del cotejo.'],
+      ['grupo', 'Con grupo asignado', 'Ver las fechas del curso y la asistencia.']
+    ]],
+    ['Renovación', [
+      ['renov-enviada', 'Renovación de poda enviada (vence el 24/10)', 'Ver una renovación en revisión.'],
+      ['renov-vencida', 'Renovación vencida que espera grupo', 'Ver una renovación que venció mientras espera grupo.'],
+      ['dict-por-vencer', 'Dictaminador por vencer, con poda vigente', 'Renovar dictaminador.'],
+      ['dict-sin-poda', 'Dictaminador vigente con la poda vencida', 'Ver cómo se muestra un dictaminador cuya poda ya venció.']
+    ]],
+    ['Solicitud terminada', [
+      ['emitida', 'Acreditación emitida', 'Ver cuándo y dónde recogerla.'],
+      ['no-acreditada', 'No acreditada (calificación menor a la mínima)', 'Ver el resultado y cómo volver a tramitar.'],
+      ['sin-examen', 'Sin derecho a examen (asistencia insuficiente)', 'Ver el resultado por asistencia.'],
+      ['rechazada', 'Dictaminador rechazado por perfil', 'Leer el motivo del rechazo.'],
+      ['cancelada', 'Cancelada por la persona', 'Ver una solicitud cancelada.'],
+      ['sin-atender', 'Concluida sin atender las observaciones', 'Ver el cierre por plazo.']
+    ]],
+    ['Personal de la Secretaría', [
+      ['personal', 'Revisión documental — María Ejemplo Revisora', 'Revisar las solicitudes enviadas.']
+    ]]
+  ];
+  for (const sel of document.querySelectorAll('[data-casos]')) {
+    const elegido = sel.dataset.elegido || 'obs-poda';
+    sel.append(new Option('Elige un caso', ''));
+    for (const [grupo, casos] of CASOS) {
+      const og = document.createElement('optgroup');
+      og.label = grupo;
+      for (const [v, t] of casos) og.append(new Option(t, v, false, v === elegido));
+      sel.append(og);
+    }
+    const texto = sel.closest('section').querySelector('[data-caso-texto]');
+    if (texto) sel.addEventListener('change', () => {
+      const caso = CASOS.flatMap(([, c]) => c).find(([v]) => v === sel.value);
+      texto.textContent = caso ? `Qué puedes probar: ${caso[2]}` : '';
+    });
+  }
+  // Vistas de la maqueta
+  const botones = document.querySelectorAll('[data-ver]');
+  for (const b of botones) b.addEventListener('click', () => {
+    for (const o of botones) o.setAttribute('aria-pressed', String(o === b));
+    for (const v of document.querySelectorAll('[data-vista]')) v.hidden = v.dataset.vista !== b.dataset.ver;
+  });
+})();
+</script>
+</body>
+</html>

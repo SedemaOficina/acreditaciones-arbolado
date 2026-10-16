@@ -1,0 +1,48 @@
+/* Maqueta · reorganización del menú de pruebas. Sólo tokens del estándar. */
+body { background: var(--fondo); }
+.maqueta-aviso { text-align: center; }
+.maqueta-pasos { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-5); }
+.maqueta-pasos button {
+  font: inherit; font-size: var(--t-sm); min-height: var(--objetivo-min); padding: var(--e-1) var(--e-4);
+  border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); background: var(--blanco); color: var(--texto); cursor: pointer;
+}
+.maqueta-pasos button[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--blanco); }
+.maqueta-pasos button:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+
+/* Vista: el menú (como se vería abierto) y, junto, la explicación */
+.maqueta-vista { display: grid; gap: var(--e-6); align-items: start; }
+.maqueta-vista[hidden] { display: none; }
+@media (min-width: 1024px) { .maqueta-vista { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.maqueta-menu { width: 100%; max-height: none; margin: 0; }
+.maqueta-explica { display: grid; gap: var(--e-3); }
+.maqueta-explica h2 { margin: 0; }
+.maqueta-explica ol { list-style: decimal; }
+.maqueta-explica ul { list-style: disc; }
+.maqueta-explica ol, .maqueta-explica ul { margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-2); }
+
+/* Marcas numeradas de los problemas, sobre el menú actual */
+.marca { display: inline-grid; place-items: center; min-width: var(--icono); height: var(--icono); padding-inline: var(--e-1); margin-inline-end: var(--e-1); border-radius: var(--r-pill); background: var(--guinda); color: var(--blanco); font-size: var(--t-xs); font-weight: var(--peso-fuerte); vertical-align: middle; }
+.repetido { outline: var(--b-2) dashed var(--guinda); outline-offset: var(--e-1); border-radius: var(--r-ctrl); }
+
+/* Propuesta: cabeza con la sesión y bloques fijos */
+.mp-ahora { display: grid; gap: var(--e-2); padding: var(--e-3); border-radius: var(--r-caja); background: var(--fondo); }
+.mp-ahora p { margin: 0; }
+.mp-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.mp-ayuda { margin: 0; font-size: var(--t-sm); color: var(--gris); }
+.mp-caso { margin: 0; padding: var(--e-2) var(--e-3); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); font-size: var(--t-sm); }
+.mp-grupos { display: grid; gap: var(--e-3); }
+@media (min-width: 560px) { .mp-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mp-grupos h4 { margin: 0 0 var(--e-1); font-size: var(--t-sm); color: var(--gris); font-weight: var(--peso-medio); }
+.mp-grupos ul { margin: 0; padding-inline-start: var(--e-4); display: grid; gap: var(--e-1); }
+.mp-grupos [aria-current="page"] { font-weight: var(--peso-fuerte); }
+.mp-envio { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.mp-rotulo { margin: 0; font-weight: var(--peso-medio); }
+.mp-envio a { display: inline-flex; align-items: center; min-height: var(--objetivo-min); padding: var(--e-1) var(--e-3); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); font-size: var(--t-sm); }
+.mp-envio a[aria-current="true"] { border-color: var(--guinda); color: var(--guinda); font-weight: var(--peso-fuerte); }
+.mp-ajuste { display: grid; gap: var(--e-1); }
+.mp-ajuste p { margin: 0; }
+
+/* Entrar: lo que queda de la caja de pruebas */
+.mp-entrar { display: grid; gap: var(--e-4); }
+.mp-nota-entrar { margin: 0; padding: var(--e-3); border: var(--b-1) dashed var(--pend); border-radius: var(--r-caja); background: var(--pend-bg); color: var(--pend-txt); font-size: var(--t-sm); }
+.mono { font-family: var(--fuente-mono); }
