@@ -93,6 +93,14 @@
 /* Revisión: nombre con que se guarda cada documento (TIPO_NOMBRE COMPLETO) y, debajo, el archivo que subió */
 .rev-archivo-nuevo { display: block; }
 .rev-archivo-original { display: block; font-size: var(--t-sm); color: var(--gris); }
+/* Estilo de formularios (decisión 2026-10-16, Liber; segunda tanda de hallazgos del estándar, S2-1 a S2-3):
+   una ayuda por bloque bajo el título de la sección, respuestas cortas en línea y anchos según el dato. */
+.titulo-primero { margin-top: var(--e-6); }
+.ayuda-bloque { margin-bottom: var(--e-4); }
+.opciones-en-linea { display: grid; grid-template-columns: 1fr; gap: var(--e-2); }
+@media (min-width: 760px) { .opciones-en-linea { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.control-medio { max-width: var(--ancho-acuse); }
+.tarjeta-angosta { max-width: var(--ancho-dialogo); margin-inline: auto; }
 [data-interno] { display: none; }
 /* Dato que se muestra a la persona pero aún no está confirmado (concepto, monto y referencia de pago) */
 .datos-por-confirmar { display: block; }

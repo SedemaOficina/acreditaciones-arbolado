@@ -65,7 +65,7 @@
 
       <fieldset class="grupo" data-campo="tipo" data-requerido data-uso="Definir la acreditación, el curso y los documentos que corresponden a la solicitud.">
         <legend class="etiqueta">Acreditación que solicitas</legend>
-        <div class="opciones-lista">
+        <div class="opciones-lista opciones-en-linea">
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo" value="poda"><span><span class="opcion-nombre">Poda y derribo</span><span class="opcion-desc" data-desc-tipo="poda">Para podar y derribar árboles en la vía pública y en áreas verdes.</span></span></label>
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo" value="dictaminador"><span><span class="opcion-nombre">Dictaminador técnico</span><span class="opcion-desc" data-desc-tipo="dictaminador">Para emitir dictámenes técnicos de arbolado. Necesitas tener vigente la de poda y derribo.</span></span></label>
         </div>
@@ -101,7 +101,7 @@
         <p class="ayuda">El más alto que cursas o cursaste.</p>
         <div class="select">
           <!-- autocomplete off: el navegador no tiene un valor que proponer para el nivel de estudios. -->
-          <select class="control control-select" id="nivel_estudios" name="nivel_estudios" autocomplete="off">
+          <select class="control control-select control-medio" id="nivel_estudios" name="nivel_estudios" autocomplete="off">
           <option value="">Elige tu nivel de estudios</option>
           <option value="ninguna">Ninguno</option>
           <option value="preescolar">Preescolar</option>
@@ -128,7 +128,7 @@
         <fieldset class="grupo" data-campo="estatus_estudios" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Saber si tienes título, carta de pasante o estudios sin concluir; en dictaminador, para fijar la experiencia mínima.">
           <legend class="etiqueta">¿En qué situación está ese último grado de estudios?</legend>
           <!-- autocomplete off: el navegador no tiene un valor que proponer para la situación de los estudios. -->
-          <div class="opciones-lista">
+          <div class="opciones-lista opciones-en-linea">
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="en_curso"><span><span class="opcion-nombre">En curso</span><span class="opcion-desc">Todavía lo estudias.</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="trunco"><span><span class="opcion-nombre">Trunco</span><span class="opcion-desc">Lo dejaste sin terminar.</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="concluido"><span><span class="opcion-nombre">Concluido</span><span class="opcion-desc">Terminaste los créditos; tienes carta de pasante o constancia del 100 %.</span></span></label>

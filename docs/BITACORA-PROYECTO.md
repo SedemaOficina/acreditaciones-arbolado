@@ -347,3 +347,16 @@ auditor de CSS y de campos correctos.
   estado, y «Cómo revisar» con el avance por pantalla). `npm run textos` lo regenera.
 - Primera versión: 528 textos de la versión de prueba 0.11. Señalado: inicio dice «en PDF o en foto» (sólo se acepta
   PDF) y cuatro textos de estado que nunca se muestran.
+
+## 2026-10-16 · Bloque 27 · Estilo de los formularios
+
+- Revisión de estilo de «Crea tu cuenta» con capturas antes y después (artefacto «Revisión de estilo»); aprobada por Liber.
+- Cuenta: secciones Tus datos, Contacto, Tu adscripción, Contraseña y Antes de crear tu cuenta; nombre y apellidos en
+  `.fila-3`, fecha y CURP en `.fila`; una ayuda por bloque; CURP sin ícono de ayuda; introducción más corta (−13 % de
+  alto en escritorio). Adscripción (cuenta y Mis datos): Sí/No en línea. Solicitud: acreditación y situación de los
+  estudios en línea; nivel de estudios con ancho medio. Entrar: tarjeta angosta.
+- `app/apd.css`: `.ayuda-bloque`, `.opciones-en-linea`, `.control-medio`, `.tarjeta-angosta`, con tokens del estándar.
+- Documento de fallas del estándar: sección «Segunda tanda» (P61 y S2-1 a S2-4).
+
+**Verificado**: esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos; auditor de CSS y de
+campos correctos.

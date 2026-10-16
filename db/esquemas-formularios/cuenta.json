@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-16T02:33:28.298Z",
+  "generado": "2026-10-16T14:00:19.744Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -66,7 +66,7 @@
       "autocomplete": "bday"
     },
     "curp": {
-      "etiqueta": "CURP Son 18 caracteres, como aparecen en tu constancia de CURP. Con ella entrarás a tu cuenta.",
+      "etiqueta": "CURP",
       "tipo": "texto",
       "requerido": true,
       "formato": "curp",
