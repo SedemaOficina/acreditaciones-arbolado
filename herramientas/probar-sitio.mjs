@@ -29,6 +29,7 @@ const NUEVA = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: '
 NUEVA.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: NUEVA.nombre, primer: NUEVA.primer_apellido, segundo: NUEVA.segundo_apellido }, NUEVA.nacimiento, 'M', 'NE') + '0');
 const otroDigito = (c) => c.slice(0, 17) + String((Number(c[17]) + 1) % 10);
 // Fecha de nacimiento de una persona ficticia: está en su CURP (homoclave 0 = nacida antes de 2000)
+const dma = (iso) => iso.split('-').reverse().join('/'); // la fecha se escribe día/mes/año (decisión 2026-10-16)
 const nacimientoDe = (p) => `19${p.curp.slice(4, 6)}-${p.curp.slice(6, 8)}-${p.curp.slice(8, 10)}`;
 const CONTRASENA = 'Prueba-ficticia-2026';
 const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada'];
@@ -113,7 +114,7 @@ async function llenaCuenta(page, p, curp = p.curp) {
   await page.fill('#nombre', p.nombre);
   await page.fill('#primer_apellido', p.primer_apellido);
   await page.fill('#segundo_apellido', p.segundo_apellido || '');
-  await page.fill('#fecha_nacimiento', p.nacimiento || nacimientoDe(p));
+  await page.fill('#fecha_nacimiento', dma(p.nacimiento || nacimientoDe(p)));
   await page.fill('#curp', curp);
   await page.fill('#correo', 'nadia@ejemplo.local');
   await page.fill('#correo2', 'nadia@ejemplo.local');
@@ -204,9 +205,18 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.fill('#primer_apellido', NUEVA.primer_apellido);
   await page.fill('#curp', NUEVA.curp);
   await page.press('#curp', 'Tab');
-  await page.fill('#fecha_nacimiento', '1999-12-31');
+  await page.fill('#fecha_nacimiento', '31/12/1999');
   await page.press('#fecha_nacimiento', 'Tab');
   comprueba(/fecha de nacimiento no coincide/.test(await page.textContent('[data-campo="curp"] .err')), t('cuenta: con la CURP ya escrita, una fecha distinta se marca al momento'));
+  // La fecha se escribe sin calendario, como día/mes/año; ocho dígitos seguidos se acomodan (decisión 2026-10-16)
+  comprueba(await page.getAttribute('#fecha_nacimiento', 'type') === 'text', t('cuenta: la fecha de nacimiento se escribe, sin calendario'));
+  await page.fill('#fecha_nacimiento', '30121999');
+  await page.press('#fecha_nacimiento', 'Tab');
+  comprueba(await page.inputValue('#fecha_nacimiento') === '30/12/1999' && !/fecha de nacimiento no coincide/.test(await page.textContent('[data-campo="curp"] .err')),
+    t('cuenta: «30121999» queda como 30/12/1999 y coincide con la CURP'));
+  await page.fill('#fecha_nacimiento', '31/02/1999');
+  await page.press('#fecha_nacimiento', 'Tab');
+  comprueba(/fecha real/.test(await page.textContent('[data-campo="fecha_nacimiento"] .err')), t('cuenta: una fecha que no existe se rechaza'));
   await page.goto(BASE + 'cuenta.html');
   // CURP con dígito incorrecto: el formulario la rechaza, igual que la base
   await llenaCuenta(page, NUEVA, otroDigito(NUEVA.curp));
@@ -227,10 +237,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.fill('#segundo_apellido', NUEVA.segundo_apellido);
   // Nombre correcto pero otra fecha de nacimiento
   await page.fill('#curp', NUEVA.curp);
-  await page.fill('#fecha_nacimiento', '1999-12-31');
+  await page.fill('#fecha_nacimiento', '31/12/1999');
   await page.click('[data-accion="enviar"]');
   comprueba(await page.locator('[aria-invalid="true"]').count() > 0, t('cuenta: la fecha de nacimiento distinta a la de la CURP se rechaza'));
-  await page.fill('#fecha_nacimiento', NUEVA.nacimiento);
+  await page.fill('#fecha_nacimiento', dma(NUEVA.nacimiento));
   await page.fill('#curp', NUEVA.curp);
   await captura(page, `02-cuenta-${sufijo}`);
   await page.click('[data-accion="enviar"]');

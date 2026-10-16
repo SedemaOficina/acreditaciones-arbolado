@@ -419,3 +419,17 @@ campos correctos.
 - Comprobación de punta a punta en teléfono y escritorio: se envía un dictaminador con un PDF de tres hojas, llega a la
   bandeja señalado y el visor lo muestra (280 comprobaciones).
 
+## 2026-10-16 · Bloque 33 · Fecha de nacimiento escrita, sin calendario
+
+- Pedido de Liber: la fecha de nacimiento se escribe sin abrir calendario.
+- Formato propio `fecha-dma` (`app/fecha-dma.js`): acepta día/mes/año con `/`, `-`, `.` o espacio, o los ocho dígitos
+  juntos, y lo deja como 23/07/1985; exige fecha real, no posterior a hoy (hora de la Ciudad de México) y año desde 1900.
+  Cruzada `curp-fecha-dma` contra la fecha de la CURP. Campo de texto con teclado numérico y `autocomplete="bday"`.
+- Se carga en el navegador y en Node: el esquema del servidor valida igual. La API (etapa 3) la convierte a fecha
+  (`APD_FECHA.iso`) antes de guardarla. Hallazgo del estándar: P70.
+- Comprobaciones nuevas: el campo ya no es de calendario, «30121999» queda «30/12/1999», «31/02/1999» se rechaza (286).
+
+## 2026-10-16 · Bloque 34 · Comprobante de domicilio
+
+- Decisión de Liber: al emitir los lineamientos no se pide el comprobante de domicilio (no se utiliza); hoy la norma lo
+  exige, así que el sistema lo sigue pidiendo. P03, DECISIONES (corrección 13) y mapa (R13) actualizados.

@@ -67,6 +67,8 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-16 | Sede única: la cita de cotejo, el curso y la entrega de acreditaciones son siempre en el Vivero Nezahualcóyotl. No se elige lugar al asignar la cita; el grupo toma la sede solo (parámetros `sede` y `sede_direccion`). Falta la dirección con referencias para llegar | Liber Saltijeral |
 | 2026-10-16 | En la revisión, al aceptar un documento se pasa al siguiente sin decidir: en computadora el visor lo muestra y la lista lo trae a la vista; con todo decidido, la página baja al resultado. Al observar no avanza, porque hay que escribir qué corregir | Liber Saltijeral |
 | 2026-10-16 | Versión de prueba sin servidor: los archivos que se cargan al enviar o reenviar una solicitud se guardan sólo en ese navegador (IndexedDB) y la revisión del personal los muestra en el visor; la solicitud llega a la bandeja señalada «Archivos cargados en este navegador». El menú de pruebas los borra. Se quita al pasar al SIA | Liber Saltijeral |
+| 2026-10-16 | Fecha de nacimiento: se escribe como día/mes/año (23/07/1985), sin calendario. Acepta también guiones, puntos o los ocho dígitos juntos y la deja como 23/07/1985; debe ser una fecha real, no posterior a hoy, y coincidir con la CURP | Liber Saltijeral |
+| 2026-10-16 | Comprobante de domicilio: al emitir los lineamientos no se pide, porque no se utiliza. Mientras la norma vigente lo exija, el sistema lo sigue pidiendo (P03) | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
@@ -155,7 +157,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 10 | La consecuencia de no renovar a tiempo está truncada | Pasado un año del vencimiento se tramita como nueva |
 | 11 | «El resultado de la evaluación será inapelable» | Liber lo mantiene (mapa, R37). Recomendación: que la Dirección Jurídica revise la redacción antes de publicar |
 | 12 | Faltan el check list (anexo), el Anexo 1 de carreras afines, el concepto y monto del derecho, y las secciones «Del pago» y «Del curso» | Pedirlos a la Dirección |
-| 13 | El comprobante de domicilio no tiene uso declarado en el procedimiento | Justificar su uso o retirarlo |
+| 13 | El comprobante de domicilio no tiene uso declarado en el procedimiento | **No pedirlo** (decisión de Liber): no se utiliza. Hoy la norma lo exige y el sistema lo sigue pidiendo hasta que se publiquen los lineamientos (P03) |
 | 16 | Expediente por solicitud o sin regla | Un expediente por persona (CURP) para todos sus trámites, abierto en su primer cotejo |
 | 17 | Sin datos de pago antes de la cita | Al asignar la cita se dan concepto, monto y referencia; el comprobante se presenta en el cotejo |
 | 18 | La entrega no deja constancia | Acuse de entrega firmado por la persona, escaneado y cargado por la Secretaría |

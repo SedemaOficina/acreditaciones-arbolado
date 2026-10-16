@@ -121,7 +121,7 @@
     if (pagina === 'cuenta.html') {
       const p = personaNueva();
       pon('nombre', p.nombre); pon('primer_apellido', p.primer); pon('segundo_apellido', p.segundo);
-      pon('fecha_nacimiento', p.fecha); pon('curp', p.curp);
+      pon('fecha_nacimiento', p.fecha.split('-').reverse().join('/')); pon('curp', p.curp);
       pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
       adjuntaFoto(form.querySelector('[data-campo="foto"]'));

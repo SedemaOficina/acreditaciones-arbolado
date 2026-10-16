@@ -18,7 +18,7 @@
    Se omiten partículas (DE, DEL, LA, LOS, Y, MC, VAN…); en nombres
    compuestos que empiezan con MARÍA o JOSÉ se usa el segundo; la Ñ cuenta
    como X; las palabras altisonantes de cuatro letras cambian su segunda
-   letra por X. La fecha de nacimiento la compara la cruzada «curp-fecha»
+   letra por X. La fecha de nacimiento la compara la cruzada «curp-fecha-dma» (app/fecha-dma.js)
    del estándar.
 
    Límite: comprueba que los datos sean coherentes entre sí, no que la CURP

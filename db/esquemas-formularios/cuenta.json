@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-16T16:34:34.198Z",
+  "generado": "2026-10-16T17:21:12.812Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -55,11 +55,12 @@
       "etiqueta": "Fecha de nacimiento",
       "tipo": "texto",
       "requerido": true,
-      "formato": "fecha",
+      "formato": "fecha-dma",
       "sensible": true,
       "uso": "Comprobar la CURP; no se guarda aparte porque ya está en ella.",
       "finalidad": "Comprobar que la CURP corresponde a quien crea la cuenta.",
       "atributos": {
+        "maxlength": "10",
         "max": "hoy",
         "noFutura": ""
       },
@@ -80,7 +81,7 @@
       "autocomplete": "off",
       "cruzadas": [
         {
-          "clave": "curp-fecha",
+          "clave": "curp-fecha-dma",
           "mapa": {
             "curp": "curp",
             "fecha": "fecha_nacimiento",

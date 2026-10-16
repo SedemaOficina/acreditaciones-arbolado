@@ -52,4 +52,4 @@ prueba con el cálculo de los auxiliares que hará la API (14 casos).
   motivos frecuentes y quién fija la fecha (P64).
 - Visor de documentos: en la prueba muestra el archivo cargado en el navegador o un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
 - Siguientes pantallas: citas de cotejo, grupos y asistencia, calificación, emisión y entrega.
-- Hallazgos del estándar: P65 (chips con lista fija), P66 (tabla filtrada y columna de acción en teléfono) y P67 (no hay visor de documentos).
+- Hallazgos del estándar: P65 (chips con lista fija), P66 (tabla filtrada y columna de acción en teléfono) P67 (no hay visor de documentos) y P70 (fecha escrita como día/mes/año, usada en «Crear cuenta»).

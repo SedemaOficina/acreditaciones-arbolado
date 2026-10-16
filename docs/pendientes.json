@@ -56,8 +56,8 @@
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-14",
-      "titulo": "Uso del comprobante de domicilio: el procedimiento no dice para qué se pide",
-      "recomendacion": "Retirarlo. Es un dato personal sin uso declarado y nada del trámite depende del domicilio. Si la Dirección lo quiere para notificar, que lo declare así en los lineamientos y en el aviso de privacidad."
+      "titulo": "Comprobante de domicilio: no pedirlo al emitir los lineamientos; hoy la norma lo exige",
+      "recomendacion": "Decisión de Liber (2026-10-16): al emitir los lineamientos no se pide, porque es un dato personal que no se utiliza en ningún paso del trámite. Mientras la norma vigente lo exija, la solicitud lo sigue pidiendo y la revisión lo acepta u observa. Al publicarse los lineamientos sin él, se quita el requisito del catálogo (apd.requisito) y del aviso de privacidad."
     },
     {
       "id": "P04",
@@ -522,6 +522,14 @@
       "desde": "2026-10-16",
       "titulo": "Ventanas de horario para las citas de cotejo en el Vivero Nezahualcóyotl",
       "recomendacion": "Preguntar qué días y en qué horario se atienden citas, cuánto dura cada una y cuántas personas caben por franja (por ejemplo, de lunes a viernes, de 9:00 a 14:00, en bloques de 30 minutos). Con eso la revisión sólo ofrece horas dentro de las ventanas, avisa si una franja ya está llena y puede proponer la primera libre (se liga a P64). Mientras, la hora se escribe libre."
+    },
+    {
+      "id": "P70",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-16",
+      "titulo": "El formato «fecha» del estándar sólo acepta AAAA-MM-DD escrito, o el calendario del navegador",
+      "recomendacion": "Proponer un formato de fecha escrita como día/mes/año (acepta 23/07/1985, 23-07-1985 o 23071985 y la deja como 23/07/1985), con su cruzada contra la CURP y el límite «no posterior a hoy», a partir de app/fecha-dma.js de este proyecto. Para la fecha de nacimiento, el calendario obliga a recorrer décadas."
     }
   ],
   "resueltos": [

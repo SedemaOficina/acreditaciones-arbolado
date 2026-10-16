@@ -22,9 +22,9 @@
      · CURP nueva                  → cuenta nueva.
    ?simular=error | limite | lento muestra cada pantalla de fallo.
    ========================================================= */
-/* Validaciones cruzadas propias del proyecto (CURP ↔ nombre y apellidos), de app/curp-nombre.js:
-   la misma regla que aplica el servidor. La de la fecha (curp-fecha) ya viene en el estándar. */
-window.FORMKIT_CONFIG = { cruzadas: window.APD_CRUZADAS };
+/* Validaciones cruzadas propias del proyecto (CURP ↔ nombre y apellidos, de app/curp-nombre.js; CURP ↔ fecha escrita
+   como día/mes/año, de app/fecha-dma.js) y el formato fecha-dma: la misma regla que aplica el servidor. */
+window.FORMKIT_CONFIG = { cruzadas: window.APD_CRUZADAS, formatos: window.APD_FORMATOS };
 
 window.FORMKIT_OPCIONES = {
   enviar(payload, { signal }) {
