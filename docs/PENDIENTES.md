@@ -12,11 +12,9 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 
 | # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P01 | Experiencia mínima de pasantes: el borrador dice 5 años en la tabla y 2 en las disposiciones | Dos años para los tres perfiles universitarios (título, 100 % de créditos y pasante) y cinco para carrera técnica. Es lo que dicen las disposiciones específicas; la tabla parece ser la que tiene el error. | datos reales |
 | P02 | Plazo para atender observaciones y para presentarse a la cita | 30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra. | datos reales |
 | P03 | Uso del comprobante de domicilio: el procedimiento no dice para qué se pide | Retirarlo. Es un dato personal sin uso declarado y nada del trámite depende del domicilio. Si la Dirección lo quiere para notificar, que lo declare así en los lineamientos y en el aviso de privacidad. | datos reales |
-| P04 | Check list del cotejo, Anexo 1 de carreras afines y secciones «Del pago» y «Del curso» del borrador | Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener. | etapa 2 |
-| P05 | Si las constancias de capacitación se piden también a quien tiene título | Sí, a todos los perfiles en dictaminador nueva, como ya está en la base (R11). Una regla igual para todos es más fácil de revisar y de explicar. | datos reales |
+| P04 | Check list del cotejo y secciones «Del pago» y «Del curso» del borrador | Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener. (El Anexo 1 de carreras afines ya no se necesita: la carrera la valida el personal.) | etapa 2 |
 | P06 | No admitir una solicitud nueva si la persona ya tiene una del mismo tipo vigente o renovable (R07) | Mantener la regla: con una acreditación vigente o todavía renovable corresponde renovar. Evita dos acreditaciones del mismo tipo para la misma persona. | no |
 | P07 | Cómo corregir una calificación mal capturada (hoy el resultado es inapelable y no se modifica) | Distinguir el examen de la captura. El resultado del examen es inapelable; un error de captura se corrige sólo antes de emitir, con el perfil de administración, con motivo y en la bitácora. | etapa 2 |
 | P08 | Revisión jurídica de la redacción «el resultado de la evaluación será inapelable» | Enviarla a la Dirección Jurídica junto con la regla de P07, para que la redacción deje claro que lo inapelable es la evaluación y no un error de captura. | datos reales |
@@ -134,3 +132,5 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Nombres de los identificadores (P58) | «Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema | 15/10/2026 |
 | Catálogo de carreras afines (P59) | No habrá catálogo de afines: campo abierto que valida el personal en la revisión documental; el catálogo crece con las carreras aceptadas de manera explícita | 15/10/2026 |
 | Reglas del perfil de dictaminador (P60) | Confirmadas por Liber: licenciatura titulada; posgrado cuenta en su área; lo que no cumple se envía y lo decide el personal | 15/10/2026 |
+| Experiencia mínima de pasantes (P01) | 5 años, según el apartado académico que dio Liber | 16/10/2026 |
+| Constancias de capacitación (P05) | ya no se piden por separado; van entre los comprobantes de experiencia | 16/10/2026 |

@@ -44,14 +44,6 @@
   ],
   "pendientes": [
     {
-      "id": "P01",
-      "grupo": "direccion",
-      "bloquea": "datos reales",
-      "desde": "2026-10-14",
-      "titulo": "Experiencia mínima de pasantes: el borrador dice 5 años en la tabla y 2 en las disposiciones",
-      "recomendacion": "Dos años para los tres perfiles universitarios (título, 100 % de créditos y pasante) y cinco para carrera técnica. Es lo que dicen las disposiciones específicas; la tabla parece ser la que tiene el error."
-    },
-    {
       "id": "P02",
       "grupo": "direccion",
       "bloquea": "datos reales",
@@ -72,16 +64,8 @@
       "grupo": "direccion",
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
-      "titulo": "Check list del cotejo, Anexo 1 de carreras afines y secciones «Del pago» y «Del curso» del borrador",
-      "recomendacion": "Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener."
-    },
-    {
-      "id": "P05",
-      "grupo": "direccion",
-      "bloquea": "datos reales",
-      "desde": "2026-10-14",
-      "titulo": "Si las constancias de capacitación se piden también a quien tiene título",
-      "recomendacion": "Sí, a todos los perfiles en dictaminador nueva, como ya está en la base (R11). Una regla igual para todos es más fácil de revisar y de explicar."
+      "titulo": "Check list del cotejo y secciones «Del pago» y «Del curso» del borrador",
+      "recomendacion": "Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener. (El Anexo 1 de carreras afines ya no se necesita: la carrera la valida el personal.)"
     },
     {
       "id": "P06",
@@ -628,6 +612,16 @@
       "titulo": "Reglas del perfil de dictaminador (P60)",
       "como": "Confirmadas por Liber: licenciatura titulada; posgrado cuenta en su área; lo que no cumple se envía y lo decide el personal",
       "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Experiencia mínima de pasantes (P01)",
+      "como": "5 años, según el apartado académico que dio Liber",
+      "fecha": "2026-10-16"
+    },
+    {
+      "titulo": "Constancias de capacitación (P05)",
+      "como": "ya no se piden por separado; van entre los comprobantes de experiencia",
+      "fecha": "2026-10-16"
     }
   ]
 }
