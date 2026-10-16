@@ -97,6 +97,9 @@ async function siguiente(page) {
   // La adscripción es obligatoria en el primer paso; donde la prueba no la revisa, se responde «No»
   const sinAdscripcion = await page.$(`${pasoVisible} [data-campo="adscrito"]:not(:has(input:checked))`);
   if (sinAdscripcion) await page.check('input[name="adscrito"][value="no"]', { force: true });
+  // Los estudios se preguntan en poda y en dictaminador; donde la prueba no los revisa, preparatoria
+  const sinEstudios = await page.$(`${pasoVisible} [data-campo="nivel_estudios"]:not(:has(input:checked))`);
+  if (sinEstudios && await sinEstudios.isVisible()) await page.check('input[name="nivel_estudios"][value="preparatoria"]', { force: true });
   await page.click(`${pasoVisible} [data-accion="siguiente"]`);
 }
 async function cargaObligatorios(page) {
@@ -246,6 +249,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/solicitud nueva/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud: informa que le corresponde una solicitud nueva (no lo pregunta)'));
   comprueba(/Independiente/.test(await page.textContent('[data-adscripcion-texto]')),
     t('solicitud: muestra la adscripción de la persona con la que se enviará (se cambia en «Mis datos»)'));
+  await page.check('input[name="nivel_estudios"][value="licenciatura"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="carrera"]') && !(await page.isVisible('[data-campo="estatus_estudios"]')) && !(await page.isVisible('[data-campo="anios_experiencia"]')),
+    t('poda: pregunta nivel de estudios y carrera, sin situación de los estudios ni experiencia'));
+  await page.fill('#carrera', 'Arquitectura de Paisaje');
   await siguiente(page);
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
     t('documentos: la CURP trae el enlace oficial para obtenerla'));
@@ -321,6 +328,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.check('input[name="nivel_estudios"][value="preparatoria"]', { force: true });
   comprueba(!(await page.isVisible('[data-campo="carrera"]')) && await page.isVisible('[data-perfil-no-cumple]'),
     t('perfil: con preparatoria no se pregunta carrera y avisa que no cumple el perfil'));
+  await page.check('input[name="nivel_estudios"][value="tecnica"]', { force: true });
+  comprueba(!(await page.isVisible('[data-campo="carrera"]')) && await page.isVisible('[data-campo="estatus_estudios"]'),
+    t('dictaminador: con carrera técnica pide la situación de los estudios, sin carrera'));
   await page.check('input[name="nivel_estudios"][value="licenciatura"]', { force: true });
   comprueba(await page.isVisible('[data-campo="carrera"]') && await page.isVisible('[data-campo="estatus_estudios"]') && !(await page.isVisible('[data-perfil-no-cumple]')),
     t('perfil: con licenciatura pregunta la carrera y luego su situación'));

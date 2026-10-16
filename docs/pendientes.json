@@ -497,7 +497,7 @@
       "bloquea": "no",
       "desde": "2026-10-15",
       "titulo": "Reglas supuestas del perfil de dictaminador",
-      "recomendacion": "Confirmar: (1) un posgrado cuenta como licenciatura titulada en su carrera; (2) hasta preparatoria, o licenciatura en curso o trunca, no cumple y la solicitud no se envía; (3) la carta de pasante sólo vale en carrera principal, afín o disciplina afín."
+      "recomendacion": "Confirmar: (1) un posgrado cuenta como licenciatura titulada; (2) hasta preparatoria, o carrera técnica o licenciatura en curso o truncas, no cumple y la solicitud no se envía; (3) la carta de pasante sólo vale en carrera principal, afín o disciplina afín."
     },
     {
       "id": "P61",

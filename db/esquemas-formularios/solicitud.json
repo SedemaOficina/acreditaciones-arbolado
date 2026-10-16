@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-16T01:36:28.686Z",
+  "generado": "2026-10-16T01:47:41.995Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -47,8 +47,8 @@
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
-      "uso": "Saber si cumples el perfil y cuántos años de experiencia se piden.",
-      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "uso": "Conocer tu formación; en dictaminador, saber si cumples el perfil y cuántos años de experiencia se piden.",
+      "finalidad": "Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos.",
       "atributos": {},
       "opciones": [
         "ninguna",
@@ -61,21 +61,15 @@
         "maestria",
         "doctorado"
       ],
-      "autocomplete": "off",
-      "si": {
-        "campo": "tipo",
-        "valores": [
-          "dictaminador"
-        ]
-      }
+      "autocomplete": "off"
     },
     "carrera": {
       "etiqueta": "¿Qué carrera estudiaste?",
       "tipo": "combo",
       "requerido": true,
       "sensible": false,
-      "uso": "Saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.",
-      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "uso": "Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.",
+      "finalidad": "Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos.",
       "atributos": {
         "maxlength": "120"
       },
@@ -92,7 +86,7 @@
       }
     },
     "estatus_estudios": {
-      "etiqueta": "¿En qué situación están esos estudios?",
+      "etiqueta": "¿En qué situación está ese último grado de estudios?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -107,11 +101,9 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "nivel_estudios",
+        "campo": "tipo",
         "valores": [
-          "licenciatura",
-          "maestria",
-          "doctorado"
+          "dictaminador"
         ]
       }
     },

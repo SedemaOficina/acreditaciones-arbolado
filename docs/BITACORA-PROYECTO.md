@@ -295,3 +295,14 @@ auditor de CSS y de campos correctos.
 
 **Verificado**: 113 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
 auditor de CSS y de campos correctos.
+
+## 2026-10-15 · Bloque 22 · Estudios también en poda
+
+- «Tus estudios» en las dos acreditaciones: nivel y, desde licenciatura, carrera. En dictaminador, además, la situación
+  del último grado (también en carrera técnica: en curso o trunca no cumple). La base pide nivel y carrera al enviar
+  (`faltan_estudios`) y en poda no guarda situación ni perfil.
+- La situación de los estudios tiene una sola condición (tipo = dictaminador): con dos condiciones anidadas el esquema
+  del servidor sólo leía la más cercana y la exigía en poda (P38). Con nivel «ninguno», la base la descarta.
+
+**Verificado**: 116 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
+auditor de CSS y de campos correctos.

@@ -45,8 +45,8 @@ const COTEJO_PERSONA = `(SELECT solicitante_id FROM apd.solicitud WHERE estado =
 const SIN_FOTO = `
      INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
      VALUES ('00000000-0000-4000-a000-000000000011', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
-     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
-     VALUES ('00000000-0000-4000-a000-000000000012', '00000000-0000-4000-a000-000000000011', 'poda', 'nueva');
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000012', '00000000-0000-4000-a000-000000000011', 'poda', 'nueva', 'preparatoria');
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
      SELECT '00000000-0000-4000-a000-000000000012', rc.requisito, 'prueba/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1000, repeat('a', 64)
        FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
@@ -98,8 +98,8 @@ const casos = [
   ['No se envía con documentos faltantes', { codigo: 'faltan_documentos' }, null, `
      INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
      VALUES ('00000000-0000-4000-a000-000000000001', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
-     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
-     VALUES ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000001', 'poda', 'nueva');
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-a000-000000000001', 'poda', 'nueva', 'preparatoria');
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000002';`],
   ['Sin factura no se concluye el cotejo ni se asigna curso', { codigo: 'sin_factura' }, null, `
      UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
@@ -128,8 +128,8 @@ const casos = [
   ['Cada archivo se guarda como TIPO DE DOCUMENTO_NOMBRE COMPLETO, sin acentos y con Ñ', 'ok', null, `
      INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
      VALUES ('00000000-0000-4000-a000-000000000031', 'XAXX991231HNEXXX09', 'maría josé', 'peña', 'güemes', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
-     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad)
-     VALUES ('00000000-0000-4000-a000-000000000032', '00000000-0000-4000-a000-000000000031', 'poda', 'nueva');
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000032', '00000000-0000-4000-a000-000000000031', 'poda', 'nueva', 'preparatoria');
      INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
      VALUES ('00000000-0000-4000-a000-000000000032', 'curp', 'prueba/curp', 'escaneo 0042 final.PDF', 'application/pdf', 1000, repeat('a', 64)),
             ('00000000-0000-4000-a000-000000000032', 'identificacion_oficial', 'prueba/ine', 'INE escaneada.pdf', 'application/pdf', 1000, repeat('a', 64));
@@ -424,10 +424,21 @@ const casos = [
   ['Licenciatura trunca no cumple el perfil y no se envía', { codigo: 'perfil_no_cumple' }, null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'trunco', carrera = 'Biología' WHERE id = ${DICT_OBS};
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
-  ['Con preparatoria no se guardan carrera ni estatus, y no cumple el perfil', 'ok', null, `
+  ['Con preparatoria no se guarda la carrera, y no cumple el perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'preparatoria', estatus_estudios = 'titulado', carrera = 'Biología' WHERE id = ${DICT_OBS};
-     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL
+     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios = 'titulado' AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
+  ['Carrera técnica trunca no cumple el perfil', { codigo: 'perfil_no_cumple' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'tecnica', estatus_estudios = 'trunco' WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+  ['Poda: se guardan nivel y carrera, sin situación de estudios ni perfil', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', carrera = 'Biología', estatus_estudios = 'titulado' WHERE id = ${BORRADOR};
+     DO $$ BEGIN ASSERT (SELECT nivel_estudios = 'licenciatura' AND carrera = 'Biología' AND carrera_id IS NOT NULL
+                                AND estatus_estudios IS NULL AND perfil_academico IS NULL
+                           FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1); END $$;`],
+  ['Sin nivel de estudios no se envía (poda y dictaminador)', { codigo: 'faltan_estudios' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = NULL WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
   ['Carrera técnica pide 5 años', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'tecnica' WHERE id = ${DICT_OBS};
      DO $$ BEGIN ASSERT (SELECT perfil_academico = 'tecnica' AND experiencia_minima = 5

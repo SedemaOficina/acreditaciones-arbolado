@@ -146,9 +146,12 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   en(opciones.fecha, '09:30');
   como(p.correo, 'solicitante');
   // Perfil del dictaminador: nivel, carrera y estatus; la base calcula el perfil y la experiencia mínima
+  // En poda se pregunta el nivel y, desde licenciatura, la carrera (dato del padrón); se reparte entre niveles comunes
+  const NIVELES_PODA = ['secundaria', 'preparatoria', 'tecnica', 'licenciatura'];
+  const nivelPoda = opciones.nivel || NIVELES_PODA[[...clave].reduce((n, ch) => n + ch.charCodeAt(0), 0) % NIVELES_PODA.length];
   const perfil = tipo === 'dictaminador'
     ? { nivel: opciones.nivel || 'licenciatura', carrera: opciones.carrera || 'Biología', estatus: opciones.estatus || 'titulado', anios: opciones.anios ?? 4 }
-    : { nivel: null, carrera: null, estatus: null, anios: null };
+    : { nivel: nivelPoda, carrera: nivelPoda === 'licenciatura' ? (opciones.carrera || 'Arquitectura de Paisaje') : null, estatus: null, anios: null };
   // La adscripción es de la persona («Mis datos»); la solicitud la copia
   if (opciones.org) emitir(`UPDATE apd.solicitante SET adscripcion = ${q(ORG[opciones.org].tipo)}, organizacion_id = ${orgId(opciones.org)} WHERE id = ${q(p.id)}`);
   emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id,

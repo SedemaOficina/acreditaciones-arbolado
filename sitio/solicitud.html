@@ -92,52 +92,55 @@
         </div>
       </div>
 
+      <!-- Estudios (decisión 2026-10-15, Liber): nivel y, desde licenciatura, carrera, en poda y en dictaminador. En
+           dictaminador son requisito: se pide además la situación del último grado y, con eso, la base calcula el perfil
+           y la experiencia mínima que piden los lineamientos (apd.perfil_academico). -->
+      <h3 class="titulo-bloque">Tus estudios</h3>
+      <fieldset class="grupo" data-campo="nivel_estudios" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si cumples el perfil y cuántos años de experiencia se piden.">
+        <legend class="etiqueta">¿Cuál es tu último nivel o grado de estudios?</legend>
+        <p class="ayuda">El más alto que cursas o cursaste.</p>
+        <!-- autocomplete off: el navegador no tiene un valor que proponer para el nivel de estudios. -->
+        <div class="opciones-lista">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="ninguna"><span><span class="opcion-nombre">Ninguno</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="preescolar"><span><span class="opcion-nombre">Preescolar</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="primaria"><span><span class="opcion-nombre">Primaria</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="secundaria"><span><span class="opcion-nombre">Secundaria</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="preparatoria"><span><span class="opcion-nombre">Preparatoria o bachillerato</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="tecnica"><span><span class="opcion-nombre">Carrera técnica</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="licenciatura"><span><span class="opcion-nombre">Licenciatura o ingeniería</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="maestria"><span><span class="opcion-nombre">Maestría</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="doctorado"><span><span class="opcion-nombre">Doctorado</span></span></label>
+        </div>
+      </fieldset>
+      <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
+        <div class="campo" data-campo="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
+          <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
+          <p class="ayuda">Elígela de la lista o escríbela como aparece en tu título o constancia. Si tienes posgrado, la carrera más relacionada con el arbolado.</p>
+          <div class="combo" data-combo data-catalogo="carreras" data-libre>
+            <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
+            <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
+            <ul class="combo-lista" hidden></ul>
+          </div>
+        </div>
+      </div>
+      <!-- Una sola condición (tipo): el esquema del servidor sólo lee el data-si más cercano (P38). Con nivel «ninguno»
+           la base descarta la situación. -->
       <div data-si="tipo=dictaminador">
-        <h3 class="titulo-bloque">Tu perfil</h3>
-        <!-- Perfil (decisión 2026-10-15, Liber): nivel → carrera (desde licenciatura) → estatus. Con eso la base calcula
-             el perfil y la experiencia mínima que piden los lineamientos (apd.perfil_academico). -->
-        <fieldset class="grupo" data-campo="nivel_estudios" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si cumples el perfil y cuántos años de experiencia se piden.">
-          <legend class="etiqueta">¿Cuál es tu último nivel o grado de estudios?</legend>
-          <p class="ayuda">El más alto que cursas o cursaste.</p>
-          <!-- autocomplete off: el navegador no tiene un valor que proponer para el nivel de estudios. -->
+        <fieldset class="grupo" data-campo="estatus_estudios" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si tienes título, carta de pasante o estudios sin concluir, para fijar la experiencia mínima.">
+          <legend class="etiqueta">¿En qué situación está ese último grado de estudios?</legend>
+          <!-- autocomplete off: el navegador no tiene un valor que proponer para la situación de los estudios. -->
           <div class="opciones-lista">
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="ninguna"><span><span class="opcion-nombre">Ninguno</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="preescolar"><span><span class="opcion-nombre">Preescolar</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="primaria"><span><span class="opcion-nombre">Primaria</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="secundaria"><span><span class="opcion-nombre">Secundaria</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="preparatoria"><span><span class="opcion-nombre">Preparatoria o bachillerato</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="tecnica"><span><span class="opcion-nombre">Carrera técnica</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="licenciatura"><span><span class="opcion-nombre">Licenciatura o ingeniería</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="maestria"><span><span class="opcion-nombre">Maestría</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="doctorado"><span><span class="opcion-nombre">Doctorado</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="en_curso"><span><span class="opcion-nombre">En curso</span><span class="opcion-desc">Todavía lo estudias.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="trunco"><span><span class="opcion-nombre">Trunco</span><span class="opcion-desc">Lo dejaste sin terminar.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="concluido"><span><span class="opcion-nombre">Concluido</span><span class="opcion-desc">Lo terminaste. En licenciatura: tienes carta de pasante o constancia del 100 % de créditos.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="titulado"><span><span class="opcion-nombre">Titulado</span><span class="opcion-desc">Tienes título, cédula o certificado.</span></span></label>
           </div>
         </fieldset>
-        <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
-          <div class="campo" data-campo="carrera" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
-            <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
-            <p class="ayuda">Elígela de la lista o escríbela como aparece en tu título o constancia. Si tienes posgrado, la carrera más relacionada con el arbolado.</p>
-            <div class="combo" data-combo data-catalogo="carreras" data-libre>
-              <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
-              <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
-              <ul class="combo-lista" hidden></ul>
-            </div>
-          </div>
-          <fieldset class="grupo" data-campo="estatus_estudios" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si tienes título, carta de pasante o estudios sin concluir, para fijar la experiencia mínima.">
-            <legend class="etiqueta">¿En qué situación están esos estudios?</legend>
-            <!-- autocomplete off: el navegador no tiene un valor que proponer para la situación de los estudios. -->
-            <div class="opciones-lista">
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="en_curso"><span><span class="opcion-nombre">En curso</span><span class="opcion-desc">Todavía los estudias.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="trunco"><span><span class="opcion-nombre">Trunco</span><span class="opcion-desc">Los dejaste sin terminar.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="concluido"><span><span class="opcion-nombre">Concluido</span><span class="opcion-desc">Terminaste los créditos; tienes carta de pasante o constancia del 100 %.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="titulado"><span><span class="opcion-nombre">Titulado</span><span class="opcion-desc">Tienes título o cédula profesional.</span></span></label>
-            </div>
-          </fieldset>
-        </div>
-        <!-- Lo que calcula la base con las tres respuestas; la persona ve la experiencia que se le pide (abajo). -->
+        <!-- Lo que calcula la base con las respuestas; la persona ve la experiencia que se le pide (abajo). -->
         <div data-interno="Lo calcula la base con el nivel, la situación de los estudios y el grupo de la carrera (apd.perfil_academico). Se guarda en apd.solicitud.perfil_academico y experiencia_minima." data-interno-etiqueta="Perfil y experiencia mínima (calculados)" data-interno-texto=""></div>
         <div class="aviso aviso-bloqueo" data-perfil-no-cumple hidden>
           <svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg>
-          <div class="aviso-texto"><p>Con estos estudios no cumples el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, o carrera técnica. La solicitud no se podrá enviar.</p></div>
+          <div class="aviso-texto"><p>Con estos estudios no cumples el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, o carrera técnica concluida. La solicitud no se podrá enviar.</p></div>
         </div>
         <div class="campo" data-campo="anios_experiencia" data-formato="numero" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.">
           <label class="etiqueta" for="anios_experiencia">Experiencia en manejo de arbolado</label>

@@ -9,7 +9,7 @@
        ser obligatorios;
      · el ejemplo de cómo se guardan sus archivos, con su nombre (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo hace
        la base al cargarlos, apd.nombre_de_archivo);
-     · dictaminador: con nivel, carrera y situación de los estudios, la experiencia que se le pide (APD.perfilAcademico,
+     · estudios (poda y dictaminador); en dictaminador, con nivel, carrera y situación, la experiencia que se le pide (APD.perfilAcademico,
        mismo cálculo que la base). Fija el mínimo del campo de experiencia y avisa si no cumple el perfil.
    La base vuelve a comprobar todo al enviar. */
 (function () {
@@ -142,14 +142,13 @@
     fija('tipo', s.tipo_acreditacion);
     const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
     ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
-    if (s.tipo_acreditacion === 'dictaminador') {
-      for (const [n, v] of [['nivel_estudios', s.nivel_estudios], ['estatus_estudios', s.estatus_estudios]]) {
-        const r = radios(n).find((x) => x.value === v);
-        if (r) { r.checked = true; avisa(r); }
-      }
-      ponValor('carrera', s.carrera);
-      ponValor('anios_experiencia', s.anios_experiencia);
+    // Estudios: nivel y carrera en los dos tipos; situación y experiencia, en dictaminador
+    for (const [n, v] of [['nivel_estudios', s.nivel_estudios], ['estatus_estudios', s.estatus_estudios]]) {
+      const r = radios(n).find((x) => x.value === v);
+      if (r) { r.checked = true; avisa(r); }
     }
+    ponValor('carrera', s.carrera);
+    if (s.tipo_acreditacion === 'dictaminador') ponValor('anios_experiencia', s.anios_experiencia);
 
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r.nombre]));
@@ -176,7 +175,7 @@
     const valor = (n) => { const r = radios(n).find((x) => x.checked); return r ? r.value : ''; };
     const nivel = valor('nivel_estudios');
     const superior = APD.SUPERIORES.includes(nivel);
-    const p = APD.perfilAcademico(datos, nivel, superior ? valor('estatus_estudios') : '', superior ? document.getElementById('carrera').value : '');
+    const p = APD.perfilAcademico(datos, nivel, valor('estatus_estudios'), superior ? document.getElementById('carrera').value : '');
     const anios = document.getElementById('anios_experiencia');
     anios.setAttribute('min', p && p.minimo ? String(p.minimo) : '0');
     document.querySelector('[data-perfil-no-cumple]').hidden = !(p && p.perfil === 'no_cumple');
