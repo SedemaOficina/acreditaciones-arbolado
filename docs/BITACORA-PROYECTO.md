@@ -316,3 +316,6 @@ auditor de CSS y de campos correctos.
 
 **Verificado**: 116 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
 auditor de CSS y de campos correctos.
+- Sin catálogo de carreras afines (Liber): la carrera es abierta y la valida el personal; el catálogo inicial trae sólo las
+  cuatro que nombran los lineamientos y la lista sugiere sólo las aceptadas. P59 resuelto; P62 (pantalla para
+  clasificar carreras) para la etapa 2.

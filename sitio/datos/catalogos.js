@@ -4,5 +4,5 @@
    2026-10-14. En producción lo sirve la base. */
 window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
   empresas: ["Jardines Ejemplo del Norte, S.A. de C.V.","Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos"],
-  carreras: ["Agronomía","Arquitectura","Arquitectura de Paisaje","Biología","Ciencias Ambientales","Ecología","Ingeniería Agrónoma","Ingeniería Ambiental","Ingeniería en Restauración Forestal","Ingeniería Forestal"]
+  carreras: ["Agronomía","Biología","Ingeniería Agrónoma","Ingeniería Forestal"]
 });

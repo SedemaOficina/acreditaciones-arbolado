@@ -144,21 +144,16 @@ INSERT INTO apd.organizacion (tipo, clave, nombre) VALUES
   ('alcaldia', 'venustiano_carranza', 'Venustiano Carranza'),
   ('alcaldia', 'xochimilco',          'Xochimilco');
 
--- Carreras para la pregunta «¿Qué carrera estudiaste?» (cgo_carreras; decisión 2026-10-15, Liber). Grupo según los
--- lineamientos: «principal» son las que nombran (Biología, Ingeniería Forestal, Ingeniería Agrónoma; Agronomía es la
--- misma carrera con otro nombre). Las afines (Anexo 1) se agregan con grupo «afin» cuando la Dirección las entregue
--- [pendiente P59]; las demás de la lista inicial quedan sin grupo y las clasifica la Secretaría.
+-- Carreras para la pregunta «¿Qué carrera estudiaste?» (decisión 2026-10-15, Liber). No hay catálogo de carreras afines:
+-- la carrera es un campo abierto y el personal la valida en la revisión documental. El catálogo empieza con las que
+-- nombran los lineamientos («principal»; Agronomía es la misma carrera que Ingeniería Agrónoma) y crece con las que la
+-- Secretaría acepta de manera explícita (afin o disciplina_afin). Sólo las aceptadas se sugieren al escribir; las
+-- escritas por las personas entran sin grupo hasta que se clasifican.
 INSERT INTO apd.carrera (nombre, grupo) VALUES
   ('Biología',                         'principal'),
   ('Ingeniería Forestal',              'principal'),
   ('Ingeniería Agrónoma',              'principal'),
-  ('Agronomía',                        'principal'),
-  ('Arquitectura de Paisaje',          NULL),
-  ('Ingeniería Ambiental',             NULL),
-  ('Ciencias Ambientales',             NULL),
-  ('Ingeniería en Restauración Forestal', NULL),
-  ('Ecología',                         NULL),
-  ('Arquitectura',                     NULL);
+  ('Agronomía',                        'principal');
 
 -- Cómo se nombra el archivo guardado de cada documento (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE
 -- COMPLETO, p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Un requisito nuevo sin este dato usa su nombre en mayúsculas.

@@ -484,14 +484,6 @@
       "recomendacion": "Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
     },
     {
-      "id": "P59",
-      "grupo": "direccion",
-      "bloquea": "datos reales",
-      "desde": "2026-10-15",
-      "titulo": "Catálogo de carreras (cgo_carreras) y Anexo 1 de carreras afines",
-      "recomendacion": "Entregar el catálogo cgo_carreras y el Anexo 1 para clasificar cada carrera como principal, afín, disciplina afín o no afín. Hoy sólo Biología, Ingeniería Forestal, Ingeniería Agrónoma y Agronomía están clasificadas; las demás quedan «por clasificar» y la Secretaría las clasifica en la revisión documental."
-    },
-    {
       "id": "P60",
       "grupo": "liber",
       "bloquea": "no",
@@ -506,6 +498,14 @@
       "desde": "2026-10-15",
       "titulo": "El mínimo de un número no puede depender de otra respuesta",
       "recomendacion": "Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente."
+    },
+    {
+      "id": "P62",
+      "grupo": "sia",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-15",
+      "titulo": "Pantalla del personal para clasificar carreras en la revisión documental",
+      "recomendacion": "En la revisión documental, la carrera sin clasificar se marca como aceptada (afín o disciplina afín) o no afín; al aceptarla entra al catálogo y se sugiere a las siguientes personas. La base ya recalcula el perfil al clasificarla."
     }
   ],
   "resueltos": [
@@ -617,6 +617,11 @@
     {
       "titulo": "Nombres de los identificadores (P58)",
       "como": "«Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Catálogo de carreras afines (P59)",
+      "como": "No habrá catálogo de afines: campo abierto que valida el personal en la revisión documental; el catálogo crece con las carreras aceptadas de manera explícita",
       "fecha": "2026-10-15"
     }
   ]

@@ -25,7 +25,6 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P48 | ¿La credencial se imprime en el lugar de entrega? | Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento. | etapa 2 |
 | P49 | Especificación de la foto de la credencial y diseño de la credencial | Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. | datos reales |
 | P57 | Hora de entrada al curso | Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base. | datos reales |
-| P59 | Catálogo de carreras (cgo_carreras) y Anexo 1 de carreras afines | Entregar el catálogo cgo_carreras y el Anexo 1 para clasificar cada carrera como principal, afín, disciplina afín o no afín. Hoy sólo Biología, Ingeniería Forestal, Ingeniería Agrónoma y Agronomía están clasificadas; las demás quedan «por clasificar» y la Secretaría las clasifica en la revisión documental. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
@@ -69,6 +68,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P29 | Conexión del examen en línea: cuenta propia o API del módulo | Por la API del módulo, para que la calificación pase por las mismas reglas y la misma bitácora que la captura del instructor. | no |
 | P30 | Formato exacto de la contraseña derivada que usa el esquema acceso | Pedirlo al SIA para usar el mismo; hoy los ficticios usan scrypt con los parámetros documentados. | etapa 3 |
 | P55 | Cambio de correo en «Mis datos» sin comprobar que el correo nuevo es de la persona | Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio. | etapa 3 |
+| P62 | Pantalla del personal para clasificar carreras en la revisión documental | En la revisión documental, la carrera sin clasificar se marca como aceptada (afín o disciplina afín) o no afín; al aceptarla entra al catálogo y se sugiere a las siguientes personas. La base ya recalcula el perfil al clasificarla. | etapa 2 |
 
 ## Unidad de Transparencia (datos personales)
 
@@ -132,3 +132,4 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Lista de Direcciones Generales de la SEDEMA (P53) | Lista cerrada de seis Direcciones Generales; se quitó «Otra área de la Secretaría» por indicación de Liber | 15/10/2026 |
 | Universidades e instituciones educativas en la adscripción (P54) | Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre | 15/10/2026 |
 | Nombres de los identificadores (P58) | «Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema | 15/10/2026 |
+| Catálogo de carreras afines (P59) | No habrá catálogo de afines: campo abierto que valida el personal en la revisión documental; el catálogo crece con las carreras aceptadas de manera explícita | 15/10/2026 |

@@ -58,8 +58,10 @@ cpSync(join(raiz, 'datos/ficticios.json'), join(sitio, 'datos/ficticios.json'));
 // Arreglo simple: el módulo combo 1.0.0 sólo lee arreglos (P37).
 const alcaldias = datos.organizacion.filter((o) => o.activa && o.tipo === 'alcaldia' && o.clave).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 const empresas = datos.organizacion.filter((o) => o.activa && o.tipo === 'privada').map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
-// Carreras del perfil de dictaminador (apd.carrera, cgo_carreras): combo abierto; el grupo lo lee app/apd.js de los datos
-const carreras = datos.carrera.filter((c) => c.activa).map((c) => c.nombre).sort((a, b) => a.localeCompare(b, 'es'));
+// Carreras (apd.carrera): combo abierto que sugiere sólo las aceptadas de manera explícita por la Secretaría
+// (principal, afín o disciplina afín); las escritas por las personas sin clasificar no se sugieren
+const carreras = datos.carrera.filter((c) => c.activa && ['principal', 'afin', 'disciplina_afin'].includes(c.grupo))
+  .map((c) => c.nombre).sort((a, b) => a.localeCompare(b, 'es'));
 writeFileSync(join(sitio, 'datos/catalogos.js'), `/* Generado por herramientas/construir-sitio.mjs desde datos/ficticios.json. No se edita a mano.
    Empresas, consultorías y particulares ya registrados (apd.organizacion, tipo privada; FICTICIOS) y carreras
    (apd.carrera), corte
