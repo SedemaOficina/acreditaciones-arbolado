@@ -306,3 +306,13 @@ auditor de CSS y de campos correctos.
 
 **Verificado**: 116 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
 auditor de CSS y de campos correctos.
+
+## 2026-10-15 · Bloque 23 · Nivel en lista desplegable y situación del grado en los dos tipos
+
+- El nivel de estudios es una lista desplegable (sin autocompletado). Carrera y situación del grado se preguntan sólo
+  con licenciatura, maestría o doctorado, en poda y en dictaminador, y son obligatorias (`faltan_estudios`).
+- Carrera técnica vuelve a no pedir situación: cuenta como «carrera técnica» (5 años).
+- Ayudas: en poda los estudios son estadísticos; en dictaminador, requisito con la experiencia del apartado académico.
+
+**Verificado**: 116 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
+auditor de CSS y de campos correctos.

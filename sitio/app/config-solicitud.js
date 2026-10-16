@@ -18,8 +18,8 @@
      · alcaldia                                        → la de esa clave (lista de las 16);
      · dependencia_federal = cfe | otro (+ nombre)     → la de clave cfe o la del nombre escrito;
      · educativa = unam | otro (+ nombre)              → la de clave unam o la del nombre escrito.
-   Estudios: nivel_estudios y, desde licenciatura, carrera en los dos tipos; en dictaminador, también
-   estatus_estudios (salvo nivel «ninguna»). Van tal cual; en dictaminador la base calcula
+   Estudios, en los dos tipos: nivel_estudios y, con licenciatura o posgrado, carrera y estatus_estudios.
+   Van tal cual; en dictaminador la base calcula
    perfil_academico y experiencia_minima (apd.perfil_academico) y liga la carrera a apd.carrera.
 
    El envío es una SIMULACIÓN: asigna un folio con la forma de la base

@@ -424,18 +424,18 @@ const casos = [
   ['Licenciatura trunca no cumple el perfil y no se envía', { codigo: 'perfil_no_cumple' }, null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'trunco', carrera = 'Biología' WHERE id = ${DICT_OBS};
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
-  ['Con preparatoria no se guarda la carrera, y no cumple el perfil', 'ok', null, `
+  ['Con preparatoria no se guardan carrera ni situación, y no cumple el perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'preparatoria', estatus_estudios = 'titulado', carrera = 'Biología' WHERE id = ${DICT_OBS};
-     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios = 'titulado' AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL
+     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
-  ['Carrera técnica trunca no cumple el perfil', { codigo: 'perfil_no_cumple' }, null, `
-     UPDATE apd.solicitud SET nivel_estudios = 'tecnica', estatus_estudios = 'trunco' WHERE id = ${DICT_OBS};
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
-  ['Poda: se guardan nivel y carrera, sin situación de estudios ni perfil', 'ok', null, `
+  ['Poda: se guardan nivel, carrera y situación, sin perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', carrera = 'Biología', estatus_estudios = 'titulado' WHERE id = ${BORRADOR};
      DO $$ BEGIN ASSERT (SELECT nivel_estudios = 'licenciatura' AND carrera = 'Biología' AND carrera_id IS NOT NULL
-                                AND estatus_estudios IS NULL AND perfil_academico IS NULL
+                                AND estatus_estudios = 'titulado' AND perfil_academico IS NULL
                            FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1); END $$;`],
+  ['Con licenciatura, sin la situación de los estudios no se envía', { codigo: 'faltan_estudios' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', carrera = 'Biología', estatus_estudios = NULL WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
   ['Sin nivel de estudios no se envía (poda y dictaminador)', { codigo: 'faltan_estudios' }, null, `
      UPDATE apd.solicitud SET nivel_estudios = NULL WHERE id = ${DICT_OBS};
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],

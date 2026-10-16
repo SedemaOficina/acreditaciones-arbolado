@@ -130,8 +130,8 @@
     if (!nivel) return null;
     let perfil;
     if (BASICOS.includes(nivel)) perfil = 'no_cumple';
+    else if (nivel === 'tecnica') perfil = 'tecnica';
     else if (!estatus) return null;
-    else if (nivel === 'tecnica') perfil = ['en_curso', 'trunco'].includes(estatus) ? 'no_cumple' : 'tecnica';
     else if (nivel === 'licenciatura' && ['en_curso', 'trunco'].includes(estatus)) perfil = 'no_cumple';
     else {
       if (!normaliza(carrera)) return null;

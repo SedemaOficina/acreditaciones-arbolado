@@ -133,7 +133,7 @@
       pon('numero', datos.verificacion_publica[0].numero);
     } else if (pagina === 'solicitud.html') {
       if (!form.querySelector('input[name="tipo"]:checked')) elige('tipo');
-      elige('nivel_estudios', 'licenciatura'); pon('carrera', 'Biología'); elige('estatus_estudios', 'titulado'); pon('anios_experiencia', '3');
+      pon('nivel_estudios', 'licenciatura'); pon('carrera', 'Biología'); elige('estatus_estudios', 'titulado'); pon('anios_experiencia', '3');
       for (const c of form.querySelectorAll('[data-campo^="doc_"]')) if (visible(c)) adjunta(c);
     }
     marca('aviso'); marca('humano');

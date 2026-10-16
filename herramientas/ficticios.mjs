@@ -151,7 +151,7 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   const nivelPoda = opciones.nivel || NIVELES_PODA[[...clave].reduce((n, ch) => n + ch.charCodeAt(0), 0) % NIVELES_PODA.length];
   const perfil = tipo === 'dictaminador'
     ? { nivel: opciones.nivel || 'licenciatura', carrera: opciones.carrera || 'Biología', estatus: opciones.estatus || 'titulado', anios: opciones.anios ?? 4 }
-    : { nivel: nivelPoda, carrera: nivelPoda === 'licenciatura' ? (opciones.carrera || 'Arquitectura de Paisaje') : null, estatus: null, anios: null };
+    : { nivel: nivelPoda, carrera: nivelPoda === 'licenciatura' ? (opciones.carrera || 'Arquitectura de Paisaje') : null, estatus: nivelPoda === 'licenciatura' ? 'titulado' : null, anios: null };
   // La adscripción es de la persona («Mis datos»); la solicitud la copia
   if (opciones.org) emitir(`UPDATE apd.solicitante SET adscripcion = ${q(ORG[opciones.org].tipo)}, organizacion_id = ${orgId(opciones.org)} WHERE id = ${q(p.id)}`);
   emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id,

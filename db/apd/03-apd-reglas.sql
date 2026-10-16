@@ -160,15 +160,15 @@ CREATE TRIGGER carrera_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.carre
 --   a) licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín → 2 años;
 --   c) carta de pasante, carrera técnica o disciplina afín → 5 años.
 -- Un posgrado (maestría o doctorado) cuenta como licenciatura titulada en su carrera, porque para cursarlo se
--- pide el título [supuesto por confirmar, P60]. Hasta preparatoria, o técnica o licenciatura en curso o truncas, no cumple.
+-- pide el título [supuesto por confirmar, P60]. Hasta preparatoria, o licenciatura en curso o trunca, no cumple.
 -- Una carrera sin clasificar deja el perfil «por_clasificar»: lo resuelve la Secretaría en la revisión documental.
 CREATE FUNCTION apd.perfil_academico(p_nivel text, p_estatus text, p_grupo text) RETURNS text
   LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE
     WHEN p_nivel IS NULL THEN NULL
     WHEN p_nivel IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria') THEN 'no_cumple'
+    WHEN p_nivel = 'tecnica' THEN 'tecnica'
     WHEN p_estatus IS NULL THEN NULL
-    WHEN p_nivel = 'tecnica' THEN CASE WHEN p_estatus IN ('en_curso', 'trunco') THEN 'no_cumple' ELSE 'tecnica' END
     WHEN p_nivel = 'licenciatura' AND p_estatus IN ('en_curso', 'trunco') THEN 'no_cumple'
     WHEN p_grupo IS NULL THEN 'por_clasificar'
     WHEN p_grupo = 'no_afin' THEN 'no_cumple'
@@ -184,16 +184,13 @@ $$;
 
 -- La base completa los estudios (poda y dictaminador, decisión 2026-10-15): liga la carrera al catálogo (si la escrita
 -- no existe, la agrega sin grupo) y, en dictaminador, calcula perfil y experiencia mínima. Lo que no corresponde se
--- descarta: la carrera sólo desde licenciatura; la situación de los estudios sólo en dictaminador y con algún nivel.
+-- descarta: carrera y situación de los estudios sólo con licenciatura, maestría o doctorado (decisión 2026-10-15).
 -- Se recalcula en cada cambio, así que una carrera que la Secretaría clasifica después se refleja.
 CREATE FUNCTION apd.solicitud_perfil() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE c apd.carrera;
 BEGIN
   IF NEW.nivel_estudios IS NULL OR NEW.nivel_estudios NOT IN ('licenciatura', 'maestria', 'doctorado') THEN
-    NEW.carrera := NULL;
-  END IF;
-  IF NEW.tipo_acreditacion <> 'dictaminador' OR NEW.nivel_estudios IS NULL OR NEW.nivel_estudios = 'ninguna' THEN
-    NEW.estatus_estudios := NULL;
+    NEW.carrera := NULL; NEW.estatus_estudios := NULL;
   END IF;
   NEW.carrera := nullif(regexp_replace(trim(coalesce(NEW.carrera, '')), '\s+', ' ', 'g'), '');
   NEW.carrera_id := NULL;
@@ -613,14 +610,15 @@ END $$;
 CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE faltan text; perfil text;
 BEGIN
-  -- Estudios: en los dos tipos, el nivel y, desde licenciatura, la carrera
+  -- Estudios: en los dos tipos, el nivel y, con licenciatura o posgrado, la carrera y su situación
   IF s.nivel_estudios IS NULL
-     OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado') AND coalesce(trim(s.carrera), '') = '') THEN
-    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios y, si es licenciatura o posgrado, tu carrera');
+     OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado')
+         AND (coalesce(trim(s.carrera), '') = '' OR s.estatus_estudios IS NULL)) THEN
+    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios y, si es licenciatura o posgrado, tu carrera y su situación');
   END IF;
   IF s.tipo_acreditacion = 'dictaminador' THEN
-    IF s.anios_experiencia IS NULL OR (s.nivel_estudios <> 'ninguna' AND s.estatus_estudios IS NULL) THEN
-      PERFORM apd.error('falta_perfil', 'Indica la situación de tus estudios y tus años de experiencia');
+    IF s.anios_experiencia IS NULL THEN
+      PERFORM apd.error('falta_perfil', 'Indica tus años de experiencia en manejo de arbolado');
     END IF;
     -- Se calcula aquí, no se lee de la columna: el disparador del perfil corre después que el de cambio
     perfil := apd.perfil_academico(s.nivel_estudios, s.estatus_estudios,

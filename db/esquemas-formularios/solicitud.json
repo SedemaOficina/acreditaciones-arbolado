@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-16T01:47:41.995Z",
+  "generado": "2026-10-16T02:01:33.173Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -44,7 +44,7 @@
     },
     "nivel_estudios": {
       "etiqueta": "¿Cuál es tu último nivel o grado de estudios?",
-      "tipo": "opcion",
+      "tipo": "select",
       "requerido": true,
       "sensible": false,
       "uso": "Conocer tu formación; en dictaminador, saber si cumples el perfil y cuántos años de experiencia se piden.",
@@ -90,8 +90,8 @@
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
-      "uso": "Saber si tienes título, carta de pasante o estudios sin concluir, para fijar la experiencia mínima.",
-      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "uso": "Saber si tienes título, carta de pasante o estudios sin concluir; en dictaminador, para fijar la experiencia mínima.",
+      "finalidad": "Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos.",
       "atributos": {},
       "opciones": [
         "en_curso",
@@ -101,9 +101,11 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "tipo",
+        "campo": "nivel_estudios",
         "valores": [
-          "dictaminador"
+          "licenciatura",
+          "maestria",
+          "doctorado"
         ]
       }
     },

@@ -302,7 +302,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `nivel_estudios` | `text` | No | Último nivel o grado de estudios, en poda y en dictaminador (ninguna, preescolar, primaria, secundaria, preparatoria, tecnica, licenciatura, maestria, doctorado). En poda es dato del padrón; en dictaminador, requisito |
 | `carrera` | `text` | No | Con licenciatura o posgrado, en poda y en dictaminador: la carrera que estudió, elegida del catálogo o escrita |
 | `carrera_id` | `uuid` | No | Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo) |
-| `estatus_estudios` | `text` | No | Sólo dictaminador, con cualquier nivel salvo ninguna: situación del último grado (en_curso, trunco, concluido —en licenciatura, carta de pasante o 100 % de créditos— o titulado) |
+| `estatus_estudios` | `text` | No | Con licenciatura o posgrado, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado) |
 | `perfil_academico` | `text` | No | Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple |
 | `experiencia_minima` | `numeric(3,1)` | No | Años de experiencia que pide el perfil (2 o 5); la calcula la base. Vacía si el perfil está por clasificar o no cumple |
 | `anios_experiencia` | `numeric(4,1)` | No | Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban |
@@ -339,7 +339,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_estatus_ck CHECK (estatus_estudios IN ('en_curso', 'trunco', 'concluido', 'titulado'))`
 - `CONSTRAINT solicitud_carrera_fk FOREIGN KEY (carrera_id) REFERENCES apd.carrera (id)`
 - `CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IN ('licenciatura_afin', 'disciplina_afin', 'pasante', 'tecnica', 'por_clasificar', 'no_cumple'))`
-- `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (estatus_estudios IS NULL AND perfil_academico IS NULL AND anios_experiencia IS NULL))`
+- `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND anios_experiencia IS NULL))`
 - `CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70)`
 - `CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender') OR length(trim(coalesce(motivo_cierre, ''))) > 0)`
 - `CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')`

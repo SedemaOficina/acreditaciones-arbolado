@@ -98,8 +98,7 @@ async function siguiente(page) {
   const sinAdscripcion = await page.$(`${pasoVisible} [data-campo="adscrito"]:not(:has(input:checked))`);
   if (sinAdscripcion) await page.check('input[name="adscrito"][value="no"]', { force: true });
   // Los estudios se preguntan en poda y en dictaminador; donde la prueba no los revisa, preparatoria
-  const sinEstudios = await page.$(`${pasoVisible} [data-campo="nivel_estudios"]:not(:has(input:checked))`);
-  if (sinEstudios && await sinEstudios.isVisible()) await page.check('input[name="nivel_estudios"][value="preparatoria"]', { force: true });
+  if (await page.isVisible(`${pasoVisible} #nivel_estudios`) && !(await page.inputValue('#nivel_estudios'))) await page.selectOption('#nivel_estudios', 'preparatoria');
   await page.click(`${pasoVisible} [data-accion="siguiente"]`);
 }
 async function cargaObligatorios(page) {
@@ -249,10 +248,15 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/solicitud nueva/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud: informa que le corresponde una solicitud nueva (no lo pregunta)'));
   comprueba(/Independiente/.test(await page.textContent('[data-adscripcion-texto]')),
     t('solicitud: muestra la adscripción de la persona con la que se enviará (se cambia en «Mis datos»)'));
-  await page.check('input[name="nivel_estudios"][value="licenciatura"]', { force: true });
-  comprueba(await page.isVisible('[data-campo="carrera"]') && !(await page.isVisible('[data-campo="estatus_estudios"]')) && !(await page.isVisible('[data-campo="anios_experiencia"]')),
-    t('poda: pregunta nivel de estudios y carrera, sin situación de los estudios ni experiencia'));
+  comprueba(await page.$eval('#nivel_estudios', (e) => e.tagName === 'SELECT' && e.options.length === 10), t('estudios: el nivel es una lista desplegable con 9 niveles'));
+  await page.selectOption('#nivel_estudios', 'tecnica');
+  comprueba(!(await page.isVisible('[data-campo="carrera"]')) && !(await page.isVisible('[data-campo="estatus_estudios"]')),
+    t('estudios: con carrera técnica no se preguntan carrera ni situación'));
+  await page.selectOption('#nivel_estudios', 'licenciatura');
+  comprueba(await page.isVisible('[data-campo="carrera"]') && await page.isVisible('[data-campo="estatus_estudios"]') && !(await page.isVisible('[data-campo="anios_experiencia"]')),
+    t('poda: con licenciatura pregunta carrera y su situación, sin experiencia'));
   await page.fill('#carrera', 'Arquitectura de Paisaje');
+  await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
   await siguiente(page);
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
     t('documentos: la CURP trae el enlace oficial para obtenerla'));
@@ -323,15 +327,14 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
   await page.waitForFunction(() => document.getElementById('tramite').value === 'dictaminador_nueva');
   await siguiente(page);
-  comprueba(await page.isVisible('[data-campo="nivel_estudios"]'), t('dictaminador: sin perfil no avanza'));
+  comprueba(await page.isVisible('[data-campo="anios_experiencia"]'), t('dictaminador: sin perfil no avanza'));
   comprueba(!(await page.isVisible('[data-campo="carrera"]')), t('perfil: la carrera no se pregunta antes del nivel de estudios'));
-  await page.check('input[name="nivel_estudios"][value="preparatoria"]', { force: true });
+  await page.selectOption('#nivel_estudios', 'preparatoria');
   comprueba(!(await page.isVisible('[data-campo="carrera"]')) && await page.isVisible('[data-perfil-no-cumple]'),
     t('perfil: con preparatoria no se pregunta carrera y avisa que no cumple el perfil'));
-  await page.check('input[name="nivel_estudios"][value="tecnica"]', { force: true });
-  comprueba(!(await page.isVisible('[data-campo="carrera"]')) && await page.isVisible('[data-campo="estatus_estudios"]'),
-    t('dictaminador: con carrera técnica pide la situación de los estudios, sin carrera'));
-  await page.check('input[name="nivel_estudios"][value="licenciatura"]', { force: true });
+  await page.selectOption('#nivel_estudios', 'tecnica');
+  comprueba(/cinco años/.test(await page.textContent('[data-experiencia-minima]')), t('dictaminador: con carrera técnica se piden cinco años'));
+  await page.selectOption('#nivel_estudios', 'licenciatura');
   comprueba(await page.isVisible('[data-campo="carrera"]') && await page.isVisible('[data-campo="estatus_estudios"]') && !(await page.isVisible('[data-perfil-no-cumple]')),
     t('perfil: con licenciatura pregunta la carrera y luego su situación'));
   await page.fill('#carrera', 'Biología');

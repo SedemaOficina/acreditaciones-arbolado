@@ -97,18 +97,17 @@ caso('Solicitud con un documento en JPG se rechaza: sólo PDF', 'solicitud', { .
   podaNueva.map((r) => (r === 'curp' ? { nombre: 'curp.jpg', size: 200000, type: 'image/jpeg', campo: 'doc_poda_nueva_curp' } : pdf(`doc_poda_nueva_${r}`))));
 caso('Solicitud poda nueva sin documentos pide sólo los de poda nueva', 'solicitud', { ...base, tipo: 'poda' }, podaNueva.map((r) => `doc_poda_nueva_${r}`));
 caso('Solicitud dictaminador nueva sin perfil ni documentos pide perfil y sus 8 documentos', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'dictaminador' },
-  ['nivel_estudios', 'estatus_estudios', 'anios_experiencia', ...['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia', 'constancias_capacitacion'].map((r) => `doc_dictaminador_nueva_${r}`)]);
+  ['nivel_estudios', 'anios_experiencia', ...['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia', 'constancias_capacitacion'].map((r) => `doc_dictaminador_nueva_${r}`)]);
 caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (lo demás es «si aplica»)', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106' }, ['doc_poda_renovacion_constancia_situacion_fiscal']);
 // Perfil del dictaminador: carrera y situación sólo desde licenciatura
 const dictRenov = { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', anios_experiencia: '3', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' };
 const csf = [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')];
 caso('Perfil: licenciatura pide carrera y situación de los estudios', 'solicitud', { ...dictRenov, nivel_estudios: 'licenciatura' }, ['carrera', 'estatus_estudios'], csf);
-caso('Perfil: carrera técnica pide la situación, no la carrera', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica' }, ['estatus_estudios'], csf);
-caso('Perfil: en dictaminador la situación del último grado siempre se pide', 'solicitud', { ...dictRenov, nivel_estudios: 'secundaria' }, ['estatus_estudios'], csf);
-caso('Poda: licenciatura pide la carrera, pero no la situación', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
+caso('Perfil: carrera técnica no pide carrera ni situación', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica' }, true, csf);
+caso('Poda: licenciatura pide la carrera y su situación', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera', 'estatus_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Poda: sin nivel de estudios se rechaza', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['nivel_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso' }, true, csf);
-caso('Perfil: un nivel que no existe se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'posdoctorado', estatus_estudios: 'titulado' }, ['nivel_estudios'], csf);
+caso('Perfil: un nivel que no existe se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'posdoctorado' }, ['nivel_estudios'], csf);
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
 

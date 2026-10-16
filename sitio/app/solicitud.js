@@ -142,11 +142,10 @@
     fija('tipo', s.tipo_acreditacion);
     const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
     ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
-    // Estudios: nivel y carrera en los dos tipos; situación y experiencia, en dictaminador
-    for (const [n, v] of [['nivel_estudios', s.nivel_estudios], ['estatus_estudios', s.estatus_estudios]]) {
-      const r = radios(n).find((x) => x.value === v);
-      if (r) { r.checked = true; avisa(r); }
-    }
+    // Estudios en los dos tipos (nivel; con licenciatura o posgrado, carrera y situación); experiencia, en dictaminador
+    ponValor('nivel_estudios', s.nivel_estudios);
+    const st = radios('estatus_estudios').find((x) => x.value === s.estatus_estudios);
+    if (st) { st.checked = true; avisa(st); }
     ponValor('carrera', s.carrera);
     if (s.tipo_acreditacion === 'dictaminador') ponValor('anios_experiencia', s.anios_experiencia);
 
@@ -173,9 +172,9 @@
   };
   function experiencia(datos) {
     const valor = (n) => { const r = radios(n).find((x) => x.checked); return r ? r.value : ''; };
-    const nivel = valor('nivel_estudios');
+    const nivel = document.getElementById('nivel_estudios').value;
     const superior = APD.SUPERIORES.includes(nivel);
-    const p = APD.perfilAcademico(datos, nivel, valor('estatus_estudios'), superior ? document.getElementById('carrera').value : '');
+    const p = APD.perfilAcademico(datos, nivel, superior ? valor('estatus_estudios') : '', superior ? document.getElementById('carrera').value : '');
     const anios = document.getElementById('anios_experiencia');
     anios.setAttribute('min', p && p.minimo ? String(p.minimo) : '0');
     document.querySelector('[data-perfil-no-cumple]').hidden = !(p && p.perfil === 'no_cumple');
@@ -184,7 +183,7 @@
     texto.textContent = p && p.minimo
       ? `Con tu perfil se piden al menos ${p.minimo === 2 ? 'dos' : 'cinco'} años.`
       : p && p.perfil === 'por_clasificar'
-        ? 'La Secretaría confirmará si tu carrera es afín: con licenciatura titulada se piden dos años; si es disciplina afín, cinco.'
+        ? 'La Secretaría confirmará en la revisión documental si tu carrera es afín (dos años de experiencia) o disciplina afín (cinco).'
         : texto.dataset.original;
     const interno = document.querySelector('[data-interno-texto]');
     if (interno) interno.dataset.internoTexto = p ? `${p.perfil} (${TEXTO_PERFIL[p.perfil]}) · experiencia mínima: ${p.minimo ? `${p.minimo} años` : '—'}` : '';
