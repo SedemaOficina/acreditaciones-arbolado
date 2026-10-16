@@ -40,9 +40,12 @@
     <!-- Filtros: búsqueda por nombre o folio, tipo de acreditación, si es nueva o renovación, y vuelta de revisión -->
     <div class="filtros-bandeja" role="search" aria-label="Buscar y filtrar la bandeja">
       <div class="campo campo-busqueda">
-        <label class="etiqueta" for="f-buscar">Buscar por nombre o folio</label>
+        <label class="etiqueta" for="f-buscar">Buscar una solicitud</label>
+        <p class="ayuda">Nombre, CURP, folio de la solicitud (APD-S-…) o número de expediente (EXP-…).</p>
         <input class="control" id="f-buscar" type="search" autocomplete="off" placeholder="">
       </div>
+      <button type="button" class="btn btn-secundario btn-filtrar" aria-expanded="false" aria-controls="filtros-extra" data-filtrar>Filtrar</button>
+      <div class="filtros-extra" id="filtros-extra" data-plegado="true">
       <div class="campo">
         <label class="etiqueta" for="f-tipo">Acreditación</label>
         <div class="select"><select class="control control-select" id="f-tipo"><option value="">Todas</option><option value="poda">Poda y derribo</option><option value="dictaminador">Dictaminador técnico</option></select></div>
@@ -55,6 +58,7 @@
         <label class="etiqueta" for="f-vuelta">Vuelta de revisión</label>
         <div class="select"><select class="control control-select" id="f-vuelta"><option value="">Todas</option><option value="primera">Primera vez</option><option value="reenviada">Reenviadas</option></select></div>
       </div>
+      </div>
     </div>
     <p class="resumen-filtro" aria-live="polite" data-cuenta>Se muestran las 6 solicitudes.</p>
 
@@ -62,34 +66,34 @@
       <table class="tabla-bandeja">
         <caption class="solo-lector">Solicitudes enviadas en espera de revisión documental</caption>
         <thead>
-          <tr><th scope="col">Folio</th><th scope="col">Persona</th><th scope="col">Acreditación</th><th scope="col">Enviada</th><th scope="col">Espera</th><th scope="col">Vuelta</th><th scope="col">A revisar con atención</th><th scope="col"><span class="solo-lector">Acción</span></th></tr>
+          <tr><th scope="col">Folio de la solicitud</th><th scope="col">Persona</th><th scope="col">Acreditación</th><th scope="col">Enviada</th><th scope="col">Espera</th><th scope="col">Vuelta</th><th scope="col">A revisar con atención</th><th scope="col"><span class="solo-lector">Acción</span></th></tr>
         </thead>
         <tbody>
-          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="reenviada">
-            <td class="mono">APD-S-2026-00007</td><td>KARLA EJEMPLO SIMULADO</td><td>Poda y derribo · nueva</td><td>02/10/2026</td><td><span class="estado" data-tono="error">12 días</span></td><td>2.ª (reenviada)</td><td>2 documentos corregidos</td>
+          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="reenviada" data-buscar="EEMJ760707HNEJSN06 EXP-2026-0007">
+            <td class="mono">APD-S-2026-00007</td><td>JUAN EJEMPLO MUESTRA</td><td>Poda y derribo · nueva</td><td>02/10/2026</td><td><span class="estado" data-tono="error">12 días</span></td><td>2.ª (reenviada)</td><td>2 documentos corregidos</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr data-tipo="dictaminador" data-modalidad="nueva" data-vuelta="primera" class="fila-destacada">
+          <tr data-tipo="dictaminador" data-modalidad="nueva" data-vuelta="primera" class="fila-destacada" data-buscar="MUFB710202HNESCR03 EXP-2026-0002">
             <td class="mono">APD-S-2026-00020</td><td>BRUNO MUESTRA FICTICIO</td><td>Dictaminador técnico · nueva</td><td>10/10/2026</td><td><span class="estado" data-tono="pend">4 días</span></td><td>1.ª</td><td><span class="estado" data-tono="pend">Carrera por clasificar</span></td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr data-tipo="poda" data-modalidad="renovacion" data-vuelta="primera">
-            <td class="mono">APD-S-2026-00014</td><td>LUIS SIMULADO PRUEBA</td><td>Poda y derribo · renovación</td><td>12/10/2026</td><td><span class="estado">2 días</span></td><td>1.ª</td><td>—</td>
+          <tr data-tipo="poda" data-modalidad="renovacion" data-vuelta="primera" data-buscar="SIML811212HNEMSS04">
+            <td class="mono">APD-S-2026-00014</td><td>LUIS SIMULADO MUESTRA</td><td>Poda y derribo · renovación</td><td>12/10/2026</td><td><span class="estado">2 días</span></td><td>1.ª</td><td>—</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr data-tipo="dictaminador" data-modalidad="nueva" data-vuelta="primera">
-            <td class="mono">APD-S-2026-00041</td><td>TERESA FICTICIA MUESTRA</td><td>Dictaminador técnico · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>1.ª</td><td><span class="estado" data-tono="error">Podría no cumplir el perfil</span></td>
+          <tr data-tipo="dictaminador" data-modalidad="nueva" data-vuelta="primera" data-buscar="SIMR810615HNEMSS00">
+            <td class="mono">APD-S-2026-00041</td><td>ROSA SIMULADO MUESTRA</td><td>Dictaminador técnico · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>1.ª</td><td><span class="estado" data-tono="error">Podría no cumplir el perfil</span></td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="reenviada">
-            <td class="mono">APD-S-2026-00042</td><td>RAÚL EJEMPLO DATOS</td><td>Poda y derribo · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>2.ª (reenviada)</td><td>1 documento corregido</td>
+          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="reenviada" data-buscar="EEPS820716MNEJRR08">
+            <td class="mono">APD-S-2026-00042</td><td>SERGIO EJEMPLO PRUEBA</td><td>Poda y derribo · nueva</td><td>13/10/2026</td><td><span class="estado">1 día</span></td><td>2.ª (reenviada)</td><td>1 documento corregido</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="primera">
-            <td class="mono">APD-S-2026-00044</td><td>ULISES PRUEBA SIMULADO</td><td>Poda y derribo · nueva</td><td>14/10/2026</td><td><span class="estado">Hoy</span></td><td>1.ª</td><td>—</td>
+          <tr data-tipo="poda" data-modalidad="nueva" data-vuelta="primera" data-buscar="PUMU840918MNERDL07">
+            <td class="mono">APD-S-2026-00044</td><td>ULISES PRUEBA MODELO</td><td>Poda y derribo · nueva</td><td>14/10/2026</td><td><span class="estado">Hoy</span></td><td>1.ª</td><td>—</td>
             <td><a class="btn btn-secundario btn-chico" href="#revision" data-ir="revision">Revisar</a></td>
           </tr>
-          <tr class="fila-vacia" data-vacia hidden><td colspan="8">Ninguna solicitud coincide con la búsqueda. Revise el nombre o el folio, o quite algún filtro.</td></tr>
+          <tr class="fila-vacia" data-vacia hidden><td colspan="8">Ninguna solicitud coincide con la búsqueda. Revise lo que escribió en la búsqueda o quite algún filtro.</td></tr>
         </tbody>
       </table>
     </div>
@@ -104,7 +108,7 @@
       <div class="revision-cabeza">
         <div>
           <h2 class="titulo-paso" id="t-revision">Dictaminador técnico · solicitud nueva</h2>
-          <p class="bajada">Folio <strong class="mono">APD-S-2026-00020</strong> · enviada el 10/10/2026 · primera revisión</p>
+          <p class="bajada">Folio de la solicitud <strong class="mono">APD-S-2026-00020</strong> · enviada el 10/10/2026 · primera revisión</p>
         </div>
         <span class="estado">En revisión documental</span>
       </div>
@@ -335,7 +339,7 @@
     const q = norm($('#f-buscar').value), tipo = $('#f-tipo').value, mod = $('#f-modalidad').value, vta = $('#f-vuelta').value;
     let n = 0;
     filasB.forEach((tr) => {
-      const texto = norm(tr.cells[0].textContent + ' ' + tr.cells[1].textContent);
+      const texto = norm(tr.cells[0].textContent + ' ' + tr.cells[1].textContent + ' ' + (tr.dataset.buscar || ''));
       const ve = (!q || texto.includes(q)) && (!tipo || tr.dataset.tipo === tipo) && (!mod || tr.dataset.modalidad === mod) && (!vta || tr.dataset.vuelta === vta);
       tr.hidden = !ve; if (ve) n += 1;
     });
@@ -343,6 +347,16 @@
     $('[data-cuenta]').textContent = n === filasB.length ? `Se muestran las ${n} solicitudes.` : `Se muestran ${n} de ${filasB.length} solicitudes.`;
   }
   ['#f-buscar', '#f-tipo', '#f-modalidad', '#f-vuelta'].forEach((sel) => $(sel).addEventListener('input', filtra));
+  // En teléfono, los filtros quedan plegados bajo «Filtrar»; el botón dice cuántos hay activos
+  const bF = $('[data-filtrar]'), extra = $('#filtros-extra');
+  bF.addEventListener('click', () => {
+    const abrir = bF.getAttribute('aria-expanded') !== 'true';
+    bF.setAttribute('aria-expanded', String(abrir)); extra.dataset.plegado = String(!abrir);
+  });
+  ['#f-tipo', '#f-modalidad', '#f-vuelta'].forEach((sel) => $(sel).addEventListener('input', () => {
+    const n = ['#f-tipo', '#f-modalidad', '#f-vuelta'].filter((x) => $(x).value).length;
+    bF.textContent = n ? `Filtrar (${n} activo${n > 1 ? 's' : ''})` : 'Filtrar';
+  }));
   muestra();
 })();
 </script>

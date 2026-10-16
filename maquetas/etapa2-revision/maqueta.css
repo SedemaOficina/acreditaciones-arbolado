@@ -19,7 +19,15 @@ body { background: var(--fondo); }
 
 /* Bandeja */
 .filtros-bandeja { display: grid; gap: 0 var(--e-4); margin-block-start: var(--e-4); }
-@media (min-width: 760px) { .filtros-bandeja { grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); align-items: end; } }
+.btn-filtrar { justify-self: start; margin-block-end: var(--e-4); }
+.filtros-extra { display: grid; gap: 0 var(--e-4); }
+.filtros-extra[data-plegado="true"] { display: none; }
+@media (min-width: 760px) {
+  .filtros-bandeja { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: end; }
+  .btn-filtrar { display: none; }
+  .filtros-extra { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .filtros-extra[data-plegado="true"] { display: grid; }
+}
 .resumen-filtro { color: var(--gris); font-size: var(--t-sm); margin-block: 0 var(--e-3); }
 .fila-vacia td { color: var(--gris); }
 /* Bandeja: en teléfono cada renglón es una ficha; desde 760px, tabla */
