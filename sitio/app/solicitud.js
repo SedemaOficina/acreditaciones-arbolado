@@ -8,7 +8,9 @@
      · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, lo que hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de
        ser obligatorios;
      · el ejemplo de cómo se guardan sus archivos, con su nombre (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo hace
-       la base al cargarlos, apd.nombre_de_archivo).
+       la base al cargarlos, apd.nombre_de_archivo);
+     · dictaminador: con nivel, carrera y situación de los estudios, la experiencia que se le pide (APD.perfilAcademico,
+       mismo cálculo que la base). Fija el mínimo del campo de experiencia y avisa si no cumple el perfil.
    La base vuelve a comprobar todo al enviar. */
 (function () {
   'use strict';
@@ -35,10 +37,35 @@
 
   /* Ejemplo del nombre con que se guardan sus archivos: mayúsculas sin acentos; la Ñ se conserva. */
   function ejemploArchivo(persona) {
-    const nombre = APD.nombreCompleto(persona).toLocaleUpperCase('es-MX')
-      .replace(/Ñ/g, '\u0001').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0001/g, 'Ñ');
     const caja = document.querySelector('[data-ejemplo-archivo]');
-    if (caja && nombre) caja.textContent = `CURP_${nombre}.pdf`;
+    if (caja && APD.nombreCompleto(persona)) caja.textContent = APD.nombreDeArchivo('CURP', persona);
+  }
+
+  /* Nombres con que se guardan los archivos (decisión 2026-10-15): bajo cada documento cargado y en la revisión,
+     donde el nombre nuevo va primero y el del archivo que subió la persona, debajo. */
+  const archivoDe = (campo) => { const a = campo && campo.querySelector('.arch:not([data-estado="error"]) .arch-nombre'); return a ? a.textContent : ''; };
+  function nombresGuardados(persona) {
+    for (const p of form.querySelectorAll('[data-nombre-archivo]')) {
+      const original = archivoDe(p.closest('[data-campo]'));
+      const v = original ? `Se guardará como: ${APD.nombreDeArchivo(p.dataset.nombreArchivo, persona, original)}` : '';
+      if (p.textContent !== v) p.textContent = v;
+      p.hidden = !original;
+    }
+  }
+  function revisionConNombres(persona) {
+    const nuevos = [];
+    for (const b of form.querySelectorAll('[data-revision-lista] [data-editar^="doc_"]')) {
+      const campo = form.querySelector(`[data-campo="${b.dataset.editar}"]`);
+      const p = campo && campo.querySelector('[data-nombre-archivo]');
+      const original = archivoDe(campo);
+      if (!p || !original) continue;
+      const nuevo = APD.nombreDeArchivo(p.dataset.nombreArchivo, persona, original);
+      nuevos.push(nuevo);
+      const val = b.parentElement.firstElementChild;
+      val.replaceChildren(el('span', { class: 'rev-archivo-nuevo', texto: nuevo }), el('span', { class: 'rev-archivo-original', texto: `Archivo que subiste: ${original}` }));
+    }
+    const resumen = nuevos.length && form.querySelector('[data-revision-lista] [data-editar^="doc_"]').closest('.rev-bloque').querySelector('.rev-resumen');
+    if (resumen) resumen.textContent = nuevos.length === 1 ? nuevos[0] : `${nuevos.length} documentos`;
   }
 
   function ponValor(id, valor) {
@@ -116,8 +143,10 @@
     const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
     ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
     if (s.tipo_acreditacion === 'dictaminador') {
-      if (s.perfil_academico) fija('perfil_academico', s.perfil_academico);
-      for (const r of radios('perfil_academico')) r.disabled = false;
+      for (const [n, v] of [['nivel_estudios', s.nivel_estudios], ['estatus_estudios', s.estatus_estudios]]) {
+        const r = radios(n).find((x) => x.value === v);
+        if (r) { r.checked = true; avisa(r); }
+      }
       ponValor('carrera', s.carrera);
       ponValor('anios_experiencia', s.anios_experiencia);
     }
@@ -136,13 +165,49 @@
     }
   }
 
+  /* Experiencia mínima según el perfil. El mínimo del campo cambia con las respuestas: el núcleo lee «min» en cada
+     validación. Sin perfil completo, o por clasificar, queda en 0 y la Secretaría lo revisa. */
+  const TEXTO_PERFIL = {
+    licenciatura_afin: 'licenciatura titulada en una carrera de las que piden los lineamientos o afín',
+    disciplina_afin: 'licenciatura en una disciplina afín', pasante: 'carta de pasante', tecnica: 'carrera técnica',
+    por_clasificar: 'carrera por clasificar: la Secretaría confirma si es afín en la revisión documental', no_cumple: 'no cumple el perfil'
+  };
+  function experiencia(datos) {
+    const valor = (n) => { const r = radios(n).find((x) => x.checked); return r ? r.value : ''; };
+    const nivel = valor('nivel_estudios');
+    const superior = APD.SUPERIORES.includes(nivel);
+    const p = APD.perfilAcademico(datos, nivel, superior ? valor('estatus_estudios') : '', superior ? document.getElementById('carrera').value : '');
+    const anios = document.getElementById('anios_experiencia');
+    anios.setAttribute('min', p && p.minimo ? String(p.minimo) : '0');
+    document.querySelector('[data-perfil-no-cumple]').hidden = !(p && p.perfil === 'no_cumple');
+    const texto = document.querySelector('[data-experiencia-minima]');
+    if (!texto.dataset.original) texto.dataset.original = texto.textContent;
+    texto.textContent = p && p.minimo
+      ? `Con tu perfil se piden al menos ${p.minimo === 2 ? 'dos' : 'cinco'} años.`
+      : p && p.perfil === 'por_clasificar'
+        ? 'La Secretaría confirmará si tu carrera es afín: con licenciatura titulada se piden dos años; si es disciplina afín, cinco.'
+        : texto.dataset.original;
+    const interno = document.querySelector('[data-interno-texto]');
+    if (interno) interno.dataset.internoTexto = p ? `${p.perfil} (${TEXTO_PERFIL[p.perfil]}) · experiencia mínima: ${p.minimo ? `${p.minimo} años` : '—'}` : '';
+  }
+
   APD.cargar().then((datos) => {
     const persona = APD.requiereSesion(datos);
     if (!persona) return;
+    for (const ev of ['input', 'change']) {
+      form.addEventListener(ev, (e) => {
+        if (['nivel_estudios', 'estatus_estudios', 'carrera'].includes(e.target.name)) experiencia(datos);
+      });
+    }
     APD.pintaSesion(document.querySelector('[data-sesion]'), persona);
     ejemploArchivo(persona);
+    let pendiente = 0;
+    new MutationObserver(() => { clearTimeout(pendiente); pendiente = setTimeout(() => nombresGuardados(persona), 30); })
+      .observe(form, { childList: true, subtree: true });
+    form.addEventListener('formkit:paso', () => revisionConNombres(persona));
     pintaAdscripcion(datos, persona);
     const folio = new URLSearchParams(location.search).get('folio');
     if (folio) continua(datos, persona, folio); else nueva(datos, persona);
+    experiencia(datos);
   }).catch(() => sinOpciones(['No se pudo cargar tu información. Intenta de nuevo más tarde.']));
 }());

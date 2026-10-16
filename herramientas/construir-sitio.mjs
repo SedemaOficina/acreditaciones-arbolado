@@ -58,11 +58,15 @@ cpSync(join(raiz, 'datos/ficticios.json'), join(sitio, 'datos/ficticios.json'));
 // Arreglo simple: el módulo combo 1.0.0 sólo lee arreglos (P37).
 const alcaldias = datos.organizacion.filter((o) => o.activa && o.tipo === 'alcaldia' && o.clave).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 const empresas = datos.organizacion.filter((o) => o.activa && o.tipo === 'privada').map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
+// Carreras del perfil de dictaminador (apd.carrera, cgo_carreras): combo abierto; el grupo lo lee app/apd.js de los datos
+const carreras = datos.carrera.filter((c) => c.activa).map((c) => c.nombre).sort((a, b) => a.localeCompare(b, 'es'));
 writeFileSync(join(sitio, 'datos/catalogos.js'), `/* Generado por herramientas/construir-sitio.mjs desde datos/ficticios.json. No se edita a mano.
-   Empresas, consultorías y particulares ya registrados (apd.organizacion, tipo privada; FICTICIOS), corte
+   Empresas, consultorías y particulares ya registrados (apd.organizacion, tipo privada; FICTICIOS) y carreras
+   (apd.carrera), corte
    ${datos.fecha_corte}. En producción lo sirve la base. */
 window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
-  empresas: ${JSON.stringify(empresas)}
+  empresas: ${JSON.stringify(empresas)},
+  carreras: ${JSON.stringify(carreras)}
 });
 `);
 
@@ -102,8 +106,8 @@ for (const [tipo, modalidad] of cursos) {
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="${esc(r.nombre_archivo || limpia(r.nombre).toUpperCase())}"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="${esc(r.nombre_archivo || limpia(r.nombre).toUpperCase())}" hidden></p>
           </div>`;
   });
   // Una sola condición por bloque (sin anidar): el esquema del servidor sólo lee el data-si más cercano

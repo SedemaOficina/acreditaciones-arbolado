@@ -12,6 +12,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`requisito`](#requisito) — Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
 - [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
+- [`carrera`](#carrera) — Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?» del perfil de dictaminador (equivale a cgo_carreras). El grupo decide la experiencia mínima que piden los lineamientos: principal (Biología, Ingeniería Forestal, Ingeniería Agrónoma) y afín, dos años con título; disciplina afín, cinco; no afín, no cumple. Las carreras afines (Anexo 1 de los lineamientos) se cargan cuando la Dirección las entregue; las que escribe una persona y no están en la lista las agrega la base sin grupo, y la Secretaría las clasifica en la revisión documental.
 - [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 - [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
@@ -136,6 +137,25 @@ Restricciones e índices:
 - `CONSTRAINT organizacion_tipo_ck CHECK (tipo IN ('privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
 - `CONSTRAINT organizacion_clave_uk UNIQUE (clave)`
 - `CONSTRAINT organizacion_nombre_uk UNIQUE (nombre_normalizado)`
+
+## carrera
+
+Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?» del perfil de dictaminador (equivale a cgo_carreras). El grupo decide la experiencia mínima que piden los lineamientos: principal (Biología, Ingeniería Forestal, Ingeniería Agrónoma) y afín, dos años con título; disciplina afín, cinco; no afín, no cumple. Las carreras afines (Anexo 1 de los lineamientos) se cargan cuando la Dirección las entregue; las que escribe una persona y no están en la lista las agrega la base sin grupo, y la Secretaría las clasifica en la revisión documental.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
+| `nombre` | `text` | Sí | Nombre de la carrera |
+| `nombre_normalizado` | `text` | Sí | Nombre sin acentos, en minúsculas y sin puntuación; lo calcula la base y evita duplicados |
+| `grupo` | `text` | No | principal, afin, disciplina_afin o no_afin; vacío mientras la Secretaría no la clasifica |
+| `activa` | `boolean` | Sí | Si aparece en la lista al solicitar (por omisión: `true`) |
+| `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
+
+Restricciones e índices:
+
+- `CONSTRAINT carrera_pk PRIMARY KEY (id)`
+- `CONSTRAINT carrera_grupo_ck CHECK (grupo IN ('principal', 'afin', 'disciplina_afin', 'no_afin'))`
+- `CONSTRAINT carrera_nombre_uk UNIQUE (nombre_normalizado)`
 
 ## solicitante
 
@@ -279,8 +299,12 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `factura_rfc` | `text` | No | RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo |
 | `factura_razon_social` | `text` | No | Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo |
 | `factura_folio_fiscal` | `text` | No | Folio fiscal (UUID) de la factura, para seguimiento; lo captura el personal en el cotejo |
-| `perfil_academico` | `text` | No | Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima |
-| `carrera` | `text` | No | Sólo dictaminador: carrera o formación declarada |
+| `nivel_estudios` | `text` | No | Sólo dictaminador: último nivel o grado de estudios (ninguna, preescolar, primaria, secundaria, preparatoria, tecnica, licenciatura, maestria, doctorado) |
+| `carrera` | `text` | No | Sólo dictaminador con licenciatura o posgrado: la carrera que estudió, elegida del catálogo o escrita |
+| `carrera_id` | `uuid` | No | Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo) |
+| `estatus_estudios` | `text` | No | Sólo dictaminador con licenciatura o posgrado: en_curso, trunco, concluido (carta de pasante o 100 % de créditos) o titulado |
+| `perfil_academico` | `text` | No | Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple |
+| `experiencia_minima` | `numeric(3,1)` | No | Años de experiencia que pide el perfil (2 o 5); la calcula la base. Vacía si el perfil está por clasificar o no cumple |
 | `anios_experiencia` | `numeric(4,1)` | No | Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban |
 | `estado` | `text` | Sí | Ver apd.transicion_solicitud() (por omisión: `'borrador'`) |
 | `estado_desde` | `timestamptz` | Sí | Desde cuándo está en el estado actual; lo pone la base (por omisión: `now()`) |
@@ -311,8 +335,11 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal)`
 - `CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')`
 - `CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')`
-- `CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica'))`
-- `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL))`
+- `CONSTRAINT solicitud_nivel_ck CHECK (nivel_estudios IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria', 'tecnica', 'licenciatura', 'maestria', 'doctorado'))`
+- `CONSTRAINT solicitud_estatus_ck CHECK (estatus_estudios IN ('en_curso', 'trunco', 'concluido', 'titulado'))`
+- `CONSTRAINT solicitud_carrera_fk FOREIGN KEY (carrera_id) REFERENCES apd.carrera (id)`
+- `CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IN ('licenciatura_afin', 'disciplina_afin', 'pasante', 'tecnica', 'por_clasificar', 'no_cumple'))`
+- `CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (nivel_estudios IS NULL AND carrera IS NULL AND estatus_estudios IS NULL AND anios_experiencia IS NULL))`
 - `CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70)`
 - `CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender') OR length(trim(coalesce(motivo_cierre, ''))) > 0)`
 - `CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender')`

@@ -121,12 +121,44 @@
   function normaliza(t) {
     return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
   }
+  /* Perfil del dictaminador: el mismo cálculo que apd.perfil_academico y apd.experiencia_minima en la base
+     (decisión 2026-10-15). Devuelve { perfil, minimo } o null si aún faltan respuestas. */
+  const BASICOS = ['ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria'];
+  const SUPERIORES = ['licenciatura', 'maestria', 'doctorado'];
+  const MINIMOS = { licenciatura_afin: 2, disciplina_afin: 5, pasante: 5, tecnica: 5 };
+  function perfilAcademico(datos, nivel, estatus, carrera) {
+    if (!nivel) return null;
+    let perfil;
+    if (BASICOS.includes(nivel)) perfil = 'no_cumple';
+    else if (nivel === 'tecnica') perfil = 'tecnica';
+    else if (!estatus) return null;
+    else if (nivel === 'licenciatura' && ['en_curso', 'trunco'].includes(estatus)) perfil = 'no_cumple';
+    else {
+      if (!normaliza(carrera)) return null;
+      const c = (datos.carrera || []).find((x) => x.nombre_normalizado === normaliza(carrera));
+      const grupo = c ? c.grupo : null;
+      if (!grupo) perfil = 'por_clasificar';
+      else if (grupo === 'no_afin') perfil = 'no_cumple';
+      else if (nivel === 'licenciatura' && estatus === 'concluido') perfil = 'pasante';
+      else perfil = ['principal', 'afin'].includes(grupo) ? 'licenciatura_afin' : 'disciplina_afin';
+    }
+    return { perfil, minimo: MINIMOS[perfil] || null };
+  }
   function requiereSesion(datos) {
     const p = personaDeSesion(datos);
     if (!p) { global.location.replace(`entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop())}`); return null; }
     return p;
   }
   function nombreCompleto(p) { return [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' '); }
+  /* Nombre con que se guarda un archivo: el mismo cálculo que apd.nombre_de_archivo en la base (decisión
+     2026-10-15): TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext, en mayúsculas, sin acentos salvo la Ñ, sin caracteres
+     que un sistema de archivos no admite. La extensión sale del archivo elegido. */
+  function nombreDeArchivo(tipo, persona, original) {
+    const ext = /\.png$/i.test(original || '') ? '.png' : /\.jpe?g$/i.test(original || '') ? '.jpg' : '.pdf';
+    return `${tipo}_${nombreCompleto(persona)}`.toLocaleUpperCase('es-MX')
+      .replace(/Ñ/g, '\u0001').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0001/g, 'Ñ')
+      .replace(/[\\/:*?"<>|]/g, '') + ext;
+  }
 
   /* ----- Consultas sobre los datos exportados ----- */
   const deTabla = (datos, tabla, campo, valor) => datos[tabla].filter((f) => f[campo] === valor);
@@ -233,8 +265,9 @@
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, fecha, fechaHora, sumaDias, sumaMeses,
-    leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto,
+    leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, activa, limpia, opciones,
-    el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe
+    el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
+    perfilAcademico, SUPERIORES
   };
 }(window));

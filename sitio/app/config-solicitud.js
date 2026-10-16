@@ -5,7 +5,7 @@
    validaciones.config.js:
      · archivos: 5 MB por archivo (parámetro tamano_maximo_archivo_bytes de
        la base) y sólo PDF (apd.requisito.formatos de lo que carga la persona; decisión 2026-10-15).
-   El catálogo de alcaldías lo da datos/catalogos.js (generado de apd.organizacion).
+   Los catálogos de empresas y carreras los da datos/catalogos.js (generado de apd.organizacion y apd.carrera).
 
    Adscripción (decisiones 2026-10-15). La API convierte las respuestas en solicitud.adscripcion y
    solicitud.organizacion_id (catálogo apd.organizacion, buscado por clave o, si es un nombre escrito, por
@@ -13,10 +13,13 @@
      · adscrito = no                                   → sin adscripción ni institución;
      · privada + empresa_nombre                        → institución «privada» con ese nombre;
      · dependencia_cdmx = sobse | paot                 → la de esa clave;
-     · dependencia_cdmx = sedema + direccion_sedema    → clave sedema_<siglas>; «otro» → «SEDEMA · <nombre>»;
+     · dependencia_cdmx = sedema + direccion_sedema    → clave sedema_<siglas> (lista cerrada);
      · dependencia_cdmx = otro + dependencia_cdmx_otra → institución con ese nombre;
-     · alcaldia                                        → la de ese nombre (catálogo cerrado);
-     · dependencia_federal = cfe | otro (+ nombre)     → la de clave cfe o la del nombre escrito.
+     · alcaldia                                        → la de esa clave (lista de las 16);
+     · dependencia_federal = cfe | otro (+ nombre)     → la de clave cfe o la del nombre escrito;
+     · educativa = unam | otro (+ nombre)              → la de clave unam o la del nombre escrito.
+   Perfil del dictaminador: nivel_estudios, carrera y estatus_estudios van tal cual; la base calcula
+   perfil_academico y experiencia_minima (apd.perfil_academico) y liga la carrera a apd.carrera.
 
    El envío es una SIMULACIÓN: asigna un folio con la forma de la base
    (APD-S-AAAA-NNNNN) y no guarda nada fuera de esta pestaña. En la etapa 3

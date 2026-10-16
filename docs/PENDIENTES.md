@@ -24,7 +24,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P10 | Lugar, días y horario de entrega de acreditaciones | Usar el mismo catálogo de sedes de P09, con días y horario de entrega. Mientras se define, el parámetro de la base lo muestra como pendiente. | datos reales |
 | P48 | ¿La credencial se imprime en el lugar de entrega? | Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento. | etapa 2 |
 | P49 | Especificación de la foto de la credencial y diseño de la credencial | Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. | datos reales |
-| P57 | Hora de entrada al curso y si los días del curso son consecutivos | Confirmar la hora de entrada (se muestra «por confirmar») y si el curso corre en días consecutivos, como hoy lo cuenta la base, o sólo en días hábiles; en ese caso, guardar el calendario del grupo. | datos reales |
+| P57 | Hora de entrada al curso | Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base. | datos reales |
+| P59 | Catálogo de carreras (cgo_carreras) y Anexo 1 de carreras afines | Entregar el catálogo cgo_carreras y el Anexo 1 para clasificar cada carrera como principal, afín, disciplina afín o no afín. Hoy sólo Biología, Ingeniería Forestal, Ingeniería Agrónoma y Agronomía están clasificadas; las demás quedan «por clasificar» y la Secretaría las clasifica en la revisión documental. | datos reales |
 
 ## Liber (formatos y definiciones del sistema)
 
@@ -36,7 +37,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P14 | Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? | Sí basta para abrir la cuenta, porque nadie llega a un curso sin presentar su identificación oficial en el cotejo. | etapa 3 |
 | P15 | Contrastar la CURP con el servicio de consulta de RENAPO | Hacerlo sólo si el SIA ya tiene acceso al servicio. No bloquea: el cotejo presencial ya confirma la identidad. | no |
 | P51 | ¿La verificación pública muestra la foto de la credencial? | No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física. | no |
-| P58 | Nombres de los tres identificadores: folio de la solicitud, expediente y acreditación | Propuesta: «Folio de la solicitud», «Número de expediente» y «Número de acreditación»; hoy se muestran «Folio de la solicitud», «Expediente» y «Folio de la acreditación». Confirmar con cuál aparece en la credencial impresa. | no |
+| P60 | Reglas supuestas del perfil de dictaminador | Confirmar: (1) un posgrado cuenta como licenciatura titulada en su carrera; (2) hasta preparatoria, o licenciatura en curso o trunca, no cumple y la solicitud no se envía; (3) la carta de pasante sólo vale en carrera principal, afín o disciplina afín. | no |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
 
@@ -103,6 +104,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P47 | El núcleo pone aria-required en el botón de la zona de carga, que no lo admite | Reportarlo al estándar; el proyecto lo quita sólo de ese botón (app/apd.js). | no |
 | P52 | Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí) | Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas. | no |
 | P56 | Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado | Hacer de opciones-lista la forma por omisión de las preguntas de una sola respuesta, dejar la rejilla para casos con pocas opciones muy visuales y agregar a opciones-lista su estado deshabilitado. | no |
+| P61 | El mínimo de un número no puede depender de otra respuesta | Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente. | no |
 
 ## Resueltos
 
@@ -129,3 +131,4 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | Estilo de las preguntas de opción | Lista con el botón de opción visible, una por renglón (opciones-lista), en todo el sistema | 15/10/2026 |
 | Lista de Direcciones Generales de la SEDEMA (P53) | Lista cerrada de seis Direcciones Generales; se quitó «Otra área de la Secretaría» por indicación de Liber | 15/10/2026 |
 | Universidades e instituciones educativas en la adscripción (P54) | Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre | 15/10/2026 |
+| Nombres de los identificadores (P58) | «Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema | 15/10/2026 |

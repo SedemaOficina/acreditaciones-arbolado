@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-16T01:02:19.099Z",
+  "generado": "2026-10-16T01:36:28.686Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -42,19 +42,24 @@
         ]
       }
     },
-    "perfil_academico": {
-      "etiqueta": "Estudios",
+    "nivel_estudios": {
+      "etiqueta": "¿Cuál es tu último nivel o grado de estudios?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
-      "uso": "Definir la experiencia mínima y los documentos de estudios que se piden.",
+      "uso": "Saber si cumples el perfil y cuántos años de experiencia se piden.",
       "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
       "atributos": {},
       "opciones": [
-        "titulo",
-        "creditos_100",
-        "pasante",
-        "tecnica"
+        "ninguna",
+        "preescolar",
+        "primaria",
+        "secundaria",
+        "preparatoria",
+        "tecnica",
+        "licenciatura",
+        "maestria",
+        "doctorado"
       ],
       "autocomplete": "off",
       "si": {
@@ -65,20 +70,48 @@
       }
     },
     "carrera": {
-      "etiqueta": "Carrera",
-      "tipo": "texto",
+      "etiqueta": "¿Qué carrera estudiaste?",
+      "tipo": "combo",
       "requerido": true,
       "sensible": false,
-      "uso": "Comprobar que la formación es afín al manejo del arbolado.",
+      "uso": "Saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.",
       "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
       "atributos": {
         "maxlength": "120"
       },
+      "cerrado": false,
+      "catalogo": "carreras",
       "autocomplete": "off",
       "si": {
-        "campo": "tipo",
+        "campo": "nivel_estudios",
         "valores": [
-          "dictaminador"
+          "licenciatura",
+          "maestria",
+          "doctorado"
+        ]
+      }
+    },
+    "estatus_estudios": {
+      "etiqueta": "¿En qué situación están esos estudios?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Saber si tienes título, carta de pasante o estudios sin concluir, para fijar la experiencia mínima.",
+      "finalidad": "Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar.",
+      "atributos": {},
+      "opciones": [
+        "en_curso",
+        "trunco",
+        "concluido",
+        "titulado"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "nivel_estudios",
+        "valores": [
+          "licenciatura",
+          "maestria",
+          "doctorado"
         ]
       }
     },

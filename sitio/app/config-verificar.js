@@ -38,7 +38,7 @@ window.FORMKIT_OPCIONES = {
         APD.datosLista([
           ['Nombre', f.nombre],
           ['Acreditación', f.tipo],
-          ['Número', f.numero],
+          ['Número de acreditación', f.numero],
           ['Emitida el', APD.fecha(f.emitida_en)],
           ['Vence el', APD.fecha(f.vence_en)]
         ]),

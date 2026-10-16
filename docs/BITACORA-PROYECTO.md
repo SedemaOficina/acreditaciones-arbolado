@@ -280,3 +280,18 @@ hallazgos; auditor de CSS y de campos correctos.
 
 **Verificado**: 106 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
 auditor de CSS y de campos correctos.
+
+## 2026-10-15 · Bloque 21 · Perfil del dictaminador, nombres de archivo e identificadores
+
+- Perfil en tres preguntas: último nivel de estudios; desde licenciatura, carrera (combo abierto con `apd.carrera`) y
+  situación de los estudios. La base calcula `perfil_academico` y `experiencia_minima` (`apd.perfil_academico`) y, al
+  enviar, rechaza `perfil_no_cumple` y `experiencia_insuficiente`. El navegador hace el mismo cálculo
+  (`APD.perfilAcademico`): fija el mínimo del campo de experiencia, dice cuántos años se piden y avisa si no cumple. En
+  pruebas, el perfil calculado se ve en amarillo.
+- Nombres de archivo: la persona ve «Se guardará como: CURP_…pdf» bajo cada archivo y, en la revisión, el nombre nuevo
+  con el archivo original debajo (`APD.nombreDeArchivo`, mismo cálculo que `apd.nombre_de_archivo`).
+- «Número de expediente», «Número de acreditación» y «Fecha en que enviaste la solicitud».
+- Hallazgo del estándar P61 (mínimo que depende de otra respuesta), anotado en el documento de fallas.
+
+**Verificado**: 113 casos de la base, esquemas del servidor, comprobaciones del sitio y accesibilidad sin hallazgos;
+auditor de CSS y de campos correctos.

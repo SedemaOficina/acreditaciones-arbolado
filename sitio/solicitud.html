@@ -94,25 +94,54 @@
 
       <div data-si="tipo=dictaminador">
         <h3 class="titulo-bloque">Tu perfil</h3>
-        <fieldset class="grupo" data-campo="perfil_academico" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Definir la experiencia mínima y los documentos de estudios que se piden.">
-          <legend class="etiqueta">Estudios</legend>
+        <!-- Perfil (decisión 2026-10-15, Liber): nivel → carrera (desde licenciatura) → estatus. Con eso la base calcula
+             el perfil y la experiencia mínima que piden los lineamientos (apd.perfil_academico). -->
+        <fieldset class="grupo" data-campo="nivel_estudios" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si cumples el perfil y cuántos años de experiencia se piden.">
+          <legend class="etiqueta">¿Cuál es tu último nivel o grado de estudios?</legend>
+          <p class="ayuda">El más alto que cursas o cursaste.</p>
           <!-- autocomplete off: el navegador no tiene un valor que proponer para el nivel de estudios. -->
           <div class="opciones-lista">
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="perfil_academico" autocomplete="off" value="titulo"><span><span class="opcion-nombre">Título profesional</span><span class="opcion-desc">Licenciatura o ingeniería concluida y titulada.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="perfil_academico" autocomplete="off" value="creditos_100"><span><span class="opcion-nombre">100 % de créditos</span><span class="opcion-desc">Terminaste la carrera, pero aún no te titulas.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="perfil_academico" autocomplete="off" value="pasante"><span><span class="opcion-nombre">Pasante</span><span class="opcion-desc">Cursas o cursaste la carrera sin concluirla.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="perfil_academico" autocomplete="off" value="tecnica"><span><span class="opcion-nombre">Carrera técnica</span><span class="opcion-desc">Técnico o técnica en una carrera afín.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="ninguna"><span><span class="opcion-nombre">Ninguno</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="preescolar"><span><span class="opcion-nombre">Preescolar</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="primaria"><span><span class="opcion-nombre">Primaria</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="secundaria"><span><span class="opcion-nombre">Secundaria</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="preparatoria"><span><span class="opcion-nombre">Preparatoria o bachillerato</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="tecnica"><span><span class="opcion-nombre">Carrera técnica</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="licenciatura"><span><span class="opcion-nombre">Licenciatura o ingeniería</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="maestria"><span><span class="opcion-nombre">Maestría</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="nivel_estudios" autocomplete="off" value="doctorado"><span><span class="opcion-nombre">Doctorado</span></span></label>
           </div>
         </fieldset>
-        <div class="campo" data-campo="carrera" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar que la formación es afín al manejo del arbolado.">
-          <label class="etiqueta" for="carrera">Carrera</label>
-          <p class="ayuda">Como aparece en tu título o constancia. Por ejemplo: Biología, Ingeniería forestal.</p>
-          <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
-          <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
+        <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
+          <div class="campo" data-campo="carrera" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
+            <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
+            <p class="ayuda">Elígela de la lista o escríbela como aparece en tu título o constancia. Si tienes posgrado, la carrera más relacionada con el arbolado.</p>
+            <div class="combo" data-combo data-catalogo="carreras" data-libre>
+              <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
+              <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
+              <ul class="combo-lista" hidden></ul>
+            </div>
+          </div>
+          <fieldset class="grupo" data-campo="estatus_estudios" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Saber si tienes título, carta de pasante o estudios sin concluir, para fijar la experiencia mínima.">
+            <legend class="etiqueta">¿En qué situación están esos estudios?</legend>
+            <!-- autocomplete off: el navegador no tiene un valor que proponer para la situación de los estudios. -->
+            <div class="opciones-lista">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="en_curso"><span><span class="opcion-nombre">En curso</span><span class="opcion-desc">Todavía los estudias.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="trunco"><span><span class="opcion-nombre">Trunco</span><span class="opcion-desc">Los dejaste sin terminar.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="concluido"><span><span class="opcion-nombre">Concluido</span><span class="opcion-desc">Terminaste los créditos; tienes carta de pasante o constancia del 100 %.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="titulado"><span><span class="opcion-nombre">Titulado</span><span class="opcion-desc">Tienes título o cédula profesional.</span></span></label>
+            </div>
+          </fieldset>
+        </div>
+        <!-- Lo que calcula la base con las tres respuestas; la persona ve la experiencia que se le pide (abajo). -->
+        <div data-interno="Lo calcula la base con el nivel, la situación de los estudios y el grupo de la carrera (apd.perfil_academico). Se guarda en apd.solicitud.perfil_academico y experiencia_minima." data-interno-etiqueta="Perfil y experiencia mínima (calculados)" data-interno-texto=""></div>
+        <div class="aviso aviso-bloqueo" data-perfil-no-cumple hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg>
+          <div class="aviso-texto"><p>Con estos estudios no cumples el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, o carrera técnica. La solicitud no se podrá enviar.</p></div>
         </div>
         <div class="campo" data-campo="anios_experiencia" data-formato="numero" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.">
           <label class="etiqueta" for="anios_experiencia">Experiencia en manejo de arbolado</label>
-          <p class="ayuda">Puedes usar medios años; por ejemplo, 2.5. Los comprobantes que cargues en el siguiente paso deben respaldarlos.</p>
+          <p class="ayuda"><span data-experiencia-minima>Se piden dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, y cinco con carta de pasante, carrera técnica o disciplina afín.</span> Puedes usar medios años; por ejemplo, 2.5. Los comprobantes que cargues en el siguiente paso deben respaldarlos.</p>
           <!-- autocomplete off: dato del trámite; el navegador no tiene un valor que proponer. -->
           <div class="control-grupo"><input class="control control-corto" id="anios_experiencia" name="anios_experiencia" type="text" inputmode="decimal" min="0" max="70" step="0.5" autocomplete="off"><span class="control-unidad" aria-hidden="true">años</span></div>
         </div>
@@ -150,8 +179,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="IDENTIFICACION OFICIAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
           <div class="campo" data-campo="doc_poda_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -168,8 +197,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CURP"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
           <div class="campo" data-campo="doc_poda_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -186,8 +215,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTE DE DOMICILIO"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
           <div class="campo" data-campo="doc_poda_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -204,8 +233,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
         </div>
         <div data-si="tramite=poda_renovacion">
@@ -224,8 +253,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="IDENTIFICACION OFICIAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
           <div class="campo" data-campo="doc_poda_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -242,8 +271,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CURP"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
           <div class="campo" data-campo="doc_poda_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -260,8 +289,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTE DE DOMICILIO"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
           <div class="campo" data-campo="doc_poda_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -278,8 +307,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
         </div>
         <div data-si="tramite=dictaminador_nueva">
@@ -298,8 +327,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="IDENTIFICACION OFICIAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -316,8 +345,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CURP"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -334,8 +363,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTE DE DOMICILIO"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -352,13 +381,13 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_estudios" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobante_estudios">Comprobante de estudios</span>
-            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_estudios">Título, cédula profesional, carta de pasante vigente, constancia de 100 % de créditos o certificado de carrera técnica.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobante_estudios">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -370,8 +399,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE ESTUDIOS" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_curriculum_vitae" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Currículum vitae» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -388,13 +417,13 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CURRICULUM VITAE"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CURRICULUM VITAE" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_comprobantes_experiencia" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobantes_experiencia">Comprobantes de experiencia</span>
-            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF. Dos años con título, pasantía o 100 % de créditos; cinco con carrera técnica.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF. Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobantes_experiencia">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -406,8 +435,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_nueva_constancias_capacitacion" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Constancias de capacitación especializada» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -424,8 +453,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CONSTANCIAS DE CAPACITACION"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIAS DE CAPACITACION" hidden></p>
           </div>
         </div>
         <div data-si="tramite=dictaminador_renovacion">
@@ -444,8 +473,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="IDENTIFICACION OFICIAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -462,8 +491,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CURP"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -480,8 +509,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTE DE DOMICILIO"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -498,13 +527,13 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_estudios" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobante_estudios">Comprobante de estudios (si aplica)</span>
-            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_estudios">Título, cédula profesional, carta de pasante vigente, constancia de 100 % de créditos o certificado de carrera técnica. Sólo si actualizaste tus estudios.</p>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Sólo si actualizaste tus estudios.</p>
             <div data-archivos>
               <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_comprobante_estudios">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -516,8 +545,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE ESTUDIOS" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_curriculum_vitae" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Currículum vitae» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -534,8 +563,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CURRICULUM VITAE"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CURRICULUM VITAE" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_comprobantes_experiencia" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -552,8 +581,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA" hidden></p>
           </div>
           <div class="campo" data-campo="doc_dictaminador_renovacion_constancias_capacitacion" data-max="1" data-extensiones="pdf" data-mb="5"
                data-uso="Comprobar el requisito «Constancias de capacitación especializada» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
@@ -570,8 +599,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Dato interno: el nombre con que la base guarda el archivo (apd.nombre_de_archivo). Sólo se ve en pruebas. -->
-            <div data-interno="La base lo pone al registrar el documento: TIPO DE DOCUMENTO_NOMBRE COMPLETO. Se guarda en apd.documento.nombre_archivo; la persona no tiene que renombrar nada." data-interno-etiqueta="Se guardará como" data-nombre-archivo="CONSTANCIAS DE CAPACITACION"></div>
+            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
+            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIAS DE CAPACITACION" hidden></p>
           </div>
         </div>
         <!-- documentos:fin -->

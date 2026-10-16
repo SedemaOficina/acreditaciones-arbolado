@@ -255,9 +255,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(await page.textContent('[data-ejemplo-archivo]')),
     t(`documentos: dice cómo se guardarán sus archivos (${await page.textContent('[data-ejemplo-archivo]')})`));
   const n = await cargaObligatorios(page);
-  const comoSeGuarda = await page.textContent('[data-campo="doc_poda_nueva_curp"] [data-nombre-archivo] [data-interno-valor]');
-  comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(comoSeGuarda) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] [data-nombre-archivo] .nota-interna'),
-    t(`documentos: en pruebas, cada archivo cargado dice en amarillo cómo se guardará (${comoSeGuarda})`));
+  await page.waitForFunction(() => document.querySelector('[data-campo="doc_poda_nueva_curp"] .nombre-guardado').textContent !== '');
+  const comoSeGuarda = await page.textContent('[data-campo="doc_poda_nueva_curp"] .nombre-guardado');
+  comprueba(/^Se guardará como: CURP_[A-ZÑ ]+\.pdf$/.test(comoSeGuarda) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] .nombre-guardado'),
+    t(`documentos: cada archivo cargado dice con qué nombre se guarda (${comoSeGuarda})`));
   comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
   await captura(page, `03-solicitud-documentos-${sufijo}`);
   await siguiente(page);
@@ -315,10 +316,24 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
   await page.waitForFunction(() => document.getElementById('tramite').value === 'dictaminador_nueva');
   await siguiente(page);
-  comprueba(await page.isVisible('[data-campo="perfil_academico"]'), t('dictaminador: sin perfil no avanza'));
-  await page.check('input[name="perfil_academico"][value="titulo"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="nivel_estudios"]'), t('dictaminador: sin perfil no avanza'));
+  comprueba(!(await page.isVisible('[data-campo="carrera"]')), t('perfil: la carrera no se pregunta antes del nivel de estudios'));
+  await page.check('input[name="nivel_estudios"][value="preparatoria"]', { force: true });
+  comprueba(!(await page.isVisible('[data-campo="carrera"]')) && await page.isVisible('[data-perfil-no-cumple]'),
+    t('perfil: con preparatoria no se pregunta carrera y avisa que no cumple el perfil'));
+  await page.check('input[name="nivel_estudios"][value="licenciatura"]', { force: true });
+  comprueba(await page.isVisible('[data-campo="carrera"]') && await page.isVisible('[data-campo="estatus_estudios"]') && !(await page.isVisible('[data-perfil-no-cumple]')),
+    t('perfil: con licenciatura pregunta la carrera y luego su situación'));
   await page.fill('#carrera', 'Biología');
+  await page.check('input[name="estatus_estudios"][value="concluido"]', { force: true });
+  comprueba(/cinco años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: con carta de pasante se piden cinco años'));
   await page.fill('#anios_experiencia', '3');
+  await siguiente(page);
+  comprueba(await page.locator('[data-campo="anios_experiencia"] .err:not(:empty)').count() > 0, t('perfil: con menos experiencia de la que pide el perfil no avanza'));
+  await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+  comprueba(/dos años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: titulado en Biología, dos años'));
+  const calculado = await page.waitForFunction(() => /licenciatura_afin/.test(document.querySelector('[data-interno-texto] [data-interno-valor]').textContent), null, { timeout: 3000 }).then(() => true, () => false);
+  comprueba(calculado, t('perfil: en pruebas, el perfil calculado se ve en amarillo'));
   await captura(page, `10-dictaminador-perfil-${sufijo}`);
   await siguiente(page);
   const nd = await cargaObligatorios(page);
@@ -326,6 +341,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     && datos.requisito.find((r) => r.clave === rc.requisito).forma === 'documento' && datos.requisito.find((r) => r.clave === rc.requisito).momento === 'en_linea').length;
   comprueba(nd === esperados, t(`dictaminador nueva: ${nd} documentos obligatorios (catálogo: ${esperados})`));
   await siguiente(page);
+  const rev = await page.textContent('[data-revision-lista]');
+  comprueba(/CURP_[A-ZÑ ]+\.pdf/.test(rev) && /Archivo que subiste:/.test(rev), t('revisión: muestra el nombre con que se guarda cada documento y, debajo, el archivo que subió'));
   await marcaCasillas(page);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
@@ -445,7 +462,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   if (emitida) {
     await entra(page, emitida.curp);
     const f = await fichaDe('Acreditación emitida').textContent();
-    comprueba(/Inicio de vigencia/.test(f) && /Fin de vigencia/.test(f) && /Folio de la acreditación/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f),
+    comprueba(/Inicio de vigencia/.test(f) && /Fin de vigencia/.test(f) && /Número de acreditación/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f),
       t('mis solicitudes: la acreditación emitida muestra su folio y vigencia, sin los datos del curso'));
     await page.click('[data-sesion] button');
   }

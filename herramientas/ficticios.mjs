@@ -145,15 +145,16 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   if (p.sinActivar) activar(p, opciones.fecha); // la persona del padrón crea su contraseña al solicitar
   en(opciones.fecha, '09:30');
   como(p.correo, 'solicitante');
+  // Perfil del dictaminador: nivel, carrera y estatus; la base calcula el perfil y la experiencia mínima
   const perfil = tipo === 'dictaminador'
-    ? { perfil: opciones.perfil || 'titulo', carrera: opciones.carrera || 'Biología', anios: opciones.anios ?? 4 }
-    : { perfil: null, carrera: null, anios: null };
+    ? { nivel: opciones.nivel || 'licenciatura', carrera: opciones.carrera || 'Biología', estatus: opciones.estatus || 'titulado', anios: opciones.anios ?? 4 }
+    : { nivel: null, carrera: null, estatus: null, anios: null };
   // La adscripción es de la persona («Mis datos»); la solicitud la copia
   if (opciones.org) emitir(`UPDATE apd.solicitante SET adscripcion = ${q(ORG[opciones.org].tipo)}, organizacion_id = ${orgId(opciones.org)} WHERE id = ${q(p.id)}`);
   emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id,
-    perfil_academico, carrera, anios_experiencia, es_ficticio)
+    nivel_estudios, carrera, estatus_estudios, anios_experiencia, es_ficticio)
   VALUES (${q(s.id)}, ${q(p.id)}, ${q(tipo)}, ${q(modalidad)},
-    ${q(opciones.anterior)}, ${q(perfil.perfil)}, ${q(perfil.carrera)}, ${perfil.anios ?? 'NULL'}, true)`);
+    ${q(opciones.anterior)}, ${q(perfil.nivel)}, ${q(perfil.carrera)}, ${q(perfil.estatus)}, ${perfil.anios ?? 'NULL'}, true)`);
   // Documentos obligatorios que se cargan en línea, tomados del catálogo de la base (fuente única)
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
   SELECT md5('doc' || ${q(s.id)} || rc.requisito)::uuid, ${q(s.id)}, rc.requisito,
@@ -424,15 +425,15 @@ solicitud('vencida-no-renovable', noRenovable, 'poda', 'nueva', { fecha: '2026-1
 // Dictaminadores
 const sDict1 = solicitud('dict-nuevo-1', dictNuevo1, 'dictaminador', 'nueva', { fecha: '2026-09-14', org: 'uni', carrera: 'Ingeniería Forestal', anios: 3 });
 hastaLista(sDict1, { envio: '2026-09-14', validacion: '2026-09-17', cita: '2026-09-23' });
-const sDict2 = solicitud('dict-nuevo-2', dictNuevo2, 'dictaminador', 'nueva', { fecha: '2026-10-05', perfil: 'tecnica', carrera: 'Técnico en jardinería', anios: 7 });
+const sDict2 = solicitud('dict-nuevo-2', dictNuevo2, 'dictaminador', 'nueva', { fecha: '2026-10-05', nivel: 'tecnica', anios: 7 });
 hastaLista(sDict2, { envio: '2026-10-05', validacion: '2026-10-07', cita: '2026-10-09' });
 const sDictR = solicitud('dict-renov', dictRenov, 'dictaminador', 'renovacion', { fecha: '2026-10-01', anterior: a5, anios: 6, carrera: 'Agronomía' });
 hastaLista(sDictR, { envio: '2026-10-01', validacion: '2026-10-02', cita: '2026-10-06' });
-const sDictObs = solicitud('dict-observado', dictObs, 'dictaminador', 'nueva', { fecha: '2026-10-06', perfil: 'pasante', carrera: 'Biología', anios: 2.5 });
+const sDictObs = solicitud('dict-observado', dictObs, 'dictaminador', 'nueva', { fecha: '2026-10-06', estatus: 'concluido', carrera: 'Biología', anios: 5.5 });
 enviar(sDictObs, '2026-10-06');
 observar(sDictObs, '2026-10-08', 'comprobantes_experiencia', 'Las constancias no indican el periodo ni las funciones realizadas en manejo de arbolado.');
 // Un aprobado del grupo de septiembre ya pide dictaminador (tiene la poda que acaba de recibir)
-const sDictG1 = solicitud('dict-g1', g1[1].persona, 'dictaminador', 'nueva', { fecha: '2026-10-10', carrera: 'Ingeniería Ambiental', anios: 5 });
+const sDictG1 = solicitud('dict-g1', g1[1].persona, 'dictaminador', 'nueva', { fecha: '2026-10-10', nivel: 'maestria', carrera: 'Ingeniería Ambiental', anios: 5 });
 enviar(sDictG1, '2026-10-10');
 
 // 3 · Grupo de poda específico de una alcaldía, en curso (cinco días desde el 13/10): día 1 capturado, una falta

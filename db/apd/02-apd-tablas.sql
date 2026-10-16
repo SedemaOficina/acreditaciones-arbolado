@@ -125,6 +125,25 @@ COMMENT ON COLUMN apd.organizacion.nombre_normalizado IS 'Nombre sin acentos, en
 COMMENT ON COLUMN apd.organizacion.activa IS 'Si aparece al solicitar';
 COMMENT ON COLUMN apd.organizacion.es_ficticio IS 'Dato de prueba';
 
+CREATE TABLE apd.carrera (
+  id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
+  nombre                     text          NOT NULL,
+  nombre_normalizado         text          NOT NULL,
+  grupo                      text          NULL,
+  activa                     boolean       NOT NULL DEFAULT true,
+  es_ficticio                boolean       NOT NULL DEFAULT false,
+  CONSTRAINT carrera_pk PRIMARY KEY (id),
+  CONSTRAINT carrera_grupo_ck CHECK (grupo IN ('principal', 'afin', 'disciplina_afin', 'no_afin')),
+  CONSTRAINT carrera_nombre_uk UNIQUE (nombre_normalizado)
+);
+COMMENT ON TABLE apd.carrera IS 'Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?» del perfil de dictaminador (equivale a cgo_carreras). El grupo decide la experiencia mínima que piden los lineamientos: principal (Biología, Ingeniería Forestal, Ingeniería Agrónoma) y afín, dos años con título; disciplina afín, cinco; no afín, no cumple. Las carreras afines (Anexo 1 de los lineamientos) se cargan cuando la Dirección las entregue; las que escribe una persona y no están en la lista las agrega la base sin grupo, y la Secretaría las clasifica en la revisión documental.';
+COMMENT ON COLUMN apd.carrera.id IS 'Identificador interno';
+COMMENT ON COLUMN apd.carrera.nombre IS 'Nombre de la carrera';
+COMMENT ON COLUMN apd.carrera.nombre_normalizado IS 'Nombre sin acentos, en minúsculas y sin puntuación; lo calcula la base y evita duplicados';
+COMMENT ON COLUMN apd.carrera.grupo IS 'principal, afin, disciplina_afin o no_afin; vacío mientras la Secretaría no la clasifica';
+COMMENT ON COLUMN apd.carrera.activa IS 'Si aparece en la lista al solicitar';
+COMMENT ON COLUMN apd.carrera.es_ficticio IS 'Dato de prueba';
+
 CREATE TABLE apd.solicitante (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
   curp                       text          NOT NULL,
@@ -287,8 +306,12 @@ CREATE TABLE apd.solicitud (
   factura_rfc                text          NULL,
   factura_razon_social       text          NULL,
   factura_folio_fiscal       text          NULL,
-  perfil_academico           text          NULL,
+  nivel_estudios             text          NULL,
   carrera                    text          NULL,
+  carrera_id                 uuid          NULL,
+  estatus_estudios           text          NULL,
+  perfil_academico           text          NULL,
+  experiencia_minima         numeric(3,1)  NULL,
   anios_experiencia          numeric(4,1)  NULL,
   estado                     text          NOT NULL DEFAULT 'borrador',
   estado_desde               timestamptz   NOT NULL DEFAULT now(),
@@ -316,8 +339,11 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal),
   CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$'),
   CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'),
-  CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IS NULL OR perfil_academico IN ('titulo', 'pasante', 'creditos_100', 'tecnica')),
-  CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (perfil_academico IS NULL AND carrera IS NULL AND anios_experiencia IS NULL)),
+  CONSTRAINT solicitud_nivel_ck CHECK (nivel_estudios IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria', 'tecnica', 'licenciatura', 'maestria', 'doctorado')),
+  CONSTRAINT solicitud_estatus_ck CHECK (estatus_estudios IN ('en_curso', 'trunco', 'concluido', 'titulado')),
+  CONSTRAINT solicitud_carrera_fk FOREIGN KEY (carrera_id) REFERENCES apd.carrera (id),
+  CONSTRAINT solicitud_perfil_ck CHECK (perfil_academico IN ('licenciatura_afin', 'disciplina_afin', 'pasante', 'tecnica', 'por_clasificar', 'no_cumple')),
+  CONSTRAINT solicitud_perfil_tipo_ck CHECK (tipo_acreditacion = 'dictaminador' OR (nivel_estudios IS NULL AND carrera IS NULL AND estatus_estudios IS NULL AND anios_experiencia IS NULL)),
   CONSTRAINT solicitud_experiencia_ck CHECK (anios_experiencia IS NULL OR anios_experiencia BETWEEN 0 AND 70),
   CONSTRAINT solicitud_cierre_ck CHECK (estado NOT IN ('cancelada', 'concluida_sin_atender') OR length(trim(coalesce(motivo_cierre, ''))) > 0)
 );
@@ -337,8 +363,12 @@ COMMENT ON COLUMN apd.solicitud.acreditacion_anterior_id IS 'Acreditación que s
 COMMENT ON COLUMN apd.solicitud.factura_rfc IS 'RFC a cuyo favor se emitió la factura del pago; lo captura el personal en el cotejo';
 COMMENT ON COLUMN apd.solicitud.factura_razon_social IS 'Nombre o razón social a cuyo favor se emitió la factura; lo captura el personal en el cotejo';
 COMMENT ON COLUMN apd.solicitud.factura_folio_fiscal IS 'Folio fiscal (UUID) de la factura, para seguimiento; lo captura el personal en el cotejo';
-COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Sólo dictaminador: titulo, pasante, creditos_100 o tecnica. Determina la experiencia mínima';
-COMMENT ON COLUMN apd.solicitud.carrera IS 'Sólo dictaminador: carrera o formación declarada';
+COMMENT ON COLUMN apd.solicitud.nivel_estudios IS 'Sólo dictaminador: último nivel o grado de estudios (ninguna, preescolar, primaria, secundaria, preparatoria, tecnica, licenciatura, maestria, doctorado)';
+COMMENT ON COLUMN apd.solicitud.carrera IS 'Sólo dictaminador con licenciatura o posgrado: la carrera que estudió, elegida del catálogo o escrita';
+COMMENT ON COLUMN apd.solicitud.carrera_id IS 'Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo)';
+COMMENT ON COLUMN apd.solicitud.estatus_estudios IS 'Sólo dictaminador con licenciatura o posgrado: en_curso, trunco, concluido (carta de pasante o 100 % de créditos) o titulado';
+COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple';
+COMMENT ON COLUMN apd.solicitud.experiencia_minima IS 'Años de experiencia que pide el perfil (2 o 5); la calcula la base. Vacía si el perfil está por clasificar o no cumple';
 COMMENT ON COLUMN apd.solicitud.anios_experiencia IS 'Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban';
 COMMENT ON COLUMN apd.solicitud.estado IS 'Ver apd.transicion_solicitud()';
 COMMENT ON COLUMN apd.solicitud.estado_desde IS 'Desde cuándo está en el estado actual; lo pone la base';

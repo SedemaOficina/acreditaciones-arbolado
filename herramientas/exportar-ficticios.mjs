@@ -27,6 +27,7 @@ const TABLAS = {
   requisito: 'clave',
   requisito_curso: 'tipo_acreditacion, modalidad, orden',
   organizacion: 'nombre',
+  carrera: 'nombre',
   solicitante: 'curp',
   fotografia: 'solicitante_id, cargada_en',
   acreditacion: 'numero',

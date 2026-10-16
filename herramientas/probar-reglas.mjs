@@ -28,6 +28,7 @@ const GRUPO_INTEGRACION = `(SELECT id FROM apd.grupo WHERE estado = 'en_integrac
 const GRUPO_EN_CURSO = `(SELECT id FROM apd.grupo WHERE estado = 'en_curso' LIMIT 1)`;
 const BORRADOR = `(SELECT id FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1)`;
 const ENVIADA = `(SELECT id FROM apd.solicitud WHERE estado = 'enviada' ORDER BY folio LIMIT 1)`;
+const DICT_OBS = `(SELECT id FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1)`;
 const LISTA_DICT = `(SELECT solicitud_id FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1)`;
 const DOC_PEQUENO = (sol, req, tam = 1000) =>
   `INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
@@ -89,8 +90,8 @@ const casos = [
   ['Pedir una nueva teniendo una vigente se rechaza: debe renovar', { codigo: 'debe_renovar' }, null, `
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad) VALUES (${PERSONA_VIGENTE}, 'poda', 'nueva');`],
   ['Dictaminador sin poda vigente se rechaza', { codigo: 'sin_poda_vigente' }, null, `
-     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, perfil_academico, carrera, anios_experiencia)
-     VALUES (${PERSONA_NO_RENOVABLE}, 'dictaminador', 'nueva', 'titulo', 'Biología', 3);`],
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
+     VALUES (${PERSONA_NO_RENOVABLE}, 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);`],
   ['Una persona no tiene dos solicitudes activas del mismo tipo', { sqlstate: '23505' }, null, `
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad)
      SELECT solicitante_id, 'poda', 'nueva' FROM apd.solicitud WHERE id = ${BORRADOR};`],
@@ -203,8 +204,8 @@ const casos = [
         AND NOT EXISTS (SELECT 1 FROM apd.solicitud x WHERE x.solicitante_id = s.solicitante_id AND x.tipo_acreditacion = 'dictaminador')
       ORDER BY s.folio LIMIT 1;
      CREATE TEMP TABLE c AS SELECT count(*) AS n FROM apd.solicitante WHERE numero_expediente IS NOT NULL;
-     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, perfil_academico, carrera, anios_experiencia)
-     VALUES ('00000000-0000-4000-a000-000000000009', (SELECT solicitante_id FROM p), 'dictaminador', 'nueva', 'titulo', 'Biología', 3);
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
+     VALUES ('00000000-0000-4000-a000-000000000009', (SELECT solicitante_id FROM p), 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);
      SELECT apd.asignar_expediente((SELECT solicitante_id FROM p));
      DO $$ BEGIN
        ASSERT (SELECT numero_expediente FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM p)) = (SELECT numero_expediente FROM p);
@@ -411,6 +412,39 @@ const casos = [
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = ${PERSONA_VIGENTE};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'adscripcion' AND detalle LIKE '%alcaldia: Tlalpan'); END $$;`],
+  // Perfil del dictaminador (decisión 2026-10-15): nivel, carrera y estatus; la base calcula perfil y experiencia mínima
+  ['Licenciatura titulada en una carrera principal pide 2 años (la carrera se liga al catálogo)', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'titulado', carrera = 'biologia' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT perfil_academico = 'licenciatura_afin' AND experiencia_minima = 2
+                                AND carrera_id = (SELECT id FROM apd.carrera WHERE nombre = 'Biología')
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
+  ['Con carta de pasante se piden 5 años: con menos no se envía', { codigo: 'experiencia_insuficiente' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'concluido', carrera = 'Biología', anios_experiencia = 3 WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+  ['Licenciatura trunca no cumple el perfil y no se envía', { codigo: 'perfil_no_cumple' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'trunco', carrera = 'Biología' WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+  ['Con preparatoria no se guardan carrera ni estatus, y no cumple el perfil', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'preparatoria', estatus_estudios = 'titulado', carrera = 'Biología' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima IS NULL
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
+  ['Carrera técnica pide 5 años', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'tecnica' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT perfil_academico = 'tecnica' AND experiencia_minima = 5
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
+  ['Una carrera escrita nueva se agrega sin grupo; al clasificarla la Secretaría, el perfil se actualiza', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', estatus_estudios = 'titulado', carrera = 'Gestión  Ambiental Urbana' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT s.perfil_academico = 'por_clasificar' AND s.experiencia_minima IS NULL AND c.grupo IS NULL AND c.nombre = 'Gestión Ambiental Urbana'
+                           FROM apd.solicitud s JOIN apd.carrera c ON c.id = s.carrera_id
+                          WHERE s.estado = 'con_observaciones' AND s.tipo_acreditacion = 'dictaminador' ORDER BY s.folio LIMIT 1); END $$;
+     UPDATE apd.carrera SET grupo = 'disciplina_afin' WHERE nombre = 'Gestión Ambiental Urbana';
+     UPDATE apd.solicitud SET anios_experiencia = anios_experiencia WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT perfil_academico = 'disciplina_afin' AND experiencia_minima = 5
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
+  ['Un posgrado cuenta como licenciatura titulada en su carrera', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'maestria', estatus_estudios = 'en_curso', carrera = 'Ingeniería Forestal' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT perfil_academico = 'licenciatura_afin' AND experiencia_minima = 2
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Una persona de la UNAM queda adscrita a una institución educativa', 'ok', null, `
      UPDATE apd.solicitante SET adscripcion = 'educativa', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'unam') WHERE id = ${PERSONA_VIGENTE};`],
   ['Una institución educativa nueva se registra con su tipo', 'ok', null, `

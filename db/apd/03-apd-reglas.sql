@@ -142,6 +142,72 @@ END $$;
 CREATE TRIGGER organizacion_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.organizacion
   FOR EACH ROW EXECUTE FUNCTION apd.organizacion_normalizar();
 
+-- ───────────────────────────── Carreras y perfil del dictaminador ─────────────────────────────
+
+CREATE FUNCTION apd.carrera_normalizar() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.nombre := regexp_replace(trim(NEW.nombre), '\s+', ' ', 'g');
+  NEW.nombre_normalizado := apd.normalizar(NEW.nombre);
+  IF NEW.nombre_normalizado = '' THEN
+    PERFORM apd.error('carrera_sin_nombre', 'La carrera necesita un nombre');
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER carrera_normalizar BEFORE INSERT OR UPDATE OF nombre ON apd.carrera
+  FOR EACH ROW EXECUTE FUNCTION apd.carrera_normalizar();
+
+-- Perfil académico del dictaminador según los lineamientos (decisión 2026-10-15, Liber):
+--   a) licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín → 2 años;
+--   c) carta de pasante, carrera técnica o disciplina afín → 5 años.
+-- Un posgrado (maestría o doctorado) cuenta como licenciatura titulada en su carrera, porque para cursarlo se
+-- pide el título [supuesto por confirmar, P60]. Hasta preparatoria, o licenciatura en curso o trunca, no cumple.
+-- Una carrera sin clasificar deja el perfil «por_clasificar»: lo resuelve la Secretaría en la revisión documental.
+CREATE FUNCTION apd.perfil_academico(p_nivel text, p_estatus text, p_grupo text) RETURNS text
+  LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE
+    WHEN p_nivel IS NULL THEN NULL
+    WHEN p_nivel IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria') THEN 'no_cumple'
+    WHEN p_nivel = 'tecnica' THEN 'tecnica'
+    WHEN p_estatus IS NULL THEN NULL
+    WHEN p_nivel = 'licenciatura' AND p_estatus IN ('en_curso', 'trunco') THEN 'no_cumple'
+    WHEN p_grupo IS NULL THEN 'por_clasificar'
+    WHEN p_grupo = 'no_afin' THEN 'no_cumple'
+    WHEN p_nivel = 'licenciatura' AND p_estatus = 'concluido' THEN 'pasante'
+    WHEN p_grupo IN ('principal', 'afin') THEN 'licenciatura_afin'
+    ELSE 'disciplina_afin'
+  END
+$$;
+CREATE FUNCTION apd.experiencia_minima(p_perfil text) RETURNS numeric
+  LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE p_perfil WHEN 'licenciatura_afin' THEN 2 WHEN 'disciplina_afin' THEN 5 WHEN 'pasante' THEN 5 WHEN 'tecnica' THEN 5 END::numeric
+$$;
+
+-- La base completa el perfil: liga la carrera al catálogo (si la escrita no existe, la agrega sin grupo) y calcula
+-- perfil y experiencia mínima. Lo que no corresponde al nivel elegido se descarta (carrera y estatus sólo desde
+-- licenciatura). Se recalcula en cada cambio, así que una carrera que la Secretaría clasifica después se refleja.
+CREATE FUNCTION apd.solicitud_perfil() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE c apd.carrera;
+BEGIN
+  IF NEW.tipo_acreditacion <> 'dictaminador' THEN RETURN NEW; END IF;
+  IF NEW.nivel_estudios IS NULL OR NEW.nivel_estudios NOT IN ('licenciatura', 'maestria', 'doctorado') THEN
+    NEW.carrera := NULL; NEW.estatus_estudios := NULL;
+  END IF;
+  NEW.carrera := nullif(regexp_replace(trim(coalesce(NEW.carrera, '')), '\s+', ' ', 'g'), '');
+  NEW.carrera_id := NULL;
+  IF NEW.carrera IS NOT NULL THEN
+    SELECT * INTO c FROM apd.carrera WHERE nombre_normalizado = apd.normalizar(NEW.carrera);
+    IF c.id IS NULL THEN
+      INSERT INTO apd.carrera (nombre, es_ficticio) VALUES (NEW.carrera, NEW.es_ficticio) RETURNING * INTO c;
+    END IF;
+    NEW.carrera_id := c.id;
+  END IF;
+  NEW.perfil_academico := apd.perfil_academico(NEW.nivel_estudios, NEW.estatus_estudios, c.grupo);
+  NEW.experiencia_minima := apd.experiencia_minima(NEW.perfil_academico);
+  RETURN NEW;
+END $$;
+CREATE TRIGGER solicitud_perfil BEFORE INSERT OR UPDATE ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_perfil();
+
 -- La institución es del tipo de adscripción que la persona eligió (decisiones 2026-10-15). La adscripción es de
 -- la persona (la cambia en «Mis datos»); cada solicitud guarda una copia al darse de alta y al enviarse.
 CREATE FUNCTION apd.comprobar_adscripcion(p_adscripcion text, p_organizacion uuid) RETURNS void LANGUAGE plpgsql AS $$
@@ -538,11 +604,23 @@ END $$;
 
 -- Al enviar: perfil y documentos obligatorios que se cargan en línea
 CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
-DECLARE faltan text;
+DECLARE faltan text; perfil text;
 BEGIN
-  IF s.tipo_acreditacion = 'dictaminador'
-     AND (s.perfil_academico IS NULL OR coalesce(trim(s.carrera), '') = '' OR s.anios_experiencia IS NULL) THEN
-    PERFORM apd.error('falta_perfil', 'Indica tu perfil académico, tu carrera y tus años de experiencia');
+  IF s.tipo_acreditacion = 'dictaminador' THEN
+    IF s.nivel_estudios IS NULL OR s.anios_experiencia IS NULL
+       OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado')
+           AND (coalesce(trim(s.carrera), '') = '' OR s.estatus_estudios IS NULL)) THEN
+      PERFORM apd.error('falta_perfil', 'Indica tu nivel de estudios, tu carrera y su situación, y tus años de experiencia');
+    END IF;
+    -- Se calcula aquí, no se lee de la columna: el disparador del perfil corre después que el de cambio
+    perfil := apd.perfil_academico(s.nivel_estudios, s.estatus_estudios,
+                (SELECT grupo FROM apd.carrera WHERE nombre_normalizado = apd.normalizar(s.carrera)));
+    IF perfil = 'no_cumple' THEN
+      PERFORM apd.error('perfil_no_cumple', 'Con los estudios que indicaste no cumples el perfil que piden los lineamientos para dictaminar');
+    END IF;
+    IF s.anios_experiencia < apd.experiencia_minima(perfil) THEN
+      PERFORM apd.error('experiencia_insuficiente', format('Tu perfil pide al menos %s años de experiencia en manejo de arbolado', apd.experiencia_minima(perfil)));
+    END IF;
   END IF;
   SELECT string_agg(r.nombre, ', ' ORDER BY rc.orden) INTO faltan
     FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
@@ -572,10 +650,10 @@ BEGIN
   END IF;
   IF OLD.estado NOT IN ('borrador', 'con_observaciones')
      AND (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id, NEW.adscripcion, NEW.organizacion_id,
-          NEW.perfil_academico, NEW.carrera, NEW.anios_experiencia)
+          NEW.nivel_estudios, NEW.carrera, NEW.estatus_estudios, NEW.anios_experiencia)
          IS DISTINCT FROM
          (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id, OLD.adscripcion, OLD.organizacion_id,
-          OLD.perfil_academico, OLD.carrera, OLD.anios_experiencia) THEN
+          OLD.nivel_estudios, OLD.carrera, OLD.estatus_estudios, OLD.anios_experiencia) THEN
     PERFORM apd.error('solicitud_cerrada', 'Los datos de la solicitud sólo se cambian en borrador o con observaciones');
   END IF;
   IF OLD.estado <> 'borrador' AND (NEW.tipo_acreditacion, NEW.modalidad) IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad) THEN

@@ -48,14 +48,14 @@
   function fichaSolicitud(datos, s, persona) {
     const e = APD.ESTADOS[s.estado] || { texto: s.estado, tono: '', sigue: '' };
     let sigue = e.sigue;
-    const pares = [['Folio de la solicitud', s.folio], ['Enviada el', fechaHora(s.enviada_en)]];
+    const pares = [['Folio de la solicitud', s.folio], ['Fecha en que enviaste la solicitud', fechaHora(s.enviada_en)]];
     const extra = [];
     const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad);
 
     if (s.estado === 'validada_en_linea' && s.cita_en) pares.push(['Cita de cotejo', fechaHora(s.cita_en)]);
     // El expediente físico es de la persona y lo comparten todos sus trámites; se abre en el primer cotejo
     if (persona.numero_expediente && !['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'cancelada', 'concluida_sin_atender'].includes(s.estado)) {
-      pares.push(['Expediente', persona.numero_expediente]);
+      pares.push(['Número de expediente', persona.numero_expediente]);
     }
 
     // Con la cita, los datos para pagar: el comprobante se presenta en la cita y ahí se emite la factura
@@ -121,7 +121,7 @@
       const a = datos.acreditacion.find((x) => x.solicitud_id === s.id);
       if (a) {
         // Lo que importa de una acreditación emitida: su número y su vigencia; va primero
-        pares.unshift(['Folio de la acreditación', a.numero], ['Inicio de vigencia', fecha(a.emitida_en)], ['Fin de vigencia', fecha(a.vence_en)]);
+        pares.unshift(['Número de acreditación', a.numero], ['Inicio de vigencia', fecha(a.emitida_en)], ['Fin de vigencia', fecha(a.vence_en)]);
         if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
         else {
           const lugar = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';

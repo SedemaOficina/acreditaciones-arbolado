@@ -46,7 +46,7 @@ INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('dictaminador_anterior', 'Acreditación de dictaminador a renovar',
    'El sistema la comprueba en su padrón.', 'registro', 'en_linea'),
   ('comprobante_estudios', 'Comprobante de estudios',
-   'Título, cédula profesional, carta de pasante vigente, constancia de 100 % de créditos o certificado de carrera técnica.', 'documento', 'en_linea'),
+   'Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica.', 'documento', 'en_linea'),
   ('curriculum_vitae', 'Currículum vitae',
    'Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico.', 'documento', 'en_linea'),
   ('comprobantes_experiencia', 'Comprobantes de experiencia',
@@ -88,7 +88,7 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'nueva',      'poda_vigente',                6, true,  ''),
   ('dictaminador', 'nueva',      'comprobante_estudios',        7, true,  ''),
   ('dictaminador', 'nueva',      'curriculum_vitae',            8, true,  ''),
-  ('dictaminador', 'nueva',      'comprobantes_experiencia',    9, true,  'Dos años con título, pasantía o 100 % de créditos; cinco con carrera técnica. [pendiente] la regla para pasantes.'),
+  ('dictaminador', 'nueva',      'comprobantes_experiencia',    9, true,  'Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.'),
   ('dictaminador', 'nueva',      'constancias_capacitacion',   10, true,  ''),
   ('dictaminador', 'renovacion', 'identificacion_oficial',      1, false, 'Sólo si cambió o ya no está vigente.'),
   ('dictaminador', 'renovacion', 'curp',                        2, false, 'Sólo si cambió o ya no está vigente.'),
@@ -114,7 +114,7 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
 -- Instituciones que el formulario ofrece por nombre (decisión 2026-10-15, Liber): las dependencias de la Ciudad
 -- y federales de la lista, y las 16 alcaldías de la Ciudad de México. Las demás las agrega la base cuando una
 -- persona escribe un nombre nuevo («Otra» o el nombre de su empresa). La clave es la que manda el formulario. En la
--- SEDEMA se registra la Dirección General (sedema_<siglas>); un área que no está en la lista entra como «SEDEMA · <nombre>».
+-- SEDEMA se registra la Dirección General (sedema_<siglas>), de una lista cerrada.
 INSERT INTO apd.organizacion (tipo, clave, nombre) VALUES
   ('dependencia_cdmx',    'sobse',  'Secretaría de Obras y Servicios (SOBSE)'),
   ('dependencia_cdmx',    'sedema', 'Secretaría del Medio Ambiente (SEDEMA)'),
@@ -143,6 +143,22 @@ INSERT INTO apd.organizacion (tipo, clave, nombre) VALUES
   ('alcaldia', 'tlalpan',             'Tlalpan'),
   ('alcaldia', 'venustiano_carranza', 'Venustiano Carranza'),
   ('alcaldia', 'xochimilco',          'Xochimilco');
+
+-- Carreras para la pregunta «¿Qué carrera estudiaste?» (cgo_carreras; decisión 2026-10-15, Liber). Grupo según los
+-- lineamientos: «principal» son las que nombran (Biología, Ingeniería Forestal, Ingeniería Agrónoma; Agronomía es la
+-- misma carrera con otro nombre). Las afines (Anexo 1) se agregan con grupo «afin» cuando la Dirección las entregue
+-- [pendiente P59]; las demás de la lista inicial quedan sin grupo y las clasifica la Secretaría.
+INSERT INTO apd.carrera (nombre, grupo) VALUES
+  ('Biología',                         'principal'),
+  ('Ingeniería Forestal',              'principal'),
+  ('Ingeniería Agrónoma',              'principal'),
+  ('Agronomía',                        'principal'),
+  ('Arquitectura de Paisaje',          NULL),
+  ('Ingeniería Ambiental',             NULL),
+  ('Ciencias Ambientales',             NULL),
+  ('Ingeniería en Restauración Forestal', NULL),
+  ('Ecología',                         NULL),
+  ('Arquitectura',                     NULL);
 
 -- Cómo se nombra el archivo guardado de cada documento (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE
 -- COMPLETO, p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Un requisito nuevo sin este dato usa su nombre en mayúsculas.

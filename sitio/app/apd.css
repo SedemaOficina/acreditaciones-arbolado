@@ -90,6 +90,10 @@
 /* Datos internos (decisión 2026-10-15): los que calcula el sistema y SE GUARDAN en la base, como el sexo tomado de
    la CURP, no los ve la persona; los que sólo usa la página (p. ej. sin_segundo_apellido) no se marcan. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
    nota, para revisarlos; al pasar al SIA se quita pruebas.js y quedan ocultos. */
+/* Nombre con que se guarda cada archivo (TIPO_NOMBRE COMPLETO): bajo el archivo cargado y en la revisión */
+.nombre-guardado { margin: var(--e-2) 0 0; font-size: var(--t-sm); color: var(--gris); }
+.rev-archivo-nuevo { display: block; }
+.rev-archivo-original { display: block; font-size: var(--t-sm); color: var(--gris); }
 [data-interno] { display: none; }
 /* Dato que se muestra a la persona pero aún no está confirmado (concepto, monto y referencia de pago) */
 .datos-por-confirmar { display: block; }

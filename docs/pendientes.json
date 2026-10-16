@@ -480,16 +480,32 @@
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-15",
-      "titulo": "Hora de entrada al curso y si los días del curso son consecutivos",
-      "recomendacion": "Confirmar la hora de entrada (se muestra «por confirmar») y si el curso corre en días consecutivos, como hoy lo cuenta la base, o sólo en días hábiles; en ese caso, guardar el calendario del grupo."
+      "titulo": "Hora de entrada al curso",
+      "recomendacion": "Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
     },
     {
-      "id": "P58",
+      "id": "P59",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-15",
+      "titulo": "Catálogo de carreras (cgo_carreras) y Anexo 1 de carreras afines",
+      "recomendacion": "Entregar el catálogo cgo_carreras y el Anexo 1 para clasificar cada carrera como principal, afín, disciplina afín o no afín. Hoy sólo Biología, Ingeniería Forestal, Ingeniería Agrónoma y Agronomía están clasificadas; las demás quedan «por clasificar» y la Secretaría las clasifica en la revisión documental."
+    },
+    {
+      "id": "P60",
       "grupo": "liber",
       "bloquea": "no",
       "desde": "2026-10-15",
-      "titulo": "Nombres de los tres identificadores: folio de la solicitud, expediente y acreditación",
-      "recomendacion": "Propuesta: «Folio de la solicitud», «Número de expediente» y «Número de acreditación»; hoy se muestran «Folio de la solicitud», «Expediente» y «Folio de la acreditación». Confirmar con cuál aparece en la credencial impresa."
+      "titulo": "Reglas supuestas del perfil de dictaminador",
+      "recomendacion": "Confirmar: (1) un posgrado cuenta como licenciatura titulada en su carrera; (2) hasta preparatoria, o licenciatura en curso o trunca, no cumple y la solicitud no se envía; (3) la carta de pasante sólo vale en carrera principal, afín o disciplina afín."
+    },
+    {
+      "id": "P61",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-15",
+      "titulo": "El mínimo de un número no puede depender de otra respuesta",
+      "recomendacion": "Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente."
     }
   ],
   "resueltos": [
@@ -596,6 +612,11 @@
     {
       "titulo": "Universidades e instituciones educativas en la adscripción (P54)",
       "como": "Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre",
+      "fecha": "2026-10-15"
+    },
+    {
+      "titulo": "Nombres de los identificadores (P58)",
+      "como": "«Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema",
       "fecha": "2026-10-15"
     }
   ]
