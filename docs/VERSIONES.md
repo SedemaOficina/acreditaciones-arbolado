@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.11 | 15/10/26, 8:35 p.m. | Mínimo de 5 años cuando el perfil lo decide el personal; indicación de posgrado sólo con maestría o doctorado |
 | 0.10 | 15/10/26, 8:26 p.m. | Perfil del dictaminador: posgrado afín cuenta; lo que no cumple se envía y lo revisa el personal |
 | 0.9 | 15/10/26, 8:22 p.m. | Sin constancias de capacitación para dictaminador; un solo PDF en estudios y experiencia |
 | 0.8 | 15/10/26, 8:11 p.m. | Declaración bajo protesta de decir verdad; sin aviso de renombrado al cargar documentos |
