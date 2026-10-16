@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.16 | 16/10/26, 10:37 a.m. | Sede única: cita, curso y entrega en el Vivero Nezahualcóyotl |
 | 0.15 | 16/10/26, 10:26 a.m. | Revisión documental: visor con todas las hojas del documento (pdf.js local), fijo a la derecha en computadora |
 | 0.14 | 16/10/26, 9:44 a.m. | Etapa 2: revisión documental del personal (bandeja y revisión), rechazo por perfil y clasificación de carreras |
 | 0.13 | 16/10/26, 8:10 a.m. | Adscripción: opciones cortas en dos columnas |
