@@ -10,7 +10,8 @@
     "probar-sitio": "node herramientas/probar-sitio.mjs http://localhost:8765/ verificacion/capturas",
     "construir-sitio": "node herramientas/construir-sitio.mjs",
     "probar-esquemas": "node herramientas/probar-esquemas.mjs",
-    "pendientes": "node herramientas/generar-pendientes.mjs"
+    "pendientes": "node herramientas/generar-pendientes.mjs",
+    "textos": "node herramientas/inventario-textos.mjs http://localhost:8765/ && python3 herramientas/inventario-textos.py"
   },
   "engines": {
     "node": ">=18"

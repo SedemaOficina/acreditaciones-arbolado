@@ -1,0 +1,2669 @@
+[
+ {
+  "pantalla": "Todas las pantallas",
+  "archivo": "*.html",
+  "seccion": "Cabecera",
+  "tipo": "Título del sistema",
+  "cuando": "Siempre",
+  "texto": "Acreditaciones de arbolado urbano"
+ },
+ {
+  "pantalla": "Todas las pantallas",
+  "archivo": "*.html",
+  "seccion": "Pie",
+  "tipo": "Texto",
+  "cuando": "Siempre",
+  "texto": "Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental."
+ },
+ {
+  "pantalla": "Todas las pantallas",
+  "archivo": "*.html",
+  "seccion": "Acceso con teclado",
+  "tipo": "Enlace",
+  "cuando": "Al navegar con teclado",
+  "texto": "Ir al contenido"
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Título",
+  "texto": "Acreditación de poda y derribo, y de dictaminador técnico",
+  "cuando": "Siempre",
+  "seccion": "Acreditación de poda y derribo, y de dictaminador técnico",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Introducción",
+  "texto": "Para trabajar en el arbolado urbano de la Ciudad de México necesitas una acreditación vigente de la Secretaría. Aquí la solicitas por primera vez o la renuevas, y das seguimiento a tu trámite.",
+  "cuando": "Siempre",
+  "seccion": "Acreditación de poda y derribo, y de dictaminador técnico",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Crear tu cuenta La primera vez. Necesitas tu CURP y un correo.",
+  "cuando": "Siempre",
+  "seccion": "Acreditación de poda y derribo, y de dictaminador técnico",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Entrar Inicia o renueva tu acreditación y consulta en qué va tu trámite.",
+  "cuando": "Siempre",
+  "seccion": "Acreditación de poda y derribo, y de dictaminador técnico",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Verificar una acreditación Consulta si una acreditación está vigente. No necesitas cuenta.",
+  "cuando": "Siempre",
+  "seccion": "Acreditación de poda y derribo, y de dictaminador técnico",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Título",
+  "texto": "Cómo es el trámite",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Creas tu cuenta con tu CURP y una fotografía de frente. Cada persona hace su propio trámite.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Llenas tu solicitud y cargas tus documentos en PDF o en foto.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "La Secretaría revisa tus documentos. Si algo falta, te lo indica y lo corriges en línea.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Acudes a tu cita de cotejo con los mismos documentos, impresos, y con tu comprobante de pago. Ahí la Secretaría confirma tu fotografía, emite tu factura y abre tu expediente.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Cuando se reúne un grupo, la Secretaría te asigna a un curso: de 5 días la primera vez y de 1 día la renovación.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Al terminar el curso presentas el examen. Si lo apruebas, la Secretaría emite tu acreditación y la recoges en persona: ahí te toman la fotografía de tu credencial y firmas el comprobante de recepción.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Título",
+  "texto": "Cuándo renovar",
+  "cuando": "Siempre",
+  "seccion": "Cuándo renovar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Puedes renovar desde 30 días antes de que venza tu acreditación y hasta 12 meses después. Pasado ese plazo, haces una solicitud nueva.",
+  "cuando": "Siempre",
+  "seccion": "Cuándo renovar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Aviso",
+  "texto": "Mientras tu acreditación no esté vigente no puedes trabajar en el arbolado, aunque tu renovación esté en trámite.",
+  "cuando": "Siempre",
+  "seccion": "Cuándo renovar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Para la acreditación de dictaminador técnico necesitas tener vigente la de poda y derribo al momento del trámite.",
+  "cuando": "Siempre",
+  "seccion": "Cuándo renovar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Título",
+  "texto": "Requisitos",
+  "cuando": "Siempre",
+  "seccion": "Requisitos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Los documentos se cargan sólo en PDF, de hasta 5 MB cada uno. Al crear tu cuenta, además, cargas o tomas con tu teléfono una fotografía de frente (JPG o PNG).",
+  "cuando": "Siempre",
+  "seccion": "Requisitos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Cargando requisitos…",
+  "cuando": "Siempre",
+  "seccion": "Requisitos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Inicio",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Título",
+  "texto": "Crea tu cuenta",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Introducción",
+  "texto": "Una cuenta por persona, ligada a tu CURP. Escribe tus datos tal como aparecen en ella: el sistema comprueba que la CURP corresponda a tu nombre y a tu fecha de nacimiento. Ten a la mano una fotografía de frente o tómala con tu teléfono. Si ya tuviste una acreditación de la Secretaría, al crear tu cuenta la verás en tu historial.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Nota",
+  "texto": "Los campos con * son obligatorios.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre o nombres",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Como aparece en tu identificación oficial.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Primer apellido",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Segundo apellido",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Si no tienes, déjalo vacío: tu CURP lleva una X en su lugar y así se comprueba.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Fecha de nacimiento",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Como aparece en tu acta de nacimiento o en tu identificación.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "CURP",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda emergente (ícono ?)",
+  "texto": "Son 18 caracteres, como aparecen en tu constancia de CURP. Con ella entrarás a tu cuenta.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Debe corresponder a tu nombre, tus apellidos y tu fecha de nacimiento. Con ella entras a tu cuenta; si te equivocas, sólo la Secretaría la corrige. Si no la tienes a la mano, consúltala en gob.mx.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Fotografía de frente",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "De frente y con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Con ella te reconocen en la cita, el curso y el examen. La foto de tu credencial es otra: te la toman cuando la recoges.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Elegir fotografía",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Tomar fotografía",
+  "cuando": "En teléfono o equipo con cámara",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Correo electrónico",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Confirma tu correo",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Teléfono",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Diez dígitos, de preferencia un celular.",
+  "cuando": "Siempre",
+  "seccion": "Crea tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Subtítulo",
+  "texto": "Tu adscripción",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿Trabajas para alguna empresa, institución o dependencia?",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Sí",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "No, soy independiente",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿De qué tipo es?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Empresa, consultoría o particular — Persona moral o física: empresas, consultoras o trabajo para un particular.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dependencia del Gobierno de la Ciudad de México",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Alcaldía",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dependencia del Gobierno Federal — Por ejemplo, la CFE.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Institución educativa — Por ejemplo, la UNAM.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la empresa, consultoría o persona física",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "El nombre o la razón social, tal como aparece en su constancia de situación fiscal. Escribe las primeras letras: si ya está registrada, elígela de la lista; si no, escríbela completa.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Secretaría de Obras y Servicios (SOBSE)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Secretaría del Medio Ambiente (SEDEMA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Otra",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la dependencia",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Otra» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»; Si «¿A qué dependencia del Gobierno Federal perteneces?» es «Otra»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué Dirección General de la SEDEMA perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Vigilancia Ambiental (DGIVA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿En qué alcaldía trabajas?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Indicación de lista",
+  "texto": "Elige la alcaldía",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Álvaro Obregón",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Azcapotzalco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Benito Juárez",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Coyoacán",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Cuajimalpa de Morelos",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Cuauhtémoc",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Gustavo A. Madero",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Iztacalco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Iztapalapa",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "La Magdalena Contreras",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Miguel Hidalgo",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Milpa Alta",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Tláhuac",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Tlalpan",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Venustiano Carranza",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción de lista",
+  "texto": "Xochimilco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué dependencia del Gobierno Federal perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Comisión Federal de Electricidad (CFE)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué institución educativa perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Opción",
+  "texto": "Universidad Nacional Autónoma de México (UNAM)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la institución",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»; Si «¿A qué institución educativa perteneces?» es «Otra»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Subtítulo",
+  "texto": "Contraseña",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Contraseña",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Al menos 12 caracteres. Una frase que recuerdes es más segura que una palabra con símbolos.",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Confirma tu contraseña",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Leer el aviso de privacidad",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Leí el aviso de privacidad",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "No soy un programa automático",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "Lo comprueba el sistema; no es una pregunta sobre tu trámite.",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Crear cuenta",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Texto",
+  "texto": "¿Ya tienes cuenta? Entra aquí.",
+  "cuando": "Siempre",
+  "seccion": "Contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Título",
+  "texto": "Tu cuenta está lista",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tu cuenta está lista",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Introducción",
+  "texto": "Encontramos acreditaciones anteriores con tu CURP. Las verás en «Mis trámites».",
+  "cuando": "Al enviar con éxito (acuse); Si la CURP tiene acreditaciones anteriores (registro de Kobo)",
+  "seccion": "Tu cuenta está lista",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Texto",
+  "texto": "Entra con tu CURP y tu contraseña.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tu cuenta está lista",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Texto",
+  "texto": "Inicia tu solicitud y carga tus documentos.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tu cuenta está lista",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ir a mis trámites",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tu cuenta está lista",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Título",
+  "texto": "Aviso de privacidad simplificado",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Texto",
+  "texto": "La Secretaría del Medio Ambiente recaba tu nombre, CURP (y de ella tu sexo), fotografía de frente, correo, teléfono y la institución para la que trabajas, si es el caso, para crear tu cuenta, tramitar tu acreditación, reconocerte en la cita, el curso y el examen, avisarte el avance y llevar el padrón de personas acreditadas. Al entregarte la credencial te toma otra fotografía, que es la que se imprime en ella.",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Texto",
+  "texto": "Fundamento: [Art. __, fracc. __]. Pendiente: lo completa la Unidad de Transparencia.",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Cerrar",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Botón o enlace",
+  "texto": "Inicio",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Título",
+  "texto": "Entra a tu cuenta",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Nota",
+  "texto": "Los campos con * son obligatorios.",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Pregunta",
+  "texto": "CURP",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Pregunta",
+  "texto": "Contraseña",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Botón o enlace",
+  "texto": "Entrar",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Texto",
+  "texto": "¿No tienes cuenta? Créala aquí.",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Entrar",
+  "archivo": "entrar.html",
+  "tipo": "Texto",
+  "texto": "¿Olvidaste tu contraseña? Pendiente: definir quién atiende la recuperación del acceso y por qué medio.",
+  "cuando": "Siempre",
+  "seccion": "Entra a tu cuenta",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Mis trámites",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Título",
+  "texto": "Mis datos",
+  "cuando": "Siempre",
+  "seccion": "Mis datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Introducción",
+  "texto": "Estos datos van ligados a tu CURP. Si alguno está mal, pide a la Secretaría que lo corrija.",
+  "cuando": "Siempre",
+  "seccion": "Mis datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Texto",
+  "texto": "Cargando tus datos…",
+  "cuando": "Siempre",
+  "seccion": "Mis datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Título",
+  "texto": "Contacto",
+  "cuando": "Siempre",
+  "seccion": "Contacto",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Nota",
+  "texto": "Los campos con * son obligatorios.",
+  "cuando": "Siempre",
+  "seccion": "Contacto",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Correo electrónico",
+  "cuando": "Siempre",
+  "seccion": "Contacto",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Confirma tu correo",
+  "cuando": "Siempre",
+  "seccion": "Contacto",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Teléfono",
+  "cuando": "Siempre",
+  "seccion": "Contacto",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Ayuda",
+  "texto": "Diez dígitos, de preferencia un celular.",
+  "cuando": "Siempre",
+  "seccion": "Contacto",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Título",
+  "texto": "Tu adscripción",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Ayuda",
+  "texto": "Tus solicitudes se envían con la adscripción que tengas ese día; las que ya enviaste conservan la suya.",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿Trabajas para alguna empresa, institución o dependencia?",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Ayuda",
+  "texto": "Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Sí",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "No, soy independiente",
+  "cuando": "Siempre",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿De qué tipo es?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Empresa, consultoría o particular — Persona moral o física: empresas, consultoras o trabajo para un particular.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dependencia del Gobierno de la Ciudad de México",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Alcaldía",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dependencia del Gobierno Federal — Por ejemplo, la CFE.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Institución educativa — Por ejemplo, la UNAM.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la empresa, consultoría o persona física",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Ayuda",
+  "texto": "El nombre o la razón social, tal como aparece en su constancia de situación fiscal. Escribe las primeras letras: si ya está registrada, elígela de la lista; si no, escríbela completa.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Secretaría de Obras y Servicios (SOBSE)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Secretaría del Medio Ambiente (SEDEMA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Otra",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la dependencia",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Otra» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»; Si «¿A qué dependencia del Gobierno Federal perteneces?» es «Otra»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué Dirección General de la SEDEMA perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Vigilancia Ambiental (DGIVA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿En qué alcaldía trabajas?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Indicación de lista",
+  "texto": "Elige la alcaldía",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción"
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Álvaro Obregón",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Azcapotzalco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Benito Juárez",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Coyoacán",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Cuajimalpa de Morelos",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Cuauhtémoc",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Gustavo A. Madero",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Iztacalco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Iztapalapa",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "La Magdalena Contreras",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Miguel Hidalgo",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Milpa Alta",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Tláhuac",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Tlalpan",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Venustiano Carranza",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción de lista",
+  "texto": "Xochimilco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué dependencia del Gobierno Federal perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Comisión Federal de Electricidad (CFE)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué institución educativa perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Opción",
+  "texto": "Universidad Nacional Autónoma de México (UNAM)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la institución",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»; Si «¿A qué institución educativa perteneces?» es «Otra»",
+  "seccion": "Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Título",
+  "texto": "Fotografía",
+  "cuando": "Siempre",
+  "seccion": "Fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Pregunta",
+  "texto": "Cambiar fotografía",
+  "cuando": "Mientras la fotografía no está confirmada",
+  "seccion": "Fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Ayuda",
+  "texto": "Sólo si quieres reemplazarla. De frente y con el rostro descubierto, fondo claro y buena luz.",
+  "cuando": "Mientras la fotografía no está confirmada",
+  "seccion": "Fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Elegir fotografía",
+  "cuando": "Mientras la fotografía no está confirmada",
+  "seccion": "Fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Tomar fotografía",
+  "cuando": "Mientras la fotografía no está confirmada; En teléfono o equipo con cámara",
+  "seccion": "Fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Guardar cambios",
+  "cuando": "Siempre",
+  "seccion": "Fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Título",
+  "texto": "Tus datos se guardaron",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tus datos se guardaron",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Introducción",
+  "texto": "Tus próximas solicitudes se envían con estos datos.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tus datos se guardaron",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis datos",
+  "archivo": "datos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Continuar",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Tus datos se guardaron",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Mis trámites",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "Por ahora no tienes una solicitud disponible",
+  "cuando": "Si la persona no puede iniciar ninguna solicitud",
+  "seccion": "Por ahora no tienes una solicitud disponible",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ir a mis trámites",
+  "cuando": "Si la persona no puede iniciar ninguna solicitud",
+  "seccion": "Por ahora no tienes una solicitud disponible",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Recordatorio",
+  "texto": "Estás solicitando:",
+  "cuando": "Después de elegir la acreditación (recordatorio arriba de cada paso)",
+  "seccion": "Por ahora no tienes una solicitud disponible",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "¿Qué acreditación solicitas?",
+  "cuando": "Siempre",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Introducción",
+  "texto": "Elige la acreditación. Si es tu primera vez o una renovación lo sabe el sistema por tu historial; te lo indica al elegir.",
+  "cuando": "Siempre",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Nota",
+  "texto": "Los campos con * son obligatorios.",
+  "cuando": "Siempre",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Acreditación que solicitas",
+  "cuando": "Siempre",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción",
+  "texto": "Poda y derribo — Para podar y derribar árboles en la vía pública y en áreas verdes.",
+  "cuando": "Siempre",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción",
+  "texto": "Dictaminador técnico — Para emitir dictámenes técnicos de arbolado. Necesitas tener vigente la de poda y derribo.",
+  "cuando": "Siempre",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Acreditación que renuevas",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Es la más reciente de este tipo. Si no es la tuya, avisa a la Secretaría.",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Aviso",
+  "texto": "Tu adscripción: — La solicitud se envía con ella. Si cambió, actualízala en Mis datos antes de enviar.",
+  "cuando": "Siempre (muestra la adscripción de la persona)",
+  "seccion": "Trámite · ¿Qué acreditación solicitas?",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Subtítulo",
+  "texto": "Tus estudios",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "¿Cuál es tu último nivel o grado de estudios?",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "El más alto que cursas o cursaste.",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Indicación de lista",
+  "texto": "Elige tu nivel de estudios",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Ninguno",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Preescolar",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Primaria",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Secundaria",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Preparatoria o bachillerato",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Carrera técnica",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Licenciatura o ingeniería",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Maestría",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción de lista",
+  "texto": "Doctorado",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "¿Qué carrera estudiaste?",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Escríbela como aparece en tu título o constancia; al escribir te sugerimos las ya registradas. Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "¿En qué situación está ese último grado de estudios?",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción",
+  "texto": "En curso — Todavía lo estudias.",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción",
+  "texto": "Trunco — Lo dejaste sin terminar.",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción",
+  "texto": "Concluido — Terminaste los créditos; tienes carta de pasante o constancia del 100 %.",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Opción",
+  "texto": "Titulado — Tienes título o cédula profesional.",
+  "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Aviso",
+  "texto": "Con estos estudios podrías no cumplir el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, posgrado en un área afín, o carrera técnica. Puedes enviar tu solicitud: la Secretaría la revisará con tus documentos.",
+  "cuando": "Si «Acreditación que solicitas» es «Dictaminador técnico»; Dictaminador cuyo perfil podría no cumplir los lineamientos",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Experiencia en manejo de arbolado",
+  "cuando": "Si «Acreditación que solicitas» es «Dictaminador técnico»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Experiencia laboral comprobable: dos años con licenciatura en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín. Puedes usar medios años; por ejemplo, 2.5. Los comprobantes que cargues en el siguiente paso deben respaldarlos.",
+  "cuando": "Si «Acreditación que solicitas» es «Dictaminador técnico»",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Continuar",
+  "cuando": "Siempre",
+  "seccion": "Trámite · Tus estudios",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "Carga tus documentos",
+  "cuando": "Siempre",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Introducción",
+  "texto": "Un archivo por documento, sólo en PDF, de hasta 5 MB. Si tienes una foto del documento, conviértela a PDF; por ejemplo, con la función de escanear de tu teléfono. Que se lea completo: la Secretaría lo revisa antes de darte cita. En la cita llevas los mismos documentos, impresos.",
+  "cuando": "Siempre",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Aviso",
+  "texto": "Lo que debes corregir:",
+  "cuando": "Al corregir una solicitud con observaciones",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Nota",
+  "texto": "Los campos con * son obligatorios.",
+  "cuando": "Siempre",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Identificación oficial",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional.",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Elegir archivo",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «poda y derribo, renovación» o «poda y derribo, renovación» o «poda y derribo, renovación» o «poda y derribo, renovación» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, renovación» o «dictaminador técnico, renovación» o «dictaminador técnico, renovación» o «dictaminador técnico, renovación» o «dictaminador técnico, renovación» o «dictaminador técnico, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Clave Única de Registro de Población (CURP)",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "En formato actualizado. Consulta y descarga tu CURP en gob.mx.",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Comprobante de domicilio",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses.",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Constancia de situación fiscal",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «poda y derribo, renovación» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.",
+  "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «poda y derribo, renovación» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Identificación oficial (si aplica)",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional. Sólo si cambió o ya no está vigente.",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Clave Única de Registro de Población (CURP) (si aplica)",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "En formato actualizado. Sólo si cambió o ya no está vigente. Consulta y descarga tu CURP en gob.mx.",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Comprobante de domicilio (si aplica)",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. Sólo si cambió o ya no está vigente.",
+  "cuando": "Si «Trámite» es «poda y derribo, renovación» o «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Comprobante de estudios",
+  "cuando": "Si «Trámite» es «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Si son varios documentos, escanéalos todos en un solo PDF.",
+  "cuando": "Si «Trámite» es «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Currículum vitae",
+  "cuando": "Si «Trámite» es «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico.",
+  "cuando": "Si «Trámite» es «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Comprobantes de experiencia",
+  "cuando": "Si «Trámite» es «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Constancias laborales, contratos, informes técnicos, actas, registros o constancias de capacitación que acrediten la experiencia en manejo de arbolado urbano. Escanea todos tus comprobantes en un solo PDF. Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.",
+  "cuando": "Si «Trámite» es «dictaminador técnico, solicitud nueva»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Comprobante de estudios (si aplica)",
+  "cuando": "Si «Trámite» es «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Si son varios documentos, escanéalos todos en un solo PDF. Sólo si actualizaste tus estudios.",
+  "cuando": "Si «Trámite» es «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Currículum vitae (si aplica)",
+  "cuando": "Si «Trámite» es «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico. Sólo si actualizaste tu experiencia.",
+  "cuando": "Si «Trámite» es «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Comprobantes de experiencia (si aplica)",
+  "cuando": "Si «Trámite» es «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Constancias laborales, contratos, informes técnicos, actas, registros o constancias de capacitación que acrediten la experiencia en manejo de arbolado urbano. Escanea todos tus comprobantes en un solo PDF. Sólo si actualizaste tu experiencia.",
+  "cuando": "Si «Trámite» es «dictaminador técnico, renovación»",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": "Catálogo de requisitos (base)"
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Continuar",
+  "cuando": "Siempre",
+  "seccion": "Documentos · Carga tus documentos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "Revisa antes de enviar",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Introducción",
+  "texto": "Abre cada bloque para ver lo que capturaste. «Editar» te lleva al campo. Después de enviar ya no puedes cambiar tus documentos, salvo que la Secretaría te pida corregir alguno.",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "La Secretaría usa tus datos y documentos sólo para tu trámite de acreditación y para el padrón de personas acreditadas.",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Leer el aviso de privacidad",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Asimismo, reconozco que proporcionar información falsa puede ocasionar la cancelación del trámite.",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Leí el aviso de privacidad",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "No soy un programa automático",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Lo comprueba el sistema; no es una pregunta sobre tu trámite.",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Enviar solicitud",
+  "cuando": "Siempre",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "Por ahora no podemos recibir más envíos desde este dispositivo",
+  "cuando": "Si se rebasan los envíos permitidos desde el dispositivo",
+  "seccion": "Por ahora no podemos recibir más envíos desde este dispositivo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Introducción",
+  "texto": "Lo que capturaste no se perdió y sigue en el formulario. Intenta de nuevo más tarde.",
+  "cuando": "Si se rebasan los envíos permitidos desde el dispositivo",
+  "seccion": "Por ahora no podemos recibir más envíos desde este dispositivo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Volver a la revisión",
+  "cuando": "Si se rebasan los envíos permitidos desde el dispositivo",
+  "seccion": "Por ahora no podemos recibir más envíos desde este dispositivo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "Recibimos tu solicitud",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Introducción",
+  "texto": "Guarda tu folio: es la referencia de tu trámite.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Copiar folio",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "La Secretaría revisa tus documentos. Pendiente: plazo de revisión",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "Si algo falta, te lo indica en «Mis trámites» y lo corriges en línea.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "Si todo está completo, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "Después de la cita, esperas a que se integre tu grupo de curso.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ir a mis trámites",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Título",
+  "texto": "Aviso de privacidad simplificado",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "La Secretaría del Medio Ambiente recaba los datos y documentos de esta solicitud para revisar que cumples los requisitos, integrar tu expediente, asignarte a un curso y, en su caso, emitir tu acreditación e incluirla en el padrón.",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "La verificación pública de acreditaciones muestra sólo tu nombre, el tipo y número de acreditación y su vigencia.",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Texto",
+  "texto": "Fundamento: [Art. __, fracc. __]. Pendiente: lo completa la Unidad de Transparencia.",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Cerrar",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "seccion": "Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis trámites",
+  "archivo": "tramites.html",
+  "tipo": "Título",
+  "texto": "Mis trámites",
+  "cuando": "Siempre",
+  "seccion": "Mis trámites",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis trámites",
+  "archivo": "tramites.html",
+  "tipo": "Introducción",
+  "texto": "Cargando tu información…",
+  "cuando": "Siempre",
+  "seccion": "Mis trámites",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis trámites",
+  "archivo": "tramites.html",
+  "tipo": "Botón o enlace",
+  "texto": "Iniciar una solicitud",
+  "cuando": "Al crear la cuenta con éxito",
+  "seccion": "Mis trámites",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis trámites",
+  "archivo": "tramites.html",
+  "tipo": "Subtítulo",
+  "texto": "Mis acreditaciones",
+  "cuando": "Siempre",
+  "seccion": "Mis acreditaciones",
+  "origen": ""
+ },
+ {
+  "pantalla": "Mis trámites",
+  "archivo": "tramites.html",
+  "tipo": "Subtítulo",
+  "texto": "Mis solicitudes",
+  "cuando": "Siempre",
+  "seccion": "Mis solicitudes",
+  "origen": ""
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "archivo": "verificar.html",
+  "tipo": "Botón o enlace",
+  "texto": "Inicio",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "archivo": "verificar.html",
+  "tipo": "Título",
+  "texto": "Verifica una acreditación",
+  "cuando": "Siempre",
+  "seccion": "Verifica una acreditación",
+  "origen": ""
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "archivo": "verificar.html",
+  "tipo": "Introducción",
+  "texto": "Antes de contratar a alguien para podar, derribar o dictaminar árboles, confirma que su acreditación esté vigente.",
+  "cuando": "Siempre",
+  "seccion": "Verifica una acreditación",
+  "origen": ""
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "archivo": "verificar.html",
+  "tipo": "Pregunta",
+  "texto": "Número de acreditación",
+  "cuando": "Siempre",
+  "seccion": "Verifica una acreditación",
+  "origen": ""
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "archivo": "verificar.html",
+  "tipo": "Ayuda",
+  "texto": "Viene impreso en la acreditación. Por ejemplo: PD-2026-0001.",
+  "cuando": "Siempre",
+  "seccion": "Verifica una acreditación",
+  "origen": ""
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "archivo": "verificar.html",
+  "tipo": "Botón o enlace",
+  "texto": "Verificar",
+  "cuando": "Siempre",
+  "seccion": "Verifica una acreditación",
+  "origen": ""
+ }
+]

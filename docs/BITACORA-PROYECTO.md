@@ -337,3 +337,13 @@ auditor de CSS y de campos correctos.
   (en ámbar) que la Secretaría lo revisará. P60 resuelto.
 - Lo que decide el personal (carrera por clasificar o no cumple) pide 5 años de experiencia; sólo carrera principal o
   afín baja a 2. La indicación de escribir la carrera del posgrado sólo aparece con maestría o doctorado.
+
+## 2026-10-15 · Bloque 26 · Inventario de textos para revisión
+
+- `herramientas/inventario-textos.mjs` saca de las páginas (sin ejecutar scripts) cada texto visible con su pantalla,
+  sección, tipo y la condición en que aparece; `herramientas/inventario-textos.py` le suma los textos que pintan los
+  scripts según perfil y estado (lista curada), los mensajes de la base (`apd.error`) y los del Estándar que el
+  sistema usa, y escribe `docs/textos/inventario-textos.xlsx` (hoja «Textos» con columnas para la corrección y el
+  estado, y «Cómo revisar» con el avance por pantalla). `npm run textos` lo regenera.
+- Primera versión: 528 textos de la versión de prueba 0.11. Señalado: inicio dice «en PDF o en foto» (sólo se acepta
+  PDF) y cuatro textos de estado que nunca se muestran.
