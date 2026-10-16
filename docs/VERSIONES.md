@@ -4,4 +4,5 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.3 | 15/10/26, 7:19 p.m. | Adscripción con institución educativa y empresas registradas; fichas de «Mis solicitudes» por estado; nombre del archivo en pruebas |
 | 0.2 | 15/10/26, 6:45 p.m. | Datos internos en amarillo sólo en la versión de prueba, y número de versión por publicación |
