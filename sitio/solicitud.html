@@ -160,7 +160,6 @@
     <section class="tarjeta" data-paso data-titulo="Documentos" hidden>
       <h2 class="titulo-paso">Carga tus documentos</h2>
       <p class="bajada">Un archivo por documento, sólo en PDF, de hasta 5 MB. Si tienes una foto del documento, conviértela a PDF; por ejemplo, con la función de escanear de tu teléfono. Que se lea completo: la Secretaría lo revisa antes de darte cita. En la cita llevas los mismos documentos, impresos.</p>
-      <p class="ayuda">No necesitas renombrar tus archivos: cada uno se guarda con el nombre del documento y tu nombre completo, por ejemplo <strong data-ejemplo-archivo>CURP_NOMBRE Y APELLIDOS.pdf</strong>.</p>
       <div class="aviso aviso-advertencia" data-observaciones hidden>
         <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
         <div class="aviso-texto"><p><strong>Lo que debes corregir:</strong></p><ul class="lista-obs" data-observaciones-lista></ul></div>
@@ -168,7 +167,7 @@
       <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
         <!-- documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
         <div data-si="tramite=poda_nueva">
-          <div class="campo" data-campo="doc_poda_nueva_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_nueva_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
                data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_nueva_identificacion_oficial">Identificación oficial</span>
             <p class="ayuda" id="ay-doc_poda_nueva_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional.</p>
@@ -183,10 +182,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_poda_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_nueva_curp">Clave Única de Registro de Población (CURP)</span>
             <p class="ayuda" id="ay-doc_poda_nueva_curp">En formato actualizado. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
@@ -201,10 +198,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_poda_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_nueva_comprobante_domicilio">Comprobante de domicilio</span>
             <p class="ayuda" id="ay-doc_poda_nueva_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses.</p>
@@ -219,10 +214,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_poda_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_nueva_constancia_situacion_fiscal">Constancia de situación fiscal</span>
             <p class="ayuda" id="ay-doc_poda_nueva_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
@@ -237,12 +230,10 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
         </div>
         <div data-si="tramite=poda_renovacion">
-          <div class="campo" data-campo="doc_poda_renovacion_identificacion_oficial" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_renovacion_identificacion_oficial" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
                data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_renovacion_identificacion_oficial">Identificación oficial (si aplica)</span>
             <p class="ayuda" id="ay-doc_poda_renovacion_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional. Sólo si cambió o ya no está vigente.</p>
@@ -257,10 +248,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_poda_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_renovacion_curp">Clave Única de Registro de Población (CURP) (si aplica)</span>
             <p class="ayuda" id="ay-doc_poda_renovacion_curp">En formato actualizado. Sólo si cambió o ya no está vigente. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
@@ -275,10 +264,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_poda_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_renovacion_comprobante_domicilio">Comprobante de domicilio (si aplica)</span>
             <p class="ayuda" id="ay-doc_poda_renovacion_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. Sólo si cambió o ya no está vigente.</p>
@@ -293,10 +280,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_poda_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_poda_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_poda_renovacion_constancia_situacion_fiscal">Constancia de situación fiscal</span>
             <p class="ayuda" id="ay-doc_poda_renovacion_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
@@ -311,12 +296,10 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
         </div>
         <div data-si="tramite=dictaminador_nueva">
-          <div class="campo" data-campo="doc_dictaminador_nueva_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
                data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_identificacion_oficial">Identificación oficial</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional.</p>
@@ -331,10 +314,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_curp">Clave Única de Registro de Población (CURP)</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_curp">En formato actualizado. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
@@ -349,10 +330,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobante_domicilio">Comprobante de domicilio</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses.</p>
@@ -367,10 +346,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_constancia_situacion_fiscal">Constancia de situación fiscal</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
@@ -385,10 +362,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_estudios" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_estudios" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
                data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobante_estudios">Comprobante de estudios</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica.</p>
@@ -403,10 +378,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE ESTUDIOS" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_curriculum_vitae" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_curriculum_vitae" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURRICULUM VITAE"
                data-uso="Comprobar el requisito «Currículum vitae» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_curriculum_vitae">Currículum vitae</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_curriculum_vitae">Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico.</p>
@@ -421,10 +394,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CURRICULUM VITAE" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_comprobantes_experiencia" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_comprobantes_experiencia" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
                data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobantes_experiencia">Comprobantes de experiencia</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF. Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</p>
@@ -439,10 +410,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_nueva_constancias_capacitacion" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_nueva_constancias_capacitacion" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIAS DE CAPACITACION"
                data-uso="Comprobar el requisito «Constancias de capacitación especializada» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_nueva_constancias_capacitacion">Constancias de capacitación especializada</span>
             <p class="ayuda" id="ay-doc_dictaminador_nueva_constancias_capacitacion">Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador.</p>
@@ -457,12 +426,10 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIAS DE CAPACITACION" hidden></p>
           </div>
         </div>
         <div data-si="tramite=dictaminador_renovacion">
-          <div class="campo" data-campo="doc_dictaminador_renovacion_identificacion_oficial" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_identificacion_oficial" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
                data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_identificacion_oficial">Identificación oficial (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional. Sólo si cambió o ya no está vigente.</p>
@@ -477,10 +444,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="IDENTIFICACION OFICIAL" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
                data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_curp">Clave Única de Registro de Población (CURP) (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_curp">En formato actualizado. Sólo si cambió o ya no está vigente. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
@@ -495,10 +460,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CURP" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
                data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobante_domicilio">Comprobante de domicilio (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. Sólo si cambió o ya no está vigente.</p>
@@ -513,10 +476,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE DOMICILIO" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
                data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_constancia_situacion_fiscal">Constancia de situación fiscal</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
@@ -531,10 +492,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_estudios" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_estudios" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
                data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobante_estudios">Comprobante de estudios (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Sólo si actualizaste tus estudios.</p>
@@ -549,10 +508,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTE DE ESTUDIOS" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_curriculum_vitae" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_curriculum_vitae" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURRICULUM VITAE"
                data-uso="Comprobar el requisito «Currículum vitae» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_curriculum_vitae">Currículum vitae (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_curriculum_vitae">Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico. Sólo si actualizaste tu experiencia.</p>
@@ -567,10 +524,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CURRICULUM VITAE" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobantes_experiencia" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobantes_experiencia" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
                data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobantes_experiencia">Comprobantes de experiencia (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas o registros que acrediten la experiencia en manejo de arbolado urbano, en un solo PDF. Sólo si actualizaste tu experiencia.</p>
@@ -585,10 +540,8 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA" hidden></p>
           </div>
-          <div class="campo" data-campo="doc_dictaminador_renovacion_constancias_capacitacion" data-max="1" data-extensiones="pdf" data-mb="5"
+          <div class="campo" data-campo="doc_dictaminador_renovacion_constancias_capacitacion" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIAS DE CAPACITACION"
                data-uso="Comprobar el requisito «Constancias de capacitación especializada» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-doc_dictaminador_renovacion_constancias_capacitacion">Constancias de capacitación especializada (si aplica)</span>
             <p class="ayuda" id="ay-doc_dictaminador_renovacion_constancias_capacitacion">Constancias o certificaciones de instituciones educativas, colegios profesionales o la Secretaría. Se piden para dictaminador. Sólo si tienes constancias nuevas.</p>
@@ -603,8 +556,6 @@
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="CONSTANCIAS DE CAPACITACION" hidden></p>
           </div>
         </div>
         <!-- documentos:fin -->
@@ -624,6 +575,11 @@
       <div class="priv">
         <p class="priv-parrafo">La Secretaría usa tus datos y documentos sólo para tu trámite de acreditación y para el padrón de personas acreditadas.</p>
         <button type="button" class="btn-enlace" data-abre-dialogo="dialogo-privacidad">Leer el aviso de privacidad</button>
+      </div>
+      <!-- Declaración bajo protesta de decir verdad (decisión 2026-10-15, Liber). Se escribe en mayúsculas y minúsculas:
+           el texto todo en mayúsculas se lee peor. -->
+      <div class="destacado" data-campo="protesta" data-requerido data-uso="Dejar constancia de que la persona declara bajo protesta de decir verdad que su información es auténtica.">
+        <label class="casilla"><input class="casilla-input" type="checkbox" name="protesta" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real</span><span class="destacado-ayuda">Asimismo, reconozco que proporcionar información falsa puede ocasionar la cancelación del trámite.</span></span></label>
       </div>
       <div class="destacado" data-campo="aviso" data-requerido data-uso="Dejar constancia de que se informó a la persona.">
         <label class="casilla"><input class="casilla-input" type="checkbox" name="aviso" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Leí el aviso de privacidad</span></span></label>

@@ -136,7 +136,7 @@ CREATE TABLE apd.carrera (
   CONSTRAINT carrera_grupo_ck CHECK (grupo IN ('principal', 'afin', 'disciplina_afin', 'no_afin')),
   CONSTRAINT carrera_nombre_uk UNIQUE (nombre_normalizado)
 );
-COMMENT ON TABLE apd.carrera IS 'Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?» del perfil de dictaminador (equivale a cgo_carreras). El grupo decide la experiencia mínima que piden los lineamientos: principal (Biología, Ingeniería Forestal, Ingeniería Agrónoma) y afín, dos años con título; disciplina afín, cinco; no afín, no cumple. Las carreras afines (Anexo 1 de los lineamientos) se cargan cuando la Dirección las entregue; las que escribe una persona y no están en la lista las agrega la base sin grupo, y la Secretaría las clasifica en la revisión documental.';
+COMMENT ON TABLE apd.carrera IS 'Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?». No hay catálogo de carreras afines (decisión 2026-10-15, Liber): la carrera es un campo abierto que el personal valida en la revisión documental. Empieza con las que nombran los lineamientos (principal) y crece con las que la Secretaría acepta de manera explícita. El grupo decide la experiencia mínima del dictaminador: principal y afín, dos años con licenciatura; disciplina afín, cinco; no afín, no cumple. Las que escribe una persona entran sin grupo; sólo las aceptadas se sugieren al escribir.';
 COMMENT ON COLUMN apd.carrera.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.carrera.nombre IS 'Nombre de la carrera';
 COMMENT ON COLUMN apd.carrera.nombre_normalizado IS 'Nombre sin acentos, en minúsculas y sin puntuación; lo calcula la base y evita duplicados';

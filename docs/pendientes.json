@@ -506,6 +506,14 @@
       "desde": "2026-10-15",
       "titulo": "Pantalla del personal para clasificar carreras en la revisión documental",
       "recomendacion": "En la revisión documental, la carrera sin clasificar se marca como aceptada (afín o disciplina afín) o no afín; al aceptarla entra al catálogo y se sugiere a las siguientes personas. La base ya recalcula el perfil al clasificarla."
+    },
+    {
+      "id": "P63",
+      "grupo": "liber",
+      "bloquea": "datos reales",
+      "desde": "2026-10-15",
+      "titulo": "Verificar los requisitos que aparecen en la página de inicio",
+      "recomendacion": "Revisar contra los lineamientos la lista de requisitos por acreditación y modalidad que muestra index.html (sale del catálogo apd.requisito y apd.requisito_curso); lo que se corrija se cambia en el catálogo y se refleja en inicio, solicitud y documentos."
     }
   ],
   "resueltos": [

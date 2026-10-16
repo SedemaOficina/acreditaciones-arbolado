@@ -90,7 +90,7 @@ caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso:
 
 // Solicitud: lo obligatorio depende del trámite elegido, con una sola condición por bloque
 const docs = (t, lista) => Object.fromEntries(lista.map((r) => [`doc_${t}_${r}`, `${r}.pdf`]));
-const base = { aviso: 'si', humano: 'si', nivel_estudios: 'preparatoria' };
+const base = { protesta: 'si', aviso: 'si', humano: 'si', nivel_estudios: 'preparatoria' };
 const podaNueva = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
 caso('Solicitud poda nueva con sus 4 documentos se acepta', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, true, podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
 caso('Solicitud con un documento en JPG se rechaza: sólo PDF', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, ['doc_poda_nueva_curp'],
@@ -108,6 +108,7 @@ caso('Poda: licenciatura pide la carrera y su situación', 'solicitud', { ...bas
 caso('Poda: sin nivel de estudios se rechaza', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['nivel_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso' }, true, csf);
 caso('Perfil: un nivel que no existe se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'posdoctorado' }, ['nivel_estudios'], csf);
+caso('Solicitud sin la declaración bajo protesta de decir verdad se rechaza', 'solicitud', { ...base, protesta: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['protesta'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
 

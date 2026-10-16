@@ -93,7 +93,7 @@ for (const [tipo, modalidad] of cursos) {
     const r = requisito[rc.requisito];
     const nombre = `doc_${tipo}_${modalidad}_${rc.requisito}`;
     const nota = limpia(rc.nota) ? ` ${limpia(rc.nota)}` : '';
-    return `          <div class="campo" data-campo="${nombre}"${rc.obligatorio ? ' data-requerido' : ''} data-max="1" data-extensiones="${extensionesDe(r)}" data-mb="5"
+    return `          <div class="campo" data-campo="${nombre}"${rc.obligatorio ? ' data-requerido' : ''} data-max="1" data-extensiones="${extensionesDe(r)}" data-mb="5" data-nombre-archivo="${esc(r.nombre_archivo || limpia(r.nombre).toUpperCase())}"
                data-uso="Comprobar el requisito «${esc(r.nombre)}» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
             <span class="etiqueta" id="et-${nombre}">${esc(r.nombre)}${rc.obligatorio ? '' : ' (si aplica)'}</span>
             <p class="ayuda" id="ay-${nombre}">${esc(limpia(r.descripcion))}${esc(nota)}${enlaceDe(r)}</p>
@@ -108,8 +108,6 @@ for (const [tipo, modalidad] of cursos) {
               <div data-rechazos></div>
               <ul class="lista-arch"></ul>
             </div>
-            <!-- Con qué nombre se guarda el archivo (apd.nombre_de_archivo; lo pinta app/solicitud.js al cargarlo) -->
-            <p class="nombre-guardado" data-nombre-archivo="${esc(r.nombre_archivo || limpia(r.nombre).toUpperCase())}" hidden></p>
           </div>`;
   });
   // Una sola condición por bloque (sin anidar): el esquema del servidor sólo lee el data-si más cercano

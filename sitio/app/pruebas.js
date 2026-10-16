@@ -136,7 +136,7 @@
       pon('nivel_estudios', 'licenciatura'); pon('carrera', 'Biología'); elige('estatus_estudios', 'titulado'); pon('anios_experiencia', '3');
       for (const c of form.querySelectorAll('[data-campo^="doc_"]')) if (visible(c)) adjunta(c);
     }
-    marca('aviso'); marca('humano');
+    marca('protesta'); marca('aviso'); marca('humano');
     return 'Formulario llenado con datos ficticios.';
   }
 

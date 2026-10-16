@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-16T02:04:34.134Z",
+  "generado": "2026-10-16T02:07:42.694Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -140,7 +140,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "IDENTIFICACION OFICIAL"
       },
       "autocomplete": "off",
       "si": {
@@ -160,7 +161,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CURP"
       },
       "autocomplete": "off",
       "si": {
@@ -180,7 +182,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE DOMICILIO"
       },
       "autocomplete": "off",
       "si": {
@@ -200,7 +203,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIA DE SITUACION FISCAL"
       },
       "autocomplete": "off",
       "si": {
@@ -220,7 +224,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "IDENTIFICACION OFICIAL"
       },
       "autocomplete": "off",
       "si": {
@@ -240,7 +245,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CURP"
       },
       "autocomplete": "off",
       "si": {
@@ -260,7 +266,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE DOMICILIO"
       },
       "autocomplete": "off",
       "si": {
@@ -280,7 +287,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIA DE SITUACION FISCAL"
       },
       "autocomplete": "off",
       "si": {
@@ -300,7 +308,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "IDENTIFICACION OFICIAL"
       },
       "autocomplete": "off",
       "si": {
@@ -320,7 +329,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CURP"
       },
       "autocomplete": "off",
       "si": {
@@ -340,7 +350,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE DOMICILIO"
       },
       "autocomplete": "off",
       "si": {
@@ -360,7 +371,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIA DE SITUACION FISCAL"
       },
       "autocomplete": "off",
       "si": {
@@ -380,7 +392,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE ESTUDIOS"
       },
       "autocomplete": "off",
       "si": {
@@ -400,7 +413,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CURRICULUM VITAE"
       },
       "autocomplete": "off",
       "si": {
@@ -420,7 +434,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTES DE EXPERIENCIA"
       },
       "autocomplete": "off",
       "si": {
@@ -440,7 +455,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIAS DE CAPACITACION"
       },
       "autocomplete": "off",
       "si": {
@@ -460,7 +476,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "IDENTIFICACION OFICIAL"
       },
       "autocomplete": "off",
       "si": {
@@ -480,7 +497,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CURP"
       },
       "autocomplete": "off",
       "si": {
@@ -500,7 +518,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE DOMICILIO"
       },
       "autocomplete": "off",
       "si": {
@@ -520,7 +539,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIA DE SITUACION FISCAL"
       },
       "autocomplete": "off",
       "si": {
@@ -540,7 +560,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE ESTUDIOS"
       },
       "autocomplete": "off",
       "si": {
@@ -560,7 +581,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CURRICULUM VITAE"
       },
       "autocomplete": "off",
       "si": {
@@ -580,7 +602,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTES DE EXPERIENCIA"
       },
       "autocomplete": "off",
       "si": {
@@ -600,7 +623,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "5"
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIAS DE CAPACITACION"
       },
       "autocomplete": "off",
       "si": {
@@ -609,6 +633,14 @@
           "dictaminador_renovacion"
         ]
       }
+    },
+    "protesta": {
+      "etiqueta": "Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real",
+      "tipo": "casilla",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Dejar constancia de que la persona declara bajo protesta de decir verdad que su información es auténtica.",
+      "atributos": {}
     },
     "aviso": {
       "etiqueta": "Leí el aviso de privacidad",

@@ -7,8 +7,8 @@
      · la adscripción con la que se enviará (es de la persona; se cambia en «Mis datos»);
      · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, lo que hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de
        ser obligatorios;
-     · el ejemplo de cómo se guardan sus archivos, con su nombre (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo hace
-       la base al cargarlos, apd.nombre_de_archivo);
+     · en la revisión, el nombre con que se guarda cada documento (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo pone la
+       base al cargarlos, apd.nombre_de_archivo) y, debajo, el archivo que subió;
      · estudios (poda y dictaminador); en dictaminador, con nivel, carrera y situación, la experiencia que se le pide (APD.perfilAcademico,
        mismo cálculo que la base). Fija el mínimo del campo de experiencia y avisa si no cumple el perfil.
    La base vuelve a comprobar todo al enviar. */
@@ -35,31 +35,17 @@
     document.querySelector('[data-adscripcion-info]').classList.toggle('aviso-advertencia', !texto);
   }
 
-  /* Ejemplo del nombre con que se guardan sus archivos: mayúsculas sin acentos; la Ñ se conserva. */
-  function ejemploArchivo(persona) {
-    const caja = document.querySelector('[data-ejemplo-archivo]');
-    if (caja && APD.nombreCompleto(persona)) caja.textContent = APD.nombreDeArchivo('CURP', persona);
-  }
-
-  /* Nombres con que se guardan los archivos (decisión 2026-10-15): bajo cada documento cargado y en la revisión,
-     donde el nombre nuevo va primero y el del archivo que subió la persona, debajo. */
+  /* Nombres con que se guardan los archivos (decisión 2026-10-15, ajustada por Liber): el sistema renombra solo y no
+     se avisa al cargar; en la revisión cada documento muestra su nombre nuevo y, debajo, el archivo que subió. El tipo
+     de documento viene en data-nombre-archivo de cada campo (apd.requisito.nombre_archivo). */
   const archivoDe = (campo) => { const a = campo && campo.querySelector('.arch:not([data-estado="error"]) .arch-nombre'); return a ? a.textContent : ''; };
-  function nombresGuardados(persona) {
-    for (const p of form.querySelectorAll('[data-nombre-archivo]')) {
-      const original = archivoDe(p.closest('[data-campo]'));
-      const v = original ? `Se guardará como: ${APD.nombreDeArchivo(p.dataset.nombreArchivo, persona, original)}` : '';
-      if (p.textContent !== v) p.textContent = v;
-      p.hidden = !original;
-    }
-  }
   function revisionConNombres(persona) {
     const nuevos = [];
     for (const b of form.querySelectorAll('[data-revision-lista] [data-editar^="doc_"]')) {
       const campo = form.querySelector(`[data-campo="${b.dataset.editar}"]`);
-      const p = campo && campo.querySelector('[data-nombre-archivo]');
       const original = archivoDe(campo);
-      if (!p || !original) continue;
-      const nuevo = APD.nombreDeArchivo(p.dataset.nombreArchivo, persona, original);
+      if (!campo || !campo.dataset.nombreArchivo || !original) continue;
+      const nuevo = APD.nombreDeArchivo(campo.dataset.nombreArchivo, persona, original);
       nuevos.push(nuevo);
       const val = b.parentElement.firstElementChild;
       val.replaceChildren(el('span', { class: 'rev-archivo-nuevo', texto: nuevo }), el('span', { class: 'rev-archivo-original', texto: `Archivo que subiste: ${original}` }));
@@ -198,10 +184,6 @@
       });
     }
     APD.pintaSesion(document.querySelector('[data-sesion]'), persona);
-    ejemploArchivo(persona);
-    let pendiente = 0;
-    new MutationObserver(() => { clearTimeout(pendiente); pendiente = setTimeout(() => nombresGuardados(persona), 30); })
-      .observe(form, { childList: true, subtree: true });
     form.addEventListener('formkit:paso', () => revisionConNombres(persona));
     pintaAdscripcion(datos, persona);
     const folio = new URLSearchParams(location.search).get('folio');

@@ -37,6 +37,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P15 | Contrastar la CURP con el servicio de consulta de RENAPO | Hacerlo sólo si el SIA ya tiene acceso al servicio. No bloquea: el cotejo presencial ya confirma la identidad. | no |
 | P51 | ¿La verificación pública muestra la foto de la credencial? | No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física. | no |
 | P60 | Reglas supuestas del perfil de dictaminador | Confirmar: (1) «con licenciatura» quiere decir titulada; concluida sin título cuenta como carta de pasante (5 años); (2) un posgrado cuenta como licenciatura titulada; (3) con preparatoria o menos, o licenciatura en curso o trunca, no cumple y la solicitud no se envía; (4) la carta de pasante sólo vale en carrera principal, afín o disciplina afín. | no |
+| P63 | Verificar los requisitos que aparecen en la página de inicio | Revisar contra los lineamientos la lista de requisitos por acreditación y modalidad que muestra index.html (sale del catálogo apd.requisito y apd.requisito_curso); lo que se corrija se cambia en el catálogo y se refleja en inicio, solicitud y documentos. | datos reales |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
 

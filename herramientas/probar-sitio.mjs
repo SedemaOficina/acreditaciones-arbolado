@@ -125,7 +125,7 @@ async function llenaCuenta(page, p, curp = p.curp) {
   await marcaCasillas(page);
 }
 async function marcaCasillas(page) {
-  for (const n of ['aviso', 'humano']) await page.check(`input[name="${n}"]`, { force: true });
+  for (const n of ['protesta', 'aviso', 'humano']) if (await page.$(`input[name="${n}"]`)) await page.check(`input[name="${n}"]`, { force: true });
 }
 
 async function recorrido(navegador, ancho, alto, sufijo) {
@@ -263,13 +263,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"]', 'data-extensiones') === 'pdf', t('documentos: sólo se aceptan en PDF'));
   await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', FOTO);
   comprueba(await page.locator('[data-campo="doc_poda_nueva_curp"] [data-rechazos] *').count() > 0, t('documentos: una imagen se rechaza con su motivo'));
-  comprueba(/^CURP_[A-ZÑ ]+\.pdf$/.test(await page.textContent('[data-ejemplo-archivo]')),
-    t(`documentos: dice cómo se guardarán sus archivos (${await page.textContent('[data-ejemplo-archivo]')})`));
   const n = await cargaObligatorios(page);
-  await page.waitForFunction(() => document.querySelector('[data-campo="doc_poda_nueva_curp"] .nombre-guardado').textContent !== '');
-  const comoSeGuarda = await page.textContent('[data-campo="doc_poda_nueva_curp"] .nombre-guardado');
-  comprueba(/^Se guardará como: CURP_[A-ZÑ ]+\.pdf$/.test(comoSeGuarda) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] .nombre-guardado'),
-    t(`documentos: cada archivo cargado dice con qué nombre se guarda (${comoSeGuarda})`));
+  comprueba(!/Se guardará como|renombrar/.test(await page.textContent(pasoVisible)), t('documentos: no avisa del renombrado al cargar (lo hace el sistema)'));
   comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
   await captura(page, `03-solicitud-documentos-${sufijo}`);
   await siguiente(page);
