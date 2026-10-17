@@ -42,9 +42,9 @@ async function sinDesborde(p, que) {
 async function captura(p, nombre) { if (CAPTURAS) await p.screenshot({ path: join(CAPTURAS, `examen-${nombre}.png`), fullPage: true }); }
 const vista = (p) => p.evaluate(() => (document.querySelector('[data-vista]:not([hidden])') || {}).dataset?.vista);
 
-/* Genera en aplicar.html el código de la n-ésima persona con derecho y lo devuelve */
+/* Pasa lista en aplicar.html: marca presente a la n-ésima persona por pasar lista y devuelve su código */
 async function generar(ap, n) {
-  const boton = ap.locator('[data-accion="generar"]').nth(n);
+  const boton = ap.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).nth(n);
   const ins = await boton.getAttribute('data-ins');
   await boton.click();
   await ap.waitForSelector(`tr[data-ins="${ins}"] .examen-codigo`);
@@ -77,6 +77,19 @@ async function enviar(ex) {
   const filas = await ap.locator('[data-filas] tr').count();
   ok(filas === 10, `aplicar: 10 personas inscritas (hay ${filas})`);
   ok(await ap.locator('[data-filas] .estado', { hasText: 'Sin derecho a examen' }).count() === 1, 'aplicar: una persona sin derecho a examen');
+  ok(await ap.locator('tr', { hasText: 'Sin derecho a examen' }).locator('[data-accion]').count() === 0, 'aplicar: a quien no tiene derecho no se le pasa lista');
+  await ap.waitForFunction(() => document.querySelectorAll('[data-filas] .examen-foto-lista img').length === 10);
+  ok(true, 'aplicar: la lista muestra la fotografía de cada persona');
+  // «No llegó» y después llega
+  const tarde = ap.locator('[data-filas] tr').filter({ has: ap.locator('[data-accion="ausente"]') }).last();
+  const insTarde = await tarde.getAttribute('data-ins');
+  await tarde.locator('[data-accion="ausente"]').click();
+  await ap.waitForSelector(`tr[data-ins="${insTarde}"] >> text=No llegó al examen`);
+  ok(true, 'pase de lista: «No llegó» queda registrado');
+  ok(/1 no llegó/.test(await ap.textContent('[data-cuenta]')), 'resumen: cuenta a quien no llegó');
+  await ap.click(`tr[data-ins="${insTarde}"] >> text=Llegó: marcar presente`);
+  await ap.waitForSelector(`tr[data-ins="${insTarde}"] .examen-codigo`);
+  ok(true, 'pase de lista: si llega después se marca presente y aparece su código');
   ok((await ap.textContent('[data-grupo]')).includes('PILARES'), 'aplicar: el lugar es el salón de cómputo del PILARES');
   ok(/^\d{1,2} personas inscritas, 9 con derecho/.test(await ap.textContent('[data-cuenta]')), 'aplicar: resumen del grupo');
   await captura(ap, 'aplicar-inicio-escritorio');
@@ -96,7 +109,14 @@ async function enviar(ex) {
   await ex.click('#entrar [data-accion="enviar"]');
   await ex.waitForFunction(() => document.querySelector('[data-campo="codigo"]').textContent.includes('no existe'));
   ok(true, 'código inexistente: lo dice el servidor junto al campo');
-  await entraYEmpieza(ex, c1);
+  await ex.fill('#codigo', c1);
+  await ex.click('#entrar [data-accion="enviar"]');
+  await ex.waitForSelector('[data-vista="confirmar"]:not([hidden])');
+  await ex.waitForSelector('[data-foto-persona] img');
+  ok(true, '¿eres tú?: muestra la fotografía de la persona');
+  await ex.click('[data-ir-vista="instrucciones"]');
+  await ex.click('[data-empezar]');
+  await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
   ok((await ex.textContent('[data-numero]')) === 'Pregunta 1 de 12', 'pregunta 1 de 12');
   await ex.locator('[data-opciones] input').first().check();
   await ex.waitForFunction(() => document.querySelector('[data-guardado]').textContent === 'Respuesta guardada.');
@@ -110,6 +130,16 @@ async function enviar(ex) {
   await ex.reload();
   await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
   ok(true, 'una recarga vuelve al examen abierto');
+  // El mismo código en otra computadora (otra pestaña) mientras la primera sigue abierta: no entra y se avisa
+  const otra = await c.newPage();
+  await otra.goto(`${BASE}examen.html`);
+  await otra.fill('#codigo', c1);
+  await otra.click('#entrar [data-accion="enviar"]');
+  await otra.waitForFunction(() => document.querySelector('[data-campo="codigo"]').textContent.includes('otra computadora'));
+  ok(true, 'el mismo código no se abre en otra computadora mientras la primera sigue abierta');
+  await ap.waitForFunction(() => document.querySelector('[data-filas]').textContent.includes('se intentó abrir en otra computadora 1 vez'));
+  ok(true, 'aplicar: ve el intento en otra computadora');
+  await otra.close();
   // Quien aplica ve el avance al momento
   await ap.waitForFunction(() => document.querySelector('[data-filas]').textContent.includes('Contestando · 1 de 12'));
   ok(true, 'aplicar: ve «Contestando · 1 de 12»');
@@ -169,15 +199,33 @@ async function enviar(ex) {
   ok((await ex.textContent('[data-motivo-suspension]')).includes('teléfono'), 'la persona ve que su examen se suspendió y por qué');
   await ex.click('[data-vista="suspendido"] [data-salir]');
 
+  // 4b · La computadora falla: la pantalla deja de avisar y la persona sigue en otra con el mismo código
+  const c4b = await generar(ap, 0);
+  const falla = await c.newPage();
+  await falla.goto(`${BASE}examen.html`);
+  await entraYEmpieza(falla, c4b);
+  await falla.locator('[data-opciones] input').first().check();
+  await falla.waitForFunction(() => document.querySelector('[data-guardado]').textContent === 'Respuesta guardada.');
+  await falla.close();
+  await espera(13000);
+  const sigue = await c.newPage();
+  await sigue.goto(`${BASE}examen.html`);
+  await sigue.fill('#codigo', c4b);
+  await sigue.click('#entrar [data-accion="enviar"]');
+  await sigue.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+  ok((await sigue.textContent('[data-contestadas]')).includes('1 contestada'), 'computadora que falla: sigue en otra con su respuesta guardada');
+  await sigue.close();
+
   // 5 · Código perdido: se repone y el examen sigue igual
   const c5 = await generar(ap, 0);
   await entraYEmpieza(ex, c5);
   await ex.locator('[data-opciones] input').nth(1).check();
   await ex.waitForFunction(() => document.querySelector('[data-guardado]').textContent === 'Respuesta guardada.');
+  const ins5 = await ap.locator('tr', { hasText: c5 }).getAttribute('data-ins');
   await ap.locator('tr', { hasText: c5 }).locator('[data-accion="reponer"]').click();
   await ap.click('.dialogo-confirma [data-r="si"]');
   await ap.waitForFunction((v) => !document.querySelector('[data-filas]').textContent.includes(v), c5);
-  const c5b = (await ap.locator('tr', { hasText: 'Contestando · 1 de 12' }).locator('.examen-codigo').textContent()).trim();
+  const c5b = (await ap.locator(`tr[data-ins="${ins5}"] .examen-codigo`).textContent()).trim();
   ok(c5b !== c5, 'reponer: hay un código nuevo');
   await ex.waitForSelector('[data-vista="entrar"]:not([hidden])', { timeout: 6000 });
   ok((await ex.textContent('[data-aviso-entrar]')).includes('código nuevo'), 'reponer: la pantalla con el código anterior pide el nuevo');
@@ -200,13 +248,13 @@ async function enviar(ex) {
   // Menú de pruebas: sus acciones propias aparecen en «En esta pantalla»
   await ap.click('.menu-pruebas-boton');
   ok(await ap.locator('.menu-pruebas >> text=Simular que todas contestan y envían').count() === 1, 'menú de pruebas de aplicar: acciones propias');
-  await ap.click('.menu-pruebas >> text=Generar los códigos de todas las personas con derecho');
-  await ap.waitForFunction(() => document.querySelector('.menu-pruebas-estado').textContent === 'Códigos generados.');
+  await ap.click('.menu-pruebas >> text=Pasar lista: todas presentes');
+  await ap.waitForFunction(() => document.querySelector('.menu-pruebas-estado').textContent.startsWith('Lista pasada'));
   await ap.click('.menu-pruebas >> text=Simular que todas contestan y envían');
   await ap.waitForFunction(() => /enviados? con respuestas/.test(document.querySelector('.menu-pruebas-estado').textContent));
   await ap.click('.menu-pruebas-cabeza .btn-enlace');
-  await ap.waitForSelector('[data-todos]:not([hidden])');
-  ok(true, 'aplicar: aviso de que todas terminaron');
+  const todos = await ap.waitForSelector('[data-todos]:not([hidden])', { timeout: 8000 }).then(() => true, () => false);
+  ok(todos, `aplicar: aviso de que todas terminaron (${await ap.textContent('[data-cuenta]')})`);
   ok(c.errores.length === 0, `escritorio sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
   await c.close();
 }
@@ -279,7 +327,7 @@ if (process.env.AXE) {
   };
   await p.goto(`${BASE}aplicar.html`);
   await p.waitForSelector('[data-filas] tr');
-  await p.locator('[data-accion="generar"]').first().click();
+  await p.locator('[data-accion="presente"]').first().click();
   await p.waitForSelector('.examen-codigo');
   const cod = (await p.textContent('.examen-codigo')).trim();
   await revisa('aplicar');

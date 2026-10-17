@@ -10,10 +10,15 @@
      · tiene derecho a examen quien alcanzó los días mínimos de asistencia
        del curso (R33 y R35).
 
+   El día del examen el instructor pasa lista en el salón de cómputo: compara a
+   cada persona con su fotografía y su identificación oficial y la marca
+   presente (eso registra la asistencia de ese día y genera su código) o
+   ausente (decisión 2026-10-17, P78).
+
    VERSIÓN DE PRUEBA: los datos ficticios tienen capturado sólo el primer día
-   del grupo en curso. Los días sin capturar se cuentan como asistidos, salvo
-   a quien faltó el primer día, a quien se le simula otra falta el día 3 para
-   ver el caso «sin derecho a examen».
+   del grupo en curso. Los días anteriores al examen sin capturar se cuentan
+   como asistidos, salvo a quien faltó el primer día, a quien se le simula otra
+   falta el día 3 para ver el caso «sin derecho a examen».
    ========================================================= */
 (function (global) {
   'use strict';
@@ -23,9 +28,12 @@
   function curso(datos, g) { return APD.curso(datos, g.tipo_acreditacion, g.modalidad); }
   function fechaExamen(datos, g) { return APD.sumaDias(g.fecha_inicio, curso(datos, g).dias_duracion - 1); }
 
-  /* Personas inscritas (activas), con su asistencia y su derecho a examen, en orden alfabético */
+  /* Personas inscritas (activas), en orden alfabético, con su asistencia de los días anteriores al examen y si pueden
+     presentarlo: el último día se cuenta al pasar lista en el salón de cómputo (decisión 2026-10-17). Quien ni
+     asistiendo hoy llega al mínimo, no tiene derecho a examen y no se le pasa lista. */
   function personas(datos, g) {
     const c = curso(datos, g);
+    const anteriores = c.dias_duracion - 1;
     const sols = Object.fromEntries(datos.solicitud.map((s) => [s.id, s]));
     const pers = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     return datos.inscripcion.filter((i) => i.grupo_id === g.id && i.activa).map((i) => {
@@ -33,15 +41,23 @@
       const p = pers[s.solicitante_id];
       const capturada = Object.fromEntries(datos.asistencia.filter((a) => a.inscripcion_id === i.id).map((a) => [a.dia, a.asistio]));
       const faltoAntes = Object.values(capturada).includes(false);
-      let asistidos = 0;
+      let previos = 0;
       let simulada = false;
-      for (let dia = 1; dia <= c.dias_duracion; dia++) {
-        if (dia in capturada) { if (capturada[dia]) asistidos += 1; continue; }
+      for (let dia = 1; dia <= anteriores; dia++) {
+        if (dia in capturada) { if (capturada[dia]) previos += 1; continue; }
         simulada = true;
-        if (!(faltoAntes && dia === 3)) asistidos += 1; // prueba: otra falta simulada para ver el caso sin derecho
+        if (!(faltoAntes && dia === 3)) previos += 1; // prueba: otra falta simulada para ver el caso sin derecho
       }
-      return { inscripcion: i, solicitud: s, persona: p, asistidos, dias: c.dias_duracion, minimo: c.dias_minimos_asistencia, derecho: asistidos >= c.dias_minimos_asistencia, simulada };
+      return { inscripcion: i, solicitud: s, persona: p, previos, anteriores, dias: c.dias_duracion, minimo: c.dias_minimos_asistencia,
+        puede: previos + 1 >= c.dias_minimos_asistencia, simulada };
     }).sort((a, b) => APD.nombreCompleto(a.persona).localeCompare(APD.nombreCompleto(b.persona), 'es'));
+  }
+
+  /* Pasa lista a una persona (asistencia del último día) y, si está presente, genera su código; si ya tenía uno
+     vigente, lo devuelve. En la etapa 3 la API registra la asistencia en apd.asistencia y el código en una sola
+     transacción. */
+  function pasarLista(datos, g, fila, presente, por) {
+    return APD_EXAMEN_API.pasarLista(fila.inscripcion.id, presente, por).then(() => (presente ? generarPara(datos, g, fila, por) : null));
   }
 
   /* Genera (o devuelve) el código de una persona con derecho a examen */
@@ -49,11 +65,31 @@
     const c = curso(datos, g);
     return APD_EXAMEN_API.generar({
       inscripcion_id: fila.inscripcion.id, folio: fila.solicitud.folio,
-      persona: { nombre: APD.nombreCompleto(fila.persona), expediente: fila.persona.numero_expediente || '' },
+      // curp: sólo para traer su fotografía en la versión de prueba (en el SIA, la API da la imagen); no se muestra
+      persona: { nombre: APD.nombreCompleto(fila.persona), expediente: fila.persona.numero_expediente || '', curp: fila.persona.curp },
       grupo: { id: g.id, folio: g.folio, examen_en: fechaExamen(datos, g), lugar: LUGAR },
       tipo: g.tipo_acreditacion, modalidad: g.modalidad, minima: Number(c.calificacion_minima), por
     });
   }
 
-  global.APD_EXAMEN_GRUPO = { LUGAR, grupos, curso, fechaExamen, personas, generarPara };
+  /* Fotografía de la cuenta (la confirmada en el cotejo). En la versión de prueba: la cargada en este navegador o,
+     para las personas ficticias, una silueta dibujada aquí (no es la foto de nadie). Devuelve una URL. */
+  const siluetas = {};
+  function fotoDe(curp, nombre) {
+    const A = global.APD_ARCHIVOS_PRUEBA;
+    return (A && curp ? A.foto(curp) : Promise.resolve(null)).then((r) => {
+      if (r && r.blob) return URL.createObjectURL(r.blob);
+      if (siluetas[curp]) return siluetas[curp];
+      const token = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+      const ini = String(nombre || '').split(' ').slice(0, 2).map((x) => x.charAt(0)).join('');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><rect width="120" height="150" fill="${token('--fondo')}"/>`
+        + `<circle cx="60" cy="58" r="28" fill="${token('--gris-cl')}"/><ellipse cx="60" cy="150" rx="50" ry="48" fill="${token('--gris-cl')}"/>`
+        + `<text x="60" y="22" font-family="sans-serif" font-size="13" font-weight="700" text-anchor="middle" fill="${token('--guinda')}">${ini}</text>`
+        + `<text x="60" y="142" font-family="sans-serif" font-size="9" text-anchor="middle" fill="${token('--blanco')}">Foto ficticia</text></svg>`;
+      siluetas[curp] = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      return siluetas[curp];
+    });
+  }
+
+  global.APD_EXAMEN_GRUPO = { LUGAR, grupos, curso, fechaExamen, personas, pasarLista, generarPara, fotoDe };
 }(window));

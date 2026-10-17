@@ -46,8 +46,11 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 
 ## 2b. Reglas del examen en línea (prototipo, bloque 46)
 
-- La persona entra sólo con su código de un solo uso; lo genera quien aplica tras comprobar su identificación oficial
-  (P78). Un código perdido se repone; el anterior deja de servir y el examen sigue igual.
+- Pase de lista en el salón de cómputo: fotografía de cada persona, «Presente» (registra la asistencia del último día y
+  genera su código) o «No llegó» (si llega después, se marca presente). Sin derecho a examen: no se le pasa lista.
+- La persona entra sólo con su código de un solo uso (P78), no con su cuenta; «¿Eres tú?» muestra su nombre y su
+  fotografía. Un código perdido se repone; el anterior deja de servir y el examen sigue igual. Un código se abre en una
+  sola computadora a la vez; el intento en otra se le cuenta a quien aplica.
 - Orden de preguntas y opciones distinto por persona y fijo para ella. Cada respuesta se guarda al elegirla; se puede
   cambiar hasta enviar. El tiempo corre desde «Empezar» en el servidor; al agotarse se envía lo contestado. Una
   pregunta sin contestar cuenta como incorrecta.

@@ -52,6 +52,10 @@
 .examen-pasos { display: grid; gap: var(--e-1); margin-block: var(--e-5) 0; padding-inline-start: var(--e-7); list-style: decimal; }
 .examen-herramientas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3) var(--e-5); margin-block: var(--e-4); }
 .examen-herramientas .btn { width: auto; }
+.examen-persona-fila { display: flex; align-items: center; gap: var(--e-3); }
+.examen-foto-lista { flex: none; width: var(--e-9); }
+.examen-lista-botones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
+.examen-lista-botones .btn { width: auto; }
 .examen-nombre { display: block; font-weight: var(--peso-medio); }
 .examen-nota { display: block; font-size: var(--t-sm); color: var(--gris); }
 .examen-codigo { font-size: var(--t-base); font-weight: var(--peso-fuerte); letter-spacing: var(--tracking-rotulo); }

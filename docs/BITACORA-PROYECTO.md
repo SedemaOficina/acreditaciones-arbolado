@@ -621,3 +621,21 @@ campos correctos.
   grupo confirmado hasta el día anterior al inicio; el curso empieza al menos 7 días después de confirmar.
 - Base: parámetro `dias_anticipacion_grupo` (7), reglas `anticipacion` y `grupo_por_iniciar`. 160 casos de reglas.
 - Por preguntar al área: horario del curso (P91) y quién arma los grupos (P92). Maqueta actualizada.
+
+## 2026-10-17 · Bloque 49 · Pase de lista con fotografía en el examen
+
+- Pregunta de Liber: el instructor debe pasar lista y ver las fotos en el salón de cómputo; ¿por qué un código y no la
+  cuenta? Se explicó (verificación presencial, computadoras compartidas, contraseñas olvidadas sin correo) y aprobó.
+- «Aplicar el examen»: la lista muestra la fotografía de cada persona (ficticias: silueta dibujada en el navegador) y
+  la asistencia de los días anteriores; «Presente» registra la asistencia del último día y genera el código en el mismo
+  paso; «No llegó» y, si llega, «Llegó: marcar presente». Sin derecho a examen, sin botones. Resumen con cuántas faltan
+  por pasar lista y cuántas no llegaron.
+- «¿Eres tú?» con la fotografía de la persona.
+- Un código en una sola computadora a la vez: cada pantalla avisa que sigue abierta cada 3 segundos; otra computadora
+  no entra mientras la primera siga activa (12 segundos) y el intento se le muestra a quien aplica; si la computadora
+  falla, se sigue en otra.
+- Servidor simulado: un registro por código en el navegador y la señal de pantalla abierta aparte, para que dos
+  pestañas no se pisen lo guardado (se detectó en la prueba: una pantalla abierta borraba lo que enviaba otra).
+- Pruebas: `probar-examen.mjs` 54 comprobaciones (pase de lista, llegada tarde, foto, código en otra computadora,
+  computadora que falla), con axe.
+
