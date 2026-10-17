@@ -471,6 +471,7 @@
    "integracion": "combinado",
    "estado_desde": "2026-09-12T08:30:00-06:00",
    "fecha_inicio": "2026-09-07",
+   "hora_entrada": "09:00:00",
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null
@@ -489,6 +490,7 @@
    "integracion": "combinado",
    "estado_desde": "2026-10-12T08:30:00-06:00",
    "fecha_inicio": null,
+   "hora_entrada": null,
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": "No se reunió el cupo mínimo en el plazo previsto; las personas regresan a la bandeja."
@@ -507,6 +509,7 @@
    "integracion": "especifico",
    "estado_desde": "2026-10-13T08:30:00-06:00",
    "fecha_inicio": "2026-10-13",
+   "hora_entrada": "09:00:00",
    "organizacion_id": "43a4d636-7b82-449c-844d-444762f97cb2",
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null
@@ -525,6 +528,7 @@
    "integracion": "combinado",
    "estado_desde": "2026-10-07T09:00:00-06:00",
    "fecha_inicio": null,
+   "hora_entrada": null,
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null

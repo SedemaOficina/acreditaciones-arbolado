@@ -34,7 +34,8 @@
   }
 
   /* Nombres con que se guardan los archivos (decisión 2026-10-15, ajustada por Liber): el sistema renombra solo y no
-     se avisa al cargar; en la revisión cada documento muestra su nombre nuevo y, debajo, el archivo que subió. El tipo
+     se avisa al cargar; en su revisión, la persona ve el nombre nuevo de cada documento y, debajo, el archivo que subió
+     (el personal sólo ve el nombre nuevo, 2026-10-17). El tipo
      de documento viene en data-nombre-archivo de cada campo (apd.requisito.nombre_archivo). */
   const archivoDe = (campo) => { const a = campo && campo.querySelector('.arch:not([data-estado="error"]) .arch-nombre'); return a ? a.textContent : ''; };
   function revisionConNombres(persona) {

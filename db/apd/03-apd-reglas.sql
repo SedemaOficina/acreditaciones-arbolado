@@ -1238,8 +1238,8 @@ BEGIN
     PERFORM apd.error('campo_inmutable', 'El curso, la integración y los cupos de un grupo no cambian después de crearlo');
   END IF;
   IF OLD.estado IN ('en_curso', 'concluido', 'cancelado')
-     AND (NEW.sede, NEW.fecha_inicio) IS DISTINCT FROM (OLD.sede, OLD.fecha_inicio) THEN
-    PERFORM apd.error('grupo_cerrado', 'La sede y la fecha no cambian una vez iniciado el curso');
+     AND (NEW.sede, NEW.fecha_inicio, NEW.hora_entrada) IS DISTINCT FROM (OLD.sede, OLD.fecha_inicio, OLD.hora_entrada) THEN
+    PERFORM apd.error('grupo_cerrado', 'La sede, la fecha y la hora de entrada no cambian una vez iniciado el curso');
   END IF;
   -- El instructor puede variar, también durante el curso (corrección R26); cada día queda quién capturó
   -- la asistencia. Sólo no cambia con el grupo concluido o cancelado.
@@ -1268,6 +1268,10 @@ BEGIN
 
   SELECT count(*) INTO inscritos FROM apd.inscripcion WHERE grupo_id = NEW.id AND activa;
 
+  -- Para confirmar: primer día, hora de entrada (P91) e instructor; la sede es la única (decisión 2026-10-16)
+  IF NEW.estado = 'confirmado' AND (NEW.fecha_inicio IS NULL OR NEW.hora_entrada IS NULL OR NEW.instructor IS NULL) THEN
+    PERFORM apd.error('datos_para_confirmar', 'Para confirmar el grupo indique el primer día, la hora de entrada y el instructor');
+  END IF;
   -- Anticipación (decisión 2026-10-17, Liber): el curso empieza al menos dias_anticipacion_grupo días después de confirmar,
   -- para que la persona se entere y se organice
   IF NEW.estado = 'confirmado' AND OLD.estado = 'en_integracion'
@@ -1400,6 +1404,11 @@ BEGIN
     -- Regresa a la bandeja salvo que la baja venga de cancelar la propia solicitud
     UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = NEW.solicitud_id AND estado = 'inscrita';
     PERFORM apd.registrar('baja', 'solicitud', NEW.solicitud_id::text, format('Grupo %s · %s', folio_grupo, NEW.motivo_baja));
+    -- Un grupo confirmado que queda por debajo del mínimo regresa a integración (conserva fecha, hora e instructor
+    -- como propuesta) y se vuelve a confirmar al completarse (propuesta de Claude, bloque 53)
+    UPDATE apd.grupo g SET estado = 'en_integracion'
+     WHERE g.id = NEW.grupo_id AND g.estado = 'confirmado'
+       AND (SELECT count(*) FROM apd.inscripcion i WHERE i.grupo_id = g.id AND i.activa) < g.cupo_minimo;
   END IF;
   RETURN NULL;
 END $$;

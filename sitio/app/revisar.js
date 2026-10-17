@@ -163,7 +163,9 @@
       const peso = d.tamano_bytes >= 1048576 ? `${(d.tamano_bytes / 1048576).toFixed(1)}\u00a0MB` : `${Math.round(d.tamano_bytes / 1024)}\u00a0KB`;
       $('[data-doc-archivo]', art).replaceChildren(...[
         el('span', { class: 'mono', texto: nombre }),
-        document.createTextNode(` · ${peso} · Archivo que subió: ${d.nombre_original}`),
+        // Sólo el nombre con que se guarda: el del archivo original no le sirve a quien revisa y puede traer datos ajenos
+        // al trámite (decisión de Liber, 2026-10-17); queda en la base (apd.documento.nombre_original) para aclaraciones
+        document.createTextNode(` · ${peso}`),
         corregidos.has(k) ? el('span', { class: 'doc-corregido' }, [APD.estado('Corregido en esta vuelta', 'pend')]) : null
       ].filter(Boolean));
     }

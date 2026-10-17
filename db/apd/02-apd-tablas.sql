@@ -496,6 +496,7 @@ CREATE TABLE apd.grupo (
   instructor                 text          NULL,
   sede                       text          NULL,
   fecha_inicio               date          NULL,
+  hora_entrada               time          NULL,
   estado                     text          NOT NULL DEFAULT 'en_integracion',
   estado_desde               timestamptz   NOT NULL DEFAULT now(),
   motivo_cancelacion         text          NULL,
@@ -509,7 +510,7 @@ CREATE TABLE apd.grupo (
   CONSTRAINT grupo_especifico_ck CHECK ((integracion = 'especifico') = (organizacion_id IS NOT NULL)),
   CONSTRAINT grupo_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo),
   CONSTRAINT grupo_estado_ck CHECK (estado IN ('en_integracion', 'confirmado', 'en_curso', 'concluido', 'cancelado')),
-  CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL)),
+  CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL AND hora_entrada IS NOT NULL)),
   CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)
 );
 CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado);
@@ -525,6 +526,7 @@ COMMENT ON COLUMN apd.grupo.cupo_maximo IS 'Copiado del curso al crearse; lo pon
 COMMENT ON COLUMN apd.grupo.instructor IS 'Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo';
 COMMENT ON COLUMN apd.grupo.sede IS 'Instalación de la Secretaría; obligatoria para confirmar';
 COMMENT ON COLUMN apd.grupo.fecha_inicio IS 'Primer día; obligatoria para confirmar';
+COMMENT ON COLUMN apd.grupo.hora_entrada IS 'Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. Falta la hora de salida y si cambia el día del examen (P91)';
 COMMENT ON COLUMN apd.grupo.estado IS 'en_integracion, confirmado, en_curso, concluido o cancelado';
 COMMENT ON COLUMN apd.grupo.estado_desde IS 'Desde cuándo; lo pone la base';
 COMMENT ON COLUMN apd.grupo.motivo_cancelacion IS 'Obligatorio al cancelar';

@@ -452,6 +452,7 @@ Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con e
 | `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo |
 | `sede` | `text` | No | Instalación de la Secretaría; obligatoria para confirmar |
 | `fecha_inicio` | `date` | No | Primer día; obligatoria para confirmar |
+| `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. Falta la hora de salida y si cambia el día del examen (P91) |
 | `estado` | `text` | Sí | en_integracion, confirmado, en_curso, concluido o cancelado (por omisión: `'en_integracion'`) |
 | `estado_desde` | `timestamptz` | Sí | Desde cuándo; lo pone la base (por omisión: `now()`) |
 | `motivo_cancelacion` | `text` | No | Obligatorio al cancelar |
@@ -468,7 +469,7 @@ Restricciones e índices:
 - `CONSTRAINT grupo_especifico_ck CHECK ((integracion = 'especifico') = (organizacion_id IS NOT NULL))`
 - `CONSTRAINT grupo_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)`
 - `CONSTRAINT grupo_estado_ck CHECK (estado IN ('en_integracion', 'confirmado', 'en_curso', 'concluido', 'cancelado'))`
-- `CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL))`
+- `CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL AND hora_entrada IS NOT NULL))`
 - `CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)`
 - `CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado)`
 

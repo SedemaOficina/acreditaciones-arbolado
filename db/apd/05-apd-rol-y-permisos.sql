@@ -66,7 +66,7 @@ GRANT UPDATE (estado, observacion, revisado_por, vigente) ON apd.documento TO ap
 
 -- Cursos
 GRANT SELECT, INSERT ON apd.grupo TO apd_api;
-GRANT UPDATE (instructor, sede, fecha_inicio, estado, motivo_cancelacion) ON apd.grupo TO apd_api;
+GRANT UPDATE (instructor, sede, fecha_inicio, hora_entrada, estado, motivo_cancelacion) ON apd.grupo TO apd_api;
 GRANT SELECT, INSERT ON apd.inscripcion TO apd_api;
 GRANT UPDATE (activa, motivo_baja) ON apd.inscripcion TO apd_api;
 GRANT SELECT, INSERT ON apd.asistencia TO apd_api;

@@ -414,6 +414,7 @@
         { "nombre": "instructor", "tipo": "text", "nulo": true, "descripcion": "Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo" },
         { "nombre": "sede", "tipo": "text", "nulo": true, "descripcion": "Instalación de la Secretaría; obligatoria para confirmar" },
         { "nombre": "fecha_inicio", "tipo": "date", "nulo": true, "descripcion": "Primer día; obligatoria para confirmar" },
+        { "nombre": "hora_entrada", "tipo": "time", "nulo": true, "descripcion": "Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. Falta la hora de salida y si cambia el día del examen (P91)" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'en_integracion'", "descripcion": "en_integracion, confirmado, en_curso, concluido o cancelado" },
         { "nombre": "estado_desde", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Desde cuándo; lo pone la base" },
         { "nombre": "motivo_cancelacion", "tipo": "text", "nulo": true, "descripcion": "Obligatorio al cancelar" },
@@ -429,7 +430,7 @@
         "CONSTRAINT grupo_especifico_ck CHECK ((integracion = 'especifico') = (organizacion_id IS NOT NULL))",
         "CONSTRAINT grupo_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)",
         "CONSTRAINT grupo_estado_ck CHECK (estado IN ('en_integracion', 'confirmado', 'en_curso', 'concluido', 'cancelado'))",
-        "CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL))",
+        "CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL AND hora_entrada IS NOT NULL))",
         "CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)"
       ],
       "indices": [
