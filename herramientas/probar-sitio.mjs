@@ -216,6 +216,15 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('adscripción: SEDEMA pregunta su Dirección General y nada más'));
   comprueba(await page.locator('input[name="direccion_sedema"][value="otro"]').count() === 0, t('adscripción: la Dirección General es una lista cerrada (sin «otra área»)'));
   comprueba(/^Confirma tu contraseña/.test(await page.textContent('label[for="contrasena2"]')), t('cuenta: la segunda contraseña dice «Confirma tu contraseña»'));
+  // «Mostrar» deja ver la contraseña y «Ocultar» la vuelve a tapar (2026-10-17)
+  await page.fill('#contrasena', 'una frase larga de prueba');
+  await page.click('[data-ver-contrasena][aria-controls="contrasena"]');
+  const visible = await page.getAttribute('#contrasena', 'type');
+  await page.click('[data-ver-contrasena][aria-controls="contrasena"]');
+  comprueba(visible === 'text' && await page.getAttribute('#contrasena', 'type') === 'password' && await page.inputValue('#contrasena') === 'una frase larga de prueba',
+    t('cuenta: «Mostrar» deja ver la contraseña y «Ocultar» la tapa'));
+  if (ancho >= 760) comprueba(await page.evaluate(() => Math.abs(document.getElementById('contrasena').getBoundingClientRect().top - document.getElementById('contrasena2').getBoundingClientRect().top) < 2),
+    t('cuenta: contraseña y confirmación quedan a la misma altura'));
   await page.check('input[name="tipo_adscripcion"][value="educativa"]', { force: true });
   await page.check('input[name="institucion_educativa"][value="otro"]', { force: true });
   comprueba(await page.isVisible('[data-campo="institucion_educativa_otra"]') && await page.locator('input[name="institucion_educativa"][value="unam"]').count() === 1,
@@ -369,6 +378,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('.perfil-imagen');
   comprueba(await page.evaluate(() => { const i = document.querySelector('.perfil-imagen'); return i.complete && i.naturalWidth > 0; }),
     t('mi perfil: muestra la fotografía que cargó al crear la cuenta'));
+  comprueba((await page.textContent('[data-vista="adscripcion"]')).trim() === 'Eres independiente.', t('mi perfil: la adscripción independiente se dice directo, «Eres independiente.»'));
   await page.click('[data-editar="foto"]');
   await page.setInputFiles('#form-foto [data-archivos] > input[type="file"]:not([data-entrada-camara])', FOTO);
   await page.waitForSelector('#form-foto .lista-arch li[data-estado="listo"]');
@@ -500,7 +510,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/Mi perfil/.test(await page.textContent('h2')) && /Sexo/.test(await page.textContent('[data-identidad]')) && await page.$('#curp') === null,
     t('mi perfil: muestra CURP y sexo sin dejarlos cambiar'));
   comprueba(await page.locator('form.perfil-form:not([hidden])').count() === 0 && /@/.test(await page.textContent('[data-vista="contacto"]'))
-    && /Empresa/.test(await page.textContent('[data-vista="adscripcion"]')),
+    && /^Empresa, consultoría o particular: /.test(await page.textContent('[data-vista="adscripcion"]')),
     t('mi perfil: se ve lo registrado, escrito, sin preguntas a la vista'));
   comprueba(/^[A-ZÁÉÍÓÚÑ]{2}$/.test((await page.textContent('[data-perfil-iniciales]')).trim()), t('mi perfil: sin imagen, la persona ficticia se ve con sus iniciales'));
   await page.click('[data-editar="contacto"]');

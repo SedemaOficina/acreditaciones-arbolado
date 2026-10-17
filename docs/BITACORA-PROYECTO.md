@@ -478,3 +478,11 @@ campos correctos.
 - Botones: comprobación automática de aire en cada captura de `probar-sitio.mjs`; acuses con `.acuse-acciones` y relleno
   lateral; «Editar» parejo en la revisión antes de enviar. Hallazgo P72.
 - Bandeja: lo enviado en este navegador va primero y con la fecha simulada.
+
+## 2026-10-17 · Bloque 38 · Mostrar la contraseña
+
+- Pedido de Liber: botón para ver la contraseña. `app/ver-contrasena.js`: «Mostrar» / «Ocultar» dentro del campo
+  (aria-pressed, nombre accesible), en «Crear cuenta» y «Entrar»; al enviar se vuelve a ocultar. El envoltorio
+  `.contrasena-caja` ocupa el renglón del control para que contraseña y confirmación sigan a la misma altura.
+  Hallazgo del estándar: P73. Comprobaciones nuevas en el sitio.
+- «Mi perfil»: la adscripción se lee en un renglón a todo lo ancho, directo: «Eres independiente.» o «Alcaldía: Tlalpan.».

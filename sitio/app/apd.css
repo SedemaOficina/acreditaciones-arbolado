@@ -231,6 +231,7 @@
 .perfil-quien p { margin: 0; }
 .perfil-nombre { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); overflow-wrap: anywhere; }
 .perfil-guardado { width: 100%; text-align: start; }
+.perfil-valor { margin: 0; font-weight: var(--peso-medio); }
 .perfil-form { width: 100%; text-align: start; }
 .perfil-seccion-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-block-end: var(--e-3); }
 .perfil-seccion-cabeza .titulo-bloque { margin-block: 0; }
@@ -243,3 +244,9 @@
 
 /* Acuse: el estándar le quita el relleno lateral a la tarjeta (.acuse) y en teléfono el botón queda pegado a la orilla */
 .tarjeta.acuse { padding-inline: var(--e-seccion); }
+
+/* Contraseña con «Mostrar» dentro del campo, a la derecha (app/ver-contrasena.js, 2026-10-17) */
+.contrasena-caja { position: relative; grid-row: 3; } /* en .fila ocupa el renglón del control, como .select */
+.contrasena-caja > .control { padding-inline-end: var(--e-11); }
+.contrasena-ver { position: absolute; inset-block: var(--b-1); inset-inline-end: var(--b-1); min-width: var(--objetivo-min); padding-inline: var(--e-3); border: 0; border-radius: var(--r-ctrl); background: transparent; color: var(--azul); font: inherit; font-size: var(--t-sm); font-weight: var(--peso-medio); text-decoration: underline; cursor: pointer; }
+.contrasena-ver:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: calc(var(--foco-sep) * -1); }

@@ -546,6 +546,14 @@
       "desde": "2026-10-17",
       "titulo": "Acuse y revisión: botones pegados o desalineados",
       "recomendacion": "Proponer tres ajustes: (1) .acuse quita el relleno lateral de la tarjeta y en teléfono un botón queda pegado a la orilla: conservar el relleno; (2) el acuse no prevé una acción para continuar («Ir a mis trámites»): documentar que va en .acuse-acciones; (3) en la revisión, «Editar» baja de renglón con valores largos: que .rev-dato-valor no se parta y deje «Editar» arriba a la derecha. Base: apd.css de este proyecto y la comprobación automática de aire de probar-sitio.mjs."
+    },
+    {
+      "id": "P73",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "El estándar no trae botón para mostrar la contraseña",
+      "recomendacion": "Proponer «Mostrar» / «Ocultar» dentro del campo de contraseña (botón con aria-pressed y nombre accesible, vuelve a ocultarla al enviar) y que el envoltorio respete el renglón del control en .fila. Base: app/ver-contrasena.js y apd.css de este proyecto."
     }
   ],
   "resueltos": [

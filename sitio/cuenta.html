@@ -288,12 +288,20 @@
            data-finalidad="Proteger el acceso a la cuenta." data-uso="Acceso a la cuenta; se guarda cifrada, nunca en claro.">
         <label class="etiqueta" for="contrasena">Contraseña</label>
         <p class="ayuda">Al menos 12 caracteres. Una frase que recuerdes es más segura que una palabra con símbolos.</p>
-        <input class="control" id="contrasena" name="contrasena" type="password" minlength="12" autocomplete="new-password">
+        <!-- «Mostrar» deja ver lo escrito (app/ver-contrasena.js; el estándar no lo trae: P73). -->
+        <div class="contrasena-caja">
+          <input class="control" id="contrasena" name="contrasena" type="password" minlength="12" autocomplete="new-password">
+          <button type="button" class="contrasena-ver" data-ver-contrasena aria-controls="contrasena" aria-pressed="false"><span data-ver-texto>Mostrar</span><span class="solo-lector"> la contraseña</span></button>
+        </div>
       </div>
       <div class="campo" data-campo="contrasena2" data-formato="contrasena" data-requerido data-sensible
            data-uso="Evitar errores de captura en la contraseña." data-cruzada="igual" data-cruzada-campos="original=contrasena confirmacion=contrasena2">
         <label class="etiqueta" for="contrasena2">Confirma tu contraseña</label>
-        <input class="control" id="contrasena2" name="contrasena2" type="password" minlength="12" autocomplete="new-password">
+        <!-- «Mostrar» deja ver lo escrito (app/ver-contrasena.js; el estándar no lo trae: P73). -->
+        <div class="contrasena-caja">
+          <input class="control" id="contrasena2" name="contrasena2" type="password" minlength="12" autocomplete="new-password">
+          <button type="button" class="contrasena-ver" data-ver-contrasena aria-controls="contrasena2" aria-pressed="false"><span data-ver-texto>Mostrar</span><span class="solo-lector"> la confirmación de la contraseña</span></button>
+        </div>
       </div>
     </div>
 
@@ -368,6 +376,7 @@
 <script src="app/archivos-prueba.js?v=0.21"></script>
 <script src="app/casos-prueba.js?v=0.21"></script>
 <script src="app/pruebas.js?v=0.21"></script>
+<script src="app/ver-contrasena.js?v=0.21"></script>
 <script src="app/version-visible.js?v=0.21"></script>
 </body>
 </html>

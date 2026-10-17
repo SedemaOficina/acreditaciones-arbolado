@@ -39,7 +39,11 @@
     <div class="campo" data-campo="contrasena" data-requerido data-sensible
          data-finalidad="Comprobar que quien entra es la persona titular de la cuenta." data-uso="Comprobar el acceso; no se guarda.">
       <label class="etiqueta" for="contrasena">Contraseña</label>
-      <input class="control" id="contrasena" name="contrasena" type="password" autocomplete="current-password">
+      <!-- «Mostrar» deja ver lo escrito (app/ver-contrasena.js; el estándar no lo trae: P73). -->
+      <div class="contrasena-caja">
+        <input class="control" id="contrasena" name="contrasena" type="password" autocomplete="current-password">
+        <button type="button" class="contrasena-ver" data-ver-contrasena aria-controls="contrasena" aria-pressed="false"><span data-ver-texto>Mostrar</span><span class="solo-lector"> la contraseña</span></button>
+      </div>
     </div>
     <!-- Trampa para programas automáticos: una persona no la ve ni la llena. -->
     <div class="solo-lector" aria-hidden="true" data-trampa><label>No llenar <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label></div>
@@ -73,6 +77,7 @@
 <script src="app/archivos-prueba.js?v=0.21"></script>
 <script src="app/casos-prueba.js?v=0.21"></script>
 <script src="app/pruebas.js?v=0.21"></script>
+<script src="app/ver-contrasena.js?v=0.21"></script>
 <script src="app/version-visible.js?v=0.21"></script>
 </body>
 </html>

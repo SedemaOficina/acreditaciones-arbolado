@@ -98,9 +98,9 @@
       ['Correo electrónico', p.correo || 'Sin registrar'],
       ['Teléfono', p.telefono || 'Sin registrar']
     ]));
-    $('[data-vista="adscripcion"]').replaceChildren(APD.datosLista([
-      ['Trabajas para', APD.adscripcionTexto(datos, p) || 'Sin indicar']
-    ]));
+    // Directo y en un renglón: «Eres independiente.» o «Alcaldía: Tlalpan.» (decisión 2026-10-17)
+    $('[data-vista="adscripcion"]').replaceChildren(el('p', { class: 'perfil-valor',
+      texto: p.adscripcion === 'independiente' ? 'Eres independiente.' : (APD.adscripcionTexto(datos, p) || 'Sin indicar. Presiona «Editar» para decir si trabajas para alguien.') }));
     pintaFoto(datos, p);
   }
 
