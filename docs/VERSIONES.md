@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.30 | 17/10/26, 12:20 p.m. | Bloque 46: prototipo del examen en línea en el PILARES (aplicar el examen y examen de la persona) |
 | 0.29 | 17/10/26, 12:09 p.m. | Bloque 45: un correo, una cuenta; sin fotografía nueva en el cotejo; catálogo de avisos por correo |
 | 0.28 | 17/10/26, 11:51 a.m. | Bloque 44: aviso de cuenta guardada en otro navegador y de almacenamiento bloqueado (prueba) |
 | 0.27 | 17/10/26, 11:35 a.m. | Bloque 43: citas de cotejo (agenda, cotejo, corrección del mismo día) y reglas de la cita en la base |
