@@ -110,7 +110,8 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Fotografía de la persona** (`apd.fotografia`): una vigente por persona, sólo JPG o PNG. La persona la carga
   al crear su cuenta y la cambia mientras nadie la confirme; en el cotejo la confirma el personal (con su
   usuario y fecha, en la bitácora) o toma una nueva, que queda confirmada. Ya confirmada, sólo el personal
-  carga otra. No se modifica ni se borra: la nueva sustituye a la anterior.
+  carga otra. No se modifica ni se borra: la nueva sustituye a la anterior. Tiene que verse clara: el día del
+  examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia (decisión 2026-10-17).
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
   anterior sin borrarlo.
 - **La hora** sale de `apd.ahora()`. Sólo en una base de pruebas se puede simular; en producción, simularla
