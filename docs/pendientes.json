@@ -54,7 +54,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Plazo para atender observaciones y para presentarse a la cita",
-      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación, con una sola reprogramación. Al vencer, la solicitud se cierra «concluida sin atender» con su motivo; la persona puede iniciar otra. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba)."
+      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación. Ya decidido (2026-10-17): si no se presenta, una sola cita nueva; a la segunda inasistencia se cierra «concluida sin atender». Falta el plazo en días. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba)."
     },
     {
       "id": "P03",
@@ -237,8 +237,8 @@
       "grupo": "sia",
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
-      "titulo": "Cuentas del personal en acceso, recurso apd, con cinco perfiles",
-      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión, cotejo, instructor, emisión y consulta. Mientras, las pantallas del personal entran con un perfil ficticio de revisión documental."
+      "titulo": "Cuentas del personal en acceso, recurso apd, con cuatro perfiles",
+      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17), instructor, emisión y consulta. Mientras, las pantallas del personal entran con un perfil ficticio."
     },
     {
       "id": "P28",

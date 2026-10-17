@@ -558,8 +558,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'solicitud.html');
   await page.click('.menu-pruebas-boton');
   comprueba(await page.isVisible('dialog.menu-pruebas'), t('menú de pruebas: se abre'));
-  comprueba(/Fase 1 de 7: Cuenta y solicitud/.test(await page.textContent('.menu-pruebas-fase')) && await page.locator('.menu-pruebas-fase a[target="_blank"]').count() === 1,
-    t('menú de pruebas: dice en qué fase del trámite está la pantalla y enlaza al mapa del trámite'));
+  comprueba(/Pantalla: [^·]+ · Fase [1-7] de 7: /.test(await page.textContent('.ubicacion-prueba')) && await page.locator('.ubicacion-prueba a[target="_blank"]').count() === 1,
+    t('siempre a la vista: la pantalla, la fase del trámite y el enlace al mapa del trámite'));
   comprueba(await page.locator('dialog.menu-pruebas h3').allTextContents().then((l) => l.join('|')) === 'En esta pantalla|Entrar como|Ir a otra pantalla|Ajustes de la prueba',
     t('menú de pruebas: bloques en orden (en esta pantalla, entrar como, ir a otra pantalla, ajustes)'));
   const opcionesCasos = await page.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean));

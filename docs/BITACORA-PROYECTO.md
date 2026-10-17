@@ -527,3 +527,11 @@ campos correctos.
   Inicio, mapa (R34, R40, R51, pasos 14 y 16), P10 y la maqueta de cotejo actualizados.
 - Maqueta de cotejo: tabla con el módulo «tabla» del estándar; «¿Es la misma persona de la fotografía?»; quinta propuesta
   para decidir (si no es la persona).
+
+## 2026-10-17 · Bloque 42 · Ubicación siempre a la vista y decisiones del cotejo
+
+- Pedido de Liber: la ubicación no en el menú sino siempre en pantalla. `pruebas.js` pone bajo la franja de la versión de
+  prueba «Pantalla · Fase N de 7 · Ver el mapa del trámite» (sólo en la versión de prueba).
+- Decisiones del cotejo (aprobadas con la maqueta): inasistencia → una cita nueva, a la segunda se cierra; sin pago → otra
+  cita con el mismo monto; documento que no coincide → pausa para cargar el correcto ese día, o con observaciones; no es la
+  persona → no se atiende y se bloquea la cuenta; un solo perfil «revisión y cotejo» (P27).

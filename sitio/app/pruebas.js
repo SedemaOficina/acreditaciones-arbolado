@@ -246,22 +246,8 @@
         el('p', {}, [el('strong', { texto: 'Estás como: ' }), document.createTextNode(quien)]),
         enPersonal || sesion ? boton('Salir', () => { APD.cierraSesion(); location.href = 'index.html'; }, 'btn-enlace') : null
       ].filter(Boolean)),
-      ayuda([actual && actual.clave !== 'personal' ? `Caso: ${actual.texto}.` : '', `Pantalla: ${NOMBRES[pagina] || pagina}.`].filter(Boolean).join(' ')),
-      fase()
+      ayuda(actual && actual.clave !== 'personal' ? `Caso: ${actual.texto}.` : 'Dónde estás en el trámite: en la franja de arriba de la página.')
     ]);
-    /* En qué fase del trámite está lo que se ve: en «Mis trámites», la de la solicitud más reciente de la persona */
-    function fase() {
-      let n = FASE_PANTALLA[pagina] || 0;
-      if (pagina === 'tramites.html' && persona) {
-        const s = APD.solicitudesDe(datos, persona)[0];
-        n = s ? FASE_ESTADO[s.estado] || 1 : 1;
-      }
-      return el('p', { class: 'menu-pruebas-fase' }, [
-        n ? document.createTextNode(`Fase ${n} de 7: ${FASES[n - 1]}. `) : null,
-        el('a', { href: MAPA, target: '_blank', rel: 'noopener' }, [document.createTextNode('Ver el mapa del trámite: quién hace qué, fase por fase'),
-          el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])
-      ].filter(Boolean));
-    }
 
     /* 2 · En esta pantalla: sólo lo que aplica */
     const aqui = [];
@@ -396,11 +382,33 @@
   }
   /* Nombre de quien revisa: el perfil ficticio del personal (personal.js sólo se carga en sus pantallas) */
   function APD_PERSONAL_NOMBRE() { return typeof APD_PERSONAL !== 'undefined' ? APD_PERSONAL.REVISORA.nombre : 'María Ejemplo Revisora'; }
+  /* Ubicación siempre a la vista (decisión 2026-10-17): bajo la franja de la versión de prueba, la pantalla, la fase del
+     trámite (en «Mis trámites», la de la solicitud más reciente de la persona) y el enlace al mapa del trámite */
+  function ubicacion(datos) {
+    let n = FASE_PANTALLA[pagina] || 0;
+    if (pagina === 'tramites.html') {
+      const persona = APD.personaDeSesion(datos);
+      const s = persona ? APD.solicitudesDe(datos, persona)[0] : null;
+      n = s ? FASE_ESTADO[s.estado] || 1 : 1;
+    }
+    const nombre = NOMBRES[pagina] || pagina;
+    return el('nav', { class: 'ubicacion-prueba', 'aria-label': 'Dónde estás en el trámite (versión de prueba)' }, [
+      el('p', { class: 'ubicacion-prueba-int' }, [
+        el('strong', { texto: `Pantalla: ${nombre}` }),
+        n ? document.createTextNode(` · Fase ${n} de 7: ${FASES[n - 1]} · `) : document.createTextNode(' · '),
+        el('a', { href: MAPA, target: '_blank', rel: 'noopener' }, [document.createTextNode('Ver el mapa del trámite: quién hace qué, fase por fase'),
+          el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])
+      ])
+    ]);
+  }
+
   function monta() {
     fetch('VERSION', { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((v) => {
       if (!/^0\./.test(v.trim())) return;
       return APD.cargar().then((datos) => {
         const dialogo = panel(datos);
+        const franja = document.querySelector('.entorno-pruebas');
+        if (franja) franja.after(ubicacion(datos));
         const abre = el('button', { type: 'button', class: 'btn btn-secundario menu-pruebas-boton', 'aria-haspopup': 'dialog', texto: 'Menú de pruebas' });
         abre.addEventListener('click', () => dialogo.showModal());
         const pie = document.querySelector('footer') || document.body;

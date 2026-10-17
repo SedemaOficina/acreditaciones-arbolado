@@ -90,7 +90,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | Versión de prueba: el resultado de la revisión llega a la persona en «Mis trámites» (con observaciones y qué corregir, validada con su cita, o rechazada con su motivo); si la reenvía, vuelve a la bandeja como reenviada. Las revisadas salen de la bandeja y se listan en «Revisadas en esta prueba» mientras no existan las pantallas de citas de cotejo, grupos, calificación y entrega | Liber Saltijeral |
 | 2026-10-17 | La fotografía que carga la persona sólo sirve para identificar su perfil y para comprobar en la cita de cotejo que es la misma persona. La de la credencial se toma el día que se entrega | Liber Saltijeral |
 | 2026-10-17 | La credencial se entrega el mismo día del examen: el examen es en computadora y la calificación sale al momento, así que quien aprueba la recoge ese día (P10) | Liber Saltijeral |
-| 2026-10-17 | Menú de pruebas: dice en qué fase del trámite está la pantalla (en «Mis trámites», la de la solicitud de la persona) y enlaza al mapa del trámite, «quién hace qué, fase por fase», para ubicarse | Liber Saltijeral |
+| 2026-10-17 | Versión de prueba: siempre a la vista, bajo la franja amarilla, la pantalla, la fase del trámite (en «Mis trámites», la de la solicitud de la persona) y el enlace al mapa del trámite, «quién hace qué, fase por fase». No va en el menú de pruebas | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
@@ -117,6 +117,11 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | En el cotejo la persona presenta los mismos documentos que cargó; si no coinciden, no se da por válido y el trámite no continúa hasta que los corrija (mapa, R19) | Liber Saltijeral |
 | ~~2026-10-14~~ | ~~Cada solicitud recibe un número de expediente físico al concluir el cotejo~~ Sustituida | Liber Saltijeral |
 | 2026-10-14 | El expediente físico es de la persona: una CURP, un expediente, asociado a uno o más trámites. Se abre en su primer cotejo, consecutivo por año y sin huecos, y los trámites siguientes usan el mismo número. No se registra la ubicación. Formato provisional EXP-AAAA-NNNN | Liber Saltijeral |
+| 2026-10-17 | Si la persona no se presenta a la cita: se marca y se le da una cita nueva una sola vez; si tampoco se presenta a la segunda, la solicitud se cierra como «concluida sin atender» (plazo: P02) | Liber Saltijeral |
+| 2026-10-17 | Si no trae el comprobante de pago: no se termina el cotejo; se le da otra cita y conserva el monto que se le indicó | Liber Saltijeral |
+| 2026-10-17 | Si un documento no coincide con lo que cargó, la persona tiene oportunidad de conseguir el correcto ese mismo día (un café internet, su teléfono): la cita queda en pausa, ella carga el documento desde «Mis trámites» y el personal retoma el cotejo de ese documento. Si no puede ese día, la solicitud regresa con observaciones y, tras una nueva revisión, recibe otra cita | Liber Saltijeral |
+| 2026-10-17 | Si no es la persona de la fotografía ni de la identificación: no se atiende la cita, se avisa a la Dirección y la cuenta queda bloqueada hasta aclararlo | Liber Saltijeral |
+| 2026-10-17 | La misma persona del personal revisa en línea y atiende las citas de cotejo: un solo perfil «revisión y cotejo» (P27) | Liber Saltijeral |
 
 ## Cursos y grupos
 
