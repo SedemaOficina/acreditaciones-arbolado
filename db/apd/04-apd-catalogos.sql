@@ -14,7 +14,7 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).'),
   ('pago_instrucciones', '[pendiente] Banco, cuenta o CLABE y forma de pago: los define la Secretaría de Administración y Finanzas.',
    'Cómo pagar los derechos; se muestra a la persona con su cita y su referencia (decisión 2026-10-14).'),
-  ('entrega_lugar', '[pendiente] Días y horario de entrega de acreditaciones.',
+  ('entrega_lugar', '[pendiente] Si no puedes quedarte el día del examen: días y horario para recoger tu credencial en el Vivero (P10).',
    'Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14).'),
   ('dias_anticipacion_grupo', '7',
    'Días mínimos entre confirmar un grupo y el primer día del curso, para que la persona se entere y se organice (decisión 2026-10-17, Liber).'),
@@ -161,7 +161,7 @@ INSERT INTO apd.carrera (nombre, grupo) VALUES
   ('Ciencias Forestales',              'afin');      -- posgrado afín (ejemplo de Liber, 2026-10-15)
 
 -- Cómo se nombra el archivo guardado de cada documento (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE
--- COMPLETO, p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Un requisito nuevo sin este dato usa su nombre en mayúsculas.
+-- COMPLETO, p. ej. CURP_ANA EJEMPLO MUESTRA.pdf. Un requisito nuevo sin este dato usa su nombre en mayúsculas.
 UPDATE apd.requisito SET nombre_archivo = v.nombre_archivo
   FROM (VALUES ('identificacion_oficial',      'IDENTIFICACION OFICIAL'),
                ('curp',                        'CURP'),

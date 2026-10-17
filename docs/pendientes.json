@@ -54,7 +54,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Plazo para atender observaciones y para presentarse a la cita",
-      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación. Ya decidido (2026-10-17): si no se presenta, una sola cita nueva; a la segunda inasistencia se cierra «concluida sin atender». Falta el plazo en días. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba). Ya resuelto en la base: a la segunda inasistencia a la cita de cotejo la solicitud se cierra (parámetro inasistencias_cotejo_maximas = 2); falta el plazo para atender observaciones."
+      "recomendacion": "Falta: (a) el plazo para atender observaciones (propuesta: 30 días naturales) y (b) el plazo entre la validación y la cita (propuesta: dentro de los 30 días siguientes). Ya decidido y en la base: si no se presenta, una sola cita nueva; a la segunda inasistencia se cierra «concluida sin atender» (inasistencias_cotejo_maximas = 2). Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba)."
     },
     {
       "id": "P03",
@@ -69,8 +69,8 @@
       "grupo": "direccion",
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
-      "titulo": "Check list del cotejo y secciones «Del pago» y «Del curso» del borrador",
-      "recomendacion": "Pedirlos en una sola solicitud. El check list del cotejo puede salir del propio sistema a partir de la tabla de requisitos de cada curso, así no hay dos listas que mantener. (El Anexo 1 de carreras afines ya no se necesita: la carrera la valida el personal.)"
+      "titulo": "Secciones «Del pago» y «Del curso» del borrador, y visto bueno del check list del cotejo",
+      "recomendacion": "El check list del cotejo ya lo genera el sistema desde los requisitos de cada curso (cotejo.html); falta que la Dirección lo confirme y entregue las secciones «Del pago» y «Del curso». (El Anexo 1 de carreras afines ya no se necesita: la carrera la valida el personal.)"
     },
     {
       "id": "P06",
@@ -86,7 +86,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
       "titulo": "Cómo corregir una calificación mal capturada (hoy el resultado es inapelable y no se modifica)",
-      "recomendacion": "Distinguir el examen de la captura. El resultado del examen es inapelable; un error de captura se corrige sólo antes de emitir, con el perfil de administración, con motivo y en la bitácora."
+      "recomendacion": "Distinguir el examen de la captura. El resultado del examen es inapelable; un error de captura se corrige sólo antes de emitir, con el perfil de administración, con motivo y en la bitácora. Con el examen en línea el escrito no se captura: la regla aplica a la evaluación práctica (P83) y a calificaciones con origen captura."
     },
     {
       "id": "P08",
@@ -99,10 +99,10 @@
     {
       "id": "P10",
       "grupo": "direccion",
-      "bloquea": "datos reales",
+      "bloquea": "etapa 2",
       "desde": "2026-10-14",
       "titulo": "Entrega de credenciales el mismo día del examen: qué se necesita en el lugar",
-      "recomendacion": "Decisión de Liber (2026-10-17): quien aprueba recoge su credencial el mismo día del examen, porque la calificación sale al momento en la computadora. Falta confirmar: que la acreditación se pueda emitir y firmar ese mismo día; cámara e impresora de credenciales en el lugar del examen (PILARES Vivero Nezahualcóyotl); y qué pasa con quien no puede quedarse a recogerla (otro día en el Vivero)."
+      "recomendacion": "Decisión de Liber (2026-10-17): quien aprueba recoge su credencial el mismo día del examen, porque la calificación sale al momento en la computadora. Falta confirmar: que la acreditación se pueda emitir y firmar ese mismo día; cámara e impresora de credenciales en el lugar del examen (PILARES Vivero Nezahualcóyotl); y qué pasa con quien no puede quedarse a recogerla (otro día en el Vivero). Si la credencial no puede imprimirse ese día, se imprime después y la persona la recoge en el Vivero; la foto de la credencial se toma el día del examen. Condiciona la pantalla de emisión y entrega."
     },
     {
       "id": "P11",
@@ -121,14 +121,6 @@
       "recomendacion": "Conservarlo, con el año en que se abrió el expediente. Como es uno por persona, el número no cambia aunque haga trámites en otros años."
     },
     {
-      "id": "P13",
-      "grupo": "liber",
-      "bloquea": "etapa 3",
-      "desde": "2026-10-14",
-      "titulo": "Quién restablece las contraseñas de solicitantes y por qué medio, si el SIA no da correo",
-      "recomendacion": "El personal de revisión genera una contraseña temporal de un solo uso después de verificar la identidad (CURP e identificación), y la persona la cambia al entrar. La base ya tiene la marca para obligar el cambio."
-    },
-    {
       "id": "P14",
       "grupo": "liber",
       "bloquea": "etapa 3",
@@ -138,7 +130,7 @@
     },
     {
       "id": "P15",
-      "grupo": "liber",
+      "grupo": "sia",
       "bloquea": "no",
       "desde": "2026-10-14",
       "titulo": "Contrastar la CURP con el servicio de consulta de RENAPO",
@@ -237,8 +229,8 @@
       "grupo": "sia",
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
-      "titulo": "Cuentas del personal en acceso, recurso apd, con cuatro perfiles",
-      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17), instructor, emisión y consulta. Mientras, las pantallas del personal entran con un perfil ficticio."
+      "titulo": "Cuentas del personal en acceso, recurso apd, con cinco perfiles",
+      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17), instructor, emisión, consulta y administración (parámetros, montos, cupos, desbloqueos y correcciones con motivo). Quién arma los grupos: P92. Mientras, las pantallas del personal entran con un perfil ficticio."
     },
     {
       "id": "P28",
@@ -313,14 +305,6 @@
       "recomendacion": "La firma quien haga la sesión de P33 a P35; con eso se cierra la etapa 1."
     },
     {
-      "id": "P48",
-      "grupo": "direccion",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-14",
-      "titulo": "¿La credencial se imprime en el lugar de entrega?",
-      "recomendacion": "Si se imprime ahí (impresora de credenciales), la foto se toma al entregar, como está. Si se imprime antes, la foto debe tomarse en una visita anterior (cotejo o examen) y el requisito cambia de momento."
-    },
-    {
       "id": "P49",
       "grupo": "direccion",
       "bloquea": "datos reales",
@@ -349,16 +333,8 @@
       "grupo": "sia",
       "bloquea": "etapa 3",
       "desde": "2026-10-15",
-      "titulo": "Cambio de correo en «Mis datos» sin comprobar que el correo nuevo es de la persona",
-      "recomendacion": "Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio."
-    },
-    {
-      "id": "P57",
-      "grupo": "direccion",
-      "bloquea": "datos reales",
-      "desde": "2026-10-15",
-      "titulo": "Hora de entrada al curso",
-      "recomendacion": "Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
+      "titulo": "Cambio de correo en «Mi perfil» sin comprobar que el correo nuevo es de la persona",
+      "recomendacion": "Enviar un enlace de confirmación al correo nuevo y un aviso al anterior (aviso C3; requiere el servicio de correo, P23). Ya construido: el correo nuevo no puede ser el de otra cuenta activa."
     },
     {
       "id": "P63",
@@ -425,20 +401,12 @@
       "recomendacion": "Si el salón tiene menos equipos que el grupo, aplicar el examen en dos turnos el mismo día con preguntas en distinto orden, o bajar el cupo máximo a las computadoras disponibles (el cupo ya es un parámetro editable)."
     },
     {
-      "id": "P78",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "Entrada al examen: código de un solo uso que entrega el aplicador",
-      "recomendacion": "El aplicador pasa lista con identificación oficial y entrega a cada persona un código de examen de un solo uso generado para el grupo; no se entra con la contraseña de la cuenta, para que nadie lo presente fuera del salón. Cada respuesta se guarda en el servidor al contestarla, así quien cambia de computadora sigue con el mismo código; la calificación la calcula el servidor (P29). Construido así en el prototipo del examen (bloque 46, aplicar.html y examen.html): falta tu visto bueno."
-    },
-    {
       "id": "P79",
       "grupo": "direccion",
       "bloquea": "etapa 3",
       "desde": "2026-10-17",
       "titulo": "Aviso a la Dirección cuando en el cotejo no es la persona, y cómo se aclara",
-      "recomendacion": "Cuando el personal marca «No es la persona» la cuenta queda bloqueada (apd.solicitante.bloqueo_motivo = identidad) y la nota queda en la bitácora de la cita. Falta decidir a quién de la Dirección le llega el aviso y por qué medio (recomendación: correo institucional a una cuenta de la Dirección, con folio y nota), qué se le dice a la persona al entrar y cómo se levanta el bloqueo (la Secretaría, con motivo en la bitácora)."
+      "recomendacion": "Cuando el personal marca «No es la persona» la cuenta queda bloqueada (apd.solicitante.bloqueo_motivo = identidad) y la nota queda en la bitácora de la cita. Ya construido: el aviso de cuenta bloqueada al entrar y el bloqueo, que sólo pone o quita la Secretaría con motivo en la bitácora. Falta decidir a quién de la Dirección le llega el aviso (D1) y por qué medio (recomendación: correo institucional a una cuenta de la Dirección, con folio y nota), y cómo se aclara el caso antes de levantar el bloqueo."
     },
     {
       "id": "P80",
@@ -497,20 +465,20 @@
       "recomendacion": "Reportarlo: en examen.html la casilla «Marcarla para revisar», fuera del formulario, volvía «casilla» el campo del código. La herramienta debería leer sólo lo que está dentro del <form>. Mientras, probar-esquemas.mjs extrae el formulario antes de generar el esquema."
     },
     {
+      "id": "P91",
       "grupo": "direccion",
       "bloquea": "etapa 2",
+      "desde": "2026-10-17",
       "titulo": "Horario del curso: hora de entrada y de salida, y si es igual todos los días",
-      "recomendacion": "Preguntar al área. Propuesta: la hora de entrada se fija por grupo al confirmarlo; falta la hora de salida y si cambia algún día (por ejemplo, el día del examen en el PILARES). Se muestra a la persona en «Mis trámites» y en el aviso por correo del grupo.",
-      "id": "P91",
-      "desde": "2026-10-17"
+      "recomendacion": "Preguntar al área. Propuesta: la hora de entrada se fija por grupo al confirmarlo; falta la hora de salida y si cambia algún día (por ejemplo, el día del examen en el PILARES). Se muestra a la persona en «Mis trámites» y en el aviso por correo del grupo. Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
     },
     {
+      "id": "P92",
       "grupo": "direccion",
       "bloquea": "etapa 2",
+      "desde": "2026-10-17",
       "titulo": "Quién arma los grupos",
-      "recomendacion": "Preguntar al área. Propuesta: el mismo perfil «revisión y cotejo» (P27) arma, confirma y cancela grupos; el instructor sólo ve sus grupos y captura asistencia.",
-      "id": "P92",
-      "desde": "2026-10-17"
+      "recomendacion": "Preguntar al área. Propuesta: el mismo perfil «revisión y cotejo» (P27) arma, confirma y cancela grupos; el instructor sólo ve sus grupos y captura asistencia."
     },
     {
       "id": "P93",
@@ -559,6 +527,30 @@
       "desde": "2026-10-17",
       "titulo": "Los botones «Mostrar» de la contraseña y de su confirmación tienen el mismo nombre accesible",
       "recomendacion": "Hallazgo para el estándar (accesibilidad). El núcleo pone «Mostrar la contraseña» en todos los campos de contraseña (mensajes.contrasenaLector es un solo texto); en «Crea tu cuenta» hay dos campos y el lector de pantalla oye dos botones iguales. El botón escrito a mano decía «Mostrar la confirmación de la contraseña». Propuesta: componer el nombre con la etiqueta del campo («Mostrar Confirma tu contraseña») o admitir data-ver-etiqueta."
+    },
+    {
+      "id": "P99",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "El combo abre su lista con cualquier «input», también cuando la página llena el campo sin que la persona esté en él",
+      "recomendacion": "Hallazgo para el estándar (auditoría 2026-10-17). Al retomar un borrador de solicitud, la página escribe la carrera y avisa con un evento input; el combo abre su lista («No está en la lista: se guarda como lo escribiste») y tapa la pregunta siguiente, y además anuncia resultados al lector de pantalla. El proyecto cierra la lista si el campo no tiene el foco (APD.avisa en app/apd.js). Propuesta: que el combo sólo abra su lista cuando la entrada tiene el foco."
+    },
+    {
+      "id": "P100",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-17",
+      "titulo": "Cómo se actualiza una fotografía ya confirmada (renovación, cambio de aspecto)",
+      "recomendacion": "Ya confirmada, la persona no la cambia y en la cita no se toma otra (decisión 2026-10-17); pero debe verse clara para el pase de lista del examen. Recomendación: al iniciar una renovación la persona puede cargar una fotografía nueva, que se vuelve a confirmar contra la identificación en la cita de cotejo. La base conserva la carga por el personal (origen cotejo) por si se prefiere que la tome la Secretaría."
+    },
+    {
+      "id": "P101",
+      "grupo": "liber",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Visto bueno del funcionamiento del examen en línea",
+      "recomendacion": "Por aprobar (DECISIONES, examen): una pregunta por pantalla con orden distinto por persona; el tiempo lo lleva el servidor y al agotarse se envía lo contestado; una pregunta sin contestar cuenta como incorrecta; quien aplica puede suspender con motivo; salir de la ventana no bloquea, se le cuenta a quien aplica. Si ya lo aprobaste, se pasa a resueltos."
     }
   ],
   "resueltos": [
@@ -604,7 +596,7 @@
     },
     {
       "titulo": "Fotografía de la persona",
-      "como": "Obligatoria al crear la cuenta; el personal la confirma en el cotejo o toma una nueva ahí; sin ella no se envía la solicitud ni se concluye el cotejo",
+      "como": "Obligatoria al crear la cuenta; el personal la confirma en el cotejo contra la identificación (desde el 2026-10-17 en la cita no se toma otra); sin ella no se envía la solicitud ni se concluye el cotejo. Tiene que verse clara: quien aplica el examen la usa para confirmar la identidad y la asistencia.",
       "fecha": "2026-10-14"
     },
     {
@@ -628,7 +620,7 @@
       "fecha": "2026-10-15"
     },
     {
-      "titulo": "Mis datos",
+      "titulo": "Mi perfil (antes «Mis datos»)",
       "como": "Pantalla para consultar los datos ligados a la CURP y cambiar contacto, adscripción y, mientras no esté confirmada, la fotografía",
       "fecha": "2026-10-15"
     },
@@ -714,7 +706,7 @@
     },
     {
       "titulo": "archivos dice «Hasta 1 archivos» (P39)",
-      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "como": "Lo resolvió el estándar 1.1.0; se unió a P71.",
       "fecha": "2026-10-17"
     },
     {
@@ -729,7 +721,7 @@
     },
     {
       "titulo": "No hay «mostrar contraseña» (P42)",
-      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "como": "Lo resolvió el estándar 1.1.0 y lo rehízo la 1.2.1 (P73); se unió a P73.",
       "fecha": "2026-10-17"
     },
     {
@@ -819,12 +811,32 @@
     },
     {
       "titulo": "Actualizar el sitio al Estándar de formularios 1.1.0 (P86)",
-      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "como": "El sitio se actualizó al estándar 1.3.1 (bloque 50), que pinta los errores del servidor junto a su campo.",
       "fecha": "2026-10-17"
     },
     {
       "titulo": "El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde (P87)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Entrada al examen con código de un solo uso (P78)",
+      "como": "Aprobado por Liber (bloque 49): quien aplica pasa lista con la fotografía y la identificación de cada persona; «Presente» genera su código de un solo uso; no se entra con la contraseña de la cuenta.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Quién restablece las contraseñas de solicitantes y por qué medio (P13)",
+      "como": "Con la decisión de lanzar sólo con servicio de correo (P23, 2026-10-17), la contraseña se restablece con un enlace de un solo uso enviado por correo (aviso C1); no hay contraseña temporal del personal.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Hora de entrada al curso (P57)",
+      "como": "Se unió a P91 (horario del curso), 2026-10-17.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "¿La credencial se imprime en el lugar de entrega? (P48)",
+      "como": "Se unió a P10 (entrega el mismo día del examen), 2026-10-17. La foto de la credencial se toma el día del examen; en el cotejo no se toma ninguna.",
       "fecha": "2026-10-17"
     }
   ]

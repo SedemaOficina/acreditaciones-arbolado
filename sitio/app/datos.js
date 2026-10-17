@@ -13,7 +13,7 @@
   const { el } = APD;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  const avisa = (c) => { c.dispatchEvent(new Event('input', { bubbles: true })); c.dispatchEvent(new Event('change', { bubbles: true })); };
+  const avisa = (c) => APD.avisa(c);
   const SEXO = { H: 'Hombre', M: 'Mujer', X: 'No binario' };
   const SECCIONES = ['foto', 'contacto', 'adscripcion'];
   const formDe = (k) => document.getElementById(`form-${k}`);

@@ -45,7 +45,6 @@ mkdirSync(join(sitio, 'app'), { recursive: true });
 const plantillaVersion = join(raiz, 'herramientas/plantillas/version');
 cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-visible.js'));
 // La hoja del distintivo es el módulo «version» del estándar (formkit/modulos/version/version.css, mismas clases)
-rmSync(join(sitio, 'app/version-visible.css'), { force: true });
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
 const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'aplicar.html', 'examen.html'];
 for (const p of paginas) {
@@ -73,7 +72,7 @@ rmSync(join(sitio, 'datos/documentos'), { recursive: true, force: true });
 cpSync(join(raiz, 'datos/documentos'), join(sitio, 'datos/documentos'), { recursive: true });
 // Las 16 alcaldías (catálogo inicial de la base, con clave), en orden alfabético: van como opciones de la lista
 // desplegable del fragmento de adscripción (abajo). Empresas ya registradas (tipo privada): catálogo del combo abierto.
-// Arreglo simple: el módulo combo 1.0.0 sólo lee arreglos (P37).
+// Cada catálogo con su fuente, corte y aviso de datos ficticios: {filas, fuente, corte, es_ficticio} (estándar 1.1.0, P37).
 const alcaldias = datos.organizacion.filter((o) => o.activa && o.tipo === 'alcaldia' && o.clave).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 const empresas = datos.organizacion.filter((o) => o.activa && o.tipo === 'privada').map((o) => o.nombre).sort((a, b) => a.localeCompare(b, 'es'));
 // Carreras (apd.carrera): combo abierto que sugiere sólo las aceptadas de manera explícita por la Secretaría
@@ -85,8 +84,8 @@ writeFileSync(join(sitio, 'datos/catalogos.js'), `/* Generado por herramientas/c
    (apd.carrera), corte
    ${datos.fecha_corte}. En producción lo sirve la base. */
 window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
-  empresas: ${JSON.stringify(empresas)},
-  carreras: ${JSON.stringify(carreras)}
+  empresas: { filas: ${JSON.stringify(empresas)}, fuente: 'apd.organizacion (tipo privada)', corte: '${datos.fecha_corte}', es_ficticio: true },
+  carreras: { filas: ${JSON.stringify(carreras)}, fuente: 'apd.carrera (principal, afín o disciplina afín)', corte: '${datos.fecha_corte}', es_ficticio: true }
 });
 `);
 

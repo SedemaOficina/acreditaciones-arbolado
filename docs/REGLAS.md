@@ -25,7 +25,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada; en dictaminador, la carrera clasificada (`carrera_sin_clasificar`) y un perfil que cumple (`perfil_no_cumple`). Las observaciones necesitan un texto general o un documento observado |
 | → rechazada | Revisión (revisión con resultado `rechazada`) | Sólo dictaminador cuyo perfil no cumple (`rechazo_sin_causa`): carrera clasificada como no afín, o estudios que el comprobante confirma por debajo del lineamiento. Motivo obligatorio (`rechazo_sin_motivo`), que se copia a `motivo_cierre`. Es final: la persona puede iniciar otra solicitud |
 | Clasificar una carrera | Personal (`apd.carrera.grupo`) | Sólo el personal (`clasificacion_sin_permiso`); queda en la bitácora y las solicitudes abiertas con esa carrera recalculan perfil y experiencia mínima |
-| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la persona confirmada por el personal (o tomada ahí). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha. Además, todos los documentos en línea coincidieron (`documentos_sin_cotejar`) y la cita quedó atendida (`cotejo_sin_cita`) |
+| → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la cuenta confirmada por el personal (en la cita no se toma otra, decisión 2026-10-17). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha. Además, todos los documentos en línea coincidieron (`documentos_sin_cotejar`) y la cita quedó atendida (`cotejo_sin_cita`) |
 | Cita de cotejo (`apd.cita`) | Personal | La crea la base al validar o al cambiar la cita; con una cita abierta no se asigna otra (`cita_abierta`), y sólo el personal la asigna (`cita_de_personal`). Se cierra una vez (`cita_cerrada`): atendida, en pausa (con un documento marcado como no coincidente, `cotejo_sin_documento`; sólo ese día, `pausa_vencida`), con observaciones (la solicitud regresa), sin pago, no se presentó (a la segunda, la solicitud se cierra: `inasistencias_cotejo_maximas`) o no era la persona (la cuenta queda bloqueada; sólo la Secretaría la bloquea o desbloquea, `bloqueo_de_personal`). En pausa la persona sólo carga el documento que no coincidió. `apd.cerrar_pausas_vencidas()` regresa con observaciones las pausas de días anteriores |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
@@ -57,7 +57,7 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 
 ## Grupos
 
-Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `sede` (Vivero Nezahualcóyotl) si no se indica otra; la cita de cotejo y la entrega también son ahí.
+Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `sede` (Vivero Nezahualcóyotl) si no se indica otra; la cita de cotejo también es ahí; el examen y la entrega del mismo día, en el PILARES Vivero Nezahualcóyotl, dentro del mismo predio.
 
 | Paso | La base exige |
 |---|---|
@@ -108,10 +108,12 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Sexo**: `solicitante.sexo` se calcula de la CURP (columna generada); no se captura. El catálogo trae las 16 alcaldías, SOBSE, SEDEMA
   con sus Direcciones Generales, PAOT y CFE; los nombres escritos se agregan sin duplicar.
 - **Fotografía de la persona** (`apd.fotografia`): una vigente por persona, sólo JPG o PNG. La persona la carga
-  al crear su cuenta y la cambia mientras nadie la confirme; en el cotejo la confirma el personal (con su
-  usuario y fecha, en la bitácora) o toma una nueva, que queda confirmada. Ya confirmada, sólo el personal
-  carga otra. No se modifica ni se borra: la nueva sustituye a la anterior. Tiene que verse clara: el día del
-  examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia (decisión 2026-10-17).
+  al crear su cuenta y la cambia mientras nadie la confirme; en el cotejo la confirma el personal contra la
+  identificación (con su usuario y fecha, en la bitácora); en la cita no se toma otra (decisión 2026-10-17). Ya
+  confirmada, la persona no la cambia; cómo se actualiza: P100 (la base aún admite que el personal cargue una, con
+  origen `cotejo`, sin pantalla que lo use). No se modifica ni se borra: la nueva sustituye a la anterior. Tiene que
+  verse clara: el día del examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia
+  (decisión 2026-10-17).
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
   anterior sin borrarlo.
 - **La hora** sale de `apd.ahora()`. Sólo en una base de pruebas se puede simular; en producción, simularla
@@ -122,11 +124,11 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 104 casos con fechas
-movidas, cupos, permisos y bitácora.
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 160 casos con fechas
+movidas, cupos, permisos y bitácora (resultados de la última corrida: `docs/BITACORA-PROYECTO.md`).
 
-Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y
-`herramientas/probar-esquemas.mjs`); ver `docs/ETAPA-1-PANTALLAS.md`.
+Las pantallas se prueban aparte (`herramientas/probar-sitio.mjs`, `herramientas/probar-esquemas.mjs` y
+`herramientas/probar-examen.mjs`); ver `docs/ETAPA-1-PANTALLAS.md` y `docs/ETAPA-2-PANTALLAS.md`.
 
 **Un correo, una cuenta** (decisión 2026-10-17): al crear una cuenta, activar una del registro anterior o cambiar el
 correo, la base rechaza el de otra cuenta activa (`correo_registrado`; índice `solicitante_correo_uk`, sólo entre cuentas

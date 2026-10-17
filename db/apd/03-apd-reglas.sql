@@ -246,7 +246,7 @@ CREATE TRIGGER solicitud_perfil BEFORE INSERT OR UPDATE ON apd.solicitud
   FOR EACH ROW EXECUTE FUNCTION apd.solicitud_perfil();
 
 -- La institución es del tipo de adscripción que la persona eligió (decisiones 2026-10-15). La adscripción es de
--- la persona (la cambia en «Mis datos»); cada solicitud guarda una copia al darse de alta y al enviarse.
+-- la persona (la cambia en «Mi perfil»); cada solicitud guarda una copia al darse de alta y al enviarse.
 CREATE FUNCTION apd.comprobar_adscripcion(p_adscripcion text, p_organizacion uuid) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
   IF p_organizacion IS NOT NULL
@@ -283,7 +283,7 @@ CREATE FUNCTION apd.mayusculas(t text) RETURNS text
 $f$;
 
 -- Nombre con que se guarda un archivo (decisión 2026-10-15, Liber): TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext,
--- p. ej. CURP_JUAN RAMIREZ OSORIO.pdf. Mayúsculas sin acentos (la Ñ se conserva) y sin caracteres que un
+-- p. ej. CURP_ANA EJEMPLO MUESTRA.pdf. Mayúsculas sin acentos (la Ñ se conserva) y sin caracteres que un
 -- sistema de archivos no admite. Se fija al cargar: si después se corrige el nombre, el archivo conserva el suyo.
 CREATE FUNCTION apd.nombre_de_archivo(p_tipo text, p_persona uuid, p_mime text) RETURNS text
   LANGUAGE sql STABLE AS $f$
@@ -370,15 +370,18 @@ CREATE TRIGGER solicitante_cambio BEFORE UPDATE ON apd.solicitante
   FOR EACH ROW EXECUTE FUNCTION apd.solicitante_cambio();
 
 -- Fotografía de frente de la persona (decisión 2026-10-14, Liber): obligatoria al crear la cuenta; sirve
--- para reconocerla en el cotejo, el curso y el examen. La persona la cambia mientras nadie la haya
--- confirmado; en el cotejo el personal la confirma contra la identificación oficial o toma una nueva, que
--- queda confirmada al cargarse. Una carga nueva sustituye a la anterior sin borrarla.
+-- para reconocerla en el cotejo y el curso, y quien aplica el examen la usa para confirmar su identidad y
+-- su asistencia (por eso debe verse clara). La persona la cambia mientras nadie la haya confirmado; en el
+-- cotejo el personal la confirma contra la identificación oficial y en la cita no se toma otra (decisión
+-- 2026-10-17). La carga del personal (origen cotejo, queda confirmada) se conserva en la base para el caso
+-- de actualizar una fotografía ya confirmada, que está por decidir (P100); hoy ninguna pantalla la usa.
+-- Una carga nueva sustituye a la anterior sin borrarla.
 CREATE FUNCTION apd.fotografia_alta() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE de_personal boolean := apd.contexto('usuario_tipo') = 'personal';
 BEGIN
   IF NOT de_personal AND EXISTS (SELECT 1 FROM apd.fotografia f
                                   WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente AND f.estado = 'confirmada') THEN
-    PERFORM apd.error('foto_confirmada', 'La Secretaría ya confirmó tu fotografía; si hay que cambiarla, se toma en tu próxima cita');
+    PERFORM apd.error('foto_confirmada', 'La Secretaría ya confirmó tu fotografía; ya no se puede cambiar desde tu perfil');
   END IF;
   IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
     PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
@@ -390,7 +393,7 @@ BEGIN
   NEW.cargada_en := apd.ahora();
   NEW.cargada_por := apd.contexto('usuario');
   IF de_personal THEN
-    -- La toma el personal en la cita, frente a la persona: queda confirmada
+    -- La carga el personal frente a la persona: queda confirmada (hoy sin pantalla; P100)
     NEW.origen := 'cotejo';
     NEW.estado := 'confirmada';
     NEW.confirmada_por := NEW.cargada_por;
@@ -420,7 +423,7 @@ BEGIN
   END IF;
   IF NEW.estado IS DISTINCT FROM OLD.estado THEN
     IF OLD.estado = 'confirmada' THEN
-      PERFORM apd.error('foto_confirmada', 'Una fotografía confirmada no se desconfirma: se toma una nueva');
+      PERFORM apd.error('foto_confirmada', 'Una fotografía confirmada no se desconfirma');
     END IF;
     IF NOT OLD.vigente THEN
       PERFORM apd.error('foto_sustituida', 'Sólo se confirma la fotografía vigente');
@@ -789,11 +792,11 @@ BEGIN
       IF NOT EXISTS (SELECT 1 FROM apd.fotografia f WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente) THEN
         PERFORM apd.error('sin_fotografia', 'Carga tu fotografía de frente antes de enviar la solicitud');
       END IF;
-      -- La solicitud se va con la adscripción que la persona tiene hoy en «Mis datos»
+      -- La solicitud se va con la adscripción que la persona tiene hoy en «Mi perfil»
       SELECT p.adscripcion, p.organizacion_id INTO NEW.adscripcion, NEW.organizacion_id
         FROM apd.solicitante p WHERE p.id = NEW.solicitante_id;
       IF NEW.adscripcion IS NULL THEN
-        PERFORM apd.error('sin_adscripcion', 'Indica en «Mis datos» si trabajas para alguna empresa, institución o dependencia');
+        PERFORM apd.error('sin_adscripcion', 'Indica en «Mi perfil» si trabajas para alguna empresa, institución o dependencia');
       END IF;
       IF NEW.enviada_en IS NULL THEN NEW.enviada_en := apd.ahora(); END IF;
     WHEN 'con_observaciones' THEN
@@ -842,16 +845,16 @@ BEGIN
               AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'cotejo'
               AND NOT EXISTS (SELECT 1 FROM apd.documento d
                                WHERE d.solicitud_id = NEW.id AND d.requisito = rc.requisito AND d.vigente)) THEN
-        PERFORM apd.error('sin_factura', 'Carga la factura del pago de derechos para concluir el cotejo');
+        PERFORM apd.error('sin_factura', 'Cargue la factura del pago de derechos para concluir el cotejo');
       END IF;
       IF OLD.estado = 'validada_en_linea' AND (coalesce(NEW.factura_rfc, '') = '' OR coalesce(trim(NEW.factura_razon_social), '') = ''
                                               OR coalesce(NEW.factura_folio_fiscal, '') = '') THEN
-        PERFORM apd.error('sin_datos_factura', 'Captura el RFC, el nombre o razón social y el folio fiscal de la factura');
+        PERFORM apd.error('sin_datos_factura', 'Capture el RFC, el nombre o razón social y el folio fiscal de la factura');
       END IF;
-      -- En el cotejo el personal confirma que la fotografía es de quien se presentó, o toma una nueva
+      -- En el cotejo el personal confirma que la fotografía es de quien se presentó (en la cita no se toma otra)
       IF OLD.estado = 'validada_en_linea' AND NOT EXISTS (
            SELECT 1 FROM apd.fotografia f WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente AND f.estado = 'confirmada') THEN
-        PERFORM apd.error('foto_sin_confirmar', 'Confirma que la fotografía corresponde a la persona, o tómale una nueva, para concluir el cotejo');
+        PERFORM apd.error('foto_sin_confirmar', 'Confirme que la fotografía de la cuenta corresponde a la persona para concluir el cotejo');
       END IF;
       -- Todos los documentos en línea coincidieron con los que trajo la persona, y la cita quedó atendida
       IF OLD.estado = 'validada_en_linea' AND EXISTS (
@@ -1194,7 +1197,7 @@ CREATE TRIGGER documento_cambio BEFORE UPDATE ON apd.documento
   FOR EACH ROW EXECUTE FUNCTION apd.documento_cambio();
 
 -- ───────────────────────────── Grupos ─────────────────────────────
--- Decisiones de cursos y grupos (2026-10-14): cupo 10–25 copiado al crear; ningún grupo abre con menos
+-- Decisiones de cursos y grupos (2026-10-14): cupo 5–25 copiado al crear; ningún grupo abre con menos
 -- del mínimo; grupos específicos (una organización) o combinados; los cuatro cursos no se mezclan.
 
 CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -1292,7 +1295,7 @@ BEGIN
     END IF;
   END IF;
   IF NEW.estado = 'cancelado' AND coalesce(trim(NEW.motivo_cancelacion), '') = '' THEN
-    PERFORM apd.error('cancelacion_sin_motivo', 'Indica el motivo de la cancelación');
+    PERFORM apd.error('cancelacion_sin_motivo', 'Indique el motivo de la cancelación');
   END IF;
   NEW.estado_desde := apd.ahora();
   RETURN NEW;
@@ -1375,7 +1378,7 @@ BEGIN
   END IF;
   IF OLD.activa AND NOT NEW.activa THEN
     IF coalesce(trim(NEW.motivo_baja), '') = '' THEN
-      PERFORM apd.error('baja_sin_motivo', 'Indica el motivo de la baja');
+      PERFORM apd.error('baja_sin_motivo', 'Indique el motivo de la baja');
     END IF;
     IF EXISTS (SELECT 1 FROM apd.examen WHERE inscripcion_id = NEW.id) THEN
       PERFORM apd.error('baja_con_examen', 'No se da de baja a quien ya presentó examen');

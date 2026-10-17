@@ -37,7 +37,7 @@ const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada
 
 // ── Personas para cada camino, elegidas de los datos (no fijadas a mano) ──
 const persona = (id) => datos.solicitante.find((p) => p.id === id);
-// Persona con cuenta activa y adscrita a una empresa: para «Mis datos»
+// Persona con cuenta activa y adscrita a una empresa: para «Mi perfil»
 const CON_ORG = datos.solicitante.find((p) => p.estado === 'activa' && p.adscripcion === 'privada');
 const conObs = datos.solicitud.find((s) => s.estado === 'con_observaciones');
 const ultimaDe = (p, tipo) => datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === tipo).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];
@@ -200,7 +200,6 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(['Mujer', 'Hombre'].includes(await page.inputValue('#sexo')), t(`cuenta: el sexo se toma de la CURP (${await page.inputValue('#sexo')})`));
   // Datos internos: en la versión de prueba se ven en amarillo con su nota; sin el modo de prueba, no se ven
   comprueba(await page.isVisible('[data-campo="sexo"] .nota-interna'), t('datos internos: en la versión de prueba el sexo se ve con su nota'));
-  comprueba(!(await page.isVisible('[data-campo="sin_segundo_apellido"] .nota-interna')), t('datos internos: lo que no se guarda en la base (sin segundo apellido) no se muestra'));
   const ocultoEnProduccion = await page.evaluate(() => {
     document.documentElement.classList.remove('modo-pruebas');
     const r = getComputedStyle(document.querySelector('[data-campo="sexo"]')).display === 'none';
@@ -326,8 +325,11 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForFunction(() => document.querySelector('input[name="tipo"][value="poda"]').checked);
   comprueba(await page.isDisabled('input[name="tipo"][value="dictaminador"]'), t('solicitud: dictaminador deshabilitado sin poda vigente, con su motivo'));
   comprueba(/solicitud nueva/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud: informa que le corresponde una solicitud nueva (no lo pregunta)'));
+  // El dato calculado «tramite» (data-auxiliar) se ve en la versión de prueba como dato interno, con su valor
+  comprueba(await page.waitForFunction(() => { const o = document.querySelector('#tramite').closest('[data-interno]').querySelector('[data-interno-valor]'); return o && o.textContent === 'poda_nueva'; }, null, { timeout: 3000 }).then(() => true, () => false),
+    t('datos internos: el curso calculado (poda_nueva) se ve en la versión de prueba'));
   comprueba(/Independiente/.test(await page.textContent('[data-adscripcion-texto]')),
-    t('solicitud: muestra la adscripción de la persona con la que se enviará (se cambia en «Mis datos»)'));
+    t('solicitud: muestra la adscripción de la persona con la que se enviará (se cambia en «Mi perfil»)'));
   comprueba(await page.$eval('#nivel_estudios', (e) => e.tagName === 'SELECT' && e.options.length === 10), t('estudios: el nivel es una lista desplegable con 9 niveles'));
   await page.selectOption('#nivel_estudios', 'tecnica');
   comprueba(!(await page.isVisible('[data-campo="carrera"]')) && !(await page.isVisible('[data-campo="estatus_estudios"]')),

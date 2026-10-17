@@ -4,3 +4,5 @@ node_modules/
 *.log
 .DS_Store
 _to_delete/
+# Capturas de la auditoría (se regeneran con npm run auditar; los hallazgos sí se guardan)
+verificacion/auditoria/capturas/

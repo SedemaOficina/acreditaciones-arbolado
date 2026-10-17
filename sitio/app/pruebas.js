@@ -70,7 +70,7 @@
   }
 
   /* ----- Utilidades de llenado ----- */
-  const avisa = (c) => { c.dispatchEvent(new Event('input', { bubbles: true })); c.dispatchEvent(new Event('change', { bubbles: true })); };
+  const avisa = (c) => APD.avisa(c);
   function pon(id, valor) { const c = document.getElementById(id); if (c && !c.readOnly && !c.disabled) { c.value = valor; avisa(c); } }
   function elige(nombre, valor) {
     const r = form.querySelector(`input[name="${nombre}"]${valor ? `[value="${valor}"]` : ''}:not(:disabled)`);

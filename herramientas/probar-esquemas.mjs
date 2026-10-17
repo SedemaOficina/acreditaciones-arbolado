@@ -2,7 +2,7 @@
 // Estándar de formularios del SIA y comprueba con su validar.mjs que el servidor acepta lo correcto y rechaza
 // lo incorrecto, con las mismas reglas que el navegador.
 //
-// Uso: node herramientas/probar-esquemas.mjs <ruta-al-clon-de-estandar-formularios>
+// Uso: node herramientas/probar-esquemas.mjs <ruta-a-estandares-sia/formularios>
 // Escribe db/esquemas-formularios/<formulario>.json (generados; no se editan a mano).
 
 import { execFileSync } from 'node:child_process';
@@ -13,7 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const estandar = process.argv[2];
-if (!estandar) { console.error('Uso: node herramientas/probar-esquemas.mjs <ruta-al-clon-de-estandar-formularios>'); process.exit(2); }
+if (!estandar) { console.error('Uso: node herramientas/probar-esquemas.mjs <ruta-a-estandares-sia/formularios>'); process.exit(2); }
 const { validaPayload } = await import(pathToFileURL(join(estandar, 'codigo/servidor/validar.mjs')).href);
 // Las cruzadas CURP ↔ nombre, apellidos y fecha, y los formatos fecha-dma y folio-fiscal, son del estándar desde la
 // 1.1.0–1.3.0: ya no se suman reglas propias. Sí se suman el formato del código de examen (examen en línea) y la
@@ -111,12 +111,12 @@ function calcula(form, d, ctx) {
 const auxiliaresDe = (form, ctx) => Object.fromEntries(Object.entries(esquema[form].campos || {})
   .filter(([, c]) => c.tipo === 'auxiliar').map(([n]) => [n, (datos) => calcula(form, datos, ctx)[n]]));
 // El mínimo de experiencia según el perfil (data-min-segun="experiencia"), con la misma regla de la página
-const limitesSegun = { experiencia: (r) => globalThis.APD_PERFIL.minimoExperiencia(ficticiosPerfil, r) };
+const limitesSegun = { experiencia: (r) => globalThis.APD_PERFIL_ACADEMICO.minimoExperiencia(ficticiosPerfil, r) };
 const REQUISITOS_EN_LINEA = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia'];
 // El catálogo cerrado de alcaldías, como lo tendrá la API (el mismo que genera construir-sitio.mjs)
 const orgs = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8')).organizacion;
 const ficticios = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
-const catalogos = { empresas: orgs.filter((o) => o.tipo === 'privada').map((o) => o.nombre), carreras: ficticios.carrera.map((c) => c.nombre) };
+const catalogos = { empresas: { filas: orgs.filter((o) => o.tipo === 'privada').map((o) => o.nombre), fuente: 'apd.organizacion', es_ficticio: true }, carreras: { filas: ficticios.carrera.map((c) => c.nombre), fuente: 'apd.carrera', es_ficticio: true } };
 const ficticiosPerfil = ficticios;
 // Los archivos llegan sólo en payload.archivos: desde la 1.1.0 el servidor ya no necesita su número en `datos` (P46).
 function caso(nombre, form, datos, espera, archivos = []) {

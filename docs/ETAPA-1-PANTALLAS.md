@@ -9,10 +9,10 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | Página | Forma | Qué hace | Módulos del estándar |
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
-| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento (escrita como día/mes/año, sin calendario: formato propio `fecha-dma`, P70), CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), sexo (tomado de la CURP, sólo lectura), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, adscripción (fragmento compartido con «Mis datos»), contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, opciones, otro, combo, tooltip, modal, copiar, acuse |
+| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento (escrita como día/mes/año, sin calendario: formato `fecha-dma` y módulo `fecha` del estándar, P70), CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), sexo (tomado de la CURP, sólo lectura), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, adscripción (fragmento compartido con «Mi perfil»), contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, opciones, otro, combo, fecha, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. En la versión de prueba, una línea con la contraseña de las personas de ejemplo; escogerlas se hace desde el menú de pruebas | identificadores |
 | `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado —«En revisión documental»…—, qué sigue, cita con datos de pago —concepto, monto y referencia en amarillo «por confirmar»— y aviso de llevar la identificación para confirmar la fotografía, folio de la solicitud, expediente de la persona, con grupo: preséntate el, el curso termina el, sede; observaciones; asistencia y calificación mientras es el resultado; acreditación emitida: folio, inicio y fin de vigencia; lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
-| `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), la adscripción con que se enviará (se cambia en «Mis datos»), estudios en los dos tipos (último nivel en lista desplegable → con licenciatura o posgrado, carrera con autocompletado y situación del grado); en dictaminador, además, experiencia, con el mínimo que pide su perfil y aviso si no cumple · **Documentos** (generados del catálogo; sólo PDF; la CURP con su enlace a gob.mx) · **Revisión** (cada documento con su nombre nuevo y, debajo, el archivo que subió), declaración bajo protesta de decir verdad, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
+| `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), la adscripción con que se enviará (se cambia en «Mi perfil»), estudios en los dos tipos (último nivel en lista desplegable → con licenciatura o posgrado, carrera con autocompletado y situación del grado); en dictaminador, además, experiencia, con el mínimo que pide su perfil y aviso si no cumple · **Documentos** (generados del catálogo; sólo PDF; la CURP con su enlace a gob.mx) · **Revisión** (cada documento con su nombre nuevo y, debajo, el archivo que subió), declaración bajo protesta de decir verdad, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
 | `datos.html` | «Mi perfil», por partes | Cabeza con fotografía (en la prueba, la cargada en ese navegador; si no, iniciales), nombre y estado de la fotografía, con «Cambiar fotografía» mientras no esté confirmada; datos de identidad de sólo lectura (CURP, fecha de nacimiento, expediente; el sexo sólo como dato interno); contacto y adscripción escritos, cada uno con «Editar» que abre su formulario (adscripción: el fragmento compartido con la cuenta). Una parte a la vez; «Cancelar» cierra sin guardar. `?volver=` ofrece regresar a la solicitud | opciones, otro, combo, archivos |
 | `verificar.html` | Una página | Verificación pública por número de acreditación: nombre, tipo, fechas y «Vigente / No vigente» | identificadores |
 
@@ -28,7 +28,7 @@ se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
 2. **En esta pantalla**, sólo lo que aplica (si nada aplica, no aparece): llenar con datos ficticios (cuenta —con una
    fotografía ficticia dibujada en el navegador—, solicitud y verificar); crear la cuenta de alguien del registro
    anterior con su CURP (cuenta); llenar CURP y contraseña con un caso (entrar); ir al paso (solicitud); cómo responde el
-   envío —normal, falla, límite, lento— (cuenta, mis datos, entrar y solicitud).
+   envío —normal, falla, límite, lento— (cuenta, mi perfil, entrar y solicitud).
 3. **Entrar como**: los casos de prueba con nombre de `app/casos-prueba.js`, agrupados por etapa (sin trámite, solicitud
    en curso, renovación, solicitud terminada, personal), con una línea de qué se puede probar. Cada caso busca en los
    ficticios la primera persona que lo cumple; la prueba del sitio comprueba que todos la encuentran.
@@ -68,8 +68,13 @@ Orden de carga en cada página (contrato del estándar):
 | `app/config-cuenta.js` | Las cruzadas CURP ↔ nombre, apellidos y fecha son del estándar (`curp-nombre`, `curp-segundo-apellido`, `curp-fecha-dma`). Envío simulado: CURP con cuenta → rechazo con motivo; CURP del registro de Kobo → activa y muestra historial; nueva → cuenta |
 | `app/config-entrar.js` | Acceso simulado (contraseña ficticia común) y regreso a la pantalla pedida |
 | `app/config-solicitud.js` | `archivos`: 5 MB, sólo PDF, 1 por documento (parámetro de la base y `apd.requisito.formatos`). `limitesSegun.experiencia`: mínimo de años según el perfil (`data-min-segun`). Envío simulado con folio `APD-S-AAAA-NNNNN` |
+| `app/config-datos.js` | «Mi perfil»: guardado simulado de cada parte (contacto, adscripción, fotografía); en la etapa 3, la API con los esquemas `perfil-*.json` |
 | `app/config-verificar.js` | Consulta a la vista `apd.verificacion_publica` |
 | `datos/catalogos.js` | Las 16 alcaldías (generado del catálogo inicial de la base) |
+
+La configuración de las pantallas del personal y del examen (`config-cotejo.js`, `config-corregir.js`, `config-examen.js`
+y `config-usted.js`, que pone en usted los textos del estándar) se describe en el encabezado de cada archivo; ver
+`docs/ETAPA-2-PANTALLAS.md`.
 
 Todas aceptan `?simular=error | limite | lento` para ver las pantallas de fallo. No hay mapa: el proyecto no
 pide ubicación (decisión 4 del SIA).
@@ -77,13 +82,13 @@ pide ubicación (decisión 4 del SIA).
 ## 4. Validación en el servidor
 
 ```sh
-node herramientas/probar-esquemas.mjs <ruta-al-estandar>
+node herramientas/probar-esquemas.mjs ../estandares-sia/formularios
 ```
 
 Regenera `db/esquemas-formularios/<formulario>.json` con `herramientas/esquema-desde-html.mjs` del estándar
-y prueba 36 casos con su `codigo/servidor/validar.mjs` (lo correcto pasa; cuenta sin fotografía o con la fotografía en PDF, CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
+y prueba cada esquema con su `codigo/servidor/validar.mjs` (lo correcto pasa; cuenta sin fotografía o con la fotografía en PDF, CURP con dígito incorrecto, CURP ajena, otro segundo apellido u otra fecha de nacimiento,
 confirmaciones distintas, contraseña corta, documentos faltantes por trámite y valores fuera de rango se
-rechazan). En la etapa 3 la API:
+rechazan; resultados de la última corrida: bitácora, bloque 50 y siguientes). En la etapa 3 la API:
 
 - valida cada envío con `validaPayload(payload, esquema)` antes de tocar la base;
 - separa `tramite` en `tipo_acreditacion` y `modalidad`, y **no confía** en `anterior`: la acreditación que se
@@ -99,7 +104,7 @@ rechazan). En la etapa 3 la API:
    que corresponde va en un dato calculado `tramite` (`<input type="hidden" data-auxiliar>` del estándar, que no viaja
    al servidor) y de él dependen los documentos. El servidor calcula `tramite` por su cuenta (`validaPayload(…, { auxiliares })`).
 2. **CURP con dígito verificador también en la base** (`apd.curp_valida`): estructura, entidad y dígito, igual
-   que el estándar. Las CURP ficticias pasaron a `XAXX…NEXXX0d`, válidas en formato. 71 de 71 pruebas de la base.
+   que el estándar. Las CURP ficticias pasaron a `XAXX…NEXXX0d`, válidas en formato (en su momento, 71 de 71 pruebas de la base).
 3. **Contraseña ficticia** `Prueba-ficticia-2026`: la anterior tenía 11 caracteres y el estándar pide 12.
 4. **Experiencia en medios años** (`step 0.5`): un dato ficticio tenía 2.5 años y la base admite un decimal.
 5. **Distintivo de versión** con el módulo `version` del estándar (antes, una hoja propia con sus tokens) y dentro del pie, para pasar el auditor de CSS y la regla de regiones de axe.
@@ -132,14 +137,21 @@ no lleva estas soluciones provisionales (bitácora, bloque 50). La tabla queda c
 
 Automática (Chromium 390 × 844 táctil y 1280 × 900):
 
-- `herramientas/probar-sitio.mjs`: **137 comprobaciones correctas** — inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
+- `herramientas/probar-sitio.mjs`: inicio, cuenta nueva (sin fotografía no se crea; la de PDF se rechaza; cámara frontal), cuenta del registro de Kobo,
   solicitud de poda nueva, renovación, dictaminador nueva con perfil y 7 documentos, corrección de observaciones
   (sólo lo observado es obligatorio), grupo asignado, error de acceso, verificación vigente y no vigente,
-  fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas; sin errores de consola ni desborde horizontal; **axe-core sin hallazgos** en 8 pantallas.
-- `auditar-campos.mjs`: 74 campos correctos (uso, finalidad, autocompletado, sensibilidad, teclado).
-- `auditor-css.mjs` sobre `apd.css` y `version-visible.css`: 0 hallazgos.
-- `probar-esquemas.mjs`: 36 de 36. `probar-base.sh`: 104 de 104.
-- Capturas en `verificacion/capturas/` (10 pantallas × 2 anchos).
+  fallo de envío, CURP ajena o con otra fecha rechazada, menú de pruebas, y las pantallas del personal
+  (`docs/ETAPA-2-PANTALLAS.md`); sin errores de consola ni desborde horizontal; **axe-core** en cada pantalla y estado
+  que recorre.
+- `herramientas/probar-examen.mjs`: examen en línea de punta a punta (`aplicar.html` y `examen.html`), con axe.
+- `auditar-campos.mjs`: uso, finalidad, autocompletado, sensibilidad y teclado de cada campo.
+- `auditor-css.mjs` sobre `apd.css` (el distintivo de versión ya es el módulo `version` del estándar).
+- `herramientas/auditar-sitio.mjs` (`npm run auditar`): todas las pantallas en teléfono y escritorio (consola, enlaces,
+  encimados, objetivos táctiles, botones sin efecto); resultado en `verificacion/auditoria/`.
+- `probar-esquemas.mjs` y `probar-base.sh`: ver «Validación en el servidor» y `docs/REGLAS.md`.
+- Capturas en `verificacion/capturas/` (cada pantalla y estado, en teléfono y escritorio).
+
+Resultados de la última corrida de cada prueba: bitácora (`docs/BITACORA-PROYECTO.md`), bloque 50 y siguientes.
 
 Lista para personas (`docs/08` del estándar, sección 2) — **pendiente**, no se pudo hacer en el entorno de construcción:
 
@@ -159,6 +171,6 @@ Todo está numerado en `docs/PENDIENTES.md`.
 
 ## 8 bis. Resumen (no es de esta etapa)
 
-Acceso real y sesiones (etapa 3), recuperación de contraseña (pendiente 2), correo institucional (pregunta 1 al
-SIA), aviso de privacidad (pendiente 1), lugar de la cita y de la sede (pendiente 11), titularidad al activar
-una cuenta del registro de Kobo (pendiente 10).
+Acceso real y sesiones (etapa 3), recuperación de contraseña (por correo: P13 resuelto con P23), correo institucional
+(P23, condición de lanzamiento; pregunta 1 al SIA), aviso de privacidad (P31), dirección del Vivero Nezahualcóyotl
+(P68; sede única, P09 resuelto), titularidad al activar una cuenta del registro de Kobo (P14).

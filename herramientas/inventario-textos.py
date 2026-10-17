@@ -176,8 +176,8 @@ dinamicos = [
     # Cuenta y entrar (mensajes que devuelve el servidor)
     ('Crea tu cuenta', 'Al crear la cuenta', 'Error', 'Si ya hay una cuenta con esa CURP', 'Ya hay una cuenta con esta CURP. Entra con ella; si no recuerdas tu contraseña, pide ayuda a la Secretaría.', D('config-cuenta.js')),
     ('Crea tu cuenta', 'Al crear la cuenta', 'Error', 'CURP del registro de Kobo con otro nombre', 'Tu nombre no coincide con el registro anterior de la Secretaría para esta CURP. Acude a la Secretaría para aclararlo.', D('config-cuenta.js')),
-    ('Crea tu cuenta', 'CURP', 'Error', 'Si la CURP no corresponde al nombre y apellidos', 'La CURP no corresponde con el nombre y los apellidos que escribiste. Escríbelos tal como aparecen en tu CURP.', D('curp-nombre.js')),
-    ('Crea tu cuenta', 'CURP', 'Error', 'Si la CURP indica segundo apellido y no se escribió', 'Tu CURP indica que tienes segundo apellido. Escríbelo tal como aparece en tu CURP.', D('curp-nombre.js')),
+    ('Crea tu cuenta', 'CURP', 'Error', 'Si la CURP no corresponde al nombre y apellidos', 'La CURP no corresponde con el nombre y los apellidos que escribiste. Escríbelos tal como aparecen en tu CURP.', 'Estándar de formularios (cruzada curp-nombre, sitio/formkit/js/validaciones.config.js)'),
+    ('Crea tu cuenta', 'CURP', 'Error', 'Si la CURP indica segundo apellido y no se escribió', 'Tu CURP indica que tienes segundo apellido. Escríbelo tal como aparece en tu CURP.', 'Estándar de formularios (cruzada curp-segundo-apellido, sitio/formkit/js/validaciones.config.js)'),
     ('Entrar', 'Entra a tu cuenta', 'Error', 'CURP del registro de Kobo sin cuenta', 'Esta CURP tiene acreditaciones anteriores, pero todavía no tiene cuenta. Crea tu cuenta con ella para verlas.', D('config-entrar.js')),
     ('Entrar', 'Entra a tu cuenta', 'Error', 'CURP o contraseña incorrectas', 'La CURP o la contraseña no coinciden. Revisa ambas e intenta de nuevo.', D('config-entrar.js')),
     # Mis datos

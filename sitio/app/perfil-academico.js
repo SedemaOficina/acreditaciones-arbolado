@@ -39,5 +39,5 @@
     const p = perfilAcademico(catalogo, r.nivel_estudios, superior ? r.estatus_estudios || '' : '', superior ? r.carrera || '' : '');
     return p && p.minimo ? p.minimo : 0;
   }
-  global.APD_PERFIL = { perfilAcademico, minimoExperiencia, normaliza, SUPERIORES, BASICOS, MINIMOS };
+  global.APD_PERFIL_ACADEMICO = { perfilAcademico, minimoExperiencia, normaliza, SUPERIORES, BASICOS, MINIMOS };
 }(typeof window !== 'undefined' ? window : globalThis));

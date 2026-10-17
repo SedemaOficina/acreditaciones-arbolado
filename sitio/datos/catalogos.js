@@ -3,6 +3,6 @@
    (apd.carrera), corte
    2026-10-14. En producción lo sirve la base. */
 window.FORMKIT_CATALOGOS = Object.assign(window.FORMKIT_CATALOGOS || {}, {
-  empresas: ["Jardines Ejemplo del Norte, S.A. de C.V.","Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos"],
-  carreras: ["Agronomía","Biología","Ciencias Forestales","Ingeniería Agrónoma","Ingeniería Forestal"]
+  empresas: { filas: ["Jardines Ejemplo del Norte, S.A. de C.V.","Podas y Paisajes Muestra, Sociedad Cooperativa de Producción de Servicios Ambientales Urbanos"], fuente: 'apd.organizacion (tipo privada)', corte: '2026-10-14', es_ficticio: true },
+  carreras: { filas: ["Agronomía","Biología","Ciencias Forestales","Ingeniería Agrónoma","Ingeniería Forestal"], fuente: 'apd.carrera (principal, afín o disciplina afín)', corte: '2026-10-14', es_ficticio: true }
 });

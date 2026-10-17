@@ -163,7 +163,7 @@
         }
       }
     }
-    if (s.estado === 'aprobada') sigue = 'Aprobaste el examen. La Secretaría emite tu acreditación; aquí verás cuándo puedes recogerla.';
+    if (s.estado === 'aprobada') sigue = 'Aprobaste el examen. Recoge tu credencial hoy mismo, en la sede, antes de irte: ahí te toman la fotografía que lleva y firmas el comprobante de recepción.';
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.motivo_cierre) pares.push([s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo', APD.limpia(s.motivo_cierre)]);

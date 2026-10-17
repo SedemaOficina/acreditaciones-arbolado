@@ -18,10 +18,7 @@
   const { el } = APD;
   const form = document.getElementById('formulario');
   const radios = (nombre) => Array.from(form.querySelectorAll(`input[name="${nombre}"]`));
-  const avisa = (control) => {
-    control.dispatchEvent(new Event('input', { bubbles: true }));
-    control.dispatchEvent(new Event('change', { bubbles: true }));
-  };
+  const avisa = (control) => APD.avisa(control);
 
   /* Marca una opción y deshabilita las demás (no aplican al caso de la persona). */
   function fija(nombre, valor) {

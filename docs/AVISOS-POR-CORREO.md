@@ -12,7 +12,7 @@ Prioridad:
 
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
-| C1 | Restablecer la contraseña | Enlace de un solo uso con vigencia corta (sustituye la contraseña temporal del personal, P13) | Indispensable |
+| C1 | Restablecer la contraseña | Enlace de un solo uso con vigencia corta; no hay contraseña temporal del personal (P13, resuelto con P23) | Indispensable |
 | C2 | Cuenta creada | Bienvenida y enlace para confirmar que el correo es suyo | Recomendable |
 | C3 | Cambio de correo o de contraseña | Aviso al correo anterior, con qué hacer si no fue la persona; confirmación en el nuevo (P55) | Recomendable |
 | C4 | Cuenta bloqueada por intentos fallidos | Hasta cuándo y cómo restablecer la contraseña | Recomendable |
@@ -40,10 +40,10 @@ Prioridad:
 
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
-| G1 | Inscrita en un grupo | Fechas del curso, horario de entrada, sede y asistencia mínima | Indispensable |
+| G1 | Inscrita en un grupo | Se envía al confirmar el grupo, al menos 7 días antes del curso (`dias_anticipacion_grupo`), o al agregarla a un grupo ya confirmado: fechas del curso, horario de entrada, sede y asistencia mínima | Indispensable |
 | G2 | Cambio o cancelación del grupo, o baja | Qué cambió y qué sigue (regresa a la espera con su antigüedad) | Indispensable |
 | G3 | Un día antes del curso | Recordatorio | Recomendable |
-| G4 | Resultado del examen | Aprobada, no acreditada o sin derecho a examen, con calificación y asistencia | Recomendable (se le dice el mismo día en la sede) |
+| G4 | Resultado del examen | Aprobada, no acreditada o sin derecho a examen, con calificación y asistencia; si aprobó, que recoge su credencial ese mismo día | Recomendable (se le dice el mismo día en la sede) |
 
 ## 5. Acreditación y vigencia
 

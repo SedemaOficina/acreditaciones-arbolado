@@ -52,7 +52,11 @@
     <!-- Curso que corresponde (tipo + nueva o renovación). No es una pregunta: lo calcula app/solicitud.js a
          partir del tipo elegido y del historial, y de él dependen los documentos. El servidor lo calcula por su
          cuenta. Va fuera de los pasos para no aparecer en la revisión. -->
-    <input type="hidden" id="tramite" name="tramite" value="" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página." data-interno="Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad." data-interno-etiqueta="Curso que corresponde (calculado)">
+    <!-- El dato calculado es el input (contrato data-auxiliar del estándar); la caja que lo envuelve sólo lo muestra en la
+         versión de prueba como dato interno (app/pruebas.js). -->
+    <div data-interno="Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad." data-interno-etiqueta="Curso que corresponde (calculado)">
+      <input type="hidden" id="tramite" name="tramite" value="" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página.">
+    </div>
 
     <!-- Paso 1 · Trámite -->
     <section class="tarjeta" data-paso data-titulo="Trámite" hidden>

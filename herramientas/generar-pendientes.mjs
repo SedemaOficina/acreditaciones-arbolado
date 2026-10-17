@@ -27,7 +27,8 @@ pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resu
 \`docs/DECISIONES.md\`.
 
 Actualizado: ${fecha(datos.actualizado)}. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
-primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa etapa; *no* = se puede avanzar.
+primer dato real; *lanzamiento* = antes de abrir el sistema al público; *SIA* = antes de pasar al SIA; *etapa N* =
+antes de cerrar esa etapa; *no* = se puede avanzar.
 `;
 for (const g of datos.grupos) {
   const lista = datos.pendientes.filter((p) => p.grupo === g.id);

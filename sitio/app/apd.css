@@ -22,7 +22,6 @@
 .sesion-enlaces { display: flex; flex-wrap: wrap; gap: var(--e-3); }
 
 .seccion { display: grid; gap: var(--e-4); margin-block-end: var(--e-7); }
-.seccion-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); }
 
 .ficha { display: grid; gap: var(--e-3); padding: var(--e-seccion); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
 .ficha-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-2); }
@@ -150,7 +149,6 @@
 .doc-titulo { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); }
 .doc-archivo { margin: 0; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; }
 .doc-corregido { display: inline-flex; margin-inline-start: var(--e-2); }
-.doc-vista summary { display: inline-flex; align-items: center; min-height: var(--objetivo-min); color: var(--azul); text-decoration: underline; cursor: pointer; }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
 .acciones-izq { justify-content: flex-start; }
 
@@ -204,3 +202,7 @@
 .perfil-foto-grande { width: calc(var(--e-11) * 1.4); }
 .pago-datos { padding: var(--e-3) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
 .pago-datos .datos { margin: 0; }
+
+/* Versión de prueba (auditoría 2026-10-17): en computadora el visor fijo termina arriba del botón «Menú de pruebas»,
+   para que el botón no tape el documento que se revisa */
+@media (min-width: 1024px) { .modo-pruebas .visor { height: calc(100dvh - var(--e-6) - var(--objetivo-min) - var(--e-4)); } }

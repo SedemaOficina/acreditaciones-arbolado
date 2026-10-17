@@ -187,7 +187,7 @@ COMMENT ON COLUMN apd.solicitante.nombre IS 'Nombre(s)';
 COMMENT ON COLUMN apd.solicitante.primer_apellido IS 'Primer apellido';
 COMMENT ON COLUMN apd.solicitante.segundo_apellido IS 'Segundo apellido, si lo hay';
 COMMENT ON COLUMN apd.solicitante.sexo IS 'H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada';
-COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar';
+COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mi perfos»; vacía sólo en cuentas del padrón migrado sin activar';
 COMMENT ON COLUMN apd.solicitante.organizacion_id IS 'Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente';
 COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta';
 COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos';
@@ -227,7 +227,7 @@ CREATE TABLE apd.fotografia (
   CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))
 );
 CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente;
-COMMENT ON TABLE apd.fotografia IS 'Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.';
+COMMENT ON TABLE apd.fotografia IS 'Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en el curso; quien aplica el examen la usa para confirmar su identidad y su asistencia, por eso debe verse clara. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta (en la cita no se toma otra). No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.';
 COMMENT ON COLUMN apd.fotografia.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.fotografia.solicitante_id IS 'Persona';
 COMMENT ON COLUMN apd.fotografia.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
@@ -235,7 +235,7 @@ COMMENT ON COLUMN apd.fotografia.tipo_mime IS 'image/jpeg o image/png';
 COMMENT ON COLUMN apd.fotografia.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.fotografia.sha256 IS 'Suma del archivo, para comprobar el almacén';
 COMMENT ON COLUMN apd.fotografia.nombre_archivo IS 'Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla';
-COMMENT ON COLUMN apd.fotografia.origen IS 'en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base';
+COMMENT ON COLUMN apd.fotografia.origen IS 'en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100). Lo pone la base';
 COMMENT ON COLUMN apd.fotografia.estado IS 'pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó';
 COMMENT ON COLUMN apd.fotografia.vigente IS 'Es la última fotografía de la persona';
 COMMENT ON COLUMN apd.fotografia.cargada_en IS 'Carga';
@@ -472,7 +472,7 @@ COMMENT ON COLUMN apd.documento.solicitud_id IS 'Solicitud';
 COMMENT ON COLUMN apd.documento.requisito IS 'Requisito que atiende';
 COMMENT ON COLUMN apd.documento.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
 COMMENT ON COLUMN apd.documento.nombre_original IS 'Nombre con que se cargó';
-COMMENT ON COLUMN apd.documento.nombre_archivo IS 'Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_JUAN RAMIREZ OSORIO.pdf). Lo pone la base al cargarlo';
+COMMENT ON COLUMN apd.documento.nombre_archivo IS 'Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_ANA EJEMPLO MUESTRA.pdf). Lo pone la base al cargarlo';
 COMMENT ON COLUMN apd.documento.tipo_mime IS 'application/pdf, image/jpeg o image/png';
 COMMENT ON COLUMN apd.documento.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.documento.sha256 IS 'Suma del archivo, para comprobar el almacén';
@@ -589,7 +589,7 @@ COMMENT ON COLUMN apd.examen.inscripcion_id IS 'Inscripción';
 COMMENT ON COLUMN apd.examen.presentado_en IS 'Fecha del examen';
 COMMENT ON COLUMN apd.examen.calificacion IS 'De 0.0 a 10.0';
 COMMENT ON COLUMN apd.examen.capturado_por IS 'Cuenta del instructor (acceso) o del sistema de examen en línea';
-COMMENT ON COLUMN apd.examen.origen IS 'captura: la registra el instructor; examen_web: llega del sistema de examen en salón de cómputo que se conectará después (R36)';
+COMMENT ON COLUMN apd.examen.origen IS 'captura: la registra el instructor; examen_web: la registra el examen en línea del salón de cómputo del PILARES (R36; prototipo en la versión de prueba)';
 COMMENT ON COLUMN apd.examen.capturado_en IS 'Captura';
 
 CREATE TABLE apd.folio_contador (

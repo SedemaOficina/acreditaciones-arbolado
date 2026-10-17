@@ -140,7 +140,7 @@
   }
   /* Perfil del dictaminador: la regla está en app/perfil-academico.js (sin navegador), para que la use también el
      servidor. */
-  const { normaliza, perfilAcademico, SUPERIORES } = global.APD_PERFIL;
+  const { normaliza, perfilAcademico, SUPERIORES } = global.APD_PERFIL_ACADEMICO;
   function requiereSesion(datos) {
     const p = personaDeSesion(datos);
     if (!p) { global.location.replace(`entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop())}`); return null; }
@@ -269,12 +269,21 @@
   }
   const CORREO_EN_USO = 'Este correo ya está registrado en otra cuenta. Escribe otro; si es tuyo y no recuerdas esa cuenta, pide ayuda a la Secretaría.';
 
+  /* Avisa al núcleo que la página cambió el valor de un control (input y change, como al escribir). El combo del
+     estándar abre su lista con cualquier «input», también al llenar un borrador o un perfil sin que la persona esté en
+     el campo, y la lista tapa la pregunta siguiente (hallazgo P99): si el combo no tiene el foco, se cierra. */
+  function avisa(c) {
+    c.dispatchEvent(new Event('input', { bubbles: true }));
+    c.dispatchEvent(new Event('change', { bubbles: true }));
+    if (c.getAttribute('role') === 'combobox' && document.activeElement !== c) c.dispatchEvent(new Event('blur'));
+  }
+
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
-    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO
+    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));

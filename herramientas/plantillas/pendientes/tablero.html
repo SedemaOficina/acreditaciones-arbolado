@@ -143,6 +143,7 @@ tbody tr:last-child td { border-bottom: 0; }
           <option value="etapa 2">Etapa 2</option>
           <option value="etapa 3">Etapa 3</option>
           <option value="datos reales">Antes del primer dato real</option>
+          <option value="lanzamiento">Antes del lanzamiento</option>
           <option value="SIA">Antes de pasar al SIA</option>
         </select>
       </label>
@@ -196,7 +197,7 @@ tbody tr:last-child td { border-bottom: 0; }
     if (filtroGrupo !== 'todos' && p.grupo !== filtroGrupo) return false;
     if (filtroEstado === 'todos') return true;
     if (filtroEstado === 'sin_marcar') return !m;
-    if (filtroEstado === 'datos') return p.bloquea === 'datos reales';
+    if (filtroEstado === 'datos') return p.bloquea === 'datos reales' || p.bloquea === 'lanzamiento';
     return m === filtroEstado;
   }
 

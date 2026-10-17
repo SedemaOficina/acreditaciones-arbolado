@@ -8,6 +8,7 @@
 // Uso: node herramientas/exportar-ficticios.mjs <base_de_prueba>
 
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -66,7 +67,15 @@ if (r.status !== 0) {
   process.exit(1);
 }
 const salida = r.stdout.split('\n');
-const json = JSON.parse(salida.slice(salida.findIndex((l) => l.startsWith('{'))).join('\n'));
+let json = JSON.parse(salida.slice(salida.findIndex((l) => l.startsWith('{'))).join('\n'));
+// Los catálogos (organizaciones y carreras) toman un id aleatorio al instalarse: se sustituye, en todo el archivo, por uno
+// derivado de su nombre, para que regenerar no cambie el archivo sin motivo (auditoría 2026-10-17)
+const uuidDe = (texto) => { const h = createHash('md5').update(texto).digest('hex'); return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`; };
+let texto = JSON.stringify(json);
+for (const [tabla, campo] of [['organizacion', 'nombre_normalizado'], ['carrera', 'nombre_normalizado']]) {
+  for (const fila of json[tabla]) texto = texto.split(`"${fila.id}"`).join(`"${uuidDe(`${tabla}:${fila[campo] || fila.nombre}`)}"`);
+}
+json = JSON.parse(texto);
 const archivo = {
   aviso: 'DATOS FICTICIOS. Generados por herramientas/probar-base.sh desde herramientas/ficticios.mjs, pasando por todas las reglas de la base. No se editan a mano. Ninguna persona, CURP, correo, teléfono ni organización es real.',
   fecha_corte: CORTE,

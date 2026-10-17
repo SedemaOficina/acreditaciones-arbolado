@@ -14,7 +14,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
 - [`carrera`](#carrera) — Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?». No hay catálogo de carreras afines (decisión 2026-10-15, Liber): la carrera es un campo abierto que el personal valida en la revisión documental. Empieza con las que nombran los lineamientos (principal) y crece con las que la Secretaría acepta de manera explícita. El grupo decide la experiencia mínima del dictaminador: principal y afín, dos años con licenciatura; disciplina afín, cinco; no afín, no cumple. Las que escribe una persona entran sin grupo; sólo las aceptadas se sugieren al escribir.
 - [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
-- [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
+- [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en el curso; quien aplica el examen la usa para confirmar su identidad y su asistencia, por eso debe verse clara. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta (en la cita no se toma otra). No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
 - [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
 - [`solicitud`](#solicitud) — Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
@@ -170,7 +170,7 @@ Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (ap
 | `primer_apellido` | `text` | Sí | Primer apellido |
 | `segundo_apellido` | `text` | No | Segundo apellido, si lo hay |
 | `sexo` | `text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED` | Sí | H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada |
-| `adscripcion` | `text` | No | Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar |
+| `adscripcion` | `text` | No | Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mi perfos»; vacía sólo en cuentas del padrón migrado sin activar |
 | `organizacion_id` | `uuid` | No | Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente |
 | `correo` | `text` | Sí | Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta |
 | `telefono` | `text` | Sí | Teléfono de contacto, 10 dígitos |
@@ -204,7 +204,7 @@ Restricciones e índices:
 
 ## fotografia
 
-Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en el curso y en el examen. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta o toma una nueva. No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
+Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en el curso; quien aplica el examen la usa para confirmar su identidad y su asistencia, por eso debe verse clara. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta (en la cita no se toma otra). No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
@@ -215,7 +215,7 @@ Fotografía de frente de la persona, para reconocerla en la cita de cotejo, en e
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
 | `nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla (por omisión: `''`) |
-| `origen` | `text` | Sí | en_linea: la cargó la persona; cotejo: la tomó el personal en la cita. Lo pone la base |
+| `origen` | `text` | Sí | en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100). Lo pone la base |
 | `estado` | `text` | Sí | pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó (por omisión: `'pendiente'`) |
 | `vigente` | `boolean` | Sí | Es la última fotografía de la persona (por omisión: `true`) |
 | `cargada_en` | `timestamptz` | Sí | Carga (por omisión: `now()`) |
@@ -410,7 +410,7 @@ Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo pub
 | `requisito` | `text` | Sí | Requisito que atiende |
 | `archivo_clave` | `text` | Sí | Clave exacta en el almacén, con sello propio |
 | `nombre_original` | `text` | Sí | Nombre con que se cargó |
-| `nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_JUAN RAMIREZ OSORIO.pdf). Lo pone la base al cargarlo (por omisión: `''`) |
+| `nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: TIPO DE DOCUMENTO_NOMBRE COMPLETO.ext (por ejemplo CURP_ANA EJEMPLO MUESTRA.pdf). Lo pone la base al cargarlo (por omisión: `''`) |
 | `tipo_mime` | `text` | Sí | application/pdf, image/jpeg o image/png |
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
@@ -523,7 +523,7 @@ Calificación del examen final: la captura el instructor o llega del sistema de 
 | `presentado_en` | `date` | Sí | Fecha del examen |
 | `calificacion` | `numeric(3,1)` | Sí | De 0.0 a 10.0 |
 | `capturado_por` | `text` | Sí | Cuenta del instructor (acceso) o del sistema de examen en línea |
-| `origen` | `text` | Sí | captura: la registra el instructor; examen_web: llega del sistema de examen en salón de cómputo que se conectará después (R36) (por omisión: `'captura'`) |
+| `origen` | `text` | Sí | captura: la registra el instructor; examen_web: la registra el examen en línea del salón de cómputo del PILARES (R36; prototipo en la versión de prueba) (por omisión: `'captura'`) |
 | `capturado_en` | `timestamptz` | Sí | Captura (por omisión: `now()`) |
 
 Restricciones e índices:

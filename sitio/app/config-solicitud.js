@@ -39,7 +39,7 @@ let catalogoCarreras = null;
 window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; } };
 window.FORMKIT_CONFIG = {
   archivos: { mb: 5, extensiones: ['pdf'], max: 1 },
-  limitesSegun: { experiencia: (r) => APD_PERFIL.minimoExperiencia(catalogoCarreras, r) }
+  limitesSegun: { experiencia: (r) => APD_PERFIL_ACADEMICO.minimoExperiencia(catalogoCarreras, r) }
 };
 
 const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
