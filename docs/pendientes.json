@@ -545,12 +545,28 @@
       "recomendacion": "Ya confirmada, la persona no la cambia y en la cita no se toma otra (decisión 2026-10-17); pero debe verse clara para el pase de lista del examen. Recomendación: al iniciar una renovación la persona puede cargar una fotografía nueva, que se vuelve a confirmar contra la identificación en la cita de cotejo. La base conserva la carga por el personal (origen cotejo) por si se prefiere que la tome la Secretaría."
     },
     {
-      "id": "P101",
-      "grupo": "liber",
-      "bloquea": "datos reales",
+      "id": "P102",
+      "grupo": "estandar",
+      "bloquea": "no",
       "desde": "2026-10-17",
-      "titulo": "Visto bueno del funcionamiento del examen en línea",
-      "recomendacion": "Por aprobar (DECISIONES, examen): una pregunta por pantalla con orden distinto por persona; el tiempo lo lleva el servidor y al agotarse se envía lo contestado; una pregunta sin contestar cuenta como incorrecta; quien aplica puede suspender con motivo; salir de la ventana no bloquea, se le cuenta a quien aplica. Si ya lo aprobaste, se pasa a resueltos."
+      "titulo": "El encabezado y el pie no se alinean con el contenido de la página",
+      "recomendacion": "Hallazgo para el estándar (auditoría visual 2026-10-17). .pagina pone su margen lateral por dentro de --ancho-pagina y .cabecera lo pone por fuera, así que el logotipo y el título empiezan 40 px antes que el contenido en computadora. El proyecto limita .cabecera-int y .pie-int a calc(--ancho-pagina − 2 × --e-pagina) (app/apd.css). Propuesta: que base.css use la misma regla en los tres, y una variante de ancho para pantallas de captura amplias."
+    },
+    {
+      "id": "P103",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Tabla: la última celda no lleva línea inferior también en computadora",
+      "recomendacion": "Hallazgo para el estándar (auditoría visual 2026-10-17). tabla.css quita el borde de td:last-child para las tarjetas de teléfono, pero la regla aplica también desde 760 px: la línea de cada fila no llega bajo la columna de acciones, y los botones quedan desalineados del texto (vertical-align: top). El proyecto lo corrige en app/apd.css. Propuesta: limitar esa regla al teléfono y alinear al centro las celdas en computadora."
+    },
+    {
+      "id": "P104",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Tabla en teléfono: el valor baja de renglón según su largo y las tarjetas se ven disparejas",
+      "recomendacion": "Hallazgo para el estándar (auditoría visual 2026-10-17). Cada celda apilada es flex con wrap: si el valor no cabe junto a su etiqueta (40 %), baja completo a otro renglón, y en una misma tarjeta unos valores van al lado y otros abajo. Propuesta: rejilla fija de dos columnas (etiqueta | valor) en la que el valor se ajusta dentro de su columna. El proyecto no lo cambia para no romper celdas con varios elementos."
     }
   ],
   "resueltos": [
@@ -837,6 +853,11 @@
     {
       "titulo": "¿La credencial se imprime en el lugar de entrega? (P48)",
       "como": "Se unió a P10 (entrega el mismo día del examen), 2026-10-17. La foto de la credencial se toma el día del examen; en el cotejo no se toma ninguna.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Visto bueno del funcionamiento del examen en línea (P101)",
+      "como": "Aprobado por Liber (2026-10-17): una pregunta por pantalla con orden distinto por persona; el tiempo lo lleva el servidor y al agotarse se envía lo contestado; una pregunta sin contestar cuenta como incorrecta; quien aplica puede suspender con motivo; salir de la ventana no bloquea.",
       "fecha": "2026-10-17"
     }
   ]

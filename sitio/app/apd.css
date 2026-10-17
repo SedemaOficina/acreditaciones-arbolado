@@ -31,7 +31,7 @@
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
 
 .datos { display: grid; gap: var(--e-2) var(--e-5); margin: 0; }
-.datos-par { display: grid; gap: var(--e-1); }
+.datos-par { display: grid; gap: var(--e-1); align-content: start; }
 .datos-etq { font-size: var(--t-sm); color: var(--gris-cl); }
 .datos-valor { margin: 0; font-weight: var(--peso-medio); }
 
@@ -102,7 +102,7 @@
 /* Estilo de formularios (decisión 2026-10-16, Liber; S2-1 a S2-3): la ayuda por bloque (.ayuda-bloque) y las
    respuestas cortas en línea (.opciones-lista.opciones-en-linea) son del estándar desde la 1.1.0; aquí, los anchos. */
 .titulo-primero { margin-top: var(--e-6); }
-.control-medio { max-width: var(--ancho-acuse); }
+.control-medio { max-width: var(--ancho-acuse); } /* en el envoltorio .select, para que la flecha quede dentro (auditoría 2026-10-17) */
 .tarjeta-angosta { max-width: var(--ancho-dialogo); margin-inline: auto; }
 [data-interno] { display: none; }
 /* Dato que se muestra a la persona pero aún no está confirmado (concepto, monto y referencia de pago) */
@@ -117,7 +117,6 @@
 
 
 /* ───── Pantallas del personal (etapa 2): bandeja y revisión documental (decisiones 2026-10-16) ───── */
-.pagina-ancha { max-width: calc(var(--ancho-pagina) + var(--e-11) * 3); }
 .personal-sesion { padding-block-end: var(--e-3); border-block-end: var(--b-1) solid var(--linea); }
 .sesion-enlaces a[aria-current="page"] { font-weight: var(--peso-fuerte); color: var(--guinda); }
 /* Bandeja: búsqueda siempre a la vista; en teléfono los filtros se pliegan bajo «Filtrar» */
@@ -138,7 +137,7 @@
 .senales { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 .btn-chico { min-height: var(--objetivo-min); padding-block: var(--e-1); padding-inline: var(--e-3); font-size: var(--t-sm); }
 /* Revisión de una solicitud */
-.revision-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
+.revision-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); margin-block-end: var(--e-4); }
 @media (min-width: 760px) {
   .datos-dos-columnas .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -206,3 +205,35 @@
 /* Versión de prueba (auditoría 2026-10-17): en computadora el visor fijo termina arriba del botón «Menú de pruebas»,
    para que el botón no tape el documento que se revisa */
 @media (min-width: 1024px) { .modo-pruebas .visor { height: calc(100dvh - var(--e-6) - var(--objetivo-min) - var(--e-4)); } }
+
+/* ───── Auditoría visual (2026-10-17) ───── */
+/* Lo oculto con el atributo hidden se oculta, aunque su clase declare display (el resultado de «Verificar» dejaba una
+   caja vacía). npm run auditar comprueba en todas las pantallas que nada con hidden se vea. */
+.resultado[hidden] { display: none; }
+/* Encabezado y pie alineados con el contenido: .pagina pone su margen lateral por dentro de su ancho y la cabecera por
+   fuera (hallazgo P102 para el estándar). Las pantallas del personal usan todas el mismo ancho (.pagina-amplia). */
+.cabecera-int, .pie-int { max-width: calc(var(--ancho-pagina) - var(--e-pagina) * 2); }
+body:has(.pagina-amplia) .cabecera-int, body:has(.pagina-amplia) .pie-int { max-width: calc(var(--ancho-pagina) * 1.6 - var(--e-pagina) * 2); }
+/* El pie llega al fondo de la ventana en las páginas cortas */
+body { min-height: 100dvh; display: flex; flex-direction: column; }
+body > main { flex: 1 0 auto; width: 100%; }
+/* El distintivo de versión (fijo, abajo a la izquierda) no tapa el texto del pie al final de la página */
+.pie { padding-block-end: calc(var(--e-7) + var(--objetivo-min) + var(--safe-inf)); }
+/* Texto que sigue a las acciones de un formulario: separado del botón */
+.acciones + p, .acciones + .texto-gris { margin-block-start: var(--e-4); }
+/* Folios, códigos y pesos: no se parten al final del renglón */
+.sin-corte { white-space: nowrap; }
+/* Tablas (módulo tabla): en computadora la línea de cada fila llega también bajo la columna de acciones (el estándar le
+   quita el borde a la última celda también ahí; hallazgo P103) y el texto y los botones de una fila se alinean al centro.
+   En teléfono una celda vacía no se muestra. */
+.tabla td:empty { display: none; }
+@media (min-width: 760px) {
+  .tabla td:last-child { border-bottom: var(--b-1) solid var(--linea); }
+  .tabla td { vertical-align: middle; }
+  .tabla td:empty { display: table-cell; }
+}
+/* Avisos con varios bloques (datos de pago, motivo): separados entre sí */
+.aviso-pila { display: grid; gap: var(--e-3); }
+.aviso-pila > * { margin: 0; }
+/* Cabecera de la solicitud en revisión y cotejo: en teléfono la etiqueta de estado no queda pegada a la fotografía */
+.revision-cabeza .bajada { margin-block-end: 0; }

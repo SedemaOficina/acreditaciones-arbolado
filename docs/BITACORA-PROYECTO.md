@@ -674,3 +674,40 @@ campos correctos.
   («Complete «Motivo».»); `examen.html` sigue en tú, porque la usa la persona.
 - `probar-examen.mjs` con axe sobre la versión 0.32 (estándar 1.3.1): 54 comprobaciones correctas, sin fallas.
 
+
+## 2026-10-17 · Bloque 52 · Auditoría completa
+
+Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-10-17.md`.
+- Herramienta nueva `herramientas/auditar-sitio.mjs` (`npm run auditar`): recorre 20 estados en teléfono y escritorio y
+  revisa consola, recursos, enlaces y anclas, ids, referencias ARIA, desborde, textos recortados, elementos encimados,
+  objetivos táctiles, controles de menos de 44 px, elementos con `hidden` que se ven, y presiona cada botón visible para
+  comprobar que hace algo. Revisión visual independiente de las 40 capturas, y de pendientes, mapa y documentación
+  contra el código y la base.
+- Corregido en el sitio:
+  - combo abierto al retomar un borrador (`APD.avisa`, P99);
+  - dato interno del curso calculado, con su prueba;
+  - nombre global repetido (`APD_PERFIL_ACADEMICO`);
+  - caja vacía en «Verificar» (`.resultado[hidden]`);
+  - flecha del desplegable fuera de su caja;
+  - encabezado y pie alineados con el contenido, y un solo ancho para las pantallas del personal (P102);
+  - pie al fondo en páginas cortas; distintivo de versión sin tapar el pie;
+  - línea de las filas de tabla bajo la columna de acciones (P103);
+  - celda vacía sin «—» en «Aplicar el examen»;
+  - avisos de pago espaciados; «Corregir y reenviar» como acción principal; motivo del rechazo como aviso;
+  - recordatorio de observaciones en el paso 1; entrega el mismo día en «Mis trámites»;
+  - folios y códigos de ejemplo que no se parten; datos alineados arriba;
+  - textos que el personal propone a la persona, en tú; visor arriba del menú de pruebas;
+  - catálogos con fuente y corte (P37).
+- Base: mensajes de fotografía (en la cita no se toma otra), usted al personal, «Mi perfil», cupo 5–25, ejemplo de
+  nombre de archivo ficticio; los ids de catálogos ya no cambian en cada exportación.
+- Pendientes:
+  - resueltos P13, P78 y P101 (Liber aprobó el funcionamiento del examen); P57 se unió a P91 y P48 a P10;
+  - nuevos P99, P102, P103 y P104 (estándar) y P100 (actualizar una fotografía confirmada);
+  - el tablero distingue «antes del lanzamiento».
+- Mapa: reglas de grupos del 17/10 (R25, R56), envío (R57), lanzamiento con correo, entrega, fotografía, P94; examen
+  aprobado (R55).
+- Documentación al día: LEEME, DECISIONES, REGLAS, DECISIONES-SIA, ETAPA-1, ETAPA-2, AVISOS-POR-CORREO.
+- Sin uso, fuera: dos reglas CSS, dos hojas viejas del distintivo de versión, cuatro capturas viejas, una comprobación
+  sin efecto.
+- Pendiente de Liber: quitar su correo personal del historial del repositorio público (requiere reescribir el
+  historial y su permiso explícito).

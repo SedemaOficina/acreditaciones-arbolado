@@ -548,7 +548,7 @@ altaMigrada(dictRechazo);
 migrar(dictRechazo, 'poda', '2026-01-19');
 const sDictRechazo = solicitud('dict-rechazado', dictRechazo, 'dictaminador', 'nueva', { fecha: '2026-10-02', nivel: 'preparatoria', anios: 9 });
 enviar(sDictRechazo, '2026-10-02');
-rechazar(sDictRechazo, '2026-10-07', 'Su comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios.');
+rechazar(sDictRechazo, '2026-10-07', 'Tu comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.');
 
 en(CORTE, '20:00');
 emitir(`SELECT set_config('apd.ahora_simulado', '', false)`);

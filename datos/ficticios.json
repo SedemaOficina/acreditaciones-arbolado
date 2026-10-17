@@ -4826,7 +4826,7 @@
   {
    "fecha": "2026-10-07T13:30:00-06:00",
    "accion": "estado",
-   "detalle": "enviada → rechazada · Su comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios.",
+   "detalle": "enviada → rechazada · Tu comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "cc392328-83ec-430d-ad80-03216eb4bc37",
@@ -5637,7 +5637,7 @@
    "resultado": "rechazada",
    "revisada_en": "2026-10-07T13:30:00-06:00",
    "solicitud_id": "cc392328-83ec-430d-ad80-03216eb4bc37",
-   "observacion_general": "Su comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios."
+   "observacion_general": "Tu comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios."
   },
   {
    "id": "bd2d05f9-8e35-4a39-a1cd-21fd7167b931",
@@ -10224,7 +10224,7 @@
   },
   {
    "clave": "entrega_lugar",
-   "valor": "[pendiente] Días y horario de entrega de acreditaciones.",
+   "valor": "[pendiente] Si no puedes quedarte el día del examen: días y horario para recoger tu credencial en el Vivero (P10).",
    "descripcion": "Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14)."
   },
   {
@@ -12002,7 +12002,7 @@
    "factura_rfc": null,
    "estado_desde": "2026-10-07T13:30:00-06:00",
    "folio_origen": null,
-   "motivo_cierre": "Su comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios.",
+   "motivo_cierre": "Tu comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.",
    "nivel_estudios": "preparatoria",
    "solicitante_id": "5cf5570b-4856-44e0-a28f-a688405c3564",
    "carrera_tecnica": null,

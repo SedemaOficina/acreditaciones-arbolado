@@ -58,7 +58,7 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
   `apd.examen` con origen `examen_web` y no se modifica (R37).
 - Suspender pide motivo (la persona lo lee). Salir de la ventana no bloquea; se le cuenta a quien aplica.
 - Parámetros de prueba: 12 preguntas, 60 minutos (P74). Tiempo adicional por fallas: P89.
-- Construido sin maqueta previa porque Liber pidió el prototipo funcional; queda por aprobar su funcionamiento (P101).
+- Construido sin maqueta previa porque Liber pidió el prototipo funcional; Liber aprobó su funcionamiento el 2026-10-17 (P101).
 - En la etapa 3 hacen falta en la base: el banco de reactivos (sin exponer la clave), los códigos con su orden y
   tiempo, y las respuestas con su hora; la API del módulo hace lo que hoy simula `app/examen-servidor.js` (P29).
 

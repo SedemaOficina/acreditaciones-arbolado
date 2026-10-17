@@ -1,7 +1,7 @@
 // AUDITORÍA DEL SITIO · recorre todas las pantallas en teléfono y escritorio, con cada caso de prueba, y busca:
 //   · errores de consola y de la página, y recursos que no cargan (404, fallos de red);
 //   · enlaces internos rotos y anclas (#id) que no existen; ids repetidos; referencias ARIA a ids que no existen;
-//   · desborde horizontal de la página y textos recortados;
+//   · desborde horizontal de la página y textos recortados; elementos con hidden que se ven;
 //   · elementos encimados (cajas de texto o controles que se tapan entre sí);
 //   · objetivos táctiles menores de 24 × 24 px (WCAG 2.2, 2.5.8);
 //   · botones que no hacen nada: cada botón visible se presiona en una página recién cargada y se comprueba que algo
@@ -65,7 +65,7 @@ const agrega = (estado, vista, tipo, detalle) => hallazgos.push({ estado, vista,
 
 // Revisión en la página: anclas, ids, ARIA, desborde, recortes, encimados, objetivos chicos
 function revisaEnPagina() {
-  const r = { ids: [], aria: [], anclas: [], desborde: null, recortes: [], encimados: [], chicos: [], bajos: [], enlaces: [], botones: [] };
+  const r = { ids: [], aria: [], anclas: [], desborde: null, recortes: [], encimados: [], chicos: [], bajos: [], ocultos: [], enlaces: [], botones: [] };
   const visible = (el) => {
     if (!el.isConnected) return false;
     // checkVisibility también descarta el contenido de un <details> cerrado (content-visibility)
@@ -91,6 +91,11 @@ function revisaEnPagina() {
     const h = a.getAttribute('href');
     if (h.startsWith('#') && h.length > 1 && !document.getElementById(decodeURIComponent(h.slice(1)))) r.anclas.push(`${nombre(a)} → ${h}`);
     else if (!/^(https?:|mailto:|tel:|#|blob:|data:)/.test(h)) r.enlaces.push(h);
+  }
+  // Lo marcado con hidden no debe verse (una clase con display le gana al atributo)
+  for (const el of document.querySelectorAll('[hidden]')) {
+    const b = el.getBoundingClientRect();
+    if (getComputedStyle(el).display !== 'none' && b.width > 0 && b.height > 0) r.ocultos.push(nombre(el));
   }
   const de = document.documentElement;
   if (de.scrollWidth > window.innerWidth + 1) r.desborde = `${de.scrollWidth}px de ancho en una ventana de ${window.innerWidth}px`;
@@ -201,6 +206,7 @@ for (const [vistaNombre, vista] of Object.entries(VISTAS)) {
     for (const x of r.recortes) agrega(nombre, vistaNombre, 'texto recortado', x);
     for (const x of r.encimados) agrega(nombre, vistaNombre, 'encimado', x);
     for (const x of r.chicos) agrega(nombre, vistaNombre, 'objetivo chico', x);
+    for (const x of r.ocultos) agrega(nombre, vistaNombre, 'marcado hidden pero visible', x);
     for (const x of r.bajos) agrega(nombre, vistaNombre, 'control de menos de 44 px de alto', x);
     for (const h of r.enlaces) {
       const url = new URL(h, page.url()).href.split('#')[0];

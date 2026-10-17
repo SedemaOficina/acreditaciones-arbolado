@@ -123,7 +123,7 @@
             }
           }
         }
-        if (!acciones.childNodes.length) acciones.append(el('span', { class: 'texto-gris', texto: '—' }));
+        // Sin acciones la celda queda vacía, como en las demás tablas; en teléfono no se muestra (auditoría 2026-10-17)
         return el('tr', { 'data-ins': id, class: (r && ['terminado', 'suspendido'].includes(r.situacion)) || (l && !l.presente) || !f.puede ? 'fila-hecha' : null }, [
           persona, asistencia, paseLista, avance, acciones
         ]);

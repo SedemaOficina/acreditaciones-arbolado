@@ -69,7 +69,7 @@
       const monto = importe != null ? Number(importe).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
       const instrucciones = (datos.parametro.find((x) => x.clave === 'pago_instrucciones') || {}).valor || '';
       extra.push(el('div', { class: 'aviso' }, [
-        el('div', { class: 'aviso-texto' }, [
+        el('div', { class: 'aviso-texto aviso-pila' }, [
           el('p', {}, [el('strong', { texto: 'Datos para tu pago' })]),
           APD.datosLista([
             ['Concepto', c.pago_concepto, 'texto oficial del concepto de pago.'],
@@ -166,7 +166,10 @@
     if (s.estado === 'aprobada') sigue = 'Aprobaste el examen. Recoge tu credencial hoy mismo, en la sede, antes de irte: ahí te toman la fotografía que lleva y firmas el comprobante de recepción.';
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
-    if (s.motivo_cierre) pares.push([s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo', APD.limpia(s.motivo_cierre)]);
+    // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
+    const motivo = s.motivo_cierre ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
+      el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo' })]),
+      el('p', { texto: APD.limpia(s.motivo_cierre) })])]) : null;
 
     const acciones = [];
     if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
@@ -175,7 +178,8 @@
       if (faltan.length) acciones.push(el('a', { class: 'btn btn-primario', href: `corregir.html?folio=${encodeURIComponent(s.folio)}`, texto: faltan.length === 1 ? 'Cargar el documento' : 'Cargar los documentos' }));
     }
     if (['borrador', 'con_observaciones'].includes(s.estado)) {
-      acciones.push(el('a', { class: 'btn btn-secundario', href: `solicitud.html?folio=${encodeURIComponent(s.folio)}`, texto: s.estado === 'borrador' ? 'Continuar solicitud' : 'Corregir y reenviar' }));
+      // La acción que toca hacer en ese estado: botón principal (auditoría 2026-10-17)
+      acciones.push(el('a', { class: 'btn btn-primario', href: `solicitud.html?folio=${encodeURIComponent(s.folio)}`, texto: s.estado === 'borrador' ? 'Continuar solicitud' : 'Corregir y reenviar' }));
     }
 
     return el('article', { class: 'ficha' }, [
@@ -186,6 +190,7 @@
       sigue ? el('p', { class: 'ficha-sigue', texto: sigue }) : null,
       ...extra,
       datosLista(pares),
+      motivo,
       acciones.length ? el('div', { class: 'ficha-acciones' }, acciones) : null
     ]);
   }

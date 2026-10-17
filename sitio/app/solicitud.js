@@ -144,6 +144,9 @@
     if (obs.length) {
       document.querySelector('[data-observaciones-lista]').replaceChildren(...obs.map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion}` })));
       document.querySelector('[data-observaciones]').hidden = false;
+      // Desde el paso 1 se sabe qué hay que corregir y dónde (auditoría 2026-10-17)
+      const bajada = document.querySelector('[data-bajada-tramite]');
+      if (bajada) bajada.textContent = `Corriges la solicitud ${s.folio}: ${obs.length === 1 ? 'tienes 1 observación' : `tienes ${obs.length} observaciones`} en «Documentos» (paso 2). La acreditación ya no cambia.`;
     }
   }
 

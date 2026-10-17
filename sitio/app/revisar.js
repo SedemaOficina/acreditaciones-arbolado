@@ -160,17 +160,17 @@
       archivos[k] = d.blob
         ? { url: URL.createObjectURL(d.blob), tipo: d.blob.type, titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
         : { url: `datos/documentos/${k}.pdf`, titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
-      const peso = d.tamano_bytes >= 1048576 ? `${(d.tamano_bytes / 1048576).toFixed(1)} MB` : `${Math.round(d.tamano_bytes / 1024)} KB`;
+      const peso = d.tamano_bytes >= 1048576 ? `${(d.tamano_bytes / 1048576).toFixed(1)}\u00a0MB` : `${Math.round(d.tamano_bytes / 1024)}\u00a0KB`;
       $('[data-doc-archivo]', art).replaceChildren(...[
         el('span', { class: 'mono', texto: nombre }),
         document.createTextNode(` · ${peso} · Archivo que subió: ${d.nombre_original}`),
         corregidos.has(k) ? el('span', { class: 'doc-corregido' }, [APD.estado('Corregido en esta vuelta', 'pend')]) : null
       ].filter(Boolean));
     }
-    // El mensaje de rechazo propuesto: la persona lo lee tal cual
+    // El mensaje de rechazo propuesto: la persona lo lee tal cual, por eso le habla de tú (auditoría 2026-10-17)
     const propuesta = () => (elegido('clasificacion') === 'no_afin'
-      ? `La carrera ${s.carrera} no es afín al manejo del arbolado, como lo pide el lineamiento para la acreditación de dictaminador técnico. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios.`
-      : `Su comprobante de estudios confirma ${s.nivel_estudios === 'licenciatura' ? `una licenciatura ${(ESTATUS_LIC[s.estatus_estudios] || '').replace(' (pasante)', '')}` : (NIVELES[s.nivel_estudios] || '').toLowerCase()} como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puede iniciar una solicitud nueva si cuenta con otro grado de estudios.`);
+      ? `La carrera ${s.carrera} no es afín al manejo del arbolado, como lo pide el lineamiento para la acreditación de dictaminador técnico. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.`
+      : `Tu comprobante de estudios confirma ${s.nivel_estudios === 'licenciatura' ? `una licenciatura ${(ESTATUS_LIC[s.estatus_estudios] || '').replace(' (pasante)', '')}` : (NIVELES[s.nivel_estudios] || '').toLowerCase()} como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.`);
 
     /* ----- Lo que calcula la página: qué se revisa y el resultado ----- */
     let calculando = false;
@@ -189,7 +189,7 @@
           obs.dispatchEvent(new Event('change', { bubbles: true }));
           const t = document.getElementById('observacion_comprobante_estudios');
           if (t && !t.value) {
-            t.value = 'Su comprobante de estudios muestra un grado distinto del que declaró. Corrija su último grado de estudios y su situación en la solicitud.';
+            t.value = 'Tu comprobante de estudios muestra un grado distinto del que declaraste. Corrige tu último grado de estudios y su situación en la solicitud.';
             t.dispatchEvent(new Event('input', { bubbles: true })); // contador de caracteres
           }
         }
