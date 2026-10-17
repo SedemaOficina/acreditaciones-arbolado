@@ -25,7 +25,12 @@ window.FORMKIT_OPCIONES = {
             return mal({ mensaje: 'Esta CURP tiene acreditaciones anteriores, pero todavía no tiene cuenta. Crea tu cuenta con ella para verlas.' });
           }
           const falla = () => mal({ mensaje: 'La CURP o la contraseña no coinciden. Revisa ambas e intenta de nuevo.' });
-          if (!p) return falla();
+          // Sólo en la versión de prueba (2026-10-17): si la CURP no tiene cuenta en ESTE navegador se dice, porque las
+          // cuentas de la prueba no se comparten entre navegadores ni entre direcciones. En el SIA el mensaje es siempre
+          // el general, para no revelar qué CURP tienen cuenta.
+          if (!p) {
+            return mal({ mensaje: 'No hay una cuenta con esta CURP en este navegador. Versión de prueba: cada cuenta se guarda sólo en el navegador y en la dirección donde la creaste (el sitio publicado y la vista dentro de Claude son lugares distintos). Si la creaste en otro lado, créala de nuevo aquí.' });
+          }
           // Una cuenta creada en la prueba entra con la contraseña que se le puso (se compara su resumen); las
           // ficticias, con la contraseña común de prueba
           const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
