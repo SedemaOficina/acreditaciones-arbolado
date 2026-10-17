@@ -133,6 +133,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_identificacion_oficial" name="observacion_identificacion_oficial" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="identificacion_oficial">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -164,6 +166,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_curp" name="observacion_curp" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curp">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -195,6 +199,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_comprobante_domicilio" name="observacion_comprobante_domicilio" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_domicilio">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -226,6 +232,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_constancia_situacion_fiscal" name="observacion_constancia_situacion_fiscal" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="constancia_situacion_fiscal">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -257,6 +265,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_comprobante_estudios" name="observacion_comprobante_estudios" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_estudios">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -288,6 +298,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_curriculum_vitae" name="observacion_curriculum_vitae" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curriculum_vitae">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -319,6 +331,8 @@
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_comprobantes_experiencia" name="observacion_comprobantes_experiencia" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobantes_experiencia">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -407,7 +421,7 @@
   <section class="tarjeta" data-hecho hidden tabindex="-1" aria-labelledby="t-hecho">
     <h2 class="titulo-paso" id="t-hecho" data-hecho-titulo></h2>
     <p data-hecho-texto></p>
-    <p class="texto-gris">Versión de prueba: la decisión sólo se recuerda en esta pestaña; no se guarda en ninguna base.</p>
+    <p class="texto-gris">Versión de prueba: la decisión se guarda sólo en este navegador; la persona la ve en «Mis trámites» si entra en este mismo navegador.</p>
     <div class="acciones acciones-izq">
       <a class="btn btn-secundario" href="revision.html">Volver a las solicitudes por revisar</a>
     </div>

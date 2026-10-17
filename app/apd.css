@@ -255,3 +255,7 @@
 .persona-con-foto { display: grid; gap: var(--e-4); }
 .perfil-foto-chica { width: var(--e-11); }
 @media (min-width: 560px) { .persona-con-foto { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }
+
+/* Revisión: «Listo, ir al siguiente» bajo la observación (2026-10-17) */
+.doc-seguir { margin: var(--e-3) 0 0; display: flex; justify-content: flex-end; }
+.doc-seguir .btn { width: auto; }

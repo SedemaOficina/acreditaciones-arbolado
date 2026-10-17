@@ -7,7 +7,8 @@
      · cuentas creadas (IndexedDB «cuentas», por CURP), con la contraseña sólo como resumen SHA-256;
      · fotografías de perfil (IndexedDB «fotos», por CURP);
      · solicitudes enviadas o reenviadas y sus documentos (IndexedDB «solicitudes» y «documentos»);
-     · cambios hechos en «Mi perfil» (localStorage «apd.perfiles»).
+     · cambios hechos en «Mi perfil» (localStorage «apd.perfiles»);
+     · revisiones del personal (localStorage «apd.personal.revisiones»): la persona ve el resultado.
    APD.cargar() los suma a los datos ficticios con mezcla(), así que todas las pantallas —«Mis trámites», «Mi
    perfil», la bandeja y la revisión del personal— ven lo mismo. Nada sale de la computadora; «Borrar lo guardado» y
    «Empezar de cero» (menú de pruebas) lo quitan. Otro navegador u otro equipo no lo ven.
@@ -90,6 +91,8 @@
 
   /* ----- Cambios de «Mi perfil» (contacto, adscripción, fotografía nueva), por persona ----- */
   const leePerfiles = () => { try { return JSON.parse(global.localStorage.getItem(PERFILES) || '{}'); } catch (e) { return {}; } };
+  /* Revisiones del personal en la prueba: las guarda app/personal.js (guardaRevision) en «apd.personal.revisiones» */
+  const leeRevisiones = () => { try { return JSON.parse(global.localStorage.getItem('apd.personal.revisiones') || '{}'); } catch (e) { return {}; } };
   function guardaPerfil(id, cambios) {
     const t = leePerfiles();
     t[id] = Object.assign({}, t[id], cambios);
@@ -107,8 +110,9 @@
     return Promise.all([cuentas(), solicitudes()]).then(([listaCuentas, registros]) => Promise.all(registros.map((r) =>
       documentos(r.folio).then((docs) => ({ r, docs })))).then((lista) => ({ listaCuentas, lista }))).then(({ listaCuentas, lista }) => {
       const perfiles = leePerfiles();
-      if (!listaCuentas.length && !lista.length && !Object.keys(perfiles).length) return datos;
-      const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice() });
+      const revisiones = leeRevisiones();
+      if (!listaCuentas.length && !lista.length && !Object.keys(perfiles).length && !Object.keys(revisiones).length) return datos;
+      const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice(), revision: datos.revision.slice() });
       // Cuentas: una del registro anterior queda activa; una nueva se agrega como persona de la prueba
       for (const c of listaCuentas) {
         const i = d.solicitante.findIndex((x) => x.curp === c.curp);
@@ -117,10 +121,11 @@
       }
       // Cambios de «Mi perfil»
       d.solicitante = d.solicitante.map((p) => (perfiles[p.id] ? Object.assign({}, p, perfiles[p.id]) : p));
-      // La prueba vive en una fecha simulada (fecha_corte): lo enviado hoy de verdad cuenta como enviado ese día, para
-      // que la espera no salga negativa (decisión 2026-10-17)
-      const tope = `${datos.fecha_corte}T19:00:00-06:00`;
-      const alCorte = (iso) => (iso && new Date(iso) > new Date(tope) ? new Date(tope).toISOString() : iso);
+      // La prueba vive en una fecha simulada (fecha_corte): lo hecho hoy de verdad cuenta como hecho ese día, para que la
+      // espera no salga negativa (decisión 2026-10-17). Se comprime el tiempo real (un día, unos 15 minutos) para que se
+      // conserve el orden entre envío, revisión y reenvío.
+      const tope = new Date(`${datos.fecha_corte}T19:00:00-06:00`).getTime();
+      const alCorte = (iso) => (iso && new Date(iso).getTime() > tope ? new Date(tope - (Date.now() - new Date(iso).getTime()) / 100).toISOString() : iso);
       for (const { r: original, docs } of lista) {
         const r = Object.assign({}, original, { estado_desde: alCorte(original.estado_desde), enviada_en: alCorte(original.enviada_en) });
         let s = d.solicitud.find((x) => x.folio === r.folio);
@@ -143,8 +148,29 @@
         for (const a of docs) {
           d.documento = d.documento.map((x) => (x.solicitud_id === s.id && x.requisito === a.requisito && x.vigente ? Object.assign({}, x, { vigente: false }) : x));
           d.documento.push({ solicitud_id: s.id, requisito: a.requisito, vigente: true, estado: 'pendiente', cargado_en: alCorte(a.cargado_en),
-            nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob });
+            cargado_real: a.cargado_en, nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob });
         }
+      }
+      // Revisiones del personal en la prueba (decisión 2026-10-17): la persona ve el resultado en «Mis trámites» como lo
+      // dejaría la base: con observaciones (y qué corregir de cada documento), validada con su cita, o rechazada con su
+      // motivo. Si la persona reenvió después de la revisión, la solicitud vuelve a revisión como reenviada.
+      const RESULTADO = { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' };
+      const registroDe = Object.fromEntries(lista.map(({ r }) => [r.folio, r]));
+      for (const [folio, rev] of Object.entries(revisiones).sort((a, b) => String(a[1].en).localeCompare(String(b[1].en)))) {
+        const i = d.solicitud.findIndex((x) => x.folio === folio);
+        if (i < 0 || !RESULTADO[rev.resultado]) continue;
+        const s = d.solicitud[i];
+        const rd = rev.datos || {};
+        d.revision.push({ solicitud_id: s.id, revisor: rev.revisor, resultado: rev.resultado, revisada_en: alCorte(rev.en), observacion_general: rd.mensaje_general || null, de_prueba: true });
+        const reg = registroDe[folio];
+        if (reg && reg.guardada_en && rev.en && reg.guardada_en > rev.en) continue; // reenviada después: sigue en revisión
+        d.documento = d.documento.map((x) => {
+          if (x.solicitud_id !== s.id || !x.vigente || !rd[`decision_${x.requisito}`]) return x;
+          return Object.assign({}, x, { estado: rd[`decision_${x.requisito}`], observacion: rd[`decision_${x.requisito}`] === 'con_observacion' ? rd[`observacion_${x.requisito}`] || null : null });
+        });
+        d.solicitud[i] = Object.assign({}, s, { estado: RESULTADO[rev.resultado], estado_desde: alCorte(rev.en),
+          cita_en: rev.resultado === 'validada' && rd.cita_fecha ? `${rd.cita_fecha}T${rd.cita_hora || '09:00'}:00-06:00` : s.cita_en,
+          motivo_cierre: rev.resultado === 'rechazada' ? rd.motivo_rechazo || null : s.motivo_cierre });
       }
       return d;
     }).catch(() => datos);
