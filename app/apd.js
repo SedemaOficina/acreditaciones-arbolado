@@ -289,12 +289,38 @@
     cargar().then(pintaCorte).catch(() => { /* sin datos: cada pantalla lo dice en su lugar */ });
   });
 
+  /* ----- Un correo, una cuenta (decisión 2026-10-17, Liber) -----
+     Además de la CURP, el correo no se repite entre cuentas activas. Las personas del registro anterior que todavía no
+     crean su cuenta (sin_activar) no cuentan: su correo del padrón puede ser viejo o compartido. Mismo criterio que la
+     base (apd.solicitante, índice solicitante_correo_uk y regla correo_registrado). */
+  function correoEnUso(datos, correo, propia) {
+    const c = String(correo || '').trim().toLowerCase();
+    return Boolean(c) && datos.solicitante.some((p) => p.estado !== 'sin_activar' && String(p.correo || '').toLowerCase() === c
+      && (!propia || (p.id !== propia.id && p.curp !== propia.curp)));
+  }
+  const CORREO_EN_USO = 'Este correo ya está registrado en otra cuenta. Escribe otro; si es tuyo y no recuerdas esa cuenta, pide ayuda a la Secretaría.';
+
+  /* Errores que devuelve el envío ({errores: [{campo, mensaje}]}, la forma de validar.mjs): cada uno junto a su campo,
+     como lo marca el núcleo. El foco se queda en el aviso del envío, que dice lo mismo: si pasara al campo, el núcleo
+     ocultaría el aviso y, al salir del campo, borraría el mensaje porque el formato es válido. El estándar 1.1.0 lo hace
+     solo (FormKit.marcaError); este sitio usa la copia 1.0.0 (P86). */
+  function pintaErrores(form, errores) {
+    for (const { campo, mensaje } of errores || []) {
+      const env = form.querySelector(`[data-campo="${campo}"]`);
+      if (!env) continue;
+      const err = env.querySelector('.err');
+      const controles = Array.from(env.querySelectorAll('input, select, textarea')).filter((c) => c.type !== 'hidden');
+      for (const c of controles) c.setAttribute('aria-invalid', 'true');
+      if (err && err.lastElementChild) { err.dataset.nivel = 'error'; err.lastElementChild.textContent = `Error: ${mensaje}`; }
+    }
+  }
+
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
-    perfilAcademico, SUPERIORES
+    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, pintaErrores
   };
 }(window));

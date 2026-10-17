@@ -26,6 +26,10 @@ window.APD_PERFIL = {
           if (!P) return mal(new Error('sin almacenamiento'));
           // Se guarda en este navegador, por persona: lo ven «Mi perfil», las solicitudes nuevas y el personal
           let guarda = Promise.resolve();
+          // Un correo, una cuenta (decisión 2026-10-17): el de otra cuenta activa no se acepta
+          if (parte === 'contacto' && APD.correoEnUso(datos, d.correo, p)) {
+            return mal({ mensaje: APD.CORREO_EN_USO, errores: [{ campo: 'correo', mensaje: APD.CORREO_EN_USO }] });
+          }
           if (parte === 'contacto') P.guardaPerfil(p.id, { correo: d.correo, telefono: d.telefono });
           if (parte === 'adscripcion') P.guardaPerfil(p.id, APD.adscripcionDe(datos, d));
           if (parte === 'foto') {
