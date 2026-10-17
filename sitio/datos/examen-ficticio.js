@@ -114,13 +114,15 @@
       d: 'El instructor, el primer día del curso de capacitación' } }
   ];
 
-  /* Un examen por curso. Valores de prueba (P74): mismo banco ficticio para los cuatro. */
+  /* Los exámenes: poda y derribo tiene uno solo, igual para solicitud nueva y renovación (decisión 2026-10-17, Liber);
+     dictaminador, por ahora uno por modalidad. Valores de prueba (P74): mismo banco ficticio para todos. */
   const examenes = {
-    poda_nueva: { preguntas: 12, minutos: 60 },
-    poda_renovacion: { preguntas: 12, minutos: 60 },
+    poda: { preguntas: 12, minutos: 60 },
     dictaminador_nueva: { preguntas: 12, minutos: 60 },
     dictaminador_renovacion: { preguntas: 12, minutos: 60 }
   };
+  /* El examen que presenta un curso: primero el de su modalidad; si no hay, el del tipo */
+  const examenDe = (tipo, modalidad) => examenes[`${tipo}_${modalidad}`] || examenes[tipo];
 
-  global.APD_EXAMEN_BANCO = { ficticio: true, reactivos, examenes };
+  global.APD_EXAMEN_BANCO = { ficticio: true, reactivos, examenes, examenDe };
 }(typeof window !== 'undefined' ? window : globalThis));

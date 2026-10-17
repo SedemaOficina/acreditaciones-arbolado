@@ -711,3 +711,11 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   sin efecto.
 - Pendiente de Liber: quitar su correo personal del historial del repositorio público (requiere reescribir el
   historial y su permiso explícito).
+
+## 2026-10-17 · Bloque 53 · Un solo examen de poda
+
+- Liber: el examen de poda y derribo es el mismo para solicitud nueva y renovación, y el cuadernillo cambió; enviará el
+  vigente para capturarlo en el banco de reactivos (P74, P84 actualizados).
+- Banco ficticio: `examenes.poda` (uno solo) y `examenDe(tipo, modalidad)`, que busca primero el de la modalidad y luego
+  el del tipo; lo usan el servidor simulado y «Aplicar el examen». `probar-examen.mjs` sin fallas.
+

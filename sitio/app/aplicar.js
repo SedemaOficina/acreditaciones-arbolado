@@ -43,7 +43,7 @@
     if (!g) { $('[data-sin-grupo]').hidden = false; return; }
     $('[data-con-grupo]').hidden = false;
     const c = G.curso(datos, g);
-    const ex = APD_EXAMEN_BANCO.examenes[`${g.tipo_acreditacion}_${g.modalidad}`];
+    const ex = APD_EXAMEN_BANCO.examenDe(g.tipo_acreditacion, g.modalidad);
     $('[data-grupo]').replaceChildren(datosLista([
       ['Grupo', g.folio],
       ['Curso', `${APD.TIPOS[g.tipo_acreditacion]} · ${APD.MODALIDADES[g.modalidad].toLowerCase()}`],

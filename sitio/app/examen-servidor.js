@@ -160,7 +160,7 @@
       const t = lee();
       const vigente = Object.values(t).find((r) => r.inscripcion_id === inscripcion_id && !r.reemplazado_por);
       if (vigente) return responde(vigente);
-      const ex = BANCO.examenes[`${tipo}_${modalidad}`];
+      const ex = BANCO.examenDe(tipo, modalidad);
       const codigo = nuevoCodigo(t);
       const r = azar(semilla(codigo));
       const preguntas = revuelve(BANCO.reactivos.map((x) => x.clave), r).slice(0, ex.preguntas);
