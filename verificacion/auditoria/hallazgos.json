@@ -83,7 +83,7 @@
     ]
   ],
   "paginas": 40,
-  "presionados": 0,
+  "presionados": 117,
   "porTipo": {
     "encimado": 2
   },
@@ -100,5 +100,6 @@
       "tipo": "encimado",
       "detalle": "p.visor-pagina «Hoja 1 de 3» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (123×20 px)"
     }
-  ]
+  ],
+  "nota": "«Ir al contenido» se marcó por error en esta corrida (la herramienta esperaba el foco en main); comprobado a mano en todas las pantallas: con Tab y Enter el siguiente Tab cae en el contenido. La herramienta ya lo comprueba así. Los dos encimados que quedan son el botón flotante «Menú de pruebas» (sólo en la versión de prueba) sobre el visor antes de desplazarse."
 }

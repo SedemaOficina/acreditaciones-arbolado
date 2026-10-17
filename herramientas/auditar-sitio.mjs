@@ -233,8 +233,10 @@ for (const [vistaNombre, vista] of Object.entries(VISTAS)) {
           await page.keyboard.press('Tab');
           const enfocado = await loc.evaluate((el) => document.activeElement === el);
           await page.keyboard.press('Enter'); await page.waitForTimeout(200);
-          const destino = await page.evaluate(() => document.activeElement && document.activeElement.id);
-          if (!enfocado || destino !== 'contenido') agrega(nombre, vistaNombre, 'botón sin efecto visible', `${b.nombre}: con el teclado no lleva al contenido (foco en «${destino}»)`);
+          // El navegador mueve el punto de partida del teclado al contenido: el siguiente Tab debe caer dentro de él
+          await page.keyboard.press('Tab');
+          const dentro = await page.evaluate(() => Boolean(document.activeElement && document.activeElement.closest('#contenido')));
+          if (!enfocado || !dentro) agrega(nombre, vistaNombre, 'botón sin efecto visible', `${b.nombre}: con el teclado no lleva al contenido`);
           continue;
         }
         try { await loc.click({ timeout: 2000 }); } catch (e) { agrega(nombre, vistaNombre, 'botón que no se puede presionar', `${b.nombre}: ${e.message.split('\n')[0]}`); continue; }
