@@ -1,0 +1,44 @@
+/* =========================================================
+   chips.css · Módulo «chips» · nivel OPCIONAL
+   Sugerencias de un toque: botón con estado aria-pressed y su «quitar».
+   Depende de: nucleo.css. Bloques: componentes → estados.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.chips:not([hidden]){display:flex;flex-wrap:wrap;align-items:center;gap:var(--e-2);margin-bottom:var(--e-2)}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  max-width:var(--ancho-chip-max);
+  min-height:var(--objetivo-min);
+  padding:var(--e-1) var(--e-3);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-pill) 0 0 var(--r-pill);
+  font-size:var(--t-sm);
+  color:var(--texto);
+}
+.chip-texto{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Respuesta frecuente fija: sin «quitar», redonda de los dos lados y con su texto completo. */
+.chip-fijo{border-radius:var(--r-pill);text-align:left;cursor:pointer}
+.chip-quitar{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:var(--objetivo-min);
+  min-height:var(--objetivo-min);
+  margin-left:calc(var(--e-2) * -1);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-left:0;
+  border-radius:0 var(--r-pill) var(--r-pill) 0;
+  color:var(--gris);
+  cursor:pointer;
+}
+.chips-borrar{margin-left:auto}
+
+/* @bloque estados */
+
+.chip:hover,.chip-quitar:hover{border-color:var(--azul);color:var(--azul)}
+.chip[aria-pressed="true"]{background:var(--azul-cl);border-color:var(--azul);color:var(--azul);font-weight:var(--peso-semi)}

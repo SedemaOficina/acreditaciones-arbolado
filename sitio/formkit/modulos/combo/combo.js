@@ -13,7 +13,8 @@
        <ul class="combo-lista" hidden></ul>
      </div>
    El catálogo se toma de window.FORMKIT_CATALOGOS[nombre]: un arreglo de
-   cadenas o de objetos {nombre, detalle, valor}. Nunca se escribe a mano en
+   cadenas o de objetos {nombre, detalle, valor}, o el objeto documentado
+   {filas, fuente, corte, es_ficticio} con ese arreglo en filas. Nunca se escribe a mano en
    el código: viene de la fuente oficial que declara codigo/catalogos.
 
    Modo (decisión C4): cerrado por omisión (sólo valores del catálogo; la
@@ -124,7 +125,9 @@
   });
 
   function catalogo(wrap) {
-    const fuente = (window.FORMKIT_CATALOGOS || {})[wrap.dataset.catalogo] || [];
-    return fuente.map((o) => (typeof o === 'string' ? { nombre: o } : o));
+    const cat = (window.FORMKIT_CATALOGOS || {})[wrap.dataset.catalogo];
+    const lista = Array.isArray(cat) ? cat : (cat && Array.isArray(cat.filas) ? cat.filas : []);
+    const vistos = new Set();
+    return lista.map((o) => (typeof o === 'string' ? { nombre: o } : o)).filter((o) => o && o.nombre && !vistos.has(o.nombre) && vistos.add(o.nombre));
   }
 }());

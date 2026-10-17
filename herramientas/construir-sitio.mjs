@@ -2,10 +2,11 @@
 // los datos ficticios y los catálogos, y genera el paso de documentos de la solicitud desde el catálogo de
 // requisitos de la base (una sola fuente: db/apd/04-apd-catalogos.sql → datos/ficticios.json).
 //
-// Uso: node herramientas/construir-sitio.mjs <ruta-al-clon-de-estandar-formularios>
+// Uso: node herramientas/construir-sitio.mjs <ruta-a-estandares-sia/formularios>
+//   (git clone --depth 1 https://github.com/SedemaOficina/estandares-sia; el estándar vive en su carpeta formularios/)
 //
 // Lo que escribe es generado y no se edita a mano: sitio/formkit/, sitio/datos/ (con examen-ficticio.js, copiado de datos/), sitio/VERSION,
-// sitio/app/version-visible.*, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
+// sitio/vendor/pdfjs-dist/, sitio/app/version-visible.js, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
 // corregir.html, cuenta.html y datos.html.
 
 import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
@@ -15,13 +16,16 @@ import { fileURLToPath } from 'node:url';
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const estandar = process.argv[2];
 if (!estandar || !existsSync(join(estandar, 'codigo/manifiesto.json'))) {
-  console.error('Uso: node herramientas/construir-sitio.mjs <ruta-al-clon-de-estandar-formularios>');
+  console.error('Uso: node herramientas/construir-sitio.mjs <ruta-a-estandares-sia/formularios>');
   process.exit(2);
 }
 const sitio = join(raiz, 'sitio');
 
 // 1 · Estándar: núcleo y sólo los módulos que usa el sitio, en su forma original
-const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla'];
+// Desde la 1.2.0: visor de documentos (P67), chips fijos (P65) y fecha día/mes/año (módulo fecha, P70); desde la 1.1.0, el
+// distintivo de versión (version, P45)
+const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla',
+  'visor', 'version', 'chips', 'fecha'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
 for (const d of ['css', 'js', 'fuentes', 'iconos', 'imagenes']) cpSync(join(estandar, 'codigo', d), join(destino, d), { recursive: true });
@@ -29,7 +33,7 @@ for (const m of MODULOS) cpSync(join(estandar, 'codigo/modulos', m), join(destin
 const cambios = readFileSync(join(estandar, 'CHANGELOG.md'), 'utf8').match(/^## ([0-9.]+) · ([0-9-]+)/m);
 writeFileSync(join(destino, 'LEEME.md'), `# Estándar de formularios del SIA (copia)
 
-Copia sin cambios de \`SedemaOficina/estandar-formularios\`, versión ${cambios ? cambios[1] + ' del ' + cambios[2] : '[sin identificar]'}.
+Copia sin cambios de \`SedemaOficina/estandares-sia\` (carpeta \`formularios/\`), versión ${cambios ? cambios[1] + ' del ' + cambios[2] : '[sin identificar]'}.
 La genera \`herramientas/construir-sitio.mjs\`. No se edita aquí: un cambio al estándar se hace en su repositorio.
 Módulos copiados: ${MODULOS.join(', ')}.
 `);
@@ -40,8 +44,8 @@ writeFileSync(join(sitio, 'VERSION'), version + '\n');
 mkdirSync(join(sitio, 'app'), { recursive: true });
 const plantillaVersion = join(raiz, 'herramientas/plantillas/version');
 cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-visible.js'));
-// La hoja de la plantilla usa valores literales; aquí va su equivalente con los tokens del estándar
-cpSync(join(plantillaVersion, 'version-visible.formkit.css'), join(sitio, 'app/version-visible.css'));
+// La hoja del distintivo es el módulo «version» del estándar (formkit/modulos/version/version.css, mismas clases)
+rmSync(join(sitio, 'app/version-visible.css'), { force: true });
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
 const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'aplicar.html', 'examen.html'];
 for (const p of paginas) {
@@ -50,23 +54,13 @@ for (const p of paginas) {
   writeFileSync(ruta, html);
 }
 
-// 2b · Visor de documentos de la revisión (decisión 2026-10-16): pdf.js, copiado del paquete fijado en package.json
-// (sin CDN). Sólo lo que usa el visor: la biblioteca, su trabajador y las fuentes estándar de los PDF.
-const pdfjs = join(raiz, 'node_modules/pdfjs-dist');
-if (!existsSync(pdfjs)) { console.error('Falta pdfjs-dist: corre npm install'); process.exit(1); }
-const vendor = join(sitio, 'vendor/pdfjs');
-rmSync(vendor, { recursive: true, force: true });
-mkdirSync(vendor, { recursive: true });
-for (const f of ['pdf.min.mjs', 'pdf.worker.min.mjs']) cpSync(join(pdfjs, 'build', f), join(vendor, f));
-cpSync(join(pdfjs, 'standard_fonts'), join(vendor, 'standard_fonts'), { recursive: true });
-cpSync(join(pdfjs, 'LICENSE'), join(vendor, 'LICENSE'));
-const versionPdfjs = JSON.parse(readFileSync(join(pdfjs, 'package.json'), 'utf8')).version;
-writeFileSync(join(vendor, 'LEEME.md'), `# pdf.js ${versionPdfjs} (copia)
-
-Copia sin cambios de \`pdfjs-dist@${versionPdfjs}\` (Mozilla, licencia Apache 2.0, ver LICENSE). La genera
-\`herramientas/construir-sitio.mjs\` desde node_modules; no se edita aquí. La usa \`app/visor.js\` para mostrar todas las
-hojas de un documento en la revisión documental.
-`);
+// 2b · Visor de documentos (módulo «visor» del estándar, P67): pdf.js 4.10.38 del propio estándar (vendor/pdfjs-dist, sin
+// CDN), copiado junto al sitio. La ruta se declara en FORMKIT_CONFIG.visor.pdfjs (app/config-usted.js): el visor la deduce sólo
+// de codigo/modulos/visor/ o dist/, y aquí el módulo está en formkit/modulos/visor/ (P96).
+const pdfjs = join(estandar, 'vendor/pdfjs-dist');
+if (!existsSync(pdfjs)) { console.error('Falta vendor/pdfjs-dist en el estándar'); process.exit(1); }
+rmSync(join(sitio, 'vendor'), { recursive: true, force: true });
+cpSync(pdfjs, join(sitio, 'vendor/pdfjs-dist'), { recursive: true });
 
 // 3 · Datos ficticios y catálogos para el formulario
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
@@ -174,12 +168,9 @@ const revisionDocs = enLinea.map((r) => {
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
               </div>
             </fieldset>
-            <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
+            <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-chips-fijos="${MOTIVOS.map(esc).join('|')}" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
               <label class="etiqueta" for="observacion_${k}">¿Qué debe corregir la persona?</label>
               <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
-              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para ${esc(r.nombre)}">
-${MOTIVOS.map((m) => `                <button type="button" class="sugerencia" data-sugerencia="${esc(m)}">${esc(m)}</button>`).join('\n')}
-              </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
@@ -188,7 +179,7 @@ ${MOTIVOS.map((m) => `                <button type="button" class="sugerencia" d
           </article>
         </div>`;
 });
-const auxiliares = enLinea.map((r) => `      <div class="solo-lector" aria-hidden="true" data-campo="revisar_${r.clave}" data-auxiliar data-uso="Pedir la revisión de «${esc(r.nombre)}» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_${r.clave}" name="revisar_${r.clave}" value="no"></div>`);
+const auxiliares = enLinea.map((r) => `      <input type="hidden" id="revisar_${r.clave}" name="revisar_${r.clave}" value="no" data-campo="revisar_${r.clave}" data-auxiliar data-uso="Pedir la revisión de «${esc(r.nombre)}» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">`);
 {
   const r = join(sitio, 'revisar.html');
   let h = readFileSync(r, 'utf8');
@@ -230,7 +221,7 @@ const cotejoDocs = enLinea.map((r) => {
         </article>
       </div>`;
 });
-const cotejoAux = enLinea.map((r) => `    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_${r.clave}" data-auxiliar data-uso="Pedir el cotejo de «${esc(r.nombre)}» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_${r.clave}" name="cotejar_${r.clave}" value="no"></div>`);
+const cotejoAux = enLinea.map((r) => `    <input type="hidden" id="cotejar_${r.clave}" name="cotejar_${r.clave}" value="no" data-campo="cotejar_${r.clave}" data-auxiliar data-uso="Pedir el cotejo de «${esc(r.nombre)}» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">`);
 // 4d · Corrección del mismo día (decisión 2026-10-17): la persona carga en «Mis trámites» el documento que no coincidió
 // en su cita en pausa. Un campo por requisito; se pide sólo el que quedó en pausa (cargar_<requisito>).
 const corregirDocs = enLinea.map((r) => {
@@ -255,7 +246,7 @@ const corregirDocs = enLinea.map((r) => {
           </div>
         </div>`;
 });
-const corregirAux = enLinea.map((r) => `      <div class="solo-lector" aria-hidden="true" data-campo="cargar_${r.clave}" data-auxiliar data-uso="Pedir «${esc(r.nombre)}» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_${r.clave}" name="cargar_${r.clave}" value="no"></div>`);
+const corregirAux = enLinea.map((r) => `      <input type="hidden" id="cargar_${r.clave}" name="cargar_${r.clave}" value="no" data-campo="cargar_${r.clave}" data-auxiliar data-uso="Pedir «${esc(r.nombre)}» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">`);
 for (const [pagina, marcas] of [['cotejo.html', [['cotejo-documentos', cotejoDocs], ['cotejo-auxiliares', cotejoAux]]],
   ['corregir.html', [['corregir-documentos', corregirDocs], ['corregir-auxiliares', corregirAux]]]]) {
   const r = join(sitio, pagina);

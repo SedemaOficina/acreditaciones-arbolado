@@ -18,7 +18,6 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "pdfjs-dist": "4.10.38",
     "playwright": "1.63.0"
   }
 }

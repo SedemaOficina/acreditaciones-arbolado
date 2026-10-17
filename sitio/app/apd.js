@@ -138,33 +138,9 @@
     o = o || (nombre ? porNombre(nombre) : null);
     return { adscripcion: d.tipo_adscripcion, organizacion_id: o ? o.id : null, organizacion_nombre: o ? o.nombre : String(nombre || '').trim() };
   }
-  /* Mismo criterio que apd.normalizar en la base: sin acentos, minúsculas, sólo letras, números y espacios. */
-  function normaliza(t) {
-    return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
-  }
-  /* Perfil del dictaminador: el mismo cálculo que apd.perfil_academico y apd.experiencia_minima en la base
-     (decisión 2026-10-15). Devuelve { perfil, minimo } o null si aún faltan respuestas. */
-  const BASICOS = ['ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria'];
-  const SUPERIORES = ['licenciatura', 'maestria', 'doctorado'];
-  const MINIMOS = { licenciatura_afin: 2, disciplina_afin: 5, pasante: 5, tecnica: 5 };
-  function perfilAcademico(datos, nivel, estatus, carrera) {
-    if (!nivel) return null;
-    let perfil;
-    if (BASICOS.includes(nivel)) perfil = 'no_cumple';
-    else if (nivel === 'tecnica') perfil = 'tecnica';
-    else if (!estatus) return null;
-    else if (nivel === 'licenciatura' && ['en_curso', 'trunco'].includes(estatus)) perfil = 'no_cumple';
-    else {
-      if (!normaliza(carrera)) return null;
-      const c = (datos.carrera || []).find((x) => x.nombre_normalizado === normaliza(carrera));
-      const grupo = c ? c.grupo : null;
-      if (!grupo) perfil = 'por_clasificar';
-      else if (grupo === 'no_afin') perfil = 'no_cumple';
-      else if (nivel === 'licenciatura' && estatus === 'concluido') perfil = 'pasante';
-      else perfil = ['principal', 'afin'].includes(grupo) ? 'licenciatura_afin' : 'disciplina_afin';
-    }
-    return { perfil, minimo: MINIMOS[perfil] || 5 }; // lo que decide el personal también pide 5 (decisión 2026-10-15)
-  }
+  /* Perfil del dictaminador: la regla está en app/perfil-academico.js (sin navegador), para que la use también el
+     servidor. */
+  const { normaliza, perfilAcademico, SUPERIORES } = global.APD_PERFIL;
   function requiereSesion(datos) {
     const p = personaDeSesion(datos);
     if (!p) { global.location.replace(`entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop())}`); return null; }
@@ -277,13 +253,6 @@
     cont.innerHTML = global.FORMKIT_ICONOS;
     document.body.prepend(cont);
   }
-  /* Hallazgo para el estándar (P47): el núcleo pone aria-required="true" en todos los controles de un campo
-     obligatorio, también en el botón de la zona de carga, y un botón no admite ese atributo (axe:
-     aria-allowed-attr). Se quita sólo ahí; lo obligatorio ya lo dicen el asterisco y el mensaje de error. */
-  new MutationObserver((cambios) => {
-    for (const c of cambios) if (c.target.matches && c.target.matches('button.zona-carga[aria-required]')) c.target.removeAttribute('aria-required');
-  }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['aria-required'] });
-
   document.addEventListener('DOMContentLoaded', () => {
     ponIconos();
     cargar().then(pintaCorte).catch(() => { /* sin datos: cada pantalla lo dice en su lugar */ });
@@ -300,27 +269,12 @@
   }
   const CORREO_EN_USO = 'Este correo ya está registrado en otra cuenta. Escribe otro; si es tuyo y no recuerdas esa cuenta, pide ayuda a la Secretaría.';
 
-  /* Errores que devuelve el envío ({errores: [{campo, mensaje}]}, la forma de validar.mjs): cada uno junto a su campo,
-     como lo marca el núcleo. El foco se queda en el aviso del envío, que dice lo mismo: si pasara al campo, el núcleo
-     ocultaría el aviso y, al salir del campo, borraría el mensaje porque el formato es válido. El estándar 1.1.0 lo hace
-     solo (FormKit.marcaError); este sitio usa la copia 1.0.0 (P86). */
-  function pintaErrores(form, errores) {
-    for (const { campo, mensaje } of errores || []) {
-      const env = form.querySelector(`[data-campo="${campo}"]`);
-      if (!env) continue;
-      const err = env.querySelector('.err');
-      const controles = Array.from(env.querySelectorAll('input, select, textarea')).filter((c) => c.type !== 'hidden');
-      for (const c of controles) c.setAttribute('aria-invalid', 'true');
-      if (err && err.lastElementChild) { err.dataset.nivel = 'error'; err.lastElementChild.textContent = `Error: ${mensaje}`; }
-    }
-  }
-
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
-    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, pintaErrores
+    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO
   };
 }(window));

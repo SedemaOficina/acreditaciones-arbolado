@@ -1,10 +1,10 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-17T18:06:37.050Z",
+  "generado": "2026-10-17T19:04:46.098Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Preguntar si la persona se presentó, salvo al retomar un cotejo en pausa (la persona ya está); lo calculan la página y el servidor con apd.cita.",
@@ -14,7 +14,7 @@
     },
     "pedir_identidad": {
       "etiqueta": "pedir_identidad",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Preguntar por la identidad si la persona se presentó y no es un cotejo retomado (la identidad ya se comprobó); lo calculan la página y el servidor.",
@@ -24,7 +24,7 @@
     },
     "pedir_documentos": {
       "etiqueta": "pedir_documentos",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Cotejar documentos si la persona se presentó y es quien dice ser; lo calculan la página y el servidor.",
@@ -34,7 +34,7 @@
     },
     "pedir_hoy": {
       "etiqueta": "pedir_hoy",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Preguntar si la persona puede traer hoy el documento correcto cuando alguno no coincide; lo calculan la página y el servidor.",
@@ -44,7 +44,7 @@
     },
     "pedir_pago": {
       "etiqueta": "pedir_pago",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Preguntar por el comprobante de pago cuando ningún documento dejó de coincidir; lo calculan la página y el servidor.",
@@ -54,7 +54,7 @@
     },
     "pedir_factura": {
       "etiqueta": "pedir_factura",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la factura y sus datos cuando el pago está verificado; lo calculan la página y el servidor.",
@@ -64,7 +64,7 @@
     },
     "resultado": {
       "etiqueta": "resultado",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Mostrar lo que pide el resultado (cita nueva, nota para la Dirección…); lo calculan la página y el servidor con las respuestas y las inasistencias de apd.cita.",
@@ -74,7 +74,7 @@
     },
     "cotejar_identificacion_oficial": {
       "etiqueta": "cotejar_identificacion_oficial",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Identificación oficial» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -84,7 +84,7 @@
     },
     "cotejar_curp": {
       "etiqueta": "cotejar_curp",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Clave Única de Registro de Población (CURP)» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -94,7 +94,7 @@
     },
     "cotejar_comprobante_domicilio": {
       "etiqueta": "cotejar_comprobante_domicilio",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Comprobante de domicilio» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -104,7 +104,7 @@
     },
     "cotejar_constancia_situacion_fiscal": {
       "etiqueta": "cotejar_constancia_situacion_fiscal",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Constancia de situación fiscal» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -114,7 +114,7 @@
     },
     "cotejar_comprobante_estudios": {
       "etiqueta": "cotejar_comprobante_estudios",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Comprobante de estudios» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -124,7 +124,7 @@
     },
     "cotejar_curriculum_vitae": {
       "etiqueta": "cotejar_curriculum_vitae",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Currículum vitae» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -134,7 +134,7 @@
     },
     "cotejar_comprobantes_experiencia": {
       "etiqueta": "cotejar_comprobantes_experiencia",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir el cotejo de «Comprobantes de experiencia» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
@@ -159,7 +159,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_llegada",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "identidad": {
       "etiqueta": "¿Es la misma persona de la fotografía y de la identificación?",
@@ -178,7 +186,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_identidad",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "nota_identidad": {
       "etiqueta": "¿Qué observó?",
@@ -197,7 +213,21 @@
         "valores": [
           "no_es"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_identidad",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "identidad",
+          "valores": [
+            "no_es"
+          ]
+        }
+      ]
     },
     "coincide_identificacion_oficial": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -216,7 +246,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_identificacion_oficial": {
       "etiqueta": "¿Qué no coincide?",
@@ -235,7 +279,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_identificacion_oficial",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "coincide_curp": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -254,7 +318,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_curp",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_curp": {
       "etiqueta": "¿Qué no coincide?",
@@ -273,7 +351,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_curp",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_curp",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "coincide_comprobante_domicilio": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -292,7 +390,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_comprobante_domicilio": {
       "etiqueta": "¿Qué no coincide?",
@@ -311,7 +423,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_comprobante_domicilio",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "coincide_constancia_situacion_fiscal": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -330,7 +462,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_constancia_situacion_fiscal": {
       "etiqueta": "¿Qué no coincide?",
@@ -349,7 +495,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_constancia_situacion_fiscal",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "coincide_comprobante_estudios": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -368,7 +534,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_comprobante_estudios": {
       "etiqueta": "¿Qué no coincide?",
@@ -387,7 +567,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_comprobante_estudios",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "coincide_curriculum_vitae": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -406,7 +606,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_curriculum_vitae": {
       "etiqueta": "¿Qué no coincide?",
@@ -425,7 +639,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_curriculum_vitae",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "coincide_comprobantes_experiencia": {
       "etiqueta": "¿Coincide con el que trae la persona?",
@@ -444,7 +678,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "diferencia_comprobantes_experiencia": {
       "etiqueta": "¿Qué no coincide?",
@@ -463,7 +711,27 @@
         "valores": [
           "no"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "cotejar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "coincide_comprobantes_experiencia",
+          "valores": [
+            "no"
+          ]
+        }
+      ]
     },
     "hoy_documento": {
       "etiqueta": "¿La persona puede conseguir hoy el documento correcto y cargarlo en línea?",
@@ -482,7 +750,21 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_documentos",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "pedir_hoy",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "pago": {
       "etiqueta": "¿Presentó el comprobante de pago por ese monto y con esa referencia?",
@@ -501,7 +783,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_pago",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "factura_pago": {
       "etiqueta": "Factura",
@@ -522,7 +812,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_factura",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "factura_rfc": {
       "etiqueta": "RFC a cuyo favor se emitió",
@@ -541,7 +839,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_factura",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "factura_razon_social": {
       "etiqueta": "Nombre o razón social",
@@ -559,7 +865,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_factura",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "factura_folio_fiscal": {
       "etiqueta": "Folio fiscal",
@@ -577,7 +891,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "pedir_factura",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "cita_fecha": {
       "etiqueta": "Fecha de la cita nueva",
@@ -594,7 +916,16 @@
           "no_se_presento",
           "otra_cita"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "no_se_presento",
+            "otra_cita"
+          ]
+        }
+      ]
     },
     "cita_hora": {
       "etiqueta": "Hora",
@@ -613,8 +944,18 @@
           "no_se_presento",
           "otra_cita"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "no_se_presento",
+            "otra_cita"
+          ]
+        }
+      ]
     }
   },
-  "repetibles": []
+  "repetibles": [],
+  "limitesRepetibles": {}
 }

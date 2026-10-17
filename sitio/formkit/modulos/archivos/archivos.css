@@ -59,6 +59,11 @@
 /* @bloque estados */
 
 .zona-carga:hover,.zona-carga[data-encima]{background:var(--azul-cl);border-color:var(--azul)}
+/* Archivo listo: verde, con el estado escrito; no sólo con color. */
+.arch[data-estado="listo"]{border-color:var(--ok);background:var(--ok-bg)}
+.arch[data-estado="listo"] .arch-estado{color:var(--ok-txt)}
+/* Con el máximo cargado no se ofrece «Elegir archivo» ni la cámara; vuelven al quitar uno. */
+[data-archivos][data-lleno] .zona-carga,[data-archivos][data-lleno] .zona-camara{display:none}
 .arch[data-estado="error"]{border-color:var(--error);background:var(--error-bg)}
 .arch[data-estado="error"] .arch-estado{color:var(--error-txt)}
 .arch[data-estado="procesando"] .arch-estado{color:var(--azul)}

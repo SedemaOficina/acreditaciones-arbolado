@@ -15,16 +15,13 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const estandar = process.argv[2];
 if (!estandar) { console.error('Uso: node herramientas/probar-esquemas.mjs <ruta-al-clon-de-estandar-formularios>'); process.exit(2); }
 const { validaPayload } = await import(pathToFileURL(join(estandar, 'codigo/servidor/validar.mjs')).href);
-// Las validaciones cruzadas propias (CURP ↔ nombre) se suman a las del estándar, como en el navegador
-await import(pathToFileURL(join(raiz, 'sitio/app/curp-nombre.js')).href);
-// …y el formato propio de la fecha escrita como día/mes/año, con su cruzada contra la CURP
-await import(pathToFileURL(join(raiz, 'sitio/app/fecha-dma.js')).href);
-// …y el folio fiscal de la factura (cotejo)
-await import(pathToFileURL(join(raiz, 'sitio/app/folio-fiscal.js')).href);
-// …y el código de examen (examen en línea)
+// Las cruzadas CURP ↔ nombre, apellidos y fecha, y los formatos fecha-dma y folio-fiscal, son del estándar desde la
+// 1.1.0–1.3.0: ya no se suman reglas propias. Sí se suman el formato del código de examen (examen en línea) y la
+// regla del perfil del dictaminador (mínimo de experiencia, limitesSegun).
 await import(pathToFileURL(join(raiz, 'sitio/app/codigo-examen.js')).href);
+await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
-const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalThis.APD_CRUZADAS }, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
+const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
 
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
@@ -59,20 +56,14 @@ for (const [archivo, id, nombre] of [['examen.html', 'entrar', 'examen-entrar'],
 let fallas = 0;
 const meta = { trampa: '', ms_en_formulario: 90000, idempotencia: 'prueba' };
 const pdf = (n) => ({ nombre: `${n}.pdf`, size: 200000, type: 'application/pdf', campo: n });
-// Como lo hará la API: los campos auxiliares no se reciben, el servidor los calcula.
-//   · cuenta: sin_segundo_apellido = «si» si el segundo apellido viene vacío;
-//   · solicitud: tramite = tipo + modalidad; la modalidad la decide la base por el historial (aquí la indica
-//     el caso en `_modalidad`).
-function comoServidor(form, datos) {
-  const d = { ...datos };
-  if (form === 'cuenta') {
-    delete d.sin_segundo_apellido;
-    if (!String(d.segundo_apellido || '').trim()) { delete d.segundo_apellido; d.sin_segundo_apellido = 'si'; }
-  }
+// Como lo hará la API: los datos que calcula la página (data-auxiliar) no se reciben; el servidor los calcula con
+// validaPayload(…, { auxiliares }) (estándar 1.1.0). `calcula` devuelve todos los de un formulario a partir de lo
+// recibido y del contexto que tendrá la API en la base (el caso lo indica en claves que empiezan con «_»):
+//   · solicitud: tramite = tipo + modalidad; la modalidad la decide la base por el historial (`_modalidad`).
+function calcula(form, d, ctx) {
+  d = { ...d, ...ctx };
   if (form === 'solicitud') {
-    delete d.tramite;
-    if (d.tipo) d.tramite = `${d.tipo}_${d._modalidad || 'nueva'}`;
-    delete d._modalidad;
+    return { tramite: d.tipo ? `${d.tipo}_${d._modalidad || 'nueva'}` : '' };
   }
   // Revisión documental del personal (etapa 2): el servidor calcula los auxiliares con la base (perfil de la
   // solicitud y documentos cargados) y con las decisiones recibidas, igual que app/revisar.js. El caso indica
@@ -80,7 +71,6 @@ function comoServidor(form, datos) {
   if (form === 'revisar') {
     const perfil = d._perfil || 'no_aplica';
     const cargados = d._cargados || [];
-    delete d._perfil; delete d._cargados;
     const rechazo = (perfil === 'por_clasificar' && d.clasificacion === 'no_afin') || (perfil === 'no_cumple' && d.comprobante_confirma === 'si');
     d.perfil_revision = perfil;
     for (const k of REQUISITOS_EN_LINEA) d[`revisar_${k}`] = !rechazo && cargados.includes(k) ? 'si' : 'no';
@@ -95,7 +85,6 @@ function comoServidor(form, datos) {
     const cargados = d._cargados || [];
     const pausa = d._pausa || null;
     const inasistencias = d._inasistencias || 0;
-    delete d._cargados; delete d._pausa; delete d._inasistencias;
     const presente = pausa ? 'si' : d.se_presento;
     const ident = pausa ? 'misma' : d.identidad;
     const conDocs = presente === 'si' && ident !== 'no_es';
@@ -115,27 +104,26 @@ function comoServidor(form, datos) {
   // Corrección del mismo día (persona): sólo los documentos que quedaron en pausa (`_pausa`)
   if (form === 'corregir') {
     const pausa = d._pausa || [];
-    delete d._pausa;
     for (const k of REQUISITOS_EN_LINEA) d[`cargar_${k}`] = pausa.includes(k) ? 'si' : 'no';
   }
-  return d;
+  return d; // las claves que no son datos calculados del esquema no se leen
 }
+const auxiliaresDe = (form, ctx) => Object.fromEntries(Object.entries(esquema[form].campos || {})
+  .filter(([, c]) => c.tipo === 'auxiliar').map(([n]) => [n, (datos) => calcula(form, datos, ctx)[n]]));
+// El mínimo de experiencia según el perfil (data-min-segun="experiencia"), con la misma regla de la página
+const limitesSegun = { experiencia: (r) => globalThis.APD_PERFIL.minimoExperiencia(ficticiosPerfil, r) };
 const REQUISITOS_EN_LINEA = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia'];
-// El navegador no manda los campos de archivos en `datos` (el módulo los declara fuera de datos), pero
-// validar.mjs exige un valor en `datos` para un campo obligatorio de archivos. Como lo hará la API: lo que
-// venga en `datos` para esos campos se descarta y se pone el número de archivos recibidos de cada uno.
-function conArchivos(form, datos, archivos) {
-  const d = { ...datos };
-  for (const [n, c] of Object.entries(esquema[form].campos || {})) if (c.tipo === 'archivos') delete d[n];
-  for (const a of archivos) d[a.campo] = String(archivos.filter((x) => x.campo === a.campo).length);
-  return d;
-}
 // El catálogo cerrado de alcaldías, como lo tendrá la API (el mismo que genera construir-sitio.mjs)
 const orgs = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8')).organizacion;
 const ficticios = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 const catalogos = { empresas: orgs.filter((o) => o.tipo === 'privada').map((o) => o.nombre), carreras: ficticios.carrera.map((c) => c.nombre) };
+const ficticiosPerfil = ficticios;
+// Los archivos llegan sólo en payload.archivos: desde la 1.1.0 el servidor ya no necesita su número en `datos` (P46).
 function caso(nombre, form, datos, espera, archivos = []) {
-  const r = validaPayload({ datos: conArchivos(form, comoServidor(form, datos), archivos), archivos, meta }, esquema[form], { config, catalogos });
+  const ctx = Object.fromEntries(Object.entries(datos).filter(([k]) => k.startsWith('_')));
+  const recibido = Object.fromEntries(Object.entries(datos).filter(([k, v]) => !k.startsWith('_') && v !== undefined
+    && !(esquema[form].campos[k] && esquema[form].campos[k].tipo === 'archivos')));
+  const r = validaPayload({ datos: recibido, archivos, meta }, esquema[form], { config, catalogos, auxiliares: auxiliaresDe(form, ctx), limitesSegun });
   const campos = r.errores.map((e) => e.campo);
   const ok = espera === true ? r.ok : !r.ok && espera.every((c) => campos.includes(c)) && campos.every((c) => espera.includes(c));
   console.log(`${ok ? 'BIEN' : 'MAL '}  ${nombre}${ok ? '' : ` → ${JSON.stringify([...new Set(campos)])}`}`);
@@ -144,7 +132,7 @@ function caso(nombre, form, datos, espera, archivos = []) {
 
 const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
-const curpNadia = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Nadia', primer: 'Ejemplo', segundo: 'Simulado' }, '1999-12-30', 'M', 'NE') + '0');
+const curpNadia = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Nadia', primer: 'Ejemplo', segundo: 'Simulado' }, '1999-12-30', 'M', 'NE') + '0');
 const cuenta = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', fecha_nacimiento: '30/12/1999', curp: curpNadia, correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', contrasena: 'una frase larga de prueba', contrasena2: 'una frase larga de prueba', adscrito: 'no', aviso: 'si', humano: 'si' };
 const foto = (nombre = 'foto.jpg', type = 'image/jpeg') => [{ nombre, size: 180000, type, campo: 'foto' }];
 caso('Cuenta completa con su fotografía se acepta', 'cuenta', cuenta, true, foto());
@@ -153,10 +141,9 @@ caso('Cuenta con la fotografía en PDF se rechaza', 'cuenta', cuenta, ['foto'], 
 caso('Cuenta: CURP con dígito incorrecto y correo sin confirmar se rechazan', 'cuenta', { ...cuenta, curp: curpNadia.slice(0, 17) + ((Number(curpNadia[17]) + 1) % 10), correo2: 'otra@ejemplo.local' }, ['curp', 'correo2'], foto());
 caso('Cuenta: una CURP ajena (de otro nombre) se rechaza', 'cuenta', { ...cuenta, nombre: 'Pedro', primer_apellido: 'López' }, ['curp'], foto());
 caso('Cuenta: otro segundo apellido se rechaza', 'cuenta', { ...cuenta, segundo_apellido: 'Muestra' }, ['curp'], foto());
-const curpUriel = conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Uriel', primer: 'Ejemplo', segundo: '' }, '1988-04-09', 'H', 'NE') + '0');
+const curpUriel = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Uriel', primer: 'Ejemplo', segundo: '' }, '1988-04-09', 'H', 'NE') + '0');
 caso('Cuenta sin segundo apellido se acepta', 'cuenta', { ...cuenta, nombre: 'Uriel', segundo_apellido: '', fecha_nacimiento: '09/04/1988', curp: curpUriel }, true, foto());
 caso('Cuenta: dejar vacío el segundo apellido con una CURP que sí lo tiene se rechaza', 'cuenta', { ...cuenta, segundo_apellido: '' }, ['curp'], foto());
-caso('Cuenta: el campo auxiliar enviado por el navegador no cuenta (lo calcula el servidor)', 'cuenta', { ...cuenta, segundo_apellido: '', sin_segundo_apellido: '' }, ['curp'], foto());
 caso('Cuenta: otra fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '31/12/1999' }, ['curp'], foto());
 caso('Cuenta: sin fecha de nacimiento se rechaza', 'cuenta', { ...cuenta, fecha_nacimiento: '' }, ['fecha_nacimiento'], foto());
 caso('Cuenta: contraseña corta se rechaza', 'cuenta', { ...cuenta, contrasena: 'corta', contrasena2: 'corta' }, ['contrasena', 'contrasena2'], foto());
@@ -177,11 +164,16 @@ caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (
 const dictRenov = { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', anios_experiencia: '3', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' };
 const csf = [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')];
 caso('Perfil: licenciatura pide carrera y situación de los estudios', 'solicitud', { ...dictRenov, nivel_estudios: 'licenciatura' }, ['carrera', 'estatus_estudios'], csf);
-caso('Perfil: carrera técnica pide cuál, no la carrera ni la situación', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica' }, ['carrera_tecnica'], csf);
-caso('Perfil: carrera técnica escrita, sin catálogo, se acepta', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal' }, true, csf);
+caso('Perfil: carrera técnica pide cuál, no la carrera ni la situación', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', anios_experiencia: '5' }, ['carrera_tecnica'], csf);
+caso('Perfil: carrera técnica escrita, sin catálogo, con cinco años se acepta', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '5' }, true, csf);
+// Mínimo de experiencia según el perfil (data-min-segun, estándar 1.1.0, P61): el servidor lo calcula con la misma regla
+caso('Experiencia: con carrera técnica, tres años se rechazan (se piden cinco)', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal' }, ['anios_experiencia'], csf);
+caso('Experiencia: titulada en Biología, dos años se aceptan', 'solicitud', { ...dictRenov, nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '2' }, true, csf);
+// Un dato que calcula la página no se recibe: si el navegador lo manda, el envío se rechaza (estándar 1.1.0)
+caso('Solicitud: el curso calculado enviado por el navegador se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '5', tramite: 'poda_nueva' }, ['tramite'], csf);
 caso('Poda: licenciatura pide la carrera y su situación', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera', 'estatus_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Poda: sin nivel de estudios se rechaza', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['nivel_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
-caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso' }, true, csf);
+caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso', anios_experiencia: '5' }, true, csf);
 caso('Perfil: un nivel que no existe se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'posdoctorado' }, ['nivel_estudios'], csf);
 caso('Solicitud sin la declaración bajo protesta de decir verdad se rechaza', 'solicitud', { ...base, protesta: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['protesta'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
@@ -257,7 +249,7 @@ caso('Cotejo: no es la persona pide la nota para la Dirección y no los document
 caso('Cotejo: no es la persona, con su nota, se acepta', 'cotejo', { _cargados: PODA, se_presento: 'si', identidad: 'no_es', nota_identidad: 'La identificación muestra a otra persona.' }, true);
 caso('Corrección del mismo día: pide sólo el documento en pausa', 'corregir', { _pausa: ['curp'] }, ['doc_curp']);
 caso('Corrección del mismo día: con el documento se acepta', 'corregir', { _pausa: ['curp'] }, true, [pdf('doc_curp')]);
-caso('Corrección del mismo día: un documento que no quedó en pausa no se recibe', 'corregir', { _pausa: ['curp'] }, ['doc_curp'], [pdf('doc_identificacion_oficial')]);
+caso('Corrección del mismo día: un documento que no quedó en pausa no se recibe', 'corregir', { _pausa: ['curp'] }, ['doc_curp', 'doc_identificacion_oficial'], [pdf('doc_identificacion_oficial')]);
 
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);

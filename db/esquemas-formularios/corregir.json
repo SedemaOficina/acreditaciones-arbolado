@@ -1,10 +1,10 @@
 {
   "formulario": "corregir.html",
-  "generado": "2026-10-17T18:06:37.100Z",
+  "generado": "2026-10-17T19:04:46.151Z",
   "campos": {
     "cargar_identificacion_oficial": {
       "etiqueta": "cargar_identificacion_oficial",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Identificación oficial» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -14,7 +14,7 @@
     },
     "cargar_curp": {
       "etiqueta": "cargar_curp",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Clave Única de Registro de Población (CURP)» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -24,7 +24,7 @@
     },
     "cargar_comprobante_domicilio": {
       "etiqueta": "cargar_comprobante_domicilio",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Comprobante de domicilio» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -34,7 +34,7 @@
     },
     "cargar_constancia_situacion_fiscal": {
       "etiqueta": "cargar_constancia_situacion_fiscal",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Constancia de situación fiscal» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -44,7 +44,7 @@
     },
     "cargar_comprobante_estudios": {
       "etiqueta": "cargar_comprobante_estudios",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Comprobante de estudios» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -54,7 +54,7 @@
     },
     "cargar_curriculum_vitae": {
       "etiqueta": "cargar_curriculum_vitae",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Currículum vitae» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -64,7 +64,7 @@
     },
     "cargar_comprobantes_experiencia": {
       "etiqueta": "cargar_comprobantes_experiencia",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir «Comprobantes de experiencia» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
@@ -91,7 +91,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "doc_curp": {
       "etiqueta": "Clave Única de Registro de Población (CURP)",
@@ -112,7 +120,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_curp",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "doc_comprobante_domicilio": {
       "etiqueta": "Comprobante de domicilio",
@@ -133,7 +149,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "doc_constancia_situacion_fiscal": {
       "etiqueta": "Constancia de situación fiscal",
@@ -154,7 +178,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "doc_comprobante_estudios": {
       "etiqueta": "Comprobante de estudios",
@@ -175,7 +207,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "doc_curriculum_vitae": {
       "etiqueta": "Currículum vitae",
@@ -196,7 +236,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "doc_comprobantes_experiencia": {
       "etiqueta": "Comprobantes de experiencia",
@@ -217,8 +265,17 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "cargar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     }
   },
-  "repetibles": []
+  "repetibles": [],
+  "limitesRepetibles": {}
 }

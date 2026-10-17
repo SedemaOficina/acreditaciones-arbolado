@@ -58,7 +58,9 @@
           const ctlDestino = envDestino && controlPrincipal(destino);
           if (!ctlDestino) continue;
           const bruto = datos[clave] || '';
-          const valor = clave === 'sexo' && ctlDestino.tagName !== 'SELECT' ? (textos[bruto] || bruto) : bruto;
+          /* La fecha de nacimiento va como el destino la pide: AAAA-MM-DD o, en «fecha-dma», DD/MM/AAAA. */
+          const valor = clave === 'sexo' && ctlDestino.tagName !== 'SELECT' ? (textos[bruto] || bruto)
+            : clave === 'fechaNacimiento' && envDestino.dataset.formato === 'fecha-dma' ? cfg.dmaDeIso(bruto) : bruto;
           if (ctlDestino.value !== valor) {
             ctlDestino.value = valor;
             ctlDestino.dispatchEvent(new Event('change', { bubbles: true }));

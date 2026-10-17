@@ -507,7 +507,7 @@
    "integracion": "especifico",
    "estado_desde": "2026-10-13T08:30:00-06:00",
    "fecha_inicio": "2026-10-13",
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null
   },
@@ -606,7 +606,7 @@
  ],
  "carrera": [
   {
-   "id": "59b31c3c-bff3-4726-b260-8199c1078539",
+   "id": "bd983519-ee22-4186-a5f7-70b861ea55df",
    "grupo": "principal",
    "activa": true,
    "nombre": "Agronomía",
@@ -614,7 +614,7 @@
    "nombre_normalizado": "agronomia"
   },
   {
-   "id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "grupo": null,
    "activa": true,
    "nombre": "Arquitectura de Paisaje",
@@ -622,7 +622,7 @@
    "nombre_normalizado": "arquitectura de paisaje"
   },
   {
-   "id": "dcc99348-9b1a-44d4-8de2-4adbccd9fe5c",
+   "id": "e951810f-1c35-47cb-a0f2-44be6afe9cff",
    "grupo": "principal",
    "activa": true,
    "nombre": "Biología",
@@ -630,7 +630,7 @@
    "nombre_normalizado": "biologia"
   },
   {
-   "id": "bf4b0a9c-9a38-4e7e-88ee-ca2ad485dc75",
+   "id": "c97c8c5c-9aef-4eab-bd8c-5dc008b7fa77",
    "grupo": "afin",
    "activa": true,
    "nombre": "Ciencias Forestales",
@@ -638,7 +638,7 @@
    "nombre_normalizado": "ciencias forestales"
   },
   {
-   "id": "66e2caf2-222b-4d7c-879d-cfc3a7c832e8",
+   "id": "246a53ac-6d54-4826-8c3f-0701f367540d",
    "grupo": "principal",
    "activa": true,
    "nombre": "Ingeniería Agrónoma",
@@ -646,7 +646,7 @@
    "nombre_normalizado": "ingenieria agronoma"
   },
   {
-   "id": "48464d72-202a-4398-83ee-e4622f1388a7",
+   "id": "ad9dbcbb-2dea-40d3-832f-6be7dbe44d58",
    "grupo": null,
    "activa": true,
    "nombre": "Ingeniería Ambiental",
@@ -654,7 +654,7 @@
    "nombre_normalizado": "ingenieria ambiental"
   },
   {
-   "id": "33471437-7e71-45cb-9b99-e980843c464e",
+   "id": "29b2593b-fe4b-43b3-9ce4-441f6f6cae86",
    "grupo": "principal",
    "activa": true,
    "nombre": "Ingeniería Forestal",
@@ -10218,6 +10218,11 @@
    "descripcion": "Días naturales antes del vencimiento desde los que se puede renovar (decisión 2026-10-14)."
   },
   {
+   "clave": "dias_anticipacion_grupo",
+   "valor": "7",
+   "descripcion": "Días mínimos entre confirmar un grupo y el primer día del curso, para que la persona se entere y se organice (decisión 2026-10-17, Liber)."
+  },
+  {
    "clave": "entrega_lugar",
    "valor": "[pendiente] Días y horario de entrega de acreditaciones.",
    "descripcion": "Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14)."
@@ -10517,7 +10522,7 @@
    "cita_en": "2026-08-18T10:00:00-06:00",
    "creada_en": "2026-08-03T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "privada",
@@ -10593,7 +10598,7 @@
    "nivel_estudios": "preparatoria",
    "solicitante_id": "94586179-43d4-4d00-af2a-848d1860a484",
    "carrera_tecnica": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "pago_referencia": "APDS202600005",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -10645,7 +10650,7 @@
    "cita_en": "2026-08-18T10:00:00-06:00",
    "creada_en": "2026-08-03T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-08-04T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "independiente",
@@ -10689,7 +10694,7 @@
    "nivel_estudios": "secundaria",
    "solicitante_id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93",
    "carrera_tecnica": null,
-   "organizacion_id": "6c9ec15d-277e-4a0b-b4df-fe58dd0cdc80",
+   "organizacion_id": "6d331a90-c83c-4eb1-995b-38d9253f5dea",
    "pago_referencia": "APDS202600008",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -10817,7 +10822,7 @@
    "nivel_estudios": "preparatoria",
    "solicitante_id": "67cf436a-a0ce-4d00-ae82-d0b40d575058",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600012",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -10881,7 +10886,7 @@
    "nivel_estudios": "secundaria",
    "solicitante_id": "f6e48496-1699-4b15-af4a-e4270249e05f",
    "carrera_tecnica": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "pago_referencia": null,
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -10901,7 +10906,7 @@
    "cita_en": null,
    "creada_en": "2026-10-13T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": null,
    "pago_monto": null,
    "adscripcion": "independiente",
@@ -10933,7 +10938,7 @@
    "cita_en": "2026-09-23T10:00:00-06:00",
    "creada_en": "2026-09-14T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "33471437-7e71-45cb-9b99-e980843c464e",
+   "carrera_id": "29b2593b-fe4b-43b3-9ce4-441f6f6cae86",
    "enviada_en": "2026-09-14T11:00:00-06:00",
    "pago_monto": 1800,
    "adscripcion": "dependencia_cdmx",
@@ -10945,7 +10950,7 @@
    "nivel_estudios": "licenciatura",
    "solicitante_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
    "carrera_tecnica": null,
-   "organizacion_id": "6c9ec15d-277e-4a0b-b4df-fe58dd0cdc80",
+   "organizacion_id": "6d331a90-c83c-4eb1-995b-38d9253f5dea",
    "pago_referencia": "APDS202600016",
    "estatus_estudios": "titulado",
    "perfil_academico": "licenciatura_afin",
@@ -10997,7 +11002,7 @@
    "cita_en": "2026-10-06T10:00:00-06:00",
    "creada_en": "2026-10-01T09:30:00-06:00",
    "modalidad": "renovacion",
-   "carrera_id": "59b31c3c-bff3-4726-b260-8199c1078539",
+   "carrera_id": "bd983519-ee22-4186-a5f7-70b861ea55df",
    "enviada_en": "2026-10-01T11:00:00-06:00",
    "pago_monto": 1000,
    "adscripcion": "independiente",
@@ -11029,7 +11034,7 @@
    "cita_en": null,
    "creada_en": "2026-10-06T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "dcc99348-9b1a-44d4-8de2-4adbccd9fe5c",
+   "carrera_id": "e951810f-1c35-47cb-a0f2-44be6afe9cff",
    "enviada_en": "2026-10-06T11:00:00-06:00",
    "pago_monto": null,
    "adscripcion": "independiente",
@@ -11061,7 +11066,7 @@
    "cita_en": null,
    "creada_en": "2026-10-10T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "48464d72-202a-4398-83ee-e4622f1388a7",
+   "carrera_id": "ad9dbcbb-2dea-40d3-832f-6be7dbe44d58",
    "enviada_en": "2026-10-10T11:00:00-06:00",
    "pago_monto": null,
    "adscripcion": "independiente",
@@ -11105,7 +11110,7 @@
    "nivel_estudios": "secundaria",
    "solicitante_id": "4de12634-5f50-414f-a9cc-ebb97a1b3a92",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600021",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11137,7 +11142,7 @@
    "nivel_estudios": "preparatoria",
    "solicitante_id": "60237a0f-dc58-4eea-afe1-2c7ad8f09217",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600022",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11169,7 +11174,7 @@
    "nivel_estudios": "tecnica",
    "solicitante_id": "0efcf35f-4b5a-41fa-a1a5-294fc26a2732",
    "carrera_tecnica": "Técnico en jardinería",
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600023",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11189,7 +11194,7 @@
    "cita_en": "2026-09-30T10:00:00-06:00",
    "creada_en": "2026-09-21T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "alcaldia",
@@ -11201,7 +11206,7 @@
    "nivel_estudios": "licenciatura",
    "solicitante_id": "5bb60068-0ca4-4d84-ad08-9901a54cceb7",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600024",
    "estatus_estudios": "titulado",
    "perfil_academico": null,
@@ -11233,7 +11238,7 @@
    "nivel_estudios": "secundaria",
    "solicitante_id": "6295db4a-f71f-4277-a0f4-3010922a9003",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600025",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11265,7 +11270,7 @@
    "nivel_estudios": "preparatoria",
    "solicitante_id": "c52ae32f-f47f-480b-aa40-d3940ce006d4",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600026",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11297,7 +11302,7 @@
    "nivel_estudios": "tecnica",
    "solicitante_id": "2ffbc313-3a83-4728-a21d-b952eb9efbf6",
    "carrera_tecnica": "Técnico en jardinería",
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600027",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11317,7 +11322,7 @@
    "cita_en": "2026-09-30T10:00:00-06:00",
    "creada_en": "2026-09-21T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-09-22T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "alcaldia",
@@ -11329,7 +11334,7 @@
    "nivel_estudios": "licenciatura",
    "solicitante_id": "08193753-7b69-4ee7-a162-3e4eb14ebfc0",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600028",
    "estatus_estudios": "titulado",
    "perfil_academico": null,
@@ -11361,7 +11366,7 @@
    "nivel_estudios": "secundaria",
    "solicitante_id": "19e97f98-8eb5-4f5e-ab8e-942a038df7db",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600029",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11393,7 +11398,7 @@
    "nivel_estudios": "preparatoria",
    "solicitante_id": "8eae0ed1-fca7-4ed0-a315-d6361c87c422",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600030",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11425,7 +11430,7 @@
    "nivel_estudios": "preparatoria",
    "solicitante_id": "42a4a0dd-6906-434c-ad6e-2f7b7090c018",
    "carrera_tecnica": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "pago_referencia": "APDS202600031",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11477,7 +11482,7 @@
    "cita_en": "2026-10-06T10:00:00-06:00",
    "creada_en": "2026-09-28T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "privada",
@@ -11585,7 +11590,7 @@
    "nivel_estudios": "tecnica",
    "solicitante_id": "0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4",
    "carrera_tecnica": "Técnico en jardinería",
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "pago_referencia": "APDS202600036",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11605,7 +11610,7 @@
    "cita_en": "2026-10-06T10:00:00-06:00",
    "creada_en": "2026-09-28T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-09-28T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "independiente",
@@ -11765,7 +11770,7 @@
    "cita_en": "2026-10-20T10:00:00-06:00",
    "creada_en": "2026-10-06T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-10-06T11:00:00-06:00",
    "pago_monto": 1200,
    "adscripcion": "independiente",
@@ -11809,7 +11814,7 @@
    "nivel_estudios": "secundaria",
    "solicitante_id": "b67eb5d7-c863-4900-a9d0-e4f3719bca06",
    "carrera_tecnica": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "pago_referencia": "APDS202600043",
    "estatus_estudios": null,
    "perfil_academico": null,
@@ -11829,7 +11834,7 @@
    "cita_en": null,
    "creada_en": "2026-10-14T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-10-14T11:00:00-06:00",
    "pago_monto": null,
    "adscripcion": "independiente",
@@ -11925,7 +11930,7 @@
    "cita_en": null,
    "creada_en": "2026-10-01T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "835b6848-b23c-46ef-9252-4de3200b98ec",
+   "carrera_id": "5abfa118-47ce-46b0-9d1b-e5415512db8e",
    "enviada_en": "2026-10-01T11:00:00-06:00",
    "pago_monto": null,
    "adscripcion": "privada",
@@ -11957,7 +11962,7 @@
    "cita_en": null,
    "creada_en": "2026-10-13T09:30:00-06:00",
    "modalidad": "nueva",
-   "carrera_id": "dcc99348-9b1a-44d4-8de2-4adbccd9fe5c",
+   "carrera_id": "e951810f-1c35-47cb-a0f2-44be6afe9cff",
    "enviada_en": "2026-10-13T11:00:00-06:00",
    "pago_monto": null,
    "adscripcion": "independiente",
@@ -13545,7 +13550,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "EJEMPLO",
    "segundo_apellido": "PRUEBA",
    "intentos_fallidos": 0,
@@ -13565,7 +13570,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "primer_apellido": "EJEMPLO",
    "segundo_apellido": "PRUEBA",
    "intentos_fallidos": 0,
@@ -13605,7 +13610,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "6c9ec15d-277e-4a0b-b4df-fe58dd0cdc80",
+   "organizacion_id": "6d331a90-c83c-4eb1-995b-38d9253f5dea",
    "primer_apellido": "EJEMPLO",
    "segundo_apellido": "PRUEBA",
    "intentos_fallidos": 0,
@@ -13645,7 +13650,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "EJEMPLO",
    "segundo_apellido": "PRUEBA",
    "intentos_fallidos": 0,
@@ -13685,7 +13690,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "FICTICIO",
    "segundo_apellido": "SIMULADO",
    "intentos_fallidos": 0,
@@ -13805,7 +13810,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "FICTICIO",
    "segundo_apellido": "SIMULADO",
    "intentos_fallidos": 0,
@@ -13825,7 +13830,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "MODELO",
    "segundo_apellido": "EJEMPLO",
    "intentos_fallidos": 0,
@@ -13845,7 +13850,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "primer_apellido": "MODELO",
    "segundo_apellido": "EJEMPLO",
    "intentos_fallidos": 0,
@@ -13965,7 +13970,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "MODELO",
    "segundo_apellido": "EJEMPLO",
    "intentos_fallidos": 0,
@@ -13985,7 +13990,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "MUESTRA",
    "segundo_apellido": "FICTICIO",
    "intentos_fallidos": 0,
@@ -14025,7 +14030,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "MUESTRA",
    "segundo_apellido": "FICTICIO",
    "intentos_fallidos": 0,
@@ -14045,7 +14050,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "6c9ec15d-277e-4a0b-b4df-fe58dd0cdc80",
+   "organizacion_id": "6d331a90-c83c-4eb1-995b-38d9253f5dea",
    "primer_apellido": "MUESTRA",
    "segundo_apellido": "FICTICIO",
    "intentos_fallidos": 0,
@@ -14085,7 +14090,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "MUESTRA",
    "segundo_apellido": "FICTICIO",
    "intentos_fallidos": 0,
@@ -14105,7 +14110,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "primer_apellido": "MUESTRA",
    "segundo_apellido": "FICTICIO",
    "intentos_fallidos": 0,
@@ -14165,7 +14170,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "PRUEBA",
    "segundo_apellido": "MODELO",
    "intentos_fallidos": 0,
@@ -14305,7 +14310,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "SIMULADO",
    "segundo_apellido": "MUESTRA",
    "intentos_fallidos": 0,
@@ -14365,7 +14370,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "primer_apellido": "SIMULADO",
    "segundo_apellido": "MUESTRA",
    "intentos_fallidos": 0,
@@ -14445,7 +14450,7 @@
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "primer_apellido": "SIMULADO",
    "segundo_apellido": "MUESTRA",
    "intentos_fallidos": 0,
@@ -14756,7 +14761,7 @@
  ],
  "organizacion": [
   {
-   "id": "43601386-6ae2-44bc-aae1-92e175fe443c",
+   "id": "774a18a4-edc6-43af-b537-a41acea926d1",
    "tipo": "alcaldia",
    "clave": "azcapotzalco",
    "activa": true,
@@ -14765,7 +14770,7 @@
    "nombre_normalizado": "azcapotzalco"
   },
   {
-   "id": "602846ba-2350-48d8-bf6f-43124f417576",
+   "id": "91a96aa7-b057-4d52-a139-177879e41809",
    "tipo": "alcaldia",
    "clave": "benito_juarez",
    "activa": true,
@@ -14774,7 +14779,7 @@
    "nombre_normalizado": "benito juarez"
   },
   {
-   "id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "tipo": "dependencia_federal",
    "clave": "cfe",
    "activa": true,
@@ -14783,7 +14788,7 @@
    "nombre_normalizado": "comision federal de electricidad cfe"
   },
   {
-   "id": "2b5f8dee-328f-477f-a752-6ec264ead87f",
+   "id": "fce0e0f4-ae32-4f83-8e60-5932e9d3d0da",
    "tipo": "alcaldia",
    "clave": "coyoacan",
    "activa": true,
@@ -14792,7 +14797,7 @@
    "nombre_normalizado": "coyoacan"
   },
   {
-   "id": "1e2989e5-7ce8-4f11-8590-432f98365e40",
+   "id": "700709cd-2fc8-43f4-8fe4-2929aedad6d6",
    "tipo": "alcaldia",
    "clave": "cuajimalpa",
    "activa": true,
@@ -14801,7 +14806,7 @@
    "nombre_normalizado": "cuajimalpa de morelos"
   },
   {
-   "id": "7e832d8d-b424-4489-b400-68b9cf9fd7af",
+   "id": "d66daa99-b135-4c40-8fce-993b917524bd",
    "tipo": "alcaldia",
    "clave": "cuauhtemoc",
    "activa": true,
@@ -14810,7 +14815,7 @@
    "nombre_normalizado": "cuauhtemoc"
   },
   {
-   "id": "def1937f-286d-46b3-86a7-7d4f0203f75f",
+   "id": "98d38286-2e88-479f-b9ae-19546445be45",
    "tipo": "alcaldia",
    "clave": "gustavo_a_madero",
    "activa": true,
@@ -14819,7 +14824,7 @@
    "nombre_normalizado": "gustavo a madero"
   },
   {
-   "id": "6e0f2484-03ed-4e64-823a-48b92533c359",
+   "id": "8dd09774-e2f5-43e5-8850-88a431c49e6d",
    "tipo": "alcaldia",
    "clave": "iztacalco",
    "activa": true,
@@ -14828,7 +14833,7 @@
    "nombre_normalizado": "iztacalco"
   },
   {
-   "id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "tipo": "alcaldia",
    "clave": "iztapalapa",
    "activa": true,
@@ -14846,7 +14851,7 @@
    "nombre_normalizado": "jardines ejemplo del norte sa de cv"
   },
   {
-   "id": "da97bc3b-93e0-4146-8516-5d5b9c54f088",
+   "id": "f7272028-77dc-454e-9032-54fb2a0fb356",
    "tipo": "alcaldia",
    "clave": "magdalena_contreras",
    "activa": true,
@@ -14855,7 +14860,7 @@
    "nombre_normalizado": "la magdalena contreras"
   },
   {
-   "id": "8b82b74c-a160-424a-ae2c-7361342eef06",
+   "id": "6a40dbcc-cfa8-41de-91e3-24e1e1c98c55",
    "tipo": "alcaldia",
    "clave": "miguel_hidalgo",
    "activa": true,
@@ -14864,7 +14869,7 @@
    "nombre_normalizado": "miguel hidalgo"
   },
   {
-   "id": "f6ae9852-1d99-4742-8f54-986e6d6edb33",
+   "id": "2dd8b38d-1017-4c4a-badf-cc7be568eb19",
    "tipo": "alcaldia",
    "clave": "milpa_alta",
    "activa": true,
@@ -14882,7 +14887,7 @@
    "nombre_normalizado": "podas y paisajes muestra sociedad cooperativa de produccion de servicios ambientales urbanos"
   },
   {
-   "id": "914b34e4-6f97-40d3-8f89-9890673ea2be",
+   "id": "6344ebdf-e40e-4cba-a327-303fcd623e9a",
    "tipo": "dependencia_cdmx",
    "clave": "paot",
    "activa": true,
@@ -14891,7 +14896,7 @@
    "nombre_normalizado": "procuraduria ambiental y del ordenamiento territorial paot"
   },
   {
-   "id": "5b5e9ea1-4752-4942-88e7-d3a034fc66d7",
+   "id": "2d005223-f88c-417f-87b9-84f3e3dec4ad",
    "tipo": "dependencia_cdmx",
    "clave": "sedema_dgcpca",
    "activa": true,
@@ -14900,7 +14905,7 @@
    "nombre_normalizado": "sedema direccion general de coordinacion de politicas y cultura ambiental dgcpca"
   },
   {
-   "id": "d26e38fd-5f40-47f9-9a4e-2f276254c021",
+   "id": "52a46ff9-5587-41d8-8cc9-59b69190eeb0",
    "tipo": "dependencia_cdmx",
    "clave": "sedema_dgeira",
    "activa": true,
@@ -14909,7 +14914,7 @@
    "nombre_normalizado": "sedema direccion general de evaluacion de impacto y regulacion ambiental dgeira"
   },
   {
-   "id": "1d4b6310-c6a6-46f8-a499-9ce2430b75b1",
+   "id": "659e0bd6-17df-4c4c-88fd-74e2eb4251d1",
    "tipo": "dependencia_cdmx",
    "clave": "sedema_dgiva",
    "activa": true,
@@ -14918,7 +14923,7 @@
    "nombre_normalizado": "sedema direccion general de vigilancia ambiental dgiva"
   },
   {
-   "id": "03c3c60e-f62f-45d9-bb62-911ea78fb070",
+   "id": "9a7aa619-9c5f-419c-97e8-1ca91197693f",
    "tipo": "dependencia_cdmx",
    "clave": "sedema_dgzcfs",
    "activa": true,
@@ -14927,7 +14932,7 @@
    "nombre_normalizado": "sedema direccion general de zoologicos y conservacion de la fauna silvestre dgzcfs"
   },
   {
-   "id": "6c9ec15d-277e-4a0b-b4df-fe58dd0cdc80",
+   "id": "6d331a90-c83c-4eb1-995b-38d9253f5dea",
    "tipo": "dependencia_cdmx",
    "clave": "sedema_dgcorenadr",
    "activa": true,
@@ -14936,7 +14941,7 @@
    "nombre_normalizado": "sedema direccion general de la comision de recursos naturales y desarrollo rural dgcorenadr"
   },
   {
-   "id": "49a48ca2-e0e3-411c-8572-55f3b5e37fef",
+   "id": "cb77413d-62e7-4330-aed6-b35ea627fbef",
    "tipo": "dependencia_cdmx",
    "clave": "sedema_dgsanpava",
    "activa": true,
@@ -14945,7 +14950,7 @@
    "nombre_normalizado": "sedema direccion general del sistema de areas naturales protegidas y areas de valor ambiental dgsanpava"
   },
   {
-   "id": "dc62e966-d7d9-4aa1-ba43-2cf81e178c09",
+   "id": "bb757283-3327-43e4-936c-8b01f536a807",
    "tipo": "dependencia_cdmx",
    "clave": "sobse",
    "activa": true,
@@ -14954,7 +14959,7 @@
    "nombre_normalizado": "secretaria de obras y servicios sobse"
   },
   {
-   "id": "8bd3e349-d414-43e3-8d53-986d820ffa34",
+   "id": "53c0ec2e-895a-486c-8c33-e1536e644f1a",
    "tipo": "dependencia_cdmx",
    "clave": "sedema",
    "activa": true,
@@ -14963,7 +14968,7 @@
    "nombre_normalizado": "secretaria del medio ambiente sedema"
   },
   {
-   "id": "6d4899b4-d79e-4378-ba09-70f98abc8520",
+   "id": "053aec45-b1e6-4423-98fd-0e3a2167976b",
    "tipo": "alcaldia",
    "clave": "tlalpan",
    "activa": true,
@@ -14972,7 +14977,7 @@
    "nombre_normalizado": "tlalpan"
   },
   {
-   "id": "6361fedd-97e6-4dc0-8a40-b0ba1b9a3df1",
+   "id": "a9228189-1e7c-48f6-ad0c-6c38a4ff9ac0",
    "tipo": "alcaldia",
    "clave": "tlahuac",
    "activa": true,
@@ -14981,7 +14986,7 @@
    "nombre_normalizado": "tlahuac"
   },
   {
-   "id": "a59d5c8e-3fd9-44d7-9301-7c2451f0c8f3",
+   "id": "506c4254-d0c8-4d9b-abfa-45fa3ccb7d7c",
    "tipo": "educativa",
    "clave": "unam",
    "activa": true,
@@ -14990,7 +14995,7 @@
    "nombre_normalizado": "universidad nacional autonoma de mexico unam"
   },
   {
-   "id": "c0945ded-a591-4474-a847-5d1935391da4",
+   "id": "ed4a0380-1faa-4fb4-8a8c-dc5ce82dac64",
    "tipo": "alcaldia",
    "clave": "venustiano_carranza",
    "activa": true,
@@ -14999,7 +15004,7 @@
    "nombre_normalizado": "venustiano carranza"
   },
   {
-   "id": "045bd461-28a5-4042-8bfa-26cda344808e",
+   "id": "20f00f1e-a202-4f9e-bef2-85a326c88780",
    "tipo": "alcaldia",
    "clave": "xochimilco",
    "activa": true,
@@ -15008,7 +15013,7 @@
    "nombre_normalizado": "xochimilco"
   },
   {
-   "id": "34753fbe-de84-48ee-a79c-a81d6079f9e1",
+   "id": "b616e962-1e35-4d32-80b1-4fd5087b15b5",
    "tipo": "alcaldia",
    "clave": "alvaro_obregon",
    "activa": true,
@@ -15029,7 +15034,7 @@
    "solicitud_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
    "orden_sugerido": "2026-09-23",
    "vence_anterior": null,
-   "organizacion_id": "6c9ec15d-277e-4a0b-b4df-fe58dd0cdc80",
+   "organizacion_id": "6d331a90-c83c-4eb1-995b-38d9253f5dea",
    "dias_para_vencer": null,
    "organizacion_tipo": "dependencia_cdmx",
    "tipo_acreditacion": "dictaminador",
@@ -15097,7 +15102,7 @@
    "solicitud_id": "7165b2ea-a3c8-4b4a-acad-e6bc737f7c46",
    "orden_sugerido": "2026-09-30",
    "vence_anterior": null,
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "dias_para_vencer": null,
    "organizacion_tipo": "alcaldia",
    "tipo_acreditacion": "poda",
@@ -15114,7 +15119,7 @@
    "solicitud_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
    "orden_sugerido": "2026-10-06",
    "vence_anterior": null,
-   "organizacion_id": "acef40c5-4092-4b89-8958-ece78449700e",
+   "organizacion_id": "80155cdf-27a2-415b-9f0e-c934d2addadc",
    "dias_para_vencer": null,
    "organizacion_tipo": "dependencia_federal",
    "tipo_acreditacion": "poda",
@@ -15199,7 +15204,7 @@
    "solicitud_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
    "orden_sugerido": "2026-10-30",
    "vence_anterior": "2026-10-30",
-   "organizacion_id": "9987eb59-82a6-4e64-a49d-b7f5dbe59f71",
+   "organizacion_id": "16c1d547-8088-4ed2-a756-42d4c0bdd60d",
    "dias_para_vencer": 16,
    "organizacion_tipo": "alcaldia",
    "tipo_acreditacion": "poda",

@@ -21,13 +21,13 @@ const CAPTURAS = process.argv[3] ? join(raiz, process.argv[3]) : null;
 if (CAPTURAS) mkdirSync(CAPTURAS, { recursive: true });
 
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
-await import('../sitio/app/curp-nombre.js'); // la misma regla nombre ↔ CURP del formulario
+await import('../sitio/formkit/js/validaciones.config.js'); // la misma regla nombre ↔ CURP del formulario (prefijoCurp)
 await import('../sitio/app/casos-prueba.js'); // los casos de prueba del menú (se comprueba que todos encuentran persona)
 const ALFABETO = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const conDigito = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
 // Persona nueva ficticia, con CURP coherente con su nombre y su fecha de nacimiento
 const NUEVA = { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado', nacimiento: '1999-12-30' };
-NUEVA.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: NUEVA.nombre, primer: NUEVA.primer_apellido, segundo: NUEVA.segundo_apellido }, NUEVA.nacimiento, 'M', 'NE') + '0');
+NUEVA.curp = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: NUEVA.nombre, primer: NUEVA.primer_apellido, segundo: NUEVA.segundo_apellido }, NUEVA.nacimiento, 'M', 'NE') + '0');
 const otroDigito = (c) => c.slice(0, 17) + String((Number(c[17]) + 1) % 10);
 // Fecha de nacimiento de una persona ficticia: está en su CURP (homoclave 0 = nacida antes de 2000)
 const dma = (iso) => iso.split('-').reverse().join('/'); // la fecha se escribe día/mes/año (decisión 2026-10-16)
@@ -378,7 +378,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 
   // Persona sin segundo apellido: crea su cuenta sin quedar atrapada
   const SIN = { nombre: 'Uriel', primer_apellido: 'Ejemplo', segundo_apellido: '', nacimiento: '1988-04-09' };
-  SIN.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: SIN.nombre, primer: SIN.primer_apellido, segundo: '' }, SIN.nacimiento, 'H', 'NE') + '0');
+  SIN.curp = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: SIN.nombre, primer: SIN.primer_apellido, segundo: '' }, SIN.nacimiento, 'H', 'NE') + '0');
   await page.goto(BASE + 'cuenta.html');
   await llenaCuenta(page, SIN);
   await page.click('[data-accion="enviar"]');
@@ -502,7 +502,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('[data-estado-envio]:not([hidden])');
   comprueba((await page.textContent('[data-estado-envio]')).includes('no coinciden'), t('entrar: error sin decir cuál dato falló'));
   // Versión de prueba: una CURP sin cuenta en este navegador se dice tal cual (las cuentas no se comparten entre navegadores)
-  await page.fill('#curp', conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Ximena', primer: 'Ejemplo', segundo: 'Simulado' }, '1990-05-05', 'M', 'NE') + '0'));
+  await page.fill('#curp', conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Ximena', primer: 'Ejemplo', segundo: 'Simulado' }, '1990-05-05', 'M', 'NE') + '0'));
   await page.click('[data-accion="enviar"]');
   await page.waitForFunction(() => /en este navegador/.test(document.querySelector('[data-estado-envio]').textContent));
   bien(t('entrar: en la prueba, una CURP sin cuenta en este navegador lo dice'));
@@ -715,7 +715,7 @@ async function recorridoGuardado(navegador) {
   };
   const real = { name: 'escaneado.pdf', mimeType: 'application/pdf', buffer: readFileSync(new URL('../datos/documentos/identificacion_oficial.pdf', import.meta.url)) };
   const P = { nombre: 'Rocío', primer_apellido: 'Guardado', segundo_apellido: 'Ejemplo', nacimiento: '1987-03-15' };
-  P.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: P.nombre, primer: P.primer_apellido, segundo: P.segundo_apellido }, P.nacimiento, 'M', 'NE') + '0');
+  P.curp = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: P.nombre, primer: P.primer_apellido, segundo: P.segundo_apellido }, P.nacimiento, 'M', 'NE') + '0');
   // 1 · Crea su cuenta y cierra la pestaña
   let page = vigila(await contexto.newPage());
   await page.goto(BASE + 'cuenta.html');
@@ -1039,9 +1039,12 @@ async function personal(navegador, ancho, alto, sufijo) {
     await page.click('[data-ver="comprobantes_experiencia"]');
     await page.waitForFunction((n) => document.querySelectorAll('.visor-lienzo').length === n, hojasDe.comprobantes_experiencia);
     comprueba(await page.textContent('[data-visor-pagina]') === 'Hoja 1 de 5', t('el visor dice en qué hoja va'));
+    // El visor del estándar (P67) vuelve a dibujar cada hoja al tamaño del acercamiento: el lienzo crece
+    const anchoAntes = await page.evaluate(() => document.querySelector('.visor-lienzo').width);
     await page.click('[data-visor-accion="acercar"]');
     await page.waitForFunction(() => document.querySelector('[data-visor-zoom]').textContent === '125 %');
-    comprueba(await page.getAttribute('[data-visor-hojas]', 'data-zoom') === '125', t('el visor acerca'));
+    await page.waitForFunction((a) => { const l = document.querySelector('.visor-lienzo'); return l && l.width > a * 1.2; }, anchoAntes, { timeout: 5000 }).catch(() => {});
+    comprueba(await page.evaluate((a) => document.querySelector('.visor-lienzo').width > a * 1.2, anchoAntes), t('el visor acerca'));
     await captura(page, `43-personal-visor-${sufijo}`);
   } else {
     comprueba(!(await page.isVisible('[data-visor]')), t('en pantalla chica el visor no ocupa lugar hasta pedirlo'));
@@ -1109,7 +1112,7 @@ async function personal(navegador, ancho, alto, sufijo) {
   comprueba(await page.isVisible('[data-anteriores]') && await page.locator('.doc-corregido').count() >= 1, t('la reenviada muestra la revisión anterior y lo corregido'));
   comprueba(!(await page.isVisible('[data-perfil]')), t('en poda no hay bloque de perfil'));
   await page.check('input[name="decision_curp"][value="con_observacion"]');
-  await page.click('[data-campo="observacion_curp"] [data-sugerencia]');
+  await page.click('[data-campo="observacion_curp"] [data-chip-fijo]');
   comprueba(/\.$/.test(await page.inputValue('#observacion_curp')), t('un motivo frecuente se agrega a la observación'));
   await sinDesborde(page, t('revisión'));
 

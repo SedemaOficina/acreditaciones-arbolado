@@ -34,7 +34,10 @@
   font-size:var(--t-md);
 }
 .rev-dato-etq{padding:var(--e-2) var(--e-3) 0;background:var(--blanco);font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--gris)}
-.rev-dato-valor{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--e-2);padding:0 var(--e-3) var(--e-2);background:var(--blanco);white-space:pre-wrap;word-break:break-word}
+.rev-dato-valor{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e-2);padding:0 var(--e-3) var(--e-2);background:var(--blanco);white-space:pre-wrap;word-break:break-word}
+/* Con un valor largo, el valor se parte en renglones y «Editar» se queda a su lado, arriba. */
+.rev-dato-valor > span{flex:1 1 auto;min-width:0}
+.rev-dato-valor > .btn-enlace{flex:none}
 
 /* @bloque estados */
 

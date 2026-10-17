@@ -1,6 +1,6 @@
 {
   "formulario": "adscripcion.html",
-  "generado": "2026-10-17T18:06:37.204Z",
+  "generado": "2026-10-17T19:04:46.284Z",
   "campos": {
     "adscrito": {
       "etiqueta": "¿Trabajas para alguna empresa, institución o dependencia?",
@@ -35,7 +35,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "empresa_nombre": {
       "etiqueta": "Nombre de la empresa, consultoría o persona física",
@@ -55,7 +63,21 @@
         "valores": [
           "privada"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "privada"
+          ]
+        }
+      ]
     },
     "dependencia_cdmx": {
       "etiqueta": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
@@ -76,7 +98,21 @@
         "valores": [
           "dependencia_cdmx"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_cdmx"
+          ]
+        }
+      ]
     },
     "dependencia_cdmx_otra": {
       "etiqueta": "Nombre de la dependencia",
@@ -94,7 +130,27 @@
         "valores": [
           "otro"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_cdmx"
+          ]
+        },
+        {
+          "campo": "dependencia_cdmx",
+          "valores": [
+            "otro"
+          ]
+        }
+      ]
     },
     "direccion_sedema": {
       "etiqueta": "¿A qué Dirección General de la SEDEMA perteneces?",
@@ -117,7 +173,27 @@
         "valores": [
           "sedema"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_cdmx"
+          ]
+        },
+        {
+          "campo": "dependencia_cdmx",
+          "valores": [
+            "sedema"
+          ]
+        }
+      ]
     },
     "alcaldia": {
       "etiqueta": "¿En qué alcaldía trabajas?",
@@ -150,7 +226,21 @@
         "valores": [
           "alcaldia"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "alcaldia"
+          ]
+        }
+      ]
     },
     "dependencia_federal": {
       "etiqueta": "¿A qué dependencia del Gobierno Federal perteneces?",
@@ -169,7 +259,21 @@
         "valores": [
           "dependencia_federal"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_federal"
+          ]
+        }
+      ]
     },
     "dependencia_federal_otra": {
       "etiqueta": "Nombre de la dependencia",
@@ -187,7 +291,27 @@
         "valores": [
           "otro"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_federal"
+          ]
+        },
+        {
+          "campo": "dependencia_federal",
+          "valores": [
+            "otro"
+          ]
+        }
+      ]
     },
     "institucion_educativa": {
       "etiqueta": "¿A qué institución educativa perteneces?",
@@ -206,7 +330,21 @@
         "valores": [
           "educativa"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "educativa"
+          ]
+        }
+      ]
     },
     "institucion_educativa_otra": {
       "etiqueta": "Nombre de la institución",
@@ -224,8 +362,29 @@
         "valores": [
           "otro"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "educativa"
+          ]
+        },
+        {
+          "campo": "institucion_educativa",
+          "valores": [
+            "otro"
+          ]
+        }
+      ]
     }
   },
-  "repetibles": []
+  "repetibles": [],
+  "limitesRepetibles": {}
 }

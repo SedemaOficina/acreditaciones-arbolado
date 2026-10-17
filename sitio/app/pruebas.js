@@ -118,7 +118,7 @@
     // Fecha al azar: cada persona nueva tiene otra CURP (las cuentas de la prueba se guardan en este navegador)
     const p = { nombre: nombres[n], primer: 'Ejemplo', segundo: 'Simulado', fecha: `${al(1960, 2002)}-${String(al(1, 12)).padStart(2, '0')}-${String(al(1, 28)).padStart(2, '0')}`, sexo: n % 2 ? 'H' : 'M' };
     // Posición 17 de la CURP: un dígito si nació antes de 2000, una letra desde 2000 (la cruzada CURP ↔ fecha lo revisa)
-    p.curp = window.APD_CURP ? conDigito(APD_CURP.prefijo({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.fecha, p.sexo, 'NE') + (p.fecha < '2000' ? '0' : 'A')) : '';
+    p.curp = window.FORMKIT_VALIDACIONES ? conDigito(FORMKIT_VALIDACIONES.prefijoCurp({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.fecha, p.sexo, 'NE') + (p.fecha < '2000' ? '0' : 'A')) : '';
     return p;
   }
 

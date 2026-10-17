@@ -93,24 +93,16 @@
   .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Preguntas de opción (decisión 2026-10-15): lista con el botón de opción visible (variante opciones-lista del
-   estándar) en lugar de tarjetas en rejilla. El estándar no le da estado deshabilitado a esa variante: se agrega
-   igual que el de las tarjetas (p. ej., «Dictaminador técnico» sin poda vigente, con su motivo). */
-.opcion-fila:has(.opcion-fila-input:disabled) { opacity: var(--op-inactivo); cursor: not-allowed; }
-.opcion-fila:has(.opcion-fila-input:disabled):hover { border-color: var(--borde); }
 
 /* Datos internos (decisión 2026-10-15): los que calcula el sistema y SE GUARDAN en la base, como el sexo tomado de
-   la CURP, no los ve la persona; los que sólo usa la página (p. ej. sin_segundo_apellido) no se marcan. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
+   la CURP, no los ve la persona; los que sólo usa la página (data-auxiliar) no se marcan. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
    nota, para revisarlos; al pasar al SIA se quita pruebas.js y quedan ocultos. */
 /* Revisión: nombre con que se guarda cada documento (TIPO_NOMBRE COMPLETO) y, debajo, el archivo que subió */
 .rev-archivo-nuevo { display: block; }
 .rev-archivo-original { display: block; font-size: var(--t-sm); color: var(--gris); }
-/* Estilo de formularios (decisión 2026-10-16, Liber; segunda tanda de hallazgos del estándar, S2-1 a S2-3):
-   una ayuda por bloque bajo el título de la sección, respuestas cortas en línea y anchos según el dato. */
+/* Estilo de formularios (decisión 2026-10-16, Liber; S2-1 a S2-3): la ayuda por bloque (.ayuda-bloque) y las
+   respuestas cortas en línea (.opciones-lista.opciones-en-linea) son del estándar desde la 1.1.0; aquí, los anchos. */
 .titulo-primero { margin-top: var(--e-6); }
-.ayuda-bloque { margin-bottom: var(--e-4); }
-.opciones-en-linea { display: grid; grid-template-columns: 1fr; gap: var(--e-2); }
-@media (min-width: 760px) { .opciones-en-linea { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .control-medio { max-width: var(--ancho-acuse); }
 .tarjeta-angosta { max-width: var(--ancho-dialogo); margin-inline: auto; }
 [data-interno] { display: none; }
@@ -159,68 +151,12 @@
 .doc-archivo { margin: 0; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; }
 .doc-corregido { display: inline-flex; margin-inline-start: var(--e-2); }
 .doc-vista summary { display: inline-flex; align-items: center; min-height: var(--objetivo-min); color: var(--azul); text-decoration: underline; cursor: pointer; }
-.visor-hoja {
-  display: grid; place-items: center; align-content: center; gap: var(--e-1); min-height: var(--alto-mapa); padding: var(--e-4);
-  border: var(--b-1) dashed var(--gris-cl); border-radius: var(--r-ctrl); background: var(--fondo); color: var(--gris); text-align: center;
-}
-.visor-icono { inline-size: var(--e-8); block-size: var(--e-8); }
-.sugerencias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-2); }
-.sugerencia {
-  min-height: var(--objetivo-min); padding: var(--e-1) var(--e-3); font: inherit; font-size: var(--t-sm);
-  border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); background: var(--blanco); color: var(--texto); cursor: pointer;
-}
-.sugerencia:hover { border-color: var(--guinda); }
-.sugerencia:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
 .acciones-izq { justify-content: flex-start; }
 
-/* ───── Visor de documentos de la revisión (decisión 2026-10-16): todas las hojas; fijo a la derecha en computadora ───── */
+/* ───── Visor de documentos (decisión 2026-10-16): es el módulo visor del estándar desde la 1.2.0 (P67) ───── */
 .pagina-amplia { max-width: calc(var(--ancho-pagina) * 1.6); }
-.revision-area { display: grid; gap: var(--e-5); }
 .doc-revision[data-viendo] { padding-inline: var(--e-3); border-inline-start: var(--b-4) solid var(--guinda); background: var(--fondo); }
-.visor {
-  inline-size: 100%; max-inline-size: none; block-size: 100dvh; max-block-size: none; margin: 0; padding: var(--e-4);
-  border: 0; background: var(--blanco); color: var(--texto); flex-direction: column; gap: var(--e-2);
-}
-.visor[open] { display: flex; }
-.visor::backdrop { background: var(--velo); }
-.visor-cabeza { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
-.visor-nombre { min-inline-size: 0; }
-.visor-titulo { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
-.visor-archivo { margin: 0; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
-.visor-barra { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
-.visor-zoom { min-inline-size: var(--e-9); text-align: center; font-variant-numeric: tabular-nums; font-size: var(--t-sm); }
-.visor-abrir { display: inline-flex; align-items: center; gap: var(--e-1); margin-inline-start: auto; }
-.visor-pagina { margin: 0; font-size: var(--t-sm); font-weight: var(--peso-medio); color: var(--gris); }
-.visor-hojas { flex: 1 1 auto; min-block-size: 0; overflow: auto; padding: var(--e-3); background: var(--linea); border-radius: var(--r-ctrl); }
-.visor-hojas:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
-.visor-hoja-pdf { margin: 0 0 var(--e-4); }
-.visor-lienzo { display: block; inline-size: 100%; block-size: auto; margin-inline: auto; background: var(--blanco); box-shadow: var(--sombra-hoja); }
-.visor-hojas[data-zoom="50"] .visor-lienzo { inline-size: 50%; }
-.visor-hojas[data-zoom="75"] .visor-lienzo { inline-size: 75%; }
-.visor-hojas[data-zoom="125"] .visor-lienzo { inline-size: 125%; }
-.visor-hojas[data-zoom="150"] .visor-lienzo { inline-size: 150%; }
-.visor-hojas[data-zoom="200"] .visor-lienzo { inline-size: 200%; }
-.visor-hojas[data-zoom="300"] .visor-lienzo { inline-size: 300%; }
-.visor-pie { margin-block-start: var(--e-1); text-align: center; font-size: var(--t-xs); color: var(--texto); }
-.visor-nota { margin: 0; font-size: var(--t-xs); }
-@media (min-width: 1024px) {
-  .revision-area { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; }
-  .visor { position: sticky; inset-block-start: var(--e-3); block-size: calc(100dvh - var(--e-6)); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
-  .visor-cerrar { display: none; }
-}
-/* En la barra del visor los botones son del tamaño de su texto, también en teléfono */
-.visor-barra .btn { width: auto; min-inline-size: var(--objetivo-min); }
-.visor-paso { font-size: var(--t-lg); line-height: 1; }
-
-/* Revisión antes de enviar: «Editar» siempre arriba a la derecha del valor, aunque el texto sea largo (2026-10-17) */
-.rev-dato-valor { flex-wrap: nowrap; align-items: flex-start; }
-.rev-dato-valor > span { flex: 1 1 auto; min-width: 0; }
-.rev-dato-valor > .btn-enlace { flex: none; }
-
-/* Carga de archivos: con el máximo alcanzado se oculta «Elegir archivo» y el archivo se ve cargado (app/archivos-lleno.js) */
-[data-archivos][data-lleno] > .zona-carga, [data-archivos][data-lleno] > .zona-camara { display: none; }
-.lista-arch > li[data-estado="listo"] { border-color: var(--ok); background: var(--ok-bg); }
 
 /* Mi perfil (2026-10-17): fotografía y nombre arriba; cada parte se ve escrita y se edita con «Editar» */
 .perfil-cabeza { display: grid; gap: var(--e-4); justify-items: center; text-align: center; }
@@ -241,15 +177,6 @@
   .perfil-quien { justify-items: start; }
   .perfil-guardado, .perfil-form { grid-column: 1 / -1; }
 }
-
-/* Acuse: el estándar le quita el relleno lateral a la tarjeta (.acuse) y en teléfono el botón queda pegado a la orilla */
-.tarjeta.acuse { padding-inline: var(--e-seccion); }
-
-/* Contraseña con «Mostrar» dentro del campo, a la derecha (app/ver-contrasena.js, 2026-10-17) */
-.contrasena-caja { position: relative; grid-row: 3; } /* en .fila ocupa el renglón del control, como .select */
-.contrasena-caja > .control { padding-inline-end: var(--e-11); }
-.contrasena-ver { position: absolute; inset-block: var(--b-1); inset-inline-end: var(--b-1); min-width: var(--objetivo-min); padding-inline: var(--e-3); border: 0; border-radius: var(--r-ctrl); background: transparent; color: var(--azul); font: inherit; font-size: var(--t-sm); font-weight: var(--peso-medio); text-decoration: underline; cursor: pointer; }
-.contrasena-ver:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: calc(var(--foco-sep) * -1); }
 
 /* Revisión del personal: fotografía de la persona junto a sus datos (2026-10-17) */
 .persona-con-foto { display: grid; gap: var(--e-4); }

@@ -19,6 +19,8 @@
 .tabla td{display:flex;flex-wrap:wrap;gap:var(--e-1) var(--e-3);padding:var(--e-2) 0;border-bottom:var(--b-1) solid var(--linea);vertical-align:top}
 .tabla td:last-child{border-bottom:0}
 .tabla td::before{content:attr(data-etiqueta);flex:0 0 40%;font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--gris)}
+/* Columna cuyo encabezado es sólo para el lector de pantalla (acciones): en teléfono tampoco se ve su rótulo. */
+.tabla td[data-etiqueta-oculta]::before{display:none}
 .tabla th{padding:var(--e-2) var(--e-3);background:var(--guinda);font-family:var(--fuente-titulo);font-size:var(--t-md);font-weight:var(--peso-fuerte);text-align:left;color:var(--blanco)}
 .tabla-orden{display:inline-flex;align-items:center;gap:var(--e-1);min-height:var(--objetivo-min);padding:0;background:none;border:0;font:inherit;color:inherit}
 .tabla-orden-icono{opacity:var(--op-inactivo);transition:transform var(--dur-rapida)}
@@ -32,6 +34,8 @@
 [aria-sort="ascending"] .tabla-orden-icono{opacity:1;transform:rotate(180deg)}
 [aria-sort="descending"] .tabla-orden-icono{opacity:1}
 .tabla[aria-busy="true"]{opacity:var(--op-inactivo)}
+/* Fila filtrada con [hidden]: «.tabla tr» declara display y le ganaría al atributo (FRM-69). */
+.tabla tr[hidden]{display:none}
 
 /* @bloque adaptaciones */
 
@@ -41,5 +45,6 @@
   .tabla tr{display:table-row;margin:0;padding:0;background:none;border:0;border-radius:0}
   .tabla td{display:table-cell;padding:var(--e-2) var(--e-3)}
   .tabla td::before{display:none}
-  .tabla tr:nth-child(even){background:var(--guinda-cl)}
+  /* Filas alternas contadas sólo entre las visibles: al filtrar con [hidden], el rayado no pierde el ritmo. */
+  .tabla tr:nth-child(even of :not([hidden])){background:var(--guinda-cl)}
 }

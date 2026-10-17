@@ -28,6 +28,12 @@
   line-height:var(--interlineado-compacto);
   color:var(--blanco);
 }
+/* Junto a una etiqueta, el texto se ancla a la etiqueta (el ancho del campo)
+   y no al botón: con el «?» cerca del borde derecho de un teléfono, el texto
+   abierto no se sale de la pantalla. */
+.etiqueta:has(.tooltip){position:relative}
+.etiqueta .tooltip{position:static}
+.etiqueta .tooltip-texto{max-width:min(var(--ancho-tooltip-max),100%)}
 
 /* @bloque estados */
 

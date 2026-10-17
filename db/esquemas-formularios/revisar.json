@@ -1,10 +1,10 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-17T18:06:37.000Z",
+  "generado": "2026-10-17T19:14:34.411Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Mostrar la pregunta de perfil que corresponde: carrera por clasificar o perfil que podría no cumplir; lo calculan la página y el servidor con apd.perfil_academico.",
@@ -14,7 +14,7 @@
     },
     "resultado": {
       "etiqueta": "resultado",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Mostrar los datos que pide el resultado (cita, mensaje o motivo); lo calculan la página y el servidor con las decisiones.",
@@ -24,7 +24,7 @@
     },
     "revisar_identificacion_oficial": {
       "etiqueta": "revisar_identificacion_oficial",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Identificación oficial» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -34,7 +34,7 @@
     },
     "revisar_curp": {
       "etiqueta": "revisar_curp",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Clave Única de Registro de Población (CURP)» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -44,7 +44,7 @@
     },
     "revisar_comprobante_domicilio": {
       "etiqueta": "revisar_comprobante_domicilio",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Comprobante de domicilio» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -54,7 +54,7 @@
     },
     "revisar_constancia_situacion_fiscal": {
       "etiqueta": "revisar_constancia_situacion_fiscal",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Constancia de situación fiscal» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -64,7 +64,7 @@
     },
     "revisar_comprobante_estudios": {
       "etiqueta": "revisar_comprobante_estudios",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Comprobante de estudios» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -74,7 +74,7 @@
     },
     "revisar_curriculum_vitae": {
       "etiqueta": "revisar_curriculum_vitae",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Currículum vitae» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -84,7 +84,7 @@
     },
     "revisar_comprobantes_experiencia": {
       "etiqueta": "revisar_comprobantes_experiencia",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Comprobantes de experiencia» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
@@ -110,7 +110,15 @@
         "valores": [
           "por_clasificar"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "perfil_revision",
+          "valores": [
+            "por_clasificar"
+          ]
+        }
+      ]
     },
     "comprobante_confirma": {
       "etiqueta": "¿El comprobante de estudios confirma lo que declaró la persona?",
@@ -129,7 +137,15 @@
         "valores": [
           "no_cumple"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "perfil_revision",
+          "valores": [
+            "no_cumple"
+          ]
+        }
+      ]
     },
     "decision_identificacion_oficial": {
       "etiqueta": "¿El documento cumple?",
@@ -148,7 +164,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_identificacion_oficial": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -159,7 +183,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -167,7 +192,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_identificacion_oficial",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "decision_curp": {
       "etiqueta": "¿El documento cumple?",
@@ -186,7 +225,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_curp",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_curp": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -197,7 +244,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -205,7 +253,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_curp",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_curp",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "decision_comprobante_domicilio": {
       "etiqueta": "¿El documento cumple?",
@@ -224,7 +286,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_comprobante_domicilio": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -235,7 +305,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -243,7 +314,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_comprobante_domicilio",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "decision_constancia_situacion_fiscal": {
       "etiqueta": "¿El documento cumple?",
@@ -262,7 +347,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_constancia_situacion_fiscal": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -273,7 +366,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -281,7 +375,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_constancia_situacion_fiscal",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "decision_comprobante_estudios": {
       "etiqueta": "¿El documento cumple?",
@@ -300,7 +408,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_comprobante_estudios": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -311,7 +427,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -319,7 +436,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_comprobante_estudios",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "decision_curriculum_vitae": {
       "etiqueta": "¿El documento cumple?",
@@ -338,7 +469,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_curriculum_vitae": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -349,7 +488,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -357,7 +497,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_curriculum_vitae",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "decision_comprobantes_experiencia": {
       "etiqueta": "¿El documento cumple?",
@@ -376,7 +530,15 @@
         "valores": [
           "si"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
     },
     "observacion_comprobantes_experiencia": {
       "etiqueta": "¿Qué debe corregir la persona?",
@@ -387,7 +549,8 @@
       "uso": "Decirle a la persona qué debe corregir de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).",
       "atributos": {
         "minlength": "10",
-        "maxlength": "400"
+        "maxlength": "400",
+        "chipsFijos": "No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta"
       },
       "autocomplete": "off",
       "si": {
@@ -395,7 +558,21 @@
         "valores": [
           "con_observacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "revisar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decision_comprobantes_experiencia",
+          "valores": [
+            "con_observacion"
+          ]
+        }
+      ]
     },
     "cita_fecha": {
       "etiqueta": "Fecha de la cita",
@@ -411,7 +588,15 @@
         "valores": [
           "validada"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "validada"
+          ]
+        }
+      ]
     },
     "cita_hora": {
       "etiqueta": "Hora",
@@ -429,7 +614,15 @@
         "valores": [
           "validada"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "validada"
+          ]
+        }
+      ]
     },
     "mensaje_general": {
       "etiqueta": "Mensaje para la persona (opcional)",
@@ -447,7 +640,15 @@
         "valores": [
           "con_observaciones"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "con_observaciones"
+          ]
+        }
+      ]
     },
     "motivo_rechazo": {
       "etiqueta": "Motivo del rechazo",
@@ -466,8 +667,17 @@
         "valores": [
           "rechazada"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "rechazada"
+          ]
+        }
+      ]
     }
   },
-  "repetibles": []
+  "repetibles": [],
+  "limitesRepetibles": {}
 }

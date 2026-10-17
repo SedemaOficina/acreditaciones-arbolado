@@ -1,6 +1,6 @@
 {
   "formulario": "contacto.html",
-  "generado": "2026-10-17T18:06:37.150Z",
+  "generado": "2026-10-17T19:04:46.214Z",
   "campos": {
     "correo": {
       "etiqueta": "Correo electrónico",
@@ -49,5 +49,6 @@
       "autocomplete": "tel-national"
     }
   },
-  "repetibles": []
+  "repetibles": [],
+  "limitesRepetibles": {}
 }

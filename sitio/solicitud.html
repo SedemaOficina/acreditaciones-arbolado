@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="formkit/modulos/acuse/acuse.css">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
 <link rel="stylesheet" href="formkit/modulos/copiar/copiar.css">
-<link rel="stylesheet" href="app/version-visible.css?v=0.31">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="app/apd.css?v=0.31">
 </head>
 <body>
@@ -52,10 +52,7 @@
     <!-- Curso que corresponde (tipo + nueva o renovación). No es una pregunta: lo calcula app/solicitud.js a
          partir del tipo elegido y del historial, y de él dependen los documentos. El servidor lo calcula por su
          cuenta. Va fuera de los pasos para no aparecer en la revisión. -->
-    <div class="solo-lector" aria-hidden="true" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página."
-         data-interno="Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad." data-interno-etiqueta="Curso que corresponde (calculado)">
-      <input type="hidden" id="tramite" name="tramite" value="">
-    </div>
+    <input type="hidden" id="tramite" name="tramite" value="" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página." data-interno="Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad." data-interno-etiqueta="Curso que corresponde (calculado)">
 
     <!-- Paso 1 · Trámite -->
     <section class="tarjeta" data-paso data-titulo="Trámite" hidden>
@@ -151,7 +148,7 @@
           <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
           <div class="aviso-texto"><p>Con estos estudios podrías no cumplir el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, posgrado en un área afín, o carrera técnica. Puedes enviar tu solicitud: la Secretaría la revisará con tus documentos.</p></div>
         </div>
-        <div class="campo" data-campo="anios_experiencia" data-formato="numero" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.">
+        <div class="campo" data-campo="anios_experiencia" data-formato="numero" data-requerido data-min-segun="experiencia" data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.">
           <label class="etiqueta" for="anios_experiencia">Experiencia en manejo de arbolado</label>
           <p class="ayuda"><span data-experiencia-minima>Experiencia laboral comprobable: dos años con licenciatura en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</span> Puedes usar medios años; por ejemplo, 2.5. Los comprobantes que cargues en el siguiente paso deben respaldarlos.</p>
           <!-- autocomplete off: dato del trámite; el navegador no tiene un valor que proponer. -->
@@ -617,6 +614,7 @@
   <div class="dialogo-cierre"><button type="button" class="btn btn-primario" data-cierra-dialogo>Cerrar</button></div>
 </dialog>
 
+<script src="app/perfil-academico.js?v=0.31"></script>
 <script src="app/apd.js?v=0.31"></script>
 <script src="datos/catalogos.js?v=0.31"></script>
 <!-- Versión de prueba: guarda en este navegador los archivos enviados, para verlos en la revisión del personal. -->
@@ -628,15 +626,12 @@
 <script src="formkit/modulos/combo/combo.js"></script>
 <script src="formkit/modulos/pasos/pasos.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="app/archivos-lleno.js?v=0.31"></script>
 <script src="formkit/modulos/revision/revision.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
-<script src="app/auxiliar.js?v=0.31"></script>
 <script src="app/solicitud.js?v=0.31"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
-<script src="app/curp-nombre.js?v=0.31"></script>
 <script src="app/casos-prueba.js?v=0.31"></script>
 <script src="app/pruebas.js?v=0.31"></script>
 <script src="app/version-visible.js?v=0.31"></script>

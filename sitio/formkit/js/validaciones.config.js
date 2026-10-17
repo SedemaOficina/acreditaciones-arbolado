@@ -29,8 +29,48 @@
   /* ---------- Utilidades compartidas ---------- */
   const recorta = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
   const soloDigitos = (v) => String(v ?? '').replace(/\D/g, '');
+  /* Formatos de archivo para leerlos: en mayúsculas y sin repetir JPEG (jpg y jpeg son el mismo). */
+  const formatosArchivo = (exts) => [...new Set((exts || []).map((e) => String(e).trim().toUpperCase()).map((e) => (e === 'JPG' ? 'JPEG' : e)))].join(', ');
   const sinAcentos = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '');
   const esFechaReal = (a, m, d) => { const f = new Date(Date.UTC(a, m - 1, d)); return f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d; };
+
+  /* Fecha escrita como día/mes/año (formato «fecha-dma»): 23/07/1985,
+     23-07-1985, 23.07.1985, 23 07 1985 o 23071985; también AAAA-MM-DD, que es
+     lo que pone el autocompletado del navegador. */
+  function partesDma(v) {
+    const t = String(v || '').trim();
+    let m = t.match(/^(\d{1,2})\s*[/.\- ]\s*(\d{1,2})\s*[/.\- ]\s*(\d{4})$/) || t.match(/^(\d{2})(\d{2})(\d{4})$/);
+    if (m) return { d: Number(m[1]), m: Number(m[2]), a: Number(m[3]) };
+    m = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? { d: Number(m[3]), m: Number(m[2]), a: Number(m[1]) } : null;
+  }
+  const dosCifras = (n) => String(n).padStart(2, '0');
+  /* «23/07/1985» → «1985-07-23»; '' si no es una fecha real. */
+  const isoDeDma = (v) => { const p = partesDma(v); return p && esFechaReal(p.a, p.m, p.d) ? `${p.a}-${dosCifras(p.m)}-${dosCifras(p.d)}` : ''; };
+  /* «1985-07-23» → «23/07/1985». */
+  const dmaDeIso = (iso) => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; };
+  /* Escritura guiada, sin calendario: al completar el día pasa al mes y al
+     completar el mes pasa al año, poniendo las diagonales. Un primer dígito
+     que no puede empezar un día de dos cifras (4 a 9) o un mes (2 a 9) se
+     completa con cero: «4» → «04/». Una diagonal, punto, guion o espacio tras
+     un solo dígito también lo cierra: «3/» → «03/». */
+  function guiaFechaDma(texto) {
+    const seg = ['', '', ''];
+    const cerrado = [false, false];
+    let i = 0;
+    for (const c of String(texto)) {
+      if (/\d/.test(c)) {
+        if (i < 2 && cerrado[i]) i++;
+        if (i === 2) { if (seg[2].length < 4) seg[2] += c; continue; }
+        seg[i] += c;
+        if (seg[i].length === 1 && Number(c) > (i === 0 ? 3 : 1)) seg[i] = `0${c}`;
+        if (seg[i].length === 2) cerrado[i] = true;
+      } else if (/[/.\- ]/.test(c) && i < 2 && seg[i].length === 1) {
+        seg[i] = `0${seg[i]}`; cerrado[i] = true;
+      }
+    }
+    return seg[0] + (cerrado[0] ? '/' : '') + seg[1] + (cerrado[1] ? '/' : '') + seg[2];
+  }
   const hoyISO = () => {
     /* La fecha de «hoy» se toma en la zona horaria de la Ciudad de México,
        no en la del dispositivo: una persona que captura desde otro huso no
@@ -95,6 +135,62 @@
     return String((10 - (suma % 10)) % 10);
   }
 
+  /* ---------- CURP contra nombre y apellidos ----------
+     Reglas de formación de las letras, simplificadas, A CONFIRMAR con el
+     instructivo del emisor (RENAPO) [Fuente: __]:
+       1 inicial del primer apellido · 2 su primera vocal interna ·
+       3 inicial del segundo apellido (X si no hay) · 4 inicial del nombre ·
+       14, 15 y 16 primera consonante interna del primer apellido, del segundo
+       (X si no hay) y del nombre.
+     Se omiten las partículas (DE, DEL, LA, LOS, Y, MC, VAN…); en un nombre
+     compuesto que empieza con MARÍA o JOSÉ cuenta el segundo; la Ñ cuenta
+     como X; si las cuatro primeras letras forman una palabra altisonante, la
+     segunda cambia por X.
+     Límite: comprueba que la CURP y el nombre sean coherentes entre sí, no
+     que la CURP exista ni que sea de quien la escribe. */
+  const CURP_NOMBRE = {
+    particulas: ['DA', 'DAS', 'DE', 'DEL', 'DER', 'DI', 'DIE', 'DD', 'EL', 'LA', 'LAS', 'LE', 'LES', 'LOS', 'MAC', 'MC', 'VAN', 'VON', 'Y'],
+    nombresComunes: ['MARIA', 'MA', 'MX', 'M', 'JOSE', 'J'],
+    altisonantes: ['BACA', 'BAKA', 'BUEI', 'BUEY', 'CACA', 'CACO', 'CAGA', 'CAGO', 'CAKA', 'CAKO', 'COGE', 'COGI',
+      'COJA', 'COJE', 'COJI', 'COJO', 'COLA', 'CULO', 'FALO', 'FETO', 'GETA', 'GUEI', 'GUEY', 'JETA', 'JOTO', 'KACA', 'KACO',
+      'KAGA', 'KAGO', 'KAKA', 'KAKO', 'KOGE', 'KOGI', 'KOJA', 'KOJE', 'KOJI', 'KOJO', 'KOLA', 'KULO', 'LILO', 'LOCA', 'LOCO',
+      'LOKA', 'LOKO', 'MAME', 'MAMO', 'MEAR', 'MEAS', 'MEON', 'MIAR', 'MION', 'MOCO', 'MOKO', 'MULA', 'MULO', 'NACA', 'NACO',
+      'PEDA', 'PEDO', 'PENE', 'PIPI', 'PITO', 'POPO', 'PUTA', 'PUTO', 'QULO', 'RATA', 'ROBA', 'ROBE', 'ROBO', 'RUIN', 'SENO',
+      'TETA', 'VACA', 'VAGA', 'VAGO', 'VAKA', 'VUEI', 'VUEY', 'WUEI', 'WUEY'],
+    vocales: 'AEIOU'
+  };
+  /* Mayúsculas y sin acentos (la Ñ se conserva para tratarla aparte); sólo letras y espacios. */
+  function letrasDeNombre(t) {
+    return String(t || '').toUpperCase()
+      .replace(/Ñ/g, '\u0001').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\u0001/g, 'Ñ')
+      .replace(/[^A-ZÑ ]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  /* La palabra que cuenta: la primera que no es partícula; en el nombre, la que sigue a MARÍA o JOSÉ. */
+  function palabraDeCurp(t, esNombre) {
+    let p = letrasDeNombre(t).split(' ').filter((w) => w && !CURP_NOMBRE.particulas.includes(w));
+    if (esNombre && p.length > 1 && CURP_NOMBRE.nombresComunes.includes(p[0])) p = p.slice(1);
+    return p[0] || '';
+  }
+  const letraDeCurp = (c) => (!c || c === 'Ñ' ? 'X' : c);
+  const vocalInterna = (p) => letraDeCurp([...p.slice(1)].find((c) => CURP_NOMBRE.vocales.includes(c)));
+  const consonanteInterna = (p) => letraDeCurp([...p.slice(1)].find((c) => !CURP_NOMBRE.vocales.includes(c)));
+  /* Las letras que la CURP debe tener según el nombre; null si falta el nombre o el primer apellido. */
+  function letrasDeCurp({ nombre, primer, segundo }) {
+    const n = palabraDeCurp(nombre, true), a1 = palabraDeCurp(primer), a2 = palabraDeCurp(segundo);
+    if (!n || !a1) return null;
+    return {
+      p1: letraDeCurp(a1[0]), p2: vocalInterna(a1), p3: a2 ? letraDeCurp(a2[0]) : 'X', p4: letraDeCurp(n[0]),
+      p14: consonanteInterna(a1), p15: a2 ? consonanteInterna(a2) : 'X', p16: consonanteInterna(n)
+    };
+  }
+  /* Las 16 primeras posiciones de una CURP coherente con los datos (sin diferenciador ni dígito): para armar datos ficticios de prueba. */
+  function prefijoCurp(datos, fechaISO, sexo, entidad) {
+    const e = letrasDeCurp(datos);
+    let cuatro = e.p1 + e.p2 + e.p3 + e.p4;
+    if (CURP_NOMBRE.altisonantes.includes(cuatro)) cuatro = `${cuatro[0]}X${cuatro.slice(2)}`;
+    return cuatro + fechaISO.slice(2, 4) + fechaISO.slice(5, 7) + fechaISO.slice(8, 10) + sexo + entidad + e.p14 + e.p15 + e.p16;
+  }
+
   /* ---------- Formatos por tipo de dato ---------- */
   const FORMATOS = {
     nombre: {
@@ -140,9 +236,11 @@
       descripcion: 'Código postal: cinco dígitos, se conserva como texto',
       inputmode: 'numeric', autocomplete: 'postal-code',
       normaliza: (v) => soloDigitos(v),
-      valida: (v) => {
+      /* Con data-ambito="nacional" en el campo se acepta cualquier código del
+         país (domicilio fuera de la Ciudad); si no, sólo los del ámbito. */
+      valida: (v, a = {}) => {
         if (!/^\d{5}$/.test(v)) return 'El código postal lleva 5 dígitos. Ejemplo: 01000';
-        const am = CONFIG.ambito.cp;
+        const am = a.ambito === 'nacional' ? null : CONFIG.ambito.cp;
         if (am && (v < am.min || v > am.max)) return am.mensaje;
         return '';
       }
@@ -181,7 +279,12 @@
       valida: (v, a = {}) => {
         if (!/^-?\d+(\.\d+)?$/.test(v)) return 'Escribe sólo números; para decimales usa punto. Ejemplo: 12.5';
         const n = Number(v);
-        if (a.step && a.step !== 'any' && Number(a.step) >= 1 && !Number.isInteger(n)) return 'Escribe un número entero, sin decimales.';
+        /* El paso cuenta desde el mínimo, como en HTML; con tolerancia de redondeo para pasos decimales. */
+        const paso = a.step && a.step !== 'any' ? Number(a.step) : 0;
+        if (paso > 0) {
+          const k = (n - (a.min !== undefined && a.min !== '' ? Number(a.min) : 0)) / paso;
+          if (Math.abs(k - Math.round(k)) > 1e-9) return paso === 1 ? 'Escribe un número entero, sin decimales.' : `Usa múltiplos de ${a.step}.`;
+        }
         if (a.min !== undefined && a.min !== '' && n < Number(a.min)) return `El valor mínimo es ${a.min}.`;
         if (a.max !== undefined && a.max !== '' && n > Number(a.max)) return `El valor máximo es ${a.max}.`;
         return '';
@@ -196,6 +299,21 @@
         if (!m || !esFechaReal(Number(m[1]), Number(m[2]), Number(m[3]))) return 'Escribe una fecha real con el formato AAAA-MM-DD. Ejemplo: 2026-03-15';
         if (a.max && v > a.max) return a.max === hoyISO() ? 'La fecha no puede ser posterior a hoy.' : `La fecha no puede ser posterior al ${a.max}.`;
         if (a.min && v < a.min) return `La fecha no puede ser anterior al ${a.min}.`;
+        return '';
+      }
+    },
+    'fecha-dma': {
+      descripcion: 'Fecha real escrita como día/mes/año (DD/MM/AAAA), sin calendario; para la fecha de nacimiento',
+      inputmode: 'numeric', autocomplete: 'off',
+      normaliza: (v) => { const iso = isoDeDma(v); return iso ? dmaDeIso(iso) : recorta(v); },
+      valida: (v, a = {}) => {
+        const iso = isoDeDma(v);
+        if (!iso) return 'Escribe una fecha real como día/mes/año. Ejemplo: 23/07/1985';
+        if (Number(iso.slice(0, 4)) < 1900) return 'Revisa el año: escribe los cuatro dígitos, de 1900 en adelante. Ejemplo: 1985';
+        /* En el navegador llega data-no-futura; en el servidor, max ya resuelto a hoy. */
+        const max = a.max || (a.noFutura !== undefined ? hoyISO() : '');
+        if (max && iso > max) return max === hoyISO() ? 'La fecha no puede ser posterior a hoy.' : `La fecha no puede ser posterior al ${dmaDeIso(max)}.`;
+        if (a.min && iso < a.min) return `La fecha no puede ser anterior al ${dmaDeIso(a.min)}.`;
         return '';
       }
     },
@@ -236,6 +354,20 @@
       normaliza: (v) => recorta(v).toUpperCase().replace(/\s/g, ''),
       valida: (v, a = {}) => (/^[A-Z0-9][A-Z0-9-]{2,}$/.test(v) && v.length <= (a.maxlength || 40) ? '' : 'Escribe el folio tal como aparece en tu acuse, con letras, números y guiones.')
     },
+    /* Folio fiscal (UUID) de una factura: 32 dígitos hexadecimales en grupos
+       8-4-4-4-12, 36 caracteres. Se acepta en minúsculas y sin guiones, y se
+       guarda en mayúsculas con ellos. Comprueba la forma, no que la factura exista. */
+    'folio-fiscal': {
+      descripcion: 'Folio fiscal (UUID) de una factura: 32 dígitos hexadecimales en grupos 8-4-4-4-12',
+      inputmode: 'text', autocomplete: 'off',
+      normaliza: (v) => {
+        const t = recorta(v).toUpperCase().replace(/\s/g, '');
+        const solo = t.replace(/-/g, '');
+        return /^[0-9A-F]{32}$/.test(solo) ? `${solo.slice(0, 8)}-${solo.slice(8, 12)}-${solo.slice(12, 16)}-${solo.slice(16, 20)}-${solo.slice(20)}` : t;
+      },
+      valida: (v) => (/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/.test(v) ? ''
+        : 'El folio fiscal tiene 36 caracteres: números y letras de la A a la F, en grupos de 8, 4, 4, 4 y 12 separados por guiones. Cópialo como aparece en la factura.')
+    },
     contrasena: {
       descripcion: 'Contraseña: sin límite máximo restrictivo ni bloqueo del pegado',
       inputmode: 'text', autocomplete: 'new-password',
@@ -271,7 +403,8 @@
     'curp-fecha': {
       descripcion: 'La fecha de nacimiento coincide con la contenida en la CURP',
       campos: ['curp', 'fecha'], bloquea: true,
-      valida: ({ curp, fecha }) => (fechaDeCurp(curp) === fecha ? '' : 'La fecha de nacimiento no coincide con la CURP. Revisa que ambos datos estén correctos.')
+      /* La fecha puede venir como AAAA-MM-DD (formato «fecha») o DD/MM/AAAA («fecha-dma»). */
+      valida: ({ curp, fecha }) => (fechaDeCurp(curp) === (isoDeDma(fecha) || fecha) ? '' : 'La fecha de nacimiento no coincide con la CURP. Revisa que ambos datos estén correctos.')
     },
     'curp-sexo': {
       descripcion: 'El sexo declarado coincide con la posición 11 de la CURP',
@@ -282,6 +415,28 @@
       descripcion: 'La entidad de nacimiento coincide con las posiciones 12 y 13 de la CURP',
       campos: ['curp', 'entidad'], bloquea: false,
       valida: ({ curp, entidad }) => (!entidad || curp.slice(11, 13) === String(entidad).toUpperCase() ? '' : 'La entidad de nacimiento no coincide con la de la CURP. Revisa ambos datos.')
+    },
+    /* La CURP y el nombre son coherentes (no prueba que la CURP exista). */
+    'curp-nombre': {
+      descripcion: 'Las letras de la CURP corresponden al nombre y al primer apellido (posiciones 1, 2, 4, 14 y 16)',
+      campos: ['curp', 'nombre', 'primer'], bloquea: true,
+      valida: ({ curp, nombre, primer }) => {
+        const e = letrasDeCurp({ nombre, primer, segundo: '' });
+        if (!e) return '';
+        /* La posición 3 viene de la propia CURP: así se reconoce la palabra altisonante sin pedir el segundo apellido. */
+        const p2 = CURP_NOMBRE.altisonantes.includes(e.p1 + e.p2 + curp[2] + e.p4) ? 'X' : e.p2;
+        return curp[0] === e.p1 && curp[1] === p2 && curp[3] === e.p4 && curp[13] === e.p14 && curp[15] === e.p16 ? '' : CONFIG.mensajes.curpNombre;
+      }
+    },
+    /* El segundo apellido es opcional: sin él, la CURP lleva X en las posiciones 3 y 15. */
+    'curp-segundo-apellido': {
+      descripcion: 'Las letras de la CURP corresponden al segundo apellido (posiciones 3 y 15); sin segundo apellido, la CURP lleva X en las dos',
+      campos: ['curp', 'segundo'], opcionales: ['segundo'], bloquea: true,
+      valida: ({ curp, segundo }) => {
+        const a2 = palabraDeCurp(segundo);
+        if (!a2) return curp[2] === 'X' && curp[14] === 'X' ? '' : CONFIG.mensajes.curpSinSegundo;
+        return curp[2] === letraDeCurp(a2[0]) && curp[14] === consonanteInterna(a2) ? '' : CONFIG.mensajes.curpNombre;
+      }
     },
     'rango-fechas': {
       descripcion: 'La fecha final no es anterior a la inicial',
@@ -299,7 +454,7 @@
       valida: ({ original, confirmacion }) => (original === confirmacion ? '' : 'Los dos valores no coinciden. Escríbelos igual en ambos campos.')
     },
     'edad': {
-      descripcion: 'Edad calculada dentro de la mínima y máxima del trámite',
+      descripcion: 'Edad calculada dentro de la mínima y máxima que exige el formulario',
       campos: ['fecha'], bloquea: true,
       valida: ({ fecha }, a = {}) => {
         const e = edadEn(fecha, hoyISO());
@@ -320,6 +475,9 @@
     }
   };
 
+  /* «curp-fecha-dma»: el mismo cruce, con el nombre que usan los proyectos con fecha día/mes/año. */
+  CRUZADAS['curp-fecha-dma'] = { ...CRUZADAS['curp-fecha'], descripcion: 'La fecha de nacimiento (día/mes/año) coincide con la contenida en la CURP' };
+
   /* ---------- Archivos ---------- */
   const ARCHIVOS = {
     extensiones: ['jpg', 'jpeg', 'png', 'pdf'],
@@ -339,13 +497,13 @@
     },
     optimiza: { tipos: ['jpg', 'jpeg', 'png', 'webp'], lado: 2048, calidad: 0.82 },
     imagen: { anchoMin: 320, altoMin: 240 },
-    conservarExif: false,  /* decisión C6: la ubicación de la foto viaja sólo si el trámite lo pide y la persona lo sabe */
+    conservarExif: false,  /* decisión C6: la ubicación de la foto viaja sólo si el formulario la pide y la persona lo sabe */
     nombreMax: 120
   };
 
   /* ---------- Configuración ---------- */
   const CONFIG = {
-    version: '1.0.0',
+    version: '1.3.1',
     idioma: 'es-MX',
     fechas: { zonaHoraria: 'America/Mexico_City' },
     /* Ámbito territorial. `cp` restringe el rango; `coordenadas` el
@@ -364,6 +522,10 @@
     anuncios: { retardoMs: 50 },
     combo: { maxResultados: 8 },
     chips: { max: 5, clave: 'sia-chips' },
+    /* Visor de documentos: dónde está pdf.js (vacío: vendor/pdfjs-dist/ junto
+       al paquete), desde qué ancho queda fijo junto a lo que se revisa en lugar
+       de abrirse a pantalla completa, y la espera para repintar al cambiar el tamaño. */
+    visor: { pdfjs: '', fijoDesde: '(min-width: 1024px)', retardoMs: 250 },
     mensajes: {
       prefijoError: 'Error:',
       obligatorioTexto: 'Completa «{etiqueta}».',
@@ -375,8 +537,10 @@
       maximoOpciones: 'Elige como máximo {max} opciones en «{etiqueta}».',
       soloLista: 'Elige una opción de la lista en «{etiqueta}».',
       repiteOpcion: '«{texto}» ya está en la lista: elige esa opción.',
-      edadMinima: 'Se requiere una edad mínima de {edad} años. Si la persona es menor, el trámite debe hacerlo su madre, padre o tutor.',
-      edadMaxima: 'La edad máxima para este trámite es de {edad} años.',
+      edadMinima: 'Se requiere una edad mínima de {edad} años. Si la persona tiene menos, su madre, padre o tutor debe llenar el formulario.',
+      edadMaxima: 'La edad máxima es de {edad} años.',
+      curpNombre: 'La CURP no corresponde con el nombre y los apellidos que escribiste. Escríbelos tal como aparecen en tu CURP.',
+      curpSinSegundo: 'Tu CURP indica que tienes segundo apellido. Escríbelo tal como aparece en tu CURP.',
       advertencia: 'Advertencia:',
       resumenUno: 'Falta revisar 1 campo para continuar.',
       resumenVarios: 'Faltan por revisar {n} campos para continuar.',
@@ -385,6 +549,9 @@
       pasoHecho: 'completado',
       pasoError: 'con errores',
       palabraObligatorio: 'obligatorio',
+      contrasenaMostrar: 'Mostrar',
+      contrasenaOcultar: 'Ocultar',
+      contrasenaLector: ' la contraseña',
       palabraSi: 'Sí',
       palabraNo: 'No',
       sinValor: 'No indicado',
@@ -405,6 +572,7 @@
       archQuitar: 'Quitar archivo {nombre}',
       archRechazoTitulo: 'No se agregó «{nombre}»:',
       archRechazoMax: 'sólo se admiten {max} archivos.',
+      archRechazoMaxUno: 'sólo se admite un archivo.',
       archRechazoTipo: 'ese tipo de archivo no se admite. Los formatos son {formatos}.',
       archRechazoFirma: 'el contenido del archivo no corresponde a su extensión. Elige el archivo original.',
       archRechazoPeso: 'pesa {peso} y el máximo es {mb} MB. Reduce su tamaño o elige otro.',
@@ -413,7 +581,12 @@
       archRechazoDuplicado: 'ya adjuntaste ese mismo archivo.',
       archRechazoDimension: 'la imagen es demasiado pequeña (mínimo {ancho} × {alto} píxeles).',
       archRechazoOptimizada: 'aun optimizada pesa {peso} y el máximo es {mb} MB.',
-      archLimite: 'Formatos admitidos: {formatos}. Hasta {max} archivos de {mb} MB cada uno.',
+      archLimite: '{admitidos}: {formatos}. Hasta {max} archivos de {mb} MB cada uno.',
+      archLimiteUno: '{admitidos}: {formatos}. Un archivo de hasta {mb} MB.',
+      archFormatos: 'Formatos admitidos',
+      archFormato: 'Formato admitido',
+      archLleno: 'Ya adjuntaste los {max} archivos. Para cambiar uno, quítalo.',
+      archLlenoUno: 'Ya adjuntaste el archivo. Para cambiarlo, quítalo.',
       archAgregado: 'Se agregó {nombre}.',
       archQuitado: 'Se quitó {nombre}.',
       archReintentar: 'Reintentar',
@@ -436,9 +609,15 @@
       mapaFuera: 'El punto queda fuera del ámbito. Muévelo o escribe la dirección.',
       chipsBorrar: 'Borrar historial',
       chipsQuitar: 'Quitar {texto} de las sugerencias',
+      chipsFijos: 'Respuestas frecuentes para {etiqueta}',
+      chipsAgregado: 'Agregado: {texto}',
+      visorCargando: 'Cargando el documento…',
+      visorError: 'No se pudo mostrar el documento aquí. Ábrelo en otra pestaña con el enlace de arriba.',
+      visorNavegador: 'Se muestra con el visor del navegador. Si no lo ves completo, ábrelo en otra pestaña con el enlace de arriba.',
+      visorHoja: 'Hoja {n} de {total}',
       sesionExpira: 'Tu sesión terminará en {min} minutos. Guarda o continúa para mantenerla.'
     }
   };
 
-  return Object.assign(CONFIG, { pareceTexto, fechaDeCurp, digitoCurp, hoyISO, ahoraHM, edadEn, plantilla, recorta, soloDigitos, distancia });
+  return Object.assign(CONFIG, { pareceTexto, fechaDeCurp, digitoCurp, letrasDeCurp, prefijoCurp, isoDeDma, dmaDeIso, guiaFechaDma, hoyISO, ahoraHM, edadEn, plantilla, recorta, soloDigitos, distancia, formatosArchivo });
 }));

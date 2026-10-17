@@ -17,7 +17,7 @@
 
 import { createHash, scryptSync } from 'node:crypto';
 import { CORTE } from './corte-ficticios.mjs';
-await import('../sitio/app/curp-nombre.js'); // la regla nombre ↔ CURP del formulario, para formar las CURP ficticias
+await import('../sitio/formkit/js/validaciones.config.js'); // la regla nombre ↔ CURP del estándar (prefijoCurp), para formar las CURP ficticias
 
 const CORTE_MIGRACION = '2026-07-01';
 const sql = [];
@@ -88,10 +88,10 @@ function persona(clave, opciones = {}) {
     telefono: `00000000${String(n + 1).padStart(2, '0')}`
   };
   // CURP ficticia que pasa las mismas reglas que una real: se forma del nombre ficticio como lo haría
-  // RENAPO (sitio/app/curp-nombre.js, la misma regla del formulario), con fecha de nacimiento ficticia,
+  // RENAPO (prefijoCurp del estándar, la misma regla del formulario), con fecha de nacimiento ficticia,
   // entidad NE (nacida en el extranjero), homoclave 0 y dígito verificador (apd.curp_valida).
   p.nacimiento = `19${String(70 + (n % 30)).padStart(2, '0')}-${String((n % 12) + 1).padStart(2, '0')}-${String((n % 27) + 1).padStart(2, '0')}`;
-  p.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.nacimiento, sexo, 'NE') + '0');
+  p.curp = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.nacimiento, sexo, 'NE') + '0');
   return p;
 }
 

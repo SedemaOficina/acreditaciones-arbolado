@@ -28,10 +28,10 @@
       const ayuda = $(`[data-diferencia="${k}"]`, form);
       if (ayuda) ayuda.textContent = d && d.observacion ? `No coincidió: ${d.observacion}` : 'No coincidió con el que llevaste.';
     }
-    for (const input of form.querySelectorAll('[data-auxiliar] input')) {
+    for (const input of form.querySelectorAll('input[data-auxiliar]')) {
       const k = input.name.replace(/^cargar_/, '');
       input.value = pausa.docs.includes(k) ? 'si' : 'no';
-      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     const boton = $('[data-accion="enviar"]', form);
     boton.textContent = pausa.docs.length === 1 ? 'Cargar el documento' : 'Cargar los documentos';

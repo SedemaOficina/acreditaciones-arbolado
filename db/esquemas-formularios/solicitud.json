@@ -1,10 +1,10 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-17T18:06:36.884Z",
+  "generado": "2026-10-17T19:04:45.908Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
-      "tipo": "texto",
+      "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Mostrar los documentos del curso que corresponde; lo calcula la página.",
@@ -40,7 +40,16 @@
           "poda_renovacion",
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_renovacion",
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "nivel_estudios": {
       "etiqueta": "¿Cuál es tu último nivel o grado de estudios?",
@@ -79,7 +88,15 @@
         "valores": [
           "tecnica"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "nivel_estudios",
+          "valores": [
+            "tecnica"
+          ]
+        }
+      ]
     },
     "carrera": {
       "etiqueta": "¿Qué carrera estudiaste?",
@@ -101,7 +118,17 @@
           "maestria",
           "doctorado"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "nivel_estudios",
+          "valores": [
+            "licenciatura",
+            "maestria",
+            "doctorado"
+          ]
+        }
+      ]
     },
     "estatus_estudios": {
       "etiqueta": "¿En qué situación está ese último grado de estudios?",
@@ -125,7 +152,17 @@
           "maestria",
           "doctorado"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "nivel_estudios",
+          "valores": [
+            "licenciatura",
+            "maestria",
+            "doctorado"
+          ]
+        }
+      ]
     },
     "anios_experiencia": {
       "etiqueta": "Experiencia en manejo de arbolado",
@@ -138,7 +175,8 @@
       "atributos": {
         "min": "0",
         "max": "70",
-        "step": "0.5"
+        "step": "0.5",
+        "minSegun": "experiencia"
       },
       "autocomplete": "off",
       "si": {
@@ -146,7 +184,15 @@
         "valores": [
           "dictaminador"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tipo",
+          "valores": [
+            "dictaminador"
+          ]
+        }
+      ]
     },
     "doc_poda_nueva_identificacion_oficial": {
       "etiqueta": "Identificación oficial",
@@ -167,7 +213,15 @@
         "valores": [
           "poda_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_nueva"
+          ]
+        }
+      ]
     },
     "doc_poda_nueva_curp": {
       "etiqueta": "Clave Única de Registro de Población (CURP)",
@@ -188,7 +242,15 @@
         "valores": [
           "poda_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_nueva"
+          ]
+        }
+      ]
     },
     "doc_poda_nueva_comprobante_domicilio": {
       "etiqueta": "Comprobante de domicilio",
@@ -209,7 +271,15 @@
         "valores": [
           "poda_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_nueva"
+          ]
+        }
+      ]
     },
     "doc_poda_nueva_constancia_situacion_fiscal": {
       "etiqueta": "Constancia de situación fiscal",
@@ -230,7 +300,15 @@
         "valores": [
           "poda_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_nueva"
+          ]
+        }
+      ]
     },
     "doc_poda_renovacion_identificacion_oficial": {
       "etiqueta": "Identificación oficial (si aplica)",
@@ -251,7 +329,15 @@
         "valores": [
           "poda_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_renovacion"
+          ]
+        }
+      ]
     },
     "doc_poda_renovacion_curp": {
       "etiqueta": "Clave Única de Registro de Población (CURP) (si aplica)",
@@ -272,7 +358,15 @@
         "valores": [
           "poda_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_renovacion"
+          ]
+        }
+      ]
     },
     "doc_poda_renovacion_comprobante_domicilio": {
       "etiqueta": "Comprobante de domicilio (si aplica)",
@@ -293,7 +387,15 @@
         "valores": [
           "poda_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_renovacion"
+          ]
+        }
+      ]
     },
     "doc_poda_renovacion_constancia_situacion_fiscal": {
       "etiqueta": "Constancia de situación fiscal",
@@ -314,7 +416,15 @@
         "valores": [
           "poda_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "poda_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_identificacion_oficial": {
       "etiqueta": "Identificación oficial",
@@ -335,7 +445,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_curp": {
       "etiqueta": "Clave Única de Registro de Población (CURP)",
@@ -356,7 +474,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_comprobante_domicilio": {
       "etiqueta": "Comprobante de domicilio",
@@ -377,7 +503,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_constancia_situacion_fiscal": {
       "etiqueta": "Constancia de situación fiscal",
@@ -398,7 +532,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_comprobante_estudios": {
       "etiqueta": "Comprobante de estudios",
@@ -419,7 +561,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_curriculum_vitae": {
       "etiqueta": "Currículum vitae",
@@ -440,7 +590,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_nueva_comprobantes_experiencia": {
       "etiqueta": "Comprobantes de experiencia",
@@ -461,7 +619,15 @@
         "valores": [
           "dictaminador_nueva"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_identificacion_oficial": {
       "etiqueta": "Identificación oficial (si aplica)",
@@ -482,7 +648,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_curp": {
       "etiqueta": "Clave Única de Registro de Población (CURP) (si aplica)",
@@ -503,7 +677,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_comprobante_domicilio": {
       "etiqueta": "Comprobante de domicilio (si aplica)",
@@ -524,7 +706,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_constancia_situacion_fiscal": {
       "etiqueta": "Constancia de situación fiscal",
@@ -545,7 +735,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_comprobante_estudios": {
       "etiqueta": "Comprobante de estudios (si aplica)",
@@ -566,7 +764,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_curriculum_vitae": {
       "etiqueta": "Currículum vitae (si aplica)",
@@ -587,7 +793,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "doc_dictaminador_renovacion_comprobantes_experiencia": {
       "etiqueta": "Comprobantes de experiencia (si aplica)",
@@ -608,7 +822,15 @@
         "valores": [
           "dictaminador_renovacion"
         ]
-      }
+      },
+      "condiciones": [
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_renovacion"
+          ]
+        }
+      ]
     },
     "protesta": {
       "etiqueta": "Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real",
@@ -635,5 +857,6 @@
       "atributos": {}
     }
   },
-  "repetibles": []
+  "repetibles": [],
+  "limitesRepetibles": {}
 }
