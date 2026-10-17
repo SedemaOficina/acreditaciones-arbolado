@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.21 | 17/10/26, 8:48 a.m. | Bloque 37: Mi perfil, carrera técnica, carga de archivos, botones con aire y bandeja de prueba |
 | 0.20 | 16/10/26, 11:57 a.m. | Bloques 35 y 36: fecha con escritura guiada y menú de pruebas reorganizado |
 | 0.19 | 16/10/26, 11:30 a.m. | Bloques 33 y 34: fecha de nacimiento escrita (día/mes/año, sin calendario) y nota del comprobante de domicilio |
 | 0.18 | 16/10/26, 11:11 a.m. | Prueba sin servidor: los archivos enviados se guardan en el navegador y se ven en la revisión |
