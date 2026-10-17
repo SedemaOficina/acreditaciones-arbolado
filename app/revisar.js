@@ -12,7 +12,7 @@
    Campos auxiliares que calcula la página (y el servidor por su cuenta): perfil_revision, resultado y
    revisar_<requisito> (si el documento está cargado y no se rechaza por perfil).
 
-   El registro es una SIMULACIÓN: se recuerda en esta pestaña. En la etapa 3 lo sustituye la API del
+   El registro es una SIMULACIÓN: se recuerda en este navegador. En la etapa 3 lo sustituye la API del
    personal: guarda la clasificación de la carrera (apd.carrera.grupo), el estado y la observación de cada
    documento, la cita, y la revisión (apd.revision), que mueve la solicitud. */
 (function () {
@@ -59,10 +59,12 @@
     P.pintaSesion($('[data-sesion-personal]'), 'revision');
     const s = datos.solicitud.find((x) => x.folio === folio);
     if (!s) return falla('No se encontró esa solicitud. Vuelva a la bandeja y elíjala de nuevo.');
+    // Una solicitud se revisa mientras está enviada: si la persona la reenvió después de una revisión, se revisa otra vez
     const ya = P.revisiones()[folio];
-    if (s.estado !== 'enviada' || ya) {
-      return falla(ya ? `Ya registró la revisión de esta solicitud en esta prueba (${ya.texto}).`
-        : `Esta solicitud no está en revisión documental: su estado es «${(APD.ESTADOS[s.estado] || { texto: s.estado }).texto}».`);
+    if (s.estado !== 'enviada') {
+      const actual = (APD.ESTADOS[s.estado] || { texto: s.estado }).texto;
+      return falla(ya ? `Ya registró la revisión de esta solicitud en esta prueba (${ya.texto}). Ahora está «${actual}».`
+        : `Esta solicitud no está en revisión documental: su estado es «${actual}».`);
     }
     const p = datos.solicitante.find((x) => x.id === s.solicitante_id);
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
@@ -114,7 +116,9 @@
         // Lo observado en esa vuelta: las cargas que fueron sustituidas después, con su observación
         const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.estado === 'con_observacion' && d.revisado_en && d.revisado_en <= r.revisada_en && (anteriores[i - 1] ? d.revisado_en > anteriores[i - 1].revisada_en : true));
         return el('div', { class: 'revision-anterior' }, [
-          el('p', {}, [el('strong', { texto: `${i + 1}.ª revisión · ${fechaHora(r.revisada_en)}` }), document.createTextNode(` · ${r.resultado === 'validada' ? 'validada' : r.resultado === 'rechazada' ? 'rechazada' : 'con observaciones'}`)]),
+          // Una vuelta puede venir del cotejo: un documento que no coincidió con el que trajo la persona
+          el('p', {}, [el('strong', { texto: r.en_cotejo ? `Cotejo · ${fechaHora(r.revisada_en)}` : `${i + 1}.ª revisión · ${fechaHora(r.revisada_en)}` }),
+            document.createTextNode(` · ${r.en_cotejo ? 'regresó con observaciones: un documento no coincidió' : r.resultado === 'validada' ? 'validada' : r.resultado === 'rechazada' ? 'rechazada' : 'con observaciones'}`)]),
           obs.length ? el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${nombre(d.requisito)}: ${d.observacion}${corregidos.has(d.requisito) ? ' — la persona cargó uno nuevo' : ''}` }))) : null,
           r.observacion_general && !obs.some((d) => d.observacion === r.observacion_general) ? el('p', { class: 'texto-gris', texto: `Mensaje general: ${r.observacion_general}` }) : null
         ]);

@@ -117,7 +117,8 @@
     const al = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
     // Fecha al azar: cada persona nueva tiene otra CURP (las cuentas de la prueba se guardan en este navegador)
     const p = { nombre: nombres[n], primer: 'Ejemplo', segundo: 'Simulado', fecha: `${al(1960, 2002)}-${String(al(1, 12)).padStart(2, '0')}-${String(al(1, 28)).padStart(2, '0')}`, sexo: n % 2 ? 'H' : 'M' };
-    p.curp = window.APD_CURP ? conDigito(APD_CURP.prefijo({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.fecha, p.sexo, 'NE') + '0') : '';
+    // Posición 17 de la CURP: un dígito si nació antes de 2000, una letra desde 2000 (la cruzada CURP ↔ fecha lo revisa)
+    p.curp = window.APD_CURP ? conDigito(APD_CURP.prefijo({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.fecha, p.sexo, 'NE') + (p.fecha < '2000' ? '0' : 'A')) : '';
     return p;
   }
 
@@ -184,34 +185,38 @@
   const PANTALLAS = [
     ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación']]],
     ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
-    ['Personal', [['revision.html', 'Solicitudes por revisar']]]
+    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo']]]
   ];
-  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
-  const DEL_PERSONAL = ['revision.html', 'revisar.html'];
+  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
+  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html'];
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
   const PREFIJO = 'apd.';                                                      // todo lo que guarda el sitio en la pestaña
   /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
   const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
   const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
-  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'verificar.html': 7 };
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'verificar.html': 7 };
   const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
-  /* Lo guardado en este navegador: solicitudes enviadas en la prueba (IndexedDB) y revisiones de esta pestaña */
-  function guardado() {
-    let revisiones = 0;
-    try { revisiones = Object.keys(JSON.parse(window.localStorage.getItem('apd.personal.revisiones') || '{}')).length; } catch (e) { /* sin almacenamiento */ }
-    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ cuentas: 0, envios: 0, fotos: 0, revisiones });
-    return APD_ARCHIVOS_PRUEBA.guardado().then((g) => Object.assign(g, { revisiones }));
+  /* Lo guardado en este navegador: solicitudes enviadas en la prueba (IndexedDB), revisiones y citas atendidas */
+  function cuentaLista(clave) {
+    try { return Object.values(JSON.parse(window.localStorage.getItem(clave) || '{}')).reduce((n, v) => n + (Array.isArray(v) ? v.length : 1), 0); } catch (e) { return 0; }
   }
-  function textoGuardado({ cuentas, envios, fotos, revisiones }) {
+  function guardado() {
+    const revisiones = cuentaLista('apd.personal.revisiones');
+    const cotejos = cuentaLista('apd.personal.cotejos');
+    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ cuentas: 0, envios: 0, fotos: 0, revisiones, cotejos });
+    return APD_ARCHIVOS_PRUEBA.guardado().then((g) => Object.assign(g, { revisiones, cotejos }));
+  }
+  function textoGuardado({ cuentas, envios, fotos, revisiones, cotejos }) {
     const partes = [];
     if (cuentas) partes.push(cuentas === 1 ? '1 cuenta' : `${cuentas} cuentas`);
     if (fotos) partes.push(fotos === 1 ? '1 fotografía de perfil' : `${fotos} fotografías de perfil`);
     if (envios) partes.push(envios === 1 ? '1 solicitud enviada con sus documentos' : `${envios} solicitudes enviadas con sus documentos`);
     if (revisiones) partes.push(revisiones === 1 ? '1 revisión' : `${revisiones} revisiones`);
-    return partes.length ? partes.join(' y ') : 'nada';
+    if (cotejos) partes.push(cotejos === 1 ? '1 cita de cotejo atendida' : `${cotejos} citas de cotejo atendidas`);
+    return partes.length ? `${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : 'nada';
   }
   function borraPestana() {
     try {
@@ -314,10 +319,12 @@
     const cuenta = el('p', {}, [el('strong', { texto: 'Guardado en este navegador: ' }), el('span', { 'data-guardado': '', texto: '…' })]);
     const borrar = boton('Borrar lo guardado', () => {
       const docs = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve() : APD_ARCHIVOS_PRUEBA.borraTodo();
-      try { window.localStorage.removeItem('apd.personal.revisiones'); } catch (e) { /* sin almacenamiento */ }
+      for (const k of ['apd.personal.revisiones', 'apd.personal.cotejos']) {
+        try { window.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
+      }
       docs.then(() => { di('Se borró lo guardado en este navegador.'); pintaGuardado(); }, () => di('No se pudo borrar.'));
     });
-    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.cuentas && !g.envios && !g.fotos && !g.revisiones; }); }
+    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.cuentas && !g.envios && !g.fotos && !g.revisiones && !g.cotejos; }); }
     pintaGuardado();
 
     const hijos = [
@@ -352,7 +359,7 @@
         el('ul', { class: 'menu-pruebas-lista' }, lista.map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))
       ])))]),
       seccion('Ajustes de la prueba', [
-        ayuda('Lo guardado (cuentas, solicitudes, documentos, fotografías, revisiones) queda en este navegador aunque lo cierres; las preguntas obligatorias, sólo en esta pestaña.'),
+        ayuda('Lo guardado (cuentas, solicitudes, documentos, fotografías, revisiones, citas de cotejo) queda en este navegador aunque lo cierres; las preguntas obligatorias, sólo en esta pestaña.'),
         interruptor,
         el('div', { class: 'menu-pruebas-ajuste' }, [cuenta, acciones(borrar)]),
         acciones(boton('Empezar de cero', () => {
