@@ -109,7 +109,7 @@
   }
 
   function borraTodo() {
-    for (const k of [PERFILES, 'apd.personal.revisiones', 'apd.personal.cotejos']) {
+    for (const k of [PERFILES, 'apd.personal.revisiones', 'apd.personal.cotejos', 'apd.personal.grupos']) {
       try { global.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
     }
     return Promise.all([SOLS, DOCS, FOTOS, CUENTAS].map((a) => tx(a, 'readwrite', (s) => s.clear())));
@@ -128,6 +128,83 @@
   const EN_LA_BASE = { terminado: 'atendida', pausa: 'en_pausa', con_observaciones: 'con_observaciones', otra_cita: 'sin_pago',
     no_se_presento: 'no_se_presento', cerrar: 'no_se_presento', no_es_la_persona: 'no_es_la_persona' };
 
+  /* Grupos y asistencia de la prueba (grupos.html, grupo.html, espera.html, asistencia.html): una lista de lo que pasó, en
+     orden, en «apd.personal.grupos». Cada evento se aplica como lo dejaría la base (apd.grupo_cambio, apd.inscripcion_alta,
+     apd.asistencia_captura): lo que la base rechazaría, aquí no cambia nada. */
+  const leeGrupos = () => { try { const v = JSON.parse(global.localStorage.getItem('apd.personal.grupos') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+  function aplicaGrupos(d, eventos, alCorte) {
+    const hoy = d.fecha_corte;
+    const sede = (d.parametro.find((x) => x.clave === 'sede') || {}).valor || null;
+    const curso = (t, m) => d.curso.find((c) => c.tipo_acreditacion === t && c.modalidad === m);
+    const activas = (gid) => d.inscripcion.filter((i) => i.grupo_id === gid && i.activa);
+    const conExamen = (insId) => d.examen.some((x) => x.inscripcion_id === insId);
+    const ponSol = (id, cambios) => { const i = d.solicitud.findIndex((x) => x.id === id); if (i >= 0) d.solicitud[i] = Object.assign({}, d.solicitud[i], cambios); };
+    const ponGrupo = (g, cambios) => { const i = d.grupo.indexOf(g); const n = Object.assign({}, g, cambios); d.grupo[i] = n; return n; };
+    const masDias = (iso, n) => { const x = new Date(`${iso}T12:00:00-06:00`); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+    function recibe(g) { return g.estado === 'en_integracion' || (g.estado === 'confirmado' && hoy < g.fecha_inicio); }
+    function inscribe(g, folios, en) {
+      for (const f of folios || []) {
+        const s = d.solicitud.find((x) => x.folio === f);
+        if (!s || s.estado !== 'lista_para_curso' || !recibe(g) || s.tipo_acreditacion !== g.tipo_acreditacion || s.modalidad !== g.modalidad) continue;
+        if (g.integracion === 'especifico' && (s.organizacion_id || null) !== g.organizacion_id) continue;
+        if (activas(g.id).length >= g.cupo_maximo) continue;
+        d.inscripcion.push({ id: `prueba:${g.id}:${s.id}:${en}`, solicitud_id: s.id, grupo_id: g.id, activa: true, inscrita_en: en, baja_en: null, motivo_baja: null, de_prueba: true });
+        ponSol(s.id, { estado: 'inscrita', estado_desde: en });
+      }
+    }
+    function baja(ins, motivo, en) {
+      d.inscripcion = d.inscripcion.map((x) => (x === ins ? Object.assign({}, x, { activa: false, baja_en: en, motivo_baja: motivo }) : x));
+      const s = d.solicitud.find((x) => x.id === ins.solicitud_id);
+      // Regresa a la espera con su antigüedad (lista_para_curso_en no cambia)
+      if (s && s.estado === 'inscrita') ponSol(s.id, { estado: 'lista_para_curso', estado_desde: en });
+    }
+    for (const e of eventos.slice().sort((a, b) => String(a.en).localeCompare(String(b.en)))) {
+      const en = alCorte(e.en);
+      if (e.tipo === 'crear') {
+        const c = curso(e.tipo_acreditacion, e.modalidad);
+        if (!c || d.grupo.some((g) => g.id === e.grupo_id)) continue;
+        const g = { id: e.grupo_id, folio: e.folio, tipo_acreditacion: e.tipo_acreditacion, modalidad: e.modalidad, integracion: e.integracion,
+          organizacion_id: e.integracion === 'especifico' ? e.organizacion_id : null, cupo_minimo: c.cupo_minimo, cupo_maximo: c.cupo_maximo,
+          instructor: null, sede, fecha_inicio: null, hora_entrada: null, estado: 'en_integracion', estado_desde: en, creado_en: en,
+          motivo_cancelacion: null, es_ficticio: true, de_prueba: true };
+        d.grupo.push(g);
+        inscribe(g, e.folios, en);
+        continue;
+      }
+      let g = d.grupo.find((x) => x.id === e.grupo_id);
+      if (!g) continue;
+      if (e.tipo === 'agregar') {
+        inscribe(g, e.folios, en);
+      } else if (e.tipo === 'baja') {
+        const s = d.solicitud.find((x) => x.folio === e.folio);
+        const ins = s && activas(g.id).find((i) => i.solicitud_id === s.id);
+        if (!ins || conExamen(ins.id) || !String(e.motivo || '').trim()) continue;
+        baja(ins, e.motivo, en);
+        // Un grupo confirmado que queda por debajo del mínimo regresa a integración, con su fecha (como la base)
+        if (g.estado === 'confirmado' && activas(g.id).length < g.cupo_minimo) g = ponGrupo(g, { estado: 'en_integracion', estado_desde: en });
+      } else if (e.tipo === 'confirmar') {
+        const c = curso(g.tipo_acreditacion, g.modalidad);
+        const anticipacion = Number((d.parametro.find((x) => x.clave === 'dias_anticipacion_grupo') || {}).valor || 7);
+        if (g.estado !== 'en_integracion' || activas(g.id).length < g.cupo_minimo || !e.fecha_inicio || !e.hora_entrada || !e.instructor) continue;
+        if (e.fecha_inicio < masDias(hoy, anticipacion) || !c) continue;
+        g = ponGrupo(g, { estado: 'confirmado', estado_desde: en, fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada, instructor: e.instructor });
+      } else if (e.tipo === 'cancelar') {
+        if (!['en_integracion', 'confirmado'].includes(g.estado) || !String(e.motivo || '').trim()) continue;
+        for (const ins of activas(g.id)) baja(ins, `Grupo cancelado: ${e.motivo}`, en);
+        g = ponGrupo(g, { estado: 'cancelado', estado_desde: en, motivo_cancelacion: e.motivo });
+      } else if (e.tipo === 'asistencia') {
+        const c = curso(g.tipo_acreditacion, g.modalidad);
+        if (g.estado !== 'en_curso' || !c || e.dia < 1 || e.dia > c.dias_duracion) continue;
+        for (const [insId, asistio] of Object.entries(e.lista || {})) {
+          const ins = activas(g.id).find((i) => i.id === insId);
+          if (!ins || conExamen(insId)) continue;
+          d.asistencia = d.asistencia.filter((a) => !(a.inscripcion_id === insId && a.dia === e.dia));
+          d.asistencia.push({ inscripcion_id: insId, dia: e.dia, asistio: Boolean(asistio), capturada_por: e.por, capturada_en: en, de_prueba: true });
+        }
+      }
+    }
+  }
+
   function mezcla(datos) {
     return Promise.all([cuentas(), solicitudes()]).then(([listaCuentas, registros]) => {
       const revisiones = comoLista(leeRevisiones());
@@ -137,9 +214,11 @@
         .then((pares) => ({ listaCuentas, registros, revisiones, cotejos, docsDe: Object.fromEntries(pares) }));
     }).then(({ listaCuentas, registros, revisiones, cotejos, docsDe }) => {
       const perfiles = leePerfiles();
-      if (!listaCuentas.length && !registros.length && !Object.keys(perfiles).length && !Object.keys(revisiones).length && !Object.keys(cotejos).length) return datos;
+      const eventosGrupo = leeGrupos();
+      if (!listaCuentas.length && !registros.length && !Object.keys(perfiles).length && !Object.keys(revisiones).length && !Object.keys(cotejos).length && !eventosGrupo.length) return datos;
       const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice(),
-        revision: datos.revision.slice(), fotografia: datos.fotografia.slice(), cita: (datos.cita || []).slice() });
+        revision: datos.revision.slice(), fotografia: datos.fotografia.slice(), cita: (datos.cita || []).slice(),
+        grupo: datos.grupo.slice(), inscripcion: datos.inscripcion.slice(), asistencia: datos.asistencia.slice() });
       // Cuentas: una del registro anterior queda activa; una nueva se agrega como persona de la prueba
       for (const c of listaCuentas) {
         const i = d.solicitante.findIndex((x) => x.curp === c.curp);
@@ -283,6 +362,8 @@
           }
         }
       }
+      // Grupos y asistencia, después: una solicitud llega a la espera de grupo con su cotejo terminado
+      aplicaGrupos(d, eventosGrupo, alCorte);
       return d;
     }).catch((e) => {
       // Si algo de lo guardado no se puede aplicar, se ven los ficticios solos; queda el aviso en la consola

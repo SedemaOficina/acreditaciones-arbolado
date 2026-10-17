@@ -366,7 +366,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-16",
       "titulo": "Ventanas de horario para las citas de cotejo en el Vivero Nezahualcóyotl",
-      "recomendacion": "Preguntar qué días y en qué horario se atienden citas, cuánto dura cada una y cuántas personas caben por franja (por ejemplo, de lunes a viernes, de 9:00 a 14:00, en bloques de 30 minutos). Con eso la revisión sólo ofrece horas dentro de las ventanas, avisa si una franja ya está llena y puede proponer la primera libre (se liga a P64). Mientras, la hora se escribe libre."
+      "recomendacion": "Preguntar qué días y en qué horario se atienden citas, cuánto dura cada una y cuántas personas caben por franja (por ejemplo, de lunes a viernes, de 9:00 a 14:00, en bloques de 30 minutos). Con eso la revisión sólo ofrece horas dentro de las ventanas, avisa si una franja ya está llena y puede proponer la primera libre (se liga a P64). Desde el 2026-10-17 (Liber) la hora de la cita se elige de una lista cerrada de 24 horas, sin texto libre; mientras el área define los horarios, la lista de prueba va de 09:00 a 14:00 cada 30 minutos (revisión y cotejo). Preguntar al área: días de atención, horarios de citas y cuántas citas caben en cada uno."
     },
     {
       "id": "P74",
@@ -478,7 +478,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-17",
       "titulo": "Horario del curso: hora de entrada y de salida, y si es igual todos los días",
-      "recomendacion": "Preguntar al área. Propuesta: la hora de entrada se fija por grupo al confirmarlo; falta la hora de salida y si cambia algún día (por ejemplo, el día del examen en el PILARES). Se muestra a la persona en «Mis trámites» y en el aviso por correo del grupo. Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
+      "recomendacion": "Preguntar al área. Propuesta: la hora de entrada se fija por grupo al confirmarlo; falta la hora de salida y si cambia algún día (por ejemplo, el día del examen en el PILARES). Se muestra a la persona en «Mis trámites» y en el aviso por correo del grupo. Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base. La hora de entrada del grupo se elige de una lista cerrada de 24 horas (como la de la cita, decisión de Liber 2026-10-17), con valores de prueba hasta que el área defina el horario; ya está en la base (apd.grupo.hora_entrada, obligatoria para confirmar)."
     },
     {
       "id": "P92",

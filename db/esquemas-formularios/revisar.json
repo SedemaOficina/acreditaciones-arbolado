@@ -1,6 +1,6 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-17T19:14:34.411Z",
+  "generado": "2026-10-17T23:02:22.633Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
@@ -600,14 +600,25 @@
     },
     "cita_hora": {
       "etiqueta": "Hora",
-      "tipo": "texto",
+      "tipo": "select",
       "requerido": true,
       "formato": "hora",
       "sensible": false,
       "uso": "Fijar la hora de la cita de cotejo (apd.solicitud.cita_en).",
-      "atributos": {
-        "maxlength": "5"
-      },
+      "atributos": {},
+      "opciones": [
+        "09:00",
+        "09:30",
+        "10:00",
+        "10:30",
+        "11:00",
+        "11:30",
+        "12:00",
+        "12:30",
+        "13:00",
+        "13:30",
+        "14:00"
+      ],
       "autocomplete": "off",
       "si": {
         "campo": "resultado",

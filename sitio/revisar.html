@@ -306,9 +306,23 @@
           </div>
           <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_hora">Hora</label>
-            <p class="ayuda">De 24 horas; por ejemplo, 10:00.</p>
-            <!-- autocomplete off: la hora la elige quien revisa. -->
-            <input class="control control-corto" id="cita_hora" name="cita_hora" type="text" inputmode="numeric" maxlength="5" autocomplete="off">
+            <p class="ayuda" id="ay-cita-hora">De 24 horas. <span class="pendiente">Horarios de prueba: los define el área (P69).</span></p>
+            <!-- Lista cerrada de horarios (Liber, 2026-10-17): sin texto libre. Se sustituye por los horarios de citas que
+                 defina el área (P69). autocomplete off: la hora la elige quien revisa. -->
+            <div class="select control-corto"><select class="control" id="cita_hora" name="cita_hora" autocomplete="off" aria-describedby="ay-cita-hora">
+              <option value="">Elija</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00">14:00</option>
+            </select></div>
           </div>
         </div>
         <!-- Lugar fijo: todas las citas, cursos y entregas son en la sede única (decisión 2026-10-16); no se elige. -->

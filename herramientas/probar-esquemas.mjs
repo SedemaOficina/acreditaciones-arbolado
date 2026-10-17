@@ -214,6 +214,7 @@ const cita = { cita_fecha: '2026-10-21', cita_hora: '10:00' };
 caso('Revisión: poda con todo aceptado y su cita se valida', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita }, true);
 caso('Revisión: validar sin cita se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA) }, ['cita_fecha', 'cita_hora']);
 caso('Revisión: una hora que no existe se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '25:00' }, ['cita_hora']);
+caso('Revisión: una hora fuera de la lista de horarios se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '10:15' }, ['cita_hora']);
 caso('Revisión: un documento sin decidir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA.slice(1)) }, ['decision_identificacion_oficial']);
 caso('Revisión: observar un documento sin decir qué corregir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), decision_curp: 'con_observacion' }, ['observacion_curp']);
 caso('Revisión: con una observación no se pide la cita', 'revisar', { _cargados: PODA, ...acepta(PODA), decision_curp: 'con_observacion', observacion_curp: 'No se lee completo.' }, true);

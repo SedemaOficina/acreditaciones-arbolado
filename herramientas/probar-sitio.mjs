@@ -810,7 +810,7 @@ async function recorridoGuardado(navegador) {
   for (const k of campos.map((c) => c.replace(/^doc_poda_nueva_/, ''))) await page.check(`input[name="decision_${k}"][value="aceptado"]`);
   const dia = await page.getAttribute('#cita_fecha', 'min');
   await page.fill('#cita_fecha', dia);
-  await page.fill('#cita_hora', '12:30');
+  await page.selectOption('#cita_hora', '12:30');
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-hecho]:not([hidden])');
   bien(t('la segunda revisión la valida con su cita'));
@@ -907,7 +907,7 @@ async function caminosCotejo(navegador) {
   await pg.check('input[name="se_presento"][value="no"]');
   comprueba(!(await pg.isVisible('[data-campo="identidad"]')) && await pg.isVisible('#cita_fecha'), t('si no se presentó sólo se pide la cita nueva'));
   await pg.fill('#cita_fecha', manana);
-  await pg.fill('#cita_hora', '09:30');
+  await pg.selectOption('#cita_hora', '09:30');
   await registra(pg);
   await entra(pg, p1.curp);
   const f1 = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
@@ -935,7 +935,7 @@ async function caminosCotejo(navegador) {
   await pg.check('input[name="pago"][value="no"]');
   comprueba(!(await pg.isVisible('[data-campo="factura_rfc"]')) && (await pg.textContent('[data-accion="enviar"]')).trim() === 'Darle otra cita', t('sin pago no se pide factura y el botón es «Darle otra cita»'));
   await pg.fill('#cita_fecha', manana);
-  await pg.fill('#cita_hora', '11:00');
+  await pg.selectOption('#cita_hora', '11:00');
   await registra(pg);
   await pg.goto(BASE + `citas.html?dia=${s1.cita_en.slice(0, 10)}`);
   // La misma solicitud tiene dos filas: la cita atendida (ese día) y la nueva (otro día)
@@ -1077,7 +1077,7 @@ async function personal(navegador, ancho, alto, sufijo) {
   }
   for (const d of datos.documento.filter((x) => x.solicitud_id === porClasificar.id && x.vigente)) await page.check(`input[name="decision_${d.requisito}"][value="aceptado"]`);
   comprueba(await page.textContent('[data-accion="enviar"]') === 'Validar y asignar la cita', t('con todo aceptado, la acción es validar'));
-  await page.fill('#cita_fecha', '2026-10-21'); await page.fill('#cita_hora', '10:00');
+  await page.fill('#cita_fecha', '2026-10-21'); await page.selectOption('#cita_hora', '10:00');
   await captura(page, `41-personal-validar-${sufijo}`);
   // Tras una captura de página completa, Chromium sin ventana desplaza la página al enfocar: se enfoca antes de pulsar
   await page.focus('[data-accion="enviar"]');
