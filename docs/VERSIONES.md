@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.36 | 17/10/26, 5:36 p.m. | Capturas de verificación del bloque 55 |
 | 0.35 | 17/10/26, 5:32 p.m. | Examen en línea: casos con tablas, opciones de orden fijo; un examen por acreditación |
 | 0.34 | 17/10/26, 2:56 p.m. | Auditoría: informe final (docs/AUDITORIA-2026-10-17.md) y resultado de la corrida con 117 botones |
 | 0.33 | 17/10/26, 1:52 p.m. | Bloque 51: «Aplicar el examen» en usted (config-usted.js); examen probado sobre el estándar 1.3.1 |
