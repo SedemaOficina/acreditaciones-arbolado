@@ -69,7 +69,12 @@
       <p class="tabla-vacia" data-tabla-vacia hidden>Ninguna solicitud coincide con la búsqueda. Revise lo que escribió o quite algún filtro.</p>
     </div>
     <p class="ayuda">La espera se marca en ámbar desde <span data-umbral-ambar></span> días y en rojo desde <span data-umbral-rojo></span>. <span class="pendiente">Pendiente: plazos de la revisión documental que fije la Dirección (P02).</span></p>
-    <p class="ayuda" data-revisadas hidden></p>
+    <!-- Versión de prueba: lo revisado en este navegador, mientras no existan las pantallas que siguen (2026-10-17) -->
+    <div class="revisadas" data-revisadas hidden>
+      <h3 class="titulo-bloque">Revisadas en esta prueba</h3>
+      <p class="ayuda">Ya no están por revisar: siguen su camino. Las validadas pasan a la cita de cotejo; las observadas regresan a la persona y vuelven aquí si las reenvía. <span class="pendiente">Pendiente: las pantallas de citas de cotejo, grupos, calificación y entrega.</span></p>
+      <ul class="lista-obs" data-revisadas-lista></ul>
+    </div>
   </section>
 </main>
 

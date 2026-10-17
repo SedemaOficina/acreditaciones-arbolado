@@ -740,6 +740,25 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector('[data-persona] .perfil-imagen');
   comprueba(await page.evaluate(() => { const i = document.querySelector('[data-persona] .perfil-imagen'); return i.complete && i.naturalWidth > 0; }),
     t('la revisión muestra la fotografía que cargó la persona'));
+  // 5 · El personal observa un documento y acepta los demás; la confirmación queda a la vista, sin el visor
+  const [primero, ...resto] = campos.map((c) => c.replace(/^doc_poda_nueva_/, ''));
+  await page.check(`input[name="decision_${primero}"][value="con_observacion"]`);
+  await page.fill(`#observacion_${primero}`, 'No se lee completo: vuelve a escanearlo.');
+  for (const k of resto) await page.check(`input[name="decision_${k}"][value="aceptado"]`);
+  await page.focus('[data-accion="enviar"]');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])');
+  comprueba(!(await page.evaluate(() => document.querySelector('[data-visor]').open)) && await page.evaluate(() => document.querySelector('[data-hecho]').getBoundingClientRect().top < window.innerHeight),
+    t('al registrar, el visor se cierra y la confirmación queda a la vista'));
+  await page.goto(BASE + 'revision.html');
+  await page.waitForSelector('[data-revisadas]:not([hidden])');
+  comprueba(await page.locator(`[data-filas] tr[data-folio="${folio}"]`).count() === 0 && (await page.textContent('[data-revisadas-lista]')).includes(folio),
+    t('la revisada sale de la bandeja y aparece en «Revisadas en esta prueba»'));
+  // 6 · La persona ve sus observaciones en «Mis trámites»
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
+  const ficha = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
+  comprueba(/con observaciones/i.test(ficha) && /vuelve a escanearlo/.test(ficha), t('la persona ve «Con observaciones» y qué corregir'));
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await contexto.close();
 }
@@ -827,6 +846,14 @@ async function personal(navegador, ancho, alto, sufijo) {
   if (ancho >= 1024) {
     await page.waitForFunction(() => document.querySelector('[data-visor-titulo]').textContent === 'Currículum vitae');
     comprueba(await page.locator('[data-doc="curriculum_vitae"][data-viendo]').count() === 1, t('al aceptar, el visor pasa al siguiente documento sin decidir'));
+    // Al observar: «Listo, ir al siguiente» pide la observación escrita y luego avanza (decisión 2026-10-17)
+    await page.check('input[name="decision_curriculum_vitae"][value="con_observacion"]');
+    await page.click('[data-seguir="curriculum_vitae"]');
+    comprueba(await page.evaluate(() => document.activeElement.id === 'observacion_curriculum_vitae'), t('al observar, sin escribir qué corregir no avanza'));
+    await page.fill('#observacion_curriculum_vitae', 'Falta la última página del currículum.');
+    await page.click('[data-seguir="curriculum_vitae"]');
+    await page.waitForFunction(() => document.querySelector('[data-visor-titulo]').textContent !== 'Currículum vitae');
+    bien(t('con la observación escrita, «Listo, ir al siguiente» pasa al siguiente documento'));
   }
   for (const d of datos.documento.filter((x) => x.solicitud_id === porClasificar.id && x.vigente)) await page.check(`input[name="decision_${d.requisito}"][value="aceptado"]`);
   comprueba(await page.textContent('[data-accion="enviar"]') === 'Validar y asignar la cita', t('con todo aceptado, la acción es validar'));

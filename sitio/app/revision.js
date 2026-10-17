@@ -36,7 +36,9 @@
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const revisadas = P.revisiones();
 
-    const enviadas = datos.solicitud.filter((s) => s.estado === 'enviada' && !revisadas[s.folio])
+    // Lo que ya se revisó cambió de estado (APD.cargar aplica las revisiones de la prueba); si la persona lo reenvió,
+    // vuelve a estar enviada y regresa a la bandeja como reenviada
+    const enviadas = datos.solicitud.filter((s) => s.estado === 'enviada')
       // Lo enviado en este navegador durante la prueba va primero, para encontrarlo (decisión 2026-10-17); lo demás, de la
       // que más espera a la más reciente
       .sort((a, b) => Number(Boolean(b.de_prueba)) - Number(Boolean(a.de_prueba)) || a.estado_desde.localeCompare(b.estado_desde));
@@ -88,11 +90,18 @@
     form.addEventListener('change', filtra);
     filtra();
 
-    const hechas = Object.keys(revisadas);
+    // Revisadas en la prueba: salen de la bandeja y siguen su camino; mientras no existan las pantallas que siguen
+    // (citas de cotejo, grupos…), aquí se listan con su resultado y su estado actual (decisión 2026-10-17)
+    const hechas = Object.entries(revisadas).sort((a, b) => String(b[1].en).localeCompare(String(a[1].en)));
     if (hechas.length) {
-      const nodo = $('[data-revisadas]');
-      nodo.textContent = `En esta prueba ya registró ${hechas.length === 1 ? 'la revisión de' : `${hechas.length} revisiones:`} ${hechas.join(', ')}. Ya no aparecen aquí; al cerrar la pestaña vuelven.`;
-      nodo.hidden = false;
+      const porFolio = Object.fromEntries(datos.solicitud.map((s) => [s.folio, s]));
+      $('[data-revisadas-lista]').replaceChildren(...hechas.map(([folio, r]) => {
+        const s = porFolio[folio];
+        const p = s ? persona[s.solicitante_id] : null;
+        const actual = s ? (APD.ESTADOS[s.estado] || { texto: s.estado }) : { texto: '—' };
+        return el('li', {}, [el('span', { class: 'mono', texto: folio }), document.createTextNode(` · ${p ? APD.nombreCompleto(p) : ''} · ${r.texto || r.resultado} · ahora: ${actual.texto}`)]);
+      }));
+      $('[data-revisadas]').hidden = false;
     }
   }).catch(() => {
     $('[data-cuenta]').textContent = 'No se pudieron cargar las solicitudes. Intente de nuevo más tarde.';

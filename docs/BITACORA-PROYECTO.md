@@ -505,3 +505,15 @@ campos correctos.
     fiscal es obligatoria (duda de Liber: «sólo aparece la constancia»).
 - Prueba nueva de punta a punta en otras pestañas: crear cuenta con foto, volver a entrar con su contraseña, enviar con
   documentos reales y verla primero en la bandeja, con sus 4 documentos y su fotografía.
+
+## 2026-10-17 · Bloque 40 · Revisión: seguir después de observar y el resultado llega a la persona
+
+- «Listo, ir al siguiente» bajo cada observación (generado en `construir-sitio.mjs`); `revisar.js` comparte `avanza()` con
+  el avance al aceptar; sin observación escrita, enfoca el texto y lo anuncia.
+- Al registrar, el visor se cierra y la confirmación se trae a la vista (antes quedaba hasta abajo, debajo del visor).
+- `archivos-prueba.js` (`mezcla`) aplica las revisiones guardadas: estado, documentos aceptados u observados con su texto,
+  cita o motivo de rechazo, y un registro en `revision` (la vuelta cuenta). Si la persona reenvía después, sigue enviada.
+  El tiempo real se comprime al pasar de la fecha simulada para conservar el orden envío → revisión → reenvío.
+- Bandeja: sólo lo que está enviado; «Revisadas en esta prueba» con su resultado y su estado actual.
+- Prueba de punta a punta ampliada: el personal observa un documento, registra, la revisada sale de la bandeja y la
+  persona ve «Con observaciones» con qué corregir (411 comprobaciones).

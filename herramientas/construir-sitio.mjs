@@ -179,6 +179,8 @@ ${MOTIVOS.map((m) => `                <button type="button" class="sugerencia" d
               </div>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
+              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>`;

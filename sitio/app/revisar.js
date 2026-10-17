@@ -293,8 +293,13 @@
         $('[data-hecho-titulo]').textContent = titulos[resultado];
         $('[data-hecho-texto]').textContent = textos[resultado];
         const hecho = $('[data-hecho]');
+        // El visor se cierra (en computadora queda fijo y empujaba la confirmación hasta abajo) y la confirmación
+        // queda arriba, a la vista (2026-10-17)
+        const visor = $('[data-visor]');
+        if (visor && visor.open) visor.close();
         hecho.hidden = false;
         hecho.focus();
+        hecho.scrollIntoView({ block: 'start' });
       }
     });
 
@@ -321,12 +326,27 @@
 
     /* Al aceptar un documento, se pasa al siguiente sin decidir (decisión 2026-10-16): en computadora el visor lo muestra
        y la lista lo trae a la vista; con todo decidido, se va al resultado. Sólo con una decisión de quien revisa (no con
-       las que marca la página) y sólo al aceptar: al observar hay que escribir qué corregir. */
+       las que marca la página). Al observar no se avanza solo, porque hay que escribir qué corregir: «Listo, ir al
+       siguiente» lleva al siguiente cuando la observación ya está escrita (decisión 2026-10-17). */
     const suave = global_matchMedia('(prefers-reduced-motion: reduce)') ? 'auto' : 'smooth';
     form.addEventListener('change', (e) => {
       const r = e.target;
       if (!e.isTrusted || !r.name || !r.name.startsWith('decision_') || r.value !== 'aceptado') return;
-      const actual = r.name.replace('decision_', '');
+      avanza(r.name.replace('decision_', ''));
+    });
+    form.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-seguir]');
+      if (!b) return;
+      const k = b.dataset.seguir;
+      const texto = document.getElementById(`observacion_${k}`);
+      if (texto.value.trim().length < 10) {
+        texto.focus();
+        FormKit.anuncia('Antes de seguir, escriba qué debe corregir la persona (al menos 10 caracteres).');
+        return;
+      }
+      avanza(k);
+    });
+    function avanza(actual) {
       const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k] && document.getElementById(`revisar_${k}`).value === 'si');
       const pendiente = (k) => !elegido(`decision_${k}`);
       const i = orden.indexOf(actual);
@@ -340,7 +360,7 @@
       if (global_visor() && APD_VISOR.enComputadora()) ver(siguiente, null);
       art.scrollIntoView({ behavior: suave, block: 'start' });
       FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
-    });
+    }
     recalcula();
   }).catch(() => falla('No se pudo cargar la solicitud. Intente de nuevo más tarde.'));
 }());
