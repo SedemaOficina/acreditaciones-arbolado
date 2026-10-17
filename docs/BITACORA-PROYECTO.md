@@ -667,3 +667,10 @@ campos correctos.
 - Hallazgos nuevos para el estándar: P95 (mensajes de formatos y de longitud mínima fuera de «mensajes»), P96 (ruta de
   pdf.js con los módulos en otra carpeta), P97 (nombre del grupo de motivos frecuentes) y P98 (dos «Mostrar» con el
   mismo nombre accesible).
+
+## 2026-10-17 · Bloque 51 · Examen sobre el estándar 1.3.1; «Aplicar el examen» en usted
+
+- `aplicar.html` carga `app/config-usted.js` después de `validaciones.config.js`: los textos del estándar salen en usted
+  («Complete «Motivo».»); `examen.html` sigue en tú, porque la usa la persona.
+- `probar-examen.mjs` con axe sobre la versión 0.32 (estándar 1.3.1): 54 comprobaciones correctas, sin fallas.
+
