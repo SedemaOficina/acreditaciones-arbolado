@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maqueta · Citas de cotejo</title>
+<!-- MAQUETA de la etapa 2 (pantallas del personal): citas de cotejo. Usa las hojas reales del sitio (estándar y apd.css)
+     y datos ficticios. No es funcional: sirve para aprobar la forma antes de construir. -->
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="app/apd.css">
+<link rel="stylesheet" href="maqueta.css">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas maqueta-aviso" aria-label="Aviso de maqueta">Maqueta para aprobar · datos ficticios · los botones no guardan nada</aside>
+<header class="cabecera">
+  <div class="cabecera-int">
+    <span class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente"></span>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion">
+    <p class="sesion-nombre">María Ejemplo Revisora <span class="estado">Perfil: cotejo</span></p>
+    <nav class="sesion-enlaces" aria-label="Secciones del personal">
+      <span class="btn-enlace">Revisión documental</span>
+      <span class="btn-enlace" aria-current="page">Citas de cotejo</span>
+      <span class="nav-futura">Grupos</span><span class="nav-futura">Emisión y entrega</span>
+    </nav>
+  </div>
+
+  <nav class="maqueta-pasos" aria-label="Pantallas de la maqueta">
+    <button type="button" data-vista="agenda" aria-pressed="true">1 · Agenda del día</button>
+    <button type="button" data-vista="atender" aria-pressed="false">2 · Atender la cita</button>
+    <button type="button" data-vista="hecho" aria-pressed="false">3 · Cotejo terminado</button>
+  </nav>
+
+  <!-- ═════════════ 1 · AGENDA ═════════════ -->
+  <section data-pantalla="agenda" aria-labelledby="t-agenda">
+    <div class="tarjeta">
+      <h2 class="titulo-paso" id="t-agenda">Citas de cotejo</h2>
+      <p class="bajada">Las citas del día en el Vivero Nezahualcóyotl, por hora. Cuando la persona llegue, búsquela por su nombre, su CURP o su folio y presione «Atender».</p>
+      <div class="campo">
+        <label class="etiqueta" for="buscar">Buscar una cita</label>
+        <p class="ayuda">Nombre, CURP o folio de la solicitud (APD-S-…). Busca en todos los días.</p>
+        <input class="control" id="buscar" type="search" autocomplete="off">
+      </div>
+      <div class="agenda-dia">
+        <p class="agenda-fecha">Martes 20 de octubre de 2026</p>
+        <div class="agenda-flechas">
+          <span class="btn btn-secundario btn-chico"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Día anterior</span>
+          <span class="btn btn-secundario btn-chico">Día siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></span>
+        </div>
+      </div>
+      <p class="resumen-filtro">4 citas: 1 atendida y 3 por atender.</p>
+      <div class="tabla-marco">
+        <table class="tabla tabla-bandeja">
+          <caption class="solo-lector">Citas de cotejo del martes 20 de octubre de 2026</caption>
+          <thead><tr><th scope="col">Hora</th><th scope="col">Persona</th><th scope="col">Folio de la solicitud</th><th scope="col">Acreditación</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+          <tbody>
+            <tr class="fila-hecha"><td data-etq="Hora">09:00</td><td data-etq="Persona">RAÚL EJEMPLO SIMULADO</td><td data-etq="Folio"><span class="mono">APD-S-2026-00051</span></td><td data-etq="Acreditación">Poda y derribo · nueva</td><td data-etq="Situación"><span class="estado" data-tono="ok">Atendida · EXP-2026-0012</span></td><td><span class="btn-enlace">Ver</span></td></tr>
+            <tr><td data-etq="Hora">10:00</td><td data-etq="Persona">SERGIO EJEMPLO PRUEBA</td><td data-etq="Folio"><span class="mono">APD-S-2026-00042</span></td><td data-etq="Acreditación">Poda y derribo · nueva</td><td data-etq="Situación"><span class="estado">Por atender</span></td><td><button type="button" class="btn btn-primario btn-chico" data-ir="atender">Atender</button></td></tr>
+            <tr><td data-etq="Hora">10:30</td><td data-etq="Persona">NADIA MUESTRA FICTICIO</td><td data-etq="Folio"><span class="mono">APD-S-2026-00053</span></td><td data-etq="Acreditación">Dictaminador técnico · nueva</td><td data-etq="Situación"><span class="estado">Por atender</span></td><td><span class="btn btn-secundario btn-chico">Atender</span></td></tr>
+            <tr><td data-etq="Hora">11:00</td><td data-etq="Persona">TOMÁS PRUEBA MODELO</td><td data-etq="Folio"><span class="mono">APD-S-2026-00055</span></td><td data-etq="Acreditación">Poda y derribo · renovación</td><td data-etq="Situación"><span class="estado">Por atender</span></td><td><span class="btn btn-secundario btn-chico">Atender</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ayuda"><span class="pendiente">Pendiente (P69): días, horario y cuántas citas por horario. Mientras, la hora la escribe quien revisa.</span></p>
+    </div>
+
+    <div class="tarjeta">
+      <h3 class="titulo-bloque">Para decidir antes de construir</h3>
+      <ol class="decidir">
+        <li><strong>Si la persona no se presenta.</strong> Propuesta: «Marcar que no se presentó» y darle una cita nueva una sola vez; a la segunda, la solicitud se cierra como «concluida sin atender». <span class="pendiente">Plazo para presentarse: P02.</span></li>
+        <li><strong>Si no trae el comprobante de pago.</strong> Propuesta: no se termina el cotejo; se le da otra cita y conserva el monto que se le indicó.</li>
+        <li><strong>Si un documento no coincide con lo que cargó</strong> (decisión del 14/10): no se da por válido; la solicitud regresa con observaciones, la persona corrige en línea y, tras una nueva revisión, recibe otra cita.</li>
+        <li><strong>Quién atiende la cita.</strong> Propuesta: el perfil «cotejo» (P27); la misma persona puede tener los perfiles de revisión y de cotejo.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═════════════ 2 · ATENDER LA CITA ═════════════ -->
+  <section data-pantalla="atender" aria-labelledby="t-atender" hidden>
+    <p><span class="btn-atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Citas de cotejo</span></p>
+    <div class="tarjeta">
+      <div class="revision-cabeza">
+        <div>
+          <h2 class="titulo-paso" id="t-atender">Poda y derribo · solicitud nueva</h2>
+          <p class="bajada">Folio de la solicitud <span class="mono">APD-S-2026-00042</span> · cita del martes 20/10/2026 a las 10:00 · validada en línea el 12/10/2026</p>
+        </div>
+        <span class="estado">Cita asignada</span>
+      </div>
+      <div class="persona-con-foto">
+        <div class="perfil-foto perfil-foto-chica"><span class="perfil-iniciales" aria-hidden="true">SE</span></div>
+        <dl class="datos">
+          <div class="datos-par"><dt class="datos-etq">Persona</dt><dd class="datos-valor">SERGIO EJEMPLO PRUEBA</dd></div>
+          <div class="datos-par"><dt class="datos-etq">CURP</dt><dd class="datos-valor">EEPS820716MNEJRR08</dd></div>
+          <div class="datos-par"><dt class="datos-etq">Número de expediente</dt><dd class="datos-valor">Se abre al terminar este cotejo: es su primer trámite</dd></div>
+          <div class="datos-par"><dt class="datos-etq">Adscripción</dt><dd class="datos-valor">Independiente</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="cotejo-area">
+      <form class="cotejo-form" action="#" data-cotejo>
+        <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+        <!-- 1 · Identidad y fotografía -->
+        <section class="tarjeta" aria-labelledby="t-foto">
+          <h3 class="titulo-paso" id="t-foto">1. Identidad y fotografía</h3>
+          <p class="ayuda ayuda-bloque">Compare a la persona con su identificación oficial y con la fotografía que cargó al crear su cuenta. La fotografía confirmada es la de su credencial.</p>
+          <div class="lado-a-lado">
+            <div class="perfil-foto foto-grande"><span class="perfil-iniciales" aria-hidden="true">SE</span></div>
+            <fieldset class="grupo">
+              <legend class="etiqueta">¿La fotografía sirve? <span class="oblig" aria-hidden="true">*</span></legend>
+              <div class="opciones-lista">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="foto" value="confirmar" autocomplete="off"><span><span class="opcion-nombre">Sí, es la persona: confirmarla</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="foto" value="otra" autocomplete="off"><span><span class="opcion-nombre">No sirve: tomar otra aquí</span><span class="opcion-desc">De frente, fondo claro y sin lentes oscuros.</span></span></label>
+              </div>
+            </fieldset>
+          </div>
+          <div class="zona-maqueta" data-si-maqueta="foto=otra" hidden><svg class="icono" aria-hidden="true"><use href="#i-camara"></use></svg>Tomar fotografía con la cámara</div>
+        </section>
+
+        <!-- 2 · Cotejo de documentos -->
+        <section class="tarjeta" aria-labelledby="t-docs">
+          <h3 class="titulo-paso" id="t-docs">2. Cotejo de documentos</h3>
+          <p class="ayuda ayuda-bloque">Compare cada documento que trae la persona con lo que cargó en línea (a la derecha). Si alguno no coincide, el trámite no sigue: regresa a la persona para que lo corrija.</p>
+          <div data-docs-maqueta></div>
+        </section>
+
+        <!-- 3 · Pago -->
+        <section class="tarjeta" aria-labelledby="t-pago">
+          <h3 class="titulo-paso" id="t-pago">3. Pago</h3>
+          <dl class="datos pago-datos">
+            <div class="datos-par"><dt class="datos-etq">Concepto</dt><dd class="datos-valor">Acreditación de poda y derribo de arbolado urbano</dd></div>
+            <div class="datos-par"><dt class="datos-etq">Monto que se le indicó</dt><dd class="datos-valor">$1,200.00 <span class="datos-nota">Monto ficticio de prueba: el real lo fija la Gaceta Oficial.</span></dd></div>
+            <div class="datos-par"><dt class="datos-etq">Referencia</dt><dd class="datos-valor"><span class="mono">APDS202600042</span> <span class="datos-nota">Provisional: el folio sin guiones. Pendiente con Finanzas.</span></dd></div>
+          </dl>
+          <fieldset class="grupo">
+            <legend class="etiqueta">¿Presentó el comprobante de pago por ese monto y con esa referencia? <span class="oblig" aria-hidden="true">*</span></legend>
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="pago" value="si" autocomplete="off"><span><span class="opcion-nombre">Sí</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="pago" value="no" autocomplete="off"><span><span class="opcion-nombre">No</span></span></label>
+            </div>
+          </fieldset>
+          <p class="aviso aviso-advertencia" data-si-maqueta="pago=no" hidden><span class="aviso-texto">Sin pago no se puede terminar el cotejo. <span class="pendiente">Por decidir: darle otra cita (propuesta) o cerrar la solicitud.</span></span></p>
+        </section>
+
+        <!-- 4 · Factura -->
+        <section class="tarjeta" aria-labelledby="t-factura" data-si-maqueta="pago=si" hidden>
+          <h3 class="titulo-paso" id="t-factura">4. Factura</h3>
+          <p class="ayuda ayuda-bloque">La Secretaría emite la factura del pago y usted la carga aquí, en PDF. Con la factura cargada, la solicitud pasa sola a la bandeja de grupos.</p>
+          <div class="campo">
+            <span class="etiqueta">Factura <span class="oblig" aria-hidden="true">*</span></span>
+            <p class="ayuda">Sólo PDF, hasta 5 MB.</p>
+            <div class="zona-maqueta"><svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>Elegir archivo</div>
+          </div>
+          <div class="fila">
+            <div class="campo">
+              <label class="etiqueta" for="rfc">RFC a cuyo favor se emitió <span class="oblig" aria-hidden="true">*</span></label>
+              <p class="ayuda">12 caracteres si es empresa; 13 si es persona.</p>
+              <input class="control control-corto" id="rfc" autocomplete="off" maxlength="13">
+            </div>
+            <div class="campo">
+              <label class="etiqueta" for="folio-fiscal">Folio fiscal <span class="oblig" aria-hidden="true">*</span></label>
+              <p class="ayuda">Los 36 caracteres del folio de la factura. No se repite.</p>
+              <input class="control" id="folio-fiscal" autocomplete="off" maxlength="36">
+            </div>
+          </div>
+          <div class="campo">
+            <label class="etiqueta" for="razon">Nombre o razón social <span class="oblig" aria-hidden="true">*</span></label>
+            <p class="ayuda">Como aparece en la factura.</p>
+            <input class="control" id="razon" autocomplete="off" maxlength="200">
+          </div>
+        </section>
+
+        <!-- Resultado -->
+        <section class="tarjeta" aria-labelledby="t-resultado">
+          <h3 class="titulo-paso" id="t-resultado">Resultado del cotejo</h3>
+          <p class="resultado-texto" data-resultado-texto>Falta: la fotografía, el cotejo de 4 documentos y el pago.</p>
+          <div class="acciones">
+            <button type="button" class="btn btn-primario" data-accion-maqueta>Terminar el cotejo</button>
+          </div>
+        </section>
+      </form>
+
+      <aside class="visor-maqueta" aria-label="Documento cargado">
+        <p class="visor-titulo" data-visor-titulo>Identificación oficial</p>
+        <p class="visor-archivo">IDENTIFICACION OFICIAL_SERGIO EJEMPLO PRUEBA.pdf · lo cargó el 11/10/2026</p>
+        <div class="visor-hoja-maqueta"><p>Aquí se ve el documento que cargó, con todas sus hojas,<br>para compararlo con el que trae la persona.</p></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ═════════════ 3 · HECHO ═════════════ -->
+  <section data-pantalla="hecho" aria-labelledby="t-hecho" hidden>
+    <div class="tarjeta">
+      <h2 class="titulo-paso" id="t-hecho">El cotejo quedó registrado</h2>
+      <dl class="datos">
+        <div class="datos-par"><dt class="datos-etq">Número de expediente</dt><dd class="datos-valor mono">EXP-2026-0013</dd></div>
+        <div class="datos-par"><dt class="datos-etq">Situación</dt><dd class="datos-valor">En espera de grupo · Poda y derribo · nueva</dd></div>
+      </dl>
+      <p>Anote el número de expediente en la carpeta física de SERGIO EJEMPLO PRUEBA. La persona ya ve en «Mis trámites» que espera grupo y su número de expediente.</p>
+      <div class="acciones">
+        <span class="btn-atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Citas de cotejo</span>
+        <span class="btn btn-primario">Atender la siguiente: 10:30 · NADIA MUESTRA FICTICIO</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div></footer>
+
+<script src="formkit/js/iconos.js"></script>
+<script>
+(() => {
+  document.body.insertAdjacentHTML('afterbegin', window.FORMKIT_ICONOS || '');
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  // Vistas
+  const vistas = $$('[data-vista]');
+  function ve(v) {
+    for (const b of vistas) b.setAttribute('aria-pressed', String(b.dataset.vista === v));
+    for (const p of $$('[data-pantalla]')) p.hidden = p.dataset.pantalla !== v;
+    window.scrollTo(0, 0);
+  }
+  for (const b of vistas) b.addEventListener('click', () => ve(b.dataset.vista));
+  for (const b of $$('[data-ir]')) b.addEventListener('click', () => ve(b.dataset.ir));
+
+  // Documentos a cotejar (los cuatro de una solicitud de poda nueva)
+  const docs = [['identificacion_oficial', 'Identificación oficial'], ['curp', 'Clave Única de Registro de Población (CURP)'],
+    ['comprobante_domicilio', 'Comprobante de domicilio'], ['constancia_situacion_fiscal', 'Constancia de situación fiscal']];
+  $('[data-docs-maqueta]').innerHTML = docs.map(([k, n]) => `
+    <article class="doc-revision" data-doc="${k}">
+      <div class="doc-cabeza"><h4 class="doc-titulo">${n}</h4><span class="estado" data-estado-doc="${k}">Por cotejar</span></div>
+      <p><button type="button" class="btn-enlace" data-ver="${k}" data-nombre="${n}">Ver lo que cargó</button></p>
+      <fieldset class="grupo">
+        <legend class="etiqueta">¿Coincide con lo que cargó? <span class="oblig" aria-hidden="true">*</span></legend>
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="doc_${k}" value="si" autocomplete="off"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="doc_${k}" value="no" autocomplete="off"><span><span class="opcion-nombre">No coincide</span></span></label>
+        </div>
+      </fieldset>
+      <div class="campo" data-si-maqueta="doc_${k}=no" hidden>
+        <label class="etiqueta" for="obs_${k}">¿Qué no coincide? <span class="oblig" aria-hidden="true">*</span></label>
+        <p class="ayuda">La persona lo leerá tal como lo escriba, para corregirlo en línea.</p>
+        <textarea class="control" id="obs_${k}" rows="2" autocomplete="off"></textarea>
+      </div>
+    </article>`).join('');
+
+  const valor = (n) => { const r = $(`input[name="${n}"]:checked`); return r ? r.value : ''; };
+  function pinta() {
+    for (const c of $$('[data-si-maqueta]')) { const [n, v] = c.dataset.siMaqueta.split('='); c.hidden = valor(n) !== v; }
+    for (const [k] of docs) {
+      const v = valor(`doc_${k}`);
+      const e = $(`[data-estado-doc="${k}"]`);
+      e.textContent = v === 'si' ? 'Coincide' : v === 'no' ? 'No coincide' : 'Por cotejar';
+      if (v) e.dataset.tono = v === 'si' ? 'ok' : 'error'; else delete e.dataset.tono;
+    }
+    const faltan = [];
+    if (!valor('foto')) faltan.push('la fotografía');
+    const sinCotejar = docs.filter(([k]) => !valor(`doc_${k}`)).length;
+    if (sinCotejar) faltan.push(`el cotejo de ${sinCotejar} ${sinCotejar === 1 ? 'documento' : 'documentos'}`);
+    const noCoinciden = docs.filter(([k]) => valor(`doc_${k}`) === 'no').length;
+    if (!valor('pago') && !noCoinciden) faltan.push('el pago');
+    const texto = $('[data-resultado-texto]');
+    const boton = $('[data-accion-maqueta]');
+    if (noCoinciden) {
+      texto.textContent = `${noCoinciden === 1 ? 'Un documento no coincide' : `${noCoinciden} documentos no coinciden`}: la solicitud regresa con observaciones. La persona corrige en línea y, después de una nueva revisión, recibe otra cita. El pago y la factura se ven en esa cita.`;
+      boton.textContent = 'Regresar con observaciones';
+    } else if (valor('pago') === 'no') {
+      texto.textContent = 'No presentó el pago: el cotejo no se termina.';
+      boton.textContent = 'Darle otra cita';
+    } else if (faltan.length) {
+      texto.textContent = `Falta: ${faltan.join(', ').replace(/, ([^,]*)$/, ' y $1')}.`;
+      boton.textContent = 'Terminar el cotejo';
+    } else {
+      texto.textContent = 'Todo coincide y el pago está verificado. Al terminar se abre el expediente EXP-2026-0013 y la solicitud pasa a «En espera de grupo».';
+      boton.textContent = 'Terminar el cotejo';
+    }
+  }
+  document.addEventListener('change', pinta);
+  pinta();
+  $('[data-accion-maqueta]').addEventListener('click', () => { if (!valor('pago') || $('[data-accion-maqueta]').textContent !== 'Terminar el cotejo') return; ve('hecho'); });
+  // Visor: muestra el nombre del documento elegido
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ver]');
+    if (b) $('[data-visor-titulo]').textContent = b.dataset.nombre;
+  });
+})();
+</script>
+</body>
+</html>

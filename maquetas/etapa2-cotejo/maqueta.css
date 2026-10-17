@@ -1,0 +1,39 @@
+/* Maqueta de la etapa 2 · citas de cotejo. Sólo tokens del estándar. */
+body { background: var(--fondo); }
+.maqueta-aviso { text-align: center; }
+.maqueta-pasos { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-5); }
+.maqueta-pasos button {
+  font: inherit; font-size: var(--t-sm); min-height: var(--objetivo-min); padding: var(--e-1) var(--e-4);
+  border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); background: var(--blanco); color: var(--texto); cursor: pointer;
+}
+.maqueta-pasos button[aria-pressed="true"] { background: var(--guinda); border-color: var(--guinda); color: var(--blanco); }
+.maqueta-pasos button:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+[data-pantalla][hidden] { display: none; }
+.nav-futura { color: var(--gris-cl); }
+
+/* Agenda */
+.agenda-dia { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); margin-block: var(--e-4); }
+.agenda-fecha { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); }
+.agenda-flechas { display: flex; gap: var(--e-2); }
+.agenda-flechas .btn { width: auto; }
+.mono { font-family: var(--fuente-mono); }
+.btn-chico { width: auto; }
+
+/* Para decidir */
+.decidir { margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-2); }
+
+/* Atender: área con visor a la derecha en computadora */
+.cotejo-area { display: grid; gap: var(--e-5); align-items: start; }
+@media (min-width: 1024px) { .cotejo-area { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .visor-maqueta { position: sticky; top: var(--e-4); } }
+.cotejo-form { display: grid; gap: var(--e-5); }
+.visor-maqueta { display: grid; gap: var(--e-3); padding: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); background: var(--blanco); }
+.visor-maqueta p { margin: 0; }
+.visor-hoja-maqueta { display: grid; place-items: center; min-height: calc(var(--alto-mapa) * 1.3); border: var(--b-1) dashed var(--gris-cl); border-radius: var(--r-ctrl); background: var(--fondo); color: var(--gris); text-align: center; padding: var(--e-4); }
+.foto-grande { width: calc(var(--e-11) * 1.4); }
+.lado-a-lado { display: grid; gap: var(--e-4); }
+@media (min-width: 560px) { .lado-a-lado { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }
+.zona-maqueta { display: grid; place-items: center; gap: var(--e-1); min-height: calc(var(--objetivo-min) * 2); padding: var(--e-4); border: var(--b-2) dashed var(--gris-cl); border-radius: var(--r-caja); color: var(--azul); text-align: center; font-weight: var(--peso-medio); }
+.pago-datos { padding: var(--e-3) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
+.resultado-texto { margin: 0; }
+.fila-hecha td { color: var(--gris); }
+[data-si-maqueta][hidden] { display: none; }
