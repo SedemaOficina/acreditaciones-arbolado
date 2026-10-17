@@ -167,6 +167,9 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | La calificación la calcula el servidor: aciertos entre preguntas por 10, con un decimal y sin redondear hacia arriba (P88). La persona la ve al enviar; queda en apd.examen con origen examen_web y no se modifica | Propuesta de Claude, por aprobar |
 | 2026-10-17 | Quien aplica sigue el avance al momento, puede suspender un examen con motivo (la persona lo lee en su pantalla y lo contestado no se califica) e imprimir los códigos en papeletas. Salir de la ventana del examen no lo bloquea: se le cuenta a quien aplica | Propuesta de Claude, por aprobar |
 | 2026-10-17 | El banco real de reactivos, con su clave, nunca entra al repositorio público: el prototipo usa preguntas ficticias sobre el propio trámite y la página nunca recibe la respuesta correcta (P85) | Liber Saltijeral / Propuesta |
+| 2026-10-17 | La fotografía de la cuenta tiene que verse clara: el día del examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia. Así lo dice la ayuda en «Crea tu cuenta» y al cambiarla en «Mi perfil» | Liber Saltijeral |
+| 2026-10-17 | El sitio usa el Estándar de formularios del SIA 1.3.1 (`SedemaOficina/estandares-sia`, carpeta `formularios/`) y quita las soluciones provisionales que el estándar ya resolvió (P37–P47, P52, P56, P61, P65–P67, P70–P73, P81, P82, P86, P87) | Instrucción del proyecto |
+| 2026-10-17 | En las pantallas del personal los textos del estándar se ven en usted (`app/config-usted.js`, sin editar `formkit/`); en las de la persona solicitante, en tú, como el estándar | Instrucción del proyecto |
 
 ## Vigencia y renovación
 

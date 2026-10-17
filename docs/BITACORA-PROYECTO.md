@@ -639,3 +639,31 @@ campos correctos.
 - Pruebas: `probar-examen.mjs` 54 comprobaciones (pase de lista, llegada tarde, foto, código en otra computadora,
   computadora que falla), con axe.
 
+
+## 2026-10-17 · Bloque 50 · Estándar de formularios 1.3.1
+
+- **El sitio usa el Estándar de formularios del SIA 1.3.1** (`SedemaOficina/estandares-sia`, carpeta `formularios/`;
+  antes la copia 1.0.0). `construir-sitio.mjs` copia además los módulos `visor`, `version`, `chips` y `fecha`, y pdf.js
+  4.10.38 del propio estándar (`sitio/vendor/pdfjs-dist/`; se quitó `pdfjs-dist` de `package.json`). La hoja del
+  distintivo de versión es el módulo `version`.
+- Se quitaron las soluciones provisionales: `app/auxiliar.js` (datos calculados como `<input type="hidden" data-auxiliar>`),
+  `curp-nombre.js` y el campo `sin_segundo_apellido` (cruzadas `curp-nombre` y `curp-segundo-apellido` del estándar),
+  `fecha-dma.js` (formato y escritura guiada del estándar, módulo `fecha`), `folio-fiscal.js`, `archivos-lleno.js`,
+  `ver-contrasena.js` (el núcleo pone «Mostrar» dentro del campo), `visor.js` (`FormKit.visor.abre`), `APD.pintaErrores`
+  (P86), el ajuste de `aria-required` (P47), el de «Cancelar» en «Mi perfil» (P87), la revalidación de la CURP (P44) y
+  las reglas de `apd.css` que ya trae el estándar (P56, P71, P72, P73, S2-1, S2-2 y el visor).
+- Mínimo de experiencia según el perfil con `data-min-segun="experiencia"` (P61): la regla pasó a
+  `app/perfil-academico.js`, sin navegador, para que la use también el servidor (`limitesSegun`).
+- Motivos frecuentes de la revisión con `data-chips-fijos` (P65). Textos del estándar en usted para el personal
+  (`app/config-usted.js`): mensajes, visor y los formatos fecha, hora, RFC, número y folio fiscal.
+- `probar-esquemas.mjs` sin el relleno de archivos (P46), con `auxiliares` y `limitesSegun`: ahora el servidor también
+  rechaza menos experiencia de la que pide el perfil y un dato calculado que mande el navegador. 93 casos.
+- Fotografía de la cuenta (Liber): la ayuda dice que tiene que verse clara porque quien aplica el examen la usa para
+  confirmar que es la persona y tomarle asistencia.
+- Pruebas: `probar-sitio.mjs` 452 de 452 con axe; `probar-examen.mjs` 53 de 53 con axe; `probar-esquemas.mjs` 93 de
+  93; `auditor-css` sobre `apd.css`: 0 hallazgos; `auditar-campos`: 8 formularios correctos; guion de ficticios igual al
+  anterior. Revisadas en teléfono y escritorio: cuenta (fecha, fotografía, contraseña),
+  revisión (motivos frecuentes y visor), cotejo (visor y folio fiscal).
+- Hallazgos nuevos para el estándar: P95 (mensajes de formatos y de longitud mínima fuera de «mensajes»), P96 (ruta de
+  pdf.js con los módulos en otra carpeta), P97 (nombre del grupo de motivos frecuentes) y P98 (dos «Mostrar» con el
+  mismo nombre accesible).

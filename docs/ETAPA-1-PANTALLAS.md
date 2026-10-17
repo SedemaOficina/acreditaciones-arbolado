@@ -1,7 +1,7 @@
 # Etapa 1 · Pantallas de la persona solicitante
 
-Versión de prueba 0.N (sube con cada publicación; ver `docs/VERSIONES.md`), con datos ficticios. Construida con el **Estándar de formularios del SIA v1.0.0**
-(`SedemaOficina/estandar-formularios`), sin modificarlo. Ninguna pantalla guarda nada fuera de la pestaña:
+Versión de prueba 0.N (sube con cada publicación; ver `docs/VERSIONES.md`), con datos ficticios. Construida con el **Estándar de formularios del SIA 1.3.1**
+(`SedemaOficina/estandares-sia`, carpeta `formularios/`; desde el 2026-10-17, antes 1.0.0), sin modificarlo. Ninguna pantalla guarda nada fuera de la pestaña:
 el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.json` hasta la etapa 3.
 
 ## 1. Pantallas
@@ -40,7 +40,7 @@ se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
 En «Entrar» ya no hay caja de personas de ejemplo: sólo una línea con su contraseña.
 También pone la página en modo de prueba: los **datos internos** (`data-interno`: lo que calcula el sistema, se guarda
 en la base y la persona no ve, como el sexo tomado de la CURP o el curso que corresponde, `tramite`; lo que sólo usa
-la página, como `sin_segundo_apellido`, no se muestra) se
+la página, los datos calculados `data-auxiliar`, no se muestra) se
 muestran en un recuadro amarillo con su nota y su valor; sin este archivo, en producción, quedan ocultos. No
 aparece si `VERSION` no es 0.N; al pasar al SIA se quita de las páginas con el acceso simulado.
 
@@ -48,13 +48,15 @@ aparece si `VERSION` no es 0.N; al pasar al SIA se quita de las páginas con el 
 
 Los copia `herramientas/construir-sitio.mjs` a `sitio/formkit/`, sin cambios: `css/` (tokens, base, núcleo),
 `js/` (validaciones.config, iconos, formkit.core), `fuentes/`, `iconos/`, `imagenes/` y los módulos
-**opciones, otro, combo, identificadores, pasos, archivos, revision, acuse, modal, copiar, tooltip, acordeon**.
+**opciones, otro, combo, identificadores, pasos, archivos, revision, acuse, modal, copiar, tooltip, acordeon, tabla,
+visor, version, chips, fecha**, y pdf.js 4.10.38 del propio estándar en `sitio/vendor/pdfjs-dist/`.
 Alternativa equivalente: `dist/formkit.css` y `dist/formkit.js`.
 
 Orden de carga en cada página (contrato del estándar):
 
-1. `formkit/css/tokens.css` → `base.css` → `nucleo.css` → CSS de los módulos usados → `app/version-visible.css` → `app/apd.css`
-2. `app/apd.js` → (`datos/catalogos.js`) → `app/config-<página>.js` → `formkit/js/validaciones.config.js` →
+1. `formkit/css/tokens.css` → `base.css` → `nucleo.css` → CSS de los módulos usados → `formkit/modulos/version/version.css` → `app/apd.css`
+2. `app/perfil-academico.js` → `app/apd.js` → (`datos/catalogos.js`) → `app/config-<página>.js` → `formkit/js/validaciones.config.js` →
+   (`app/config-usted.js`, en las pantallas del personal) →
    `formkit/js/iconos.js` → `formkit/js/formkit.core.js` → JS de los módulos → script propio de la página →
    `app/version-visible.js`
 
@@ -62,10 +64,10 @@ Orden de carga en cada página (contrato del estándar):
 
 | Archivo | Qué ajusta |
 |---|---|
-| `app/curp-nombre.js` | Validaciones cruzadas propias `curp-nombre`, `curp-segundo-apellido` y `curp-sin-segundo-apellido` (iniciales y consonantes de la CURP contra nombre y apellidos). Se cargan antes de la configuración; el servidor las usa con `validaPayload(…, { config })` |
-| `app/config-cuenta.js` | Suma las cruzadas propias (`FORMKIT_CONFIG.cruzadas`). Envío simulado: CURP con cuenta → rechazo con motivo; CURP del registro de Kobo → activa y muestra historial; nueva → cuenta |
+| `app/perfil-academico.js` | Perfil del dictaminador y experiencia mínima (sin navegador): lo usan la página y el servidor (`limitesSegun`) |
+| `app/config-cuenta.js` | Las cruzadas CURP ↔ nombre, apellidos y fecha son del estándar (`curp-nombre`, `curp-segundo-apellido`, `curp-fecha-dma`). Envío simulado: CURP con cuenta → rechazo con motivo; CURP del registro de Kobo → activa y muestra historial; nueva → cuenta |
 | `app/config-entrar.js` | Acceso simulado (contraseña ficticia común) y regreso a la pantalla pedida |
-| `app/config-solicitud.js` | `archivos`: 5 MB, sólo PDF, 1 por documento (parámetro de la base y `apd.requisito.formatos`). Envío simulado con folio `APD-S-AAAA-NNNNN` |
+| `app/config-solicitud.js` | `archivos`: 5 MB, sólo PDF, 1 por documento (parámetro de la base y `apd.requisito.formatos`). `limitesSegun.experiencia`: mínimo de años según el perfil (`data-min-segun`). Envío simulado con folio `APD-S-AAAA-NNNNN` |
 | `app/config-verificar.js` | Consulta a la vista `apd.verificacion_publica` |
 | `datos/catalogos.js` | Las 16 alcaldías (generado del catálogo inicial de la base) |
 
@@ -94,18 +96,19 @@ rechazan). En la etapa 3 la API:
 ## 5. Decisiones técnicas de esta etapa
 
 1. **Una sola pregunta: la acreditación.** Si es nueva o renovación lo decide el historial y se informa. El curso
-   que corresponde va en un campo auxiliar `tramite` (módulo propio `app/auxiliar.js`, que no viaja al servidor)
-   y de él dependen los documentos con una sola condición, porque el esquema del servidor no combina condiciones
-   anidadas (P38). El servidor calcula `tramite` por su cuenta.
+   que corresponde va en un dato calculado `tramite` (`<input type="hidden" data-auxiliar>` del estándar, que no viaja
+   al servidor) y de él dependen los documentos. El servidor calcula `tramite` por su cuenta (`validaPayload(…, { auxiliares })`).
 2. **CURP con dígito verificador también en la base** (`apd.curp_valida`): estructura, entidad y dígito, igual
    que el estándar. Las CURP ficticias pasaron a `XAXX…NEXXX0d`, válidas en formato. 71 de 71 pruebas de la base.
 3. **Contraseña ficticia** `Prueba-ficticia-2026`: la anterior tenía 11 caracteres y el estándar pide 12.
 4. **Experiencia en medios años** (`step 0.5`): un dato ficticio tenía 2.5 años y la base admite un decimal.
-5. **Distintivo de versión** con los tokens del estándar (`herramientas/plantillas/version/version-visible.formkit.css`)
-   y dentro del pie, para pasar el auditor de CSS y la regla de regiones de axe.
+5. **Distintivo de versión** con el módulo `version` del estándar (antes, una hoja propia con sus tokens) y dentro del pie, para pasar el auditor de CSS y la regla de regiones de axe.
 6. Las marcas internas del catálogo (`[pendiente] …`) no se muestran a la persona; siguen en la base.
 
 ## 6. Hallazgos para el Estándar de formularios (no se corrigieron aquí)
+
+Todos los de esta tabla los resolvió el estándar entre la 1.1.0 y la 1.3.1. Desde el 2026-10-17 el sitio usa la 1.3.1 y ya
+no lleva estas soluciones provisionales (bitácora, bloque 50). La tabla queda como registro.
 
 | Módulo o herramienta | Hallazgo | Cómo se resolvió en el proyecto |
 |---|---|---|

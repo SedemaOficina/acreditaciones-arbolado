@@ -64,7 +64,8 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 
 ## 2 bis. Visor de documentos
 
-`app/visor.js` muestra todas las hojas del PDF con pdf.js (copiado en `vendor/pdfjs/`, sin CDN): contador de hoja,
+El módulo `visor` del estándar (desde la 1.2.0, P67; antes `app/visor.js`, del que salió) muestra todas las hojas del PDF
+con pdf.js 4.10.38 del propio estándar (copiado en `vendor/pdfjs-dist/`, sin CDN; ruta en `FORMKIT_CONFIG.visor.pdfjs`): contador de hoja,
 acercar y alejar, ajustar al ancho, girar y abrir en otra pestaña. En computadora (≥1024 px) queda fijo a la derecha y
 abre de entrada el primer documento (el comprobante de estudios si hay que decidir el perfil); en pantalla chica se abre a
 pantalla completa. Al aceptar un documento, el visor y la lista pasan al siguiente sin decidir; con todo decidido, la
@@ -78,18 +79,20 @@ de la persona y el visor el archivo real. Se quita en la etapa 3 junto con el ac
 ## 3. Formulario y servidor
 
 La revisión es un formulario del estándar que arranca a mano (`data-formkit="manual"`) cuando la página ya calculó sus
-campos auxiliares (módulo propio `auxiliar`): `perfil_revision`, `revisar_<requisito>` (documento cargado y sin
-rechazo por perfil) y `resultado`. Cada campo depende de una sola condición (P38). Los siete bloques de documentos se
+datos calculados (`<input type="hidden" data-auxiliar>` del estándar 1.1.0): `perfil_revision`, `revisar_<requisito>`
+(documento cargado y sin rechazo por perfil) y `resultado`; el servidor los calcula con `validaPayload(…, { auxiliares })`.
+Los motivos frecuentes de cada observación son `data-chips-fijos` (módulo `chips`, P65). Los textos del estándar se
+ven en usted (`app/config-usted.js`). Los siete bloques de documentos se
 generan del catálogo de requisitos en `herramientas/construir-sitio.mjs` (marcadores `revision-documentos` y
-`revision-auxiliares`). Módulos del estándar: `opciones`, `modal` (`FormKit.confirma` para rechazar) y `tabla`
+`revision-auxiliares`). Módulos del estándar: `opciones`, `modal` (`FormKit.confirma` para rechazar), `chips`, `visor` y `tabla`
 (bandeja). El esquema del servidor es `db/esquemas-formularios/revisar.json`; `herramientas/probar-esquemas.mjs` lo
 prueba con el cálculo de los auxiliares que hará la API (14 casos).
 
 El cotejo sigue el mismo patrón: auxiliares `pedir_llegada`, `pedir_identidad`, `pedir_documentos`, `cotejar_<requisito>`,
 `pedir_hoy`, `pedir_pago`, `pedir_factura` y `resultado`; bloques generados entre los marcadores `cotejo-documentos` y
-`cotejo-auxiliares` (y `corregir-*` para la corrección de la persona). Formato propio `folio-fiscal`
-(`app/folio-fiscal.js`). Esquemas `cotejo.json` y `corregir.json` (19 casos). El examen tiene dos formularios del estándar: «Entra a tu examen» (formato propio `codigo-examen`, `app/codigo-examen.js`) y «Suspender el examen» (diálogo en `aplicar.html`); esquemas `examen-entrar.json` y `examen-suspender.json` (6 casos). Las condiciones van en `div[data-si]`: la
-herramienta del esquema no las lee en otra etiqueta.
+`cotejo-auxiliares` (y `corregir-*` para la corrección de la persona). Formato `folio-fiscal` del
+estándar (1.3.0, P82). Esquemas `cotejo.json` y `corregir.json` (19 casos). El examen tiene dos formularios del estándar: «Entra a tu examen» (formato propio `codigo-examen`, `app/codigo-examen.js`) y «Suspender el examen» (diálogo en `aplicar.html`); esquemas `examen-entrar.json` y `examen-suspender.json` (6 casos). Las condiciones van en `div[data-si]`; desde la 1.3.0
+la herramienta del esquema las lee en cualquier etiqueta (P81) y los `div` se quedan.
 
 ## 4. Lo que falta
 

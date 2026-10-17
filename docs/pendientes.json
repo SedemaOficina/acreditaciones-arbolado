@@ -313,94 +313,6 @@
       "recomendacion": "La firma quien haga la sesión de P33 a P35; con eso se cierra la etapa 1."
     },
     {
-      "id": "P37",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "combo no acepta el catálogo como {filas, fuente, corte} aunque su documentación lo dice",
-      "recomendacion": "Reportarlo al repositorio del estándar. Te preparo el texto de los nueve reportes (P37 a P45) en un solo documento."
-    },
-    {
-      "id": "P38",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "esquema-desde-html.mjs sólo toma el data-si más cercano con condiciones anidadas",
-      "recomendacion": "Reportarlo; afecta a cualquier formulario con condiciones anidadas."
-    },
-    {
-      "id": "P39",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "archivos dice «Hasta 1 archivos»",
-      "recomendacion": "Reportarlo; es un ajuste de texto."
-    },
-    {
-      "id": "P40",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "numero no valida un step menor que 1",
-      "recomendacion": "Reportarlo."
-    },
-    {
-      "id": "P41",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "No hay forma de marcar en un campo un error que devuelve el servidor",
-      "recomendacion": "Reportarlo; todos los formularios con servidor lo necesitan (por ejemplo, «esta CURP ya tiene cuenta»)."
-    },
-    {
-      "id": "P42",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "No hay «mostrar contraseña»",
-      "recomendacion": "Proponerlo como mejora del estándar."
-    },
-    {
-      "id": "P43",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "No hay validación cruzada de CURP contra nombre y apellidos",
-      "recomendacion": "Proponer que el estándar adopte las tres cruzadas de este proyecto."
-    },
-    {
-      "id": "P44",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "Una cruzada no se vuelve a comprobar si cambia el otro dato",
-      "recomendacion": "Reportarlo; el proyecto lo resolvió por su cuenta y el estándar debería hacerlo en el núcleo."
-    },
-    {
-      "id": "P45",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS",
-      "recomendacion": "Reportarlo y proponer la hoja con tokens que hizo este proyecto."
-    },
-    {
-      "id": "P46",
-      "grupo": "estandar",
-      "bloquea": "etapa 3",
-      "desde": "2026-10-14",
-      "titulo": "validar.mjs exige en «datos» los campos de archivos que el navegador no manda ahí",
-      "recomendacion": "Reportarlo al estándar. Mientras, la API pone en «datos» el número de archivos recibidos de cada campo antes de validar (así lo prueba probar-esquemas.mjs)."
-    },
-    {
-      "id": "P47",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "El núcleo pone aria-required en el botón de la zona de carga, que no lo admite",
-      "recomendacion": "Reportarlo al estándar; el proyecto lo quita sólo de ese botón (app/apd.js)."
-    },
-    {
       "id": "P48",
       "grupo": "direccion",
       "bloquea": "etapa 2",
@@ -433,14 +345,6 @@
       "recomendacion": "No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física."
     },
     {
-      "id": "P52",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-15",
-      "titulo": "Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí)",
-      "recomendacion": "Reportarlo: al evaluar data-si, tratar como no cumplida la condición sobre un campo inactivo. Mientras, envolturas data-si anidadas."
-    },
-    {
       "id": "P55",
       "grupo": "sia",
       "bloquea": "etapa 3",
@@ -449,28 +353,12 @@
       "recomendacion": "Con servicio de correo (P23), enviar un enlace de confirmación al correo nuevo y avisar al anterior. Sin él, pedir la contraseña actual para guardar el cambio."
     },
     {
-      "id": "P56",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-15",
-      "titulo": "Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado",
-      "recomendacion": "Hacer de opciones-lista la forma por omisión de las preguntas de una sola respuesta, dejar la rejilla para casos con pocas opciones muy visuales y agregar a opciones-lista su estado deshabilitado."
-    },
-    {
       "id": "P57",
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-15",
       "titulo": "Hora de entrada al curso",
       "recomendacion": "Confirmar la hora de entrada (hoy se muestra «por confirmar»). Los días del curso son consecutivos (confirmado por Liber, 2026-10-15), como ya los cuenta la base."
-    },
-    {
-      "id": "P61",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-15",
-      "titulo": "El mínimo de un número no puede depender de otra respuesta",
-      "recomendacion": "Reportarlo y proponer un mínimo declarativo según otra respuesta, que lea también validar.mjs. Mientras, app/solicitud.js cambia el atributo min y la base rechaza con experiencia_insuficiente."
     },
     {
       "id": "P63",
@@ -489,30 +377,6 @@
       "recomendacion": "Confirmar los cinco motivos que ofrece la revisión (no se lee completo, está vencido, no corresponde al requisito, falta una página, no coincide con el nombre de la cuenta) y si la fecha de la cita la elige quien revisa (como está) o se toma de un calendario de citas disponibles en el Vivero Nezahualcóyotl."
     },
     {
-      "id": "P65",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-16",
-      "titulo": "El módulo chips sólo sugiere del historial; no admite una lista fija de sugerencias",
-      "recomendacion": "Proponer en chips una lista fija declarada en el HTML (data-chips-fijos) para respuestas frecuentes conocidas, como los motivos de observación. Mientras, la revisión usa botones propios (.sugerencia) con los tokens del estándar."
-    },
-    {
-      "id": "P66",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-16",
-      "titulo": "Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto",
-      "recomendacion": "Reportarlo: alternar con :nth-child no cuenta las filas ocultas; y una columna cuyo encabezado es sólo para lector de pantalla no debería mostrar su rótulo en la vista de fichas."
-    },
-    {
-      "id": "P67",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-16",
-      "titulo": "El estándar no tiene visor de documentos para revisar lo que se carga",
-      "recomendacion": "Proponer un módulo «visor» (todas las hojas, contador, acercar, girar, abrir en otra pestaña; fijo junto al formulario en computadora y a pantalla completa en teléfono) con pdf.js incluido en el paquete, a partir de app/visor.js de este proyecto."
-    },
-    {
       "id": "P68",
       "grupo": "direccion",
       "bloquea": "datos reales",
@@ -527,38 +391,6 @@
       "desde": "2026-10-16",
       "titulo": "Ventanas de horario para las citas de cotejo en el Vivero Nezahualcóyotl",
       "recomendacion": "Preguntar qué días y en qué horario se atienden citas, cuánto dura cada una y cuántas personas caben por franja (por ejemplo, de lunes a viernes, de 9:00 a 14:00, en bloques de 30 minutos). Con eso la revisión sólo ofrece horas dentro de las ventanas, avisa si una franja ya está llena y puede proponer la primera libre (se liga a P64). Mientras, la hora se escribe libre."
-    },
-    {
-      "id": "P70",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-16",
-      "titulo": "El formato «fecha» del estándar sólo acepta AAAA-MM-DD escrito, o el calendario del navegador",
-      "recomendacion": "Proponer un formato de fecha escrita como día/mes/año (acepta 23/07/1985, 23-07-1985 o 23071985 y la deja como 23/07/1985), con su cruzada contra la CURP y el límite «no posterior a hoy», a partir de app/fecha-dma.js de este proyecto. Para la fecha de nacimiento, el calendario obliga a recorrer décadas."
-    },
-    {
-      "id": "P71",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "Módulo «archivos»: «Elegir archivo» sigue a la vista con el máximo ya cargado, y dice «Hasta 1 archivos»",
-      "recomendacion": "Proponer que el módulo oculte la zona de carga (y la cámara) cuando el campo llega a data-max y la muestre al quitar el archivo; que el archivo listo se vea como cargado; y que con data-max=\"1\" el texto diga «Un archivo de hasta N MB». Base: app/archivos-lleno.js y apd.css de este proyecto."
-    },
-    {
-      "id": "P72",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "Acuse y revisión: botones pegados o desalineados",
-      "recomendacion": "Proponer tres ajustes: (1) .acuse quita el relleno lateral de la tarjeta y en teléfono un botón queda pegado a la orilla: conservar el relleno; (2) el acuse no prevé una acción para continuar («Ir a mis trámites»): documentar que va en .acuse-acciones; (3) en la revisión, «Editar» baja de renglón con valores largos: que .rev-dato-valor no se parta y deje «Editar» arriba a la derecha. Base: apd.css de este proyecto y la comprobación automática de aire de probar-sitio.mjs."
-    },
-    {
-      "id": "P73",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "El estándar no trae botón para mostrar la contraseña",
-      "recomendacion": "Proponer «Mostrar» / «Ocultar» dentro del campo de contraseña (botón con aria-pressed y nombre accesible, vuelve a ocultarla al enviar) y que el envoltorio respete el renglón del control en .fila. Base: app/ver-contrasena.js y apd.css de este proyecto."
     },
     {
       "id": "P74",
@@ -617,22 +449,6 @@
       "recomendacion": "La pausa del cotejo sólo dura el día de la cita. apd.cerrar_pausas_vencidas() regresa con observaciones las que no se retomaron; hay que programarla cada noche (cron del servidor o pg_cron) con la cuenta del servicio. Pedirlo al SIA junto con el despliegue."
     },
     {
-      "id": "P81",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "esquema-desde-html sólo lee condiciones en div[data-si]",
-      "recomendacion": "Una sección (<section data-si>) se oculta bien en el navegador, pero la herramienta del esquema no ve su condición y el servidor exige sus campos aunque no se muestren. Proponer que lea data-si en cualquier etiqueta (o que el auditor de campos avise). Mientras, en cotejo.html las condiciones van en un div que envuelve la sección."
-    },
-    {
-      "id": "P82",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "No hay formato para el folio fiscal de una factura (CFDI)",
-      "recomendacion": "El formato «folio» del estándar es para folios de trámite. Proponer «folio-fiscal»: 32 hexadecimales en grupos 8-4-4-4-12, normalizado a mayúsculas con guiones. Base: app/folio-fiscal.js de este proyecto (navegador y servidor)."
-    },
-    {
       "id": "P83",
       "grupo": "direccion",
       "bloquea": "datos reales",
@@ -655,22 +471,6 @@
       "desde": "2026-10-17",
       "titulo": "El banco de reactivos con su clave no entra al repositorio público",
       "recomendacion": "Mientras el repositorio sea público, el prototipo del examen usa preguntas ficticias. El banco real se carga directo en la base del SIA, y la página nunca recibe la respuesta correcta: la califica el servidor."
-    },
-    {
-      "id": "P86",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "Actualizar el sitio al Estándar de formularios 1.1.0",
-      "recomendacion": "El sitio usa la copia 1.0.0, que no pinta junto a su campo los errores que devuelve el servidor ({errores: [{campo, mensaje}]}). La 1.1.0 lo hace y trae FormKit.marcaError. Mientras, APD.pintaErrores (app/apd.js) lo resuelve en «Crear cuenta» y «Mi perfil» (correo ya registrado). Al actualizar, quitarlo."
-    },
-    {
-      "id": "P87",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde",
-      "recomendacion": "Tras un envío fallido, el núcleo oculta el aviso en cuanto cualquier elemento del formulario recibe el foco; al presionar un botón debajo del aviso, el botón sube y el clic no llega. Proponer ocultarlo al cambiar un valor, no al mover el foco. En «Mi perfil», «Cancelar» evita el problema (mousedown sin mover el foco)."
     },
     {
       "id": "P88",
@@ -727,6 +527,38 @@
       "desde": "2026-10-17",
       "titulo": "¿Dónde se registra la asistencia del último día del curso: en el aula o al pasar lista en el PILARES?",
       "recomendacion": "Hoy el prototipo del examen la registra al pasar lista en el salón de cómputo del PILARES (cada persona marcada «Presente» cuenta como asistida ese día y recibe su código); la pantalla de grupos y asistencia la captura día por día en el aula. Hay que escoger una para que no se capture dos veces ni haya dos datos distintos. Opciones: (a) el último día se captura sólo al pasar lista en el PILARES (recomendada: es una sola captura y coincide con quien de verdad presentó el examen); (b) se captura en el aula como los demás días y en el PILARES sólo se comprueba la identidad y se genera el código; (c) las dos, y quien falta a una de ellas no tiene derecho a examen. Coordinar la decisión con la pantalla de grupos y asistencia."
+    },
+    {
+      "id": "P95",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Los mensajes de los formatos y el de «al menos N caracteres» no están en «mensajes»: un sistema que habla de usted no puede cambiarlos sólo con la configuración",
+      "recomendacion": "Hallazgo para el estándar. Los textos de error de cada formato (fecha, hora, RFC, folio fiscal, número…) están dentro de su función valida, y el de longitud mínima («Escribe al menos {min} caracteres en «{etiqueta}»; van {n}.») está escrito en el núcleo. Para el personal, que se trata de usted, el proyecto envuelve la función valida de cada formato (app/config-usted.js) y el de longitud mínima se queda en tú. Propuesta: llevar todos esos textos a FORMKIT_CONFIG.mensajes (p. ej. formatoFolioFiscal, minimoCaracteres) o admitir un juego de textos «usted» completo."
+    },
+    {
+      "id": "P96",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "El visor busca pdf.js sólo junto a codigo/ o dist/; con los módulos copiados en otra carpeta hay que declararlo",
+      "recomendacion": "Hallazgo menor para el estándar. Este sitio copia los módulos en formkit/modulos/; el visor no reconoce esa ruta y usa vendor/pdfjs-dist/ junto a la página, que funciona sólo si la página está en la raíz. El proyecto lo declara en FORMKIT_CONFIG.visor.pdfjs. Propuesta: deducirlo de cualquier «…/modulos/visor/visor.js» (subir dos carpetas) o decirlo en la documentación del módulo."
+    },
+    {
+      "id": "P97",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Los grupos de respuestas frecuentes (data-chips-fijos) toman su nombre de la etiqueta: si varios campos tienen la misma, todos se llaman igual",
+      "recomendacion": "Hallazgo para el estándar (accesibilidad). En la revisión documental cada documento tiene su campo «¿Qué debe corregir la persona?» con motivos frecuentes; el nombre del grupo sale de la etiqueta, en minúsculas («Respuestas frecuentes para ¿qué debe corregir la persona?»), igual en los siete documentos. Antes el proyecto decía «Motivos frecuentes para Identificación oficial». El proyecto lo deja en «Motivos frecuentes» (app/config-usted.js). Propuesta: un atributo data-chips-etiqueta en el campo para nombrar el grupo."
+    },
+    {
+      "id": "P98",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Los botones «Mostrar» de la contraseña y de su confirmación tienen el mismo nombre accesible",
+      "recomendacion": "Hallazgo para el estándar (accesibilidad). El núcleo pone «Mostrar la contraseña» en todos los campos de contraseña (mensajes.contrasenaLector es un solo texto); en «Crea tu cuenta» hay dos campos y el lector de pantalla oye dos botones iguales. El botón escrito a mano decía «Mostrar la confirmación de la contraseña». Propuesta: componer el nombre con la etiqueta del campo («Mostrar Confirma tu contraseña») o admitir data-ver-etiqueta."
     }
   ],
   "resueltos": [
@@ -869,6 +701,131 @@
       "titulo": "Lugar de la cita y sede del curso (P09)",
       "como": "Sede única: la cita, el curso y la entrega son siempre en el Vivero Nezahualcóyotl; no hay catálogo de sedes",
       "fecha": "2026-10-16"
+    },
+    {
+      "titulo": "combo no acepta el catálogo como {filas, fuente, corte} aunque su documentación lo dice (P37)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "esquema-desde-html.mjs sólo toma el data-si más cercano con condiciones anidadas (P38)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "archivos dice «Hasta 1 archivos» (P39)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "numero no valida un step menor que 1 (P40)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "No hay forma de marcar en un campo un error que devuelve el servidor (P41)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "No hay «mostrar contraseña» (P42)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "No hay validación cruzada de CURP contra nombre y apellidos (P43)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Una cruzada no se vuelve a comprobar si cambia el otro dato (P44)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS (P45)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "validar.mjs exige en «datos» los campos de archivos que el navegador no manda ahí (P46)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El núcleo pone aria-required en el botón de la zona de carga, que no lo admite (P47)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí) (P52)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado (P56)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El mínimo de un número no puede depender de otra respuesta (P61)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El módulo chips sólo sugiere del historial; no admite una lista fija de sugerencias (P65)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto (P66)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El estándar no tiene visor de documentos para revisar lo que se carga (P67)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El formato «fecha» del estándar sólo acepta AAAA-MM-DD escrito, o el calendario del navegador (P70)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Módulo «archivos»: «Elegir archivo» sigue a la vista con el máximo ya cargado, y dice «Hasta 1 archivos» (P71)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Acuse y revisión: botones pegados o desalineados (P72)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El estándar no trae botón para mostrar la contraseña (P73)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "esquema-desde-html sólo lee condiciones en div[data-si] (P81)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "No hay formato para el folio fiscal de una factura (CFDI) (P82)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Actualizar el sitio al Estándar de formularios 1.1.0 (P86)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde (P87)",
+      "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
+      "fecha": "2026-10-17"
     }
   ]
 }
