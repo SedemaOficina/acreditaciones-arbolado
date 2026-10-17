@@ -259,3 +259,6 @@
 /* Revisión: «Listo, ir al siguiente» bajo la observación (2026-10-17) */
 .doc-seguir { margin: var(--e-3) 0 0; display: flex; justify-content: flex-end; }
 .doc-seguir .btn { width: auto; }
+
+/* Menú de pruebas: fase del trámite y enlace al mapa (2026-10-17) */
+.menu-pruebas-fase { margin: 0; font-size: var(--t-sm); }

@@ -191,6 +191,12 @@
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
   const PREFIJO = 'apd.';                                                      // todo lo que guarda el sitio en la pestaña
+  /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
+  const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
+  const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'verificar.html': 7 };
+  const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
+    lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
   /* Lo guardado en este navegador: solicitudes enviadas en la prueba (IndexedDB) y revisiones de esta pestaña */
   function guardado() {
@@ -240,8 +246,22 @@
         el('p', {}, [el('strong', { texto: 'Estás como: ' }), document.createTextNode(quien)]),
         enPersonal || sesion ? boton('Salir', () => { APD.cierraSesion(); location.href = 'index.html'; }, 'btn-enlace') : null
       ].filter(Boolean)),
-      ayuda([actual && actual.clave !== 'personal' ? `Caso: ${actual.texto}.` : '', `Pantalla: ${NOMBRES[pagina] || pagina}.`].filter(Boolean).join(' '))
+      ayuda([actual && actual.clave !== 'personal' ? `Caso: ${actual.texto}.` : '', `Pantalla: ${NOMBRES[pagina] || pagina}.`].filter(Boolean).join(' ')),
+      fase()
     ]);
+    /* En qué fase del trámite está lo que se ve: en «Mis trámites», la de la solicitud más reciente de la persona */
+    function fase() {
+      let n = FASE_PANTALLA[pagina] || 0;
+      if (pagina === 'tramites.html' && persona) {
+        const s = APD.solicitudesDe(datos, persona)[0];
+        n = s ? FASE_ESTADO[s.estado] || 1 : 1;
+      }
+      return el('p', { class: 'menu-pruebas-fase' }, [
+        n ? document.createTextNode(`Fase ${n} de 7: ${FASES[n - 1]}. `) : null,
+        el('a', { href: MAPA, target: '_blank', rel: 'noopener' }, [document.createTextNode('Ver el mapa del trámite: quién hace qué, fase por fase'),
+          el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])
+      ].filter(Boolean));
+    }
 
     /* 2 · En esta pantalla: sólo lo que aplica */
     const aqui = [];

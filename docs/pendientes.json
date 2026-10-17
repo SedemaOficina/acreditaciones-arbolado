@@ -101,8 +101,8 @@
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-14",
-      "titulo": "Días y horario de entrega de acreditaciones",
-      "recomendacion": "El lugar ya está decidido: el Vivero Nezahualcóyotl. Falta definir días y horario de entrega; se capturan en el parámetro entrega_lugar y se muestran en «Mis trámites»."
+      "titulo": "Entrega de credenciales el mismo día del examen: qué se necesita en el lugar",
+      "recomendacion": "Decisión de Liber (2026-10-17): quien aprueba recoge su credencial el mismo día del examen, porque la calificación sale al momento en la computadora. Falta confirmar: que la acreditación se pueda emitir y firmar ese mismo día; cámara e impresora de credenciales en el lugar del examen (PILARES Vivero Nezahualcóyotl); y qué pasa con quien no puede quedarse a recogerla (otro día en el Vivero)."
     },
     {
       "id": "P11",

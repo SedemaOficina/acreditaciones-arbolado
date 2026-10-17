@@ -517,3 +517,13 @@ campos correctos.
 - Bandeja: sólo lo que está enviado; «Revisadas en esta prueba» con su resultado y su estado actual.
 - Prueba de punta a punta ampliada: el personal observa un documento, registra, la revisada sale de la bandeja y la
   persona ve «Con observaciones» con qué corregir (411 comprobaciones).
+
+## 2026-10-17 · Bloque 41 · Ubicarse en el trámite; fotografía y entrega el día del examen
+
+- Menú de pruebas: «Fase N de 7» de la pantalla (en «Mis trámites», según la solicitud de la persona) y enlace al mapa del
+  trámite («quién hace qué, fase por fase»), en otra pestaña.
+- Decisiones de Liber: la fotografía del perfil sólo identifica y sirve para comprobar en el cotejo que es la misma persona;
+  la credencial se entrega el mismo día del examen (calificación al momento en computadora) y ahí se toma su fotografía.
+  Inicio, mapa (R34, R40, R51, pasos 14 y 16), P10 y la maqueta de cotejo actualizados.
+- Maqueta de cotejo: tabla con el módulo «tabla» del estándar; «¿Es la misma persona de la fotografía?»; quinta propuesta
+  para decidir (si no es la persona).

@@ -88,6 +88,9 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | En la revisión, al observar un documento no se avanza solo (hay que escribir qué corregir): bajo la observación, «Listo, ir al siguiente» lleva al siguiente documento sin decidir, y no avanza si la observación está vacía | Liber Saltijeral |
 | 2026-10-17 | Al registrar la revisión, el visor se cierra y la confirmación queda arriba, a la vista | Liber Saltijeral |
 | 2026-10-17 | Versión de prueba: el resultado de la revisión llega a la persona en «Mis trámites» (con observaciones y qué corregir, validada con su cita, o rechazada con su motivo); si la reenvía, vuelve a la bandeja como reenviada. Las revisadas salen de la bandeja y se listan en «Revisadas en esta prueba» mientras no existan las pantallas de citas de cotejo, grupos, calificación y entrega | Liber Saltijeral |
+| 2026-10-17 | La fotografía que carga la persona sólo sirve para identificar su perfil y para comprobar en la cita de cotejo que es la misma persona. La de la credencial se toma el día que se entrega | Liber Saltijeral |
+| 2026-10-17 | La credencial se entrega el mismo día del examen: el examen es en computadora y la calificación sale al momento, así que quien aprueba la recoge ese día (P10) | Liber Saltijeral |
+| 2026-10-17 | Menú de pruebas: dice en qué fase del trámite está la pantalla (en «Mis trámites», la de la solicitud de la persona) y enlaza al mapa del trámite, «quién hace qué, fase por fase», para ubicarse | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
