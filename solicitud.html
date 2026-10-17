@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solicitud de acreditación · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Solicita o renueva tu acreditación de poda y derribo o de dictaminador técnico. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/combo/combo.css">
+<link rel="stylesheet" href="formkit/modulos/pasos/pasos.css">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
+<link rel="stylesheet" href="formkit/modulos/revision/revision.css">
+<link rel="stylesheet" href="formkit/modulos/acuse/acuse.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="formkit/modulos/copiar/copiar.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.23">
+<link rel="stylesheet" href="app/apd.css?v=0.23">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+  <div class="sesion" data-sesion></div>
+  <p><a class="btn-atras" href="tramites.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Mis trámites</a></p>
+
+  <!-- Si hoy no puede pedir nada (trámite en curso, acreditación vigente fuera de la ventana de renovación). -->
+  <section class="tarjeta" data-sin-opciones hidden>
+    <h2 class="titulo-paso" tabindex="-1">Por ahora no tienes una solicitud disponible</h2>
+    <ul class="lista-obs" data-sin-opciones-motivos></ul>
+    <div class="acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
+  </section>
+
+  <div class="barra-fija" data-con-formulario>
+    <div data-barra="Avance de la solicitud"></div>
+    <p class="recordatorio" data-recordatorio="tipo" hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="recordatorio-texto">Estás solicitando: <strong data-recordatorio-texto></strong></span></p>
+  </div>
+
+  <form id="formulario" data-formkit action="#" method="post">
+
+    <!-- Curso que corresponde (tipo + nueva o renovación). No es una pregunta: lo calcula app/solicitud.js a
+         partir del tipo elegido y del historial, y de él dependen los documentos. El servidor lo calcula por su
+         cuenta. Va fuera de los pasos para no aparecer en la revisión. -->
+    <div class="solo-lector" aria-hidden="true" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página."
+         data-interno="Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad." data-interno-etiqueta="Curso que corresponde (calculado)">
+      <input type="hidden" id="tramite" name="tramite" value="">
+    </div>
+
+    <!-- Paso 1 · Trámite -->
+    <section class="tarjeta" data-paso data-titulo="Trámite" hidden>
+      <h2 class="titulo-paso">¿Qué acreditación solicitas?</h2>
+      <p class="bajada" data-bajada-tramite>Elige la acreditación. Si es tu primera vez o una renovación lo sabe el sistema por tu historial; te lo indica al elegir.</p>
+      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+      <fieldset class="grupo" data-campo="tipo" data-requerido data-uso="Definir la acreditación, el curso y los documentos que corresponden a la solicitud.">
+        <legend class="etiqueta">Acreditación que solicitas</legend>
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo" value="poda"><span><span class="opcion-nombre">Poda y derribo</span><span class="opcion-desc" data-desc-tipo="poda">Para podar y derribar árboles en la vía pública y en áreas verdes.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo" value="dictaminador"><span><span class="opcion-nombre">Dictaminador técnico</span><span class="opcion-desc" data-desc-tipo="dictaminador">Para emitir dictámenes técnicos de arbolado. Necesitas tener vigente la de poda y derribo.</span></span></label>
+        </div>
+      </fieldset>
+
+      <!-- Si es nueva o renovación no se pregunta: lo decide el historial de la persona y aquí sólo se informa. -->
+      <div class="aviso" data-modalidad-info aria-live="polite" hidden>
+        <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
+        <p class="aviso-texto" data-modalidad-texto></p>
+      </div>
+
+      <div class="campo" data-campo="anterior" data-si="tramite=poda_renovacion|dictaminador_renovacion" data-uso="Ligar la renovación con la acreditación que se renueva.">
+        <label class="etiqueta" for="anterior">Acreditación que renuevas</label>
+        <p class="ayuda">Es la más reciente de este tipo. Si no es la tuya, avisa a la Secretaría.</p>
+        <input class="control" id="anterior" name="anterior" type="text" readonly autocomplete="off">
+      </div>
+
+      <!-- La adscripción es de la persona («Mi perfil»); la solicitud se envía con la que tenga ese día. -->
+      <div class="aviso" data-adscripcion-info>
+        <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
+        <div class="aviso-texto">
+          <p><strong>Tu adscripción:</strong> <span data-adscripcion-texto>—</span></p>
+          <p>La solicitud se envía con ella. Si cambió, actualízala en <a href="datos.html?volver=solicitud.html">Mi perfil</a> antes de enviar.</p>
+        </div>
+      </div>
+
+      <!-- Estudios (decisiones 2026-10-15, Liber): en poda y en dictaminador, el nivel (lista desplegable) y, sólo con
+           licenciatura, maestría o doctorado, la carrera y su situación. En dictaminador son requisito: con ellos la base
+           calcula el perfil y la experiencia mínima que piden los lineamientos (apd.perfil_academico). -->
+      <h3 class="titulo-bloque">Tus estudios</h3>
+      <div class="campo" data-campo="nivel_estudios" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si cumples el perfil y cuántos años de experiencia se piden.">
+        <label class="etiqueta" for="nivel_estudios">¿Cuál es tu último nivel o grado de estudios?</label>
+        <p class="ayuda">El más alto que cursas o cursaste.</p>
+        <div class="select">
+          <!-- autocomplete off: el navegador no tiene un valor que proponer para el nivel de estudios. -->
+          <select class="control control-select control-medio" id="nivel_estudios" name="nivel_estudios" autocomplete="off">
+          <option value="">Elige tu nivel de estudios</option>
+          <option value="ninguna">Ninguno</option>
+          <option value="preescolar">Preescolar</option>
+          <option value="primaria">Primaria</option>
+          <option value="secundaria">Secundaria</option>
+          <option value="preparatoria">Preparatoria o bachillerato</option>
+          <option value="tecnica">Carrera técnica</option>
+          <option value="licenciatura">Licenciatura o ingeniería</option>
+          <option value="maestria">Maestría</option>
+          <option value="doctorado">Doctorado</option>
+          </select>
+        </div>
+      </div>
+      <!-- Carrera técnica: sin catálogo, se escribe (decisión 2026-10-17). -->
+      <div data-si="nivel_estudios=tecnica">
+        <div class="campo" data-campo="carrera_tecnica" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación técnica; en dictaminador, para que la Secretaría la revise con tu comprobante de estudios.">
+          <label class="etiqueta" for="carrera_tecnica">¿Qué carrera técnica estudiaste?</label>
+          <!-- autocomplete off: no hay un valor de autocompletado para la carrera técnica. -->
+          <input class="control" id="carrera_tecnica" name="carrera_tecnica" type="text" maxlength="120" autocomplete="off">
+        </div>
+      </div>
+      <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
+        <div class="campo" data-campo="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
+          <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
+          <p class="ayuda">Al escribir te sugerimos las ya registradas.<span data-ayuda-posgrado hidden> Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.</span></p>
+          <div class="combo" data-combo data-catalogo="carreras" data-libre>
+            <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
+            <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
+            <ul class="combo-lista" hidden></ul>
+          </div>
+        </div>
+        <fieldset class="grupo" data-campo="estatus_estudios" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Saber si tienes título, carta de pasante o estudios sin concluir; en dictaminador, para fijar la experiencia mínima.">
+          <legend class="etiqueta">¿En qué situación está ese último grado de estudios?</legend>
+          <!-- autocomplete off: el navegador no tiene un valor que proponer para la situación de los estudios. -->
+          <div class="opciones-lista opciones-en-linea">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="en_curso"><span><span class="opcion-nombre">En curso</span><span class="opcion-desc">Todavía lo estudias.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="trunco"><span><span class="opcion-nombre">Trunco</span><span class="opcion-desc">Lo dejaste sin terminar.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="concluido"><span><span class="opcion-nombre">Concluido</span><span class="opcion-desc">Terminaste los créditos; tienes carta de pasante o constancia del 100 %.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="estatus_estudios" autocomplete="off" value="titulado"><span><span class="opcion-nombre">Titulado</span><span class="opcion-desc">Tienes título o cédula profesional.</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+      <div data-si="tipo=dictaminador">
+        <!-- Lo que calcula la base con las respuestas; la persona ve la experiencia que se le pide (abajo). -->
+        <div data-interno="Lo calcula la base con el nivel, la situación de los estudios y el grupo de la carrera (apd.perfil_academico). Se guarda en apd.solicitud.perfil_academico y experiencia_minima." data-interno-etiqueta="Perfil y experiencia mínima (calculados)" data-interno-texto=""></div>
+        <div class="aviso aviso-advertencia" data-perfil-no-cumple hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+          <div class="aviso-texto"><p>Con estos estudios podrías no cumplir el perfil que piden los lineamientos para dictaminar: licenciatura titulada o carta de pasante en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín, posgrado en un área afín, o carrera técnica. Puedes enviar tu solicitud: la Secretaría la revisará con tus documentos.</p></div>
+        </div>
+        <div class="campo" data-campo="anios_experiencia" data-formato="numero" data-requerido data-finalidad="Comprobar que la persona cumple el perfil que piden los lineamientos para dictaminar." data-uso="Comprobar la experiencia mínima en manejo de arbolado que pide tu perfil.">
+          <label class="etiqueta" for="anios_experiencia">Experiencia en manejo de arbolado</label>
+          <p class="ayuda"><span data-experiencia-minima>Experiencia laboral comprobable: dos años con licenciatura en Biología, Ingeniería Forestal, Ingeniería Agrónoma o una carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</span> Puedes usar medios años; por ejemplo, 2.5. Los comprobantes que cargues en el siguiente paso deben respaldarlos.</p>
+          <!-- autocomplete off: dato del trámite; el navegador no tiene un valor que proponer. -->
+          <div class="control-grupo"><input class="control control-corto" id="anios_experiencia" name="anios_experiencia" type="text" inputmode="decimal" min="0" max="70" step="0.5" autocomplete="off"><span class="control-unidad" aria-hidden="true">años</span></div>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="button" class="btn btn-primario" data-accion="siguiente">Continuar</button>
+      </div>
+    </section>
+
+    <!-- Paso 2 · Documentos (los campos se generan del catálogo de requisitos de la base) -->
+    <section class="tarjeta" data-paso data-titulo="Documentos" hidden>
+      <h2 class="titulo-paso">Carga tus documentos</h2>
+      <p class="bajada">Un archivo por documento, sólo en PDF, de hasta 5 MB. Si tienes una foto del documento, conviértela a PDF; por ejemplo, con la función de escanear de tu teléfono. Que se lea completo: la Secretaría lo revisa antes de darte cita. En la cita llevas los mismos documentos, impresos.</p>
+      <!-- Sólo en la versión de prueba (se quita al pasar al SIA con app/archivos-prueba.js). -->
+      <p class="aviso">Versión de prueba: los archivos que cargues se guardan sólo en este navegador, para verlos en la revisión del personal. No se envían a ningún lado.</p>
+      <div class="aviso aviso-advertencia" data-observaciones hidden>
+        <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+        <div class="aviso-texto"><p><strong>Lo que debes corregir:</strong></p><ul class="lista-obs" data-observaciones-lista></ul></div>
+      </div>
+      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+        <!-- documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+        <div data-si="tramite=poda_nueva">
+          <div class="campo" data-campo="doc_poda_nueva_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
+               data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_nueva_identificacion_oficial">Identificación oficial</span>
+            <p class="ayuda" id="ay-doc_poda_nueva_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_nueva_identificacion_oficial">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_poda_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
+               data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_nueva_curp">Clave Única de Registro de Población (CURP)</span>
+            <p class="ayuda" id="ay-doc_poda_nueva_curp">En formato actualizado. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_nueva_curp">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_poda_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
+               data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_nueva_comprobante_domicilio">Comprobante de domicilio</span>
+            <p class="ayuda" id="ay-doc_poda_nueva_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_nueva_comprobante_domicilio">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_poda_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
+               data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_nueva_constancia_situacion_fiscal">Constancia de situación fiscal</span>
+            <p class="ayuda" id="ay-doc_poda_nueva_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_nueva_constancia_situacion_fiscal">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="tramite=poda_renovacion">
+          <div class="campo" data-campo="doc_poda_renovacion_identificacion_oficial" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
+               data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_renovacion_identificacion_oficial">Identificación oficial (si aplica)</span>
+            <p class="ayuda" id="ay-doc_poda_renovacion_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional. Sólo si cambió o ya no está vigente.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_renovacion_identificacion_oficial">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_poda_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
+               data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_renovacion_curp">Clave Única de Registro de Población (CURP) (si aplica)</span>
+            <p class="ayuda" id="ay-doc_poda_renovacion_curp">En formato actualizado. Sólo si cambió o ya no está vigente. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_renovacion_curp">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_poda_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
+               data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_renovacion_comprobante_domicilio">Comprobante de domicilio (si aplica)</span>
+            <p class="ayuda" id="ay-doc_poda_renovacion_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. Sólo si cambió o ya no está vigente.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_renovacion_comprobante_domicilio">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_poda_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
+               data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_poda_renovacion_constancia_situacion_fiscal">Constancia de situación fiscal</span>
+            <p class="ayuda" id="ay-doc_poda_renovacion_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_poda_renovacion_constancia_situacion_fiscal">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="tramite=dictaminador_nueva">
+          <div class="campo" data-campo="doc_dictaminador_nueva_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
+               data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_identificacion_oficial">Identificación oficial</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_identificacion_oficial">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_nueva_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
+               data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_curp">Clave Única de Registro de Población (CURP)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_curp">En formato actualizado. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_curp">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
+               data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobante_domicilio">Comprobante de domicilio</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobante_domicilio">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_nueva_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
+               data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_constancia_situacion_fiscal">Constancia de situación fiscal</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_constancia_situacion_fiscal">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_nueva_comprobante_estudios" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
+               data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobante_estudios">Comprobante de estudios</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Si son varios documentos, escanéalos todos en un solo PDF.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobante_estudios">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_nueva_curriculum_vitae" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURRICULUM VITAE"
+               data-uso="Comprobar el requisito «Currículum vitae» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_curriculum_vitae">Currículum vitae</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_curriculum_vitae">Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_curriculum_vitae">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_nueva_comprobantes_experiencia" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
+               data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_nueva_comprobantes_experiencia">Comprobantes de experiencia</span>
+            <p class="ayuda" id="ay-doc_dictaminador_nueva_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas, registros o constancias de capacitación que acrediten la experiencia en manejo de arbolado urbano. Escanea todos tus comprobantes en un solo PDF. Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_nueva_comprobantes_experiencia">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="tramite=dictaminador_renovacion">
+          <div class="campo" data-campo="doc_dictaminador_renovacion_identificacion_oficial" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
+               data-uso="Comprobar el requisito «Identificación oficial» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_identificacion_oficial">Identificación oficial (si aplica)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_identificacion_oficial">Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional. Sólo si cambió o ya no está vigente.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_identificacion_oficial">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_renovacion_curp" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
+               data-uso="Comprobar el requisito «Clave Única de Registro de Población (CURP)» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_curp">Clave Única de Registro de Población (CURP) (si aplica)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_curp">En formato actualizado. Sólo si cambió o ya no está vigente. <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">Consulta y descarga tu CURP en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_curp">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_domicilio" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
+               data-uso="Comprobar el requisito «Comprobante de domicilio» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobante_domicilio">Comprobante de domicilio (si aplica)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_domicilio">De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. Sólo si cambió o ya no está vigente.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_comprobante_domicilio">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_renovacion_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
+               data-uso="Comprobar el requisito «Constancia de situación fiscal» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_constancia_situacion_fiscal">Constancia de situación fiscal</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_constancia_situacion_fiscal">Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_constancia_situacion_fiscal">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobante_estudios" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
+               data-uso="Comprobar el requisito «Comprobante de estudios» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobante_estudios">Comprobante de estudios (si aplica)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobante_estudios">Según la situación de tus estudios: título o cédula profesional (titulado); carta de pasante o constancia de 100 % de créditos (concluido); certificado o título de carrera técnica. Si son varios documentos, escanéalos todos en un solo PDF. Sólo si actualizaste tus estudios.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_comprobante_estudios">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_renovacion_curriculum_vitae" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURRICULUM VITAE"
+               data-uso="Comprobar el requisito «Currículum vitae» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_curriculum_vitae">Currículum vitae (si aplica)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_curriculum_vitae">Actualizado, que demuestre la experiencia en manejo de arbolado de acuerdo con el perfil académico. Sólo si actualizaste tu experiencia.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_curriculum_vitae">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+          <div class="campo" data-campo="doc_dictaminador_renovacion_comprobantes_experiencia" data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
+               data-uso="Comprobar el requisito «Comprobantes de experiencia» del trámite." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_dictaminador_renovacion_comprobantes_experiencia">Comprobantes de experiencia (si aplica)</span>
+            <p class="ayuda" id="ay-doc_dictaminador_renovacion_comprobantes_experiencia">Constancias laborales, contratos, informes técnicos, actas, registros o constancias de capacitación que acrediten la experiencia en manejo de arbolado urbano. Escanea todos tus comprobantes en un solo PDF. Sólo si actualizaste tu experiencia.</p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_dictaminador_renovacion_comprobantes_experiencia">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <!-- documentos:fin -->
+
+      <div class="acciones">
+        <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+        <button type="button" class="btn btn-primario" data-accion="siguiente">Continuar</button>
+      </div>
+    </section>
+
+    <!-- Paso 3 · Revisión y envío -->
+    <section class="tarjeta" data-paso data-revision data-titulo="Revisión" hidden>
+      <h2 class="titulo-paso">Revisa antes de enviar</h2>
+      <p class="bajada">Abre cada bloque para ver lo que capturaste. «Editar» te lleva al campo. Después de enviar ya no puedes cambiar tus documentos, salvo que la Secretaría te pida corregir alguno.</p>
+      <div data-revision-lista></div>
+
+      <div class="priv">
+        <p class="priv-parrafo">La Secretaría usa tus datos y documentos sólo para tu trámite de acreditación y para el padrón de personas acreditadas.</p>
+        <button type="button" class="btn-enlace" data-abre-dialogo="dialogo-privacidad">Leer el aviso de privacidad</button>
+      </div>
+      <!-- Declaración bajo protesta de decir verdad (decisión 2026-10-15, Liber). Se escribe en mayúsculas y minúsculas:
+           el texto todo en mayúsculas se lee peor. -->
+      <div class="destacado" data-campo="protesta" data-requerido data-uso="Dejar constancia de que la persona declara bajo protesta de decir verdad que su información es auténtica.">
+        <label class="casilla"><input class="casilla-input" type="checkbox" name="protesta" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real</span><span class="destacado-ayuda">Asimismo, reconozco que proporcionar información falsa puede ocasionar la cancelación del trámite.</span></span></label>
+      </div>
+      <div class="destacado" data-campo="aviso" data-requerido data-uso="Dejar constancia de que se informó a la persona.">
+        <label class="casilla"><input class="casilla-input" type="checkbox" name="aviso" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Leí el aviso de privacidad</span></span></label>
+      </div>
+      <div class="destacado" data-campo="humano" data-requerido data-uso="Distinguir personas de envíos automáticos.">
+        <label class="casilla"><input class="casilla-input" type="checkbox" name="humano" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">No soy un programa automático</span><span class="destacado-ayuda">Lo comprueba el sistema; no es una pregunta sobre tu trámite.</span></span></label>
+      </div>
+      <!-- Trampa para programas automáticos: una persona no la ve ni la llena. -->
+      <div class="solo-lector" aria-hidden="true" data-trampa><label>No llenar <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label></div>
+
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+
+      <div class="acciones">
+        <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Enviar solicitud</button>
+      </div>
+    </section>
+  </form>
+
+  <section class="tarjeta" data-limite hidden>
+    <h2 class="titulo-paso" tabindex="-1">Por ahora no podemos recibir más envíos desde este dispositivo</h2>
+    <p class="bajada">Lo que capturaste no se perdió y sigue en el formulario. Intenta de nuevo más tarde.</p>
+    <div class="acciones"><button type="button" class="btn btn-primario" data-accion="reintentar">Volver a la revisión</button></div>
+  </section>
+
+  <section class="tarjeta acuse" data-acuse hidden>
+    <div class="acuse-marca" aria-hidden="true"><svg class="icono"><use href="#i-palomita"></use></svg></div>
+    <h2 class="titulo-paso" tabindex="-1">Recibimos tu solicitud</h2>
+    <p class="bajada texto-centrado">Guarda tu folio: es la referencia de tu trámite.</p>
+    <div class="acuse-datos">
+      <div class="acuse-dato">
+        <span class="acuse-etq">Folio de la solicitud</span>
+        <div class="acuse-fila"><span class="acuse-valor" id="folio" data-acuse-folio></span><button type="button" class="btn-enlace" data-copiar="#folio"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-copiar"></use></svg>Copiar folio</button></div>
+      </div>
+      <div class="acuse-dato"><span class="acuse-etq">Recibida el</span><span data-acuse-fecha></span></div>
+    </div>
+    <ol class="secuencia">
+      <li class="secuencia-item">La Secretaría revisa tus documentos. <span class="pendiente">Pendiente: plazo de revisión</span></li>
+      <li class="secuencia-item">Si algo falta, te lo indica en «Mis trámites» y lo corriges en línea.</li>
+      <li class="secuencia-item">Si todo está completo, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.</li>
+      <li class="secuencia-item">Después de la cita, esperas a que se integre tu grupo de curso.</li>
+    </ol>
+    <div class="acuse-acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<dialog class="dialogo" id="dialogo-privacidad" aria-labelledby="titulo-privacidad">
+  <h2 class="titulo-bloque dialogo-titulo" id="titulo-privacidad">Aviso de privacidad simplificado</h2>
+  <p class="priv-parrafo">La Secretaría del Medio Ambiente recaba los datos y documentos de esta solicitud para revisar que cumples los requisitos, integrar tu expediente, asignarte a un curso y, en su caso, emitir tu acreditación e incluirla en el padrón.</p>
+  <p class="priv-parrafo">La verificación pública de acreditaciones muestra sólo tu nombre, el tipo y número de acreditación y su vigencia.</p>
+  <p class="priv-parrafo">Fundamento: <span class="pendiente">[Art. __, fracc. __]</span>. Pendiente: lo completa la Unidad de Transparencia.</p>
+  <div class="dialogo-cierre"><button type="button" class="btn btn-primario" data-cierra-dialogo>Cerrar</button></div>
+</dialog>
+
+<script src="app/apd.js?v=0.23"></script>
+<script src="datos/catalogos.js?v=0.23"></script>
+<!-- Versión de prueba: guarda en este navegador los archivos enviados, para verlos en la revisión del personal. -->
+<script src="app/archivos-prueba.js?v=0.23"></script>
+<script src="app/config-solicitud.js?v=0.23"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/combo/combo.js"></script>
+<script src="formkit/modulos/pasos/pasos.js"></script>
+<script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="app/archivos-lleno.js?v=0.23"></script>
+<script src="formkit/modulos/revision/revision.js"></script>
+<script src="formkit/modulos/acuse/acuse.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<script src="formkit/modulos/copiar/copiar.js"></script>
+<script src="app/auxiliar.js?v=0.23"></script>
+<script src="app/solicitud.js?v=0.23"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/curp-nombre.js?v=0.23"></script>
+<script src="app/casos-prueba.js?v=0.23"></script>
+<script src="app/pruebas.js?v=0.23"></script>
+<script src="app/version-visible.js?v=0.23"></script>
+</body>
+</html>

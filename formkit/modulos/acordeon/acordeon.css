@@ -1,0 +1,51 @@
+/* =========================================================
+   acordeon.css · Módulo «acordeon» · nivel OPCIONAL
+
+   Acordeón y secciones plegables con <details>/<summary>: el navegador ya
+   da el teclado (Enter, espacio) y el estado expandido al lector de
+   pantalla, sin una línea de JavaScript. CUÁNDO: datos accesorios o
+   preguntas frecuentes. CUÁNDO NO: contenido que la persona necesita para
+   decidir, ni campos obligatorios (lo plegado se pasa por alto).
+
+   Contrato HTML:
+     <details class="plegable"><summary class="plegable-titulo">¿Cómo copio mi ubicación?</summary>
+       <div class="plegable-cuerpo">…</div></details>
+   Depende de: nucleo.css. Bloques: componentes → estados.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.plegable{margin-bottom:var(--e-2);background:var(--blanco);border:var(--b-1) solid var(--linea);border-radius:var(--r-caja)}
+.plegable-titulo{
+  position:relative;
+  display:block;
+  min-height:var(--objetivo-min);
+  padding:var(--e-3) var(--e-9) var(--e-3) var(--e-4);
+  font-family:var(--fuente-titulo);
+  font-weight:var(--peso-fuerte);
+  line-height:var(--interlineado-compacto);
+  list-style:none;
+  cursor:pointer;
+}
+.plegable-titulo::-webkit-details-marker{display:none}
+/* La flecha se dibuja con bordes: una imagen sería un color fuera de :root. */
+.plegable-titulo::after{
+  content:'';
+  position:absolute;
+  top:50%;
+  right:var(--e-5);
+  width:var(--e-2);
+  height:var(--e-2);
+  margin-top:calc(var(--e-1) * -2);
+  border-right:var(--b-2) solid var(--guinda);
+  border-bottom:var(--b-2) solid var(--guinda);
+  transform:rotate(45deg);
+  transition:transform var(--dur-rapida);
+}
+.plegable-cuerpo{padding:0 var(--e-4) var(--e-4);font-size:var(--t-md);color:var(--gris)}
+
+/* @bloque estados */
+
+.plegable-titulo:hover{color:var(--azul)}
+.plegable[open] .plegable-titulo::after{transform:rotate(-135deg)}
+.plegable[open] .plegable-titulo{border-bottom:var(--b-1) solid var(--linea);margin-bottom:var(--e-3)}

@@ -1,0 +1,257 @@
+/* =========================================================
+   apd.css · Piezas propias del Sistema de Acreditaciones de Poda y Dictaminación
+
+   Sólo lo que el Estándar de formularios del SIA no trae: menú de inicio,
+   barra de sesión, tarjetas de trámite y de acreditación, estados con
+   palabra, verificación pública y la caja de personas de ejemplo.
+   Reglas del estándar: colores, tipografías, tamaños y espacios sólo con
+   los tokens de formkit/css/tokens.css; un selector, una declaración;
+   móvil primero (sólo min-width); sin !important.
+   Orden: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* ---------- Componentes ---------- */
+
+.menu-inicio { display: grid; gap: var(--e-4); margin-block: var(--e-5); }
+.menu-opcion { display: grid; gap: var(--e-2); padding: var(--e-seccion); background: var(--blanco); border: var(--b-1) solid var(--borde); border-radius: var(--r-caja); color: var(--texto); text-decoration: none; min-height: var(--objetivo-min); }
+.menu-opcion-titulo { font: var(--peso-fuerte) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.menu-opcion-texto { font-size: var(--t-md); color: var(--gris); }
+
+.sesion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); margin-block-end: var(--e-5); }
+.sesion-nombre { font-weight: var(--peso-medio); }
+.sesion-enlaces { display: flex; flex-wrap: wrap; gap: var(--e-3); }
+
+.seccion { display: grid; gap: var(--e-4); margin-block-end: var(--e-7); }
+.seccion-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); }
+
+.ficha { display: grid; gap: var(--e-3); padding: var(--e-seccion); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+.ficha-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-2); }
+.ficha-titulo { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
+.ficha-folio { font-family: var(--fuente-mono); font-size: var(--t-sm); color: var(--gris); }
+.ficha-sigue { margin: 0; }
+.ficha-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
+
+.datos { display: grid; gap: var(--e-2) var(--e-5); margin: 0; }
+.datos-par { display: grid; gap: var(--e-1); }
+.datos-etq { font-size: var(--t-sm); color: var(--gris-cl); }
+.datos-valor { margin: 0; font-weight: var(--peso-medio); }
+
+.lista-obs { list-style: disc; margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-1); }
+
+.estado { display: inline-flex; align-items: center; gap: var(--e-1); padding: var(--e-1) var(--e-3); border-radius: var(--r-pill); border: var(--b-1) solid var(--borde); background: var(--aviso-bg); color: var(--texto); font-size: var(--t-sm); font-weight: var(--peso-medio); }
+
+.vacio { color: var(--gris); margin: 0; }
+
+.nota-prueba { margin: 0; padding: var(--e-3); border: var(--b-1) dashed var(--pend); border-radius: var(--r-caja); background: var(--pend-bg); color: var(--pend-txt); font-size: var(--t-sm); }
+
+.resultado { display: grid; gap: var(--e-3); margin-block-start: var(--e-5); padding: var(--e-seccion); border-radius: var(--r-caja); border: var(--b-2) solid var(--borde); background: var(--blanco); }
+.resultado-situacion { font: var(--peso-fuerte) var(--t-xl)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
+
+.pasos-tramite { list-style: decimal; margin: 0; padding-inline-start: var(--e-6); display: grid; gap: var(--e-3); }
+
+/* Menú de pruebas: sólo en la versión de prueba (app/pruebas.js) */
+.menu-pruebas-boton { width: auto; position: fixed; right: max(var(--e-3), env(safe-area-inset-right)); bottom: max(var(--e-3), env(safe-area-inset-bottom)); z-index: var(--z-barra); border-style: dashed; border-color: var(--pend); background: var(--pend-bg); color: var(--pend-txt); box-shadow: var(--sombra-lista); }
+.menu-pruebas { width: min(100% - var(--e-6), var(--ancho-dialogo)); max-height: 90vh; padding: var(--e-seccion); border: var(--b-2) dashed var(--pend); border-radius: var(--r-caja); background: var(--blanco); color: var(--texto); }
+.menu-pruebas::backdrop { background: var(--velo); }
+.menu-pruebas-cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
+.menu-pruebas-seccion { display: grid; gap: var(--e-2); padding-block: var(--e-4); border-top: var(--b-1) solid var(--linea); }
+.menu-pruebas-subtitulo { margin: 0; font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); }
+.menu-pruebas-campo { display: grid; gap: var(--e-1); }
+.menu-pruebas-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.menu-pruebas-lista { margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-2); list-style: disc; }
+.menu-pruebas-estado { margin: 0; font-weight: var(--peso-medio); }
+.menu-pruebas-ahora { display: grid; gap: var(--e-1); margin-block: var(--e-3); padding: var(--e-3); border-radius: var(--r-caja); background: var(--fondo); }
+.menu-pruebas-ahora p { margin: 0; }
+.menu-pruebas-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.menu-pruebas-ayuda { margin: 0; font-size: var(--t-sm); color: var(--gris); }
+.menu-pruebas-rotulo { margin: var(--e-2) 0 0; font-weight: var(--peso-medio); }
+.menu-pruebas-caso { padding: var(--e-2) var(--e-3); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); color: var(--texto); }
+.menu-pruebas-envio { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.menu-pruebas-envio a { display: inline-flex; align-items: center; min-height: var(--objetivo-min); padding: var(--e-1) var(--e-3); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); font-size: var(--t-sm); }
+.menu-pruebas-envio a[aria-current="true"] { border-color: var(--guinda); color: var(--guinda); font-weight: var(--peso-fuerte); }
+.menu-pruebas-grupos { display: grid; gap: var(--e-3); }
+.menu-pruebas-grupo { margin: 0 0 var(--e-1); font-size: var(--t-sm); font-weight: var(--peso-medio); color: var(--gris); }
+.menu-pruebas-lista [aria-current="page"] { font-weight: var(--peso-fuerte); }
+.menu-pruebas-ajuste { display: grid; gap: var(--e-1); }
+.menu-pruebas-ajuste p { margin: 0; }
+@media (min-width: 560px) { .menu-pruebas-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* ---------- Estados ---------- */
+
+.estado[data-tono="ok"] { background: var(--ok-bg); border-color: var(--ok); color: var(--ok-txt); }
+.estado[data-tono="pend"] { background: var(--pend-bg); border-color: var(--pend); color: var(--pend-txt); }
+.estado[data-tono="error"] { background: var(--error-bg); border-color: var(--error); color: var(--error-txt); }
+.resultado[data-tono="ok"] { border-color: var(--ok); background: var(--ok-bg); }
+.resultado[data-tono="error"] { border-color: var(--error); background: var(--error-bg); }
+.menu-opcion:hover { border-color: var(--guinda); }
+.menu-opcion:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+
+/* ---------- Adaptaciones ---------- */
+
+@media (min-width: 760px) {
+  .menu-inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Preguntas de opción (decisión 2026-10-15): lista con el botón de opción visible (variante opciones-lista del
+   estándar) en lugar de tarjetas en rejilla. El estándar no le da estado deshabilitado a esa variante: se agrega
+   igual que el de las tarjetas (p. ej., «Dictaminador técnico» sin poda vigente, con su motivo). */
+.opcion-fila:has(.opcion-fila-input:disabled) { opacity: var(--op-inactivo); cursor: not-allowed; }
+.opcion-fila:has(.opcion-fila-input:disabled):hover { border-color: var(--borde); }
+
+/* Datos internos (decisión 2026-10-15): los que calcula el sistema y SE GUARDAN en la base, como el sexo tomado de
+   la CURP, no los ve la persona; los que sólo usa la página (p. ej. sin_segundo_apellido) no se marcan. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
+   nota, para revisarlos; al pasar al SIA se quita pruebas.js y quedan ocultos. */
+/* Revisión: nombre con que se guarda cada documento (TIPO_NOMBRE COMPLETO) y, debajo, el archivo que subió */
+.rev-archivo-nuevo { display: block; }
+.rev-archivo-original { display: block; font-size: var(--t-sm); color: var(--gris); }
+/* Estilo de formularios (decisión 2026-10-16, Liber; segunda tanda de hallazgos del estándar, S2-1 a S2-3):
+   una ayuda por bloque bajo el título de la sección, respuestas cortas en línea y anchos según el dato. */
+.titulo-primero { margin-top: var(--e-6); }
+.ayuda-bloque { margin-bottom: var(--e-4); }
+.opciones-en-linea { display: grid; grid-template-columns: 1fr; gap: var(--e-2); }
+@media (min-width: 760px) { .opciones-en-linea { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.control-medio { max-width: var(--ancho-acuse); }
+.tarjeta-angosta { max-width: var(--ancho-dialogo); margin-inline: auto; }
+[data-interno] { display: none; }
+/* Dato que se muestra a la persona pero aún no está confirmado (concepto, monto y referencia de pago) */
+.datos-por-confirmar { display: block; }
+.datos-nota { display: block; font-size: var(--t-sm); font-weight: var(--peso-normal); color: var(--pend-txt); }
+.modo-pruebas [data-interno] {
+  display: block; position: static; width: auto; height: auto; margin: 0 0 var(--e-5); overflow: visible; clip: auto;
+  white-space: normal; padding: var(--e-3); background: var(--pend-bg); border: var(--b-1) dashed var(--pend); border-radius: var(--r-caja);
+}
+.nota-interna { margin: var(--e-2) 0 0; font-size: var(--t-sm); color: var(--pend-txt); }
+.interno-valor { display: block; font-family: var(--fuente-mono); color: var(--texto); }
+
+
+/* ───── Pantallas del personal (etapa 2): bandeja y revisión documental (decisiones 2026-10-16) ───── */
+.pagina-ancha { max-width: calc(var(--ancho-pagina) + var(--e-11) * 3); }
+.personal-sesion { padding-block-end: var(--e-3); border-block-end: var(--b-1) solid var(--linea); }
+.sesion-enlaces a[aria-current="page"] { font-weight: var(--peso-fuerte); color: var(--guinda); }
+/* Bandeja: búsqueda siempre a la vista; en teléfono los filtros se pliegan bajo «Filtrar» */
+.filtros-bandeja { display: grid; gap: 0 var(--e-4); margin-block-start: var(--e-4); }
+.btn-filtrar { justify-self: start; margin-block-end: var(--e-4); }
+.filtros-extra { display: grid; gap: 0 var(--e-4); }
+.filtros-extra[data-plegado="true"] { display: none; }
+@media (min-width: 760px) {
+  .filtros-bandeja { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: end; }
+  .btn-filtrar { display: none; }
+  .filtros-extra { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .filtros-extra[data-plegado="true"] { display: grid; }
+}
+.resumen-filtro { color: var(--gris); font-size: var(--t-sm); margin-block: 0 var(--e-2); }
+.tabla-bandeja { font-size: var(--t-sm); }
+.tabla-bandeja tr[hidden] { display: none; }
+.tabla-bandeja .mono, .tabla-bandeja .estado { white-space: nowrap; }
+.senales { display: flex; flex-wrap: wrap; gap: var(--e-1); }
+.btn-chico { min-height: var(--objetivo-min); padding-block: var(--e-1); padding-inline: var(--e-3); font-size: var(--t-sm); }
+/* Revisión de una solicitud */
+.revision-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
+@media (min-width: 760px) {
+  .datos-dos-columnas .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.plegable-titulo { display: flex; align-items: center; gap: var(--e-2); min-height: var(--objetivo-min); cursor: pointer; font-weight: var(--peso-medio); }
+.revision-anterior { padding-block: var(--e-3); border-block-start: var(--b-1) solid var(--linea); }
+.doc-revision { display: grid; gap: var(--e-2); padding-block: var(--e-4); border-block-start: var(--b-1) solid var(--linea); }
+.doc-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--e-2); }
+.doc-titulo { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); }
+.doc-archivo { margin: 0; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; }
+.doc-corregido { display: inline-flex; margin-inline-start: var(--e-2); }
+.doc-vista summary { display: inline-flex; align-items: center; min-height: var(--objetivo-min); color: var(--azul); text-decoration: underline; cursor: pointer; }
+.visor-hoja {
+  display: grid; place-items: center; align-content: center; gap: var(--e-1); min-height: var(--alto-mapa); padding: var(--e-4);
+  border: var(--b-1) dashed var(--gris-cl); border-radius: var(--r-ctrl); background: var(--fondo); color: var(--gris); text-align: center;
+}
+.visor-icono { inline-size: var(--e-8); block-size: var(--e-8); }
+.sugerencias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-2); }
+.sugerencia {
+  min-height: var(--objetivo-min); padding: var(--e-1) var(--e-3); font: inherit; font-size: var(--t-sm);
+  border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-pill); background: var(--blanco); color: var(--texto); cursor: pointer;
+}
+.sugerencia:hover { border-color: var(--guinda); }
+.sugerencia:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+.resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
+.acciones-izq { justify-content: flex-start; }
+
+/* ───── Visor de documentos de la revisión (decisión 2026-10-16): todas las hojas; fijo a la derecha en computadora ───── */
+.pagina-amplia { max-width: calc(var(--ancho-pagina) * 1.6); }
+.revision-area { display: grid; gap: var(--e-5); }
+.doc-revision[data-viendo] { padding-inline: var(--e-3); border-inline-start: var(--b-4) solid var(--guinda); background: var(--fondo); }
+.visor {
+  inline-size: 100%; max-inline-size: none; block-size: 100dvh; max-block-size: none; margin: 0; padding: var(--e-4);
+  border: 0; background: var(--blanco); color: var(--texto); flex-direction: column; gap: var(--e-2);
+}
+.visor[open] { display: flex; }
+.visor::backdrop { background: var(--velo); }
+.visor-cabeza { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
+.visor-nombre { min-inline-size: 0; }
+.visor-titulo { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.visor-archivo { margin: 0; font-size: var(--t-xs); color: var(--gris); overflow-wrap: anywhere; }
+.visor-barra { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.visor-zoom { min-inline-size: var(--e-9); text-align: center; font-variant-numeric: tabular-nums; font-size: var(--t-sm); }
+.visor-abrir { display: inline-flex; align-items: center; gap: var(--e-1); margin-inline-start: auto; }
+.visor-pagina { margin: 0; font-size: var(--t-sm); font-weight: var(--peso-medio); color: var(--gris); }
+.visor-hojas { flex: 1 1 auto; min-block-size: 0; overflow: auto; padding: var(--e-3); background: var(--linea); border-radius: var(--r-ctrl); }
+.visor-hojas:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+.visor-hoja-pdf { margin: 0 0 var(--e-4); }
+.visor-lienzo { display: block; inline-size: 100%; block-size: auto; margin-inline: auto; background: var(--blanco); box-shadow: var(--sombra-hoja); }
+.visor-hojas[data-zoom="50"] .visor-lienzo { inline-size: 50%; }
+.visor-hojas[data-zoom="75"] .visor-lienzo { inline-size: 75%; }
+.visor-hojas[data-zoom="125"] .visor-lienzo { inline-size: 125%; }
+.visor-hojas[data-zoom="150"] .visor-lienzo { inline-size: 150%; }
+.visor-hojas[data-zoom="200"] .visor-lienzo { inline-size: 200%; }
+.visor-hojas[data-zoom="300"] .visor-lienzo { inline-size: 300%; }
+.visor-pie { margin-block-start: var(--e-1); text-align: center; font-size: var(--t-xs); color: var(--texto); }
+.visor-nota { margin: 0; font-size: var(--t-xs); }
+@media (min-width: 1024px) {
+  .revision-area { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; }
+  .visor { position: sticky; inset-block-start: var(--e-3); block-size: calc(100dvh - var(--e-6)); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+  .visor-cerrar { display: none; }
+}
+/* En la barra del visor los botones son del tamaño de su texto, también en teléfono */
+.visor-barra .btn { width: auto; min-inline-size: var(--objetivo-min); }
+.visor-paso { font-size: var(--t-lg); line-height: 1; }
+
+/* Revisión antes de enviar: «Editar» siempre arriba a la derecha del valor, aunque el texto sea largo (2026-10-17) */
+.rev-dato-valor { flex-wrap: nowrap; align-items: flex-start; }
+.rev-dato-valor > span { flex: 1 1 auto; min-width: 0; }
+.rev-dato-valor > .btn-enlace { flex: none; }
+
+/* Carga de archivos: con el máximo alcanzado se oculta «Elegir archivo» y el archivo se ve cargado (app/archivos-lleno.js) */
+[data-archivos][data-lleno] > .zona-carga, [data-archivos][data-lleno] > .zona-camara { display: none; }
+.lista-arch > li[data-estado="listo"] { border-color: var(--ok); background: var(--ok-bg); }
+
+/* Mi perfil (2026-10-17): fotografía y nombre arriba; cada parte se ve escrita y se edita con «Editar» */
+.perfil-cabeza { display: grid; gap: var(--e-4); justify-items: center; text-align: center; }
+.perfil-foto { position: relative; display: grid; place-items: center; width: calc(var(--e-11) * 1.5); aspect-ratio: 4 / 5; overflow: hidden; border: var(--b-2) solid var(--dorado); border-radius: var(--r-caja); background: var(--fondo); }
+.perfil-iniciales { font: var(--peso-fuerte) var(--t-xl)/1 var(--fuente-titulo); color: var(--guinda); }
+.perfil-imagen { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.perfil-quien { display: grid; gap: var(--e-2); justify-items: center; }
+.perfil-quien p { margin: 0; }
+.perfil-nombre { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); overflow-wrap: anywhere; }
+.perfil-guardado { width: 100%; text-align: start; }
+.perfil-valor { margin: 0; font-weight: var(--peso-medio); }
+.perfil-form { width: 100%; text-align: start; }
+.perfil-seccion-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-block-end: var(--e-3); }
+.perfil-seccion-cabeza .titulo-bloque { margin-block: 0; }
+.perfil-seccion-cabeza .btn { width: auto; }
+@media (min-width: 560px) {
+  .perfil-cabeza { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: start; }
+  .perfil-quien { justify-items: start; }
+  .perfil-guardado, .perfil-form { grid-column: 1 / -1; }
+}
+
+/* Acuse: el estándar le quita el relleno lateral a la tarjeta (.acuse) y en teléfono el botón queda pegado a la orilla */
+.tarjeta.acuse { padding-inline: var(--e-seccion); }
+
+/* Contraseña con «Mostrar» dentro del campo, a la derecha (app/ver-contrasena.js, 2026-10-17) */
+.contrasena-caja { position: relative; grid-row: 3; } /* en .fila ocupa el renglón del control, como .select */
+.contrasena-caja > .control { padding-inline-end: var(--e-11); }
+.contrasena-ver { position: absolute; inset-block: var(--b-1); inset-inline-end: var(--b-1); min-width: var(--objetivo-min); padding-inline: var(--e-3); border: 0; border-radius: var(--r-ctrl); background: transparent; color: var(--azul); font: inherit; font-size: var(--t-sm); font-weight: var(--peso-medio); text-decoration: underline; cursor: pointer; }
+.contrasena-ver:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: calc(var(--foco-sep) * -1); }
+
+/* Revisión del personal: fotografía de la persona junto a sus datos (2026-10-17) */
+.persona-con-foto { display: grid; gap: var(--e-4); }
+.perfil-foto-chica { width: var(--e-11); }
+@media (min-width: 560px) { .persona-con-foto { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }

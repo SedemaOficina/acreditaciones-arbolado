@@ -1,0 +1,34 @@
+/* =========================================================
+   tooltip.css · Módulo «tooltip» · nivel OPCIONAL
+   Botón de ayuda junto a la etiqueta y texto desplegable debajo (no
+   flotante sobre otros controles: en teléfono se taparían).
+   Depende de: nucleo.css. Bloques: componentes → estados.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.tooltip{position:relative;display:inline-flex;align-items:center;vertical-align:middle}
+.tooltip-btn{width:var(--objetivo-min);height:var(--objetivo-min);margin:calc(var(--e-3) * -1) 0;color:var(--azul)}
+.tooltip-texto{
+  position:absolute;
+  top:100%;
+  left:0;
+  z-index:var(--z-lista);
+  width:max-content;
+  max-width:var(--ancho-tooltip-max);
+  max-height:var(--alto-tooltip-max);
+  margin-top:var(--e-1);
+  padding:var(--e-3);
+  overflow:auto;
+  background:var(--texto);
+  border-radius:var(--r-ctrl);
+  box-shadow:var(--sombra-lista);
+  font-size:var(--t-sm);
+  font-weight:var(--peso-normal);
+  line-height:var(--interlineado-compacto);
+  color:var(--blanco);
+}
+
+/* @bloque estados */
+
+.tooltip-btn[aria-expanded="true"]{background:var(--azul-cl)}

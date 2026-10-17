@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi perfil · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Consulta tu perfil y actualiza tu contacto, tu adscripción y tu fotografía. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/combo/combo.css">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.23">
+<link rel="stylesheet" href="app/apd.css?v=0.23">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+  <div class="sesion" data-sesion></div>
+  <p><a class="btn-atras" href="tramites.html" data-volver><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Mis trámites</a></p>
+
+  <!-- Mi perfil (decisiones 2026-10-15 y 2026-10-17): primero se ve lo que la persona tiene registrado, escrito; cada
+       parte que es suya de mantener (contacto, adscripción y, mientras nadie la confirme, su fotografía) tiene «Editar»,
+       que abre sus preguntas en un formulario propio. Sólo se edita una parte a la vez (una acción principal por
+       pantalla). Lo que va ligado a la CURP sólo lo corrige la Secretaría. -->
+  <section class="tarjeta perfil-cabeza" aria-labelledby="t-perfil">
+    <div class="perfil-foto" data-perfil-foto><span class="perfil-iniciales" data-perfil-iniciales aria-hidden="true"></span></div>
+    <div class="perfil-quien">
+      <h2 class="titulo-paso" id="t-perfil">Mi perfil</h2>
+      <p class="perfil-nombre" data-perfil-nombre>Cargando tus datos…</p>
+      <p class="perfil-foto-estado" data-foto-estado></p>
+      <p data-foto-cambio hidden><button type="button" class="btn btn-secundario btn-chico" data-editar="foto"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-camara"></use></svg>Cambiar fotografía</button></p>
+    </div>
+    <p class="aviso aviso-ok perfil-guardado" role="status" data-guardado="foto" hidden></p>
+    <!-- Sólo mientras la Secretaría no la confirme: ya confirmada, una nueva se toma en la siguiente cita. -->
+    <form id="form-foto" class="perfil-form" data-formkit="manual" data-seccion="foto" action="#" method="post" aria-label="Cambiar fotografía" hidden>
+      <div class="campo" data-campo="foto" data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
+           data-finalidad="Reconocer a la persona en la cita de cotejo, en el curso y en el examen." data-requerido data-uso="Sustituir la fotografía de la persona antes de que se confirme en la cita.">
+        <span class="etiqueta" id="et-foto">Tu nueva fotografía</span>
+        <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto, fondo claro y buena luz.</p>
+        <div data-archivos>
+          <button type="button" class="zona-carga" aria-describedby="ay-foto">
+            <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+            <span class="zona-carga-texto">Elegir fotografía</span>
+            <span class="zona-carga-limite" data-limite-texto></span>
+          </button>
+          <button type="button" class="btn btn-secundario zona-camara" data-camara hidden>Tomar fotografía</button>
+          <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+          <input type="file" hidden autocomplete="off">
+          <!-- autocomplete off: es la cámara frontal del teléfono; no hay nada que proponer. -->
+          <input type="file" accept="image/*" capture="user" hidden data-entrada-camara autocomplete="off">
+          <div data-rechazos></div>
+          <ul class="lista-arch"></ul>
+        </div>
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="button" class="btn-enlace" data-cancelar>Cancelar</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Guardar fotografía</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-identidad">
+    <div class="perfil-seccion-cabeza">
+      <h3 class="titulo-bloque" id="t-identidad">Datos de identidad</h3>
+    </div>
+    <p class="ayuda">Van ligados a tu CURP. Si alguno está mal, pide a la Secretaría que lo corrija.</p>
+    <div data-identidad></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-contacto">
+    <div class="perfil-seccion-cabeza">
+      <h3 class="titulo-bloque" id="t-contacto">Contacto</h3>
+      <button type="button" class="btn btn-secundario btn-chico" data-editar="contacto"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-editar"></use></svg>Editar<span class="solo-lector"> contacto</span></button>
+    </div>
+    <div data-vista="contacto"></div>
+    <p class="aviso aviso-ok perfil-guardado" role="status" data-guardado="contacto" hidden></p>
+    <form id="form-contacto" class="perfil-form" data-formkit="manual" data-seccion="contacto" action="#" method="post" aria-labelledby="t-contacto" hidden>
+      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+      <div class="fila">
+        <div class="campo" data-campo="correo" data-formato="correo" data-requerido data-sensible
+             data-finalidad="Avisar a la persona el avance de su trámite y recuperar el acceso a su cuenta." data-uso="Avisos del trámite y recuperación del acceso.">
+          <label class="etiqueta" for="correo">Correo electrónico</label>
+          <input class="control" id="correo" name="correo" type="email" maxlength="120" autocomplete="email">
+        </div>
+        <div class="campo" data-campo="correo2" data-formato="correo" data-requerido data-sensible
+             data-uso="Evitar errores de captura en el correo." data-cruzada="igual" data-cruzada-campos="original=correo confirmacion=correo2">
+          <label class="etiqueta" for="correo2">Confirma tu correo</label>
+          <!-- autocomplete off: es la confirmación; se escribe de nuevo a propósito. -->
+          <input class="control" id="correo2" name="correo2" type="email" maxlength="120" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="campo" data-campo="telefono" data-formato="telefono" data-requerido data-sensible
+           data-finalidad="Confirmar o reprogramar la cita de cotejo y avisar cambios del curso." data-uso="Contacto por la cita de cotejo y el curso.">
+        <label class="etiqueta" for="telefono">Teléfono</label>
+        <p class="ayuda">Diez dígitos, de preferencia un celular.</p>
+        <input class="control control-corto" id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel-national">
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="button" class="btn-enlace" data-cancelar>Cancelar</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Guardar cambios</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-adscripcion">
+    <div class="perfil-seccion-cabeza">
+      <h3 class="titulo-bloque" id="t-adscripcion">Adscripción</h3>
+      <button type="button" class="btn btn-secundario btn-chico" data-editar="adscripcion"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-editar"></use></svg>Editar<span class="solo-lector"> adscripción</span></button>
+    </div>
+    <div data-vista="adscripcion"></div>
+    <p class="ayuda">Tus solicitudes se envían con la adscripción que tengas ese día; las que ya enviaste conservan la suya.</p>
+    <p class="aviso aviso-ok perfil-guardado" role="status" data-guardado="adscripcion" hidden></p>
+    <form id="form-adscripcion" class="perfil-form" data-formkit="manual" data-seccion="adscripcion" action="#" method="post" aria-labelledby="t-adscripcion" hidden>
+      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+      <!-- adscripcion:inicio (fragmento de herramientas/plantillas/adscripcion.html; lo inserta construir-sitio.mjs) -->
+      <!-- Adscripción (decisiones 2026-10-15): es de la persona. Se pide al crear la cuenta y se cambia en «Mi perfil»;
+           cada solicitud guarda la que tenía al enviarse. Primero si trabaja para alguien («No» = independiente); luego
+           el tipo y, según el tipo, la pregunta que corresponde. Sirve para integrar grupos por institución y para la
+           estadística de la demanda. Este bloque es un fragmento compartido: herramientas/plantillas/adscripcion.html,
+           lo inserta construir-sitio.mjs en cuenta.html y datos.html.
+           Las condiciones van en envolturas anidadas para que, al cambiar una respuesta, se oculte todo lo que
+           dependía de ella (el núcleo no encadena condiciones entre campos hermanos; P52).
+           La API convierte las respuestas en adscripción e institución del catálogo apd.organizacion (app/apd.js, adscripcionDe). -->
+      <fieldset class="grupo" data-campo="adscrito" data-requerido data-uso="Saber si la persona trabaja para una empresa, institución o dependencia, para integrar grupos por institución.">
+        <legend class="etiqueta">¿Trabajas para alguna empresa, institución o dependencia?</legend>
+        <p class="ayuda">Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».</p>
+        <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="adscrito" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="adscrito" autocomplete="off" value="no"><span><span class="opcion-nombre">No, soy independiente</span></span></label>
+        </div>
+      </fieldset>
+
+      <div data-si="adscrito=si">
+      <fieldset class="grupo" data-campo="tipo_adscripcion" data-requerido data-uso="Clasificar la institución a la que está adscrita la persona y hacer la pregunta que le corresponde.">
+        <legend class="etiqueta">¿De qué tipo es?</legend>
+        <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+        <div class="opciones-lista opciones-en-linea">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="privada"><span><span class="opcion-nombre">Empresa, consultoría o particular</span><span class="opcion-desc">Persona moral o física: empresas, consultoras o trabajo para un particular.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="dependencia_cdmx"><span><span class="opcion-nombre">Dependencia del Gobierno de la Ciudad de México</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="alcaldia"><span><span class="opcion-nombre">Alcaldía</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="dependencia_federal"><span><span class="opcion-nombre">Dependencia del Gobierno Federal</span><span class="opcion-desc">Por ejemplo, la CFE.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="tipo_adscripcion" autocomplete="off" value="educativa"><span><span class="opcion-nombre">Institución educativa</span><span class="opcion-desc">Por ejemplo, la UNAM.</span></span></label>
+        </div>
+      </fieldset>
+
+      <!-- Puede ser el nombre de otra persona (quien la contrata): sensible y sin autocompletar. -->
+      <div class="campo" data-campo="empresa_nombre" data-si="tipo_adscripcion=privada" data-requerido data-sensible
+           data-finalidad="Integrar grupos por institución y registrar a quién presta sus servicios la persona acreditada." data-uso="Nombre de la empresa, consultoría o persona física para la que trabaja.">
+        <label class="etiqueta" for="empresa_nombre">Nombre de la empresa, consultoría o persona física</label>
+        <p class="ayuda">El nombre o la razón social, tal como aparece en su constancia de situación fiscal. Escribe las primeras letras: si ya está registrada, elígela de la lista; si no, escríbela completa.</p>
+        <!-- Combo abierto: catálogo de las ya registradas (apd.organizacion, tipo privada; datos/catalogos.js) y acepta
+             nombres nuevos, que la base agrega sin duplicar. autocomplete off: es el nombre de otra persona o empresa. -->
+        <div class="combo" data-combo data-catalogo="empresas" data-libre>
+          <input class="control" id="empresa_nombre" name="empresa_nombre" type="text" maxlength="160" autocomplete="off">
+          <ul class="combo-lista" hidden></ul>
+        </div>
+      </div>
+
+      <div data-si="tipo_adscripcion=dependencia_cdmx">
+        <fieldset class="grupo" data-campo="dependencia_cdmx" data-requerido data-uso="Identificar la dependencia de la Ciudad de México para integrar grupos.">
+          <legend class="etiqueta">¿A qué dependencia del Gobierno de la Ciudad de México perteneces?</legend>
+        <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+          <div class="opciones-lista opciones-en-linea">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="sobse"><span><span class="opcion-nombre">Secretaría de Obras y Servicios (SOBSE)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="sedema"><span><span class="opcion-nombre">Secretaría del Medio Ambiente (SEDEMA)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="paot"><span><span class="opcion-nombre">Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="dependencia_cdmx" autocomplete="off" value="otro"><span><span class="opcion-nombre">Otra</span></span></label>
+          </div>
+        </fieldset>
+        <div class="campo" data-campo="dependencia_cdmx_otra" data-si="dependencia_cdmx=otro" data-otro-de="dependencia_cdmx" data-requerido data-uso="Identificar una dependencia que no está en la lista.">
+          <label class="etiqueta" for="dependencia_cdmx_otra">Nombre de la dependencia</label>
+          <!-- autocomplete off: es el nombre de una dependencia; el navegador no tiene nada que proponer. -->
+          <input class="control" id="dependencia_cdmx_otra" name="dependencia_cdmx_otra" type="text" maxlength="160" autocomplete="off">
+        </div>
+        <!-- Si es la SEDEMA, la Dirección General (decisión 2026-10-15), en el orden que fijó Liber el 2026-10-17: DGSANPAVA, DGCORENADR, DGEIRA, DGIVA, DGCPCA, DGZCFS. -->
+        <div data-si="dependencia_cdmx=sedema">
+          <fieldset class="grupo" data-campo="direccion_sedema" data-requerido data-uso="Identificar la Dirección General de la SEDEMA para integrar grupos.">
+            <legend class="etiqueta">¿A qué Dirección General de la SEDEMA perteneces?</legend>
+            <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+            <div class="opciones-lista">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgsanpava"><span><span class="opcion-nombre">Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcorenadr"><span><span class="opcion-nombre">Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgeira"><span><span class="opcion-nombre">Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgiva"><span><span class="opcion-nombre">Dirección General de Vigilancia Ambiental (DGIVA)</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcpca"><span><span class="opcion-nombre">Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgzcfs"><span><span class="opcion-nombre">Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)</span></span></label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- Las 16 alcaldías, a la vista y en orden alfabético (decisión 2026-10-15): lista desplegable cerrada. Las opciones
+           las escribe construir-sitio.mjs desde el catálogo inicial de apd.organizacion; el valor es su clave. -->
+      <div class="campo" data-campo="alcaldia" data-si="tipo_adscripcion=alcaldia" data-requerido data-uso="Identificar la alcaldía para integrar grupos.">
+        <label class="etiqueta" for="alcaldia">¿En qué alcaldía trabajas?</label>
+        <div class="select">
+          <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+          <select class="control control-select" id="alcaldia" name="alcaldia" autocomplete="off">
+            <option value="">Elige la alcaldía</option>
+            <option value="alvaro_obregon">Álvaro Obregón</option>
+            <option value="azcapotzalco">Azcapotzalco</option>
+            <option value="benito_juarez">Benito Juárez</option>
+            <option value="coyoacan">Coyoacán</option>
+            <option value="cuajimalpa">Cuajimalpa de Morelos</option>
+            <option value="cuauhtemoc">Cuauhtémoc</option>
+            <option value="gustavo_a_madero">Gustavo A. Madero</option>
+            <option value="iztacalco">Iztacalco</option>
+            <option value="iztapalapa">Iztapalapa</option>
+            <option value="magdalena_contreras">La Magdalena Contreras</option>
+            <option value="miguel_hidalgo">Miguel Hidalgo</option>
+            <option value="milpa_alta">Milpa Alta</option>
+            <option value="tlahuac">Tláhuac</option>
+            <option value="tlalpan">Tlalpan</option>
+            <option value="venustiano_carranza">Venustiano Carranza</option>
+            <option value="xochimilco">Xochimilco</option>
+          </select>
+        </div>
+      </div>
+
+      <div data-si="tipo_adscripcion=dependencia_federal">
+        <fieldset class="grupo" data-campo="dependencia_federal" data-requerido data-uso="Identificar la dependencia federal para integrar grupos.">
+          <legend class="etiqueta">¿A qué dependencia del Gobierno Federal perteneces?</legend>
+        <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+          <div class="opciones-lista opciones-en-linea">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="dependencia_federal" autocomplete="off" value="cfe"><span><span class="opcion-nombre">Comisión Federal de Electricidad (CFE)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="dependencia_federal" autocomplete="off" value="otro"><span><span class="opcion-nombre">Otra</span></span></label>
+          </div>
+        </fieldset>
+        <div class="campo" data-campo="dependencia_federal_otra" data-si="dependencia_federal=otro" data-otro-de="dependencia_federal" data-requerido data-uso="Identificar una dependencia que no está en la lista.">
+          <label class="etiqueta" for="dependencia_federal_otra">Nombre de la dependencia</label>
+          <!-- autocomplete off: es el nombre de una dependencia; el navegador no tiene nada que proponer. -->
+          <input class="control" id="dependencia_federal_otra" name="dependencia_federal_otra" type="text" maxlength="160" autocomplete="off">
+        </div>
+      </div>
+
+      <div data-si="tipo_adscripcion=educativa">
+        <fieldset class="grupo" data-campo="institucion_educativa" data-requerido data-uso="Identificar la institución educativa para integrar grupos.">
+          <legend class="etiqueta">¿A qué institución educativa perteneces?</legend>
+          <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
+          <div class="opciones-lista opciones-en-linea">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="institucion_educativa" autocomplete="off" value="unam"><span><span class="opcion-nombre">Universidad Nacional Autónoma de México (UNAM)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="institucion_educativa" autocomplete="off" value="otro"><span><span class="opcion-nombre">Otra</span></span></label>
+          </div>
+        </fieldset>
+        <div class="campo" data-campo="institucion_educativa_otra" data-si="institucion_educativa=otro" data-otro-de="institucion_educativa" data-requerido data-uso="Identificar una institución educativa que no está en la lista.">
+          <label class="etiqueta" for="institucion_educativa_otra">Nombre de la institución</label>
+          <!-- autocomplete off: es el nombre de una institución; el navegador no tiene nada que proponer. -->
+          <input class="control" id="institucion_educativa_otra" name="institucion_educativa_otra" type="text" maxlength="160" autocomplete="off">
+        </div>
+      </div>
+      </div>
+      <!-- adscripcion:fin -->
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="button" class="btn-enlace" data-cancelar>Cancelar</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Guardar cambios</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/apd.js?v=0.23"></script>
+<script src="datos/catalogos.js?v=0.23"></script>
+<script src="app/config-datos.js?v=0.23"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="app/archivos-lleno.js?v=0.23"></script>
+<script src="formkit/modulos/combo/combo.js"></script>
+<script src="formkit/modulos/otro/otro.js"></script>
+<script src="app/datos.js?v=0.23"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/archivos-prueba.js?v=0.23"></script>
+<script src="app/curp-nombre.js?v=0.23"></script>
+<script src="app/casos-prueba.js?v=0.23"></script>
+<script src="app/pruebas.js?v=0.23"></script>
+<script src="app/version-visible.js?v=0.23"></script>
+</body>
+</html>

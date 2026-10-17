@@ -1,0 +1,67 @@
+/* =========================================================
+   archivos.css · Módulo «archivos» · nivel RECOMENDADO
+   Zona de carga (botón real que recibe arrastrados), botón de cámara, lista
+   de archivos con vista previa, estado, quitar y reintentar, y rechazos
+   con motivo. Depende de: nucleo.css. Bloques: componentes → estados.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.zona-carga{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:var(--e-2);
+  width:100%;
+  padding:var(--e-7) var(--e-4);
+  background:var(--carga-bg);
+  border:var(--b-2) dashed var(--borde);
+  border-radius:var(--r-caja);
+  text-align:center;
+  color:var(--azul);
+  transition:border-color var(--dur-rapida),background var(--dur-rapida);
+}
+.zona-carga-texto{display:block;font-family:var(--fuente-titulo);font-weight:var(--peso-semi)}
+.zona-carga-limite{display:block;font-size:var(--t-sm);color:var(--gris)}
+.zona-camara{margin-top:var(--e-3)}
+.lista-arch{display:flex;flex-direction:column;gap:var(--e-2);margin-top:var(--e-4)}
+.arch{
+  display:flex;
+  align-items:center;
+  gap:var(--e-3);
+  padding:var(--e-2) var(--e-2) var(--e-2) var(--e-3);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--linea);
+  border-radius:var(--r-ctrl);
+  font-size:var(--t-md);
+}
+.arch-vista{flex:none;width:var(--vista-previa);height:var(--vista-previa);object-fit:cover;border-radius:var(--r-ctrl);background:var(--fondo)}
+.arch-icono{color:var(--gris)}
+.arch-cuerpo{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--e-1)}
+.arch-nombre{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arch-estado{font-size:var(--t-sm);color:var(--gris)}
+.arch-quitar{color:var(--error)}
+/* Rechazo de un archivo: dice cuál y por qué, en el lugar donde iba a estar. */
+.arch-rechazo{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:var(--e-1) var(--e-2);
+  margin-top:var(--e-3);
+  padding:var(--e-3);
+  background:var(--error-bg);
+  border:var(--b-1) solid var(--error);
+  border-radius:var(--r-ctrl);
+  font-size:var(--t-md);
+  color:var(--error-txt);
+}
+
+/* @bloque estados */
+
+.zona-carga:hover,.zona-carga[data-encima]{background:var(--azul-cl);border-color:var(--azul)}
+.arch[data-estado="error"]{border-color:var(--error);background:var(--error-bg)}
+.arch[data-estado="error"] .arch-estado{color:var(--error-txt)}
+.arch[data-estado="procesando"] .arch-estado{color:var(--azul)}
+.arch-quitar:hover{background:var(--error-bg);color:var(--error)}
+.icono-giro{animation:giro var(--dur-media) linear infinite}
+@keyframes giro{to{transform:rotate(1turn)}}

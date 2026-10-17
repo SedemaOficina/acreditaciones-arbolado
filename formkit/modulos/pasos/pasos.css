@@ -1,0 +1,136 @@
+/* =========================================================
+   pasos.css · Módulo «pasos» · nivel RECOMENDADO
+
+   Barra de pasos fija y navegable. Que un paso esté hecho lo dicen la
+   palomita y el número; que tenga error, el icono de alerta: nunca sólo el
+   color. En teléfono las etiquetas se ocultan y aparece «Paso X de N ·
+   Título». La barra queda fija arriba y el desplazamiento automático la
+   respeta (scroll-padding-top en base.css).
+   También define la barra de acciones fija en teléfono (opcional, clase
+   .acciones-fijas): queda al pie, respeta la franja segura y no tapa el
+   campo enfocado porque el relleno inferior de la página lo compensa.
+
+   Depende de: nucleo.css. Bloques: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.barra-fija{
+  position:sticky;
+  top:0;
+  z-index:var(--z-barra);
+  margin-bottom:var(--e-5);
+  padding:var(--e-2) 0;
+  background:var(--fondo);
+  border-bottom:var(--b-1) solid var(--linea);
+}
+.pasos{display:flex;align-items:flex-start}
+.pasos-item{position:relative;flex:1;display:flex}
+/* La línea de enlace va detrás del círculo, dentro del contexto de apilamiento de la barra. */
+.pasos-item::before{
+  content:'';
+  position:absolute;
+  top:calc(var(--bolita) / 2 + var(--e-1));
+  left:-50%;
+  z-index:-1;
+  width:100%;
+  height:var(--b-2);
+  background:var(--linea);
+}
+.pasos-item:first-child::before{display:none}
+.pasos-btn{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:var(--e-2);
+  min-height:var(--objetivo-min);
+  padding:var(--e-1);
+  background:none;
+  border:0;
+  border-radius:var(--r-ctrl);
+  color:var(--gris-cl);
+}
+.pasos-bolita{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:var(--bolita);
+  height:var(--bolita);
+  background:var(--blanco);
+  border:var(--b-2) solid var(--borde);
+  border-radius:var(--r-pill);
+  font-family:var(--fuente-titulo);
+  font-weight:var(--peso-fuerte);
+  font-size:var(--t-sm);
+  line-height:1;
+  color:var(--gris);
+}
+.pasos-icono{display:none}
+.pasos-etq{display:none;font-size:var(--t-xs);line-height:var(--interlineado-compacto);text-align:center}
+/* «Paso 2 de 5 · Título»: en teléfono sustituye a las etiquetas. */
+.pasos-actual{display:block;margin-top:var(--e-2);font-size:var(--t-sm);font-weight:var(--peso-fuerte);text-align:center}
+
+/* Recordatorio de lo que se está haciendo, dentro de la barra fija. Se
+   oculta con [hidden]: por eso el display se declara sólo cuando no lo está
+   (esta hoja carga después de nucleo.css y, a igual especificidad, ganaría). */
+.recordatorio:not([hidden]){
+  display:flex;
+  align-items:center;
+  gap:var(--e-3);
+  margin:var(--e-3) var(--e-pagina) 0;
+  padding:var(--e-2) var(--e-3);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--linea);
+  border-left:var(--b-4) solid var(--dorado);
+  border-radius:var(--r-ctrl);
+  font-size:var(--t-md);
+}
+.recordatorio-texto{flex:1}
+
+/* Barra de acciones fija al pie en teléfono (opcional). */
+.acciones-fijas{
+  position:sticky;
+  bottom:0;
+  z-index:var(--z-barra);
+  margin:var(--e-6) calc(var(--e-seccion) * -1) calc(var(--e-seccion) * -1);
+  padding:var(--e-3) calc(var(--e-seccion) + var(--safe-izq)) calc(var(--e-3) + var(--safe-inf)) calc(var(--e-seccion) + var(--safe-der));
+  background:var(--blanco);
+  border-top:var(--b-1) solid var(--linea);
+  border-radius:0 0 var(--r-caja) var(--r-caja);
+}
+
+/* @bloque estados */
+
+.pasos-btn[data-hecho]{color:var(--gris)}
+.pasos-btn[data-hecho] .pasos-bolita{border-color:var(--gris-cl)}
+.pasos-btn[data-hecho] .pasos-num{display:none}
+.pasos-btn[data-hecho] .pasos-hecho{display:block}
+.pasos-btn[data-error]{color:var(--error-txt)}
+.pasos-btn[data-error] .pasos-bolita{border-color:var(--error);color:var(--error)}
+.pasos-btn[data-error] .pasos-num{display:none}
+.pasos-btn[data-error] .pasos-error{display:block}
+.pasos-btn[aria-current="step"]{color:var(--texto);font-weight:var(--peso-fuerte);cursor:default}
+.pasos-btn[aria-current="step"] .pasos-bolita{background:var(--texto);border-color:var(--texto);color:var(--blanco)}
+.pasos-btn:hover .pasos-bolita{border-color:var(--azul)}
+.pasos-btn[aria-current="step"]:hover .pasos-bolita{border-color:var(--texto)}
+/* Lo hecho pinta su línea de enlace. */
+.pasos-item:has([data-hecho])::before,.pasos-item:has([aria-current="step"])::before{background:var(--gris-cl)}
+
+/* @bloque adaptaciones */
+
+@media (min-width:760px){
+  .barra-fija{padding:var(--e-3) 0 var(--e-2)}
+  .pasos-etq{display:block}
+  .pasos-actual{display:none}
+  .acciones-fijas{position:static;margin:var(--e-6) 0 0;padding:var(--e-5) 0 0;border-radius:0}
+}
+
+@media (forced-colors: active){
+  .pasos-btn[aria-current="step"] .pasos-bolita{outline:var(--b-3) solid Highlight}
+}
+
+@media print{
+  .barra-fija{display:none}
+}

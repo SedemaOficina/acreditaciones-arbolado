@@ -1,0 +1,393 @@
+/* =========================================================
+   nucleo.css · Estándar de formularios del SIA (SEDEMA)
+
+   Componentes BASE: los que todo formulario lleva (campo, control, botón,
+   aviso, resumen de errores, icono). Los componentes RECOMENDADOS y
+   OPCIONALES viven cada uno en su módulo (codigo/modulos/<nombre>/).
+
+   Reglas de la hoja (FRM-66 a FRM-70):
+     · un selector, una declaración;
+     · especificidad plana: clases, a lo más dos niveles;
+     · componente y variante en el MISMO elemento (class="btn btn-primario");
+     · el estado se lee del atributo ([aria-invalid], [aria-disabled],
+       [readonly], :checked, [open], [hidden]), nunca de una clase;
+     · ningún color, medida, duración ni capa literal: todo es un token;
+     · se escribe para el teléfono; las pantallas anchas se adaptan con
+       (min-width) en el bloque «adaptaciones».
+
+   Bloques, en orden fijo: componentes → estados → utilidades → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+/* ---------- Campo ----------
+   Etiqueta visible arriba, ayuda, control y error, en ese orden. El error
+   reserva su renglón con min-height para que, al aparecer, no empuje los
+   botones que la persona iba a pulsar (decisión C5). */
+.campo{margin-bottom:var(--e-5)}
+.etiqueta{
+  display:block;
+  margin-bottom:var(--e-1);
+  font-weight:var(--peso-medio);
+  line-height:var(--interlineado-compacto);
+  color:var(--texto);
+}
+/* La marca de obligatorio es gris y va con la palabra (decisión C2): el
+   color solo no lo dice y el guinda está reservado a la acción principal. */
+.marca-oblig{margin-left:var(--e-1);font-weight:var(--peso-fuerte);color:var(--gris)}
+.ayuda{margin-bottom:var(--e-2);font-size:var(--t-sm);line-height:var(--interlineado-compacto);color:var(--gris-cl)}
+.ayuda:empty{margin:0}
+.contador{margin-top:var(--e-1);font-size:var(--t-xs);text-align:right;color:var(--gris-cl)}
+
+/* Error del campo: icono + palabra «Error» + qué hacer. No depende del rojo. */
+.err{
+  display:flex;
+  align-items:flex-start;
+  gap:var(--e-1);
+  min-height:var(--e-5);
+  margin-top:var(--e-1);
+  font-size:var(--t-sm);
+  font-weight:var(--peso-medio);
+  line-height:var(--interlineado-compacto);
+  color:var(--error);
+}
+.err-icono{flex:none;width:var(--icono-sm);height:var(--icono-sm);margin-top:var(--b-1)}
+/* El renglón del error siempre existe (reserva su alto): vacío no muestra icono. */
+.err:not([data-nivel]) .err-icono{display:none}
+
+.leyenda-oblig{
+  margin-bottom:var(--e-4);
+  padding:var(--e-2) var(--e-3);
+  background:var(--guinda-cl);
+  border-radius:var(--r-ctrl);
+  font-size:var(--t-sm);
+  color:var(--gris);
+}
+
+/* El control: texto, número, fecha, hora, teléfono, select y área de texto.
+   Letra de 16 px como mínimo (iOS hace zoom con menos). Su borde es
+   --borde (3:1 exigido a un control), nunca --linea. */
+.control{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  min-height:var(--alto-control);
+  padding:var(--e-3);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-ctrl);
+  font-size:var(--t-base);
+  color:var(--texto);
+  transition:border-color var(--dur-rapida),box-shadow var(--dur-rapida);
+}
+/* El campo de fecha de iPhone trae un ancho mínimo propio y se salía de la
+   tarjeta; sin la apariencia del sistema respeta el ancho de la columna. */
+.control[type="date"],.control[type="time"]{-webkit-appearance:none;appearance:none;text-align:left}
+.control-texto{min-height:var(--alto-texto-min);overflow:hidden;line-height:var(--interlineado-cuerpo);resize:none}
+.control-corto{max-width:var(--ancho-tarjeta-min)}
+
+/* El select se dibuja igual que los demás campos. La flecha es un borde
+   girado, no una imagen (una imagen incrustada es un color fuera de :root). */
+.select{position:relative}
+.select::after{
+  content:'';
+  position:absolute;
+  top:50%;
+  right:var(--e-4);
+  width:var(--e-2);
+  height:var(--e-2);
+  border-right:var(--b-2) solid var(--gris);
+  border-bottom:var(--b-2) solid var(--gris);
+  transform:translateY(-70%) rotate(45deg);
+  pointer-events:none;
+}
+.control-select{-webkit-appearance:none;appearance:none;padding-right:var(--e-9);cursor:pointer}
+
+/* Campo con unidad o prefijo visible (pesos, metros, +52). */
+.control-grupo{display:flex;align-items:stretch}
+.control-unidad{
+  display:flex;
+  align-items:center;
+  padding:0 var(--e-3);
+  background:var(--fondo);
+  border:var(--b-1) solid var(--borde);
+  border-left:0;
+  border-radius:0 var(--r-ctrl) var(--r-ctrl) 0;
+  font-size:var(--t-md);
+  color:var(--gris);
+  white-space:nowrap;
+}
+
+/* Casilla suelta (conformidad, aceptación). La casilla es la nativa. */
+.casilla{display:flex;align-items:flex-start;gap:var(--e-3);min-height:var(--objetivo-min);cursor:pointer}
+.casilla-input{flex:none;width:var(--tam-casilla);height:var(--tam-casilla);margin:var(--e-1) 0 0;accent-color:var(--azul)}
+.casilla-texto{flex:1;min-width:0;padding-top:var(--e-1)}
+
+/* Caja destacada para consentimiento y prueba de humanidad: no es una
+   pregunta de la persona, sino algo que el sistema comprueba. */
+.destacado{
+  display:flex;
+  align-items:flex-start;
+  gap:var(--e-3);
+  margin:var(--e-2) 0;
+  padding:var(--e-4);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-caja);
+}
+.destacado-nombre{display:block;font-weight:var(--peso-medio);line-height:var(--interlineado-compacto)}
+.destacado-ayuda{display:block;margin-top:var(--e-1);font-size:var(--t-sm);color:var(--gris-cl)}
+
+/* ---------- Iconos ----------
+   Un solo conjunto SVG (codigo/iconos/sprite.svg). Heredan el color del
+   texto; decorativos con aria-hidden; con significado, siempre junto a texto. */
+.icono{flex:none;width:var(--icono);height:var(--icono);fill:none;stroke:currentColor;stroke-width:var(--b-2);stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+.icono-sm{width:var(--icono-sm);height:var(--icono-sm)}
+
+/* ---------- Botones ----------
+   Una sola acción principal por pantalla (FRM-34): el botón guinda. El
+   secundario lleva borde gris (decisión C7); «Atrás» es azul con flecha
+   porque es lo tocable; el de peligro es rojo y pide confirmación. */
+.acciones{
+  display:flex;
+  flex-direction:column-reverse;
+  gap:var(--e-3);
+  margin-top:var(--e-6);
+  padding-top:var(--e-5);
+  border-top:var(--b-1) solid var(--linea);
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--e-2);
+  width:100%;
+  min-height:var(--alto-control);
+  padding:var(--e-3) var(--e-6);
+  border:var(--b-1) solid transparent;
+  border-radius:var(--r-ctrl);
+  font-family:var(--fuente-titulo);
+  font-size:var(--t-base);
+  font-weight:var(--peso-semi);
+  text-decoration:none;
+  transition:background var(--dur-rapida),border-color var(--dur-rapida);
+}
+.btn-primario{background:var(--guinda);color:var(--blanco)}
+.btn-secundario{background:var(--blanco);border-color:var(--borde);color:var(--gris)}
+.btn-peligro{background:var(--blanco);border-color:var(--error);color:var(--error-txt)}
+/* «Atrás» y los enlaces-botón no tienen caja: se leen como texto que se toca. */
+.btn-atras{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--e-2);
+  align-self:center;
+  min-height:var(--objetivo-min);
+  padding:var(--e-3) var(--e-1);
+  background:none;
+  border:0;
+  border-radius:var(--r-ctrl);
+  font-family:var(--fuente-titulo);
+  font-weight:var(--peso-semi);
+  color:var(--azul);
+}
+.btn-enlace{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--e-1);
+  min-height:var(--objetivo-min);
+  padding:var(--e-2) var(--e-1);
+  background:none;
+  border:0;
+  font-size:var(--t-sm);
+  font-weight:var(--peso-semi);
+  text-decoration:underline;
+  color:var(--azul);
+}
+/* Icono solo (cerrar, quitar): únicamente con nombre accesible y 44 px. */
+.btn-icono{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  width:var(--objetivo-min);
+  height:var(--objetivo-min);
+  background:none;
+  border:var(--b-1) solid transparent;
+  border-radius:var(--r-ctrl);
+  color:var(--gris);
+}
+
+/* ---------- Avisos ----------
+   Un aviso es algo que hay que leer, no una alarma: neutro con filete. El
+   rojo es sólo para lo que impide continuar; el verde, para que el sistema
+   confirme; el ámbar, para atención sin bloqueo. Lleva icono y palabra. */
+.aviso{
+  display:flex;
+  gap:var(--e-3);
+  margin:var(--e-4) 0;
+  padding:var(--e-4);
+  background:var(--aviso-bg);
+  border-left:var(--b-4) solid var(--borde);
+  border-radius:0 var(--r-ctrl) var(--r-ctrl) 0;
+  font-size:var(--t-md);
+  color:var(--texto);
+}
+.aviso-advertencia{background:var(--pend-bg);border-left-color:var(--pend);color:var(--pend-txt)}
+.aviso-bloqueo{background:var(--error-bg);border-left-color:var(--error);color:var(--error-txt)}
+.aviso-ok{background:var(--ok-bg);border-left-color:var(--ok);color:var(--ok-txt)}
+.aviso-texto{flex:1;min-width:0}
+
+/* Marcador de pendiente visible: lo que el proyecto aún no resuelve se dice
+   con este rótulo, nunca se oculta ni se inventa (FRM-75). El texto va en el
+   HTML, no en ::before, para que el lector de pantalla lo lea (decisión C11). */
+.pendiente{
+  padding:var(--e-1) var(--e-2);
+  background:var(--pend-bg);
+  border:var(--b-1) dashed var(--pend);
+  border-radius:var(--e-1);
+  font-size:var(--t-xs);
+  font-weight:var(--peso-semi);
+  font-style:normal;
+  color:var(--pend-txt);
+}
+
+/* Resumen de errores al inicio del paso: recibe el foco y enlaza a cada
+   campo (FRM-28). */
+.resumen-errores{
+  margin-bottom:var(--e-5);
+  padding:var(--e-4) var(--e-4) var(--e-4) var(--e-5);
+  background:var(--error-bg);
+  border:var(--b-2) solid var(--error);
+  border-radius:var(--r-ctrl);
+  color:var(--error-txt);
+}
+.resumen-errores-titulo{display:flex;align-items:center;gap:var(--e-2);margin-bottom:var(--e-2);font-weight:var(--peso-fuerte);color:var(--error)}
+.resumen-errores-lista{margin-left:var(--e-5);font-size:var(--t-md);list-style:disc}
+.resumen-errores-lista li{padding:var(--e-1) 0} /* separa los enlaces para cumplir los 24 px de WCAG 2.5.8 */
+.resumen-errores-enlace{font-weight:var(--peso-semi);color:var(--error)}
+/* «Borrador guardado»: el sistema avisa en verde, discreto, con aria-live. */
+.guardado{height:0;overflow:hidden;font-size:var(--t-sm);color:var(--ok);opacity:0;transition:opacity var(--dur-media)}
+
+/* Franja de borrador recuperado, antes del formulario. */
+.franja{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:var(--e-3);
+  margin-bottom:var(--e-4);
+  padding:var(--e-3) var(--e-4);
+  background:var(--blanco);
+  border-bottom:var(--b-1) solid var(--linea);
+  box-shadow:inset 0 var(--b-3) 0 var(--dorado);
+}
+.franja-texto{flex:1 1 var(--ancho-tarjeta-min);font-size:var(--t-md)}
+
+/* Anuncio de estado de envío (error de red, plazo vencido): recibe el foco. */
+.estado-envio{margin-top:var(--e-4)}
+
+/* @bloque estados */
+
+/* Foco: el MISMO anillo en todo el paquete y sobre cualquier fondo. Es la
+   única regla de foco; los componentes no declaran la suya. [data-demo-foco]
+   existe para que la guía visual muestre el estado sin depender del teclado. */
+:focus-visible,[data-demo-foco]{outline:var(--foco-ancho) solid var(--foco);outline-offset:var(--foco-sep)}
+.salto:focus{transform:translateY(0)}
+
+/* Campo enfocado: borde y halo del color de foco. */
+.control:focus{border-color:var(--foco);box-shadow:0 0 0 var(--b-2) var(--halo-foco)}
+
+/* Error: borde grueso y fondo tenue. Se lee del atributo que ya anuncia el
+   lector de pantalla (aria-invalid). El relleno se compensa para que el
+   control no cambie de tamaño. */
+.control[aria-invalid="true"]{padding:calc(var(--e-3) - var(--b-1));background:var(--error-bg);border:var(--b-2) solid var(--error)}
+.destacado:has([aria-invalid="true"]){border-color:var(--error);border-width:var(--b-2)}
+.destacado:has(.casilla-input:checked){background:var(--azul-cl);border-color:var(--azul)}
+
+/* Advertencia en el renglón de error: cruzada degradada o sugerencia sin bloqueo. */
+.err[data-nivel="advertencia"]{color:var(--pend-txt)}
+
+/* Solo lectura frente a deshabilitado: ambos se distinguen del campo normal
+   y entre sí sin depender sólo del color. Solo lectura: borde discontinuo,
+   texto pleno, se puede seleccionar y se envía. Deshabilitado: borde tenue,
+   texto atenuado, no se envía. */
+.control[readonly]{background:var(--solo-lectura-bg);border-style:dashed;cursor:default}
+.control:disabled{background:var(--aviso-bg);border-color:var(--linea);color:var(--gris-cl);cursor:not-allowed}
+.control-select[data-vacio]{color:var(--gris-cl)}
+
+.btn-primario:hover{background:var(--guinda-osc)}
+.btn-secundario:hover{border-color:var(--gris);color:var(--texto)}
+.btn-peligro:hover{background:var(--error-bg)}
+.btn-atras:hover{text-decoration:underline}
+.btn-icono:hover{background:var(--azul-cl);color:var(--azul)}
+/* Deshabilitado accesible: aria-disabled conserva el foco y el anuncio; la
+   acción la bloquea formkit. :disabled queda para lo que de verdad no aplica. */
+.btn:disabled,.btn[aria-disabled="true"]{opacity:var(--op-inactivo);cursor:not-allowed}
+.btn[aria-busy="true"]{cursor:progress}
+
+.guardado[data-visible]{height:auto;padding-bottom:var(--e-2);opacity:1}
+
+/* @bloque utilidades */
+
+/* El atributo hidden debe ganar siempre. Va AQUÍ, después de las reglas de
+   componente, y gana por orden sin necesidad de !important (decisión C9).
+   Los módulos no declaran display en selectores de la misma especificidad
+   que [hidden] salvo en elementos que nunca se ocultan con el atributo. */
+[hidden]{display:none}
+
+.texto-gris{font-size:var(--t-md);color:var(--gris)}
+.texto-centrado{text-align:center}
+.mono{font-family:var(--fuente-mono)}
+
+/* @bloque adaptaciones */
+
+/* Alineación de campos que comparten renglón: el renglón declara cuatro
+   filas (etiqueta, ayuda, control, error) y cada campo las adopta con
+   subgrid, de modo que las columnas alinean aunque unos lleven ayuda y otros no. */
+@supports (grid-template-rows: subgrid){
+  .fila,.fila-3,.fila-2-1{grid-template-rows:auto auto auto auto;row-gap:0}
+  .fila > .campo,.fila-3 > .campo,.fila-2-1 > .campo{display:grid;grid-template-rows:subgrid;grid-row:span 4;gap:0;align-content:start}
+  .etiqueta{grid-row:1}
+  .ayuda{grid-row:2}
+  .control,.select,.control-grupo{grid-row:3}
+  .err{grid-row:4}
+}
+
+/* Con el dedo hace falta más superficie; con el ratón, no. */
+@media (pointer: coarse){
+  .btn-enlace{min-height:var(--alto-control)}
+}
+
+/* Tableta y escritorio: renglones en columnas, acciones en fila con la
+   principal a la derecha, botones a su medida. */
+@media (min-width:760px){
+  html{scroll-padding-top:var(--alto-barra-fija)}
+  .fila{grid-template-columns:1fr 1fr}
+  .fila-3{grid-template-columns:1fr 1fr 1fr}
+  .fila-2-1{grid-template-columns:2fr 1fr}
+  .acciones{flex-direction:row;justify-content:space-between}
+  .btn:not(.btn-ancho){width:auto}
+  .btn-primario{margin-left:auto}
+  .btn-atras{align-self:auto}
+}
+
+/* Con movimiento reducido no hay transiciones ni desplazamiento suave. Es el
+   único lugar donde se admite !important (FRM-68). */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:var(--dur-nula) !important;
+    animation-iteration-count:1 !important;
+    transition-duration:var(--dur-nula) !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+/* Modo de contraste forzado: el sistema impone sus colores; lo que hoy es
+   sólo fondo lleva borde para seguir viéndose. */
+@media (forced-colors: active){
+  .destacado:has(.casilla-input:checked){outline:var(--b-3) solid Highlight}
+}
+
+@media print{
+  .acciones,.salto,.franja,.guardado{display:none}
+}

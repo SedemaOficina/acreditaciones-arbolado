@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Revisar una solicitud · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Revisión documental de una solicitud de acreditación, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.23">
+<link rel="stylesheet" href="app/apd.css?v=0.23">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+  <p><a class="btn-atras" href="revision.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Solicitudes por revisar</a></p>
+  <p class="bajada" data-cargando>Cargando la solicitud…</p>
+
+  <!-- Lo que se revisa: datos de la persona y de la solicitud, y las vueltas anteriores. Lo pinta app/revisar.js. -->
+  <section class="tarjeta" data-cabeza hidden aria-labelledby="t-solicitud">
+    <div class="revision-cabeza">
+      <div>
+        <h2 class="titulo-paso" id="t-solicitud" data-titulo></h2>
+        <p class="bajada" data-bajada></p>
+      </div>
+      <span data-estado></span>
+    </div>
+    <div data-persona></div>
+  </section>
+  <details class="tarjeta plegable" data-anteriores hidden>
+    <summary class="plegable-titulo">Revisiones anteriores <span data-anteriores-cuenta></span></summary>
+    <div data-anteriores-lista></div>
+  </details>
+
+  <!-- La revisión: una sola acción principal, que cambia con lo revisado (validar, observar o rechazar).
+       Arranca a mano (data-formkit="manual") cuando la página ya calculó los campos auxiliares. -->
+  <div class="revision-area">
+  <form id="formulario" data-formkit="manual" action="#" method="post" hidden>
+    <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+    <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
+    <div class="solo-lector" aria-hidden="true" data-campo="perfil_revision" data-auxiliar data-uso="Mostrar la pregunta de perfil que corresponde: carrera por clasificar o perfil que podría no cumplir; lo calculan la página y el servidor con apd.perfil_academico."><input type="hidden" id="perfil_revision" name="perfil_revision" value=""></div>
+    <div class="solo-lector" aria-hidden="true" data-campo="resultado" data-auxiliar data-uso="Mostrar los datos que pide el resultado (cita, mensaje o motivo); lo calculan la página y el servidor con las decisiones."><input type="hidden" id="resultado" name="resultado" value=""></div>
+    <!-- revision-auxiliares:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_identificacion_oficial" data-auxiliar data-uso="Pedir la revisión de «Identificación oficial» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_identificacion_oficial" name="revisar_identificacion_oficial" value="no"></div>
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_curp" data-auxiliar data-uso="Pedir la revisión de «Clave Única de Registro de Población (CURP)» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_curp" name="revisar_curp" value="no"></div>
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_comprobante_domicilio" data-auxiliar data-uso="Pedir la revisión de «Comprobante de domicilio» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_comprobante_domicilio" name="revisar_comprobante_domicilio" value="no"></div>
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir la revisión de «Constancia de situación fiscal» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_constancia_situacion_fiscal" name="revisar_constancia_situacion_fiscal" value="no"></div>
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_comprobante_estudios" data-auxiliar data-uso="Pedir la revisión de «Comprobante de estudios» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_comprobante_estudios" name="revisar_comprobante_estudios" value="no"></div>
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_curriculum_vitae" data-auxiliar data-uso="Pedir la revisión de «Currículum vitae» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_curriculum_vitae" name="revisar_curriculum_vitae" value="no"></div>
+      <div class="solo-lector" aria-hidden="true" data-campo="revisar_comprobantes_experiencia" data-auxiliar data-uso="Pedir la revisión de «Comprobantes de experiencia» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor."><input type="hidden" id="revisar_comprobantes_experiencia" name="revisar_comprobantes_experiencia" value="no"></div>
+    <!-- revision-auxiliares:fin -->
+
+    <!-- Perfil del dictaminador (decisiones 2026-10-15 y 2026-10-16) -->
+    <section class="tarjeta" data-perfil hidden aria-labelledby="t-perfil">
+      <h3 class="titulo-paso" id="t-perfil">Perfil del dictaminador</h3>
+      <div data-perfil-datos></div>
+      <div data-si="perfil_revision=por_clasificar">
+        <div class="aviso aviso-advertencia">
+          <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+          <div class="aviso-texto"><p><strong data-carrera-nombre></strong> todavía no está clasificada. Con base en el comprobante de estudios, indique si es afín al manejo del arbolado. Al clasificarla, se guarda en la lista de carreras y, si es afín, se sugiere a las siguientes personas.</p></div>
+        </div>
+        <fieldset class="grupo" data-campo="clasificacion" data-requerido data-uso="Clasificar la carrera en el catálogo (apd.carrera.grupo); de ella depende la experiencia mínima.">
+          <legend class="etiqueta">¿Cómo se clasifica la carrera?</legend>
+          <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+          <div class="opciones-lista">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" autocomplete="off" value="afin"><span><span class="opcion-nombre">Carrera afín</span><span class="opcion-desc">Se piden 2 años de experiencia, como con Biología o Ingeniería Forestal.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" autocomplete="off" value="disciplina_afin"><span><span class="opcion-nombre">Disciplina afín</span><span class="opcion-desc">Se piden 5 años de experiencia.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="clasificacion" autocomplete="off" value="no_afin"><span><span class="opcion-nombre">No afín</span><span class="opcion-desc">No cumple el perfil: la solicitud se rechaza.</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+      <div data-si="perfil_revision=no_cumple">
+        <div class="aviso aviso-advertencia">
+          <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+          <div class="aviso-texto"><p><strong>Con lo que declaró, la persona no cumple el perfil:</strong> <span data-no-cumple-motivo></span> Revise el comprobante de estudios: puede mostrar un grado distinto del que declaró.</p></div>
+        </div>
+        <fieldset class="grupo" data-campo="comprobante_confirma" data-requerido data-uso="Decidir, con el comprobante de estudios, si la solicitud se rechaza o regresa para corregir el grado declarado.">
+          <legend class="etiqueta">¿El comprobante de estudios confirma lo que declaró la persona?</legend>
+          <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+          <div class="opciones-lista">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="comprobante_confirma" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí: no cumple el perfil</span><span class="opcion-desc">La solicitud se rechaza.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="comprobante_confirma" autocomplete="off" value="no"><span><span class="opcion-nombre">No: muestra otro grado</span><span class="opcion-desc">Se observa el comprobante para que la persona corrija su último grado de estudios.</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+
+    <section class="tarjeta" aria-labelledby="t-documentos">
+      <h3 class="titulo-paso" id="t-documentos">Documentos</h3>
+      <p class="ayuda ayuda-bloque" data-docs-ayuda>Abra cada documento y acéptelo, u observe lo que debe corregir la persona.</p>
+      <p class="aviso" data-docs-rechazo hidden>No hace falta revisar los documentos: la solicitud se rechaza por el perfil.</p>
+      <!-- revision-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+        <div data-si="revisar_identificacion_oficial=si">
+          <article class="doc-revision" data-doc="identificacion_oficial">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Identificación oficial</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver documento<span class="solo-lector">: Identificación oficial</span></button></p>
+            <fieldset class="grupo" data-campo="decision_identificacion_oficial" data-requerido data-uso="Registrar si «Identificación oficial» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_identificacion_oficial" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_identificacion_oficial" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_identificacion_oficial" data-requerido data-si="decision_identificacion_oficial=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_identificacion_oficial">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_identificacion_oficial">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Identificación oficial">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_identificacion_oficial" name="observacion_identificacion_oficial" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+        <div data-si="revisar_curp=si">
+          <article class="doc-revision" data-doc="curp">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Clave Única de Registro de Población (CURP)</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver documento<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
+            <fieldset class="grupo" data-campo="decision_curp" data-requerido data-uso="Registrar si «Clave Única de Registro de Población (CURP)» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curp" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curp" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_curp" data-requerido data-si="decision_curp=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_curp">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_curp">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Clave Única de Registro de Población (CURP)">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_curp" name="observacion_curp" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+        <div data-si="revisar_comprobante_domicilio=si">
+          <article class="doc-revision" data-doc="comprobante_domicilio">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Comprobante de domicilio</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver documento<span class="solo-lector">: Comprobante de domicilio</span></button></p>
+            <fieldset class="grupo" data-campo="decision_comprobante_domicilio" data-requerido data-uso="Registrar si «Comprobante de domicilio» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_domicilio" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_domicilio" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_comprobante_domicilio" data-requerido data-si="decision_comprobante_domicilio=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_comprobante_domicilio">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_comprobante_domicilio">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Comprobante de domicilio">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_comprobante_domicilio" name="observacion_comprobante_domicilio" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+        <div data-si="revisar_constancia_situacion_fiscal=si">
+          <article class="doc-revision" data-doc="constancia_situacion_fiscal">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Constancia de situación fiscal</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver documento<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
+            <fieldset class="grupo" data-campo="decision_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_constancia_situacion_fiscal" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_constancia_situacion_fiscal" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_constancia_situacion_fiscal" data-requerido data-si="decision_constancia_situacion_fiscal=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_constancia_situacion_fiscal">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_constancia_situacion_fiscal">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Constancia de situación fiscal">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_constancia_situacion_fiscal" name="observacion_constancia_situacion_fiscal" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+        <div data-si="revisar_comprobante_estudios=si">
+          <article class="doc-revision" data-doc="comprobante_estudios">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Comprobante de estudios</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver documento<span class="solo-lector">: Comprobante de estudios</span></button></p>
+            <fieldset class="grupo" data-campo="decision_comprobante_estudios" data-requerido data-uso="Registrar si «Comprobante de estudios» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_estudios" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_estudios" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_comprobante_estudios" data-requerido data-si="decision_comprobante_estudios=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_comprobante_estudios">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_comprobante_estudios">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Comprobante de estudios">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_comprobante_estudios" name="observacion_comprobante_estudios" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+        <div data-si="revisar_curriculum_vitae=si">
+          <article class="doc-revision" data-doc="curriculum_vitae">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Currículum vitae</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver documento<span class="solo-lector">: Currículum vitae</span></button></p>
+            <fieldset class="grupo" data-campo="decision_curriculum_vitae" data-requerido data-uso="Registrar si «Currículum vitae» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curriculum_vitae" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curriculum_vitae" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_curriculum_vitae" data-requerido data-si="decision_curriculum_vitae=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_curriculum_vitae">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_curriculum_vitae">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Currículum vitae">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_curriculum_vitae" name="observacion_curriculum_vitae" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+        <div data-si="revisar_comprobantes_experiencia=si">
+          <article class="doc-revision" data-doc="comprobantes_experiencia">
+            <div class="doc-cabeza">
+              <h4 class="doc-titulo">Comprobantes de experiencia</h4>
+              <span class="estado" data-doc-estado>Por revisar</span>
+            </div>
+            <p class="doc-archivo" data-doc-archivo></p>
+            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver documento<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
+            <fieldset class="grupo" data-campo="decision_comprobantes_experiencia" data-requerido data-uso="Registrar si «Comprobantes de experiencia» cumple el requisito (apd.documento.estado).">
+              <legend class="etiqueta">¿El documento cumple?</legend>
+              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+              <div class="opciones-lista opciones-en-linea">
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobantes_experiencia" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobantes_experiencia" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+              </div>
+            </fieldset>
+            <div class="campo" data-campo="observacion_comprobantes_experiencia" data-requerido data-si="decision_comprobantes_experiencia=con_observacion" data-uso="Decirle a la persona qué debe corregir de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).">
+              <label class="etiqueta" for="observacion_comprobantes_experiencia">¿Qué debe corregir la persona?</label>
+              <p class="ayuda" id="ay-observacion_comprobantes_experiencia">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <div class="sugerencias" role="group" aria-label="Motivos frecuentes para Comprobantes de experiencia">
+                <button type="button" class="sugerencia" data-sugerencia="No se lee completo">No se lee completo</button>
+                <button type="button" class="sugerencia" data-sugerencia="Está vencido">Está vencido</button>
+                <button type="button" class="sugerencia" data-sugerencia="No corresponde al requisito">No corresponde al requisito</button>
+                <button type="button" class="sugerencia" data-sugerencia="Falta una página">Falta una página</button>
+                <button type="button" class="sugerencia" data-sugerencia="No coincide con el nombre de la cuenta">No coincide con el nombre de la cuenta</button>
+              </div>
+              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+              <textarea class="control" id="observacion_comprobantes_experiencia" name="observacion_comprobantes_experiencia" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+            </div>
+          </article>
+        </div>
+      <!-- revision-documentos:fin -->
+    </section>
+
+    <section class="tarjeta" aria-labelledby="t-resultado">
+      <h3 class="titulo-paso" id="t-resultado">Resultado de la revisión</h3>
+      <p class="resumen-revision" data-resumen role="status"></p>
+
+      <div data-si="resultado=validada">
+        <p class="ayuda ayuda-bloque">Todo está en orden. Al validar, la persona recibe su cita de cotejo y los datos para pagar.</p>
+        <div class="fila">
+          <div class="campo" data-campo="cita_fecha" data-formato="fecha" data-requerido data-uso="Fijar el día de la cita de cotejo (apd.solicitud.cita_en).">
+            <label class="etiqueta" for="cita_fecha">Fecha de la cita</label>
+            <!-- autocomplete off: la fecha la elige quien revisa; el navegador no tiene un valor que proponer. -->
+            <input class="control" id="cita_fecha" name="cita_fecha" type="date" autocomplete="off">
+          </div>
+          <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita de cotejo (apd.solicitud.cita_en).">
+            <label class="etiqueta" for="cita_hora">Hora</label>
+            <p class="ayuda">De 24 horas; por ejemplo, 10:00.</p>
+            <!-- autocomplete off: la hora la elige quien revisa. -->
+            <input class="control control-corto" id="cita_hora" name="cita_hora" type="text" inputmode="numeric" maxlength="5" autocomplete="off">
+          </div>
+        </div>
+        <!-- Lugar fijo: todas las citas, cursos y entregas son en la sede única (decisión 2026-10-16); no se elige. -->
+        <p class="ayuda">La cita es en el <strong data-sede></strong>, como todas las citas de cotejo, los cursos y las entregas.</p>
+      </div>
+
+      <div data-si="resultado=con_observaciones">
+        <div class="campo" data-campo="mensaje_general" data-uso="Indicación general para la persona, además de las observaciones de cada documento (apd.revision.observacion_general).">
+          <label class="etiqueta" for="mensaje_general">Mensaje para la persona (opcional)</label>
+          <p class="ayuda">Las observaciones de cada documento ya le llegan; aquí puede agregar una indicación general.</p>
+          <!-- autocomplete off: texto de quien revisa. -->
+          <textarea class="control" id="mensaje_general" name="mensaje_general" rows="2" maxlength="600" autocomplete="off"></textarea>
+        </div>
+      </div>
+
+      <div data-si="resultado=rechazada">
+        <div class="aviso aviso-bloqueo">
+          <svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg>
+          <div class="aviso-texto"><p><strong>La solicitud se rechazará</strong> porque el perfil no cumple lo que pide el lineamiento para dictaminador técnico. La persona podrá iniciar una solicitud nueva si cuenta con otro grado de estudios.</p></div>
+        </div>
+        <div class="campo" data-campo="motivo_rechazo" data-requerido data-uso="Explicar a la persona por qué se rechaza su solicitud; se le muestra tal cual (apd.revision.observacion_general y apd.solicitud.motivo_cierre).">
+          <label class="etiqueta" for="motivo_rechazo">Motivo del rechazo</label>
+          <p class="ayuda">La persona lo leerá tal como lo escriba. Viene una propuesta que puede cambiar.</p>
+          <!-- autocomplete off: texto de quien revisa. -->
+          <textarea class="control" id="motivo_rechazo" name="motivo_rechazo" rows="4" minlength="20" maxlength="600" autocomplete="off"></textarea>
+        </div>
+      </div>
+
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Registrar la revisión</button>
+      </div>
+      <p class="ayuda">Queda en la bitácora quién revisó, cuándo y qué decidió en cada documento.</p>
+    </section>
+  </form>
+
+  <!-- Visor del documento: todas las hojas. En computadora queda fijo a la derecha; en pantalla chica se abre a
+       pantalla completa (app/visor.js). -->
+  <dialog class="visor" data-visor aria-labelledby="visor-titulo">
+    <div class="visor-cabeza">
+      <div class="visor-nombre">
+        <h3 class="visor-titulo" id="visor-titulo" data-visor-titulo>Documento</h3>
+        <p class="visor-archivo mono" data-visor-archivo></p>
+      </div>
+      <button type="button" class="btn-enlace visor-cerrar" data-visor-accion="cerrar">Cerrar</button>
+    </div>
+    <div class="visor-barra" role="toolbar" aria-label="Herramientas del visor">
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="alejar" aria-label="Alejar"><span class="visor-paso" aria-hidden="true">−</span></button>
+      <output class="visor-zoom" data-visor-zoom aria-live="polite">100 %</output>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="acercar" aria-label="Acercar"><span class="visor-paso" aria-hidden="true">+</span></button>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="ajustar">Ajustar al ancho</button>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="girar">Girar</button>
+      <a class="btn-enlace visor-abrir" data-visor-abrir href="#" target="_blank" rel="noopener">Abrir en otra pestaña<svg class="icono icono-sm" aria-hidden="true"><use href="#i-externo"></use></svg><span class="solo-lector"> (se abre en otra pestaña)</span></a>
+    </div>
+    <p class="visor-pagina" data-visor-pagina aria-live="polite"></p>
+    <p class="aviso visor-aviso" data-visor-aviso hidden></p>
+    <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
+    <p class="visor-nota"><span class="pendiente" data-visor-nota>Versión de prueba.</span></p>
+  </dialog>
+  </div>
+
+  <!-- Después de registrar: lo que pasó y qué sigue para la persona -->
+  <section class="tarjeta" data-hecho hidden tabindex="-1" aria-labelledby="t-hecho">
+    <h2 class="titulo-paso" id="t-hecho" data-hecho-titulo></h2>
+    <p data-hecho-texto></p>
+    <p class="texto-gris">Versión de prueba: la decisión sólo se recuerda en esta pestaña; no se guarda en ninguna base.</p>
+    <div class="acciones acciones-izq">
+      <a class="btn btn-secundario" href="revision.html">Volver a las solicitudes por revisar</a>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/apd.js?v=0.23"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.23"></script>
+<script src="app/personal.js?v=0.23"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<script src="app/auxiliar.js?v=0.23"></script>
+<script src="app/visor.js?v=0.23"></script>
+<script src="app/revisar.js?v=0.23"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/curp-nombre.js?v=0.23"></script>
+<script src="app/casos-prueba.js?v=0.23"></script>
+<script src="app/pruebas.js?v=0.23"></script>
+<script src="app/version-visible.js?v=0.23"></script>
+</body>
+</html>
