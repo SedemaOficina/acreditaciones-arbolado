@@ -95,8 +95,7 @@
   }
 
   function nueva(datos, persona) {
-    const sesion = APD.leeSesion() || {};
-    const op = APD.opciones(datos, persona, sesion.solicitudes || []);
+    const op = APD.opciones(datos, persona, []);
     const disponibles = ['poda', 'dictaminador'].filter((t) => op[t].disponible);
     if (!disponibles.length) return sinOpciones(['poda', 'dictaminador'].map((t) => `${APD.TIPOS[t]}: ${op[t].motivo}`));
 

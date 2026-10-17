@@ -17,6 +17,7 @@
       datosLista([
         ['Emitida el', fecha(a.emitida_en)],
         ['Vence el', fecha(a.vence_en)],
+        ['Para vencer', APD.textoVence(APD.diasParaVencer(datos, a.vence_en))],
         ['Origen', a.origen === 'kobo' ? 'Registro anterior de la Secretaría' : '']
       ])
     ]);
@@ -160,19 +161,15 @@
     const persona = APD.requiereSesion(datos);
     if (!persona) return;
     APD.pintaSesion(document.querySelector('[data-sesion]'), persona);
-    const sesion = APD.leeSesion() || {};
-    const extras = sesion.solicitudes || [];
-    const op = APD.opciones(datos, persona, extras);
+    // datos ya trae lo enviado en este navegador durante la prueba (APD.cargar)
+    const op = APD.opciones(datos, persona, []);
 
     const acs = APD.acreditacionesDe(datos, persona);
     document.querySelector('[data-acreditaciones]').replaceChildren(...(acs.length
       ? acs.map((a) => fichaAcreditacion(datos, a, op))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes acreditaciones.' })]));
 
-    // Lo reenviado en esta pestaña (simulación) aparece como «En revisión documental»
-    const reenviadas = sesion.reenviadas || [];
-    const sols = extras.concat(APD.solicitudesDe(datos, persona)
-      .map((s) => (reenviadas.includes(s.folio) ? Object.assign({}, s, { estado: 'enviada' }) : s)));
+    const sols = APD.solicitudesDe(datos, persona);
     document.querySelector('[data-solicitudes]').replaceChildren(...(sols.length
       ? sols.map((s) => fichaSolicitud(datos, s, persona))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes solicitudes.' })]));

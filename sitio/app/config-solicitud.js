@@ -46,8 +46,6 @@ window.FORMKIT_OPCIONES = {
         if (modo === 'limite') return mal({ limite: true });
         if (modo === 'error') return mal(new Error('simulado'));
         APD.cargar().then((datos) => {
-          const sesion = APD.leeSesion() || {};
-          const propias = sesion.solicitudes || [];
           const d = payload.datos;
           // El curso no viaja (campo auxiliar): el servidor lo determina del tipo y del historial
           const [tipo, modalidad] = document.getElementById('tramite').value.split('_');
@@ -55,14 +53,10 @@ window.FORMKIT_OPCIONES = {
           const ahora = new Date().toISOString();
           let folio = continua;
           if (!continua) {
-            const n = datos.solicitud.length + propias.length + 1;
+            // datos ya trae lo enviado antes en este navegador (APD.cargar): el folio no se repite
+            const n = datos.solicitud.length + 1;
             folio = `APD-S-${datos.fecha_corte.slice(0, 4)}-${String(n).padStart(5, '0')}`;
-            propias.unshift({ folio, tipo_acreditacion: tipo, modalidad, estado: 'enviada', enviada_en: ahora, creada_en: ahora, id: `sesion-${n}` });
-          } else {
-            sesion.reenviadas = (sesion.reenviadas || []).concat(continua);
           }
-          sesion.solicitudes = propias;
-          APD.guardaSesion(sesion);
           // Versión de prueba: los archivos reales y un resumen de la solicitud se guardan sólo en este navegador, para
           // verlos en la revisión del personal (app/archivos-prueba.js). Si el navegador no lo permite, el envío sigue igual.
           const prefijo = `doc_${tipo}_${modalidad}_`;
@@ -70,8 +64,10 @@ window.FORMKIT_OPCIONES = {
             .map((a) => ({ requisito: a.campo.slice(prefijo.length), blob: a.blob, nombre: a.nombre, tipo: a.tipo, size: a.size }));
           const previa = continua ? datos.solicitud.find((x) => x.folio === continua) : null;
           const p = APD.personaDeSesion(datos) || {};
+          const ant = d.anterior ? datos.acreditacion.find((a) => a.numero === d.anterior) : null;
           const registro = {
             folio, existente: Boolean(previa), tipo_acreditacion: tipo, modalidad,
+            acreditacion_anterior_id: ant ? ant.id : (previa ? previa.acreditacion_anterior_id : null),
             enviada_en: previa ? previa.enviada_en : ahora, estado_desde: ahora,
             nivel_estudios: d.nivel_estudios || null, carrera: d.carrera || null, carrera_tecnica: d.carrera_tecnica || null, estatus_estudios: d.estatus_estudios || null,
             anios_experiencia: d.anios_experiencia ? Number(d.anios_experiencia) : null,

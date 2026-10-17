@@ -84,7 +84,12 @@
     const podaVigente = datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda')
       .sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];
     const anterior = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
-    $('[data-persona]').replaceChildren(el('div', { class: 'datos-dos-columnas' }, [datosLista([
+    // Fotografía de la persona: en la prueba, la que cargó en este navegador; si no hay, sus iniciales
+    const foto = el('div', { class: 'perfil-foto perfil-foto-chica' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: `${(p.nombre || '').charAt(0)}${(p.primer_apellido || '').charAt(0)}` })]);
+    if (typeof APD_ARCHIVOS_PRUEBA !== 'undefined') APD_ARCHIVOS_PRUEBA.foto(p.curp).then((r) => {
+      if (r && r.blob) foto.append(el('img', { class: 'perfil-imagen', src: URL.createObjectURL(r.blob), alt: `Fotografía de ${APD.nombreCompleto(p)}` }));
+    });
+    $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', { class: 'datos-dos-columnas' }, [datosLista([
       ['Persona', APD.nombreCompleto(p)],
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Se abre en su primer cotejo'],
@@ -93,7 +98,12 @@
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, vigente hasta el ${fecha(podaVigente.vence_en)}` : ''],
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
       ['Contacto', `${p.correo} · ${p.telefono}`]
-    ])]));
+    ])])]));
+    // En una renovación sólo la constancia fiscal es obligatoria; lo demás se carga si la persona lo actualizó
+    // (decisión 2026-10-14): se dice aquí para que no parezca que faltan documentos
+    if (s.modalidad === 'renovacion') {
+      $('[data-docs-ayuda]').textContent = 'Es una renovación: sólo la constancia de situación fiscal es obligatoria. Los demás documentos se revisaron en su trámite anterior y aparecen aquí sólo si la persona los actualizó. Abra cada documento y acéptelo, u observe lo que debe corregir la persona.';
+    }
     $('[data-cabeza]').hidden = false;
 
     /* ----- Revisiones anteriores ----- */

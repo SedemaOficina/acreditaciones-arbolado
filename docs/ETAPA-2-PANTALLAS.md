@@ -32,9 +32,10 @@ abre de entrada el primer documento (el comprobante de estudios si hay que decid
 pantalla completa. Al aceptar un documento, el visor y la lista pasan al siguiente sin decidir; con todo decidido, la
 página baja al resultado. PDF ficticios: `herramientas/documentos-ficticios.py`.
 
-Prueba sin servidor: lo que se envía o reenvía en la solicitud se guarda sólo en ese navegador (`app/archivos-prueba.js`,
-IndexedDB) y la bandeja y la revisión lo suman a los ficticios (`APD_PERSONAL.datosConPrueba`); el visor muestra el
-archivo real. Se quita en la etapa 3 junto con el acceso simulado.
+Prueba sin servidor: todo el recorrido se guarda en ese navegador (`app/archivos-prueba.js`: cuentas, fotografías,
+solicitudes y documentos en IndexedDB; sesión, cambios de perfil y revisiones en localStorage) y `APD.cargar()` lo suma a
+los ficticios en todas las pantallas. Lo enviado en la prueba va primero en la bandeja; la revisión muestra la fotografía
+de la persona y el visor el archivo real. Se quita en la etapa 3 junto con el acceso simulado.
 
 ## 3. Formulario y servidor
 

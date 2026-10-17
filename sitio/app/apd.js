@@ -51,7 +51,9 @@
       promesa = fetch('datos/ficticios.json', { cache: 'no-store' })
         .then((r) => { if (!r.ok) throw new Error('datos'); return r.json(); });
     }
-    return promesa;
+    // Versión de prueba: lo registrado en este navegador (cuentas, solicitudes, documentos, cambios de perfil) se suma
+    // cada vez, para que todas las pantallas vean lo último (app/archivos-prueba.js)
+    return promesa.then((d) => (global.APD_ARCHIVOS_PRUEBA ? global.APD_ARCHIVOS_PRUEBA.mezcla(d) : d));
   }
 
   /* ----- Fechas: todo en hora de la Ciudad de México ----- */
@@ -67,19 +69,37 @@
   function sumaDias(iso, dias) { const d = aFecha(iso); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); }
   function sumaMeses(iso, meses) { const d = aFecha(iso); d.setMonth(d.getMonth() + meses); return d.toISOString().slice(0, 10); }
 
-  /* ----- Sesión simulada ----- */
-  function leeSesion() { try { return JSON.parse(global.sessionStorage.getItem(CLAVE_SESION) || 'null'); } catch (e) { return null; } }
-  function guardaSesion(s) { try { global.sessionStorage.setItem(CLAVE_SESION, JSON.stringify(s)); return true; } catch (e) { return false; } }
-  function cierraSesion() { try { global.sessionStorage.removeItem(CLAVE_SESION); } catch (e) { /* sin almacenamiento: nada que borrar */ } }
+  /* Hoy, como fecha AAAA-MM-DD en la Ciudad de México. En la versión de prueba es la fecha simulada de los ficticios
+     (datos.fecha_corte, la de la franja amarilla), para que cada caso siga en su situación; con la API (etapa 3) no
+     hay fecha de corte y es el día real. */
+  function hoy(datos) {
+    if (datos && datos.fecha_corte) return datos.fecha_corte;
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  }
+  /* Días naturales que faltan para que venza (negativo si ya venció), contados desde hoy (decisión 2026-10-17) */
+  function diasParaVencer(datos, venceEn) {
+    return Math.round((aFecha(venceEn) - aFecha(hoy(datos))) / 86400000);
+  }
+  function textoVence(n) {
+    if (n > 1) return `Faltan ${n.toLocaleString('es-MX')} días`;
+    if (n === 1) return 'Falta 1 día';
+    if (n === 0) return 'Vence hoy';
+    return n === -1 ? 'Venció hace 1 día' : `Venció hace ${(-n).toLocaleString('es-MX')} días`;
+  }
 
-  /* La persona de la sesión: del padrón ficticio, o una cuenta recién creada en esta pestaña. */
+  /* ----- Sesión simulada ----- */
+  /* La sesión simulada se guarda en este navegador (localStorage) y sobrevive a recargar u otra pestaña
+     (decisión 2026-10-17): sólo dice quién entró, { id } */
+  function leeSesion() { try { return JSON.parse(global.localStorage.getItem(CLAVE_SESION) || 'null'); } catch (e) { return null; } }
+  function guardaSesion(s) { try { global.localStorage.setItem(CLAVE_SESION, JSON.stringify(s)); return true; } catch (e) { return false; } }
+  function cierraSesion() { try { global.localStorage.removeItem(CLAVE_SESION); } catch (e) { /* sin almacenamiento: nada que borrar */ } }
+
+  /* La persona de la sesión: del padrón ficticio o una cuenta creada en la prueba (las dos ya vienen en datos, con los
+     cambios de «Mi perfil» aplicados por APD.cargar). */
   function personaDeSesion(datos) {
     const s = leeSesion();
-    if (!s) return null;
-    // Lo que la persona cambió en «Mi perfil» durante la prueba (s.datos) se aplica encima de lo guardado
-    if (s.nueva) return Object.assign({ id: 'nueva', estado: 'activa' }, s.nueva, s.datos || {});
-    const p = datos.solicitante.find((x) => x.id === s.id);
-    return p ? Object.assign({}, p, s.datos || {}) : null;
+    if (!s || !s.id) return null;
+    return datos.solicitante.find((x) => x.id === s.id && x.estado === 'activa') || null;
   }
 
   /* ----- Adscripción (decisiones 2026-10-15): es de la persona; cada solicitud copia la que tenga al enviarse ----- */
@@ -271,7 +291,7 @@
 
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
-    cargar, fecha, fechaHora, sumaDias, sumaMeses,
+    cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,

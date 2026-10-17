@@ -486,3 +486,22 @@ campos correctos.
   `.contrasena-caja` ocupa el renglón del control para que contraseña y confirmación sigan a la misma altura.
   Hallazgo del estándar: P73. Comprobaciones nuevas en el sitio.
 - «Mi perfil»: la adscripción se lee en un renglón a todo lo ancho, directo: «Eres independiente.» o «Alcaldía: Tlalpan.».
+
+## 2026-10-17 · Bloque 39 · Días para vencer y recorrido de prueba guardado en el navegador
+
+- Días para vencer: `APD.hoy`, `APD.diasParaVencer` y `APD.textoVence` (apd.js). «Mis trámites» y la verificación
+  pública dicen «Faltan N días», «Vence hoy» o «Venció hace N días». En la prueba, hoy = fecha simulada (fecha_corte);
+  con la API, el día real.
+- Pedido de Liber: que el recorrido completo de la prueba se guarde aunque sea en el navegador. Antes la sesión y la
+  cuenta nueva vivían en la pestaña (sessionStorage) y se perdían al abrir otra.
+  - `app/archivos-prueba.js`: almacenes nuevos `cuentas` (por CURP; la contraseña sólo como resumen SHA-256) y cambios de
+    perfil (localStorage `apd.perfiles`); `mezcla(datos)` suma cuentas, perfiles, solicitudes y documentos a los ficticios.
+  - `APD.cargar()` aplica la mezcla en cada llamada: todas las pantallas ven lo mismo. Sesión y revisiones en localStorage.
+  - «Crear cuenta» guarda la cuenta; «Entrar» acepta su propia contraseña; «Mi perfil» guarda por persona; la solicitud
+    ya no se guarda en la sesión (folio con lo ya guardado) y conserva la acreditación que renueva.
+  - Menú de pruebas: «Persona nueva» crea una cuenta de prueba; «Lo guardado» cuenta cuentas, solicitudes, fotografías y
+    revisiones; «Empezar de cero» borra también localStorage.
+  - Revisión del personal: fotografía de la persona junto a sus datos; en renovaciones, aviso de que sólo la constancia
+    fiscal es obligatoria (duda de Liber: «sólo aparece la constancia»).
+- Prueba nueva de punta a punta en otras pestañas: crear cuenta con foto, volver a entrar con su contraseña, enviar con
+  documentos reales y verla primero en la bandeja, con sus 4 documentos y su fotografía.

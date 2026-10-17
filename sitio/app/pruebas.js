@@ -114,7 +114,9 @@
   function personaNueva() {
     const nombres = ['Nadia', 'Óscar', 'Paula', 'Raúl', 'Sofía', 'Tomás'];
     const n = Math.floor(Math.random() * nombres.length);
-    const p = { nombre: nombres[n], primer: 'Ejemplo', segundo: 'Simulado', fecha: `199${n}-0${n + 1}-1${n}`, sexo: n % 2 ? 'H' : 'M' };
+    const al = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+    // Fecha al azar: cada persona nueva tiene otra CURP (las cuentas de la prueba se guardan en este navegador)
+    const p = { nombre: nombres[n], primer: 'Ejemplo', segundo: 'Simulado', fecha: `${al(1960, 2002)}-${String(al(1, 12)).padStart(2, '0')}-${String(al(1, 28)).padStart(2, '0')}`, sexo: n % 2 ? 'H' : 'M' };
     p.curp = window.APD_CURP ? conDigito(APD_CURP.prefijo({ nombre: p.nombre, primer: p.primer, segundo: p.segundo }, p.fecha, p.sexo, 'NE') + '0') : '';
     return p;
   }
@@ -193,12 +195,13 @@
   /* Lo guardado en este navegador: solicitudes enviadas en la prueba (IndexedDB) y revisiones de esta pestaña */
   function guardado() {
     let revisiones = 0;
-    try { revisiones = Object.keys(JSON.parse(window.sessionStorage.getItem('apd.personal.revisiones') || '{}')).length; } catch (e) { /* sin almacenamiento */ }
-    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ envios: 0, fotos: 0, revisiones });
-    return Promise.all([APD_ARCHIVOS_PRUEBA.solicitudes(), APD_ARCHIVOS_PRUEBA.fotos()]).then(([l, fotos]) => ({ envios: l.length, fotos, revisiones }));
+    try { revisiones = Object.keys(JSON.parse(window.localStorage.getItem('apd.personal.revisiones') || '{}')).length; } catch (e) { /* sin almacenamiento */ }
+    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ cuentas: 0, envios: 0, fotos: 0, revisiones });
+    return APD_ARCHIVOS_PRUEBA.guardado().then((g) => Object.assign(g, { revisiones }));
   }
-  function textoGuardado({ envios, fotos, revisiones }) {
+  function textoGuardado({ cuentas, envios, fotos, revisiones }) {
     const partes = [];
+    if (cuentas) partes.push(cuentas === 1 ? '1 cuenta' : `${cuentas} cuentas`);
     if (fotos) partes.push(fotos === 1 ? '1 fotografía de perfil' : `${fotos} fotografías de perfil`);
     if (envios) partes.push(envios === 1 ? '1 solicitud enviada con sus documentos' : `${envios} solicitudes enviadas con sus documentos`);
     if (revisiones) partes.push(revisiones === 1 ? '1 revisión' : `${revisiones} revisiones`);
@@ -206,7 +209,9 @@
   }
   function borraPestana() {
     try {
-      for (const k of Object.keys(window.sessionStorage)) if (k.startsWith(PREFIJO)) window.sessionStorage.removeItem(k);
+      for (const almacen of [window.sessionStorage, window.localStorage]) {
+        for (const k of Object.keys(almacen)) if (k.startsWith(PREFIJO)) almacen.removeItem(k);
+      }
     } catch (e) { /* sin almacenamiento: nada que borrar */ }
   }
 
@@ -227,11 +232,9 @@
     const enPersonal = DEL_PERSONAL.includes(pagina);
     const persona = sesion && sesion.id ? datos.solicitante.find((p) => p.id === sesion.id) : null;
     const actual = enPersonal ? casos.find((c) => c.clave === 'personal')
-      : sesion && sesion.nueva ? casos.find((c) => c.clave === 'nueva')
-        : persona ? casos.find((c) => c.persona && c.persona.id === persona.id) : null;
+      : persona ? casos.find((c) => c.persona && c.persona.id === persona.id) : null;
     const quien = enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, revisión documental`
-      : sesion && sesion.nueva ? 'una persona nueva · persona solicitante'
-        : persona ? `${APD.nombreCompleto(persona)} · persona solicitante` : 'nadie (sin sesión)';
+      : persona ? `${APD.nombreCompleto(persona)} · persona solicitante${persona.de_prueba ? ' (cuenta creada en la prueba)' : ''}` : 'nadie (sin sesión)';
     const ahora = el('div', { class: 'menu-pruebas-ahora' }, [
       el('div', { class: 'menu-pruebas-fila' }, [
         el('p', {}, [el('strong', { texto: 'Estás como: ' }), document.createTextNode(quien)]),
@@ -305,10 +308,10 @@
     const cuenta = el('p', {}, [el('strong', { texto: 'Guardado en este navegador: ' }), el('span', { 'data-guardado': '', texto: '…' })]);
     const borrar = boton('Borrar lo guardado', () => {
       const docs = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve() : APD_ARCHIVOS_PRUEBA.borraTodo();
-      try { window.sessionStorage.removeItem('apd.personal.revisiones'); } catch (e) { /* sin almacenamiento */ }
+      try { window.localStorage.removeItem('apd.personal.revisiones'); } catch (e) { /* sin almacenamiento */ }
       docs.then(() => { di('Se borró lo guardado en este navegador.'); pintaGuardado(); }, () => di('No se pudo borrar.'));
     });
-    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.envios && !g.fotos && !g.revisiones; }); }
+    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.cuentas && !g.envios && !g.fotos && !g.revisiones; }); }
     pintaGuardado();
 
     const hijos = [
@@ -328,8 +331,14 @@
           const c = casos.find((x) => x.clave === elegir.value);
           if (!c) return di('Elige un caso.');
           if (c.clave === 'personal') { location.href = 'revision.html'; return; }
-          APD.guardaSesion(c.clave === 'nueva' ? { nueva: { nombre: 'Nadia', primer_apellido: 'Ejemplo', segundo_apellido: 'Simulado' } } : { id: c.persona.id });
-          location.href = 'tramites.html';
+          if (c.clave !== 'nueva') { APD.guardaSesion({ id: c.persona.id }); location.href = 'tramites.html'; return; }
+          // Persona nueva: se le crea una cuenta de prueba (con la contraseña común de prueba), guardada en este navegador
+          const n = personaNueva();
+          const id = `prueba:${n.curp}`;
+          APD_ARCHIVOS_PRUEBA.guardaCuenta({ curp: n.curp, id, contrasena: APD.CONTRASENA_FICTICIA,
+            persona: { nombre: n.nombre.toLocaleUpperCase('es-MX'), primer_apellido: n.primer.toLocaleUpperCase('es-MX'), segundo_apellido: n.segundo.toLocaleUpperCase('es-MX'),
+              sexo: n.sexo, correo: 'prueba@ejemplo.local', telefono: '0000000099', adscripcion: 'independiente', organizacion_id: null, organizacion_nombre: '' } })
+            .then(() => { APD.guardaSesion({ id }); location.href = 'tramites.html'; }, () => di('No se pudo crear la persona nueva en este navegador.'));
         }))
       ]),
       seccion('Ir a otra pantalla', [el('div', { class: 'menu-pruebas-grupos' }, PANTALLAS.map(([grupo, lista]) => el('div', {}, [
@@ -337,7 +346,7 @@
         el('ul', { class: 'menu-pruebas-lista' }, lista.map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))
       ])))]),
       seccion('Ajustes de la prueba', [
-        ayuda('Valen en todas las pantallas mientras tengas abierta esta pestaña.'),
+        ayuda('Lo guardado (cuentas, solicitudes, documentos, fotografías, revisiones) queda en este navegador aunque lo cierres; las preguntas obligatorias, sólo en esta pestaña.'),
         interruptor,
         el('div', { class: 'menu-pruebas-ajuste' }, [cuenta, acciones(borrar)]),
         acciones(boton('Empezar de cero', () => {

@@ -46,16 +46,19 @@ window.FORMKIT_OPCIONES = {
                 || !igual(d.segundo_apellido || '', existente.segundo_apellido || '')) {
               return mal({ mensaje: 'Tu nombre no coincide con el registro anterior de la Secretaría para esta CURP. Acude a la Secretaría para aclararlo.' });
             }
-            APD.guardaSesion({ id: existente.id, datos: APD.adscripcionDe(datos, d) });
-          } else {
-            // Sólo lo necesario para la pantalla (el nombre); nada más se guarda en el navegador.
-            APD.guardaSesion({ nueva: { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null,
-              curp: d.curp, sexo: d.curp[10], correo: d.correo, telefono: d.telefono, ...APD.adscripcionDe(datos, d) } });
           }
-          // Versión de prueba: la fotografía se guarda sólo en este navegador, para verla en «Mi perfil»
+          // Versión de prueba: la cuenta (con la contraseña sólo como resumen) y la fotografía se guardan en este
+          // navegador, para entrar otra vez, verla en «Mi perfil» y en la revisión del personal (app/archivos-prueba.js)
+          const id = existente ? existente.id : `prueba:${d.curp}`;
+          const persona = Object.assign(existente ? {} : { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null, sexo: d.curp[10] },
+            { correo: d.correo, telefono: d.telefono }, APD.adscripcionDe(datos, d));
           const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
-          const guarda = foto && typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA.guardaFoto(d.curp, foto).catch(() => {}) : Promise.resolve();
-          guarda.then(() => ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) }));
+          const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
+          const guarda = P ? Promise.all([P.guardaCuenta({ curp: d.curp, id, persona, contrasena: d.contrasena }), foto ? P.guardaFoto(d.curp, foto) : null]).catch(() => {}) : Promise.resolve();
+          guarda.then(() => {
+            APD.guardaSesion({ id });
+            ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
+          });
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });

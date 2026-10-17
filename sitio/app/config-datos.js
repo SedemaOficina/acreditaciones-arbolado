@@ -3,8 +3,8 @@
 
    La página tiene un formulario por parte: contacto, adscripción y fotografía. app/datos.js arranca cada uno a
    mano (data-formkit="manual") y le pasa APD_PERFIL.guarda(parte, payload, { signal }).
-   El envío es una SIMULACIÓN: guarda los cambios en la sesión de esta pestaña (APD.personaDeSesion los aplica
-   encima de los datos ficticios) y la fotografía nueva sólo en este navegador (app/archivos-prueba.js). En la
+   El envío es una SIMULACIÓN: guarda los cambios sólo en este navegador (app/archivos-prueba.js; APD.cargar los
+   aplica encima de los datos ficticios), también la fotografía nueva. En la
    etapa 3 se sustituye por la API, que vuelve a validar cada parte con codigo/servidor/validar.mjs y su esquema
    (db/esquemas-formularios/perfil-contacto.json, perfil-adscripcion.json, perfil-foto.json) y actualiza
    apd.solicitante: correo y teléfono; adscripción (convertida con el mismo criterio que APD.adscripcionDe; la base
@@ -21,18 +21,18 @@ window.APD_PERFIL = {
         if (modo === 'error') return mal(new Error('simulado'));
         APD.cargar().then((datos) => {
           const d = payload.datos;
-          const sesion = APD.leeSesion() || {};
           const p = APD.personaDeSesion(datos) || {};
-          sesion.datos = Object.assign({}, sesion.datos);
+          const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
+          if (!P) return mal(new Error('sin almacenamiento'));
+          // Se guarda en este navegador, por persona: lo ven «Mi perfil», las solicitudes nuevas y el personal
           let guarda = Promise.resolve();
-          if (parte === 'contacto') Object.assign(sesion.datos, { correo: d.correo, telefono: d.telefono });
-          if (parte === 'adscripcion') Object.assign(sesion.datos, APD.adscripcionDe(datos, d));
+          if (parte === 'contacto') P.guardaPerfil(p.id, { correo: d.correo, telefono: d.telefono });
+          if (parte === 'adscripcion') P.guardaPerfil(p.id, APD.adscripcionDe(datos, d));
           if (parte === 'foto') {
-            sesion.datos.foto_nueva = true;
+            P.guardaPerfil(p.id, { foto_nueva: true });
             const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
-            if (foto && typeof APD_ARCHIVOS_PRUEBA !== 'undefined') guarda = APD_ARCHIVOS_PRUEBA.guardaFoto(p.curp, foto).catch(() => {});
+            if (foto) guarda = P.guardaFoto(p.curp, foto).catch(() => {});
           }
-          APD.guardaSesion(sesion);
           guarda.then(() => ok({ parte, fecha: new Date().toISOString() }));
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);

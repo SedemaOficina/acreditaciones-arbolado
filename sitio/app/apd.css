@@ -250,3 +250,8 @@
 .contrasena-caja > .control { padding-inline-end: var(--e-11); }
 .contrasena-ver { position: absolute; inset-block: var(--b-1); inset-inline-end: var(--b-1); min-width: var(--objetivo-min); padding-inline: var(--e-3); border: 0; border-radius: var(--r-ctrl); background: transparent; color: var(--azul); font: inherit; font-size: var(--t-sm); font-weight: var(--peso-medio); text-decoration: underline; cursor: pointer; }
 .contrasena-ver:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: calc(var(--foco-sep) * -1); }
+
+/* Revisión del personal: fotografía de la persona junto a sus datos (2026-10-17) */
+.persona-con-foto { display: grid; gap: var(--e-4); }
+.perfil-foto-chica { width: var(--e-11); }
+@media (min-width: 560px) { .persona-con-foto { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }

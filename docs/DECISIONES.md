@@ -82,6 +82,9 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | Contraseña: botón «Mostrar» / «Ocultar» dentro del campo, en «Crear cuenta» (contraseña y confirmación) y en «Entrar»; al enviar se vuelve a ocultar | Liber Saltijeral |
 | 2026-10-17 | «Mi perfil», adscripción: un renglón directo, «Eres independiente.» o «Alcaldía: Tlalpan.», a todo lo ancho | Liber Saltijeral |
 | 2026-10-17 | «Confirma tu correo» se queda como en el estándar: sin sugerencia del navegador (autocomplete="off"), para que el correo se vuelva a escribir y se detecte un error de dedo | Liber Saltijeral |
+| 2026-10-17 | Cada acreditación dice siempre cuántos días faltan para vencer («Faltan 145 días», «Vence hoy», «Venció hace 12 días»), calculado con el día de hoy: en «Mis trámites» y en la verificación pública. En la versión de prueba, «hoy» es la fecha simulada de la franja amarilla | Liber Saltijeral |
+| 2026-10-17 | Versión de prueba: todo el recorrido se guarda en el navegador y sobrevive a recargar, otra pestaña o cerrarlo: la sesión, las cuentas creadas (se entra con su propia contraseña; sólo se guarda su resumen), la fotografía, las solicitudes con sus documentos, los cambios de «Mi perfil» y las revisiones del personal. Todas las pantallas lo ven, también la bandeja y la revisión del personal, que muestra la fotografía de la persona. Otro navegador u otro equipo no lo ven | Liber Saltijeral |
+| 2026-10-17 | En la revisión de una renovación se aclara que sólo la constancia de situación fiscal es obligatoria y que los demás documentos aparecen sólo si la persona los actualizó | Propuesta de Claude, por la duda de Liber |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 

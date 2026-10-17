@@ -14,7 +14,7 @@ window.FORMKIT_OPCIONES = {
       const t = setTimeout(() => {
         APD.cargar().then((datos) => {
           const fila = datos.verificacion_publica.find((v) => v.numero === payload.datos.numero);
-          ok({ numero: payload.datos.numero, fila: fila || null });
+          ok({ numero: payload.datos.numero, fila: fila || null, hoy: APD.hoy(datos) });
         }).catch(mal);
       }, 300);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
@@ -40,7 +40,8 @@ window.FORMKIT_OPCIONES = {
           ['Acreditación', f.tipo],
           ['Número de acreditación', f.numero],
           ['Emitida el', APD.fecha(f.emitida_en)],
-          ['Vence el', APD.fecha(f.vence_en)]
+          ['Vence el', APD.fecha(f.vence_en)],
+          ['Para vencer', APD.textoVence(APD.diasParaVencer({ fecha_corte: r.hoy }, f.vence_en))]
         ]),
         el('p', { class: 'texto-gris', texto: vigente
           ? 'Puede trabajar en el arbolado urbano con esta acreditación hasta la fecha de vencimiento.'

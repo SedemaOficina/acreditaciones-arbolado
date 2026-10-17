@@ -389,7 +389,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await captura(page, `16-mi-perfil-foto-${sufijo}`);
   await page.click('[data-sesion] button').catch(() => {});
   await page.goto(BASE + 'index.html');
-  await page.evaluate(() => sessionStorage.clear());
+  await page.evaluate(() => localStorage.clear());
 
     // Padrón migrado: crea su cuenta con su CURP, ve su historial y renueva
   await page.goto(BASE + 'cuenta.html');
@@ -401,6 +401,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('[data-acreditaciones] .ficha');
   await captura(page, `06-tramites-renovacion-${sufijo}`);
   await sinDesborde(page, t('mis trámites'));
+  comprueba(await page.locator('[data-acreditaciones] .ficha').evaluateAll((fs) => fs.every((f) => /Para vencer\s*(Faltan [\d,]+ días|Falta 1 día|Vence hoy|Venció hace [\d,]+ días?)/.test(f.textContent))),
+    t('mis trámites: cada acreditación dice cuántos días faltan para vencer (o hace cuántos venció)'));
   comprueba(await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() >= 1, t('mis trámites: botón «Renovar» en la acreditación renovable'));
   await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).first().click();
   await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_renovacion');
@@ -495,6 +497,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-resultado]:not([hidden])');
   comprueba((await page.getAttribute('[data-resultado]', 'data-tono')) === 'ok', t(`verificar: ${vigente.numero} vigente`));
+  // Días para vencer, contados desde hoy (en la prueba, la fecha simulada) (decisión 2026-10-17)
+  const faltan = Math.round((new Date(`${vigente.vence_en}T12:00:00-06:00`) - new Date(`${datos.fecha_corte}T12:00:00-06:00`)) / 86400000);
+  const esperado = faltan > 1 ? `Faltan ${faltan.toLocaleString('es-MX')} días` : faltan === 1 ? 'Falta 1 día' : faltan === 0 ? 'Vence hoy' : `Venció hace ${-faltan}`;
+  comprueba((await page.textContent('[data-resultado]')).includes(esperado), t(`verificar: dice cuánto falta para vencer (${esperado})`));
   await page.fill('#numero', noVigente.numero);
   await page.click('[data-accion="enviar"]');
   await page.waitForFunction(() => document.querySelector('[data-resultado]').dataset.tono === 'error');
@@ -503,7 +509,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await sinDesborde(page, t('verificar'));
 
   // Mi perfil: lo registrado se ve escrito; «Editar» abre las preguntas de esa parte; guarda y se conserva
-  await page.evaluate(() => sessionStorage.clear());
+  await page.evaluate(() => localStorage.clear());
   await entra(page, CON_ORG.curp);
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-identidad] .datos');
@@ -539,7 +545,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('[data-identidad] .datos');
   comprueba(/Tlalpan/.test(await page.textContent('[data-vista="adscripcion"]')), t('mi perfil: al volver, la adscripción es la nueva'));
   await captura(page, `15-mi-perfil-vista-${sufijo}`);
-  await page.evaluate(() => sessionStorage.clear());
+  await page.evaluate(() => localStorage.clear());
 
   // Fallo de envío simulado
   await page.goto(BASE + 'cuenta.html?simular=error');
@@ -561,7 +567,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForURL(/tramites\.html/);
   await page.goto(BASE + 'solicitud.html');
   await page.click('.menu-pruebas-boton');
-  comprueba(/una persona nueva/.test(await page.textContent('.menu-pruebas-ahora')), t('menú de pruebas: dice con quién estás'));
+  comprueba(/cuenta creada en la prueba/.test(await page.textContent('.menu-pruebas-ahora')), t('menú de pruebas: dice con quién estás (la persona nueva queda como cuenta de la prueba)'));
   await page.click('dialog.menu-pruebas >> text=Desactivar las preguntas obligatorias');
   await page.waitForLoadState('load');
   await page.waitForSelector('.menu-pruebas-boton');
@@ -586,6 +592,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('dialog.menu-pruebas >> text=Cerrar');
   await page.click('[data-accion="enviar"]');
   await page.waitForURL(/tramites\.html/);
+  await page.waitForSelector('[data-solicitudes] .ficha');
   comprueba(/con observaciones/i.test(await page.textContent('[data-solicitudes]')), t('menú de pruebas: en «Entrar», un caso llena CURP y contraseña y entra'));
   // Personal: «Entrar como» lleva a la bandeja; ahí no hay «En esta pantalla» (los filtros no se llenan ni se envían)
   await page.click('.menu-pruebas-boton');
@@ -598,7 +605,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('menú de pruebas: en la bandeja del personal no ofrece llenar ni simular el envío'));
   await page.click('dialog.menu-pruebas >> text=Empezar de cero');
   await page.waitForURL(/index\.html|\/$/);
-  comprueba(await page.evaluate(() => Object.keys(sessionStorage).filter((k) => k.startsWith('apd.')).length === 0), t('menú de pruebas: «Empezar de cero» limpia la sesión y lo guardado'));
+  comprueba(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('apd.')).length === 0
+    && APD_ARCHIVOS_PRUEBA.guardado().then((g) => !g.cuentas && !g.envios && !g.fotos)), t('menú de pruebas: «Empezar de cero» limpia la sesión y lo guardado'));
   // Crear cuenta: «Llenar con su CURP» crea la cuenta de alguien del registro anterior
   await page.goto(BASE + 'cuenta.html');
   await page.click('.menu-pruebas-boton');
@@ -611,7 +619,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('[data-acuse]:not([hidden])');
   comprueba(await page.isVisible('[data-cuenta-historial]'), t('menú de pruebas: crea la cuenta de alguien del registro anterior con su CURP'));
   await page.goto(BASE + 'index.html');
-  await page.evaluate(() => sessionStorage.clear());
+  await page.evaluate(() => localStorage.clear());
   await page.goto(BASE + 'cuenta.html');
   await page.click('.menu-pruebas-boton');
   await page.click('dialog.menu-pruebas >> text=Llenar con datos ficticios');
@@ -666,6 +674,76 @@ const porClasificar = enviadas.find((s) => s.perfil_academico === 'por_clasifica
 const noCumple = enviadas.find((s) => s.perfil_academico === 'no_cumple');
 const reenviada = enviadas.find((s) => datos.revision.some((r) => r.solicitud_id === s.id));
 const rechazada = datos.solicitud.find((s) => s.estado === 'rechazada');
+/* Recorrido completo de la prueba, guardado en el navegador (decisión 2026-10-17): crear una cuenta con fotografía,
+   cerrar la pestaña, entrar con SU contraseña en otra, enviar una solicitud de poda nueva con documentos reales y verla
+   en la bandeja y en la revisión del personal con todos sus documentos y su fotografía. */
+async function recorridoGuardado(navegador) {
+  const contexto = await navegador.newContext({ viewport: { width: 1440, height: 900 } });
+  const t = (m) => `[guardado] ${m}`;
+  const errores = [];
+  const vigila = (page) => { page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`)); return page; };
+  const real = { name: 'escaneado.pdf', mimeType: 'application/pdf', buffer: readFileSync(new URL('../datos/documentos/identificacion_oficial.pdf', import.meta.url)) };
+  const P = { nombre: 'Rocío', primer_apellido: 'Guardado', segundo_apellido: 'Ejemplo', nacimiento: '1987-03-15' };
+  P.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: P.nombre, primer: P.primer_apellido, segundo: P.segundo_apellido }, P.nacimiento, 'M', 'NE') + '0');
+  // 1 · Crea su cuenta y cierra la pestaña
+  let page = vigila(await contexto.newPage());
+  await page.goto(BASE + 'cuenta.html');
+  await llenaCuenta(page, P);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  await page.close();
+  // 2 · Otra pestaña: la sesión sigue; sale y vuelve a entrar con su propia contraseña
+  page = vigila(await contexto.newPage());
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .vacio, [data-solicitudes] .ficha');
+  comprueba(/ROCÍO GUARDADO|Rocío Guardado/i.test(await page.textContent('[data-sesion]')), t('la sesión sigue abierta en otra pestaña'));
+  await page.click('[data-sesion] button');
+  await page.goto(BASE + 'entrar.html');
+  await page.fill('#curp', P.curp);
+  await page.fill('#contrasena', CONTRASENA);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-estado-envio]:not([hidden])');
+  bien(t('con la contraseña común de prueba no entra: la cuenta tiene la suya'));
+  await page.fill('#contrasena', 'una frase larga de prueba');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForURL(/tramites\.html/);
+  bien(t('vuelve a entrar con la contraseña que puso al crear la cuenta'));
+  // 3 · Envía una solicitud de poda nueva con documentos reales
+  await page.goto(BASE + 'solicitud.html?tipo=poda');
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_nueva');
+  await page.selectOption('#nivel_estudios', 'tecnica');
+  await page.fill('#carrera_tecnica', 'Técnico en jardinería');
+  await siguiente(page);
+  const campos = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo));
+  for (const n of campos) {
+    await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, real);
+    await page.waitForSelector(`[data-campo="${n}"] .lista-arch li[data-estado="listo"]`);
+  }
+  await siguiente(page);
+  await marcaCasillas(page);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  const folio = (await page.textContent('[data-acuse-folio]')).trim();
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
+  comprueba((await page.textContent('[data-solicitudes]')).includes(folio), t('«Mis trámites» muestra la solicitud enviada'));
+  await page.close();
+  // 4 · El personal, en otra pestaña: la ve primero y con todos sus documentos y la fotografía
+  page = vigila(await contexto.newPage());
+  await page.goto(BASE + 'revision.html');
+  await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
+  comprueba(await page.getAttribute('[data-filas] tr:first-child', 'data-folio') === folio, t('la solicitud llega primero a la bandeja del personal'));
+  await page.goto(BASE + `revisar.html?folio=${folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  const docs = await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).length);
+  comprueba(docs === campos.length, t(`la revisión muestra los ${campos.length} documentos que se cargaron`));
+  await page.waitForSelector('[data-persona] .perfil-imagen');
+  comprueba(await page.evaluate(() => { const i = document.querySelector('[data-persona] .perfil-imagen'); return i.complete && i.naturalWidth > 0; }),
+    t('la revisión muestra la fotografía que cargó la persona'));
+  comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await contexto.close();
+}
+
 async function personal(navegador, ancho, alto, sufijo) {
   const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
   const page = await contexto.newPage();
@@ -824,7 +902,7 @@ async function personal(navegador, ancho, alto, sufijo) {
   await marcaCasillas(page);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
-  const folioReal = await page.evaluate(() => JSON.parse(sessionStorage.getItem('apd.sesion')).solicitudes[0].folio);
+  const folioReal = (await page.textContent('[data-acuse-folio]')).trim();
   await page.goto(BASE + 'revision.html');
   await page.waitForSelector(`[data-filas] tr[data-folio="${folioReal}"]`);
   comprueba(/Archivos cargados en este navegador/.test(await page.textContent(`[data-filas] tr[data-folio="${folioReal}"]`)),
@@ -850,7 +928,7 @@ async function accesibilidad(navegador) {
   const axe = readFileSync(process.env.AXE, 'utf8');
   const page = await navegador.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(BASE + 'index.html');
-  await page.evaluate((id) => sessionStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
+  await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
     ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
@@ -875,6 +953,7 @@ try {
   await recorrido(navegador, 1280, 900, 'escritorio');
   await personal(navegador, 390, 844, 'telefono');
   await personal(navegador, 1440, 900, 'escritorio');
+  await recorridoGuardado(navegador);
   await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
