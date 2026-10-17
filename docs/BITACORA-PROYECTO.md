@@ -559,3 +559,14 @@ campos correctos.
   (ahora una letra; la prueba fallaba de vez en cuando); si lo guardado en el navegador no se puede aplicar, queda un aviso
   en la consola y las pruebas lo detectan.
 
+
+## 2026-10-17 · Bloque 44 · «Mi contraseña está mal» en la prueba
+
+- Reporte de Liber: creó su cuenta y al entrar le dijo que la CURP o la contraseña no coinciden. El código funciona (se
+  reprodujo crear y entrar con una contraseña de 12 dígitos en el mismo navegador): las cuentas de la prueba se guardan
+  sólo en el navegador y la dirección donde se crean, y el sitio publicado y la vista dentro de Claude son lugares
+  distintos.
+- Entrar (sólo en la prueba): si la CURP no tiene cuenta en ese navegador, lo dice y explica por qué; con contraseña
+  equivocada el mensaje sigue siendo el general (en el SIA siempre es el general).
+- Crear cuenta: si el navegador no deja guardarla (modo privado, almacenamiento bloqueado), lo avisa en lugar de dar la
+  cuenta por creada.

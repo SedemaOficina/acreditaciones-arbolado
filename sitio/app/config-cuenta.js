@@ -54,11 +54,15 @@ window.FORMKIT_OPCIONES = {
             { correo: d.correo, telefono: d.telefono }, APD.adscripcionDe(datos, d));
           const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
           const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
-          const guarda = P ? Promise.all([P.guardaCuenta({ curp: d.curp, id, persona, contrasena: d.contrasena }), foto ? P.guardaFoto(d.curp, foto) : null]).catch(() => {}) : Promise.resolve();
-          guarda.then(() => {
+          // Si el navegador no deja guardar (modo privado, almacenamiento bloqueado), se dice ahora: si no, la cuenta parece
+          // creada y después no se puede entrar con ella (2026-10-17)
+          const guarda = P ? Promise.all([P.guardaCuenta({ curp: d.curp, id, persona, contrasena: d.contrasena }), foto ? P.guardaFoto(d.curp, foto) : null])
+            .then(() => P.cuenta(d.curp)) : Promise.resolve(true);
+          guarda.then((guardada) => {
+            if (!guardada) throw new Error('sin cuenta guardada');
             APD.guardaSesion({ id });
             ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
-          });
+          }).catch(() => mal({ mensaje: 'Este navegador no permitió guardar tu cuenta de prueba (puede estar en modo privado o con el almacenamiento bloqueado). Prueba en una ventana normal o en otro navegador.' }));
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });

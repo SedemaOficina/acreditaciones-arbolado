@@ -490,6 +490,11 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-estado-envio]:not([hidden])');
   comprueba((await page.textContent('[data-estado-envio]')).includes('no coinciden'), t('entrar: error sin decir cuál dato falló'));
+  // Versión de prueba: una CURP sin cuenta en este navegador se dice tal cual (las cuentas no se comparten entre navegadores)
+  await page.fill('#curp', conDigito(globalThis.APD_CURP.prefijo({ nombre: 'Ximena', primer: 'Ejemplo', segundo: 'Simulado' }, '1990-05-05', 'M', 'NE') + '0'));
+  await page.click('[data-accion="enviar"]');
+  await page.waitForFunction(() => /en este navegador/.test(document.querySelector('[data-estado-envio]').textContent));
+  bien(t('entrar: en la prueba, una CURP sin cuenta en este navegador lo dice'));
   await captura(page, `08-entrar-${sufijo}`);
 
   // Verificación pública, dos consultas seguidas
