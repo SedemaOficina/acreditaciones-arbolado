@@ -5,7 +5,8 @@
 // Uso: node herramientas/construir-sitio.mjs <ruta-al-clon-de-estandar-formularios>
 //
 // Lo que escribe es generado y no se edita a mano: sitio/formkit/, sitio/datos/, sitio/VERSION,
-// sitio/app/version-visible.*, y el bloque entre los marcadores «documentos» de sitio/solicitud.html.
+// sitio/app/version-visible.*, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
+// corregir.html, cuenta.html y datos.html.
 
 import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -42,7 +43,7 @@ cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-vi
 // La hoja de la plantilla usa valores literales; aquí va su equivalente con los tokens del estándar
 cpSync(join(plantillaVersion, 'version-visible.formkit.css'), join(sitio, 'app/version-visible.css'));
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
-const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html'];
+const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html'];
 for (const p of paginas) {
   const ruta = join(sitio, p);
   const html = readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${version}`);
@@ -194,6 +195,74 @@ const auxiliares = enLinea.map((r) => `      <div class="solo-lector" aria-hidde
     const f = h.indexOf(`<!-- ${marca}:fin -->`);
     if (!ini || f < 0) { console.error(`Faltan los marcadores ${marca} en sitio/revisar.html`); process.exit(1); }
     h = h.slice(0, ini.index + ini[0].length) + '\n' + contenido + '\n' + ini[1] + h.slice(f);
+  }
+  writeFileSync(r, h);
+}
+
+// 4c · Cotejo presencial (etapa 2, decisiones 2026-10-17): un bloque por requisito que se carga en línea. Se coteja si la
+// solicitud lo tiene cargado y la persona se presentó y es quien dice ser; al retomar un cotejo en pausa, sólo los que no
+// coincidieron. Lo dice cotejar_<requisito>, que calculan la página y el servidor (una sola condición por campo, P38).
+const cotejoDocs = enLinea.map((r) => {
+  const k = r.clave;
+  return `      <div data-si="cotejar_${k}=si">
+        <article class="doc-revision" data-doc="${k}">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">${esc(r.nombre)}</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver lo que cargó<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_${k}" data-requerido data-si="coincide_${k}=no" data-uso="Decirle a la persona qué no coincidió de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_${k}">¿Qué no coincide?</label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_${k}" name="diferencia_${k}" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>`;
+});
+const cotejoAux = enLinea.map((r) => `    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_${r.clave}" data-auxiliar data-uso="Pedir el cotejo de «${esc(r.nombre)}» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_${r.clave}" name="cotejar_${r.clave}" value="no"></div>`);
+// 4d · Corrección del mismo día (decisión 2026-10-17): la persona carga en «Mis trámites» el documento que no coincidió
+// en su cita en pausa. Un campo por requisito; se pide sólo el que quedó en pausa (cargar_<requisito>).
+const corregirDocs = enLinea.map((r) => {
+  const k = r.clave;
+  const nombre = `doc_${k}`;
+  return `        <div data-si="cargar_${k}=si">
+          <div class="campo" data-campo="${nombre}" data-requerido data-max="1" data-extensiones="${extensionesDe(r)}" data-mb="5" data-nombre-archivo="${esc(r.nombre_archivo || limpia(r.nombre).toUpperCase())}"
+               data-uso="Sustituir «${esc(r.nombre)}» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-${nombre}">${esc(r.nombre)}</span>
+            <p class="ayuda" id="ay-${nombre}" data-diferencia="${k}"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-${nombre}">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>`;
+});
+const corregirAux = enLinea.map((r) => `      <div class="solo-lector" aria-hidden="true" data-campo="cargar_${r.clave}" data-auxiliar data-uso="Pedir «${esc(r.nombre)}» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_${r.clave}" name="cargar_${r.clave}" value="no"></div>`);
+for (const [pagina, marcas] of [['cotejo.html', [['cotejo-documentos', cotejoDocs], ['cotejo-auxiliares', cotejoAux]]],
+  ['corregir.html', [['corregir-documentos', corregirDocs], ['corregir-auxiliares', corregirAux]]]]) {
+  const r = join(sitio, pagina);
+  let h = readFileSync(r, 'utf8');
+  for (const [marca, lista] of marcas) {
+    const ini = h.match(new RegExp(`^( *)<!-- ${marca}:inicio[^>]*-->`, 'm'));
+    const f = h.indexOf(`<!-- ${marca}:fin -->`);
+    if (!ini || f < 0) { console.error(`Faltan los marcadores ${marca} en sitio/${pagina}`); process.exit(1); }
+    h = h.slice(0, ini.index + ini[0].length) + '\n' + lista.join('\n') + '\n' + ini[1] + h.slice(f);
   }
   writeFileSync(r, h);
 }

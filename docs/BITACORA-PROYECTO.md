@@ -535,3 +535,27 @@ campos correctos.
 - Decisiones del cotejo (aprobadas con la maqueta): inasistencia → una cita nueva, a la segunda se cierra; sin pago → otra
   cita con el mismo monto; documento que no coincide → pausa para cargar el correcto ese día, o con observaciones; no es la
   persona → no se atiende y se bloquea la cuenta; un solo perfil «revisión y cotejo» (P27).
+
+## 2026-10-17 · Bloque 43 · Citas de cotejo
+
+- Personal: «Citas de cotejo» (`citas.html`): agenda por día con su situación, día anterior y siguiente, búsqueda por
+  nombre, CURP, folio o expediente en todos los días. «Atender una cita de cotejo» (`cotejo.html`): llegada, identidad y
+  fotografía (confirmar, tomar otra o no es la persona), cotejo de cada documento contra lo que cargó (visor a la derecha),
+  pago y factura (PDF, RFC, razón social y folio fiscal). La acción principal cambia con el resultado; cerrar la solicitud
+  y no atender piden confirmación. Al terminar: expediente y «Atender la siguiente».
+- Persona: «Cita en pausa» en «Mis trámites» con lo que no coincidió y «Cargar el documento correcto» (`corregir.html`),
+  que pide sólo ese documento; avisos de cita nueva (inasistencia o sin pago) y de cierre por segunda inasistencia; al
+  entrar, aviso de cuenta bloqueada.
+- Prueba guardada: el recorrido completo en el navegador, en el orden en que pasó (envíos, revisiones, citas,
+  correcciones): `archivos-prueba.js` lo aplica como línea de tiempo. Las revisiones guardan su historial (una solicitud
+  reenviada se vuelve a revisar). Perfil ficticio «revisión y cotejo».
+- Base: tabla `apd.cita`, columna `solicitante.bloqueo_motivo`, parámetro `inasistencias_cotejo_maximas`, reglas de la cita
+  (pausa del mismo día, inasistencias, bloqueo), carga en pausa y `apd.cerrar_pausas_vencidas()`. 151 casos de reglas.
+- Formato propio `folio-fiscal` (UUID de la factura). Esquemas `cotejo.json` y `corregir.json` con 19 casos.
+- Hallazgo del estándar: `esquema-desde-html` sólo lee condiciones en `div[data-si]`; en una `section` el servidor no
+  la ve (se envolvieron en `div`).
+- Pendientes nuevos: P79 (aviso a la Dirección y desbloqueo) y P80 (tarea nocturna de pausas).
+- Correcciones: la persona al azar del menú de pruebas nacida desde 2000 llevaba un dígito en la posición 17 de su CURP
+  (ahora una letra; la prueba fallaba de vez en cuando); si lo guardado en el navegador no se puede aplicar, queda un aviso
+  en la consola y las pruebas lo detectan.
+

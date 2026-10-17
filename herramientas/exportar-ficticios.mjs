@@ -33,6 +33,7 @@ const TABLAS = {
   acreditacion: 'numero',
   solicitud: 'folio',
   revision: 'solicitud_id, revisada_en',
+  cita: 'solicitud_id, programada_en',
   documento: 'solicitud_id, requisito, cargado_en',
   grupo: 'folio',
   inscripcion: 'grupo_id, solicitud_id, inscrita_en',
@@ -46,7 +47,8 @@ const OMITIR = { solicitante: ['contrasena_hash'], parametro: ['actualizado_en']
 const partes = Object.entries(TABLAS).map(([tabla, orden]) => {
   const fila = OMITIR[tabla] ? `to_jsonb(t) - ${OMITIR[tabla].map((c) => `'${c}'`).join(' - ')}` : 'to_jsonb(t)';
   // id de la bitácora: aleatorio en cada carga; se omite para que el archivo no cambie sin motivo
-  const filaFinal = tabla === 'bitacora' ? `${fila} - 'id'` : fila;
+  // (lo mismo el de las citas, que crea la base al asignarlas)
+  const filaFinal = ['bitacora', 'cita'].includes(tabla) ? `${fila} - 'id'` : fila;
   return `'${tabla}', (SELECT coalesce(jsonb_agg(${filaFinal} ORDER BY ${orden}), '[]') FROM apd.${tabla} t)`;
 });
 partes.push(`'estado_acreditacion', (SELECT jsonb_object_agg(a.numero, apd.estado_acreditacion(a.id)) FROM apd.acreditacion a)`);

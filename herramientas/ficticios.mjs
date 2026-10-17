@@ -224,6 +224,8 @@ function cotejar(s, fecha) {
   const folio = `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
   // Frente a la persona y su identificación, el personal confirma su fotografía (una vez por persona)
   emitir(`UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = ${q(s.persona.id)} AND vigente AND estado = 'pendiente'`);
+  // Todo coincidió y el pago está verificado: la cita queda atendida (decisiones 2026-10-17)
+  emitir(`UPDATE apd.cita SET resultado = 'atendida' WHERE solicitud_id = ${q(s.id)} AND resultado = 'pendiente'`);
   emitir(`UPDATE apd.solicitud SET factura_rfc = ${q(rfc)}, factura_razon_social = ${q(razon)}, factura_folio_fiscal = ${q(folio)},
     estado = 'lista_para_curso' WHERE id = ${q(s.id)}`);
 }

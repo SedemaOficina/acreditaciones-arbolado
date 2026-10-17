@@ -54,7 +54,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Plazo para atender observaciones y para presentarse a la cita",
-      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación. Ya decidido (2026-10-17): si no se presenta, una sola cita nueva; a la segunda inasistencia se cierra «concluida sin atender». Falta el plazo en días. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba)."
+      "recomendacion": "30 días naturales para atender observaciones y una cita dentro de los 30 días siguientes a la validación. Ya decidido (2026-10-17): si no se presenta, una sola cita nueva; a la segunda inasistencia se cierra «concluida sin atender». Falta el plazo en días. Mientras, la bandeja de revisión marca la espera en ámbar desde 3 días y en rojo desde 10 (valores de prueba). Ya resuelto en la base: a la segunda inasistencia a la cita de cotejo la solicitud se cierra (parámetro inasistencias_cotejo_maximas = 2); falta el plazo para atender observaciones."
     },
     {
       "id": "P03",
@@ -599,6 +599,38 @@
       "desde": "2026-10-17",
       "titulo": "Entrada al examen: código de un solo uso que entrega el aplicador",
       "recomendacion": "El aplicador pasa lista con identificación oficial y entrega a cada persona un código de examen de un solo uso generado para el grupo; no se entra con la contraseña de la cuenta, para que nadie lo presente fuera del salón. Cada respuesta se guarda en el servidor al contestarla, así quien cambia de computadora sigue con el mismo código; la calificación la calcula el servidor (P29)."
+    },
+    {
+      "id": "P79",
+      "grupo": "direccion",
+      "bloquea": "etapa 3",
+      "desde": "2026-10-17",
+      "titulo": "Aviso a la Dirección cuando en el cotejo no es la persona, y cómo se aclara",
+      "recomendacion": "Cuando el personal marca «No es la persona» la cuenta queda bloqueada (apd.solicitante.bloqueo_motivo = identidad) y la nota queda en la bitácora de la cita. Falta decidir a quién de la Dirección le llega el aviso y por qué medio (recomendación: correo institucional a una cuenta de la Dirección, con folio y nota), qué se le dice a la persona al entrar y cómo se levanta el bloqueo (la Secretaría, con motivo en la bitácora)."
+    },
+    {
+      "id": "P80",
+      "grupo": "sia",
+      "bloquea": "etapa 3",
+      "desde": "2026-10-17",
+      "titulo": "Tarea nocturna que cierra las citas en pausa no retomadas",
+      "recomendacion": "La pausa del cotejo sólo dura el día de la cita. apd.cerrar_pausas_vencidas() regresa con observaciones las que no se retomaron; hay que programarla cada noche (cron del servidor o pg_cron) con la cuenta del servicio. Pedirlo al SIA junto con el despliegue."
+    },
+    {
+      "id": "P81",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "esquema-desde-html sólo lee condiciones en div[data-si]",
+      "recomendacion": "Una sección (<section data-si>) se oculta bien en el navegador, pero la herramienta del esquema no ve su condición y el servidor exige sus campos aunque no se muestren. Proponer que lea data-si en cualquier etiqueta (o que el auditor de campos avise). Mientras, en cotejo.html las condiciones van en un div que envuelve la sección."
+    },
+    {
+      "id": "P82",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "No hay formato para el folio fiscal de una factura (CFDI)",
+      "recomendacion": "El formato «folio» del estándar es para folios de trámite. Proponer «folio-fiscal»: 32 hexadecimales en grupos 8-4-4-4-12, normalizado a mayúsculas con guiones. Base: app/folio-fiscal.js de este proyecto (navegador y servidor)."
     }
   ],
   "resueltos": [

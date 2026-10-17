@@ -19,13 +19,15 @@ const { validaPayload } = await import(pathToFileURL(join(estandar, 'codigo/serv
 await import(pathToFileURL(join(raiz, 'sitio/app/curp-nombre.js')).href);
 // …y el formato propio de la fecha escrita como día/mes/año, con su cruzada contra la CURP
 await import(pathToFileURL(join(raiz, 'sitio/app/fecha-dma.js')).href);
+// …y el folio fiscal de la factura (cotejo)
+await import(pathToFileURL(join(raiz, 'sitio/app/folio-fiscal.js')).href);
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
 const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalThis.APD_CRUZADAS }, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
 
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar']) {
+for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
@@ -73,6 +75,36 @@ function comoServidor(form, datos) {
     const decisiones = cargados.map((k) => d[`decision_${k}`]);
     const perfilListo = perfil === 'por_clasificar' ? Boolean(d.clasificacion) : perfil === 'no_cumple' ? Boolean(d.comprobante_confirma) : true;
     d.resultado = rechazo ? 'rechazada' : decisiones.includes('con_observacion') ? 'con_observaciones' : decisiones.every(Boolean) && perfilListo ? 'validada' : '';
+  }
+  // Cotejo presencial (personal): el servidor calcula los auxiliares con la cita (en pausa o no, inasistencias
+  // anteriores) y los documentos cargados, igual que app/cotejo.js. El caso indica los documentos cargados en
+  // `_cargados`, los que quedaron en pausa en `_pausa` y las inasistencias anteriores en `_inasistencias`.
+  if (form === 'cotejo') {
+    const cargados = d._cargados || [];
+    const pausa = d._pausa || null;
+    const inasistencias = d._inasistencias || 0;
+    delete d._cargados; delete d._pausa; delete d._inasistencias;
+    const presente = pausa ? 'si' : d.se_presento;
+    const ident = pausa ? 'misma' : d.identidad;
+    const conDocs = presente === 'si' && ident !== 'no_es';
+    const aCotejar = cargados.filter((k) => !pausa || pausa.includes(k));
+    const noCoinciden = aCotejar.filter((k) => d[`coincide_${k}`] === 'no').length;
+    d.pedir_llegada = pausa ? 'no' : 'si';
+    d.pedir_identidad = presente === 'si' && !pausa ? 'si' : 'no';
+    d.pedir_documentos = conDocs ? 'si' : 'no';
+    for (const k of REQUISITOS_EN_LINEA) d[`cotejar_${k}`] = conDocs && aCotejar.includes(k) ? 'si' : 'no';
+    d.pedir_hoy = conDocs && noCoinciden ? 'si' : 'no';
+    d.pedir_pago = conDocs && !noCoinciden ? 'si' : 'no';
+    d.pedir_factura = conDocs && !noCoinciden && d.pago === 'si' ? 'si' : 'no';
+    d.resultado = presente === 'no' ? (inasistencias >= 1 ? 'cerrar' : 'no_se_presento')
+      : presente !== 'si' ? '' : ident === 'no_es' ? 'no_es_la_persona'
+        : noCoinciden ? ({ si: 'pausa', no: 'con_observaciones' }[d.hoy_documento] || '') : ({ si: 'terminado', no: 'otra_cita' }[d.pago] || '');
+  }
+  // Corrección del mismo día (persona): sólo los documentos que quedaron en pausa (`_pausa`)
+  if (form === 'corregir') {
+    const pausa = d._pausa || [];
+    delete d._pausa;
+    for (const k of REQUISITOS_EN_LINEA) d[`cargar_${k}`] = pausa.includes(k) ? 'si' : 'no';
   }
   return d;
 }
@@ -189,6 +221,31 @@ caso('Revisión: carrera no afín con su motivo se rechaza', 'revisar', { _perfi
 caso('Revisión: perfil que no cumple sin decidir con el comprobante se rechaza', 'revisar', { _perfil: 'no_cumple', _cargados: DICT, ...acepta(DICT), ...cita }, ['comprobante_confirma']);
 caso('Revisión: el comprobante muestra otro grado → se observa el comprobante', 'revisar', { _perfil: 'no_cumple', _cargados: DICT, comprobante_confirma: 'no', ...acepta(DICT), decision_comprobante_estudios: 'con_observacion', observacion_comprobante_estudios: 'Su comprobante muestra carta de pasante.' }, true);
 caso('Revisión: una clasificación que no existe se rechaza', 'revisar', { _perfil: 'por_clasificar', _cargados: DICT, clasificacion: 'principal', ...acepta(DICT), ...cita }, ['clasificacion']);
+
+// Cotejo presencial (personal, decisiones 2026-10-17)
+const coinciden = (lista) => Object.fromEntries(lista.map((k) => [`coincide_${k}`, 'si']));
+const factura = { factura_rfc: 'XAXX010101000', factura_razon_social: 'Persona Ejemplo Ficticia', factura_folio_fiscal: '6F1C2D3E-4A5B-4C6D-8E7F-9A0B1C2D3E4F' };
+const conFactura = [pdf('factura_pago')];
+const llega = { _cargados: PODA, se_presento: 'si', identidad: 'misma' };
+caso('Cotejo: todo coincide, pago y factura → terminado', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura }, true, conFactura);
+caso('Cotejo: terminado sin la factura ni sus datos se rechaza', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si' }, ['factura_pago', 'factura_rfc', 'factura_razon_social', 'factura_folio_fiscal']);
+caso('Cotejo: un folio fiscal mal escrito y un RFC que no existe se rechazan', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'XAXX019901000', factura_folio_fiscal: '6F1C2D3E-4A5B' }, ['factura_rfc', 'factura_folio_fiscal'], conFactura);
+caso('Cotejo: el folio fiscal en minúsculas y sin guiones se acepta (se normaliza)', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_folio_fiscal: '6f1c2d3e4a5b4c6d8e7f9a0b1c2d3e4f' }, true, conFactura);
+caso('Cotejo: un documento sin cotejar se rechaza', 'cotejo', { ...llega, ...coinciden(PODA.slice(1)), pago: 'si', ...factura }, ['coincide_identificacion_oficial'], conFactura);
+caso('Cotejo: sin pago no se pide factura, pero sí la cita nueva', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'no' }, ['cita_fecha', 'cita_hora']);
+caso('Cotejo: sin pago con su cita nueva se acepta', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'no', ...cita }, true);
+caso('Cotejo: un documento que no coincide pide qué no coincide y si lo trae hoy (no el pago)', 'cotejo', { ...llega, ...coinciden(PODA), coincide_curp: 'no' }, ['diferencia_curp', 'hoy_documento']);
+caso('Cotejo: en pausa con lo que no coincide se acepta', 'cotejo', { ...llega, ...coinciden(PODA), coincide_curp: 'no', diferencia_curp: 'Trae otra versión de la CURP.', hoy_documento: 'si' }, true);
+caso('Cotejo: retomado, sólo se coteja lo que quedó en pausa', 'cotejo', { _cargados: PODA, _pausa: ['curp'], coincide_curp: 'si', pago: 'si', ...factura }, true, conFactura);
+caso('Cotejo: retomado, no se pregunta otra vez la llegada ni la identidad', 'cotejo', { _cargados: PODA, _pausa: ['curp'], pago: 'si', ...factura }, ['coincide_curp'], conFactura);
+caso('Cotejo: no se presentó por primera vez pide la cita nueva', 'cotejo', { _cargados: PODA, se_presento: 'no' }, ['cita_fecha', 'cita_hora']);
+caso('Cotejo: a la segunda inasistencia se cierra sin cita nueva', 'cotejo', { _cargados: PODA, _inasistencias: 1, se_presento: 'no' }, true);
+caso('Cotejo: tomar otra fotografía la pide', 'cotejo', { ...llega, identidad: 'otra_foto', ...coinciden(PODA), pago: 'si', ...factura }, ['foto_nueva'], conFactura);
+caso('Cotejo: no es la persona pide la nota para la Dirección y no los documentos', 'cotejo', { _cargados: PODA, se_presento: 'si', identidad: 'no_es' }, ['nota_identidad']);
+caso('Cotejo: no es la persona, con su nota, se acepta', 'cotejo', { _cargados: PODA, se_presento: 'si', identidad: 'no_es', nota_identidad: 'La identificación muestra a otra persona.' }, true);
+caso('Corrección del mismo día: pide sólo el documento en pausa', 'corregir', { _pausa: ['curp'] }, ['doc_curp']);
+caso('Corrección del mismo día: con el documento se acepta', 'corregir', { _pausa: ['curp'] }, true, [pdf('doc_curp')]);
+caso('Corrección del mismo día: un documento que no quedó en pausa no se recibe', 'corregir', { _pausa: ['curp'] }, ['doc_curp'], [pdf('doc_identificacion_oficial')]);
 
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);

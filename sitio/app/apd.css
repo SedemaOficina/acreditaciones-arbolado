@@ -263,3 +263,17 @@
 /* Versión de prueba: dónde estás en el trámite, siempre a la vista bajo la franja (app/pruebas.js, 2026-10-17) */
 .ubicacion-prueba { border-block-end: var(--b-1) dashed var(--pend); background: var(--blanco); }
 .ubicacion-prueba-int { max-width: var(--ancho-pagina); margin: 0 auto; padding: var(--e-2) var(--e-pagina); font-size: var(--t-sm); text-align: center; }
+
+/* ----- Citas de cotejo (etapa 2, 2026-10-17) ----- */
+.agenda-dia { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); margin-block: var(--e-4); }
+.agenda-fecha { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); }
+.agenda-flechas { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.agenda-flechas[hidden] { display: none; }
+.agenda-flechas .btn { width: auto; }
+.fila-hecha td { color: var(--gris); }
+/* Identidad: la fotografía de la cuenta junto a la pregunta */
+.cotejo-identidad { display: grid; gap: var(--e-4); }
+@media (min-width: 560px) { .cotejo-identidad { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }
+.perfil-foto-grande { width: calc(var(--e-11) * 1.4); }
+.pago-datos { padding: var(--e-3) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
+.pago-datos .datos { margin: 0; }

@@ -1,0 +1,641 @@
+{
+  "formulario": "cotejo.html",
+  "generado": "2026-10-17T17:32:20.529Z",
+  "campos": {
+    "pedir_llegada": {
+      "etiqueta": "pedir_llegada",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Preguntar si la persona se presentó, salvo al retomar un cotejo en pausa (la persona ya está); lo calculan la página y el servidor con apd.cita.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "pedir_identidad": {
+      "etiqueta": "pedir_identidad",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Preguntar por la identidad si la persona se presentó y no es un cotejo retomado (la identidad ya se comprobó); lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "pedir_documentos": {
+      "etiqueta": "pedir_documentos",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Cotejar documentos si la persona se presentó y es quien dice ser; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "pedir_hoy": {
+      "etiqueta": "pedir_hoy",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Preguntar si la persona puede traer hoy el documento correcto cuando alguno no coincide; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "pedir_pago": {
+      "etiqueta": "pedir_pago",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Preguntar por el comprobante de pago cuando ningún documento dejó de coincidir; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "pedir_factura": {
+      "etiqueta": "pedir_factura",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la factura y sus datos cuando el pago está verificado; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "resultado": {
+      "etiqueta": "resultado",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Mostrar lo que pide el resultado (cita nueva, nota para la Dirección…); lo calculan la página y el servidor con las respuestas y las inasistencias de apd.cita.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_identificacion_oficial": {
+      "etiqueta": "cotejar_identificacion_oficial",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Identificación oficial» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_curp": {
+      "etiqueta": "cotejar_curp",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Clave Única de Registro de Población (CURP)» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_comprobante_domicilio": {
+      "etiqueta": "cotejar_comprobante_domicilio",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Comprobante de domicilio» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_constancia_situacion_fiscal": {
+      "etiqueta": "cotejar_constancia_situacion_fiscal",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Constancia de situación fiscal» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_comprobante_estudios": {
+      "etiqueta": "cotejar_comprobante_estudios",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Comprobante de estudios» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_curriculum_vitae": {
+      "etiqueta": "cotejar_curriculum_vitae",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Currículum vitae» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cotejar_comprobantes_experiencia": {
+      "etiqueta": "cotejar_comprobantes_experiencia",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir el cotejo de «Comprobantes de experiencia» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "se_presento": {
+      "etiqueta": "¿La persona se presentó a su cita?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si la persona se presentó a su cita (apd.cita.resultado).",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_llegada",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "identidad": {
+      "etiqueta": "¿Es la misma persona de la fotografía y de la identificación?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Confirmar que la fotografía es de quien se presentó, tomar una nueva o detener la cita (apd.fotografia.estado y apd.cita.resultado).",
+      "atributos": {},
+      "opciones": [
+        "misma",
+        "otra_foto",
+        "no_es"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_identidad",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "foto_nueva": {
+      "etiqueta": "Fotografía nueva",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir la fotografía de la cuenta por una tomada en la cita (apd.fotografia, origen cotejo, confirmada).",
+      "finalidad": "Reconocer a la persona en el curso y en el examen.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "identidad",
+        "valores": [
+          "otra_foto"
+        ]
+      }
+    },
+    "nota_identidad": {
+      "etiqueta": "¿Qué observó?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Explicar a la Dirección por qué no se atendió la cita; no se muestra a la persona (bitácora de apd.cita).",
+      "atributos": {
+        "minlength": "20",
+        "maxlength": "600"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "identidad",
+        "valores": [
+          "no_es"
+        ]
+      }
+    },
+    "coincide_identificacion_oficial": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Identificación oficial» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_identificacion_oficial",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_identificacion_oficial": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_identificacion_oficial",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "coincide_curp": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Clave Única de Registro de Población (CURP)» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_curp",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_curp": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_curp",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "coincide_comprobante_domicilio": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Comprobante de domicilio» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_comprobante_domicilio",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_comprobante_domicilio": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_comprobante_domicilio",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "coincide_constancia_situacion_fiscal": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Constancia de situación fiscal» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_constancia_situacion_fiscal",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_constancia_situacion_fiscal": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_constancia_situacion_fiscal",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "coincide_comprobante_estudios": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Comprobante de estudios» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_comprobante_estudios",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_comprobante_estudios": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_comprobante_estudios",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "coincide_curriculum_vitae": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Currículum vitae» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_curriculum_vitae",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_curriculum_vitae": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_curriculum_vitae",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "coincide_comprobantes_experiencia": {
+      "etiqueta": "¿Coincide con el que trae la persona?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si «Comprobantes de experiencia» que trae la persona coincide con el que cargó en línea.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "cotejar_comprobantes_experiencia",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "diferencia_comprobantes_experiencia": {
+      "etiqueta": "¿Qué no coincide?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué no coincidió de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "coincide_comprobantes_experiencia",
+        "valores": [
+          "no"
+        ]
+      }
+    },
+    "hoy_documento": {
+      "etiqueta": "¿La persona puede conseguir hoy el documento correcto y cargarlo en línea?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Decidir si la cita queda en pausa para que la persona cargue hoy el documento correcto o si la solicitud regresa con observaciones (apd.cita.resultado).",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_hoy",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "pago": {
+      "etiqueta": "¿Presentó el comprobante de pago por ese monto y con esa referencia?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si la persona presentó el comprobante del pago de derechos por el monto y con la referencia que se le indicaron.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_pago",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "factura_pago": {
+      "etiqueta": "Factura",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Guardar la factura del pago en el expediente (apd.documento, requisito factura_pago).",
+      "finalidad": "Comprobar el pago de derechos del trámite.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "FACTURA DEL PAGO"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_factura",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "factura_rfc": {
+      "etiqueta": "RFC a cuyo favor se emitió",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "rfc",
+      "sensible": true,
+      "uso": "RFC de la factura (apd.solicitud.factura_rfc).",
+      "finalidad": "Registrar a favor de quién se emitió la factura del pago.",
+      "atributos": {
+        "maxlength": "13"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_factura",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "factura_razon_social": {
+      "etiqueta": "Nombre o razón social",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Nombre o razón social de la factura (apd.solicitud.factura_razon_social).",
+      "finalidad": "Registrar a favor de quién se emitió la factura del pago.",
+      "atributos": {
+        "maxlength": "200"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_factura",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "factura_folio_fiscal": {
+      "etiqueta": "Folio fiscal",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "folio-fiscal",
+      "sensible": false,
+      "uso": "Folio fiscal de la factura, para su seguimiento; no se repite (apd.solicitud.factura_folio_fiscal).",
+      "atributos": {
+        "maxlength": "36"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "pedir_factura",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "cita_fecha": {
+      "etiqueta": "Fecha de la cita nueva",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha",
+      "sensible": false,
+      "uso": "Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).",
+      "atributos": {},
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "no_se_presento",
+          "otra_cita"
+        ]
+      }
+    },
+    "cita_hora": {
+      "etiqueta": "Hora",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "hora",
+      "sensible": false,
+      "uso": "Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).",
+      "atributos": {
+        "maxlength": "5"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "no_se_presento",
+          "otra_cita"
+        ]
+      }
+    }
+  },
+  "repetibles": []
+}

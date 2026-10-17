@@ -122,6 +122,9 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | Si un documento no coincide con lo que cargó, la persona tiene oportunidad de conseguir el correcto ese mismo día (un café internet, su teléfono): la cita queda en pausa, ella carga el documento desde «Mis trámites» y el personal retoma el cotejo de ese documento. Si no puede ese día, la solicitud regresa con observaciones y, tras una nueva revisión, recibe otra cita | Liber Saltijeral |
 | 2026-10-17 | Si no es la persona de la fotografía ni de la identificación: no se atiende la cita, se avisa a la Dirección y la cuenta queda bloqueada hasta aclararlo | Liber Saltijeral |
 | 2026-10-17 | La misma persona del personal revisa en línea y atiende las citas de cotejo: un solo perfil «revisión y cotejo» (P27) | Liber Saltijeral |
+| 2026-10-17 | Cada cita de cotejo queda registrada en la base (apd.cita) con lo que pasó: atendida, en pausa, con observaciones, sin pago, no se presentó o no era la persona. La base la crea al validar o al cambiar la cita; con una cita abierta no se asigna otra | Construcción |
+| 2026-10-17 | La pausa sólo dura el día de la cita; en pausa, la persona sólo carga el documento que no coincidió («Cargar el documento correcto», desde «Mis trámites»). La que no se retoma ese día regresa con observaciones (tarea nocturna, P80) | Construcción |
+| 2026-10-17 | Cuenta bloqueada por identidad: sólo la Secretaría la bloquea o la desbloquea; al entrar, la persona sólo ve el aviso después de dar su contraseña correcta (aviso a la Dirección: P79) | Construcción |
 
 ## Cursos y grupos
 

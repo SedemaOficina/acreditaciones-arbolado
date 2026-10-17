@@ -331,6 +331,17 @@ BEGIN
   IF OLD.numero_expediente IS NOT NULL AND NEW.numero_expediente IS DISTINCT FROM OLD.numero_expediente THEN
     PERFORM apd.error('expediente_fijo', 'El número de expediente no cambia');
   END IF;
+  -- Bloqueo por identidad (cita de cotejo con otra persona, decisión 2026-10-17): lo pone y lo quita la Secretaría
+  IF NEW.bloqueo_motivo IS DISTINCT FROM OLD.bloqueo_motivo THEN
+    IF apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('bloqueo_de_personal', 'Sólo la Secretaría bloquea o desbloquea una cuenta por identidad');
+    END IF;
+    PERFORM apd.registrar('bloqueo', 'solicitante', NEW.id::text,
+      concat_ws(' · ', coalesce(NEW.bloqueo_motivo, 'desbloqueo'), nullif(apd.contexto('motivo'), '')));
+  END IF;
+  IF OLD.bloqueo_motivo IS NOT NULL AND NEW.bloqueo_motivo IS NOT NULL AND NEW.estado <> 'bloqueada' THEN
+    PERFORM apd.error('bloqueo_por_identidad', 'La cuenta sigue bloqueada mientras la Dirección aclara la identidad de la persona');
+  END IF;
   IF NEW.curp <> OLD.curp THEN
     IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('motivo') = '' THEN
       PERFORM apd.error('curp_sin_motivo', 'Sólo la Secretaría corrige una CURP, y con motivo');
@@ -721,6 +732,17 @@ BEGIN
   NEW.enviada_en := OLD.enviada_en;
   NEW.lista_para_curso_en := OLD.lista_para_curso_en;
   NEW.estado_desde := OLD.estado_desde;
+  -- La cita de cotejo la asigna el personal. Con la solicitud ya validada, sólo se cambia cuando la cita vigente
+  -- se cerró sin cotejo: la persona no se presentó o no trajo el pago (decisiones 2026-10-17)
+  IF NEW.cita_en IS DISTINCT FROM OLD.cita_en THEN
+    IF apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('cita_de_personal', 'La cita de cotejo la asigna la Secretaría');
+    END IF;
+    IF OLD.estado = 'validada_en_linea' AND EXISTS (
+         SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.id AND c.resultado IN ('pendiente', 'en_pausa')) THEN
+      PERFORM apd.error('cita_abierta', 'Registre primero lo que pasó en la cita actual');
+    END IF;
+  END IF;
 
   IF NEW.estado = OLD.estado THEN RETURN NEW; END IF;
 
@@ -816,6 +838,15 @@ BEGIN
            SELECT 1 FROM apd.fotografia f WHERE f.solicitante_id = NEW.solicitante_id AND f.vigente AND f.estado = 'confirmada') THEN
         PERFORM apd.error('foto_sin_confirmar', 'Confirma que la fotografía corresponde a la persona, o tómale una nueva, para concluir el cotejo');
       END IF;
+      -- Todos los documentos en línea coincidieron con los que trajo la persona, y la cita quedó atendida
+      IF OLD.estado = 'validada_en_linea' AND EXISTS (
+           SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.id AND d.vigente AND d.estado <> 'aceptado') THEN
+        PERFORM apd.error('documentos_sin_cotejar', 'Todos los documentos deben coincidir con los que trae la persona');
+      END IF;
+      IF OLD.estado = 'validada_en_linea' AND NOT EXISTS (
+           SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.id AND c.resultado = 'atendida' AND c.atendida_en >= OLD.estado_desde) THEN
+        PERFORM apd.error('cotejo_sin_cita', 'Registre la cita de cotejo como atendida para concluir el cotejo');
+      END IF;
       -- El expediente físico es de la persona: se abre en su primer cotejo y lo usan todos sus trámites
       IF OLD.estado = 'validada_en_linea' THEN PERFORM apd.asignar_expediente(NEW.solicitante_id); END IF;
       -- La espera empieza la primera vez; si regresa de un grupo, conserva su antigüedad
@@ -880,6 +911,140 @@ END $$;
 CREATE TRIGGER solicitud_cambio_registrar AFTER UPDATE ON apd.solicitud
   FOR EACH ROW EXECUTE FUNCTION apd.solicitud_cambio_registrar();
 
+-- ───────────────────────────── Citas de cotejo ─────────────────────────────
+-- Decisiones 2026-10-17 (Liber). Cada cita queda registrada con lo que pasó en ella:
+--   · no se presentó: se le da una cita nueva, una sola vez; a la segunda inasistencia
+--     (parámetro inasistencias_cotejo_maximas) la solicitud se cierra como «concluida sin atender»;
+--   · sin pago: no se concluye el cotejo; se le da otra cita y conserva el monto que se le indicó;
+--   · en pausa: un documento no coincidió y la persona consigue el correcto ese mismo día; lo carga en
+--     línea y el personal retoma el cotejo. La pausa sólo dura ese día;
+--   · con observaciones: un documento no coincidió y no lo trae ese día: regresa a la persona;
+--   · no era la persona: no se atiende, se avisa a la Dirección y la cuenta queda bloqueada;
+--   · atendida: todo coincidió y el pago está verificado; la solicitud pasa a la bandeja de grupos.
+
+-- Al validar la solicitud, o al cambiar su cita, nace la cita pendiente
+CREATE FUNCTION apd.solicitud_cita() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.estado = 'validada_en_linea' AND NEW.cita_en IS NOT NULL
+     AND (OLD.estado <> 'validada_en_linea' OR NEW.cita_en IS DISTINCT FROM OLD.cita_en) THEN
+    INSERT INTO apd.cita (solicitud_id, programada_en) VALUES (NEW.id, NEW.cita_en);
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER solicitud_cita AFTER UPDATE ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_cita();
+
+CREATE FUNCTION apd.cita_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE s apd.solicitud;
+BEGIN
+  SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id;
+  IF s.estado <> 'validada_en_linea' OR s.cita_en IS DISTINCT FROM NEW.programada_en THEN
+    PERFORM apd.error('cita_fuera_de_turno', 'Una cita se crea al asignarla a una solicitud validada');
+  END IF;
+  NEW.resultado := 'pendiente';
+  NEW.observacion := '';
+  NEW.pausada_en := NULL;
+  NEW.atendida_por := NULL;
+  NEW.atendida_en := NULL;
+  NEW.creada_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER cita_alta BEFORE INSERT ON apd.cita
+  FOR EACH ROW EXECUTE FUNCTION apd.cita_alta();
+
+CREATE FUNCTION apd.cita_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  dia_pausa date;
+BEGIN
+  IF (NEW.solicitud_id, NEW.programada_en, NEW.creada_en) IS DISTINCT FROM (OLD.solicitud_id, OLD.programada_en, OLD.creada_en) THEN
+    PERFORM apd.error('campo_inmutable', 'La solicitud y la fecha de una cita no cambian: se asigna una cita nueva');
+  END IF;
+  IF apd.contexto('usuario_tipo') <> 'personal' THEN
+    PERFORM apd.error('cita_de_personal', 'Lo que pasó en la cita lo registra la Secretaría');
+  END IF;
+  IF OLD.resultado NOT IN ('pendiente', 'en_pausa') THEN
+    PERFORM apd.error('cita_cerrada', 'Esta cita ya se cerró');
+  END IF;
+  IF NEW.resultado = OLD.resultado THEN
+    NEW.pausada_en := OLD.pausada_en;
+    NEW.atendida_por := OLD.atendida_por;
+    NEW.atendida_en := OLD.atendida_en;
+    RETURN NEW;
+  END IF;
+  IF NEW.resultado = 'pendiente'
+     OR (OLD.resultado = 'en_pausa' AND NEW.resultado IN ('no_se_presento', 'no_es_la_persona')) THEN
+    PERFORM apd.error('cita_transicion', format('Una cita no pasa de «%s» a «%s»', OLD.resultado, NEW.resultado));
+  END IF;
+  -- Lo que no coincidió queda marcado en el documento (la persona lo ve) antes de pausar o regresar
+  IF NEW.resultado IN ('en_pausa', 'con_observaciones') AND NOT EXISTS (
+       SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND d.estado = 'con_observacion') THEN
+    PERFORM apd.error('cotejo_sin_documento', 'Marque qué documento no coincide y qué no coincide');
+  END IF;
+  IF NEW.resultado = 'en_pausa' THEN
+    NEW.pausada_en := apd.ahora();
+    RETURN NEW;
+  END IF;
+  -- La pausa sólo dura el día de la cita: al día siguiente sólo se regresa con observaciones
+  IF OLD.resultado = 'en_pausa' AND NEW.resultado <> 'con_observaciones' THEN
+    dia_pausa := (OLD.pausada_en AT TIME ZONE 'America/Mexico_City')::date;
+    IF (apd.ahora() AT TIME ZONE 'America/Mexico_City')::date <> dia_pausa THEN
+      PERFORM apd.error('pausa_vencida', 'La pausa sólo dura el día de la cita: regrese la solicitud con observaciones');
+    END IF;
+  END IF;
+  NEW.pausada_en := OLD.pausada_en;
+  NEW.atendida_por := apd.contexto('usuario');
+  NEW.atendida_en := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER cita_cambio BEFORE UPDATE ON apd.cita
+  FOR EACH ROW EXECUTE FUNCTION apd.cita_cambio();
+
+-- Lo que la cita mueve: la solicitud (con observaciones o cerrada) o la cuenta (bloqueada)
+CREATE FUNCTION apd.cita_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  inasistencias integer;
+BEGIN
+  IF NEW.resultado = OLD.resultado THEN RETURN NULL; END IF;
+  PERFORM apd.registrar('cita', 'solicitud', NEW.solicitud_id::text,
+    concat_ws(' · ', format('%s → %s', OLD.resultado, NEW.resultado), nullif(NEW.observacion, '')));
+  CASE NEW.resultado
+    WHEN 'con_observaciones' THEN
+      PERFORM set_config('apd.motivo', 'Cotejo: ' || NEW.observacion, true);
+      UPDATE apd.solicitud SET estado = 'con_observaciones' WHERE id = NEW.solicitud_id;
+    WHEN 'no_se_presento' THEN
+      SELECT count(*) INTO inasistencias FROM apd.cita WHERE solicitud_id = NEW.solicitud_id AND resultado = 'no_se_presento';
+      IF inasistencias >= apd.parametro_texto('inasistencias_cotejo_maximas')::integer THEN
+        UPDATE apd.solicitud SET estado = 'concluida_sin_atender',
+               motivo_cierre = format('No se presentó a su cita de cotejo %s veces.', inasistencias)
+         WHERE id = NEW.solicitud_id;
+      END IF;
+    WHEN 'no_es_la_persona' THEN
+      UPDATE apd.solicitante SET estado = 'bloqueada', bloqueo_motivo = 'identidad'
+       WHERE id = (SELECT solicitante_id FROM apd.solicitud WHERE id = NEW.solicitud_id);
+    ELSE
+      NULL;
+  END CASE;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER cita_aplicar AFTER UPDATE ON apd.cita
+  FOR EACH ROW EXECUTE FUNCTION apd.cita_aplicar();
+
+-- Una pausa que no se retomó el día de la cita regresa la solicitud con observaciones. La corre una tarea
+-- programada cada noche [pendiente: quién la programa en el SIA]; devuelve cuántas cerró.
+CREATE FUNCTION apd.cerrar_pausas_vencidas() RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+  c record;
+  n integer := 0;
+BEGIN
+  FOR c IN SELECT id FROM apd.cita
+            WHERE resultado = 'en_pausa'
+              AND (pausada_en AT TIME ZONE 'America/Mexico_City')::date < (apd.ahora() AT TIME ZONE 'America/Mexico_City')::date LOOP
+    UPDATE apd.cita SET resultado = 'con_observaciones' WHERE id = c.id;
+    n := n + 1;
+  END LOOP;
+  RETURN n;
+END $$;
+
 -- ───────────────────────────── Revisión y documentos ─────────────────────────────
 
 CREATE FUNCTION apd.revision_alta() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -928,8 +1093,13 @@ BEGIN
   IF momento IS NULL THEN
     PERFORM apd.error('requisito_ajeno', 'Ese documento no se pide para este curso');
   END IF;
-  IF momento = 'en_linea' AND s.estado NOT IN ('borrador', 'con_observaciones') THEN
-    PERFORM apd.error('carga_fuera_de_turno', 'Sólo se cargan documentos en borrador o para atender observaciones');
+  -- …o, con la cita de cotejo en pausa, el documento que no coincidió (decisión 2026-10-17)
+  IF momento = 'en_linea' AND s.estado NOT IN ('borrador', 'con_observaciones')
+     AND NOT (s.estado = 'validada_en_linea'
+              AND EXISTS (SELECT 1 FROM apd.cita c WHERE c.solicitud_id = s.id AND c.resultado = 'en_pausa')
+              AND EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = s.id AND d.requisito = NEW.requisito
+                            AND d.vigente AND d.estado = 'con_observacion')) THEN
+    PERFORM apd.error('carga_fuera_de_turno', 'Sólo se cargan documentos en borrador, para atender observaciones o el que no coincidió en tu cita');
   END IF;
   IF momento = 'cotejo' AND s.estado <> 'validada_en_linea' THEN
     PERFORM apd.error('carga_fuera_de_turno', 'Este documento se carga en la cita presencial');
@@ -992,8 +1162,11 @@ BEGIN
     IF NOT OLD.vigente THEN
       PERFORM apd.error('documento_sustituido', 'Sólo se revisa la carga vigente');
     END IF;
-    IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'enviada' THEN
-      PERFORM apd.error('revision_fuera_de_turno', 'Sólo se revisan documentos de una solicitud enviada');
+    -- En revisión documental, o en el cotejo con la cita abierta: lo que coincide o no con lo que trae la persona
+    IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'enviada'
+       AND NOT ((SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) = 'validada_en_linea'
+                AND EXISTS (SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.solicitud_id AND c.resultado IN ('pendiente', 'en_pausa'))) THEN
+      PERFORM apd.error('revision_fuera_de_turno', 'Sólo se revisan documentos de una solicitud enviada o en su cita de cotejo');
     END IF;
     IF coalesce(NEW.revisado_por, '') = '' THEN
       PERFORM apd.error('revision_sin_responsable', 'La revisión de un documento registra quién la hizo');

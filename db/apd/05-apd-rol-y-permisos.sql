@@ -44,7 +44,7 @@ GRANT UPDATE (tipo, nombre, activa) ON apd.organizacion TO apd_api;
 -- Cuentas y sesiones de solicitantes
 GRANT SELECT, INSERT ON apd.solicitante TO apd_api;
 GRANT UPDATE (curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, organizacion_id, contrasena_hash, estado,
-              intentos_fallidos, bloqueada_hasta, debe_cambiar_contrasena) ON apd.solicitante TO apd_api;
+              intentos_fallidos, bloqueada_hasta, bloqueo_motivo, debe_cambiar_contrasena) ON apd.solicitante TO apd_api;
 GRANT SELECT, INSERT, DELETE ON apd.sesion_solicitante TO apd_api;
 GRANT UPDATE (cerrada_en) ON apd.sesion_solicitante TO apd_api;
 -- Fotografía de frente: no se borra; la confirmación sólo cambia estado (y la sustitución, vigente)
@@ -58,6 +58,9 @@ GRANT UPDATE (tipo_acreditacion, modalidad, acreditacion_anterior_id,
               nivel_estudios, carrera, carrera_tecnica, estatus_estudios, anios_experiencia, estado, cita_en, motivo_cierre)
   ON apd.solicitud TO apd_api;
 GRANT SELECT, INSERT ON apd.revision TO apd_api;
+-- Citas de cotejo: las crea la base al asignar la cita; el personal registra lo que pasó (nunca se borran)
+GRANT SELECT, INSERT ON apd.cita TO apd_api;
+GRANT UPDATE (resultado, observacion) ON apd.cita TO apd_api;
 GRANT SELECT, INSERT ON apd.documento TO apd_api;
 GRANT UPDATE (estado, observacion, revisado_por, vigente) ON apd.documento TO apd_api;
 

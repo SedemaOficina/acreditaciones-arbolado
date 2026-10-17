@@ -100,13 +100,41 @@
       }
     }
 
+    // Cita de cotejo en pausa (decisión 2026-10-17): un documento no coincidió y la persona puede cargar hoy el correcto
+    const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r.nombre]));
+    if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
+      const pausa = s.cotejo_pausa;
+      const vigentes = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && pausa.docs.includes(d.requisito));
+      const cargados = vigentes.filter((d) => d.cargado_real && d.cargado_real > pausa.real);
+      sigue = cargados.length === pausa.docs.length
+        ? `Ya cargaste el documento correcto. Regresa con la persona que te atiende en el ${lugar.nombre}, con el documento impreso, para terminar tu cotejo.`
+        : 'Tu cita de cotejo está en pausa: un documento no coincidió con el que cargaste. Consíguelo hoy, cárgalo aquí y regresa con la persona que te atiende.';
+      if (cargados.length < pausa.docs.length) {
+        extra.push(el('div', { class: 'aviso aviso-advertencia' }, [
+          el('div', { class: 'aviso-texto' }, [
+            el('p', {}, [el('strong', { texto: 'Lo que no coincidió en tu cita:' })]),
+            el('ul', { class: 'lista-obs' }, vigentes.filter((d) => !cargados.includes(d)).map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion || 'no coincide con el que llevaste.'}` })))
+          ])
+        ]));
+      }
+    }
+    // Cita nueva: por no presentarse o por no traer el comprobante de pago
+    if (s.estado === 'validada_en_linea' && s.cita_motivo && s.cita_anterior) {
+      extra.push(el('p', { class: 'texto-gris', texto: s.cita_motivo === 'sin_pago'
+        ? `En tu cita del ${fechaHora(s.cita_anterior)} no presentaste tu comprobante de pago. Ésta es tu cita nueva; el monto es el mismo.`
+        : `No te presentaste a tu cita del ${fechaHora(s.cita_anterior)}. Ésta es tu cita nueva: si tampoco te presentas, tu solicitud se cierra.` }));
+    }
+    if (s.estado === 'concluida_sin_atender' && s.cierre_por === 'inasistencia') {
+      sigue = 'No te presentaste a tu cita de cotejo por segunda vez y tu solicitud se cerró. Puedes iniciar una solicitud nueva.';
+    }
+
     if (s.estado === 'con_observaciones') {
-      const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.estado === 'con_observacion' && d.observacion);
-      const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r.nombre]));
+      const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && d.estado === 'con_observacion' && d.observacion);
+      const enCotejo = obs.some((d) => d.en_cotejo);
       if (obs.length) {
         extra.push(el('div', { class: 'aviso aviso-advertencia' }, [
           el('div', { class: 'aviso-texto' }, [
-            el('p', {}, [el('strong', { texto: 'Lo que debes corregir:' })]),
+            el('p', {}, [el('strong', { texto: enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste. Corrígelo:' : 'Lo que debes corregir:' })]),
             el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion}` })))
           ])
         ]));
@@ -141,6 +169,11 @@
     if (s.motivo_cierre) pares.push([s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo', APD.limpia(s.motivo_cierre)]);
 
     const acciones = [];
+    if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
+      const pausa = s.cotejo_pausa;
+      const faltan = pausa.docs.filter((k) => !datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.requisito === k && d.cargado_real && d.cargado_real > pausa.real));
+      if (faltan.length) acciones.push(el('a', { class: 'btn btn-primario', href: `corregir.html?folio=${encodeURIComponent(s.folio)}`, texto: faltan.length === 1 ? 'Cargar el documento' : 'Cargar los documentos' }));
+    }
     if (['borrador', 'con_observaciones'].includes(s.estado)) {
       acciones.push(el('a', { class: 'btn btn-secundario', href: `solicitud.html?folio=${encodeURIComponent(s.folio)}`, texto: s.estado === 'borrador' ? 'Continuar solicitud' : 'Corregir y reenviar' }));
     }
@@ -148,7 +181,7 @@
     return el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [
         el('h4', { class: 'ficha-titulo', texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}` }),
-        estado(e.texto, e.tono)
+        estado(s.estado === 'validada_en_linea' && s.cotejo_pausa ? 'Cita en pausa' : e.texto, e.tono)
       ]),
       sigue ? el('p', { class: 'ficha-sigue', texto: sigue }) : null,
       ...extra,

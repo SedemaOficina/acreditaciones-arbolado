@@ -16,6 +16,8 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Cómo pagar los derechos; se muestra a la persona con su cita y su referencia (decisión 2026-10-14).'),
   ('entrega_lugar', '[pendiente] Días y horario de entrega de acreditaciones.',
    'Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14).'),
+  ('inasistencias_cotejo_maximas', '2',
+   'Inasistencias a la cita de cotejo con las que la solicitud se cierra como concluida sin atender: a la primera se da una cita nueva, una sola vez (decisión 2026-10-17, Liber).'),
   ('sede', 'Vivero Nezahualcóyotl',
    'Lugar único de la cita de cotejo, del curso y de la entrega de acreditaciones (decisión 2026-10-16, Liber).'),
   ('sede_direccion', '[pendiente] Dirección y referencias para llegar al Vivero Nezahualcóyotl.',

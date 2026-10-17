@@ -160,6 +160,7 @@ CREATE TABLE apd.solicitante (
   estado                     text          NOT NULL DEFAULT 'activa',
   intentos_fallidos          smallint      NOT NULL DEFAULT 0,
   bloqueada_hasta            timestamptz   NULL,
+  bloqueo_motivo             text          NULL,
   debe_cambiar_contrasena    boolean       NOT NULL DEFAULT false,
   creada_en                  timestamptz   NOT NULL DEFAULT now(),
   es_ficticio                boolean       NOT NULL DEFAULT false,
@@ -174,6 +175,7 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente')),
   CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL),
   CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar')),
+  CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada')),
   CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))
 );
 CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre);
@@ -193,6 +195,7 @@ COMMENT ON COLUMN apd.solicitante.contrasena_hash IS 'scrypt N=2^14, r=8, p=1, b
 COMMENT ON COLUMN apd.solicitante.estado IS 'activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)';
 COMMENT ON COLUMN apd.solicitante.intentos_fallidos IS 'Intentos de entrada fallidos seguidos';
 COMMENT ON COLUMN apd.solicitante.bloqueada_hasta IS 'Fin del bloqueo por intentos';
+COMMENT ON COLUMN apd.solicitante.bloqueo_motivo IS 'identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base';
 COMMENT ON COLUMN apd.solicitante.debe_cambiar_contrasena IS 'Tiene una contraseña temporal de un solo uso';
 COMMENT ON COLUMN apd.solicitante.creada_en IS 'Alta de la cuenta';
 COMMENT ON COLUMN apd.solicitante.es_ficticio IS 'Dato de prueba';
@@ -403,6 +406,36 @@ COMMENT ON COLUMN apd.revision.resultado IS 'con_observaciones, validada o recha
 COMMENT ON COLUMN apd.revision.observacion_general IS 'Indicaciones para la persona solicitante; en un rechazo, el motivo (obligatorio)';
 COMMENT ON COLUMN apd.revision.revisor IS 'Cuenta del personal (acceso)';
 COMMENT ON COLUMN apd.revision.revisada_en IS 'Fecha de la revisión';
+
+CREATE TABLE apd.cita (
+  id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
+  solicitud_id               uuid          NOT NULL,
+  programada_en              timestamptz   NOT NULL,
+  resultado                  text          NOT NULL DEFAULT 'pendiente',
+  observacion                text          NOT NULL DEFAULT '',
+  pausada_en                 timestamptz   NULL,
+  atendida_por               text          NULL,
+  atendida_en                timestamptz   NULL,
+  creada_en                  timestamptz   NOT NULL DEFAULT now(),
+  CONSTRAINT cita_pk PRIMARY KEY (id),
+  CONSTRAINT cita_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
+  CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona')),
+  CONSTRAINT cita_cerrada_ck CHECK ((resultado IN ('pendiente', 'en_pausa')) = (atendida_en IS NULL)),
+  CONSTRAINT cita_pausa_ck CHECK (resultado <> 'en_pausa' OR pausada_en IS NOT NULL),
+  CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona') OR length(trim(observacion)) > 0)
+);
+CREATE UNIQUE INDEX cita_una_abierta ON apd.cita (solicitud_id) WHERE resultado IN ('pendiente', 'en_pausa');
+CREATE INDEX cita_agenda ON apd.cita (programada_en);
+COMMENT ON TABLE apd.cita IS 'Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.';
+COMMENT ON COLUMN apd.cita.id IS 'Identificador interno';
+COMMENT ON COLUMN apd.cita.solicitud_id IS 'Solicitud';
+COMMENT ON COLUMN apd.cita.programada_en IS 'Día y hora de la cita (la cita_en de la solicitud al crearla)';
+COMMENT ON COLUMN apd.cita.resultado IS 'pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento o no_es_la_persona';
+COMMENT ON COLUMN apd.cita.observacion IS 'En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona)';
+COMMENT ON COLUMN apd.cita.pausada_en IS 'Cuándo quedó en pausa; la pausa sólo dura ese día. Lo pone la base';
+COMMENT ON COLUMN apd.cita.atendida_por IS 'Cuenta del personal que la cerró (acceso). Lo pone la base';
+COMMENT ON COLUMN apd.cita.atendida_en IS 'Cuándo se cerró. Lo pone la base';
+COMMENT ON COLUMN apd.cita.creada_en IS 'Alta. Lo pone la base';
 
 CREATE TABLE apd.documento (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),

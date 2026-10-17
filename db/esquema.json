@@ -141,6 +141,7 @@
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'activa'", "descripcion": "activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)" },
         { "nombre": "intentos_fallidos", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Intentos de entrada fallidos seguidos" },
         { "nombre": "bloqueada_hasta", "tipo": "timestamptz", "nulo": true, "descripcion": "Fin del bloqueo por intentos" },
+        { "nombre": "bloqueo_motivo", "tipo": "text", "nulo": true, "descripcion": "identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base" },
         { "nombre": "debe_cambiar_contrasena", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Tiene una contraseña temporal de un solo uso" },
         { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta de la cuenta" },
         { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
@@ -157,6 +158,7 @@
         "CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))",
         "CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL)",
         "CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))",
+        "CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada'))",
         "CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))"
       ],
       "indices": [
@@ -331,6 +333,33 @@
       ],
       "indices": [
         "CREATE INDEX revision_solicitud ON apd.revision (solicitud_id, revisada_en)"
+      ]
+    },
+    {
+      "nombre": "cita",
+      "descripcion": "Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "solicitud_id", "tipo": "uuid", "nulo": false, "descripcion": "Solicitud" },
+        { "nombre": "programada_en", "tipo": "timestamptz", "nulo": false, "descripcion": "Día y hora de la cita (la cita_en de la solicitud al crearla)" },
+        { "nombre": "resultado", "tipo": "text", "nulo": false, "defecto": "'pendiente'", "descripcion": "pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento o no_es_la_persona" },
+        { "nombre": "observacion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona)" },
+        { "nombre": "pausada_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cuándo quedó en pausa; la pausa sólo dura ese día. Lo pone la base" },
+        { "nombre": "atendida_por", "tipo": "text", "nulo": true, "descripcion": "Cuenta del personal que la cerró (acceso). Lo pone la base" },
+        { "nombre": "atendida_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cuándo se cerró. Lo pone la base" },
+        { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta. Lo pone la base" }
+      ],
+      "restricciones": [
+        "CONSTRAINT cita_pk PRIMARY KEY (id)",
+        "CONSTRAINT cita_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)",
+        "CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona'))",
+        "CONSTRAINT cita_cerrada_ck CHECK ((resultado IN ('pendiente', 'en_pausa')) = (atendida_en IS NULL))",
+        "CONSTRAINT cita_pausa_ck CHECK (resultado <> 'en_pausa' OR pausada_en IS NOT NULL)",
+        "CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona') OR length(trim(observacion)) > 0)"
+      ],
+      "indices": [
+        "CREATE UNIQUE INDEX cita_una_abierta ON apd.cita (solicitud_id) WHERE resultado IN ('pendiente', 'en_pausa')",
+        "CREATE INDEX cita_agenda ON apd.cita (programada_en)"
       ]
     },
     {

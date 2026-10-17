@@ -53,6 +53,7 @@ const paraDictaminador = datos.solicitante.find((p) => {
   return p.estado === 'activa' && poda && datos.estado_acreditacion[poda.numero] === 'vigente' && !ultimaDe(p, 'dictaminador') && !tieneActiva(p, 'dictaminador');
 });
 const inscrita = datos.solicitud.find((s) => s.estado === 'inscrita');
+const conCita = datos.solicitud.find((s) => s.estado === 'validada_en_linea' && s.cita_en);
 const vigente = datos.verificacion_publica.find((v) => v.situacion === 'Vigente');
 const noVigente = datos.verificacion_publica.find((v) => v.situacion !== 'Vigente');
 
@@ -683,7 +684,12 @@ async function recorridoGuardado(navegador) {
   const contexto = await navegador.newContext({ viewport: { width: 1440, height: 900 } });
   const t = (m) => `[guardado] ${m}`;
   const errores = [];
-  const vigila = (page) => { page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`)); return page; };
+  const vigila = (page) => {
+    page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`));
+    // Lo guardado en el navegador que no se pudo aplicar (archivos-prueba.js lo avisa en la consola)
+    page.on('console', (m) => { if (m.type() === 'warning' && /no se pudo aplicar lo guardado/.test(m.text())) errores.push(`${page.url()} · ${m.text()}`); });
+    return page;
+  };
   const real = { name: 'escaneado.pdf', mimeType: 'application/pdf', buffer: readFileSync(new URL('../datos/documentos/identificacion_oficial.pdf', import.meta.url)) };
   const P = { nombre: 'Rocío', primer_apellido: 'Guardado', segundo_apellido: 'Ejemplo', nacimiento: '1987-03-15' };
   P.curp = conDigito(globalThis.APD_CURP.prefijo({ nombre: P.nombre, primer: P.primer_apellido, segundo: P.segundo_apellido }, P.nacimiento, 'M', 'NE') + '0');
@@ -761,8 +767,192 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector('[data-solicitudes] .ficha');
   const ficha = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
   comprueba(/con observaciones/i.test(ficha) && /vuelve a escanearlo/.test(ficha), t('la persona ve «Con observaciones» y qué corregir'));
+  // 7 · Corrige y reenvía; el personal la revisa otra vez y la valida con su cita
+  await page.goto(BASE + `solicitud.html?folio=${folio}`);
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_nueva');
+  await siguiente(page);
+  await page.setInputFiles(`[data-campo="doc_poda_nueva_${primero}"] [data-archivos] > input[type="file"]`, real);
+  await page.waitForSelector(`[data-campo="doc_poda_nueva_${primero}"] .lista-arch li[data-estado="listo"]`);
+  await siguiente(page);
+  await marcaCasillas(page);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  await page.goto(BASE + 'revision.html');
+  await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
+  comprueba(/2\.ª \(reenviada\)/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t('la reenviada vuelve a la bandeja como 2.ª vuelta'));
+  await page.goto(BASE + `revisar.html?folio=${folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  for (const k of campos.map((c) => c.replace(/^doc_poda_nueva_/, ''))) await page.check(`input[name="decision_${k}"][value="aceptado"]`);
+  const dia = await page.getAttribute('#cita_fecha', 'min');
+  await page.fill('#cita_fecha', dia);
+  await page.fill('#cita_hora', '12:30');
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])');
+  bien(t('la segunda revisión la valida con su cita'));
+  // 8 · Cita de cotejo: aparece en la agenda de su día; un documento no coincide y la cita queda en pausa
+  await page.goto(BASE + `citas.html?dia=${dia}`);
+  await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
+  comprueba(/Por atender/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t('la cita aparece en la agenda de su día, por atender'));
+  await page.fill('#buscar', P.curp);
+  comprueba(await page.isVisible(`[data-filas] tr[data-folio="${folio}"]`) && /todos los días/.test(await page.textContent('[data-dia]')), t('la búsqueda por CURP la encuentra en todos los días'));
+  await page.goto(BASE + `cotejo.html?folio=${folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  await page.check('input[name="se_presento"][value="si"]');
+  await page.check('input[name="identidad"][value="misma"]');
+  const aCotejar = await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc));
+  comprueba(aCotejar.length === campos.length, t(`el cotejo pide los ${campos.length} documentos`));
+  const [distinto, ...iguales] = aCotejar;
+  for (const k of iguales) await page.check(`input[name="coincide_${k}"][value="si"]`);
+  await page.check(`input[name="coincide_${distinto}"][value="no"]`);
+  await page.fill(`#diferencia_${distinto}`, 'Trae una versión distinta de la que cargó.');
+  comprueba(!(await page.isVisible('[data-campo="pago"]')), t('con un documento que no coincide no se pregunta por el pago'));
+  await page.check('input[name="hoy_documento"][value="si"]');
+  comprueba((await page.textContent('[data-accion="enviar"]')).trim() === 'Poner la cita en pausa', t('el botón dice «Poner la cita en pausa»'));
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])', { timeout: 8000 }).catch(async (e) => {
+    if (process.env.CAPTURA_FALLA) await page.screenshot({ path: process.env.CAPTURA_FALLA, fullPage: true });
+    throw e;
+  });
+  // 9 · La persona ve la pausa, carga el documento correcto y el personal lo ve para retomar
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
+  const enPausa = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
+  comprueba(/Cita en pausa/.test(enPausa) && /versión distinta/.test(enPausa), t('la persona ve «Cita en pausa» y qué no coincidió'));
+  await page.click(`a[href="corregir.html?folio=${folio}"]`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  comprueba(await page.$$eval('[data-campo^="doc_"]', (els) => els.filter((e) => e.offsetParent !== null).length) === 1, t('«Cargar el documento correcto» pide sólo el que no coincidió'));
+  await page.setInputFiles(`[data-campo="doc_${distinto}"] [data-archivos] > input[type="file"]`, real);
+  await page.waitForSelector(`[data-campo="doc_${distinto}"] .lista-arch li[data-estado="listo"]`);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])');
+  await page.goto(BASE + `citas.html?dia=${dia}`);
+  await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
+  comprueba(/Documento cargado/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t('la agenda dice «Documento cargado · retomar»'));
+  // 10 · Retoma: sólo ese documento; con el pago y la factura, el cotejo termina y se abre el expediente
+  await page.goto(BASE + `cotejo.html?folio=${folio}`);
+  await page.waitForSelector('#formulario:not([hidden])');
+  comprueba(!(await page.isVisible('[data-campo="se_presento"]')) && !(await page.isVisible('[data-campo="identidad"]'))
+    && await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).length) === 1, t('al retomar sólo se coteja el documento que no coincidió'));
+  await page.check(`input[name="coincide_${distinto}"][value="si"]`);
+  await page.check('input[name="pago"][value="si"]');
+  await page.setInputFiles('[data-campo="factura_pago"] [data-archivos] > input[type="file"]', real);
+  await page.waitForSelector('[data-campo="factura_pago"] .lista-arch li[data-estado="listo"]');
+  await page.fill('#factura_rfc', 'XAXX010101000');
+  await page.fill('#factura_razon_social', 'Rocío Guardado Ejemplo');
+  await page.fill('#factura_folio_fiscal', '6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f');
+  comprueba((await page.textContent('[data-resumen]')).includes('EXP-'), t('el resultado anuncia el número de expediente que se abre'));
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-hecho]:not([hidden])');
+  const exp = (await page.textContent('[data-hecho-datos]')).match(/EXP-\d{4}-\d{4}/);
+  comprueba(Boolean(exp), t(`el cotejo terminado muestra el expediente${exp ? ' ' + exp[0] : ''}`));
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
+  const lista = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
+  comprueba(/En espera de grupo/.test(lista) && exp && lista.includes(exp[0]), t('la persona ve «En espera de grupo» y su número de expediente'));
+  await page.goto(BASE + 'datos.html');
+  await page.waitForSelector('[data-foto-estado] .estado');
+  comprueba(/confirmada/i.test(await page.textContent('[data-foto-estado]')), t('en «Mi perfil» su fotografía queda confirmada'));
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await contexto.close();
+}
+
+/* Los otros caminos de la cita de cotejo (decisiones 2026-10-17), sobre las dos citas ficticias: cada uno en su propio
+   navegador limpio */
+async function caminosCotejo(navegador) {
+  const t = (m) => `[cotejo] ${m}`;
+  const citas = datos.solicitud.filter((x) => x.estado === 'validada_en_linea' && x.cita_en);
+  const [s1] = citas;
+  const p1 = persona(s1.solicitante_id);
+  const nuevo = async (ancho = 1280) => {
+    const c = await navegador.newContext({ viewport: { width: ancho, height: 900 } });
+    const pg = await c.newPage();
+    const errores = [];
+    pg.on('pageerror', (e) => errores.push(e.message));
+    pg.on('console', (m) => { if (m.type() === 'warning' && /no se pudo aplicar lo guardado/.test(m.text())) errores.push(m.text()); });
+    return { c, pg, errores };
+  };
+  const abre = async (pg, folio) => { await pg.goto(BASE + `cotejo.html?folio=${folio}`); await pg.waitForSelector('#formulario:not([hidden])'); };
+  const registra = async (pg) => { await pg.click('[data-accion="enviar"]'); await pg.waitForSelector('[data-hecho]:not([hidden])'); };
+  const manana = (() => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
+
+  // No se presenta dos veces: cita nueva, y a la segunda la solicitud se cierra (con confirmación)
+  let { c, pg, errores } = await nuevo(390);
+  await abre(pg, s1.folio);
+  await sinDesborde(pg, t('cotejo en teléfono'));
+  await pg.check('input[name="se_presento"][value="no"]');
+  comprueba(!(await pg.isVisible('[data-campo="identidad"]')) && await pg.isVisible('#cita_fecha'), t('si no se presentó sólo se pide la cita nueva'));
+  await pg.fill('#cita_fecha', manana);
+  await pg.fill('#cita_hora', '09:30');
+  await registra(pg);
+  await entra(pg, p1.curp);
+  const f1 = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
+  comprueba(/No te presentaste/.test(f1) && /09:30/.test(f1), t('la persona ve que no se presentó y su cita nueva'));
+  await abre(pg, s1.folio);
+  comprueba(/No se presentó a su cita/.test(await pg.textContent('[data-antecedente]')), t('la segunda cita avisa la inasistencia anterior'));
+  await pg.check('input[name="se_presento"][value="no"]');
+  comprueba((await pg.textContent('[data-accion="enviar"]')).trim() === 'Cerrar la solicitud', t('a la segunda inasistencia el botón es «Cerrar la solicitud»'));
+  await pg.click('[data-accion="enviar"]');
+  await pg.waitForSelector('dialog[open] .btn-peligro, .modal [data-si], dialog[open]');
+  await pg.click('dialog[open] .btn-peligro');
+  await pg.waitForSelector('[data-hecho]:not([hidden])');
+  await pg.goto(BASE + 'tramites.html');
+  await pg.waitForSelector('[data-solicitudes] .ficha');
+  comprueba(/Concluida sin atender/.test(await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent()), t('a la segunda inasistencia la solicitud queda «Concluida sin atender»'));
+  comprueba(errores.length === 0, t(`inasistencias sin errores${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+
+  // Sin comprobante de pago: otra cita, con el mismo monto
+  ({ c, pg, errores } = await nuevo());
+  await abre(pg, s1.folio);
+  await pg.check('input[name="se_presento"][value="si"]');
+  await pg.check('input[name="identidad"][value="misma"]');
+  for (const k of await pg.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await pg.check(`input[name="coincide_${k}"][value="si"]`);
+  await pg.check('input[name="pago"][value="no"]');
+  comprueba(!(await pg.isVisible('[data-campo="factura_rfc"]')) && (await pg.textContent('[data-accion="enviar"]')).trim() === 'Darle otra cita', t('sin pago no se pide factura y el botón es «Darle otra cita»'));
+  await pg.fill('#cita_fecha', manana);
+  await pg.fill('#cita_hora', '11:00');
+  await registra(pg);
+  await pg.goto(BASE + `citas.html?dia=${s1.cita_en.slice(0, 10)}`);
+  // La misma solicitud tiene dos filas: la cita atendida (ese día) y la nueva (otro día)
+  await pg.waitForSelector(`[data-filas] tr[data-folio="${s1.folio}"]:not([hidden])`);
+  comprueba(/Sin pago/.test(await pg.textContent(`[data-filas] tr[data-folio="${s1.folio}"]:not([hidden])`)), t('la agenda registra la cita como «Sin pago · cita nueva»'));
+  await c.close();
+
+  // Un documento no coincide y no lo puede traer hoy: regresa con observaciones
+  ({ c, pg, errores } = await nuevo());
+  await abre(pg, s1.folio);
+  await pg.check('input[name="se_presento"][value="si"]');
+  await pg.check('input[name="identidad"][value="misma"]');
+  const ks = await pg.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc));
+  await pg.check(`input[name="coincide_${ks[0]}"][value="no"]`);
+  await pg.fill(`#diferencia_${ks[0]}`, 'El original tiene otra fecha de expedición.');
+  for (const k of ks.slice(1)) await pg.check(`input[name="coincide_${k}"][value="si"]`);
+  await pg.check('input[name="hoy_documento"][value="no"]');
+  await registra(pg);
+  await entra(pg, p1.curp);
+  const f2 = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
+  comprueba(/Con observaciones/.test(f2) && /cita de cotejo/.test(f2) && /otra fecha de expedición/.test(f2), t('la persona ve que en su cotejo un documento no coincidió'));
+  await c.close();
+
+  // No es la persona: no se atiende, se confirma y la cuenta queda bloqueada
+  ({ c, pg, errores } = await nuevo());
+  await abre(pg, s1.folio);
+  await pg.check('input[name="se_presento"][value="si"]');
+  await pg.check('input[name="identidad"][value="no_es"]');
+  comprueba(!(await pg.isVisible('article.doc-revision')), t('si no es la persona no se cotejan documentos'));
+  await pg.fill('#nota_identidad', 'La identificación muestra a otra persona distinta de la fotografía.');
+  await pg.click('[data-accion="enviar"]');
+  await pg.waitForSelector('dialog[open] .btn-peligro');
+  await pg.click('dialog[open] .btn-peligro');
+  await pg.waitForSelector('[data-hecho]:not([hidden])');
+  await pg.goto(BASE + 'entrar.html');
+  await pg.fill('#curp', p1.curp);
+  await pg.fill('#contrasena', CONTRASENA);
+  await pg.click('[data-accion="enviar"]');
+  await pg.waitForSelector('[data-estado-envio]:not([hidden])');
+  comprueba(/bloqueada/.test(await pg.textContent('[data-estado-envio]')), t('la cuenta queda bloqueada: al entrar se le dice'));
+  comprueba(errores.length === 0, t(`caminos del cotejo sin errores${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
 }
 
 async function personal(navegador, ancho, alto, sufijo) {
@@ -960,13 +1150,19 @@ async function accesibilidad(navegador) {
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
     ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
+    ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
   for (const [url, estado] of pantallas) {
     await page.goto(BASE + url);
     await page.waitForLoadState('networkidle');
     if (estado === 'rechazo') await page.check('input[name="comprobante_confirma"][value="si"]');
     else if (estado === 'menú de pruebas') { await page.click('.menu-pruebas-boton'); await page.waitForSelector('dialog.menu-pruebas[open] [data-guardado]'); }
-    else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
+    else if (estado === 'factura') {
+      await page.check('input[name="se_presento"][value="si"]');
+      await page.check('input[name="identidad"][value="otra_foto"]');
+      for (const k of await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await page.check(`input[name="coincide_${k}"][value="si"]`);
+      await page.check('input[name="pago"][value="si"]');
+    } else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.addScriptTag({ content: axe });
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
@@ -978,12 +1174,16 @@ async function accesibilidad(navegador) {
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 try {
-  await recorrido(navegador, 390, 844, 'telefono');
-  await recorrido(navegador, 1280, 900, 'escritorio');
-  await personal(navegador, 390, 844, 'telefono');
-  await personal(navegador, 1440, 900, 'escritorio');
+  // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo (para depurar)
+  if (process.env.SOLO !== 'guardado') {
+    await recorrido(navegador, 390, 844, 'telefono');
+    await recorrido(navegador, 1280, 900, 'escritorio');
+    await personal(navegador, 390, 844, 'telefono');
+    await personal(navegador, 1440, 900, 'escritorio');
+  }
   await recorridoGuardado(navegador);
-  await accesibilidad(navegador);
+  await caminosCotejo(navegador);
+  if (process.env.SOLO !== 'guardado') await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
 } finally {

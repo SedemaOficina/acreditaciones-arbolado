@@ -19,6 +19,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
 - [`solicitud`](#solicitud) — Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
 - [`revision`](#revision) — Cada ronda de revisión documental en línea, con su resultado. Permite contar cuántas vueltas dio un expediente.
+- [`cita`](#cita) — Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.
 - [`documento`](#documento) — Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`grupo`](#grupo) — Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con el cupo mínimo y nunca pasa del máximo.
 - [`inscripcion`](#inscripcion) — Una solicitud en un grupo. No se borra: una baja o una cancelación la deja inactiva y la solicitud regresa a la bandeja con su antigüedad.
@@ -178,6 +179,7 @@ Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (ap
 | `estado` | `text` | Sí | activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña) (por omisión: `'activa'`) |
 | `intentos_fallidos` | `smallint` | Sí | Intentos de entrada fallidos seguidos (por omisión: `0`) |
 | `bloqueada_hasta` | `timestamptz` | No | Fin del bloqueo por intentos |
+| `bloqueo_motivo` | `text` | No | identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base |
 | `debe_cambiar_contrasena` | `boolean` | Sí | Tiene una contraseña temporal de un solo uso (por omisión: `false`) |
 | `creada_en` | `timestamptz` | Sí | Alta de la cuenta (por omisión: `now()`) |
 | `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
@@ -195,6 +197,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_adscripcion_organizacion_ck CHECK ((organizacion_id IS NULL) = (adscripcion IS NULL OR adscripcion = 'independiente'))`
 - `CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL)`
 - `CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))`
+- `CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada'))`
 - `CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))`
 - `CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)`
 
@@ -367,6 +370,33 @@ Restricciones e índices:
 - `CONSTRAINT revision_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
 - `CONSTRAINT revision_resultado_ck CHECK (resultado IN ('con_observaciones', 'validada', 'rechazada'))`
 - `CREATE INDEX revision_solicitud ON apd.revision (solicitud_id, revisada_en)`
+
+## cita
+
+Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
+| `solicitud_id` | `uuid` | Sí | Solicitud |
+| `programada_en` | `timestamptz` | Sí | Día y hora de la cita (la cita_en de la solicitud al crearla) |
+| `resultado` | `text` | Sí | pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento o no_es_la_persona (por omisión: `'pendiente'`) |
+| `observacion` | `text` | Sí | En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona) (por omisión: `''`) |
+| `pausada_en` | `timestamptz` | No | Cuándo quedó en pausa; la pausa sólo dura ese día. Lo pone la base |
+| `atendida_por` | `text` | No | Cuenta del personal que la cerró (acceso). Lo pone la base |
+| `atendida_en` | `timestamptz` | No | Cuándo se cerró. Lo pone la base |
+| `creada_en` | `timestamptz` | Sí | Alta. Lo pone la base (por omisión: `now()`) |
+
+Restricciones e índices:
+
+- `CONSTRAINT cita_pk PRIMARY KEY (id)`
+- `CONSTRAINT cita_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
+- `CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona'))`
+- `CONSTRAINT cita_cerrada_ck CHECK ((resultado IN ('pendiente', 'en_pausa')) = (atendida_en IS NULL))`
+- `CONSTRAINT cita_pausa_ck CHECK (resultado <> 'en_pausa' OR pausada_en IS NOT NULL)`
+- `CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona') OR length(trim(observacion)) > 0)`
+- `CREATE UNIQUE INDEX cita_una_abierta ON apd.cita (solicitud_id) WHERE resultado IN ('pendiente', 'en_pausa')`
+- `CREATE INDEX cita_agenda ON apd.cita (programada_en)`
 
 ## documento
 

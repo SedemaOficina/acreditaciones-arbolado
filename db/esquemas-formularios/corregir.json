@@ -1,0 +1,224 @@
+{
+  "formulario": "corregir.html",
+  "generado": "2026-10-17T17:32:20.583Z",
+  "campos": {
+    "cargar_identificacion_oficial": {
+      "etiqueta": "cargar_identificacion_oficial",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Identificación oficial» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cargar_curp": {
+      "etiqueta": "cargar_curp",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Clave Única de Registro de Población (CURP)» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cargar_comprobante_domicilio": {
+      "etiqueta": "cargar_comprobante_domicilio",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Comprobante de domicilio» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cargar_constancia_situacion_fiscal": {
+      "etiqueta": "cargar_constancia_situacion_fiscal",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Constancia de situación fiscal» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cargar_comprobante_estudios": {
+      "etiqueta": "cargar_comprobante_estudios",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Comprobante de estudios» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cargar_curriculum_vitae": {
+      "etiqueta": "cargar_curriculum_vitae",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Currículum vitae» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "cargar_comprobantes_experiencia": {
+      "etiqueta": "cargar_comprobantes_experiencia",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir «Comprobantes de experiencia» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "doc_identificacion_oficial": {
+      "etiqueta": "Identificación oficial",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Identificación oficial» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "IDENTIFICACION OFICIAL"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_identificacion_oficial",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "doc_curp": {
+      "etiqueta": "Clave Única de Registro de Población (CURP)",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Clave Única de Registro de Población (CURP)» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "CURP"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_curp",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "doc_comprobante_domicilio": {
+      "etiqueta": "Comprobante de domicilio",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Comprobante de domicilio» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE DOMICILIO"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_comprobante_domicilio",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "doc_constancia_situacion_fiscal": {
+      "etiqueta": "Constancia de situación fiscal",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Constancia de situación fiscal» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "CONSTANCIA DE SITUACION FISCAL"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_constancia_situacion_fiscal",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "doc_comprobante_estudios": {
+      "etiqueta": "Comprobante de estudios",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Comprobante de estudios» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTE DE ESTUDIOS"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_comprobante_estudios",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "doc_curriculum_vitae": {
+      "etiqueta": "Currículum vitae",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Currículum vitae» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "CURRICULUM VITAE"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_curriculum_vitae",
+        "valores": [
+          "si"
+        ]
+      }
+    },
+    "doc_comprobantes_experiencia": {
+      "etiqueta": "Comprobantes de experiencia",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir «Comprobantes de experiencia» por el que coincide con el que llevó a su cita.",
+      "finalidad": "Revisar que la persona cumple los requisitos de la acreditación.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "5",
+        "nombreArchivo": "COMPROBANTES DE EXPERIENCIA"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "cargar_comprobantes_experiencia",
+        "valores": [
+          "si"
+        ]
+      }
+    }
+  },
+  "repetibles": []
+}

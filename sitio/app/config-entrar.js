@@ -32,6 +32,11 @@ window.FORMKIT_OPCIONES = {
           (P ? P.cuenta(curp) : Promise.resolve(null)).then((c) => (c ? P.contrasenaValida(c, contrasena) : contrasena === APD.CONTRASENA_FICTICIA))
             .then((bien) => {
               if (!bien) return falla();
+              // Cuenta bloqueada en el cotejo: no era la persona de la fotografía (decisión 2026-10-17). Sólo se dice
+              // a quien ya dio la contraseña correcta. Pendiente (P79): cómo se comunica con la Dirección.
+              if (p.estado === 'bloqueada') {
+                return mal({ mensaje: 'Tu cuenta está bloqueada mientras la Secretaría aclara tu identidad, que no se pudo confirmar en tu cita de cotejo.' });
+              }
               APD.guardaSesion({ id: p.id });
               ok({ ok: true });
             });
