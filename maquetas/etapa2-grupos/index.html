@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maqueta · Grupos y asistencia</title>
+<!-- MAQUETA de la etapa 2 (pantallas del personal): grupos y asistencia. Usa las hojas reales del sitio (estándar y
+     apd.css) y datos ficticios. No es funcional: sirve para aprobar la forma antes de construir. -->
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
+<link rel="stylesheet" href="app/apd.css">
+<link rel="stylesheet" href="maqueta.css">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas maqueta-aviso" aria-label="Aviso de maqueta">Maqueta para aprobar · datos ficticios · los botones no guardan nada</aside>
+<header class="cabecera">
+  <div class="cabecera-int">
+    <span class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente"></span>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-ancha" id="contenido">
+  <div class="sesion personal-sesion">
+    <p class="sesion-nombre" data-quien>María Ejemplo Revisora <span class="estado">Perfil: revisión y cotejo</span></p>
+    <nav class="sesion-enlaces" aria-label="Secciones del personal">
+      <span class="btn-enlace">Revisión documental</span>
+      <span class="btn-enlace">Citas de cotejo</span>
+      <span class="btn-enlace" aria-current="page">Grupos</span>
+      <span class="nav-futura">Emisión y entrega</span>
+    </nav>
+  </div>
+
+  <nav class="maqueta-pasos" aria-label="Pantallas de la maqueta">
+    <button type="button" data-vista="grupos" aria-pressed="true">1 · Grupos y espera</button>
+    <button type="button" data-vista="espera" aria-pressed="false">2 · Personas en espera</button>
+    <button type="button" data-vista="grupo" aria-pressed="false">3 · Armar un grupo</button>
+    <button type="button" data-vista="asistencia" aria-pressed="false">4 · Asistencia (instructor)</button>
+  </nav>
+
+  <!-- ═════════════ 1 · GRUPOS Y ESPERA ═════════════ -->
+  <section data-pantalla="grupos" aria-labelledby="t-grupos">
+    <div class="tarjeta">
+      <h2 class="titulo-paso" id="t-grupos">Grupos</h2>
+      <p class="bajada">Las personas con el cotejo terminado esperan grupo en su curso. Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas y recibe hasta 25.</p>
+
+      <h3 class="titulo-bloque">Personas en espera de grupo</h3>
+      <div class="cursos">
+        <article class="curso">
+          <h4 class="curso-nombre">Poda y derribo · nueva</h4>
+          <p class="curso-cifra">6 <span>en espera</span></p>
+          <p><span class="estado" data-tono="error">1 espera más de 31 días</span></p>
+          <p class="texto-gris">Alcanza para un grupo.</p>
+          <button type="button" class="btn btn-secundario btn-chico" data-ir="espera">Ver la espera</button>
+        </article>
+        <article class="curso">
+          <h4 class="curso-nombre">Poda y derribo · renovación</h4>
+          <p class="curso-cifra">3 <span>en espera</span></p>
+          <p><span class="estado" data-tono="error">1 ya vencida: no puede operar mientras espera</span></p>
+          <p class="texto-gris">Faltan 2 para el mínimo de 5.</p>
+          <span class="btn btn-secundario btn-chico">Ver la espera</span>
+        </article>
+        <article class="curso">
+          <h4 class="curso-nombre">Dictaminador técnico · nueva</h4>
+          <p class="curso-cifra">2 <span>en espera</span></p>
+          <p class="texto-gris">Faltan 3 para el mínimo de 5.</p>
+          <span class="btn btn-secundario btn-chico">Ver la espera</span>
+        </article>
+        <article class="curso">
+          <h4 class="curso-nombre">Dictaminador técnico · renovación</h4>
+          <p class="curso-cifra">1 <span>en espera</span></p>
+          <p class="texto-gris">Faltan 4 para el mínimo de 5.</p>
+          <span class="btn btn-secundario btn-chico">Ver la espera</span>
+        </article>
+      </div>
+
+      <h3 class="titulo-bloque">Grupos</h3>
+      <div class="tabla-marco">
+        <table class="tabla tabla-bandeja">
+          <caption class="solo-lector">Grupos de los cuatro cursos</caption>
+          <thead><tr><th scope="col">Grupo</th><th scope="col">Curso</th><th scope="col">Integración</th><th scope="col">Personas</th><th scope="col">Inicia</th><th scope="col">Instructor</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+          <tbody>
+            <tr><td data-etiqueta="Grupo"><span class="mono">APD-G-2026-004</span></td><td data-etiqueta="Curso">Poda y derribo · nueva</td><td data-etiqueta="Integración">Combinado</td><td data-etiqueta="Personas">4 de 25 (mínimo 5)</td><td data-etiqueta="Inicia">Sin fecha</td><td data-etiqueta="Instructor">Sin asignar</td><td data-etiqueta="Situación"><span class="estado" data-tono="pend">En integración</span></td><td data-etiqueta="Acción"><button type="button" class="btn btn-secundario btn-chico" data-ir="grupo">Abrir</button></td></tr>
+            <tr><td data-etiqueta="Grupo"><span class="mono">APD-G-2026-003</span></td><td data-etiqueta="Curso">Poda y derribo · nueva</td><td data-etiqueta="Integración">Específico · Alcaldía Iztapalapa</td><td data-etiqueta="Personas">10 de 25</td><td data-etiqueta="Inicia">13/10/2026</td><td data-etiqueta="Instructor">Instructor Ejemplo Uno</td><td data-etiqueta="Situación"><span class="estado" data-tono="ok">En curso · día 2 de 5</span></td><td data-etiqueta="Acción"><button type="button" class="btn btn-secundario btn-chico" data-ir="asistencia">Asistencia</button></td></tr>
+            <tr class="fila-baja"><td data-etiqueta="Grupo"><span class="mono">APD-G-2026-001</span></td><td data-etiqueta="Curso">Poda y derribo · nueva</td><td data-etiqueta="Integración">Combinado</td><td data-etiqueta="Personas">10 de 25</td><td data-etiqueta="Inicia">07/09/2026</td><td data-etiqueta="Instructor">Instructor Ejemplo Uno</td><td data-etiqueta="Situación"><span class="estado">Concluido</span></td><td data-etiqueta="Acción"><span class="btn-enlace">Ver</span></td></tr>
+            <tr class="fila-baja"><td data-etiqueta="Grupo"><span class="mono">APD-G-2026-002</span></td><td data-etiqueta="Curso">Poda y derribo · renovación</td><td data-etiqueta="Integración">Combinado</td><td data-etiqueta="Personas">—</td><td data-etiqueta="Inicia">—</td><td data-etiqueta="Instructor">—</td><td data-etiqueta="Situación"><span class="estado">Cancelado</span></td><td data-etiqueta="Acción"><span class="btn-enlace">Ver</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="acciones acciones-izq"><span class="btn btn-primario">Crear un grupo</span></div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 2 · PERSONAS EN ESPERA ═════════════ -->
+  <section data-pantalla="espera" aria-labelledby="t-espera" hidden>
+    <p><span class="btn-atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Grupos</span></p>
+    <div class="tarjeta">
+      <h2 class="titulo-paso" id="t-espera">En espera · Poda y derribo · nueva</h2>
+      <p class="bajada">De la que más espera a la más reciente; desde 31 días se marca como prioritaria. En renovación se ordenan por la fecha en que vence su acreditación.</p>
+      <p class="resumen-filtro">6 personas en espera · 1 prioritaria.</p>
+      <div class="tabla-marco">
+        <table class="tabla tabla-bandeja">
+          <caption class="solo-lector">Personas en espera de grupo de poda y derribo, nueva</caption>
+          <thead><tr><th scope="col"><span class="solo-lector">Elegir</span></th><th scope="col">Persona</th><th scope="col">Folio de la solicitud</th><th scope="col">Adscripción</th><th scope="col">Espera</th></tr></thead>
+          <tbody data-espera>
+            <tr><td data-etiqueta="Elegir"><input class="casilla" type="checkbox" aria-label="Elegir a NÉSTOR PRUEBA MODELO" checked></td><td data-etiqueta="Persona">NÉSTOR PRUEBA MODELO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00038</span></td><td data-etiqueta="Adscripción">Independiente</td><td data-etiqueta="Espera"><span class="estado" data-tono="error">54 días · prioritaria</span></td></tr>
+            <tr><td data-etiqueta="Elegir"><input class="casilla" type="checkbox" aria-label="Elegir a GLORIA MUESTRA FICTICIO"></td><td data-etiqueta="Persona">GLORIA MUESTRA FICTICIO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00031</span></td><td data-etiqueta="Adscripción">Alcaldía Iztapalapa</td><td data-etiqueta="Espera"><span class="estado">14 días</span></td></tr>
+            <tr><td data-etiqueta="Elegir"><input class="casilla" type="checkbox" aria-label="Elegir a LUIS EJEMPLO PRUEBA"></td><td data-etiqueta="Persona">LUIS EJEMPLO PRUEBA</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00036</span></td><td data-etiqueta="Adscripción">Comisión Federal de Electricidad (CFE)</td><td data-etiqueta="Espera"><span class="estado">8 días</span></td></tr>
+            <tr><td data-etiqueta="Elegir"><input class="casilla" type="checkbox" aria-label="Elegir a MARTA MUESTRA FICTICIO"></td><td data-etiqueta="Persona">MARTA MUESTRA FICTICIO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00037</span></td><td data-etiqueta="Adscripción">Independiente</td><td data-etiqueta="Espera"><span class="estado">8 días</span></td></tr>
+            <tr><td data-etiqueta="Elegir"><input class="casilla" type="checkbox" aria-label="Elegir a OLGA FICTICIO SIMULADO"></td><td data-etiqueta="Persona">OLGA FICTICIO SIMULADO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00039</span></td><td data-etiqueta="Adscripción">Jardines Ejemplo del Norte, S.A. de C.V.</td><td data-etiqueta="Espera"><span class="estado">1 día</span></td></tr>
+            <tr><td data-etiqueta="Elegir"><input class="casilla" type="checkbox" aria-label="Elegir a PABLO MODELO EJEMPLO"></td><td data-etiqueta="Persona">PABLO MODELO EJEMPLO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00040</span></td><td data-etiqueta="Adscripción">Jardines Ejemplo del Norte, S.A. de C.V.</td><td data-etiqueta="Espera"><span class="estado">1 día</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="seleccion">
+        <p data-seleccion><strong>1 persona elegida.</strong> Se agrega al grupo en integración de este curso: APD-G-2026-004 (4 de 25).</p>
+        <span class="btn btn-primario">Agregar al grupo APD-G-2026-004</span>
+      </div>
+      <p class="ayuda">Si no hay grupo en integración, el botón crea uno con las personas elegidas. Un grupo específico de una organización sólo recibe a personas de esa organización.</p>
+    </div>
+  </section>
+
+  <!-- ═════════════ 3 · ARMAR UN GRUPO ═════════════ -->
+  <section data-pantalla="grupo" aria-labelledby="t-grupo" hidden>
+    <p><span class="btn-atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Grupos</span></p>
+    <div class="tarjeta">
+      <div class="grupo-cabeza">
+        <div>
+          <h2 class="titulo-paso" id="t-grupo">Grupo <span class="mono">APD-G-2026-004</span></h2>
+          <p class="bajada">Poda y derribo · nueva · combinado · creado el 10/10/2026</p>
+        </div>
+        <span class="estado" data-tono="pend">En integración</span>
+      </div>
+      <div class="cupo">
+        <p class="cupo-min"><strong>4 de 25 personas.</strong> Falta 1 para el mínimo de 5.</p>
+        <div class="cupo-barra" aria-hidden="true"><span class="cupo-lleno" data-cupo></span></div>
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <h3 class="titulo-bloque">Personas del grupo</h3>
+      <div class="tabla-marco">
+        <table class="tabla tabla-bandeja">
+          <caption class="solo-lector">Personas inscritas en el grupo APD-G-2026-004</caption>
+          <thead><tr><th scope="col">Persona</th><th scope="col">Folio de la solicitud</th><th scope="col">Adscripción</th><th scope="col">En el grupo desde</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+          <tbody>
+            <tr><td data-etiqueta="Persona">ANA EJEMPLO SIMULADO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00032</span></td><td data-etiqueta="Adscripción">Independiente</td><td data-etiqueta="Desde">10/10/2026</td><td data-etiqueta="Acción"><span class="btn-enlace">Dar de baja</span></td></tr>
+            <tr><td data-etiqueta="Persona">BRUNO MUESTRA PRUEBA</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00033</span></td><td data-etiqueta="Adscripción">Alcaldía Tlalpan</td><td data-etiqueta="Desde">10/10/2026</td><td data-etiqueta="Acción"><span class="btn-enlace">Dar de baja</span></td></tr>
+            <tr><td data-etiqueta="Persona">CARLA FICTICIO MODELO</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00034</span></td><td data-etiqueta="Adscripción">Independiente</td><td data-etiqueta="Desde">10/10/2026</td><td data-etiqueta="Acción"><span class="btn-enlace">Dar de baja</span></td></tr>
+            <tr><td data-etiqueta="Persona">DIEGO EJEMPLO MUESTRA</td><td data-etiqueta="Folio"><span class="mono">APD-S-2026-00035</span></td><td data-etiqueta="Adscripción">Independiente</td><td data-etiqueta="Desde">11/10/2026</td><td data-etiqueta="Acción"><span class="btn-enlace">Dar de baja</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><span class="btn-enlace">Agregar personas de la espera (6 en espera)</span></p>
+      <p class="ayuda">Dar de baja pide el motivo; la persona regresa a la espera con su antigüedad.</p>
+    </div>
+
+    <div class="tarjeta">
+      <h3 class="titulo-bloque">Para confirmar el grupo</h3>
+      <p class="ayuda ayuda-bloque">Al confirmar, cada persona ve en «Mis trámites» su grupo, las fechas del curso y dónde presentarse.</p>
+      <div class="fila">
+        <div class="campo">
+          <label class="etiqueta" for="inicio">Primer día del curso <span class="marca-oblig" aria-hidden="true">*</span></label>
+          <p class="ayuda">El curso dura 5 días seguidos.</p>
+          <input class="control" id="inicio" type="date" autocomplete="off" value="2026-10-26">
+        </div>
+        <div class="campo">
+          <label class="etiqueta" for="hora">Hora de entrada <span class="marca-oblig" aria-hidden="true">*</span></label>
+          <p class="ayuda">De 24 horas; por ejemplo, 09:00.</p>
+          <input class="control control-corto" id="hora" type="text" inputmode="numeric" maxlength="5" autocomplete="off" value="09:00">
+        </div>
+      </div>
+      <div class="campo">
+        <label class="etiqueta" for="instructor">Instructor <span class="marca-oblig" aria-hidden="true">*</span></label>
+        <div class="select"><select class="control control-select" id="instructor" autocomplete="off"><option value="">Elige</option><option selected>Instructor Ejemplo Uno</option><option>Instructora Ejemplo Dos</option></select></div>
+      </div>
+      <p class="ayuda">Lugar: aula de capacitación del Vivero Nezahualcóyotl; el examen, en el salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio.</p>
+      <div class="aviso aviso-advertencia"><span class="aviso-texto">Falta 1 persona para el mínimo de 5: el grupo todavía no se puede confirmar.</span></div>
+      <div class="acciones-grupo">
+        <span class="btn-enlace">Cancelar el grupo</span>
+        <span class="btn btn-primario">Confirmar el grupo</span>
+      </div>
+      <p class="ayuda">Cancelar pide el motivo; las personas regresan a la espera con su antigüedad.</p>
+    </div>
+  </section>
+
+  <!-- ═════════════ 4 · ASISTENCIA ═════════════ -->
+  <section data-pantalla="asistencia" aria-labelledby="t-asistencia" hidden>
+    <p><span class="btn-atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Mis grupos</span></p>
+    <div class="tarjeta">
+      <div class="grupo-cabeza">
+        <div>
+          <h2 class="titulo-paso" id="t-asistencia">Asistencia · grupo <span class="mono">APD-G-2026-003</span></h2>
+          <p class="bajada">Poda y derribo · nueva · del 13 al 17/10/2026 · 10 personas · para el examen se necesitan 4 de 5 días</p>
+        </div>
+        <span class="estado" data-tono="ok">En curso</span>
+      </div>
+      <div class="dias" role="group" aria-label="Día del curso">
+        <button type="button" aria-pressed="false">Día 1 · 13/10</button>
+        <button type="button" aria-pressed="true">Día 2 · 14/10</button>
+        <button type="button" disabled>Día 3 · 15/10</button>
+        <button type="button" disabled>Día 4 · 16/10</button>
+        <button type="button" disabled>Día 5 · 17/10</button>
+      </div>
+      <p class="ayuda ayuda-bloque">Marque quién asistió hoy. Los días que no han ocurrido no se capturan.</p>
+      <div data-asistencia></div>
+      <div class="acciones"><span class="btn btn-primario">Guardar la asistencia del día 2</span></div>
+      <p class="ayuda">El examen se presenta en computadora en el salón de cómputo del PILARES; la calificación llega sola al sistema y ahí mismo se entrega la credencial (P74–P78).</p>
+    </div>
+  </section>
+
+  <div class="tarjeta">
+    <h3 class="titulo-bloque">Para decidir antes de construir</h3>
+    <ol class="decidir">
+      <li><strong>Quién arma los grupos.</strong> Propuesta: el mismo perfil «revisión y cotejo» (P27); el instructor sólo ve sus grupos y captura asistencia.</li>
+      <li><strong>Horario del curso.</strong> Propuesta: la hora de entrada se fija por grupo al confirmarlo (aquí 09:00); falta la hora de salida y si es igual todos los días.</li>
+      <li><strong>Anticipación.</strong> Propuesta: el primer día del curso, al menos 7 días después de confirmar, para que la persona se entere (con el correo, P23) y se organice.</li>
+      <li><strong>Agregar a un grupo ya confirmado.</strong> Propuesta: se puede hasta el día anterior al inicio, sin pasar de 25.</li>
+      <li><strong>Grupo específico.</strong> Sólo personas de esa organización (la base ya lo exige). ¿Se permite completarlo con personas independientes si la organización no llega a 5? Propuesta: no; se arma combinado.</li>
+    </ol>
+  </div>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div></footer>
+
+<script src="formkit/js/iconos.js"></script>
+<script>
+(() => {
+  document.body.insertAdjacentHTML('afterbegin', window.FORMKIT_ICONOS || '');
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  // Vistas
+  const vistas = $$('[data-vista]');
+  const QUIEN = { asistencia: 'Instructor Ejemplo Uno <span class="estado">Perfil: instructor</span>' };
+  function ve(v) {
+    for (const b of vistas) b.setAttribute('aria-pressed', String(b.dataset.vista === v));
+    for (const p of $$('[data-pantalla]')) p.hidden = p.dataset.pantalla !== v;
+    $('[data-quien]').innerHTML = QUIEN[v] || 'María Ejemplo Revisora <span class="estado">Perfil: revisión y cotejo</span>';
+    window.scrollTo(0, 0);
+  }
+  for (const b of vistas) b.addEventListener('click', () => ve(b.dataset.vista));
+  for (const b of $$('[data-ir]')) b.addEventListener('click', () => ve(b.dataset.ir));
+
+  // Cupo del grupo: 4 de 25
+  $('[data-cupo]').style.inlineSize = `${(4 / 25) * 100}%`;
+
+  // Selección en la espera
+  function cuenta() {
+    const n = $$('[data-espera] input:checked').length;
+    $('[data-seleccion]').innerHTML = n
+      ? `<strong>${n === 1 ? '1 persona elegida' : `${n} personas elegidas`}.</strong> Se ${n === 1 ? 'agrega' : 'agregan'} al grupo en integración de este curso: APD-G-2026-004 (${4 + n} de 25${4 + n >= 5 ? ', ya se puede confirmar' : ''}).`
+      : 'Elija a las personas que entran al grupo.';
+  }
+  document.addEventListener('change', (e) => { if (e.target.closest('[data-espera]')) cuenta(); });
+  cuenta();
+
+  // Asistencia del día 2
+  const personas = ['ANDRÉS FICTICIO PRUEBA', 'BEATRIZ EJEMPLO MODELO', 'CÉSAR MUESTRA SIMULADO', 'DANIELA PRUEBA EJEMPLO', 'EMILIO MODELO FICTICIO'];
+  const dia1 = [true, true, false, true, true];
+  $('[data-asistencia]').innerHTML = personas.map((p, i) => `
+    <div class="asistencia-fila">
+      <div class="asistencia-quien">
+        <p><strong>${p}</strong></p>
+        <p class="texto-gris">${dia1[i] ? 'Asistió el día 1' : 'Faltó el día 1: ya no puede faltar otro día'}</p>
+      </div>
+      <fieldset class="grupo">
+        <legend class="solo-lector">¿${p} asistió el día 2?</legend>
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="a${i}" value="si" autocomplete="off"${i !== 2 ? ' checked' : ''}><span><span class="opcion-nombre">Asistió</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="a${i}" value="no" autocomplete="off"><span><span class="opcion-nombre">Faltó</span></span></label>
+        </div>
+      </fieldset>
+    </div>`).join('') + '<p class="texto-gris">… y 5 personas más.</p>';
+})();
+</script>
+</body>
+</html>

@@ -607,3 +607,10 @@ campos correctos.
 - Pendientes nuevos: P88 (redondeo), P89 (tiempo adicional por fallas), P90 (hallazgo de `esquema-desde-html`); P78
   construido, por aprobar.
 
+## 2026-10-17 · Bloque 47 · Lanzamiento con correo; maqueta de grupos y asistencia
+
+- Decisión de Liber: el sistema no se lanza hasta tener servicio de correo transaccional (P23 bloquea el lanzamiento); no
+  se construye el comprobante imprimible de la cita.
+- Maqueta `maquetas/etapa2-grupos/` (artefacto «Maqueta · Grupos y asistencia»): espera por curso con prioridad y
+  vencidas, personas en espera con selección para un grupo, armar y confirmar un grupo (mínimo 5, máximo 25, fecha,
+  hora de entrada, instructor, lugar fijo), asistencia por día del instructor. Cinco puntos para decidir.

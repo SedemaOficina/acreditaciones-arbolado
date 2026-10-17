@@ -75,7 +75,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 
 | # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P23 | Servicio de correo institucional para cuentas, contraseñas y avisos | Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre. Catálogo de avisos (2026-10-17): docs/AVISOS-POR-CORREO.md — 13 indispensables (cita asignada, resultado de la cita, observaciones, grupo, apertura de la renovación…) y los recomendables. Mientras, archivo de calendario o comprobante imprimible de la cita, y llamada del personal en los casos indispensables. | etapa 3 |
+| P23 | Servicio de correo institucional para cuentas, contraseñas y avisos | Es la pregunta de más peso para el SIA. Decisión de Liber (2026-10-17): el sistema no se lanza hasta tener servicio de correo transaccional; no se construyen sustitutos (comprobante imprimible o archivo de calendario). Catálogo de avisos: docs/AVISOS-POR-CORREO.md — indispensables (cita asignada, resultado de la cita, observaciones, grupo, apertura de la renovación…) y recomendables. En la versión de prueba los avisos se ven en «Mis trámites». | lanzamiento |
 | P24 | Siglas apd libres para esquema, cuenta y ruta | Confirmarlo en la misma reunión con el SIA que P23 a P30; las preguntas ya están redactadas en DECISIONES-SIA. | SIA |
 | P25 | Dónde se publica la aplicación y la ruta de su API | Misma reunión con el SIA. | SIA |
 | P26 | Límite de subida de la API (se necesitan al menos 5 MB por archivo) | Misma reunión con el SIA. Si el límite es menor, bajar el tamaño máximo es un parámetro de la base. | etapa 3 |

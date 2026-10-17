@@ -1,8 +1,8 @@
 # Avisos por correo a la persona solicitante
 
 Catálogo de los momentos del trámite en que la plataforma debe escribirle a la persona (y a la Dirección). Depende de
-que el SIA tenga un servicio de correo transaccional (P23). Mientras no lo haya, **la única forma de enterarse es entrar
-a «Mis trámites»**; por eso cada aviso de esta lista ya se muestra ahí.
+que el SIA tenga un servicio de correo transaccional (P23), condición para lanzar el sistema. En la versión de prueba
+cada aviso de esta lista se muestra en «Mis trámites».
 
 Prioridad:
 - **Indispensable**: sin el aviso la persona pierde una cita, un plazo o su trámite.
@@ -71,9 +71,8 @@ Prioridad:
 - Los envíos quedan en la bitácora (a quién, cuándo, qué aviso, si rebotó).
 - Si un correo rebota, se marca en la cuenta para que el personal lo vea y pida uno nuevo.
 
-## Mientras no haya correo
+## Lanzamiento
 
-- Todo aviso de esta lista se ve en «Mis trámites» (ya está construido).
-- Al validar la solicitud, la persona puede guardar la cita: descargar un archivo de calendario (.ics) o imprimir el
-  comprobante con la cita y los datos de pago. Pendiente de construir.
-- El personal puede llamar por teléfono en los casos indispensables de la cita (T2) y del grupo (G1, G2).
+Decisión de Liber (2026-10-17): **el sistema no se lanza hasta que el SIA tenga servicio de correo transaccional** (P23).
+No se construyen sustitutos (comprobante imprimible ni archivo de calendario). En la versión de prueba, cada aviso de esta
+lista se ve en «Mis trámites».

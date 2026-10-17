@@ -203,10 +203,10 @@
     {
       "id": "P23",
       "grupo": "sia",
-      "bloquea": "etapa 3",
+      "bloquea": "lanzamiento",
       "desde": "2026-10-14",
       "titulo": "Servicio de correo institucional para cuentas, contraseñas y avisos",
-      "recomendacion": "Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre. Catálogo de avisos (2026-10-17): docs/AVISOS-POR-CORREO.md — 13 indispensables (cita asignada, resultado de la cita, observaciones, grupo, apertura de la renovación…) y los recomendables. Mientras, archivo de calendario o comprobante imprimible de la cita, y llamada del personal en los casos indispensables."
+      "recomendacion": "Es la pregunta de más peso para el SIA. Decisión de Liber (2026-10-17): el sistema no se lanza hasta tener servicio de correo transaccional; no se construyen sustitutos (comprobante imprimible o archivo de calendario). Catálogo de avisos: docs/AVISOS-POR-CORREO.md — indispensables (cita asignada, resultado de la cita, observaciones, grupo, apertura de la renovación…) y recomendables. En la versión de prueba los avisos se ven en «Mis trámites»."
     },
     {
       "id": "P24",
