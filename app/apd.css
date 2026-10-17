@@ -260,5 +260,6 @@
 .doc-seguir { margin: var(--e-3) 0 0; display: flex; justify-content: flex-end; }
 .doc-seguir .btn { width: auto; }
 
-/* Menú de pruebas: fase del trámite y enlace al mapa (2026-10-17) */
-.menu-pruebas-fase { margin: 0; font-size: var(--t-sm); }
+/* Versión de prueba: dónde estás en el trámite, siempre a la vista bajo la franja (app/pruebas.js, 2026-10-17) */
+.ubicacion-prueba { border-block-end: var(--b-1) dashed var(--pend); background: var(--blanco); }
+.ubicacion-prueba-int { max-width: var(--ancho-pagina); margin: 0 auto; padding: var(--e-2) var(--e-pagina); font-size: var(--t-sm); text-align: center; }
