@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.32 | 17/10/26, 1:21 p.m. | Bloque 50: bitácora, decisiones y pendientes del estándar 1.3.1 (P95–P98) |
 | 0.31 | 17/10/26, 12:53 p.m. | Bloque 49: pase de lista con fotografía en el examen; código en una sola computadora a la vez |
 | 0.30 | 17/10/26, 12:20 p.m. | Bloque 46: prototipo del examen en línea en el PILARES (aplicar el examen y examen de la persona) |
 | 0.29 | 17/10/26, 12:09 p.m. | Bloque 45: un correo, una cuenta; sin fotografía nueva en el cotejo; catálogo de avisos por correo |
