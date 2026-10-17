@@ -23,6 +23,13 @@
 .examen-reloj-linea { font: var(--peso-medio) var(--t-base)/var(--interlineado-cuerpo) var(--fuente-cuerpo); margin-block: var(--e-3); }
 .examen-progreso { grid-column: 1 / -1; width: 100%; height: var(--e-2); accent-color: var(--azul); }
 
+.examen-caso { margin-block-end: var(--e-5); padding: var(--e-4); background: var(--fondo); border-inline-start: var(--b-3) solid var(--guinda); border-radius: var(--r-ctrl); }
+.examen-caso-titulo { margin: 0; font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.examen-caso-parte { margin-block: var(--e-1) var(--e-3); font-size: var(--t-sm); color: var(--gris); }
+.examen-caso-cuerpo { display: grid; gap: var(--e-3); line-height: var(--interlineado-cuerpo); }
+.examen-caso-cuerpo > p { margin: 0; }
+.examen-caso-cuerpo .tabla-marco { margin: 0; }
+
 .examen-pregunta { margin: 0; padding: 0; border: 0; }
 .examen-enunciado { margin-block-end: var(--e-5); padding: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); }
 .examen-letra { font-weight: var(--peso-fuerte); color: var(--guinda); }

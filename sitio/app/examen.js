@@ -101,6 +101,7 @@
     if (!b) return;
     if (b.dataset.irVista === 'instrucciones') {
       $('[data-total]').textContent = ex.preguntas.length;
+      $('[data-con-casos]').hidden = !ex.preguntas.some((p) => p.caso);
       $('[data-minutos]').textContent = ex.minutos;
       $('[data-minima]').textContent = decimal(ex.minima);
       muestra('instrucciones');
@@ -117,9 +118,10 @@
     const n = ex.preguntas.length;
     $('[data-numero]').textContent = `Pregunta ${actual + 1} de ${n}`;
     pintaAvance();
+    pintaCaso(p);
     $('[data-enunciado]').textContent = p.texto;
     $('[data-opciones]').replaceChildren(...p.opciones.map((o, j) => {
-      const letra = 'abcd'[j];
+      const letra = 'abcdefgh'[j];
       const radio = el('input', { class: 'opcion-fila-input', type: 'radio', name: 'respuesta', value: o.valor, autocomplete: 'off', checked: ex.respuestas[p.clave] === o.valor ? '' : null });
       const texto = o.imagen
         ? el('span', { class: 'examen-opcion-imagen' }, [el('span', { class: 'opcion-nombre', texto: `${letra})` }), el('img', { src: o.imagen, alt: `Imagen de la opción ${letra}`, width: '160', height: '120' })])
@@ -133,6 +135,25 @@
     pintaNumeros();
     muestra('pregunta', $('[data-tarjeta-pregunta]'));
     FormKit.anuncia(`Pregunta ${actual + 1} de ${n}.`);
+  }
+  /* Caso: el enunciado y las tablas que comparten varias preguntas seguidas, arriba de cada una. Las tablas son
+     datos (no imágenes) y usan la tabla del estándar: en el teléfono cada fila se lee como una ficha. */
+  function pintaCaso(p) {
+    const bloque = $('[data-caso]');
+    const caso = p.caso && ex.casos && ex.casos[p.caso];
+    bloque.hidden = !caso;
+    if (!caso) return;
+    $('[data-caso-titulo]').textContent = caso.titulo;
+    $('[data-caso-parte]').textContent = `Pregunta ${p.parte} de ${p.de} de este caso`;
+    // tabindex: si la tabla no cabe a lo ancho, el marco se desplaza también con el teclado
+    const tablas = (caso.tablas || []).map((t) => el('div', { class: 'tabla-marco', tabindex: '0', role: 'region', 'aria-label': t.titulo }, [
+      el('table', { class: 'tabla' }, [
+        el('caption', { class: 'tabla-titulo', texto: t.titulo }),
+        el('thead', {}, [el('tr', {}, t.encabezados.map((h) => el('th', { scope: 'col', texto: h })))]),
+        el('tbody', {}, t.filas.map((f) => el('tr', {}, f.map((v, j) => el('td', { 'data-etiqueta': t.encabezados[j], texto: v })))))
+      ])
+    ]));
+    $('[data-caso-cuerpo]').replaceChildren(...(caso.enunciado || []).map((t) => el('p', { texto: t })), ...tablas);
   }
   function pintaAvance() {
     const n = ex.preguntas.length;

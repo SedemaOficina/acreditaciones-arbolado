@@ -373,8 +373,8 @@
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-17",
-      "titulo": "Banco de reactivos de los exámenes: poda y derribo (uno solo para nueva y renovación), dictaminador nuevo y renovación",
-      "recomendacion": "Poda y derribo tiene un solo examen para solicitud nueva y renovación (decisión de Liber, 2026-10-17). El cuadernillo cambió: Liber enviará el examen vigente para capturarlo en la plantilla «Banco de reactivos» (fuera del repositorio, P85) con su clave, número de preguntas y tiempo. Faltan los de dictaminador nueva y renovación (confirmar si también son uno solo). Para que el examen no se repita entre grupos, el banco debe tener al menos el triple de las preguntas que se aplican; al ampliarlo, igualar la extensión de las opciones."
+      "titulo": "Banco de reactivos de los exámenes: falta dictaminador técnico (un solo examen para nueva y renovación)",
+      "recomendacion": "Un examen por acreditación, igual para nueva y renovación (decisiones de Liber, 2026-10-17). Poda y derribo ya está capturado en el banco de reactivos (fuera del repositorio, P85): cuadernillo vigente 2025, 52 reactivos en 60 minutos; confirmar si 60 minutos alcanzan con 12 reactivos de cálculo. Falta el cuadernillo de dictaminador técnico con su clave, número de preguntas y tiempo. Para que el examen no se repita entre grupos, el banco debe tener al menos el triple de las preguntas que se aplican; al ampliarlo, igualar la extensión de las opciones (en 24 de 39 preguntas la correcta es la más larga)."
     },
     {
       "id": "P75",
@@ -430,7 +430,15 @@
       "bloquea": "datos reales",
       "desde": "2026-10-17",
       "titulo": "Clave de todas las preguntas del examen vigente de poda",
-      "recomendacion": "Ya se sabe que el mismo examen sirve para nueva y renovación (2026-10-17). Al capturar el examen vigente, confirmar que cada pregunta tenga marcada su respuesta (en el cuadernillo anterior faltaban la 19 y la 24) y que las ilustraciones sean propias."
+      "recomendacion": "El cuadernillo vigente de poda marca 33 respuestas (con el estilo de párrafo «Título 1», que no se ve al imprimir). Confirmar las que no trae marcadas y propuso la revisión: 18, 22, 23, 24, 25, 26 y 28, y las de los ejercicios 1 y 3 (41, 42, 44, 49, 50 y 52). La ilustración de los tres cortes (18) tiene rótulos en inglés y parece de fuente externa: hace falta una propia o con licencia, en cuatro imágenes. Antes de imprimirlo otra vez: la pregunta sin número después de la 17, la 40 que no existe y las letras de la 23 y la 24."
+    },
+    {
+      "id": "P105",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Ejercicios de valoración del examen de poda: seis reactivos no se pueden calificar",
+      "recomendacion": "Reactivos 43, 45, 46, 47, 48 y 51 del cuadernillo vigente. (1) Restitución económica: cada letra trae una cifra en UMA y otra en pesos que no se corresponden (559 UMA = $63,245.26, pero esa cantidad está junto a 230 UMA), y hay filas repetidas; además usa la UMA de 2025 ($113.14) y desde febrero de 2026 vale $117.31. Recomendación: preguntar sólo en UMA, una cifra por opción. (2) Ejercicio 2: decir cómo se mide el DAP de un ejemplar con varios tallos (tallo por tallo da 18 puntos; sumados, 20) y si un ejemplar en fase arbustiva se valora. (3) En los ejercicios 1 y 3 la pregunta de manejo se responde con el enunciado («se requiere derribar»): cambiarla. Mientras no se corrijan, esos reactivos no se aplican en línea."
     },
     {
       "id": "P85",

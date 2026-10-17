@@ -10,9 +10,10 @@
    Las opciones de cada pregunta tienen un largo parecido a propósito: en el
    cuadernillo vigente la correcta suele ser la más larga (P74).
 
-   Parámetros de cada examen: valores de prueba hasta que la Dirección los
-   defina (P74). El cuadernillo vigente de renovación de poda tiene 40
-   preguntas y 60 minutos.
+   Parámetros de cada examen (P74): el cuadernillo vigente de poda y derribo
+   (2025), único para nueva y renovación, tiene 52 reactivos (40 de opción
+   múltiple y 3 ejercicios de valoración con 4 reactivos cada uno) y 60
+   minutos. Dictaminador: valores de prueba.
    ========================================================= */
 (function (global) {
   'use strict';
@@ -111,18 +112,52 @@
       a: 'La propia persona, al escribir su carrera en la solicitud',
       b: 'El personal de la Secretaría, en la revisión documental',
       c: 'La universidad donde la persona estudió, por escrito',
-      d: 'El instructor, el primer día del curso de capacitación' } }
+      d: 'El instructor, el primer día del curso de capacitación' } },
+
+    /* Un caso: varias preguntas sobre el mismo enunciado y la misma tabla, como los ejercicios de valoración y
+       restitución del cuadernillo vigente de poda (P105). Salen juntas y en este orden; «orden: 'fijo'» deja las
+       opciones como están (escalas de números). La tabla viaja como datos, no como imagen, para que se lea con
+       lector de pantalla. */
+    { clave: 'F25', tema: 'Caso', caso: 'FC1', texto: '¿Ana tiene derecho a presentar el examen?', correcta: 'a', opciones: {
+      a: 'Sí: el curso de primera vez admite una falta',
+      b: 'No: el curso de primera vez no admite faltas',
+      c: 'Sólo si vuelve a pagar el día que faltó',
+      d: 'Sólo si el instructor lo autoriza por escrito' } },
+    { clave: 'F26', tema: 'Caso', caso: 'FC1', orden: 'fijo', texto: '¿Qué calificación obtuvo Ana?', correcta: 'b', opciones: { a: '8.0', b: '8.3', c: '8.4', d: '8.5', e: '9.0' } },
+    { clave: 'F27', tema: 'Caso', caso: 'FC1', texto: 'Con esa calificación, ¿Ana aprobó?', correcta: 'c', opciones: {
+      a: 'No: le falta una décima para la mínima',
+      b: 'No: la mínima de dictaminador es 8.5',
+      c: 'Sí: la mínima de dictaminador es 8.0',
+      d: 'Sí: la mínima de dictaminador es 7.0' } }
   ];
 
-  /* Los exámenes: poda y derribo tiene uno solo, igual para solicitud nueva y renovación (decisión 2026-10-17, Liber);
-     dictaminador, por ahora uno por modalidad. Valores de prueba (P74): mismo banco ficticio para todos. */
-  const examenes = {
-    poda: { preguntas: 12, minutos: 60 },
-    dictaminador_nueva: { preguntas: 12, minutos: 60 },
-    dictaminador_renovacion: { preguntas: 12, minutos: 60 }
+  const casos = {
+    FC1: {
+      titulo: 'Caso: el examen de Ana',
+      enunciado: ['Ana solicitó por primera vez la acreditación de dictaminador técnico. Faltó un día al curso.',
+        'En el examen contestó bien 20 de 24 preguntas. La calificación es aciertos ÷ preguntas × 10, con un decimal y sin redondear hacia arriba.'],
+      tablas: [{
+        titulo: 'Tabla A. Reglas de los cursos (ficticias, sólo para probar)',
+        encabezados: ['Curso', 'Días', 'Faltas que se admiten', 'Calificación mínima'],
+        filas: [
+          ['Poda y derribo · primera vez', '5', '1', '7.0'],
+          ['Poda y derribo · renovación', '1', '0', '7.0'],
+          ['Dictaminador técnico · primera vez', '5', '1', '8.0'],
+          ['Dictaminador técnico · renovación', '1', '0', '8.0']
+        ]
+      }]
+    }
   };
-  /* El examen que presenta un curso: primero el de su modalidad; si no hay, el del tipo */
+
+  /* Los exámenes: uno por acreditación, igual para solicitud nueva y renovación (decisiones 2026-10-17, Liber).
+     Poda y derribo: el cuadernillo vigente se aplica completo (52 reactivos, 60 minutos); aquí, igual: todas las
+     preguntas del banco ficticio. Dictaminador: valores de prueba hasta tener su cuadernillo (P74). */
+  const examenes = {
+    poda: { preguntas: reactivos.length, minutos: 60 },
+    dictaminador: { preguntas: 15, minutos: 60 }
+  };
+  /* El examen que presenta un curso: el de su tipo (la modalidad ya no cambia el examen) */
   const examenDe = (tipo, modalidad) => examenes[`${tipo}_${modalidad}`] || examenes[tipo];
 
-  global.APD_EXAMEN_BANCO = { ficticio: true, reactivos, examenes, examenDe };
+  global.APD_EXAMEN_BANCO = { ficticio: true, reactivos, casos, examenes, examenDe };
 }(typeof window !== 'undefined' ? window : globalThis));

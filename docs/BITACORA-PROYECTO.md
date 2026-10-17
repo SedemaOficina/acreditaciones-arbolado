@@ -586,8 +586,8 @@ campos correctos.
 ## 2026-10-17 · Bloque 46 · Prototipo del examen en línea (PILARES)
 
 - Pedido de Liber: prototipo del examen en línea para el salón de cómputo del PILARES Vivero Nezahualcóyotl (el curso,
-  en el aula del Vivero; el examen, a unos metros). Insumo: el cuadernillo vigente de renovación de poda (40 preguntas,
-  60 minutos) y su hoja de respuestas con la evaluación práctica; su banco con clave queda fuera del repositorio (P85).
+  en el aula del Vivero; el examen, a unos metros). Insumo: el cuadernillo de poda de entonces, ya reemplazado por el
+  vigente (bloque 54); el banco con clave queda fuera del repositorio (P85).
 - Persona (`examen.html`, sin cuenta): código de un solo uso → ¿eres tú? → instrucciones → una pregunta por pantalla con
   reloj, avance, mapa y marca para revisar → revisar y enviar (confirmación) → calificación y qué sigue (aprobado: la
   credencial ese día; no aprobado: solicitud nueva). Recargar o cambiar de computadora vuelve al examen; tiempo agotado
@@ -714,8 +714,21 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 
 ## 2026-10-17 · Bloque 53 · Un solo examen de poda
 
-- Liber: el examen de poda y derribo es el mismo para solicitud nueva y renovación, y el cuadernillo cambió; enviará el
-  vigente para capturarlo en el banco de reactivos (P74, P84 actualizados).
+- Liber: el examen de poda y derribo es el mismo para solicitud nueva y renovación; enviará el cuadernillo vigente para
+  capturarlo en el banco de reactivos (P74, P84 actualizados).
 - Banco ficticio: `examenes.poda` (uno solo) y `examenDe(tipo, modalidad)`, que busca primero el de la modalidad y luego
   el del tipo; lo usan el servidor simulado y «Aplicar el examen». `probar-examen.mjs` sin fallas.
 
+## 2026-10-17 · Bloque 54 · Cuadernillo vigente de poda y ejercicios de caso
+
+- Liber envió el cuadernillo vigente de poda y derribo («EVALUACION_PODADORES_2025»), el único que vale: se borró todo lo
+  del cuadernillo anterior (banco, imágenes y archivos de trabajo, fuera del repositorio). Dictaminador también tiene un
+  solo examen para nueva y renovación.
+- Banco de reactivos (fuera del repositorio, P85): 52 reactivos, 40 de opción múltiple y 3 ejercicios de valoración y
+  restitución con 4 reactivos cada uno; 60 minutos. 33 con respuesta marcada en el cuadernillo, 13 propuestos por la
+  revisión (por confirmar, P84) y 6 sin clave válida (P105).
+- Examen en línea: soporte para casos (enunciado y tablas compartidos por varias preguntas, que salen juntas y en orden;
+  la tabla va como datos, no como imagen) y para opciones de orden fijo y de cinco opciones. Banco ficticio con un caso
+  (FC1); el examen de poda se aplica completo, como el cuadernillo; dictaminador, un solo examen con valores de prueba.
+- `probar-examen.mjs`: el caso va seguido y en orden, opciones de orden fijo, tabla con etiquetas en teléfono y axe en la
+  pregunta del caso; 63 comprobaciones, 0 fallas. Auditor de CSS sin hallazgos.
