@@ -21,6 +21,8 @@ await import(pathToFileURL(join(raiz, 'sitio/app/curp-nombre.js')).href);
 await import(pathToFileURL(join(raiz, 'sitio/app/fecha-dma.js')).href);
 // …y el folio fiscal de la factura (cotejo)
 await import(pathToFileURL(join(raiz, 'sitio/app/folio-fiscal.js')).href);
+// …y el código de examen (examen en línea)
+await import(pathToFileURL(join(raiz, 'sitio/app/codigo-examen.js')).href);
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
 const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalThis.APD_CRUZADAS }, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
 
@@ -43,6 +45,16 @@ for (const parte of ['contacto', 'adscripcion', 'foto']) {
   esquema[`perfil-${parte}`] = JSON.parse(readFileSync(join(salida, `perfil-${parte}.json`), 'utf8'));
 }
 rmSync(join(salida, 'datos.json'), { force: true });
+// Examen en línea: el formulario de la persona (entrar con su código) y el de quien aplica (suspender un examen).
+// Se toma sólo el formulario: la herramienta del estándar lee como parte del último campo un control que está fuera
+// del formulario (la casilla «Marcarla para revisar» de examen.html la volvía «casilla»; hallazgo P90).
+for (const [archivo, id, nombre] of [['examen.html', 'entrar', 'examen-entrar'], ['aplicar.html', 'suspender', 'examen-suspender']]) {
+  const m = readFileSync(join(raiz, 'sitio', archivo), 'utf8').match(new RegExp(`<form id="${id}"[\\s\\S]*?</form>`));
+  const html = join(temporal, `${nombre}.html`);
+  writeFileSync(html, `<!DOCTYPE html><html lang="es-MX"><body>${m[0]}</body></html>`);
+  execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), html, join(salida, `${nombre}.json`)]);
+  esquema[nombre] = JSON.parse(readFileSync(join(salida, `${nombre}.json`), 'utf8'));
+}
 
 let fallas = 0;
 const meta = { trampa: '', ms_en_formulario: 90000, idempotencia: 'prueba' };
@@ -250,6 +262,14 @@ caso('Corrección del mismo día: un documento que no quedó en pausa no se reci
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);
 caso('Verificar sin número se rechaza', 'verificar', {}, ['numero']);
+
+// Examen en línea (decisiones 2026-10-17, P78): el código es de un solo uso; el servidor revisa además que exista
+caso('Examen: un código bien escrito se acepta', 'examen-entrar', { codigo: 'K7MP-3XQ9' }, true);
+caso('Examen: el código en minúsculas y sin guion se acepta (se normaliza)', 'examen-entrar', { codigo: 'k7mp3xq9' }, true);
+caso('Examen: un código con letras que se confunden (O, I, 0, 1) se rechaza', 'examen-entrar', { codigo: 'K7MO-3XQ1' }, ['codigo']);
+caso('Examen: sin código se rechaza', 'examen-entrar', {}, ['codigo']);
+caso('Examen: suspender sin motivo se rechaza', 'examen-suspender', {}, ['motivo']);
+caso('Examen: suspender con su motivo se acepta', 'examen-suspender', { motivo: 'Consultó su teléfono durante el examen.' }, true);
 
 console.log(fallas ? `\n${fallas} caso(s) fallido(s).` : '\nTodos los casos correctos.');
 process.exit(fallas ? 1 : 0);

@@ -188,17 +188,18 @@
   const PANTALLAS = [
     ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación']]],
     ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
-    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo']]]
+    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['aplicar.html', 'Aplicar el examen']]],
+    ['Salón de cómputo', [['examen.html', 'Examen en línea']]]
   ];
   const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
-  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html'];
+  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'aplicar.html'];
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
   const PREFIJO = 'apd.';                                                      // todo lo que guarda el sitio en la pestaña
   /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
   const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
   const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
-  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'verificar.html': 7 };
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'aplicar.html': 5, 'examen.html': 5, 'verificar.html': 7 };
   const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
@@ -209,16 +210,18 @@
   function guardado() {
     const revisiones = cuentaLista('apd.personal.revisiones');
     const cotejos = cuentaLista('apd.personal.cotejos');
-    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ cuentas: 0, envios: 0, fotos: 0, revisiones, cotejos });
-    return APD_ARCHIVOS_PRUEBA.guardado().then((g) => Object.assign(g, { revisiones, cotejos }));
+    const examenes = cuentaLista('apd.examen.codigos');
+    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ cuentas: 0, envios: 0, fotos: 0, revisiones, cotejos, examenes });
+    return APD_ARCHIVOS_PRUEBA.guardado().then((g) => Object.assign(g, { revisiones, cotejos, examenes }));
   }
-  function textoGuardado({ cuentas, envios, fotos, revisiones, cotejos }) {
+  function textoGuardado({ cuentas, envios, fotos, revisiones, cotejos, examenes }) {
     const partes = [];
     if (cuentas) partes.push(cuentas === 1 ? '1 cuenta' : `${cuentas} cuentas`);
     if (fotos) partes.push(fotos === 1 ? '1 fotografía de perfil' : `${fotos} fotografías de perfil`);
     if (envios) partes.push(envios === 1 ? '1 solicitud enviada con sus documentos' : `${envios} solicitudes enviadas con sus documentos`);
     if (revisiones) partes.push(revisiones === 1 ? '1 revisión' : `${revisiones} revisiones`);
     if (cotejos) partes.push(cotejos === 1 ? '1 cita de cotejo atendida' : `${cotejos} citas de cotejo atendidas`);
+    if (examenes) partes.push(examenes === 1 ? '1 código de examen' : `${examenes} códigos de examen`);
     return partes.length ? `${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : 'nada';
   }
   function borraPestana() {
@@ -247,7 +250,9 @@
     const persona = sesion && sesion.id ? datos.solicitante.find((p) => p.id === sesion.id) : null;
     const actual = enPersonal ? casos.find((c) => c.clave === 'personal')
       : persona ? casos.find((c) => c.persona && c.persona.id === persona.id) : null;
-    const quien = enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, revisión documental`
+    const quien = pagina === 'aplicar.html' ? 'Laura Ejemplo Instructora · personal, instructor (aplica el examen)'
+      : pagina === 'examen.html' ? 'persona en el salón de cómputo (entra con su código, sin cuenta)'
+      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, revisión documental`
       : persona ? `${APD.nombreCompleto(persona)} · persona solicitante${persona.de_prueba ? ' (cuenta creada en la prueba)' : ''}` : 'nadie (sin sesión)';
     const ahora = el('div', { class: 'menu-pruebas-ahora' }, [
       el('div', { class: 'menu-pruebas-fila' }, [
@@ -260,6 +265,12 @@
     /* 2 · En esta pantalla: sólo lo que aplica */
     const aqui = [];
     if (form && LLENA.includes(pagina)) aqui.push(acciones(boton('Llenar con datos ficticios', () => di(llena(datos)))));
+    /* Acciones propias de una pantalla (examen.html, aplicar.html): [texto, función async que devuelve el aviso] */
+    if (typeof window.APD_PRUEBAS_AQUI === 'function') {
+      aqui.push(acciones(...window.APD_PRUEBAS_AQUI(datos).map(([texto, hace]) => boton(texto, () => {
+        Promise.resolve().then(hace).then((m) => di(m || 'Listo.'), () => di('No se pudo hacer en este navegador.'));
+      }))));
+    }
     if (form && pagina === 'cuenta.html') {
       const migradas = APD_CASOS_PRUEBA.migradas(datos);
       if (migradas.length) {
@@ -322,12 +333,12 @@
     const cuenta = el('p', {}, [el('strong', { texto: 'Guardado en este navegador: ' }), el('span', { 'data-guardado': '', texto: '…' })]);
     const borrar = boton('Borrar lo guardado', () => {
       const docs = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve() : APD_ARCHIVOS_PRUEBA.borraTodo();
-      for (const k of ['apd.personal.revisiones', 'apd.personal.cotejos']) {
+      for (const k of ['apd.personal.revisiones', 'apd.personal.cotejos', 'apd.examen.codigos']) {
         try { window.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
       }
       docs.then(() => { di('Se borró lo guardado en este navegador.'); pintaGuardado(); }, () => di('No se pudo borrar.'));
     });
-    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.cuentas && !g.envios && !g.fotos && !g.revisiones && !g.cotejos; }); }
+    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.cuentas && !g.envios && !g.fotos && !g.revisiones && !g.cotejos && !g.examenes; }); }
     pintaGuardado();
 
     const hijos = [
@@ -362,7 +373,7 @@
         el('ul', { class: 'menu-pruebas-lista' }, lista.map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))
       ])))]),
       seccion('Ajustes de la prueba', [
-        ayuda('Lo guardado (cuentas, solicitudes, documentos, fotografías, revisiones, citas de cotejo) queda en este navegador aunque lo cierres; las preguntas obligatorias, sólo en esta pestaña.'),
+        ayuda('Lo guardado (cuentas, solicitudes, documentos, fotografías, revisiones, citas de cotejo, códigos de examen) queda en este navegador aunque lo cierres; las preguntas obligatorias, sólo en esta pestaña.'),
         interruptor,
         el('div', { class: 'menu-pruebas-ajuste' }, [cuenta, acciones(borrar)]),
         acciones(boton('Empezar de cero', () => {

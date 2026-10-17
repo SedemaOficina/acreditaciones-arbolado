@@ -1,0 +1,20 @@
+{
+  "formulario": "examen-entrar.html",
+  "generado": "2026-10-17T18:14:54.996Z",
+  "campos": {
+    "codigo": {
+      "etiqueta": "Código del examen",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "codigo-examen",
+      "sensible": false,
+      "uso": "Abrir el examen de la persona a quien se le entregó el código; no es un dato personal.",
+      "atributos": {
+        "maxlength": "9"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

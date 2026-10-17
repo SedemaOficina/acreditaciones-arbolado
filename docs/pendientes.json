@@ -598,7 +598,7 @@
       "bloquea": "no",
       "desde": "2026-10-17",
       "titulo": "Entrada al examen: código de un solo uso que entrega el aplicador",
-      "recomendacion": "El aplicador pasa lista con identificación oficial y entrega a cada persona un código de examen de un solo uso generado para el grupo; no se entra con la contraseña de la cuenta, para que nadie lo presente fuera del salón. Cada respuesta se guarda en el servidor al contestarla, así quien cambia de computadora sigue con el mismo código; la calificación la calcula el servidor (P29)."
+      "recomendacion": "El aplicador pasa lista con identificación oficial y entrega a cada persona un código de examen de un solo uso generado para el grupo; no se entra con la contraseña de la cuenta, para que nadie lo presente fuera del salón. Cada respuesta se guarda en el servidor al contestarla, así quien cambia de computadora sigue con el mismo código; la calificación la calcula el servidor (P29). Construido así en el prototipo del examen (bloque 46, aplicar.html y examen.html): falta tu visto bueno."
     },
     {
       "id": "P79",
@@ -671,6 +671,30 @@
       "desde": "2026-10-17",
       "titulo": "El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde",
       "recomendacion": "Tras un envío fallido, el núcleo oculta el aviso en cuanto cualquier elemento del formulario recibe el foco; al presionar un botón debajo del aviso, el botón sube y el clic no llega. Proponer ocultarlo al cambiar un valor, no al mover el foco. En «Mi perfil», «Cancelar» evita el problema (mousedown sin mover el foco)."
+    },
+    {
+      "id": "P88",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Redondeo de la calificación del examen",
+      "recomendacion": "Un decimal sin redondear hacia arriba: 27 de 40 aciertos da 6.75 → 6.7, no 6.8, para que nadie apruebe por redondeo. Es lo que hace el prototipo. Si la Dirección prefiere redondear al décimo más cercano, se cambia en una línea del servidor."
+    },
+    {
+      "id": "P89",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Tiempo adicional cuando la falla es del equipo o de la sede",
+      "recomendacion": "Hoy el tiempo corre aunque la computadora falle o se vaya la luz, porque lo lleva el servidor. Propuesta: que quien aplica pueda dar hasta 10 minutos más a una persona, con motivo, y que quede en la bitácora. No está en el prototipo hasta que la Dirección lo decida."
+    },
+    {
+      "id": "P90",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "esquema-desde-html toma como parte del último campo un control que está fuera del formulario",
+      "recomendacion": "Reportarlo: en examen.html la casilla «Marcarla para revisar», fuera del formulario, volvía «casilla» el campo del código. La herramienta debería leer sólo lo que está dentro del <form>. Mientras, probar-esquemas.mjs extrae el formulario antes de generar el esquema."
     }
   ],
   "resueltos": [

@@ -64,6 +64,7 @@ npm run construir-sitio -- <ruta-al-estandar>       # copia el estándar, la ver
 npm run probar-esquemas -- <ruta-al-estandar>       # esquemas del servidor y su validación con validar.mjs
 (cd sitio && python3 -m http.server 8765) &         # cualquier servidor estático
 AXE=<ruta-al-estandar>/vendor/axe-core/axe.min.js npm run probar-sitio   # teléfono y escritorio, consola, accesibilidad, capturas
+AXE=<ruta-al-estandar>/vendor/axe-core/axe.min.js npm run probar-examen  # examen en línea: aplicar.html y examen.html, de punta a punta
 bash herramientas/publicar-sitio.sh                 # gh-pages = sitio/ (después del commit en main)
 node herramientas/construir-artefacto.mjs <carpeta> # la misma versión de prueba como artefacto de Claude
 ```

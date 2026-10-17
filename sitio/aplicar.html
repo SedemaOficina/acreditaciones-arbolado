@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aplicar el examen · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Códigos y avance del examen en línea de un grupo, para quien lo aplica en el salón de cómputo. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.29">
+<link rel="stylesheet" href="app/apd.css?v=0.29">
+<link rel="stylesheet" href="app/examen.css?v=0.29">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-ancha" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+
+  <section class="tarjeta" aria-labelledby="t-aplicar" data-con-grupo hidden>
+    <h2 class="titulo-paso" id="t-aplicar">Aplicar el examen</h2>
+    <p class="bajada">Examen en línea del grupo, el último día del curso, en el salón de cómputo. Cada persona entra con un código de un solo uso; usted lo genera aquí después de comprobar su identificación oficial.</p>
+    <div data-grupo></div>
+
+    <ol class="ayuda ayuda-bloque examen-pasos">
+      <li>Pase lista: compare a cada persona con su identificación oficial.</li>
+      <li>Genere su código e imprímalo, o dígaselo. Sólo sirve para su examen.</li>
+      <li>La persona escribe el código en la computadora, en «Entra a tu examen».</li>
+      <li>Siga aquí el avance. Al enviar, cada persona ve su calificación y queda registrada.</li>
+    </ol>
+
+    <div class="examen-herramientas">
+      <button type="button" class="btn btn-secundario" data-imprimir><svg class="icono" aria-hidden="true"><use href="#i-descarga"></use></svg>Imprimir los códigos</button>
+      <a class="btn-enlace" href="examen.html" target="_blank" rel="noopener">Abrir la pantalla del examen<span class="solo-lector"> (se abre en otra pestaña)</span><svg class="icono icono-sm" aria-hidden="true"><use href="#i-externo"></use></svg></a>
+    </div>
+
+    <p class="resumen-filtro" role="status" data-cuenta>Cargando el grupo…</p>
+    <div class="aviso aviso-ok" data-todos hidden><svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg><p class="aviso-texto">Todas las personas con derecho a examen terminaron. Las calificaciones quedaron registradas como «examen en línea» y no se modifican. Sigue la entrega de credenciales a quienes aprobaron. <span class="pendiente">Pendiente: la pantalla de emisión y entrega es el siguiente bloque.</span></p></div>
+
+    <div class="tabla-marco" data-tabla data-clave="persona">
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector" data-leyenda>Personas del grupo y su examen</caption>
+        <thead><tr><th scope="col">Persona</th><th scope="col">Asistencia</th><th scope="col">Código</th><th scope="col">Avance</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+    </div>
+    <p class="ayuda">Versión de prueba: la asistencia de los días que aún no se capturan se cuenta como cumplida, salvo a una persona a la que se le simula otra falta para ver el caso sin derecho a examen. Abra la pantalla del examen en otra pestaña de este navegador: el avance se ve aquí al momento. <span class="pendiente">Pendiente (P74): número de preguntas y tiempo de cada examen; hoy, valores de prueba.</span></p>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-sin-grupo" data-sin-grupo hidden>
+    <h2 class="titulo-paso" id="t-sin-grupo">Aplicar el examen</h2>
+    <p>No hay grupos en curso con examen. Cuando un grupo esté en su último día, aparecerá aquí.</p>
+  </section>
+
+  <!-- Suspender: el motivo queda en la bitácora del examen -->
+  <dialog class="dialogo" id="dlg-suspender" aria-labelledby="t-suspender">
+    <form id="suspender" data-formkit action="#" method="post">
+      <h2 class="titulo-bloque dialogo-titulo" id="t-suspender">Suspender el examen</h2>
+      <p class="texto-gris" data-suspender-de></p>
+      <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué se suspendió el examen (bitácora); la persona lo lee tal cual.">
+        <label class="etiqueta" for="motivo">Motivo</label>
+        <p class="ayuda" id="ay-motivo">Lo que vio, en una o dos frases. La persona lo lee en su pantalla. Ejemplo: Consultó su teléfono durante el examen.</p>
+        <!-- autocomplete off: lo escribe quien aplica; no hay nada que proponer. -->
+        <textarea class="control" id="motivo" name="motivo" rows="3" maxlength="300" autocomplete="off" aria-describedby="ay-motivo"></textarea>
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones dialogo-acciones">
+        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Cancelar</button>
+        <button type="submit" class="btn btn-peligro" data-accion="enviar">Suspender el examen</button>
+      </div>
+    </form>
+  </dialog>
+</main>
+
+<!-- Papeletas para imprimir: una por persona con código vigente -->
+<div class="papeletas" data-papeletas aria-hidden="true"></div>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/apd.js?v=0.29"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.29"></script>
+<script src="app/codigo-examen.js?v=0.29"></script>
+<script src="app/config-examen.js?v=0.29"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/tabla/tabla.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<!-- Versión de prueba: banco ficticio y servidor simulado en el navegador (en el SIA, la API del módulo). -->
+<script src="datos/examen-ficticio.js?v=0.29"></script>
+<script src="app/examen-servidor.js?v=0.29"></script>
+<script src="app/examen-grupo.js?v=0.29"></script>
+<script src="app/aplicar.js?v=0.29"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/curp-nombre.js?v=0.29"></script>
+<script src="app/casos-prueba.js?v=0.29"></script>
+<script src="app/pruebas.js?v=0.29"></script>
+<script src="app/version-visible.js?v=0.29"></script>
+</body>
+</html>

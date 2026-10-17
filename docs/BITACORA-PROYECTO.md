@@ -583,3 +583,27 @@ campos correctos.
 - «Mi perfil»: «Cancelar» después de un envío fallido no respondía al primer clic (el aviso del núcleo se ocultaba y el
   botón subía): P87. Pendiente P86: actualizar al estándar 1.1.0, que pinta los errores del servidor.
 
+## 2026-10-17 · Bloque 46 · Prototipo del examen en línea (PILARES)
+
+- Pedido de Liber: prototipo del examen en línea para el salón de cómputo del PILARES Vivero Nezahualcóyotl (el curso,
+  en el aula del Vivero; el examen, a unos metros). Insumo: el cuadernillo vigente de renovación de poda (40 preguntas,
+  60 minutos) y su hoja de respuestas con la evaluación práctica; su banco con clave queda fuera del repositorio (P85).
+- Persona (`examen.html`, sin cuenta): código de un solo uso → ¿eres tú? → instrucciones → una pregunta por pantalla con
+  reloj, avance, mapa y marca para revisar → revisar y enviar (confirmación) → calificación y qué sigue (aprobado: la
+  credencial ese día; no aprobado: solicitud nueva). Recargar o cambiar de computadora vuelve al examen; tiempo agotado
+  envía solo; suspensión y código repuesto se ven al momento.
+- Quien aplica (`aplicar.html`, perfil simulado «instructor»): asistencia y derecho a examen, generar códigos, avance al
+  momento, reponer código, suspender con motivo (formulario del estándar en un diálogo) e imprimir papeletas.
+- Servidor simulado (`app/examen-servidor.js`) con las reglas de la API: orden por persona con semilla, respuestas al
+  elegirlas, tiempo en el servidor, calificación sin redondear hacia arriba, la página sin la clave. Banco ficticio de
+  24 preguntas sobre el propio trámite, con opciones de largo parecido y una pregunta con imágenes.
+- Menú de pruebas: acciones propias por pantalla (`window.APD_PRUEBAS_AQUI`): usar el código de alguien del grupo,
+  contestar todas bien o para no aprobar, dejar 1 minuto; generar todos los códigos y simular que todos envían. Cuenta y
+  borra los códigos de examen guardados.
+- Pruebas: `herramientas/probar-examen.mjs` (45 comprobaciones en teléfono y escritorio, con axe); `probar-sitio`
+  sin cambios en sus resultados; esquemas `examen-entrar.json` y `examen-suspender.json` con 6 casos (generados con
+  `estandares-sia/formularios`; el resto de los esquemas sigue con su versión). Auditor de CSS del estándar sin
+  hallazgos en `app/examen.css`.
+- Pendientes nuevos: P88 (redondeo), P89 (tiempo adicional por fallas), P90 (hallazgo de `esquema-desde-html`); P78
+  construido, por aprobar.
+

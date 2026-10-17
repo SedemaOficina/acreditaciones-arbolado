@@ -4,7 +4,7 @@
 //
 // Uso: node herramientas/construir-sitio.mjs <ruta-al-clon-de-estandar-formularios>
 //
-// Lo que escribe es generado y no se edita a mano: sitio/formkit/, sitio/datos/, sitio/VERSION,
+// Lo que escribe es generado y no se edita a mano: sitio/formkit/, sitio/datos/ (con examen-ficticio.js, copiado de datos/), sitio/VERSION,
 // sitio/app/version-visible.*, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
 // corregir.html, cuenta.html y datos.html.
 
@@ -43,7 +43,7 @@ cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-vi
 // La hoja de la plantilla usa valores literales; aquí va su equivalente con los tokens del estándar
 cpSync(join(plantillaVersion, 'version-visible.formkit.css'), join(sitio, 'app/version-visible.css'));
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
-const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html'];
+const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'aplicar.html', 'examen.html'];
 for (const p of paginas) {
   const ruta = join(sitio, p);
   const html = readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${version}`);
@@ -72,6 +72,8 @@ hojas de un documento en la revisión documental.
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 mkdirSync(join(sitio, 'datos'), { recursive: true });
 cpSync(join(raiz, 'datos/ficticios.json'), join(sitio, 'datos/ficticios.json'));
+// Banco de reactivos FICTICIO del examen en línea (preguntas sobre el propio trámite; el real nunca entra aquí, P85)
+cpSync(join(raiz, 'datos/examen-ficticio.js'), join(sitio, 'datos/examen-ficticio.js'));
 // Documentos ficticios de varias hojas para el visor (herramientas/documentos-ficticios.py)
 rmSync(join(sitio, 'datos/documentos'), { recursive: true, force: true });
 cpSync(join(raiz, 'datos/documentos'), join(sitio, 'datos/documentos'), { recursive: true });

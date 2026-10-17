@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Examen de acreditación · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Examen en línea de la acreditación de arbolado urbano, en el salón de cómputo de la sede. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="app/version-visible.css?v=0.29">
+<link rel="stylesheet" href="app/apd.css?v=0.29">
+<link rel="stylesheet" href="app/examen.css?v=0.29">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · preguntas ficticias, no son las del examen real · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <!-- Sin enlace al sitio de la Secretaría: en el salón de cómputo la persona no debe salir del examen. -->
+    <img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente">
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Examen de acreditación de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+
+  <!-- 1 · Entrar con el código -->
+  <section data-vista="entrar" aria-labelledby="t-entrar">
+    <!-- Fuera del formulario: el aviso de envío del núcleo se oculta al entrar al campo y este no debe desaparecer. -->
+    <p class="aviso aviso-advertencia tarjeta-angosta" role="status" data-aviso-entrar hidden><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg><span class="aviso-texto"></span></p>
+    <form id="entrar" class="tarjeta tarjeta-angosta" data-formkit action="#" method="post">
+      <h2 class="titulo-paso" id="t-entrar">Entra a tu examen</h2>
+      <p class="bajada">Escribe el código que te dio quien aplica el examen. Viene en un papel con tu nombre.</p>
+      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+      <div class="campo" data-campo="codigo" data-formato="codigo-examen" data-requerido
+           data-uso="Abrir el examen de la persona a quien se le entregó el código; no es un dato personal.">
+        <label class="etiqueta" for="codigo">Código del examen</label>
+        <p class="ayuda" id="ay-codigo">8 letras y números, en dos grupos de 4. Ejemplo: K7MP-3XQ9</p>
+        <!-- autocomplete off: el código es de un solo uso y la computadora la comparten varias personas. -->
+        <input class="control control-corto control-codigo" id="codigo" name="codigo" type="text" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="ay-codigo">
+      </div>
+
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Entrar al examen</button>
+      </div>
+      <p class="texto-gris">¿No tienes código o no funciona? Levanta la mano: quien aplica el examen te ayuda.</p>
+    </form>
+  </section>
+
+  <!-- 2 · ¿Eres tú? -->
+  <section class="tarjeta tarjeta-angosta" data-vista="confirmar" aria-labelledby="t-confirmar" tabindex="-1" hidden>
+    <h2 class="titulo-paso" id="t-confirmar">¿Eres tú?</h2>
+    <div class="examen-persona">
+      <div class="perfil-foto perfil-foto-chica"><span class="perfil-iniciales" aria-hidden="true" data-iniciales></span></div>
+      <div data-persona></div>
+    </div>
+    <p class="aviso aviso-advertencia"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg><span class="aviso-texto">Si no eres tú, no sigas: levanta la mano y avisa a quien aplica el examen.</span></p>
+    <div class="acciones">
+      <button type="button" class="btn btn-primario" data-ir-vista="instrucciones">Sí, soy yo</button>
+      <button type="button" class="btn-atras" data-salir><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>No soy yo</button>
+    </div>
+  </section>
+
+  <!-- 3 · Instrucciones -->
+  <section class="tarjeta tarjeta-angosta" data-vista="instrucciones" aria-labelledby="t-instrucciones" tabindex="-1" hidden>
+    <h2 class="titulo-paso" id="t-instrucciones">Antes de empezar</h2>
+    <ul class="examen-reglas">
+      <li>Son <strong data-total></strong> preguntas. Cada una tiene una sola respuesta correcta.</li>
+      <li>Tienes <strong data-minutos></strong> minutos. El tiempo empieza a correr cuando presionas «Empezar el examen» y no se detiene.</li>
+      <li>Cada respuesta se guarda en cuanto la eliges. Puedes cambiarla todas las veces que quieras hasta que envíes el examen.</li>
+      <li>Si la computadora falla, levanta la mano: sigues en otra computadora con el mismo código, con tus respuestas y el tiempo que te quede.</li>
+      <li>Para aprobar necesitas <strong data-minima></strong> o más. Verás tu calificación al terminar.</li>
+      <li>No se permite consultar libros, apuntes ni el teléfono, que debe estar apagado. Si quien aplica el examen ve una conducta indebida, puede suspenderlo.</li>
+    </ul>
+    <div class="acciones">
+      <button type="button" class="btn btn-primario" data-empezar>Empezar el examen</button>
+    </div>
+  </section>
+
+  <!-- 4 · Una pregunta por pantalla -->
+  <section data-vista="pregunta" aria-labelledby="t-pregunta" hidden>
+    <div class="examen-barra" data-barra>
+      <p class="examen-avance"><span data-numero></span><span class="texto-gris" data-contestadas></span></p>
+      <p class="examen-reloj" data-reloj><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg><span class="solo-lector">Tiempo restante: </span><span data-reloj-texto></span></p>
+      <progress class="examen-progreso" data-progreso max="1" value="0" aria-label="Preguntas contestadas"></progress>
+    </div>
+    <!-- El aviso de tiempo se anuncia sólo a los 15, 5 y 1 minutos, para no interrumpir a quien usa lector de pantalla. -->
+    <p class="solo-lector" role="status" data-aviso-tiempo></p>
+
+    <div class="tarjeta" tabindex="-1" data-tarjeta-pregunta>
+      <fieldset class="grupo examen-pregunta">
+        <legend class="examen-enunciado" id="t-pregunta" data-enunciado></legend>
+        <div class="opciones-lista" data-opciones></div>
+      </fieldset>
+      <p class="examen-guardado texto-gris" role="status" data-guardado></p>
+      <label class="casilla examen-marca"><input type="checkbox" class="casilla-input" data-marcar autocomplete="off"><span>Marcarla para revisarla antes de enviar</span></label>
+      <div class="acciones">
+        <button type="button" class="btn btn-primario" data-siguiente>Siguiente</button>
+        <button type="button" class="btn-atras" data-anterior><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Anterior</button>
+      </div>
+    </div>
+
+    <details class="examen-mapa">
+      <summary class="examen-mapa-titulo">Ver todas las preguntas</summary>
+      <p class="texto-gris">Elige un número para ir a esa pregunta.</p>
+      <ol class="examen-numeros" data-numeros></ol>
+    </details>
+  </section>
+
+  <!-- 5 · Revisar y enviar -->
+  <section class="tarjeta" data-vista="revision" aria-labelledby="t-revision" tabindex="-1" hidden>
+    <h2 class="titulo-paso" id="t-revision">Revisa antes de enviar</h2>
+    <p class="bajada" data-resumen></p>
+    <p class="examen-reloj examen-reloj-linea"><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg><span>Tiempo restante: <span data-reloj-texto></span></span></p>
+    <ol class="examen-repaso" data-repaso></ol>
+    <div class="acciones">
+      <button type="button" class="btn btn-primario" data-enviar>Enviar mis respuestas</button>
+      <button type="button" class="btn-atras" data-volver-preguntas><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Volver a las preguntas</button>
+    </div>
+  </section>
+
+  <!-- 6 · Resultado -->
+  <section class="tarjeta tarjeta-angosta examen-resultado" data-vista="resultado" aria-labelledby="t-resultado" tabindex="-1" hidden>
+    <h2 class="titulo-paso" id="t-resultado" data-resultado-titulo>Tu examen quedó enviado</h2>
+    <p class="aviso aviso-advertencia" data-por-tiempo hidden><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg><span class="aviso-texto">Se acabó el tiempo. Se enviaron las respuestas que tenías.</span></p>
+    <p class="examen-calificacion"><span class="examen-calificacion-etq">Calificación</span><span class="examen-calificacion-valor" data-calificacion></span></p>
+    <p class="examen-veredicto" data-veredicto></p>
+    <div data-resultado-datos></div>
+    <p data-resultado-sigue></p>
+    <div class="acciones">
+      <button type="button" class="btn btn-primario" data-salir>Terminar</button>
+    </div>
+  </section>
+
+  <!-- Suspendido por quien aplica -->
+  <section class="tarjeta tarjeta-angosta" data-vista="suspendido" aria-labelledby="t-suspendido" tabindex="-1" hidden>
+    <h2 class="titulo-paso" id="t-suspendido">Tu examen fue suspendido</h2>
+    <p class="aviso aviso-bloqueo"><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto" data-motivo-suspension></span></p>
+    <p>Habla con quien aplica el examen. Tus respuestas ya no se pueden cambiar.</p>
+    <div class="acciones">
+      <button type="button" class="btn btn-secundario" data-salir>Salir</button>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/apd.js?v=0.29"></script>
+<script src="app/codigo-examen.js?v=0.29"></script>
+<script src="app/config-examen.js?v=0.29"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<!-- Versión de prueba: banco ficticio y servidor simulado en el navegador (en el SIA, la API del módulo). -->
+<script src="datos/examen-ficticio.js?v=0.29"></script>
+<script src="app/examen-servidor.js?v=0.29"></script>
+<script src="app/examen-grupo.js?v=0.29"></script>
+<script src="app/examen.js?v=0.29"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/archivos-prueba.js?v=0.29"></script>
+<script src="app/curp-nombre.js?v=0.29"></script>
+<script src="app/casos-prueba.js?v=0.29"></script>
+<script src="app/pruebas.js?v=0.29"></script>
+<script src="app/version-visible.js?v=0.29"></script>
+</body>
+</html>
