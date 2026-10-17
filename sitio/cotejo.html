@@ -98,34 +98,14 @@
       <p class="ayuda ayuda-bloque">Compare a la persona con su identificación oficial y con la fotografía de su cuenta. Esa fotografía sólo sirve para reconocerla en el cotejo, el curso y el examen; la de su credencial se toma al entregársela.</p>
       <div class="cotejo-identidad">
         <div class="perfil-foto perfil-foto-grande" data-foto-grande><span class="perfil-iniciales" aria-hidden="true" data-iniciales></span></div>
-        <fieldset class="grupo" data-campo="identidad" data-requerido data-uso="Confirmar que la fotografía es de quien se presentó, tomar una nueva o detener la cita (apd.fotografia.estado y apd.cita.resultado).">
+        <fieldset class="grupo" data-campo="identidad" data-requerido data-uso="Confirmar que la fotografía es de quien se presentó o detener la cita (apd.fotografia.estado y apd.cita.resultado).">
           <legend class="etiqueta">¿Es la misma persona de la fotografía y de la identificación?</legend>
-          <!-- autocomplete off: decisión de quien atiende. -->
+          <!-- autocomplete off: decisión de quien atiende. En la cita no se toma otra fotografía (decisión 2026-10-17, Liber). -->
           <div class="opciones-lista">
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="identidad" autocomplete="off" value="misma"><span><span class="opcion-nombre">Sí, es la misma persona</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="identidad" autocomplete="off" value="otra_foto"><span><span class="opcion-nombre">Es la misma persona, pero no se le reconoce en la fotografía</span><span class="opcion-desc">Por ejemplo, si es vieja o está borrosa. Tómele otra aquí: queda como la fotografía de su cuenta.</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="identidad" autocomplete="off" value="no_es"><span><span class="opcion-nombre">No es la persona de la fotografía ni de la identificación</span><span class="opcion-desc">No se atiende la cita. Se avisa a la Dirección y la cuenta queda bloqueada hasta aclararlo.</span></span></label>
           </div>
         </fieldset>
-      </div>
-      <div class="campo" data-campo="foto_nueva" data-si="identidad=otra_foto" data-requerido data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
-           data-finalidad="Reconocer a la persona en el curso y en el examen." data-uso="Sustituir la fotografía de la cuenta por una tomada en la cita (apd.fotografia, origen cotejo, confirmada).">
-        <span class="etiqueta" id="et-foto_nueva">Fotografía nueva</span>
-        <p class="ayuda" id="ay-foto_nueva">De frente y con el rostro descubierto, sobre un fondo claro.</p>
-        <div data-archivos>
-          <button type="button" class="zona-carga" aria-describedby="ay-foto_nueva">
-            <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
-            <span class="zona-carga-texto">Elegir fotografía</span>
-            <span class="zona-carga-limite" data-limite-texto></span>
-          </button>
-          <button type="button" class="btn btn-secundario zona-camara" data-camara hidden>Tomar fotografía</button>
-          <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
-          <input type="file" hidden autocomplete="off">
-          <!-- autocomplete off: es la cámara del equipo de la Secretaría; no hay nada que proponer. -->
-          <input type="file" accept="image/*" capture="user" hidden data-entrada-camara autocomplete="off">
-          <div data-rechazos></div>
-          <ul class="lista-arch"></ul>
-        </div>
       </div>
       <div data-si="identidad=no_es">
         <div class="campo" data-campo="nota_identidad" data-requerido data-uso="Explicar a la Dirección por qué no se atendió la cita; no se muestra a la persona (bitácora de apd.cita).">

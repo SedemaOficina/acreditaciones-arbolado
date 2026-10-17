@@ -126,3 +126,8 @@ movidas, cupos, permisos y bitácora.
 
 Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-sitio.mjs` y
 `herramientas/probar-esquemas.mjs`); ver `docs/ETAPA-1-PANTALLAS.md`.
+
+**Un correo, una cuenta** (decisión 2026-10-17): al crear una cuenta, activar una del registro anterior o cambiar el
+correo, la base rechaza el de otra cuenta activa (`correo_registrado`; índice `solicitante_correo_uk`, sólo entre cuentas
+que no están `sin_activar`). La pantalla lo marca en el campo de correo.
+

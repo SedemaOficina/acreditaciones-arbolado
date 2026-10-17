@@ -240,14 +240,12 @@
           const observa = () => { for (const k of noCoinciden) marcaDoc(k, { estado: 'con_observacion', observacion: cd[`diferencia_${k}`] || '', revisado_en: en, en_cotejo: true }); };
           switch (c.resultado) {
             case 'terminado': {
-              const ident = cd.identidad || (pausa && pausa.identidad) || 'misma';
               const p = d.solicitante[persona(s.solicitante_id)] || {};
               cambiaPersona(s.solicitante_id, { numero_expediente: p.numero_expediente || c.expediente || null });
-              // La fotografía queda confirmada: la de su cuenta, o la que se tomó en la cita
-              d.fotografia = d.fotografia.map((f) => (f.solicitante_id === s.solicitante_id && f.vigente ? Object.assign({}, f, { vigente: ident !== 'otra_foto' }) : f));
+              // La fotografía de su cuenta queda confirmada (en la cita no se toma otra, decisión 2026-10-17)
               const f = d.fotografia.find((x) => x.solicitante_id === s.solicitante_id && x.vigente);
               if (f) d.fotografia = d.fotografia.map((x) => (x === f ? Object.assign({}, x, { estado: 'confirmada', confirmada_en: en, confirmada_por: c.atendio }) : x));
-              else d.fotografia.push({ solicitante_id: s.solicitante_id, vigente: true, origen: ident === 'otra_foto' ? 'cotejo' : 'en_linea', estado: 'confirmada', confirmada_en: en, confirmada_por: c.atendio, de_prueba: true });
+              else d.fotografia.push({ solicitante_id: s.solicitante_id, vigente: true, origen: 'en_linea', estado: 'confirmada', confirmada_en: en, confirmada_por: c.atendio, de_prueba: true });
               cambiaPersona(s.solicitante_id, { foto_nueva: false });
               pon({ estado: 'lista_para_curso', estado_desde: en, lista_para_curso_en: s.lista_para_curso_en || en, cotejo_pausa: null,
                 factura_rfc: cd.factura_rfc || null, factura_razon_social: cd.factura_razon_social || null, factura_folio_fiscal: cd.factura_folio_fiscal || null });

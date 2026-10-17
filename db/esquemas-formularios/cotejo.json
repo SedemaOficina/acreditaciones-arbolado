@@ -1,6 +1,6 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-17T17:32:20.529Z",
+  "generado": "2026-10-17T18:06:37.050Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
@@ -166,11 +166,10 @@
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
-      "uso": "Confirmar que la fotografía es de quien se presentó, tomar una nueva o detener la cita (apd.fotografia.estado y apd.cita.resultado).",
+      "uso": "Confirmar que la fotografía es de quien se presentó o detener la cita (apd.fotografia.estado y apd.cita.resultado).",
       "atributos": {},
       "opciones": [
         "misma",
-        "otra_foto",
         "no_es"
       ],
       "autocomplete": "off",
@@ -178,26 +177,6 @@
         "campo": "pedir_identidad",
         "valores": [
           "si"
-        ]
-      }
-    },
-    "foto_nueva": {
-      "etiqueta": "Fotografía nueva",
-      "tipo": "archivos",
-      "requerido": true,
-      "sensible": true,
-      "uso": "Sustituir la fotografía de la cuenta por una tomada en la cita (apd.fotografia, origen cotejo, confirmada).",
-      "finalidad": "Reconocer a la persona en el curso y en el examen.",
-      "atributos": {
-        "max": "1",
-        "extensiones": "jpg,jpeg,png",
-        "mb": "5"
-      },
-      "autocomplete": "off",
-      "si": {
-        "campo": "identidad",
-        "valores": [
-          "otra_foto"
         ]
       }
     },

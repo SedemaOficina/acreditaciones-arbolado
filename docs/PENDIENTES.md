@@ -73,7 +73,7 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 
 | # | Pendiente | Recomendación | Bloquea |
 |---|---|---|---|
-| P23 | Servicio de correo institucional para cuentas, contraseñas y avisos | Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre. | etapa 3 |
+| P23 | Servicio de correo institucional para cuentas, contraseñas y avisos | Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre. Catálogo de avisos (2026-10-17): docs/AVISOS-POR-CORREO.md — 13 indispensables (cita asignada, resultado de la cita, observaciones, grupo, apertura de la renovación…) y los recomendables. Mientras, archivo de calendario o comprobante imprimible de la cita, y llamada del personal en los casos indispensables. | etapa 3 |
 | P24 | Siglas apd libres para esquema, cuenta y ruta | Confirmarlo en la misma reunión con el SIA que P23 a P30; las preguntas ya están redactadas en DECISIONES-SIA. | SIA |
 | P25 | Dónde se publica la aplicación y la ruta de su API | Misma reunión con el SIA. | SIA |
 | P26 | Límite de subida de la API (se necesitan al menos 5 MB por archivo) | Misma reunión con el SIA. Si el límite es menor, bajar el tamaño máximo es un parámetro de la base. | etapa 3 |
@@ -128,6 +128,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P73 | El estándar no trae botón para mostrar la contraseña | Proponer «Mostrar» / «Ocultar» dentro del campo de contraseña (botón con aria-pressed y nombre accesible, vuelve a ocultarla al enviar) y que el envoltorio respete el renglón del control en .fila. Base: app/ver-contrasena.js y apd.css de este proyecto. | no |
 | P81 | esquema-desde-html sólo lee condiciones en div[data-si] | Una sección (<section data-si>) se oculta bien en el navegador, pero la herramienta del esquema no ve su condición y el servidor exige sus campos aunque no se muestren. Proponer que lea data-si en cualquier etiqueta (o que el auditor de campos avise). Mientras, en cotejo.html las condiciones van en un div que envuelve la sección. | no |
 | P82 | No hay formato para el folio fiscal de una factura (CFDI) | El formato «folio» del estándar es para folios de trámite. Proponer «folio-fiscal»: 32 hexadecimales en grupos 8-4-4-4-12, normalizado a mayúsculas con guiones. Base: app/folio-fiscal.js de este proyecto (navegador y servidor). | no |
+| P86 | Actualizar el sitio al Estándar de formularios 1.1.0 | El sitio usa la copia 1.0.0, que no pinta junto a su campo los errores que devuelve el servidor ({errores: [{campo, mensaje}]}). La 1.1.0 lo hace y trae FormKit.marcaError. Mientras, APD.pintaErrores (app/apd.js) lo resuelve en «Crear cuenta» y «Mi perfil» (correo ya registrado). Al actualizar, quitarlo. | no |
+| P87 | El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde | Tras un envío fallido, el núcleo oculta el aviso en cuanto cualquier elemento del formulario recibe el foco; al presionar un botón debajo del aviso, el botón sube y el clic no llega. Proponer ocultarlo al cambiar un valor, no al mover el foco. En «Mi perfil», «Cancelar» evita el problema (mousedown sin mover el foco). | no |
 
 ## Resueltos
 

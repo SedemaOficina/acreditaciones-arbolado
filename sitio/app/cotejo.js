@@ -17,8 +17,7 @@
    Campos auxiliares que calcula la página (y el servidor por su cuenta, con apd.cita y los documentos):
    pedir_llegada, pedir_identidad, pedir_documentos, cotejar_<requisito>, pedir_hoy, pedir_pago, pedir_factura y resultado.
 
-   El registro es una SIMULACIÓN: se recuerda en este navegador (APD_PERSONAL.guardaCotejo; la fotografía nueva y la
-   factura, en IndexedDB). En la etapa 3 lo sustituye la API del personal. */
+   El registro es una SIMULACIÓN: se recuerda en este navegador (APD_PERSONAL.guardaCotejo; la factura, en IndexedDB). En la etapa 3 lo sustituye la API del personal. */
 (function () {
   'use strict';
   const { el, fecha, fechaHora, datosLista } = APD;
@@ -255,8 +254,7 @@
             const archivo = (campo) => (payload.archivos || []).find((a) => a.campo === campo && a.blob);
             const guardados = [];
             const A = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
-            // La fotografía tomada en la cita sustituye la de la cuenta; la factura queda en el expediente
-            if (A && d.identidad === 'otra_foto' && archivo('foto_nueva')) guardados.push(A.guardaFoto(p.curp, archivo('foto_nueva')).catch(() => {}));
+            // La factura queda en el expediente. En la cita no se toma otra fotografía (decisión 2026-10-17, Liber)
             if (A && resultado === 'terminado' && archivo('factura_pago')) {
               guardados.push(A.guardaDocumento(s.folio, 'factura_pago', archivo('factura_pago'), { en, estado: 'aceptado', cargado_por: P.REVISORA.usuario }).catch(() => {}));
             }

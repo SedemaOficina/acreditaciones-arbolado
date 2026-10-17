@@ -134,7 +134,7 @@
         { "nombre": "sexo", "tipo": "text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED", "nulo": false, "descripcion": "H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada" },
         { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar" },
         { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente" },
-        { "nombre": "correo", "tipo": "text", "nulo": false, "descripcion": "Correo de contacto, en minúsculas" },
+        { "nombre": "correo", "tipo": "text", "nulo": false, "descripcion": "Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta" },
         { "nombre": "telefono", "tipo": "text", "nulo": false, "descripcion": "Teléfono de contacto, 10 dígitos" },
         { "nombre": "numero_expediente", "tipo": "text", "nulo": true, "descripcion": "Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN" },
         { "nombre": "contrasena_hash", "tipo": "text", "nulo": true, "descripcion": "scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar" },
@@ -162,7 +162,8 @@
         "CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))"
       ],
       "indices": [
-        "CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)"
+        "CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)",
+        "CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar'"
       ]
     },
     {

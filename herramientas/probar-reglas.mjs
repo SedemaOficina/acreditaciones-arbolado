@@ -219,6 +219,25 @@ const casos = [
        ASSERT (SELECT cargado_por = 'prueba.automatica' AND estado = 'aceptado' FROM apd.documento
                 WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'factura_pago' AND vigente);
      END $$;`],
+  // ── Un correo, una cuenta (decisión 2026-10-17) ──
+  ['Una cuenta nueva con el correo de otra cuenta activa se rechaza', { codigo: 'correo_registrado' }, null, `
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('XAXX991231HNEXXX09', 'Caso', 'Prueba', (SELECT correo FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1),
+             '0000000099', 'independiente', 'x', true);`],
+  ['El correo se compara sin importar mayúsculas', { codigo: 'correo_registrado' }, null, `
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('XAXX991231HNEXXX09', 'Caso', 'Prueba', upper((SELECT correo FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)),
+             '0000000099', 'independiente', 'x', true);`],
+  ['Cambiar el correo al de otra cuenta activa se rechaza', { codigo: 'correo_registrado' }, null, `
+     UPDATE apd.solicitante SET correo = (SELECT correo FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)
+      WHERE id = (SELECT id FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp OFFSET 1 LIMIT 1);`],
+  ['Activar una cuenta del registro anterior con el correo de otra cuenta activa se rechaza', { codigo: 'correo_registrado' }, null, `
+     UPDATE apd.solicitante SET estado = 'activa', contrasena_hash = 'x',
+            correo = (SELECT correo FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)
+      WHERE id = (SELECT id FROM apd.solicitante WHERE estado = 'sin_activar' ORDER BY curp LIMIT 1);`],
+  ['Dos personas del registro anterior sin activar pueden compartir correo', 'ok', null, `
+     UPDATE apd.solicitante SET correo = (SELECT correo FROM apd.solicitante WHERE estado = 'sin_activar' ORDER BY curp LIMIT 1)
+      WHERE id = (SELECT id FROM apd.solicitante WHERE estado = 'sin_activar' ORDER BY curp OFFSET 1 LIMIT 1);`],
   // ── Citas de cotejo (decisiones 2026-10-17) ──
   ['Al validar, la base crea la cita pendiente en la fecha asignada', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT count(*) FROM apd.solicitud s WHERE s.estado = 'validada_en_linea'

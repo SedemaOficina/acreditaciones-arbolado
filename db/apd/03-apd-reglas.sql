@@ -295,6 +295,17 @@ CREATE FUNCTION apd.nombre_de_archivo(p_tipo text, p_persona uuid, p_mime text) 
     FROM apd.solicitante s WHERE s.id = p_persona
 $f$;
 
+-- Un correo, una cuenta (decisión 2026-10-17, Liber): además de la CURP, el correo no se repite entre cuentas
+-- activas. Las personas del registro anterior que aún no crean su cuenta no cuentan: su correo puede ser viejo o
+-- compartido; al activarla escriben el suyo. El índice solicitante_correo_uk lo garantiza; esta regla da el mensaje.
+CREATE FUNCTION apd.comprobar_correo(p apd.solicitante) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  IF p.estado <> 'sin_activar' AND EXISTS (
+       SELECT 1 FROM apd.solicitante o WHERE o.correo = p.correo AND o.id <> p.id AND o.estado <> 'sin_activar') THEN
+    PERFORM apd.error('correo_registrado', 'Este correo ya está registrado en otra cuenta');
+  END IF;
+END $$;
+
 CREATE FUNCTION apd.solicitante_alta() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   NEW.nombre := apd.mayusculas(NEW.nombre);
@@ -305,6 +316,7 @@ BEGIN
   PERFORM apd.comprobar_adscripcion(NEW.adscripcion, NEW.organizacion_id);
   NEW.creada_en := apd.ahora();
   NEW.numero_expediente := NULL;  -- se abre en el primer cotejo
+  PERFORM apd.comprobar_correo(NEW);
   RETURN NEW;
 END $$;
 CREATE TRIGGER solicitante_alta BEFORE INSERT ON apd.solicitante
@@ -319,6 +331,9 @@ BEGIN
   NEW.segundo_apellido := apd.mayusculas(NEW.segundo_apellido);
   NEW.curp := upper(trim(NEW.curp));
   NEW.correo := lower(trim(NEW.correo));
+  IF NEW.correo IS DISTINCT FROM OLD.correo OR (OLD.estado = 'sin_activar' AND NEW.estado <> 'sin_activar') THEN
+    PERFORM apd.comprobar_correo(NEW);
+  END IF;
   IF NEW.creada_en IS DISTINCT FROM OLD.creada_en OR NEW.es_ficticio IS DISTINCT FROM OLD.es_ficticio THEN
     PERFORM apd.error('campo_inmutable', 'La fecha de alta y la marca de dato de prueba no se cambian');
   END IF;

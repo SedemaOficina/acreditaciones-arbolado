@@ -164,9 +164,13 @@
         alFallar(error) {
           const aviso = $('[data-estado-envio] .aviso-texto', f);
           if (error && error.mensaje && aviso) aviso.textContent = error.mensaje;
+          if (error && error.errores) APD.pintaErrores(f, error.errores);
         }
       });
       for (const b of $$(`[data-editar="${k}"]`)) b.addEventListener('click', () => abre(k, datos));
+      // Al presionar «Cancelar» el foco no se mueve todavía: el núcleo oculta el aviso del envío en cuanto otro elemento
+      // recibe el foco, el botón sube y el clic se perdía (P87)
+      $('[data-cancelar]', f).addEventListener('mousedown', (e) => e.preventDefault());
       $('[data-cancelar]', f).addEventListener('click', () => cierra(k, true));
     }
   }).catch(() => {

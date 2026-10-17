@@ -570,3 +570,16 @@ campos correctos.
   equivocada el mensaje sigue siendo el general (en el SIA siempre es el general).
 - Crear cuenta: si el navegador no deja guardarla (modo privado, almacenamiento bloqueado), lo avisa en lugar de dar la
   cuenta por creada.
+
+## 2026-10-17 · Bloque 45 · Un correo, una cuenta; sin fotografía nueva en la cita; avisos por correo
+
+- Pedido de Liber: el correo no se repite. «Crear cuenta» y «Mi perfil» rechazan el de otra cuenta activa y lo marcan en
+  el campo (APD.correoEnUso, APD.pintaErrores); la base, con `apd.comprobar_correo` (`correo_registrado`) y el índice
+  `solicitante_correo_uk`. Las personas de prueba tienen cada una su correo ficticio. 156 casos de reglas.
+- Pedido de Liber: en el cotejo se quita «Es la misma persona, pero no se le reconoce en la fotografía» (tomar otra
+  fotografía). Quedan «Sí, es la misma persona» y «No es la persona». «Mis trámites» ya no dice que ahí le toman otra.
+- Liber descubrió que sin correo transaccional la única forma de enterarse de la cita es entrar a su perfil: catálogo de
+  avisos en `docs/AVISOS-POR-CORREO.md` (incluido el resultado de la cita), ligado a P23.
+- «Mi perfil»: «Cancelar» después de un envío fallido no respondía al primer clic (el aviso del núcleo se ocultaba y el
+  botón subía): P87. Pendiente P86: actualizar al estándar 1.1.0, que pinta los errores del servidor.
+

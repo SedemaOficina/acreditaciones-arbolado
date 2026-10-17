@@ -154,8 +154,9 @@ async function llenaCuenta(page, p, curp = p.curp) {
   await page.fill('#segundo_apellido', p.segundo_apellido || '');
   await page.fill('#fecha_nacimiento', dma(p.nacimiento || nacimientoDe(p)));
   await page.fill('#curp', curp);
-  await page.fill('#correo', 'nadia@ejemplo.local');
-  await page.fill('#correo2', 'nadia@ejemplo.local');
+  // Un correo, una cuenta: cada persona de la prueba, el suyo
+  await page.fill('#correo', `${curp.toLowerCase()}@ejemplo.local`);
+  await page.fill('#correo2', `${curp.toLowerCase()}@ejemplo.local`);
   await page.fill('#telefono', '0000000077');
   await page.fill('#contrasena', 'una frase larga de prueba');
   await page.fill('#contrasena2', 'una frase larga de prueba');
@@ -301,6 +302,16 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.locator('[aria-invalid="true"]').count() > 0, t('cuenta: la fecha de nacimiento distinta a la de la CURP se rechaza'));
   await page.fill('#fecha_nacimiento', dma(NUEVA.nacimiento));
   await page.fill('#curp', NUEVA.curp);
+  // Un correo, una cuenta (decisión 2026-10-17): el de otra cuenta activa se marca en el campo de correo
+  const ajeno = datos.solicitante.find((p) => p.estado === 'activa').correo;
+  await page.fill('#correo', ajeno);
+  await page.fill('#correo2', ajeno);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForFunction(() => /ya está registrado/.test(document.querySelector('[data-campo="correo"] .err').textContent));
+  comprueba(await page.getAttribute('#correo', 'aria-invalid') === 'true' && /ya está registrado/.test(await page.textContent('[data-estado-envio]')),
+    t('cuenta: un correo de otra cuenta se marca en su campo y en el aviso del envío'));
+  await page.fill('#correo', `${NUEVA.curp.toLowerCase()}@ejemplo.local`);
+  await page.fill('#correo2', `${NUEVA.curp.toLowerCase()}@ejemplo.local`);
   await captura(page, `02-cuenta-${sufijo}`);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
@@ -527,6 +538,13 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/^[A-ZÁÉÍÓÚÑ]{2}$/.test((await page.textContent('[data-perfil-iniciales]')).trim()), t('mi perfil: sin imagen, la persona ficticia se ve con sus iniciales'));
   await page.click('[data-editar="contacto"]');
   comprueba(await page.isVisible('#form-contacto') && await page.inputValue('#correo') !== '', t('mi perfil: «Editar» abre el contacto con lo vigente'));
+  // Un correo, una cuenta: el de otra cuenta activa no se guarda
+  const deOtra = datos.solicitante.find((p) => p.estado === 'activa' && p.id !== CON_ORG.id).correo;
+  await page.fill('#correo', deOtra);
+  await page.fill('#correo2', deOtra);
+  await page.click('#form-contacto [data-accion="enviar"]');
+  await page.waitForFunction(() => /ya está registrado/.test(document.querySelector('#form-contacto [data-campo="correo"] .err').textContent));
+  bien(t('mi perfil: el correo de otra cuenta no se guarda y se marca en su campo'));
   await page.click('#form-contacto [data-cancelar]');
   comprueba(await page.isHidden('#form-contacto') && await page.evaluate(() => document.activeElement.dataset.editar === 'contacto'), t('mi perfil: «Cancelar» cierra sin guardar y regresa a «Editar»'));
   await page.click('[data-editar="adscripcion"]');
@@ -1164,7 +1182,7 @@ async function accesibilidad(navegador) {
     else if (estado === 'menú de pruebas') { await page.click('.menu-pruebas-boton'); await page.waitForSelector('dialog.menu-pruebas[open] [data-guardado]'); }
     else if (estado === 'factura') {
       await page.check('input[name="se_presento"][value="si"]');
-      await page.check('input[name="identidad"][value="otra_foto"]');
+      await page.check('input[name="identidad"][value="misma"]');
       for (const k of await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await page.check(`input[name="coincide_${k}"][value="si"]`);
       await page.check('input[name="pago"][value="si"]');
     } else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }

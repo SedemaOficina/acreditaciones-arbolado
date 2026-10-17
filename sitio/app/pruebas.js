@@ -122,6 +122,9 @@
     return p;
   }
 
+  /* Correo ficticio propio de cada persona de prueba: un correo, una cuenta (decisión 2026-10-17) */
+  const correoDe = (curp) => `prueba.${String(curp).toLowerCase()}@ejemplo.local`;
+
   /* Fecha de nacimiento dentro de la CURP, como día/mes/año */
   function fechaDeCurp(curp) {
     const siglo = /\d/.test(curp[16]) ? '19' : '20';
@@ -131,7 +134,7 @@
   function llenaMigrada(m) {
     pon('nombre', m.nombre); pon('primer_apellido', m.primer_apellido); pon('segundo_apellido', m.segundo_apellido || '');
     pon('fecha_nacimiento', fechaDeCurp(m.curp)); pon('curp', m.curp);
-    pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
+    pon('correo', correoDe(m.curp)); pon('correo2', correoDe(m.curp)); pon('telefono', '0000000099');
     pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
     adjuntaFoto(form.querySelector('[data-campo="foto"]'));
     elige('adscrito', 'no');
@@ -150,7 +153,7 @@
       const p = personaNueva();
       pon('nombre', p.nombre); pon('primer_apellido', p.primer); pon('segundo_apellido', p.segundo);
       pon('fecha_nacimiento', p.fecha.split('-').reverse().join('/')); pon('curp', p.curp);
-      pon('correo', 'prueba@ejemplo.local'); pon('correo2', 'prueba@ejemplo.local'); pon('telefono', '0000000099');
+      pon('correo', correoDe(p.curp)); pon('correo2', correoDe(p.curp)); pon('telefono', '0000000099');
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
       adjuntaFoto(form.querySelector('[data-campo="foto"]'));
       elige('adscrito', 'no');
@@ -350,7 +353,7 @@
           const id = `prueba:${n.curp}`;
           APD_ARCHIVOS_PRUEBA.guardaCuenta({ curp: n.curp, id, contrasena: APD.CONTRASENA_FICTICIA,
             persona: { nombre: n.nombre.toLocaleUpperCase('es-MX'), primer_apellido: n.primer.toLocaleUpperCase('es-MX'), segundo_apellido: n.segundo.toLocaleUpperCase('es-MX'),
-              sexo: n.sexo, correo: 'prueba@ejemplo.local', telefono: '0000000099', adscripcion: 'independiente', organizacion_id: null, organizacion_nombre: '' } })
+              sexo: n.sexo, correo: correoDe(n.curp), telefono: '0000000099', adscripcion: 'independiente', organizacion_id: null, organizacion_nombre: '' } })
             .then(() => { APD.guardaSesion({ id }); location.href = 'tramites.html'; }, () => di('No se pudo crear la persona nueva en este navegador.'));
         }))
       ]),

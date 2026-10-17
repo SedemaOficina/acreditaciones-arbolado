@@ -179,6 +179,7 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))
 );
 CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre);
+CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar';
 COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
 COMMENT ON COLUMN apd.solicitante.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitante.curp IS 'CURP en mayúsculas; identificador único de la cuenta';
@@ -188,7 +189,7 @@ COMMENT ON COLUMN apd.solicitante.segundo_apellido IS 'Segundo apellido, si lo h
 COMMENT ON COLUMN apd.solicitante.sexo IS 'H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada';
 COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar';
 COMMENT ON COLUMN apd.solicitante.organizacion_id IS 'Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente';
-COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas';
+COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta';
 COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos';
 COMMENT ON COLUMN apd.solicitante.numero_expediente IS 'Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
 COMMENT ON COLUMN apd.solicitante.contrasena_hash IS 'scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar';

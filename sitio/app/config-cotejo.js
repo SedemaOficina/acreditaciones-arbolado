@@ -3,8 +3,8 @@
 
    Se carga ANTES que el núcleo. Sólo lo que cambia respecto de validaciones.config.js:
      · el formato propio «folio-fiscal» (app/folio-fiscal.js) para el folio de la factura;
-     · archivos: 5 MB (parámetro tamano_maximo_archivo_bytes de la base). Cada campo dice sus formatos: la
-       fotografía nueva en JPG o PNG (apd.fotografia) y la factura en PDF (apd.requisito factura_pago).
+     · archivos: 5 MB (parámetro tamano_maximo_archivo_bytes de la base); la factura, en PDF (apd.requisito
+       factura_pago). En la cita no se toma otra fotografía (decisión 2026-10-17, Liber).
 
    En la etapa 3 la API del personal recibe el cotejo, vuelve a calcular los campos auxiliares con la base
    (cita en pausa, inasistencias anteriores, documentos cargados) y revalida todo con codigo/servidor/validar.mjs

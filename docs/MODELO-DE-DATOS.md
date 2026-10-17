@@ -172,7 +172,7 @@ Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (ap
 | `sexo` | `text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED` | Sí | H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada |
 | `adscripcion` | `text` | No | Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mis datos»; vacía sólo en cuentas del padrón migrado sin activar |
 | `organizacion_id` | `uuid` | No | Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente |
-| `correo` | `text` | Sí | Correo de contacto, en minúsculas |
+| `correo` | `text` | Sí | Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta |
 | `telefono` | `text` | Sí | Teléfono de contacto, 10 dígitos |
 | `numero_expediente` | `text` | No | Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN |
 | `contrasena_hash` | `text` | No | scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar |
@@ -200,6 +200,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada'))`
 - `CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))`
 - `CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)`
+- `CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar'`
 
 ## fotografia
 

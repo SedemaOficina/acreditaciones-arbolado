@@ -240,7 +240,7 @@ caso('Cotejo: retomado, sólo se coteja lo que quedó en pausa', 'cotejo', { _ca
 caso('Cotejo: retomado, no se pregunta otra vez la llegada ni la identidad', 'cotejo', { _cargados: PODA, _pausa: ['curp'], pago: 'si', ...factura }, ['coincide_curp'], conFactura);
 caso('Cotejo: no se presentó por primera vez pide la cita nueva', 'cotejo', { _cargados: PODA, se_presento: 'no' }, ['cita_fecha', 'cita_hora']);
 caso('Cotejo: a la segunda inasistencia se cierra sin cita nueva', 'cotejo', { _cargados: PODA, _inasistencias: 1, se_presento: 'no' }, true);
-caso('Cotejo: tomar otra fotografía la pide', 'cotejo', { ...llega, identidad: 'otra_foto', ...coinciden(PODA), pago: 'si', ...factura }, ['foto_nueva'], conFactura);
+caso('Cotejo: en la cita no se toma otra fotografía (la opción no existe)', 'cotejo', { ...llega, identidad: 'otra_foto', ...coinciden(PODA), pago: 'si', ...factura }, ['identidad'], conFactura);
 caso('Cotejo: no es la persona pide la nota para la Dirección y no los documentos', 'cotejo', { _cargados: PODA, se_presento: 'si', identidad: 'no_es' }, ['nota_identidad']);
 caso('Cotejo: no es la persona, con su nota, se acepta', 'cotejo', { _cargados: PODA, se_presento: 'si', identidad: 'no_es', nota_identidad: 'La identificación muestra a otra persona.' }, true);
 caso('Corrección del mismo día: pide sólo el documento en pausa', 'corregir', { _pausa: ['curp'] }, ['doc_curp']);

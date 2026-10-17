@@ -39,6 +39,10 @@ window.FORMKIT_OPCIONES = {
           if (existente && existente.estado !== 'sin_activar') {
             return mal({ mensaje: 'Ya hay una cuenta con esta CURP. Entra con ella; si no recuerdas tu contraseña, pide ayuda a la Secretaría.' });
           }
+          // Un correo, una cuenta: el de otra cuenta activa no se acepta (decisión 2026-10-17)
+          if (APD.correoEnUso(datos, d.correo, { curp: d.curp })) {
+            return mal({ mensaje: APD.CORREO_EN_USO, errores: [{ campo: 'correo', mensaje: APD.CORREO_EN_USO }] });
+          }
           if (existente) {
             // Registro anterior (Kobo): además de la CURP, el nombre debe ser el del registro
             const igual = (a, b) => APD_CURP.limpia(a) === APD_CURP.limpia(b);
@@ -76,5 +80,6 @@ window.FORMKIT_OPCIONES = {
     // El núcleo ya mostró el aviso general de fallo; si el servidor dio un motivo, se dice ese.
     const aviso = form.querySelector('[data-estado-envio] .aviso-texto');
     if (error && error.mensaje && aviso) aviso.textContent = error.mensaje;
+    if (error && error.errores) APD.pintaErrores(form, error.errores);
   }
 };

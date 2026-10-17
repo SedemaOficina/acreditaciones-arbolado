@@ -206,7 +206,7 @@
       "bloquea": "etapa 3",
       "desde": "2026-10-14",
       "titulo": "Servicio de correo institucional para cuentas, contraseñas y avisos",
-      "recomendacion": "Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre."
+      "recomendacion": "Es la pregunta de más peso para el SIA. Sin correo, el sistema funciona con «Mis trámites» y la recuperación de contraseña por el personal (P13), pero los avisos dependen de que la persona entre. Catálogo de avisos (2026-10-17): docs/AVISOS-POR-CORREO.md — 13 indispensables (cita asignada, resultado de la cita, observaciones, grupo, apertura de la renovación…) y los recomendables. Mientras, archivo de calendario o comprobante imprimible de la cita, y llamada del personal en los casos indispensables."
     },
     {
       "id": "P24",
@@ -655,6 +655,22 @@
       "desde": "2026-10-17",
       "titulo": "El banco de reactivos con su clave no entra al repositorio público",
       "recomendacion": "Mientras el repositorio sea público, el prototipo del examen usa preguntas ficticias. El banco real se carga directo en la base del SIA, y la página nunca recibe la respuesta correcta: la califica el servidor."
+    },
+    {
+      "id": "P86",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Actualizar el sitio al Estándar de formularios 1.1.0",
+      "recomendacion": "El sitio usa la copia 1.0.0, que no pinta junto a su campo los errores que devuelve el servidor ({errores: [{campo, mensaje}]}). La 1.1.0 lo hace y trae FormKit.marcaError. Mientras, APD.pintaErrores (app/apd.js) lo resuelve en «Crear cuenta» y «Mi perfil» (correo ya registrado). Al actualizar, quitarlo."
+    },
+    {
+      "id": "P87",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde",
+      "recomendacion": "Tras un envío fallido, el núcleo oculta el aviso en cuanto cualquier elemento del formulario recibe el foco; al presionar un botón debajo del aviso, el botón sube y el clic no llega. Proponer ocultarlo al cambiar un valor, no al mover el foco. En «Mi perfil», «Cancelar» evita el problema (mousedown sin mover el foco)."
     }
   ],
   "resueltos": [

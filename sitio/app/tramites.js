@@ -79,7 +79,7 @@
           s.pago_monto == null && c.pago_fundamento ? el('p', { class: 'texto-gris', texto: c.pago_fundamento }) : null,
           APD.limpia(instrucciones) ? el('p', { texto: APD.limpia(instrucciones) }) : el('p', { class: 'pendiente', texto: 'Pendiente: banco, cuenta y forma de pago.' }),
           el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' }),
-          el('p', { texto: 'Lleva también tu identificación oficial: con ella se confirma que la fotografía de tu cuenta es tuya. Si no se ve bien, ahí te toman otra.' })
+          el('p', { texto: 'Lleva también tu identificación oficial: con ella se confirma que la fotografía de tu cuenta es tuya.' })
         ])
       ]));
     }
