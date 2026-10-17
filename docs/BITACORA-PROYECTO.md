@@ -614,3 +614,10 @@ campos correctos.
 - Maqueta `maquetas/etapa2-grupos/` (artefacto «Maqueta · Grupos y asistencia»): espera por curso con prioridad y
   vencidas, personas en espera con selección para un grupo, armar y confirmar un grupo (mínimo 5, máximo 25, fecha,
   hora de entrada, instructor, lugar fijo), asistencia por día del instructor. Cinco puntos para decidir.
+
+## 2026-10-17 · Bloque 48 · Decisiones de grupos
+
+- Liber: grupos combinados con cualquier mezcla (20 de CFE, 3 de una alcaldía y 1 independiente); agregar personas a un
+  grupo confirmado hasta el día anterior al inicio; el curso empieza al menos 7 días después de confirmar.
+- Base: parámetro `dias_anticipacion_grupo` (7), reglas `anticipacion` y `grupo_por_iniciar`. 160 casos de reglas.
+- Por preguntar al área: horario del curso (P91) y quién arma los grupos (P92). Maqueta actualizada.

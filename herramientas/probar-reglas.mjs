@@ -420,6 +420,38 @@ const casos = [
        ASSERT NOT EXISTS (SELECT 1 FROM antes a JOIN apd.solicitud s ON s.id = a.id
                            WHERE s.estado <> 'lista_para_curso' OR s.lista_para_curso_en <> a.lista_para_curso_en);
      END $$;`],
+  // Decisiones 2026-10-17 (Liber): grupos combinados con cualquier mezcla; 7 días de anticipación; agregar personas a un
+  // grupo confirmado hasta el día anterior al inicio
+  ['Un grupo combinado admite cualquier mezcla de organizaciones e independientes', 'ok', '2026-10-20 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda
+      WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' AND organizacion IN ('Independiente', 'Comisión Federal de Electricidad (CFE)')
+         OR (tipo_acreditacion = 'poda' AND modalidad = 'nueva' AND organizacion LIKE 'Jardines%');
+     DO $$ BEGIN ASSERT (SELECT count(DISTINCT coalesce(s.organizacion_id::text, 'independiente')) FROM apd.inscripcion i
+                          JOIN apd.solicitud s ON s.id = i.solicitud_id WHERE i.grupo_id = ${GRUPO_INTEGRACION} AND i.activa) >= 3; END $$;`],
+  ['Un grupo no se confirma con menos de 7 días de anticipación', { codigo: 'anticipacion' }, '2026-10-20 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-26' WHERE id = ${GRUPO_INTEGRACION};
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Con 5 personas y 7 días de anticipación el grupo se confirma, y recibe personas hasta el día anterior', 'ok', '2026-10-20 10:00', `
+     CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-27' WHERE id = (SELECT id FROM g);
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = (SELECT id FROM g);
+     SELECT set_config('apd.ahora_simulado', '2026-10-26 18:00:00-06', true);
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
+  ['El día que empieza el curso ya no se agregan personas al grupo confirmado', { codigo: 'grupo_por_iniciar' }, '2026-10-20 10:00', `
+     CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-27' WHERE id = (SELECT id FROM g);
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = (SELECT id FROM g);
+     SELECT set_config('apd.ahora_simulado', '2026-10-27 08:00:00-06', true);
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
   ['Cancelar un grupo exige motivo', { codigo: 'cancelacion_sin_motivo' }, null, `
      UPDATE apd.grupo SET estado = 'cancelado' WHERE id = ${GRUPO_INTEGRACION};`],
 

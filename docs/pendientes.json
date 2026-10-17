@@ -695,6 +695,22 @@
       "desde": "2026-10-17",
       "titulo": "esquema-desde-html toma como parte del último campo un control que está fuera del formulario",
       "recomendacion": "Reportarlo: en examen.html la casilla «Marcarla para revisar», fuera del formulario, volvía «casilla» el campo del código. La herramienta debería leer sólo lo que está dentro del <form>. Mientras, probar-esquemas.mjs extrae el formulario antes de generar el esquema."
+    },
+    {
+      "grupo": "direccion",
+      "bloquea": "etapa 2",
+      "titulo": "Horario del curso: hora de entrada y de salida, y si es igual todos los días",
+      "recomendacion": "Preguntar al área. Propuesta: la hora de entrada se fija por grupo al confirmarlo; falta la hora de salida y si cambia algún día (por ejemplo, el día del examen en el PILARES). Se muestra a la persona en «Mis trámites» y en el aviso por correo del grupo.",
+      "id": "P91",
+      "desde": "2026-10-17"
+    },
+    {
+      "grupo": "direccion",
+      "bloquea": "etapa 2",
+      "titulo": "Quién arma los grupos",
+      "recomendacion": "Preguntar al área. Propuesta: el mismo perfil «revisión y cotejo» (P27) arma, confirma y cancela grupos; el instructor sólo ve sus grupos y captura asistencia.",
+      "id": "P92",
+      "desde": "2026-10-17"
     }
   ],
   "resueltos": [

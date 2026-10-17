@@ -1265,6 +1265,13 @@ BEGIN
 
   SELECT count(*) INTO inscritos FROM apd.inscripcion WHERE grupo_id = NEW.id AND activa;
 
+  -- Anticipación (decisión 2026-10-17, Liber): el curso empieza al menos dias_anticipacion_grupo días después de confirmar,
+  -- para que la persona se entere y se organice
+  IF NEW.estado = 'confirmado' AND OLD.estado = 'en_integracion'
+     AND NEW.fecha_inicio < apd.hoy() + apd.parametro_texto('dias_anticipacion_grupo')::integer THEN
+    PERFORM apd.error('anticipacion', format('El curso debe empezar al menos %s días después de confirmar el grupo',
+      apd.parametro_texto('dias_anticipacion_grupo')));
+  END IF;
   IF NEW.estado IN ('confirmado', 'en_curso') AND inscritos < NEW.cupo_minimo THEN
     PERFORM apd.error('cupo_minimo', format('El grupo tiene %s personas y necesita al menos %s', inscritos, NEW.cupo_minimo));
   END IF;
@@ -1333,6 +1340,10 @@ BEGIN
   SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id FOR UPDATE;
   IF g.estado NOT IN ('en_integracion', 'confirmado') THEN
     PERFORM apd.error('grupo_cerrado', 'El grupo ya no recibe personas');
+  END IF;
+  -- A un grupo confirmado se agregan personas hasta el día anterior al inicio (decisión 2026-10-17, Liber)
+  IF g.estado = 'confirmado' AND apd.hoy() >= g.fecha_inicio THEN
+    PERFORM apd.error('grupo_por_iniciar', 'A un grupo confirmado se agregan personas hasta el día anterior al inicio del curso');
   END IF;
   IF s.estado <> 'lista_para_curso' THEN
     PERFORM apd.error('solicitud_no_lista', format('La solicitud %s no está en espera de grupo', s.folio));

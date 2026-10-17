@@ -131,3 +131,7 @@ Las pantallas de la persona solicitante se prueban aparte (`herramientas/probar-
 correo, la base rechaza el de otra cuenta activa (`correo_registrado`; índice `solicitante_correo_uk`, sólo entre cuentas
 que no están `sin_activar`). La pantalla lo marca en el campo de correo.
 
+**Grupos** (decisiones 2026-10-17): un grupo combinado admite cualquier mezcla de organizaciones e independientes; se
+confirma con al menos 7 días de anticipación al primer día (`anticipacion`, parámetro `dias_anticipacion_grupo`); a un
+grupo confirmado se agregan personas hasta el día anterior al inicio (`grupo_por_iniciar`), sin pasar del máximo.
+
