@@ -81,6 +81,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | Bandeja del personal en la prueba: lo enviado en ese navegador va primero y cuenta como enviado en la fecha simulada (sin espera negativa). Sigue siendo sólo de ese navegador: lo enviado en otro equipo o navegador no aparece | Liber Saltijeral |
 | 2026-10-17 | Contraseña: botón «Mostrar» / «Ocultar» dentro del campo, en «Crear cuenta» (contraseña y confirmación) y en «Entrar»; al enviar se vuelve a ocultar | Liber Saltijeral |
 | 2026-10-17 | «Mi perfil», adscripción: un renglón directo, «Eres independiente.» o «Alcaldía: Tlalpan.», a todo lo ancho | Liber Saltijeral |
+| 2026-10-17 | «Confirma tu correo» se queda como en el estándar: sin sugerencia del navegador (autocomplete="off"), para que el correo se vuelva a escribir y se detecte un error de dedo | Liber Saltijeral |
 | 2026-10-14 | Para activar una cuenta del registro de Kobo, el nombre escrito debe ser el del registro; si no coincide, la persona acude a la Secretaría (propuesta de Claude, en el mapa como R03) | Propuesta |
 | — | Quién restablece las contraseñas si el SIA no da correo | **Pendiente** |
 
