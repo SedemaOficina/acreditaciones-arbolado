@@ -7,7 +7,8 @@
 
 /* @bloque componentes */
 
-.acuse{padding:var(--e-4) 0;text-align:center}
+/* Sólo arriba y abajo: el relleno lateral es el de la tarjeta; sin él, en teléfono los botones quedaban pegados a la orilla. */
+.acuse{padding-top:var(--e-4);padding-bottom:var(--e-4);text-align:center}
 .acuse-marca{
   display:flex;
   align-items:center;

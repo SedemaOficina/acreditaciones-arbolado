@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="formkit/css/tokens.css">
 <link rel="stylesheet" href="formkit/css/base.css">
 <link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="app/version-visible.css?v=0.31">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="app/apd.css?v=0.31">
 </head>
 <body>
@@ -39,11 +39,8 @@
     <div class="campo" data-campo="contrasena" data-requerido data-sensible
          data-finalidad="Comprobar que quien entra es la persona titular de la cuenta." data-uso="Comprobar el acceso; no se guarda.">
       <label class="etiqueta" for="contrasena">Contraseña</label>
-      <!-- «Mostrar» deja ver lo escrito (app/ver-contrasena.js; el estándar no lo trae: P73). -->
-      <div class="contrasena-caja">
-        <input class="control" id="contrasena" name="contrasena" type="password" autocomplete="current-password">
-        <button type="button" class="contrasena-ver" data-ver-contrasena aria-controls="contrasena" aria-pressed="false"><span data-ver-texto>Mostrar</span><span class="solo-lector"> la contraseña</span></button>
-      </div>
+      <!-- «Mostrar» / «Ocultar» lo pone el núcleo dentro del campo (estándar 1.2.1, P73). -->
+      <input class="control" id="contrasena" name="contrasena" type="password" autocomplete="current-password">
     </div>
     <!-- Trampa para programas automáticos: una persona no la ve ni la llena. -->
     <div class="solo-lector" aria-hidden="true" data-trampa><label>No llenar <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label></div>
@@ -66,6 +63,7 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
+<script src="app/perfil-academico.js?v=0.31"></script>
 <script src="app/apd.js?v=0.31"></script>
 <script src="app/config-entrar.js?v=0.31"></script>
 <script src="formkit/js/validaciones.config.js"></script>
@@ -75,10 +73,8 @@
 <script src="app/entrar.js?v=0.31"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/archivos-prueba.js?v=0.31"></script>
-<script src="app/curp-nombre.js?v=0.31"></script>
 <script src="app/casos-prueba.js?v=0.31"></script>
 <script src="app/pruebas.js?v=0.31"></script>
-<script src="app/ver-contrasena.js?v=0.31"></script>
 <script src="app/version-visible.js?v=0.31"></script>
 </body>
 </html>

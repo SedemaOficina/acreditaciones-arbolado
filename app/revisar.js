@@ -158,7 +158,7 @@
       const nombre = d.nombre_archivo || APD.nombreDeArchivo((req[k] && req[k].nombre_archivo) || k.toUpperCase(), p, d.nombre_original);
       // Un archivo cargado en este navegador (versión de prueba) se ve tal cual; si no, el PDF ficticio del requisito
       archivos[k] = d.blob
-        ? { url: URL.createObjectURL(d.blob), titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
+        ? { url: URL.createObjectURL(d.blob), tipo: d.blob.type, titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
         : { url: `datos/documentos/${k}.pdf`, titulo: req[k] ? req[k].nombre : k, archivo: nombre, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
       const peso = d.tamano_bytes >= 1048576 ? `${(d.tamano_bytes / 1048576).toFixed(1)} MB` : `${Math.round(d.tamano_bytes / 1024)} KB`;
       $('[data-doc-archivo]', art).replaceChildren(...[
@@ -238,24 +238,17 @@
     function ver(k, boton) {
       if (!archivos[k] || !global_visor()) return;
       for (const a of $$('[data-doc]', form)) a.toggleAttribute('data-viendo', a.dataset.doc === k);
-      APD_VISOR.abre(archivos[k], boton);
+      FormKit.visor.abre(archivos[k], boton);
     }
-    const global_visor = () => typeof APD_VISOR !== 'undefined';
+    const global_visor = () => Boolean(window.FormKit && FormKit.visor);
     const global_matchMedia = (q) => window.matchMedia(q).matches;
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-ver]');
       if (b) ver(b.dataset.ver, b);
     });
 
-    /* Motivos frecuentes: se agregan al texto de la observación, que quien revisa completa */
-    form.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-sugerencia]');
-      if (!b) return;
-      const t = $('textarea', b.closest('[data-campo]'));
-      t.value = t.value.trim() ? `${t.value.trim()} ${b.dataset.sugerencia}.` : `${b.dataset.sugerencia}.`;
-      t.dispatchEvent(new Event('input', { bubbles: true }));
-      t.focus();
-    });
+    /* Motivos frecuentes: data-chips-fijos en cada observación (módulo chips del estándar, P65); el motivo se agrega
+       al texto, que quien revisa completa. */
 
     // La cita es en la sede única; se elige el día, desde el siguiente al de hoy (fecha simulada del corte)
     for (const n of $$('[data-sede]')) n.textContent = APD.sede(datos).nombre;
@@ -324,7 +317,7 @@
     // (si hay que decidir el perfil, el comprobante de estudios, que es con lo que se decide)
     const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k]);
     const primero = ['por_clasificar', 'no_cumple'].includes(perfil) && archivos.comprobante_estudios ? 'comprobante_estudios' : orden[0];
-    if (primero && global_visor() && APD_VISOR.enComputadora()) ver(primero, null);
+    if (primero && global_visor() && FormKit.visor.enComputadora()) ver(primero, null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
 
@@ -361,7 +354,7 @@
         return;
       }
       const art = $(`[data-doc="${siguiente}"]`, form);
-      if (global_visor() && APD_VISOR.enComputadora()) ver(siguiente, null);
+      if (global_visor() && FormKit.visor.enComputadora()) ver(siguiente, null);
       art.scrollIntoView({ behavior: suave, block: 'start' });
       FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
     }

@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="formkit/css/base.css">
 <link rel="stylesheet" href="formkit/css/nucleo.css">
 <link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
-<link rel="stylesheet" href="app/version-visible.css?v=0.31">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="app/apd.css?v=0.31">
 </head>
 <body>
@@ -38,13 +38,13 @@
 
     <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
     <!-- corregir-auxiliares:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_identificacion_oficial" data-auxiliar data-uso="Pedir «Identificación oficial» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_identificacion_oficial" name="cargar_identificacion_oficial" value="no"></div>
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_curp" data-auxiliar data-uso="Pedir «Clave Única de Registro de Población (CURP)» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_curp" name="cargar_curp" value="no"></div>
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_comprobante_domicilio" data-auxiliar data-uso="Pedir «Comprobante de domicilio» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_comprobante_domicilio" name="cargar_comprobante_domicilio" value="no"></div>
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir «Constancia de situación fiscal» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_constancia_situacion_fiscal" name="cargar_constancia_situacion_fiscal" value="no"></div>
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_comprobante_estudios" data-auxiliar data-uso="Pedir «Comprobante de estudios» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_comprobante_estudios" name="cargar_comprobante_estudios" value="no"></div>
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_curriculum_vitae" data-auxiliar data-uso="Pedir «Currículum vitae» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_curriculum_vitae" name="cargar_curriculum_vitae" value="no"></div>
-      <div class="solo-lector" aria-hidden="true" data-campo="cargar_comprobantes_experiencia" data-auxiliar data-uso="Pedir «Comprobantes de experiencia» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor."><input type="hidden" id="cargar_comprobantes_experiencia" name="cargar_comprobantes_experiencia" value="no"></div>
+      <input type="hidden" id="cargar_identificacion_oficial" name="cargar_identificacion_oficial" value="no" data-campo="cargar_identificacion_oficial" data-auxiliar data-uso="Pedir «Identificación oficial» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_curp" name="cargar_curp" value="no" data-campo="cargar_curp" data-auxiliar data-uso="Pedir «Clave Única de Registro de Población (CURP)» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_comprobante_domicilio" name="cargar_comprobante_domicilio" value="no" data-campo="cargar_comprobante_domicilio" data-auxiliar data-uso="Pedir «Comprobante de domicilio» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_constancia_situacion_fiscal" name="cargar_constancia_situacion_fiscal" value="no" data-campo="cargar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir «Constancia de situación fiscal» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_comprobante_estudios" name="cargar_comprobante_estudios" value="no" data-campo="cargar_comprobante_estudios" data-auxiliar data-uso="Pedir «Comprobante de estudios» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_curriculum_vitae" name="cargar_curriculum_vitae" value="no" data-campo="cargar_curriculum_vitae" data-auxiliar data-uso="Pedir «Currículum vitae» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_comprobantes_experiencia" name="cargar_comprobantes_experiencia" value="no" data-campo="cargar_comprobantes_experiencia" data-auxiliar data-uso="Pedir «Comprobantes de experiencia» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
     <!-- corregir-auxiliares:fin -->
 
     <p class="ayuda ayuda-bloque">Sólo PDF. Debe ser el mismo documento que llevas a tu cita.</p>
@@ -198,6 +198,7 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
+<script src="app/perfil-academico.js?v=0.31"></script>
 <script src="app/apd.js?v=0.31"></script>
 <!-- Versión de prueba: lo cargado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.31"></script>
@@ -206,11 +207,8 @@
 <script src="formkit/js/iconos.js"></script>
 <script src="formkit/js/formkit.core.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="app/archivos-lleno.js?v=0.31"></script>
-<script src="app/auxiliar.js?v=0.31"></script>
 <script src="app/corregir.js?v=0.31"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
-<script src="app/curp-nombre.js?v=0.31"></script>
 <script src="app/casos-prueba.js?v=0.31"></script>
 <script src="app/pruebas.js?v=0.31"></script>
 <script src="app/version-visible.js?v=0.31"></script>

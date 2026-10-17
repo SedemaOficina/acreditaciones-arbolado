@@ -9,7 +9,7 @@
    Contrato HTML (fuera del <form>):
      <section class="tarjeta acuse" data-acuse hidden>
        <div class="acuse-marca" aria-hidden="true">…icono ok…</div>
-       <h2 class="titulo-paso" tabindex="-1">Recibimos tu solicitud</h2>
+       <h2 class="titulo-paso" tabindex="-1">Recibimos tu información</h2>
        <div class="acuse-datos">
          <div class="acuse-dato"><span class="acuse-etq">Folio</span>
            <div class="acuse-fila"><span class="acuse-valor" id="folio" data-acuse-folio></span>

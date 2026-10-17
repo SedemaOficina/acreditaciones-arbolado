@@ -22,9 +22,11 @@
      · CURP nueva                  → cuenta nueva.
    ?simular=error | limite | lento muestra cada pantalla de fallo.
    ========================================================= */
-/* Validaciones cruzadas propias del proyecto (CURP ↔ nombre y apellidos, de app/curp-nombre.js; CURP ↔ fecha escrita
-   como día/mes/año, de app/fecha-dma.js) y el formato fecha-dma: la misma regla que aplica el servidor. */
-window.FORMKIT_CONFIG = { cruzadas: window.APD_CRUZADAS, formatos: window.APD_FORMATOS };
+/* Las cruzadas CURP ↔ nombre, apellidos y fecha (curp-nombre, curp-segundo-apellido, curp-fecha-dma) y el formato
+   fecha-dma son del estándar desde la 1.1.0 y la 1.2.0: no hay nada que configurar. */
+window.FORMKIT_CONFIG = {};
+/* Nombre comparable con el registro anterior: mayúsculas, sin acentos ni signos. */
+const limpiaNombre = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z ]/g, ' ').replace(/\s+/g, ' ').trim();
 
 window.FORMKIT_OPCIONES = {
   enviar(payload, { signal }) {
@@ -45,7 +47,7 @@ window.FORMKIT_OPCIONES = {
           }
           if (existente) {
             // Registro anterior (Kobo): además de la CURP, el nombre debe ser el del registro
-            const igual = (a, b) => APD_CURP.limpia(a) === APD_CURP.limpia(b);
+            const igual = (a, b) => limpiaNombre(a) === limpiaNombre(b);
             if (!igual(d.nombre, existente.nombre) || !igual(d.primer_apellido, existente.primer_apellido)
                 || !igual(d.segundo_apellido || '', existente.segundo_apellido || '')) {
               return mal({ mensaje: 'Tu nombre no coincide con el registro anterior de la Secretaría para esta CURP. Acude a la Secretaría para aclararlo.' });
@@ -77,9 +79,9 @@ window.FORMKIT_OPCIONES = {
     if (h) h.hidden = !respuesta.historial;
   },
   alFallar(error, form) {
-    // El núcleo ya mostró el aviso general de fallo; si el servidor dio un motivo, se dice ese.
+    // El núcleo ya mostró el aviso general de fallo y pintó junto a su campo los errores que devolvió el servidor
+    // ({ errores }, estándar 1.3.1, P86); si el servidor dio un motivo general, se dice ese.
     const aviso = form.querySelector('[data-estado-envio] .aviso-texto');
     if (error && error.mensaje && aviso) aviso.textContent = error.mensaje;
-    if (error && error.errores) APD.pintaErrores(form, error.errores);
   }
 };

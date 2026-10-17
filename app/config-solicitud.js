@@ -32,8 +32,14 @@
    solicitud.html.
    ?simular=error | limite | lento muestra cada pantalla de fallo.
    ========================================================= */
+/* Experiencia mínima según el perfil (data-min-segun="experiencia", estándar 1.1.0, P61): la misma regla en la
+   página y en el servidor (app/perfil-academico.js). El catálogo de carreras llega cuando la página carga los datos
+   (APD_SOLICITUD.usaCatalogo); antes, el mínimo es 0. */
+let catalogoCarreras = null;
+window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; } };
 window.FORMKIT_CONFIG = {
-  archivos: { mb: 5, extensiones: ['pdf'], max: 1 }
+  archivos: { mb: 5, extensiones: ['pdf'], max: 1 },
+  limitesSegun: { experiencia: (r) => APD_PERFIL.minimoExperiencia(catalogoCarreras, r) }
 };
 
 const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';

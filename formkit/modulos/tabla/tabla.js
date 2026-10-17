@@ -33,8 +33,14 @@
         const ths = $$('thead th', tabla);
         const clave = marco.dataset.clave;
 
+        /* Un encabezado cuyo texto es sólo para el lector de pantalla (.solo-lector) no se muestra en teléfono. */
+        const soloLector = (th) => { const c = th.cloneNode(true); for (const s of $$('.solo-lector', c)) s.remove(); return !c.textContent.trim(); };
         function etiquetaCeldas() {
-          for (const tr of $$('tbody tr', tabla)) $$('td', tr).forEach((td, i) => { if (ths[i] && !td.dataset.etiqueta) td.dataset.etiqueta = ths[i].textContent.trim(); });
+          for (const tr of $$('tbody tr', tabla)) $$('td', tr).forEach((td, i) => {
+            if (!ths[i] || td.dataset.etiqueta) return;
+            td.dataset.etiqueta = ths[i].textContent.trim();
+            if (soloLector(ths[i])) td.dataset.etiquetaOculta = '';
+          });
           /* Acciones por fila: «Ver», no basta; «Ver solicitud 123» sí. */
           for (const tr of $$('tbody tr', tabla)) {
             const id = clave ? (tr.dataset[clave] || ($$('td', tr)[ths.findIndex((t) => t.textContent.trim().toLowerCase() === clave)] || {}).textContent) : '';

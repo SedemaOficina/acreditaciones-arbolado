@@ -32,11 +32,15 @@
   line-height:var(--interlineado-compacto);
   color:var(--texto);
 }
-/* La marca de obligatorio es gris y va con la palabra (decisión C2): el
-   color solo no lo dice y el guinda está reservado a la acción principal. */
-.marca-oblig{margin-left:var(--e-1);font-weight:var(--peso-fuerte);color:var(--gris)}
+/* La marca de obligatorio es guinda y va con la palabra (decisión C2,
+   revisada por la Secretaría el 14 oct 2026): el color solo no lo dice, por eso
+   lleva la leyenda y «(obligatorio)» para el lector de pantalla. */
+.marca-oblig{margin-left:var(--e-1);font-weight:var(--peso-fuerte);color:var(--guinda)}
 .ayuda{margin-bottom:var(--e-2);font-size:var(--t-sm);line-height:var(--interlineado-compacto);color:var(--gris-cl)}
 .ayuda:empty{margin:0}
+/* Ayuda de bloque: va una vez bajo el título de la sección cuando vale igual
+   para todos sus campos; la ayuda de cada campo queda para lo propio de él. */
+.ayuda-bloque{max-width:var(--ancho-lectura);margin-bottom:var(--e-4);font-size:var(--t-sm);line-height:var(--interlineado-compacto);color:var(--gris-cl)}
 .contador{margin-top:var(--e-1);font-size:var(--t-xs);text-align:right;color:var(--gris-cl)}
 
 /* Error del campo: icono + palabra «Error» + qué hacer. No depende del rojo. */
@@ -63,6 +67,8 @@
   font-size:var(--t-sm);
   color:var(--gris);
 }
+/* El asterisco de la leyenda se ve igual que el de las preguntas. */
+.leyenda-oblig [aria-hidden="true"]{font-weight:var(--peso-fuerte);color:var(--guinda)}
 
 /* El control: texto, número, fecha, hora, teléfono, select y área de texto.
    Letra de 16 px como mínimo (iOS hace zoom con menos). Su borde es
@@ -286,7 +292,19 @@
 /* Anuncio de estado de envío (error de red, plazo vencido): recibe el foco. */
 .estado-envio{margin-top:var(--e-4)}
 
+/* «Mostrar» / «Ocultar»: dentro del campo, a la derecha; aria-pressed dice si se ve lo escrito. */
+.contrasena-caja{position:relative}
+.contrasena-caja > .control{padding-right:var(--e-11)}
+.contrasena-ver{position:absolute;top:var(--b-1);right:var(--b-1);bottom:var(--b-1);min-width:var(--objetivo-min);padding:0 var(--e-3);background:transparent;border:0;border-radius:var(--r-ctrl);font:inherit;font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--azul);cursor:pointer}
+
+/* Redes sociales de la Secretaría: íconos de 44 px con nombre accesible, la
+   única fila de íconos sin texto del paquete (FRM-72). */
+.redes{display:flex;flex-wrap:wrap;gap:var(--e-2)}
+.redes-enlace{display:inline-flex;align-items:center;justify-content:center;width:var(--objetivo-min);height:var(--objetivo-min);border:var(--b-1) solid var(--borde);border-radius:var(--r-ctrl);color:var(--gris)}
+
 /* @bloque estados */
+.contrasena-ver:hover{text-decoration:underline}
+.contrasena-ver:focus-visible{outline:var(--foco-ancho) solid var(--foco);outline-offset:calc(var(--foco-sep) * -1)}
 
 /* Foco: el MISMO anillo en todo el paquete y sobre cualquier fondo. Es la
    única regla de foco; los componentes no declaran la suya. [data-demo-foco]
@@ -320,6 +338,7 @@
 .btn-peligro:hover{background:var(--error-bg)}
 .btn-atras:hover{text-decoration:underline}
 .btn-icono:hover{background:var(--azul-cl);color:var(--azul)}
+.redes-enlace:hover{background:var(--azul-cl);border-color:var(--azul);color:var(--azul)}
 /* Deshabilitado accesible: aria-disabled conserva el foco y el anuncio; la
    acción la bloquea formkit. :disabled queda para lo que de verdad no aplica. */
 .btn:disabled,.btn[aria-disabled="true"]{opacity:var(--op-inactivo);cursor:not-allowed}
@@ -349,7 +368,7 @@
   .fila > .campo,.fila-3 > .campo,.fila-2-1 > .campo{display:grid;grid-template-rows:subgrid;grid-row:span 4;gap:0;align-content:start}
   .etiqueta{grid-row:1}
   .ayuda{grid-row:2}
-  .control,.select,.control-grupo{grid-row:3}
+  .control,.select,.control-grupo,.contrasena-caja{grid-row:3}
   .err{grid-row:4}
 }
 

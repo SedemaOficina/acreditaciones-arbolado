@@ -1,0 +1,25 @@
+/* =========================================================
+   fecha.css · Módulo «fecha» · nivel RECOMENDADO
+   Control de fecha u hora con botón «Hoy» / «Ahora» y atajos de rango.
+   Depende de: nucleo.css. Bloques: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+/* Control y botón en fila; en teléfono el botón queda debajo a todo lo ancho. */
+.fecha-grupo{display:flex;flex-direction:column;gap:var(--e-2)}
+.fecha-hoy{flex:none}
+.fecha-atajos{display:flex;flex-wrap:wrap;gap:var(--e-2);margin-bottom:var(--e-3)}
+.fecha-atajo{flex:1 1 auto;min-height:var(--objetivo-min);padding:var(--e-2) var(--e-3);font-size:var(--t-sm)}
+
+/* @bloque estados */
+
+.fecha-atajo[aria-pressed="true"]{background:var(--azul-cl);border-color:var(--azul);color:var(--azul)}
+
+/* @bloque adaptaciones */
+
+@media (min-width:560px){
+  .fecha-grupo{flex-direction:row}
+  .fecha-hoy{width:auto}
+  .fecha-atajo{flex:0 1 auto}
+}

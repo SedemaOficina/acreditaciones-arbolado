@@ -12,7 +12,8 @@
 <link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
 <link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
-<link rel="stylesheet" href="app/version-visible.css?v=0.31">
+<link rel="stylesheet" href="formkit/modulos/visor/visor.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="app/apd.css?v=0.31">
 </head>
 <body>
@@ -54,26 +55,26 @@
   <!-- El cotejo (decisiones 2026-10-17): llegada, identidad, documentos, pago y factura. Una sola acción principal,
        cuyo texto cambia con el resultado. Arranca a mano (data-formkit="manual") cuando la página ya calculó los
        campos auxiliares. -->
-  <div class="revision-area">
+  <div class="visor-area">
   <form id="formulario" data-formkit="manual" action="#" method="post" hidden>
     <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
 
     <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
-    <div class="solo-lector" aria-hidden="true" data-campo="pedir_llegada" data-auxiliar data-uso="Preguntar si la persona se presentó, salvo al retomar un cotejo en pausa (la persona ya está); lo calculan la página y el servidor con apd.cita."><input type="hidden" id="pedir_llegada" name="pedir_llegada" value="si"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="pedir_identidad" data-auxiliar data-uso="Preguntar por la identidad si la persona se presentó y no es un cotejo retomado (la identidad ya se comprobó); lo calculan la página y el servidor."><input type="hidden" id="pedir_identidad" name="pedir_identidad" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="pedir_documentos" data-auxiliar data-uso="Cotejar documentos si la persona se presentó y es quien dice ser; lo calculan la página y el servidor."><input type="hidden" id="pedir_documentos" name="pedir_documentos" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="pedir_hoy" data-auxiliar data-uso="Preguntar si la persona puede traer hoy el documento correcto cuando alguno no coincide; lo calculan la página y el servidor."><input type="hidden" id="pedir_hoy" name="pedir_hoy" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="pedir_pago" data-auxiliar data-uso="Preguntar por el comprobante de pago cuando ningún documento dejó de coincidir; lo calculan la página y el servidor."><input type="hidden" id="pedir_pago" name="pedir_pago" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="pedir_factura" data-auxiliar data-uso="Pedir la factura y sus datos cuando el pago está verificado; lo calculan la página y el servidor."><input type="hidden" id="pedir_factura" name="pedir_factura" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="resultado" data-auxiliar data-uso="Mostrar lo que pide el resultado (cita nueva, nota para la Dirección…); lo calculan la página y el servidor con las respuestas y las inasistencias de apd.cita."><input type="hidden" id="resultado" name="resultado" value=""></div>
+    <input type="hidden" id="pedir_llegada" name="pedir_llegada" value="si" data-campo="pedir_llegada" data-auxiliar data-uso="Preguntar si la persona se presentó, salvo al retomar un cotejo en pausa (la persona ya está); lo calculan la página y el servidor con apd.cita.">
+    <input type="hidden" id="pedir_identidad" name="pedir_identidad" value="no" data-campo="pedir_identidad" data-auxiliar data-uso="Preguntar por la identidad si la persona se presentó y no es un cotejo retomado (la identidad ya se comprobó); lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_documentos" name="pedir_documentos" value="no" data-campo="pedir_documentos" data-auxiliar data-uso="Cotejar documentos si la persona se presentó y es quien dice ser; lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_hoy" name="pedir_hoy" value="no" data-campo="pedir_hoy" data-auxiliar data-uso="Preguntar si la persona puede traer hoy el documento correcto cuando alguno no coincide; lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_pago" name="pedir_pago" value="no" data-campo="pedir_pago" data-auxiliar data-uso="Preguntar por el comprobante de pago cuando ningún documento dejó de coincidir; lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_factura" name="pedir_factura" value="no" data-campo="pedir_factura" data-auxiliar data-uso="Pedir la factura y sus datos cuando el pago está verificado; lo calculan la página y el servidor.">
+    <input type="hidden" id="resultado" name="resultado" value="" data-campo="resultado" data-auxiliar data-uso="Mostrar lo que pide el resultado (cita nueva, nota para la Dirección…); lo calculan la página y el servidor con las respuestas y las inasistencias de apd.cita.">
     <!-- cotejo-auxiliares:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_identificacion_oficial" data-auxiliar data-uso="Pedir el cotejo de «Identificación oficial» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_identificacion_oficial" name="cotejar_identificacion_oficial" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_curp" data-auxiliar data-uso="Pedir el cotejo de «Clave Única de Registro de Población (CURP)» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_curp" name="cotejar_curp" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_comprobante_domicilio" data-auxiliar data-uso="Pedir el cotejo de «Comprobante de domicilio» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_comprobante_domicilio" name="cotejar_comprobante_domicilio" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir el cotejo de «Constancia de situación fiscal» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_constancia_situacion_fiscal" name="cotejar_constancia_situacion_fiscal" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_comprobante_estudios" data-auxiliar data-uso="Pedir el cotejo de «Comprobante de estudios» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_comprobante_estudios" name="cotejar_comprobante_estudios" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_curriculum_vitae" data-auxiliar data-uso="Pedir el cotejo de «Currículum vitae» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_curriculum_vitae" name="cotejar_curriculum_vitae" value="no"></div>
-    <div class="solo-lector" aria-hidden="true" data-campo="cotejar_comprobantes_experiencia" data-auxiliar data-uso="Pedir el cotejo de «Comprobantes de experiencia» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor."><input type="hidden" id="cotejar_comprobantes_experiencia" name="cotejar_comprobantes_experiencia" value="no"></div>
+    <input type="hidden" id="cotejar_identificacion_oficial" name="cotejar_identificacion_oficial" value="no" data-campo="cotejar_identificacion_oficial" data-auxiliar data-uso="Pedir el cotejo de «Identificación oficial» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_curp" name="cotejar_curp" value="no" data-campo="cotejar_curp" data-auxiliar data-uso="Pedir el cotejo de «Clave Única de Registro de Población (CURP)» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_comprobante_domicilio" name="cotejar_comprobante_domicilio" value="no" data-campo="cotejar_comprobante_domicilio" data-auxiliar data-uso="Pedir el cotejo de «Comprobante de domicilio» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_constancia_situacion_fiscal" name="cotejar_constancia_situacion_fiscal" value="no" data-campo="cotejar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir el cotejo de «Constancia de situación fiscal» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_comprobante_estudios" name="cotejar_comprobante_estudios" value="no" data-campo="cotejar_comprobante_estudios" data-auxiliar data-uso="Pedir el cotejo de «Comprobante de estudios» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_curriculum_vitae" name="cotejar_curriculum_vitae" value="no" data-campo="cotejar_curriculum_vitae" data-auxiliar data-uso="Pedir el cotejo de «Currículum vitae» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_comprobantes_experiencia" name="cotejar_comprobantes_experiencia" value="no" data-campo="cotejar_comprobantes_experiencia" data-auxiliar data-uso="Pedir el cotejo de «Comprobantes de experiencia» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
     <!-- cotejo-auxiliares:fin -->
 
     <!-- 0 · Llegada -->
@@ -388,7 +389,7 @@
   </form>
 
   <!-- Visor del documento que cargó la persona: todas las hojas. En computadora queda fijo a la derecha; en pantalla
-       chica se abre a pantalla completa (app/visor.js). -->
+       chica se abre a pantalla completa (módulo visor del estándar). -->
   <dialog class="visor" data-visor aria-labelledby="visor-titulo">
     <div class="visor-cabeza">
       <div class="visor-nombre">
@@ -408,7 +409,7 @@
     <p class="visor-pagina" data-visor-pagina aria-live="polite"></p>
     <p class="aviso visor-aviso" data-visor-aviso hidden></p>
     <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
-    <p class="visor-nota"><span class="pendiente" data-visor-nota>Versión de prueba.</span></p>
+    <p class="visor-nota pendiente" data-visor-nota hidden></p>
   </dialog>
   </div>
 
@@ -429,23 +430,21 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
+<script src="app/perfil-academico.js?v=0.31"></script>
 <script src="app/apd.js?v=0.31"></script>
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.31"></script>
 <script src="app/personal.js?v=0.31"></script>
-<script src="app/folio-fiscal.js?v=0.31"></script>
 <script src="app/config-cotejo.js?v=0.31"></script>
 <script src="formkit/js/validaciones.config.js"></script>
+<script src="app/config-usted.js?v=0.31"></script>
 <script src="formkit/js/iconos.js"></script>
 <script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/visor/visor.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="app/archivos-lleno.js?v=0.31"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
-<script src="app/auxiliar.js?v=0.31"></script>
-<script src="app/visor.js?v=0.31"></script>
 <script src="app/cotejo.js?v=0.31"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
-<script src="app/curp-nombre.js?v=0.31"></script>
 <script src="app/casos-prueba.js?v=0.31"></script>
 <script src="app/pruebas.js?v=0.31"></script>
 <script src="app/version-visible.js?v=0.31"></script>

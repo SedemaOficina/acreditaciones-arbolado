@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
 <link rel="stylesheet" href="formkit/modulos/combo/combo.css">
 <link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
-<link rel="stylesheet" href="app/version-visible.css?v=0.31">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="app/apd.css?v=0.31">
 </head>
 <body>
@@ -46,9 +46,9 @@
     <!-- Sólo mientras la Secretaría no la confirme: ya confirmada, una nueva se toma en la siguiente cita. -->
     <form id="form-foto" class="perfil-form" data-formkit="manual" data-seccion="foto" action="#" method="post" aria-label="Cambiar fotografía" hidden>
       <div class="campo" data-campo="foto" data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
-           data-finalidad="Reconocer a la persona en la cita de cotejo, en el curso y en el examen." data-requerido data-uso="Sustituir la fotografía de la persona antes de que se confirme en la cita.">
+           data-finalidad="Reconocer a la persona en la cita de cotejo y en el curso, y confirmar su identidad y su asistencia el día del examen." data-requerido data-uso="Sustituir la fotografía de la persona antes de que se confirme en la cita.">
         <span class="etiqueta" id="et-foto">Tu nueva fotografía</span>
-        <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto, fondo claro y buena luz.</p>
+        <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Tiene que verse clara: el día del examen, quien lo aplica la usa para confirmar que eres tú y tomarte asistencia.</p>
         <div data-archivos>
           <button type="button" class="zona-carga" aria-describedby="ay-foto">
             <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -280,6 +280,7 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
+<script src="app/perfil-academico.js?v=0.31"></script>
 <script src="app/apd.js?v=0.31"></script>
 <script src="datos/catalogos.js?v=0.31"></script>
 <script src="app/config-datos.js?v=0.31"></script>
@@ -287,13 +288,11 @@
 <script src="formkit/js/iconos.js"></script>
 <script src="formkit/js/formkit.core.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="app/archivos-lleno.js?v=0.31"></script>
 <script src="formkit/modulos/combo/combo.js"></script>
 <script src="formkit/modulos/otro/otro.js"></script>
 <script src="app/datos.js?v=0.31"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/archivos-prueba.js?v=0.31"></script>
-<script src="app/curp-nombre.js?v=0.31"></script>
 <script src="app/casos-prueba.js?v=0.31"></script>
 <script src="app/pruebas.js?v=0.31"></script>
 <script src="app/version-visible.js?v=0.31"></script>

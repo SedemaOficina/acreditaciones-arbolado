@@ -15,7 +15,8 @@
 <link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
 <link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
 <link rel="stylesheet" href="formkit/modulos/combo/combo.css">
-<link rel="stylesheet" href="app/version-visible.css?v=0.31">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="app/apd.css?v=0.31">
 </head>
 <body>
@@ -59,26 +60,21 @@
       <input class="control" id="segundo_apellido" name="segundo_apellido" type="text" maxlength="80" autocomplete="off">
     </div>
     </div>
-    <!-- No es una pregunta: lo llena app/cuenta.js («si» cuando el segundo apellido está vacío) para que la
-         CURP se compruebe también sin segundo apellido. El servidor lo calcula por su cuenta, no lo recibe. -->
-    <div class="solo-lector" aria-hidden="true" data-campo="sin_segundo_apellido" data-auxiliar data-uso="Comprobar la CURP cuando la persona no tiene segundo apellido; lo calcula la página.">
-      <input type="hidden" id="sin_segundo_apellido" name="sin_segundo_apellido" value="si">
-    </div>
 
     <div class="fila">
     <div class="campo" data-campo="fecha_nacimiento" data-formato="fecha-dma" data-requerido data-no-futura data-sensible
          data-finalidad="Comprobar que la CURP corresponde a quien crea la cuenta." data-uso="Comprobar la CURP; no se guarda aparte porque ya está en ella.">
       <label class="etiqueta" for="fecha_nacimiento">Fecha de nacimiento</label>
       <p class="ayuda" id="ay-fecha_nacimiento">Escribe día, mes y año; las diagonales se ponen solas. Ejemplo: 23/07/1985</p>
-      <!-- Se escribe, sin calendario (decisión 2026-10-16): formato propio fecha-dma con escritura guiada que pasa sola al mes y al año (app/fecha-dma.js). El placeholder sólo recuerda el orden; la etiqueta y la ayuda van aparte. -->
+      <!-- Se escribe, sin calendario (decisión 2026-10-16): formato fecha-dma del estándar, con escritura guiada que pasa sola al mes y al año. El placeholder sólo recuerda el orden; la etiqueta y la ayuda van aparte. -->
       <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="bday" aria-describedby="ay-fecha_nacimiento">
     </div>
 
-    <!-- Cuatro validaciones cruzadas: la fecha (curp-fecha, del estándar) y el nombre y los apellidos
-         (curp-nombre, curp-segundo-apellido y curp-sin-segundo-apellido, propias: app/curp-nombre.js). -->
+    <!-- Tres validaciones cruzadas del estándar: la fecha escrita como día/mes/año (curp-fecha-dma), el nombre y
+         el primer apellido (curp-nombre) y el segundo apellido, o X si no tiene (curp-segundo-apellido). -->
     <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
-         data-deriva="sexo=sexo" data-cruzada="curp-fecha-dma curp-nombre curp-segundo-apellido curp-sin-segundo-apellido"
-         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido sin=sin_segundo_apellido"
+         data-deriva="sexo=sexo" data-cruzada="curp-fecha-dma curp-nombre curp-segundo-apellido"
+         data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido"
          data-finalidad="Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona." data-uso="Identificador único de la cuenta y llave del historial de acreditaciones.">
       <label class="etiqueta" for="curp">CURP
       </label>
@@ -100,9 +96,9 @@
     <!-- Fotografía de frente (decisión 2026-10-14): obligatoria. No es la de la credencial, que se toma al entregarla.
          Sólo imagen; en el teléfono, la cámara frontal (capture="user"). La ubicación de la foto no viaja (EXIF desactivado). -->
     <div class="campo" data-campo="foto" data-requerido data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
-         data-finalidad="Reconocer a la persona en la cita de cotejo, en el curso y en el examen." data-uso="Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.">
+         data-finalidad="Reconocer a la persona en la cita de cotejo y en el curso, y confirmar su identidad y su asistencia el día del examen." data-uso="Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.">
       <span class="etiqueta" id="et-foto">Fotografía de frente</span>
-      <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Con ella te reconocen en la cita, el curso y el examen. La foto de tu credencial es otra: te la toman cuando la recoges.</p>
+      <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Tiene que verse clara: el día del examen, quien lo aplica la usa para confirmar que eres tú y tomarte asistencia. También te reconocen con ella en la cita de cotejo y en el curso. La foto de tu credencial es otra: te la toman cuando la recoges.</p>
       <div data-archivos>
         <button type="button" class="zona-carga" aria-describedby="ay-foto">
           <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -288,20 +284,14 @@
            data-finalidad="Proteger el acceso a la cuenta." data-uso="Acceso a la cuenta; se guarda cifrada, nunca en claro.">
         <label class="etiqueta" for="contrasena">Contraseña</label>
         <p class="ayuda">Al menos 12 caracteres. Una frase que recuerdes es más segura que una palabra con símbolos.</p>
-        <!-- «Mostrar» deja ver lo escrito (app/ver-contrasena.js; el estándar no lo trae: P73). -->
-        <div class="contrasena-caja">
-          <input class="control" id="contrasena" name="contrasena" type="password" minlength="12" autocomplete="new-password">
-          <button type="button" class="contrasena-ver" data-ver-contrasena aria-controls="contrasena" aria-pressed="false"><span data-ver-texto>Mostrar</span><span class="solo-lector"> la contraseña</span></button>
-        </div>
+        <!-- «Mostrar» / «Ocultar» lo pone el núcleo dentro del campo (estándar 1.2.1, P73). -->
+        <input class="control" id="contrasena" name="contrasena" type="password" minlength="12" autocomplete="new-password">
       </div>
       <div class="campo" data-campo="contrasena2" data-formato="contrasena" data-requerido data-sensible
            data-uso="Evitar errores de captura en la contraseña." data-cruzada="igual" data-cruzada-campos="original=contrasena confirmacion=contrasena2">
         <label class="etiqueta" for="contrasena2">Confirma tu contraseña</label>
-        <!-- «Mostrar» deja ver lo escrito (app/ver-contrasena.js; el estándar no lo trae: P73). -->
-        <div class="contrasena-caja">
-          <input class="control" id="contrasena2" name="contrasena2" type="password" minlength="12" autocomplete="new-password">
-          <button type="button" class="contrasena-ver" data-ver-contrasena aria-controls="contrasena2" aria-pressed="false"><span data-ver-texto>Mostrar</span><span class="solo-lector"> la confirmación de la contraseña</span></button>
-        </div>
+        <!-- «Mostrar» / «Ocultar» lo pone el núcleo dentro del campo (estándar 1.2.1, P73). -->
+        <input class="control" id="contrasena2" name="contrasena2" type="password" minlength="12" autocomplete="new-password">
       </div>
     </div>
 
@@ -354,29 +344,26 @@
   <div class="dialogo-cierre"><button type="button" class="btn btn-primario" data-cierra-dialogo>Cerrar</button></div>
 </dialog>
 
+<script src="app/perfil-academico.js?v=0.31"></script>
 <script src="app/apd.js?v=0.31"></script>
-<script src="app/curp-nombre.js?v=0.31"></script>
-<script src="app/fecha-dma.js?v=0.31"></script>
 <script src="datos/catalogos.js?v=0.31"></script>
 <script src="app/config-cuenta.js?v=0.31"></script>
 <script src="formkit/js/validaciones.config.js"></script>
 <script src="formkit/js/iconos.js"></script>
 <script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/fecha/fecha.js"></script>
 <script src="formkit/modulos/identificadores/identificadores.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="app/archivos-lleno.js?v=0.31"></script>
 <script src="formkit/modulos/combo/combo.js"></script>
 <script src="formkit/modulos/otro/otro.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>
-<script src="app/auxiliar.js?v=0.31"></script>
 <script src="app/cuenta.js?v=0.31"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/archivos-prueba.js?v=0.31"></script>
 <script src="app/casos-prueba.js?v=0.31"></script>
 <script src="app/pruebas.js?v=0.31"></script>
-<script src="app/ver-contrasena.js?v=0.31"></script>
 <script src="app/version-visible.js?v=0.31"></script>
 </body>
 </html>

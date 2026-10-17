@@ -150,8 +150,9 @@
     }
   }
 
-  /* Experiencia mínima según el perfil. El mínimo del campo cambia con las respuestas: el núcleo lee «min» en cada
-     validación. Sin perfil completo, o por clasificar, queda en 0 y la Secretaría lo revisa. */
+  /* Experiencia mínima según el perfil: el mínimo lo calcula el núcleo con FORMKIT_CONFIG.limitesSegun.experiencia
+     (data-min-segun, config-solicitud.js); aquí sólo se ajustan los textos que lo explican. Sin perfil completo, o por
+     clasificar, el mínimo queda en 0 y la Secretaría lo revisa. */
   const TEXTO_PERFIL = {
     licenciatura_afin: 'licenciatura titulada en una carrera de las que piden los lineamientos o afín',
     disciplina_afin: 'licenciatura en una disciplina afín', pasante: 'carta de pasante', tecnica: 'carrera técnica',
@@ -164,8 +165,6 @@
     // La indicación de escribir la carrera del posgrado sólo con maestría o doctorado
     document.querySelector('[data-ayuda-posgrado]').hidden = !['maestria', 'doctorado'].includes(nivel);
     const p = APD.perfilAcademico(datos, nivel, superior ? valor('estatus_estudios') : '', superior ? document.getElementById('carrera').value : '');
-    const anios = document.getElementById('anios_experiencia');
-    anios.setAttribute('min', p && p.minimo ? String(p.minimo) : '0');
     document.querySelector('[data-perfil-no-cumple]').hidden = !(p && p.perfil === 'no_cumple');
     const texto = document.querySelector('[data-experiencia-minima]');
     if (!texto.dataset.original) texto.dataset.original = texto.textContent;
@@ -180,6 +179,7 @@
   APD.cargar().then((datos) => {
     const persona = APD.requiereSesion(datos);
     if (!persona) return;
+    window.APD_SOLICITUD.usaCatalogo(datos);
     for (const ev of ['input', 'change']) {
       form.addEventListener(ev, (e) => {
         if (['nivel_estudios', 'estatus_estudios', 'carrera'].includes(e.target.name)) experiencia(datos);

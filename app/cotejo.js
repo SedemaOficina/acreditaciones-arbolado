@@ -122,7 +122,7 @@
       if (!d) continue;
       const nombreArchivo = d.nombre_archivo || APD.nombreDeArchivo((req[k] && req[k].nombre_archivo) || k.toUpperCase(), p, d.nombre_original);
       archivos[k] = d.blob
-        ? { url: URL.createObjectURL(d.blob), titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
+        ? { url: URL.createObjectURL(d.blob), tipo: d.blob.type, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
         : { url: `datos/documentos/${k}.pdf`, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
       const pie = [el('span', { class: 'mono', texto: nombreArchivo }), document.createTextNode(` · lo cargó el ${fecha(d.cargado_en)}`)];
       if (retoma && nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Cargado de nuevo hoy', 'pend')]));
@@ -213,11 +213,11 @@
     }
 
     /* Ver documento: en el visor, con todas sus hojas; el que se ve queda señalado en la lista */
-    const hayVisor = () => typeof APD_VISOR !== 'undefined';
+    const hayVisor = () => Boolean(window.FormKit && FormKit.visor);
     function ver(k, boton) {
       if (!archivos[k] || !hayVisor()) return;
       for (const a of $$('[data-doc]', form)) a.toggleAttribute('data-viendo', a.dataset.doc === k);
-      APD_VISOR.abre(archivos[k], boton);
+      FormKit.visor.abre(archivos[k], boton);
     }
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-ver]');
@@ -234,7 +234,7 @@
       const i = orden.indexOf(actual);
       const siguiente = orden.slice(i + 1).find((k) => !elegido(`coincide_${k}`)) || orden.slice(0, i).find((k) => !elegido(`coincide_${k}`));
       if (!siguiente) return;
-      if (hayVisor() && APD_VISOR.enComputadora()) ver(siguiente, null);
+      if (hayVisor() && FormKit.visor.enComputadora()) ver(siguiente, null);
       $(`[data-doc="${siguiente}"]`, form).scrollIntoView({ behavior: suave, block: 'start' });
       FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
     });
@@ -318,7 +318,7 @@
     };
 
     // En computadora el visor abre de entrada el primer documento por cotejar
-    if (aCotejar[0] && hayVisor() && APD_VISOR.enComputadora()) ver(aCotejar.find((k) => archivos[k]), null);
+    if (aCotejar[0] && hayVisor() && FormKit.visor.enComputadora()) ver(aCotejar.find((k) => archivos[k]), null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
     recalcula();

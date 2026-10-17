@@ -127,6 +127,14 @@
         }
         return [];
       };
+      /* Errores que devuelve el servidor: se abre el primer paso que tiene uno y ahí va el resumen. */
+      FormKit.ganchos.erroresServidor = (f, fallos) => {
+        if (f !== form) return false;
+        const i = pasos.findIndex((p) => fallos.some((x) => p.contains(envoltura(x.campo))));
+        if (i < 0) return false;
+        conError.add(i); ir(i, { foco: false }); muestraResumen(pasos[i], fallos.filter((x) => pasos[i].contains(envoltura(x.campo)))); pintaBarra();
+        return true;
+      };
       /* Enter en un campo intermedio avanza; sólo en el último paso envía. */
       FormKit.ganchos.submit = (f, enviar) => { if (f !== form) return false; if (actual < pasos.length - 1) $('[data-accion="siguiente"]', pasos[actual])?.click(); else enviar(); return true; };
 
