@@ -4,7 +4,7 @@
    En la versión de prueba no hay servidor: este archivo hace en el navegador
    lo que hará la API del módulo en el SIA (P29), con las mismas reglas, para
    probar las pantallas de punta a punta. Lo guardado vive en este navegador
-   (localStorage «apd.examen.codigos»), así que la pantalla de quien aplica
+   (localStorage «apd.examen.c.<código>»), así que la pantalla de quien aplica
    (aplicar.html) y la de la persona (examen.html) se ven entre pestañas.
 
    Reglas (decisiones 2026-10-17, P78):
@@ -22,6 +22,13 @@
        origen «examen_web» y no se modifica (resultado inapelable, R37).
      · Quien aplica puede suspender un examen, con motivo; un código perdido
        se repone y el anterior deja de servir.
+     · El código se genera al pasar lista: quien aplica marca a la persona
+       presente (asistencia del último día) después de compararla con su
+       fotografía y su identificación oficial.
+     · Un código abierto en una computadora no se abre en otra mientras la
+       primera siga activa (cada pantalla avisa que sigue abierta cada pocos
+       segundos). Si la computadora falla, deja de avisar y la persona sigue en
+       otra a los pocos segundos. Cada intento se le cuenta a quien aplica.
 
    EN EL SIA: la página nunca recibe la clave de respuestas. Aquí el banco
    ficticio (datos/examen-ficticio.js) viaja a la página sólo porque no hay
@@ -29,12 +36,40 @@
    ========================================================= */
 (function (global) {
   'use strict';
-  const CLAVE = 'apd.examen.codigos';
+  /* Un registro por código (apd.examen.c.<código>): así dos pantallas que escriben a la vez no se pisan los demás
+     códigos. La señal de pantalla abierta va aparte (apd.examen.latido.<código>), para no reescribir el examen. */
+  const PREFIJO = 'apd.examen.c.';
+  const LATIDO = 'apd.examen.latido.';
+  const LISTA = 'apd.examen.lista';   // pase de lista del día del examen, por inscripción
+  const VIVA_MS = 12000;              // una pantalla que no avisa en este tiempo se da por cerrada
   const RETARDO = 150; // simula la red
   const BANCO = global.APD_EXAMEN_BANCO;
 
-  const lee = () => { try { return JSON.parse(global.localStorage.getItem(CLAVE) || '{}'); } catch (e) { return {}; } };
-  const escribe = (t) => { try { global.localStorage.setItem(CLAVE, JSON.stringify(t)); return true; } catch (e) { return false; } };
+  const leeDe = (k) => { try { return JSON.parse(global.localStorage.getItem(k) || '{}'); } catch (e) { return {}; } };
+  const escribeEn = (k, t) => { try { global.localStorage.setItem(k, JSON.stringify(t)); return true; } catch (e) { return false; } };
+  const claves = (prefijo) => { try { return Object.keys(global.localStorage).filter((k) => k.startsWith(prefijo)); } catch (e) { return []; } };
+  /* Todos los códigos, como tabla { código: registro }; recuerda cómo estaba cada uno para escribir sólo lo que cambió */
+  function lee() {
+    const t = {};
+    const antes = {};
+    for (const k of claves(PREFIJO)) {
+      const crudo = global.localStorage.getItem(k);
+      try { t[k.slice(PREFIJO.length)] = JSON.parse(crudo); antes[k.slice(PREFIJO.length)] = crudo; } catch (e) { /* registro dañado: se ignora */ }
+    }
+    Object.defineProperty(t, '_antes', { value: antes, enumerable: false });
+    return t;
+  }
+  function escribe(t) {
+    try {
+      for (const [c, reg] of Object.entries(t)) {
+        const s = JSON.stringify(reg);
+        if (!t._antes || t._antes[c] !== s) global.localStorage.setItem(PREFIJO + c, s);
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+  const leeLatido = (c) => { try { return JSON.parse(global.localStorage.getItem(LATIDO + c) || 'null'); } catch (e) { return null; } };
+  const ponLatido = (c, equipo, ms) => { try { global.localStorage.setItem(LATIDO + c, JSON.stringify({ equipo, t: ms })); } catch (e) { /* sin almacenamiento */ } };
   const ahora = () => new Date().toISOString();
   const responde = (valor) => new Promise((ok) => setTimeout(() => ok(valor), RETARDO));
   const falla = (campo, mensaje, motivo) => new Promise((ok, mal) => setTimeout(() => mal({ campo, mensaje, motivo }), RETARDO));
@@ -134,6 +169,7 @@
         codigo, inscripcion_id, folio, persona, grupo, examen: { tipo, modalidad },
         minutos: ex.minutos, minima, preguntas, orden_opciones,
         generado_en: ahora(), generado_por: por, iniciado_en: null, respuestas: {}, marcadas: [], salidas: 0,
+        otro_equipo: 0,
         terminado_en: null, suspendido: null, reemplazado_por: null
       };
       escribe(t);
@@ -146,10 +182,18 @@
       if (!reg || reg.reemplazado_por) return falla(null, 'Ese código ya no está vigente.');
       if (reg.terminado_en) return falla(null, 'Ese examen ya se envió: no hace falta otro código.');
       const nuevo = nuevoCodigo(t);
-      t[nuevo] = Object.assign({}, reg, { codigo: nuevo, generado_en: ahora(), generado_por: por, repone_a: codigo });
+      t[nuevo] = Object.assign({}, reg, { codigo: nuevo, generado_en: ahora(), generado_por: por, repone_a: codigo, otro_equipo: 0 });
       reg.reemplazado_por = nuevo;
       escribe(t);
       return responde(t[nuevo]);
+    },
+    /* Pase de lista del día del examen: { inscripcion_id: { presente, en, por } } */
+    lista() { return leeDe(LISTA); },
+    pasarLista(inscripcion_id, presente, por) {
+      const l = leeDe(LISTA);
+      l[inscripcion_id] = { presente: Boolean(presente), en: ahora(), por };
+      escribeEn(LISTA, l);
+      return responde(l[inscripcion_id]);
     },
     suspender(codigo, motivo, por) {
       const t = lee();
@@ -162,13 +206,36 @@
     },
 
     /* ----- La persona ----- */
-    entrar(codigoEscrito) {
+    /* equipo: identificador de la pantalla (cada pestaña del navegador tiene el suyo) */
+    entrar(codigoEscrito, equipo) {
       const codigo = global.APD_FORMATOS['codigo-examen'].normaliza(codigoEscrito);
       const t = lee();
       const reg = alDia(t, codigo);
       if (!reg) return falla('codigo', 'Ese código no existe. Revisa que lo escribiste igual que en tu papel.', 'no_existe');
       if (reg.reemplazado_por) return falla('codigo', 'Ese código ya no sirve porque se te dio otro. Usa el código nuevo o pide ayuda a quien aplica el examen.', 'reemplazado');
+      if (['sin_empezar', 'contestando'].includes(situacion(reg)) && equipo) {
+        const l = leeLatido(codigo);
+        if (l && l.equipo !== equipo && Date.now() - l.t < VIVA_MS) {
+          reg.otro_equipo = (reg.otro_equipo || 0) + 1;
+          escribe(t);
+          return falla('codigo', 'Este código está abierto en otra computadora. Levanta la mano: quien aplica el examen te ayuda.', 'otro_equipo');
+        }
+        ponLatido(codigo, equipo, Date.now());
+      }
       return responde(vista(reg));
+    },
+    /* La pantalla avisa que sigue abierta. Si otra computadora tomó el examen, se lo dice. */
+    latido(codigo, equipo) {
+      if (!equipo) return { ok: false };
+      const l = leeLatido(codigo);
+      if (l && l.equipo !== equipo) return { otro: true };
+      ponLatido(codigo, equipo, Date.now());
+      return { ok: true };
+    },
+    /* Al terminar o salir, la pantalla suelta el código */
+    suelta(codigo, equipo) {
+      const l = leeLatido(codigo);
+      if (l && l.equipo === equipo) ponLatido(codigo, equipo, 0);
     },
     iniciar(codigo) {
       const t = lee();
@@ -239,11 +306,12 @@
         return escribe(t);
       },
       iniciar(codigo) { const t = lee(); const reg = t[codigo]; if (reg && !reg.iniciado_en) { reg.iniciado_en = ahora(); escribe(t); } },
-      cuantos() { return Object.keys(lee()).length; },
-      borra() { try { global.localStorage.removeItem(CLAVE); } catch (e) { /* sin almacenamiento */ } }
+      cuantos() { return claves(PREFIJO).length; },
+      borra() { try { for (const k of claves(PREFIJO).concat(claves(LATIDO))) global.localStorage.removeItem(k); global.localStorage.removeItem(LISTA); } catch (e) { /* sin almacenamiento */ } }
     }
   };
-  API.CLAVE = CLAVE;
+  API.PREFIJO = PREFIJO;
+  API.LISTA = LISTA;
   API.situacion = situacion;
   global.APD_EXAMEN_API = API;
 }(window));

@@ -52,35 +52,53 @@
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
     ]));
     const filas = G.personas(datos, g);
+    // Fotografías de la cuenta (las confirmadas en el cotejo), para pasar lista
+    const fotos = {};
+    Promise.all(filas.map((f) => G.fotoDe(f.persona.curp, APD.nombreCompleto(f.persona)).then((u) => { fotos[f.inscripcion.id] = u; })))
+      .then(() => pinta(true));
 
     let firma = '';
     let codigos = [];
+    let lista = {};
     function pinta(forzar) {
       codigos = API.delGrupo(g.id);
+      lista = API.lista();
       const vigente = (f) => codigos.find((r) => r.inscripcion_id === f.inscripcion.id && r.situacion !== 'reemplazado');
-      const nueva = JSON.stringify(filas.map((f) => { const r = vigente(f); return r ? [r.codigo, r.situacion, r.contestadas, Math.ceil(r.restante_ms / 60000), r.salidas, r.calificacion] : null; }));
+      const nueva = JSON.stringify(filas.map((f) => { const r = vigente(f); const l = lista[f.inscripcion.id]; return [l ? l.presente : null, r ? [r.codigo, r.situacion, r.contestadas, Math.ceil(r.restante_ms / 60000), r.salidas, r.otro_equipo, r.calificacion] : null]; }));
       if (nueva === firma && !forzar) return;
       firma = nueva;
       // Se conserva el foco en el botón de la misma persona al volver a pintar
       const enfocado = document.activeElement && document.activeElement.closest('[data-tabla]') ? [document.activeElement.dataset.accion, document.activeElement.dataset.ins] : null;
 
-      const cuenta = { derecho: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, sinCodigo: 0, suspendidas: 0 };
+      const cuenta = { derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, suspendidas: 0 };
       $('[data-filas]').replaceChildren(...filas.map((f) => {
         const nombre = APD.nombreCompleto(f.persona);
         const r = vigente(f);
-        const asistencia = el('td', {}, [document.createTextNode(`${f.asistidos} de ${f.dias} ${f.dias === 1 ? 'día' : 'días'}`)]);
-        let codigo = el('td', { class: 'texto-gris', texto: '—' });
+        const l = lista[f.inscripcion.id];
+        const id = f.inscripcion.id;
+        const foto = el('div', { class: 'perfil-foto examen-foto-lista' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: nombre.split(' ').slice(0, 2).map((x) => x[0]).join('') })]);
+        if (fotos[id]) foto.append(el('img', { class: 'perfil-imagen', src: fotos[id], alt: `Fotografía de ${nombre}` }));
+        const persona = el('td', {}, [el('div', { class: 'examen-persona-fila' }, [foto, el('div', {}, [el('span', { class: 'examen-nombre', texto: nombre }), el('span', { class: 'examen-nota mono', texto: f.solicitud.folio })])])]);
+        const asistencia = el('td', {}, [document.createTextNode(f.anteriores ? `${f.previos} de ${f.anteriores} ${f.anteriores === 1 ? 'día anterior' : 'días anteriores'}` : 'Curso de un día')]);
+        let paseLista = el('td', { class: 'texto-gris', texto: '—' });
         let avance = el('td', { class: 'texto-gris', texto: '—' });
         const acciones = el('td', { class: 'examen-acciones-fila' });
-        if (!f.derecho) {
-          asistencia.append(document.createTextNode(' '), estado('Sin derecho a examen', 'error'));
+        if (!f.puede) {
+          asistencia.append(el('span', { class: 'examen-nota' }, [estado('Sin derecho a examen', 'error')]), el('span', { class: 'examen-nota', texto: `Necesita ${f.minimo} de ${f.dias} días` }));
+        } else if (!l) {
+          cuenta.derecho += 1; cuenta.porLista += 1;
+          paseLista = el('td', {}, [el('div', { class: 'examen-lista-botones' }, [
+            el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'data-accion': 'presente', 'data-ins': id, 'aria-label': `${nombre}: presente, generar su código`, texto: 'Presente' }),
+            el('button', { type: 'button', class: 'btn-enlace', 'data-accion': 'ausente', 'data-ins': id, 'aria-label': `${nombre}: no llegó`, texto: 'No llegó' })
+          ])]);
+        } else if (!l.presente) {
+          cuenta.derecho += 1; cuenta.ausentes += 1;
+          paseLista = el('td', {}, [el('div', { class: 'examen-avance-celda' }, [estado('No llegó al examen', 'error'),
+            el('button', { type: 'button', class: 'btn-enlace', 'data-accion': 'presente', 'data-ins': id, 'aria-label': `Llegó: marcar presente a ${nombre}`, texto: 'Llegó: marcar presente' })])]);
         } else {
-          cuenta.derecho += 1;
-          if (!r) {
-            cuenta.sinCodigo += 1;
-            acciones.append(el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'data-accion': 'generar', 'data-ins': f.inscripcion.id, 'aria-label': `Generar el código de ${nombre}`, texto: 'Generar código' }));
-          } else {
-            codigo = el('td', {}, [el('span', { class: 'mono examen-codigo', texto: r.codigo })]);
+          cuenta.derecho += 1; cuenta.presentes += 1;
+          paseLista = el('td', {}, [el('div', { class: 'examen-avance-celda' }, [estado('Presente', 'ok'), r ? el('span', { class: 'mono examen-codigo', texto: r.codigo }) : null])]);
+          if (r) {
             const partes = [];
             if (r.situacion === 'sin_empezar') { cuenta.sinEmpezar += 1; partes.push(estado('Sin empezar', '')); }
             if (r.situacion === 'contestando') {
@@ -95,32 +113,33 @@
             }
             if (r.situacion === 'suspendido') { cuenta.suspendidas += 1; partes.push(estado('Suspendido', 'error'), el('span', { class: 'examen-nota', texto: r.suspendido.motivo })); }
             if (r.salidas && r.situacion !== 'terminado') partes.push(el('span', { class: 'examen-nota examen-nota-alerta', texto: `Salió de la ventana del examen ${veces(r.salidas)}` }));
+            if (r.otro_equipo && r.situacion !== 'terminado') partes.push(el('span', { class: 'examen-nota examen-nota-alerta', texto: `Su código se intentó abrir en otra computadora ${veces(r.otro_equipo)}` }));
             avance = el('td', {}, [el('div', { class: 'examen-avance-celda' }, partes)]);
             if (['sin_empezar', 'contestando'].includes(r.situacion)) {
               acciones.append(
-                el('button', { type: 'button', class: 'btn-enlace', 'data-accion': 'reponer', 'data-ins': f.inscripcion.id, 'aria-label': `Reponer el código de ${nombre}`, texto: 'Reponer código' }),
-                el('button', { type: 'button', class: 'btn-enlace examen-enlace-peligro', 'data-accion': 'suspender', 'data-ins': f.inscripcion.id, 'aria-label': `Suspender el examen de ${nombre}`, texto: 'Suspender' })
+                el('button', { type: 'button', class: 'btn-enlace', 'data-accion': 'reponer', 'data-ins': id, 'aria-label': `Reponer el código de ${nombre}`, texto: 'Reponer código' }),
+                el('button', { type: 'button', class: 'btn-enlace examen-enlace-peligro', 'data-accion': 'suspender', 'data-ins': id, 'aria-label': `Suspender el examen de ${nombre}`, texto: 'Suspender' })
               );
             }
           }
         }
         if (!acciones.childNodes.length) acciones.append(el('span', { class: 'texto-gris', texto: '—' }));
-        return el('tr', { 'data-ins': f.inscripcion.id, class: r && ['terminado', 'suspendido'].includes(r.situacion) ? 'fila-hecha' : null }, [
-          el('td', {}, [el('span', { class: 'examen-nombre', texto: nombre }), el('span', { class: 'examen-nota mono', texto: f.solicitud.folio })]),
-          asistencia, codigo, avance, acciones
+        return el('tr', { 'data-ins': id, class: (r && ['terminado', 'suspendido'].includes(r.situacion)) || (l && !l.presente) || !f.puede ? 'fila-hecha' : null }, [
+          persona, asistencia, paseLista, avance, acciones
         ]);
       }));
       $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
 
       const n = filas.length;
       const partes = [];
+      if (cuenta.porLista) partes.push(`${cuenta.porLista} por pasar lista`);
+      if (cuenta.ausentes) partes.push(`${cuenta.ausentes} no ${cuenta.ausentes === 1 ? 'llegó' : 'llegaron'}`);
       if (cuenta.terminaron) partes.push(`${cuenta.terminaron} ${cuenta.terminaron === 1 ? 'terminó' : 'terminaron'} (${cuenta.aprobadas} ${cuenta.aprobadas === 1 ? 'aprobada' : 'aprobadas'})`);
       if (cuenta.contestando) partes.push(`${cuenta.contestando} contestando`);
       if (cuenta.sinEmpezar) partes.push(`${cuenta.sinEmpezar} con código sin empezar`);
-      if (cuenta.sinCodigo) partes.push(`${cuenta.sinCodigo} sin código`);
       if (cuenta.suspendidas) partes.push(`${cuenta.suspendidas} ${cuenta.suspendidas === 1 ? 'suspendida' : 'suspendidas'}`);
       $('[data-cuenta]').textContent = `${n} personas inscritas, ${cuenta.derecho} con derecho a examen${partes.length ? `: ${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : ''}.`;
-      $('[data-todos]').hidden = !(cuenta.derecho && cuenta.terminaron + cuenta.suspendidas === cuenta.derecho);
+      $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
 
       if (enfocado) {
         const b = $(`[data-tabla] [data-accion="${enfocado[0]}"][data-ins="${enfocado[1]}"]`) || $(`[data-tabla] tr[data-ins="${enfocado[1]}"] button`);
@@ -150,8 +169,10 @@
       if (!b) return;
       const f = fila(b.dataset.ins);
       const nombre = APD.nombreCompleto(f.persona);
-      if (b.dataset.accion === 'generar') {
-        G.generarPara(datos, g, f, INSTRUCTOR.usuario).then((r) => { pinta(true); FormKit.anuncia(`Código de ${nombre}: ${r.codigo.split('').join(' ')}.`); });
+      if (b.dataset.accion === 'presente') {
+        G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario).then((r) => { pinta(true); FormKit.anuncia(`${nombre}, presente. Su código: ${r.codigo.split('').join(' ')}.`); });
+      } else if (b.dataset.accion === 'ausente') {
+        G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); });
       } else if (b.dataset.accion === 'reponer') {
         const r = codigoDe(f.inscripcion.id);
         FormKit.confirma(b, { titulo: '¿Reponer el código?', texto: `El código ${r.codigo} de ${nombre} deja de servir. El examen sigue igual con el código nuevo: mismas preguntas, respuestas guardadas y el tiempo que le quede.`, si: 'Reponer el código', no: 'Cancelar' })
@@ -183,26 +204,26 @@
 
     /* Imprimir sólo las papeletas */
     $('[data-imprimir]').addEventListener('click', () => {
-      if (!$('[data-papeletas]').children.length) { FormKit.anuncia('No hay códigos por imprimir: genere primero los códigos.'); $('[data-cuenta]').textContent = 'No hay códigos por imprimir: genere primero el código de cada persona presente.'; return; }
+      if (!$('[data-papeletas]').children.length) { FormKit.anuncia('No hay códigos por imprimir: primero pase lista.'); $('[data-cuenta]').textContent = 'No hay códigos por imprimir: primero pase lista; el código sale al marcar a cada persona presente.'; return; }
       document.body.classList.add('imprime-papeletas');
       window.print();
     });
     window.addEventListener('afterprint', () => document.body.classList.remove('imprime-papeletas'));
 
-    window.addEventListener('storage', (e) => { if (e.key === API.CLAVE) pinta(); });
+    window.addEventListener('storage', (e) => { if (e.key && (e.key.startsWith(API.PREFIJO) || e.key === API.LISTA)) pinta(); });
     setInterval(() => pinta(), 2000);
     pinta(true);
 
     /* ----- Menú de pruebas: «En esta pantalla» (app/pruebas.js) ----- */
     window.APD_PRUEBAS_AQUI = () => [
-      ['Generar los códigos de todas las personas con derecho', async () => {
-        for (const f of filas.filter((x) => x.derecho)) await G.generarPara(datos, g, f, INSTRUCTOR.usuario);
+      ['Pasar lista: todas presentes', async () => {
+        for (const f of filas.filter((x) => x.puede && !API.lista()[x.inscripcion.id])) await G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario);
         pinta(true);
-        return 'Códigos generados.';
+        return 'Lista pasada: todas presentes, con su código.';
       }],
       ['Simular que todas contestan y envían', async () => {
         const abiertos = API.delGrupo(g.id).filter((r) => ['sin_empezar', 'contestando'].includes(r.situacion));
-        if (!abiertos.length) return 'No hay exámenes por contestar: genere primero los códigos.';
+        if (!abiertos.length) return 'No hay exámenes por contestar: primero pase lista.';
         for (const r of abiertos) { API.pruebas.iniciar(r.codigo); API.pruebas.contestar(r.codigo, 'azar'); await API.terminar(r.codigo, 'enviado'); }
         pinta(true);
         return `${abiertos.length} ${abiertos.length === 1 ? 'examen enviado' : 'exámenes enviados'} con respuestas al azar.`;

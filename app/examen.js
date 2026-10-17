@@ -23,6 +23,14 @@
   const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
   /* El código abierto en esta pestaña, para que una recarga no saque a la persona de su examen */
   const SESION = 'apd.examen.abierto';
+  /* Identificador de esta pantalla: un código abierto aquí no se abre en otra computadora mientras esta siga activa */
+  const EQUIPO = (() => {
+    try {
+      let e = sessionStorage.getItem('apd.examen.equipo');
+      if (!e) { e = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('apd.examen.equipo', e); }
+      return e;
+    } catch (err) { return Math.random().toString(36).slice(2); }
+  })();
   const AVISOS_MIN = [15, 5, 1];
 
   let ex = null;          // el examen como lo da el servidor (sin clave de respuestas)
@@ -48,7 +56,7 @@
   /* ----- 1 · Entrar ----- */
   const form = $('#entrar');
   const instancia = FormKit.iniciar(form, {
-    enviar(payload) { return API.entrar(payload.datos.codigo); },
+    enviar(payload) { return API.entrar(payload.datos.codigo, EQUIPO); },
     alEnviar(v) { abre(v, false); },
     alFallar(e) {
       const aviso = $('[data-estado-envio] .aviso-texto', form);
@@ -72,6 +80,12 @@
     }
     // Sin empezar: primero se confirma que es la persona
     $('[data-iniciales]').textContent = ex.persona.nombre.split(' ').slice(0, 2).map((t) => t[0]).join('');
+    // Su fotografía (la confirmada en el cotejo): quien aplica la ve al pasar entre las computadoras
+    const marco = $('[data-foto-persona]');
+    for (const i of marco.querySelectorAll('img')) i.remove();
+    APD_EXAMEN_GRUPO.fotoDe(ex.persona.curp, ex.persona.nombre).then((url) => {
+      if (url) marco.append(el('img', { class: 'perfil-imagen', src: url, alt: `Fotografía de ${ex.persona.nombre}` }));
+    });
     $('[data-persona]').replaceChildren(datosLista([
       ['Nombre', ex.persona.nombre],
       ['Examen', nombreExamen()],
@@ -227,6 +241,7 @@
   document.addEventListener('click', (e) => {
     if (!e.target.closest('[data-salir]')) return;
     paraReloj();
+    if (ex) API.suelta(ex.codigo, EQUIPO);
     ex = null;
     guardaAbierto(null);
     form.reset();
@@ -259,6 +274,15 @@
   /* ----- Lo que cambia fuera de esta pantalla: quien aplica suspende, se repone el código, otra computadora envía ----- */
   function refresca() {
     if (!ex) return;
+    // Avisa que esta pantalla sigue abierta; si el examen se abrió en otra computadora, ésta lo suelta
+    if (['sin_empezar', 'contestando'].includes(ex.situacion) && API.latido(ex.codigo, EQUIPO).otro) {
+      paraReloj(); guardaAbierto(null); ex = null;
+      muestra('entrar', $('#codigo'));
+      const aviso = $('[data-aviso-entrar]');
+      $('.aviso-texto', aviso).textContent = 'Tu examen se abrió en otra computadora. Si eres tú, sigue allá; si no, levanta la mano.';
+      aviso.hidden = false;
+      return;
+    }
     const v = API.estado(ex.codigo);
     if (!v) return;
     if (v.situacion === ex.situacion && v.situacion !== 'contestando') return;
@@ -276,29 +300,29 @@
     }
     if (v.situacion === 'contestando') { fin = Date.now() + v.restante_ms; if (antes === 'contestando') { pintaAvance(); } }
   }
-  window.addEventListener('storage', (e) => { if (e.key === API.CLAVE) refresca(); });
+  window.addEventListener('storage', (e) => { if (e.key && e.key.startsWith(API.PREFIJO)) refresca(); });
   setInterval(refresca, 3000);
   /* Salir de la ventana del examen se le cuenta a quien aplica (no se bloquea: puede ser un aviso del sistema) */
   document.addEventListener('visibilitychange', () => { if (document.hidden && ex && ex.situacion === 'contestando') API.salida(ex.codigo); });
 
   /* Una recarga vuelve al examen abierto en esta pestaña */
   const abierto = leeAbierto();
-  if (abierto) API.entrar(abierto).then((v) => abre(v, true), () => guardaAbierto(null));
+  if (abierto) API.entrar(abierto, EQUIPO).then((v) => abre(v, true), () => guardaAbierto(null));
 
   /* ----- Menú de pruebas: «En esta pantalla» (app/pruebas.js) ----- */
   window.APD_PRUEBAS_AQUI = (datos) => {
     const G = APD_EXAMEN_GRUPO;
     const enCurso = () => (ex && ex.situacion === 'contestando' ? ex.codigo : null);
-    const reabre = (codigo, texto) => { API.entrar(codigo).then((v) => abre(v, true)); return texto; };
+    const reabre = (codigo, texto) => { API.entrar(codigo, EQUIPO).then((v) => abre(v, true)); return texto; };
     return [
       ['Usar el código de alguien del grupo en curso', async () => {
         if (ex) return 'Ya hay un examen abierto. Presiona «Terminar» o «Salir» primero.';
         const g = G.grupos(datos)[0];
         if (!g) return 'No hay un grupo en curso en los datos ficticios.';
         const usados = new Set(API.delGrupo(g.id).filter((r) => r.situacion !== 'sin_empezar').map((r) => r.inscripcion_id));
-        const fila = G.personas(datos, g).find((f) => f.derecho && !usados.has(f.inscripcion.id));
+        const fila = G.personas(datos, g).find((f) => f.puede && !usados.has(f.inscripcion.id));
         if (!fila) return 'Todas las personas con derecho a examen ya lo empezaron. Borra lo guardado para volver a probar.';
-        const r = await G.generarPara(datos, g, fila, 'menu.pruebas');
+        const r = await G.pasarLista(datos, g, fila, true, 'menu.pruebas');
         const c = $('#codigo');
         c.value = r.codigo;
         c.dispatchEvent(new Event('input', { bubbles: true }));

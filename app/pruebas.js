@@ -210,7 +210,8 @@
   function guardado() {
     const revisiones = cuentaLista('apd.personal.revisiones');
     const cotejos = cuentaLista('apd.personal.cotejos');
-    const examenes = cuentaLista('apd.examen.codigos');
+    let examenes = 0;
+    try { examenes = Object.keys(window.localStorage).filter((k) => k.startsWith('apd.examen.c.')).length; } catch (e) { /* sin almacenamiento */ }
     if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ cuentas: 0, envios: 0, fotos: 0, revisiones, cotejos, examenes });
     return APD_ARCHIVOS_PRUEBA.guardado().then((g) => Object.assign(g, { revisiones, cotejos, examenes }));
   }
@@ -333,9 +334,11 @@
     const cuenta = el('p', {}, [el('strong', { texto: 'Guardado en este navegador: ' }), el('span', { 'data-guardado': '', texto: '…' })]);
     const borrar = boton('Borrar lo guardado', () => {
       const docs = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve() : APD_ARCHIVOS_PRUEBA.borraTodo();
-      for (const k of ['apd.personal.revisiones', 'apd.personal.cotejos', 'apd.examen.codigos']) {
+      for (const k of ['apd.personal.revisiones', 'apd.personal.cotejos', 'apd.examen.lista']) {
         try { window.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
       }
+      // Códigos de examen y sus señales de pantalla abierta (un registro por código)
+      try { for (const k of Object.keys(window.localStorage)) if (k.startsWith('apd.examen.c.') || k.startsWith('apd.examen.latido.')) window.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
       docs.then(() => { di('Se borró lo guardado en este navegador.'); pintaGuardado(); }, () => di('No se pudo borrar.'));
     });
     function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.cuentas && !g.envios && !g.fotos && !g.revisiones && !g.cotejos && !g.examenes; }); }
