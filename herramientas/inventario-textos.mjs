@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = process.argv[2] || 'http://localhost:8765/';
 const PAGINAS = [
-  ['index.html', 'Inicio'], ['cuenta.html', 'Crea tu cuenta'], ['entrar.html', 'Entrar'], ['datos.html', 'Mis datos'],
+  ['index.html', 'Inicio'], ['cuenta.html', 'Crea tu cuenta'], ['entrar.html', 'Entrar'], ['datos.html', 'Mi perfil'],
   ['solicitud.html', 'Solicitud'], ['tramites.html', 'Mis trámites'], ['verificar.html', 'Verificar una acreditación']
 ];
 // Bloques que sólo aparecen en ciertos casos (atributo → condición en palabras)

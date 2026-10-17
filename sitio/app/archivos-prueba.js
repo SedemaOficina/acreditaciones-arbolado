@@ -4,7 +4,9 @@
    Para probar la revisión con documentos de verdad: al enviar (o reenviar) una solicitud en la
    versión de prueba, sus archivos y un resumen de la solicitud se guardan SÓLO en este navegador
    (IndexedDB). La bandeja y la revisión del personal los leen de ahí y el visor los muestra.
-   Nada sale de la computadora; «Borrar los documentos de prueba» (menú de pruebas) los quita.
+   Nada sale de la computadora; «Borrar lo guardado» (menú de pruebas) los quita.
+   También guarda la fotografía que se carga al crear la cuenta o al cambiarla en «Mi perfil», para mostrarla ahí
+   (decisión 2026-10-17); la clave es la CURP.
 
    En la etapa 3 este archivo se quita: los documentos los guarda y los entrega la API.
    ========================================================= */
@@ -13,17 +15,19 @@
   const BASE = 'apd-prueba';
   const DOCS = 'documentos';
   const SOLS = 'solicitudes';
+  const FOTOS = 'fotos';
   let abierta = null;
 
   function abre() {
     if (abierta) return abierta;
     abierta = new Promise((ok, mal) => {
       let r;
-      try { r = global.indexedDB.open(BASE, 1); } catch (e) { mal(e); return; }
+      try { r = global.indexedDB.open(BASE, 2); } catch (e) { mal(e); return; }
       r.onupgradeneeded = () => {
         const db = r.result;
         if (!db.objectStoreNames.contains(DOCS)) db.createObjectStore(DOCS, { keyPath: 'clave' }).createIndex('folio', 'folio');
         if (!db.objectStoreNames.contains(SOLS)) db.createObjectStore(SOLS, { keyPath: 'folio' });
+        if (!db.objectStoreNames.contains(FOTOS)) db.createObjectStore(FOTOS, { keyPath: 'curp' });
       };
       r.onsuccess = () => ok(r.result);
       r.onerror = () => mal(r.error);
@@ -53,9 +57,15 @@
   }
   function solicitudes() { return tx(SOLS, 'readonly', (s) => s.getAll()).catch(() => []); }
   function documentos(folio) { return tx(DOCS, 'readonly', (s) => s.index('folio').getAll(folio)).catch(() => []); }
+  /* Fotografía de la persona: { blob, nombre, tipo } por CURP */
+  function guardaFoto(curp, a) {
+    return tx(FOTOS, 'readwrite', (s) => s.put({ curp, blob: a.blob, nombre_original: a.nombre, tipo_mime: a.tipo, cargada_en: new Date().toISOString() }));
+  }
+  function foto(curp) { return curp ? tx(FOTOS, 'readonly', (s) => s.get(curp)).catch(() => null) : Promise.resolve(null); }
+  function fotos() { return tx(FOTOS, 'readonly', (s) => s.count()).catch(() => 0); }
   function borraTodo() {
-    return Promise.all([tx(SOLS, 'readwrite', (s) => s.clear()), tx(DOCS, 'readwrite', (s) => s.clear())]);
+    return Promise.all([SOLS, DOCS, FOTOS].map((a) => tx(a, 'readwrite', (s) => s.clear())));
   }
 
-  global.APD_ARCHIVOS_PRUEBA = { guardaEnvio, solicitudes, documentos, borraTodo };
+  global.APD_ARCHIVOS_PRUEBA = { guardaEnvio, solicitudes, documentos, guardaFoto, foto, fotos, borraTodo };
 }(window));

@@ -81,10 +81,46 @@ const comprueba = (cond, m) => (cond ? bien(m) : mal(m));
 
 async function captura(page, nombre) {
   if (CAPTURAS) await page.screenshot({ path: join(CAPTURAS, `${nombre}.png`), fullPage: true });
+  await conAire(page, nombre);
 }
 async function sinDesborde(page, donde) {
   const ok = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
   comprueba(ok, `${donde}: sin desborde horizontal`);
+  await conAire(page, donde);
+}
+/* Ningún botón visible pegado al borde de la caja que lo contiene (tarjeta, diálogo, ficha…): al menos 8 px de aire
+   (caso que reportó Liber: «Ir a mis trámites» pegado a la orilla del acuse). La caja es el ancestro más cercano con
+   borde o sombra. Se excluyen el botón fijo del menú de pruebas y el distintivo de versión. */
+async function conAire(page, donde) {
+  const pegados = await page.evaluate(() => {
+    const MIN = 8;
+    const caja = (e) => {
+      for (let a = e.parentElement; a && a !== document.body; a = a.parentElement) {
+        const c = getComputedStyle(a);
+        if (parseFloat(c.borderTopWidth) > 0 && parseFloat(c.borderRightWidth) > 0 && parseFloat(c.borderBottomWidth) > 0 && parseFloat(c.borderLeftWidth) > 0) return a;
+        if (c.boxShadow && c.boxShadow !== 'none' && a.tagName !== 'INPUT') return a;
+        if (a.tagName === 'DIALOG') return a;
+      }
+      return null;
+    };
+    const fuera = [];
+    for (const b of document.querySelectorAll('.btn, button')) {
+      if (b.closest('.menu-pruebas-boton, #version-sia, .solo-lector') || b.matches('.menu-pruebas-boton')) continue;
+      const r = b.getBoundingClientRect();
+      if (!r.width || !r.height || getComputedStyle(b).visibility === 'hidden') continue;
+      const k = caja(b);
+      if (!k) continue;
+      const q = k.getBoundingClientRect();
+      const c = getComputedStyle(k);
+      const izq = r.left - q.left - parseFloat(c.borderLeftWidth), der = q.right - parseFloat(c.borderRightWidth) - r.right;
+      const arr = r.top - q.top - parseFloat(c.borderTopWidth), aba = q.bottom - parseFloat(c.borderBottomWidth) - r.bottom;
+      // En una caja con desplazamiento propio (el menú de pruebas) lo de arriba y abajo depende del desplazamiento
+      const m = k.scrollHeight > k.clientHeight + 1 ? Math.min(izq, der) : Math.min(izq, der, arr, aba);
+      if (m < MIN) fuera.push(`«${(b.textContent || b.getAttribute('aria-label') || '').trim().slice(0, 30)}» (${Math.round(m)} px de ${k.className || k.tagName.toLowerCase()})`);
+    }
+    return [...new Set(fuera)];
+  });
+  comprueba(pegados.length === 0, `${donde}: botones con aire dentro de su caja${pegados.length ? ': ' + pegados.join('; ') : ''}`);
 }
 async function entra(page, curp) {
   await page.goto(BASE + 'entrar.html');
@@ -289,10 +325,25 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   const n = await cargaObligatorios(page);
   comprueba(!/Se guardará como|renombrar/.test(await page.textContent(pasoVisible)), t('documentos: no avisa del renombrado al cargar (lo hace el sistema)'));
   comprueba(n === 4, t(`solicitud poda nueva: ${n} documentos obligatorios`));
+  // Con el archivo cargado, «Elegir archivo» se oculta; al quitarlo vuelve (caso que reportó Liber, P71)
+  const zonaCurp = '[data-campo="doc_poda_nueva_curp"] .zona-carga';
+  comprueba(await page.isHidden(zonaCurp) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] .lista-arch li'),
+    t('documentos: con el archivo cargado ya no se ofrece «Elegir archivo»'));
+  await page.click('[data-campo="doc_poda_nueva_curp"] .arch-quitar');
+  comprueba(await page.isVisible(zonaCurp) && /Un archivo de hasta 5 MB/.test(await page.textContent(`${zonaCurp} [data-limite-texto]`)),
+    t('documentos: al quitarlo vuelve «Elegir archivo», con «Un archivo de hasta 5 MB»'));
+  await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', PDF);
+  await page.waitForSelector('[data-campo="doc_poda_nueva_curp"] .lista-arch li[data-estado="listo"]');
   await captura(page, `03-solicitud-documentos-${sufijo}`);
   await siguiente(page);
   await marcaCasillas(page);
   await captura(page, `04-solicitud-revision-${sufijo}`);
+  // «Editar» siempre a la altura del primer renglón del valor, aunque el nombre del archivo sea largo
+  const desparejos = await page.$$eval('.rev-dato-valor', (dds) => dds.filter((dd) => {
+    const v = dd.firstElementChild, b = dd.querySelector('.btn-enlace');
+    return v && b && b.getBoundingClientRect().top - v.getBoundingClientRect().top > 12;
+  }).length);
+  comprueba(desparejos === 0, t('revisión: «Editar» queda parejo, arriba a la derecha de cada dato'));
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
   const folio = await page.textContent('[data-acuse-folio]');
@@ -312,6 +363,20 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
   bien(t(`cuenta: persona sin segundo apellido (${SIN.curp}) crea su cuenta`));
+  comprueba(await page.locator('[data-acuse] .acuse-acciones .btn-primario').count() === 1, t('cuenta: «Ir a mis trámites» va en las acciones del acuse, con aire'));
+  // Mi perfil: la fotografía que cargó al crear la cuenta se ve (versión de prueba, guardada en este navegador)
+  await page.goto(BASE + 'datos.html');
+  await page.waitForSelector('.perfil-imagen');
+  comprueba(await page.evaluate(() => { const i = document.querySelector('.perfil-imagen'); return i.complete && i.naturalWidth > 0; }),
+    t('mi perfil: muestra la fotografía que cargó al crear la cuenta'));
+  await page.click('[data-editar="foto"]');
+  await page.setInputFiles('#form-foto [data-archivos] > input[type="file"]:not([data-entrada-camara])', FOTO);
+  await page.waitForSelector('#form-foto .lista-arch li[data-estado="listo"]');
+  comprueba(await page.isHidden('#form-foto .zona-carga'), t('mi perfil: con la fotografía elegida ya no se ofrece elegir otra'));
+  await page.click('#form-foto [data-accion="enviar"]');
+  await page.waitForSelector('[data-guardado="foto"]:not([hidden])');
+  comprueba(await page.isHidden('#form-foto') && await page.isVisible('.perfil-imagen'), t('mi perfil: cambia la fotografía y la muestra'));
+  await captura(page, `16-mi-perfil-foto-${sufijo}`);
   await page.click('[data-sesion] button').catch(() => {});
   await page.goto(BASE + 'index.html');
   await page.evaluate(() => sessionStorage.clear());
@@ -427,28 +492,43 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await captura(page, `09-verificar-${sufijo}`);
   await sinDesborde(page, t('verificar'));
 
-  // Mis datos: datos ligados a la CURP sólo de lectura; cambia su adscripción y se conserva
+  // Mi perfil: lo registrado se ve escrito; «Editar» abre las preguntas de esa parte; guarda y se conserva
   await page.evaluate(() => sessionStorage.clear());
   await entra(page, CON_ORG.curp);
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-identidad] .datos');
-  comprueba(/Sexo/.test(await page.textContent('[data-identidad]')) && await page.$('#curp') === null,
-    t('mis datos: muestra CURP y sexo sin dejarlos cambiar'));
+  comprueba(/Mi perfil/.test(await page.textContent('h2')) && /Sexo/.test(await page.textContent('[data-identidad]')) && await page.$('#curp') === null,
+    t('mi perfil: muestra CURP y sexo sin dejarlos cambiar'));
+  comprueba(await page.locator('form.perfil-form:not([hidden])').count() === 0 && /@/.test(await page.textContent('[data-vista="contacto"]'))
+    && /Empresa/.test(await page.textContent('[data-vista="adscripcion"]')),
+    t('mi perfil: se ve lo registrado, escrito, sin preguntas a la vista'));
+  comprueba(/^[A-ZÁÉÍÓÚÑ]{2}$/.test((await page.textContent('[data-perfil-iniciales]')).trim()), t('mi perfil: sin imagen, la persona ficticia se ve con sus iniciales'));
+  await page.click('[data-editar="contacto"]');
+  comprueba(await page.isVisible('#form-contacto') && await page.inputValue('#correo') !== '', t('mi perfil: «Editar» abre el contacto con lo vigente'));
+  await page.click('#form-contacto [data-cancelar]');
+  comprueba(await page.isHidden('#form-contacto') && await page.evaluate(() => document.activeElement.dataset.editar === 'contacto'), t('mi perfil: «Cancelar» cierra sin guardar y regresa a «Editar»'));
+  await page.click('[data-editar="adscripcion"]');
   comprueba(await page.isChecked('input[name="adscrito"][value="si"]') && await page.isChecked('input[name="tipo_adscripcion"][value="privada"]'),
-    t('mis datos: trae la adscripción vigente de la persona'));
+    t('mi perfil: trae la adscripción vigente de la persona'));
+  await page.check('input[name="tipo_adscripcion"][value="dependencia_cdmx"]', { force: true });
+  await page.check('input[name="dependencia_cdmx"][value="sedema"]', { force: true });
+  const direcciones = await page.$$eval('input[name="direccion_sedema"]', (rs) => rs.map((r) => r.value).join(' '));
+  comprueba(direcciones === 'dgsanpava dgcorenadr dgeira dgiva dgcpca dgzcfs', t('mi perfil: Direcciones Generales en el orden que fijó Liber'));
   await page.check('input[name="tipo_adscripcion"][value="alcaldia"]', { force: true });
   const alcaldias = await page.$$eval('#alcaldia option[value]:not([value=""])', (os) => os.map((o) => o.textContent));
   comprueba(alcaldias.length === 16 && alcaldias.join('|') === [...alcaldias].sort((x, y) => x.localeCompare(y, 'es')).join('|'),
-    t('mis datos: las 16 alcaldías a la vista, en orden alfabético'));
+    t('mi perfil: las 16 alcaldías a la vista, en orden alfabético'));
   await page.selectOption('#alcaldia', 'tlalpan');
-  await captura(page, `14-mis-datos-${sufijo}`);
-  await sinDesborde(page, t('mis datos'));
-  await page.click('[data-accion="enviar"]');
-  await page.waitForSelector('[data-acuse]:not([hidden])');
-  comprueba(/Tlalpan/.test(await page.textContent('[data-acuse-folio]')), t('mis datos: guarda la nueva adscripción (Alcaldía · Tlalpan)'));
+  await captura(page, `14-mi-perfil-${sufijo}`);
+  await sinDesborde(page, t('mi perfil'));
+  await page.click('#form-adscripcion [data-accion="enviar"]');
+  await page.waitForSelector('[data-guardado="adscripcion"]:not([hidden])');
+  comprueba(/Tlalpan/.test(await page.textContent('[data-vista="adscripcion"]')) && await page.isHidden('#form-adscripcion'),
+    t('mi perfil: guarda la nueva adscripción y la muestra escrita (Alcaldía · Tlalpan)'));
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-identidad] .datos');
-  comprueba(await page.inputValue('#alcaldia') === 'tlalpan', t('mis datos: al volver, la adscripción es la nueva'));
+  comprueba(/Tlalpan/.test(await page.textContent('[data-vista="adscripcion"]')), t('mi perfil: al volver, la adscripción es la nueva'));
+  await captura(page, `15-mi-perfil-vista-${sufijo}`);
   await page.evaluate(() => sessionStorage.clear());
 
   // Fallo de envío simulado
@@ -739,6 +819,8 @@ async function personal(navegador, ancho, alto, sufijo) {
   await page.waitForSelector(`[data-filas] tr[data-folio="${folioReal}"]`);
   comprueba(/Archivos cargados en este navegador/.test(await page.textContent(`[data-filas] tr[data-folio="${folioReal}"]`)),
     t('la solicitud enviada en este navegador llega a la bandeja, señalada'));
+  comprueba(await page.getAttribute('[data-filas] tr:first-child', 'data-folio') === folioReal && !/-\d+ día/.test(await page.textContent(`[data-filas] tr[data-folio="${folioReal}"]`)),
+    t('lo enviado en este navegador va primero en la bandeja y su espera no sale negativa'));
   await page.goto(BASE + `revisar.html?folio=${folioReal}`);
   await page.waitForSelector('#formulario:not([hidden])');
   await page.click('[data-ver="curp"]');

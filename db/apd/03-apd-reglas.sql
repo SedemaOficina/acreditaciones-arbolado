@@ -214,7 +214,8 @@ $$;
 
 -- La base completa los estudios (poda y dictaminador, decisión 2026-10-15): liga la carrera al catálogo (si la escrita
 -- no existe, la agrega sin grupo) y, en dictaminador, calcula perfil y experiencia mínima. Lo que no corresponde se
--- descarta: carrera y situación de los estudios sólo con licenciatura, maestría o doctorado (decisión 2026-10-15).
+-- descarta: carrera y situación de los estudios sólo con licenciatura, maestría o doctorado (decisión 2026-10-15); el
+-- nombre de la carrera técnica, sólo con carrera técnica y sin catálogo (decisión 2026-10-17).
 -- Se recalcula en cada cambio, así que una carrera que la Secretaría clasifica después se refleja.
 CREATE FUNCTION apd.solicitud_perfil() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE c apd.carrera;
@@ -222,6 +223,8 @@ BEGIN
   IF NEW.nivel_estudios IS NULL OR NEW.nivel_estudios NOT IN ('licenciatura', 'maestria', 'doctorado') THEN
     NEW.carrera := NULL; NEW.estatus_estudios := NULL;
   END IF;
+  IF NEW.nivel_estudios IS DISTINCT FROM 'tecnica' THEN NEW.carrera_tecnica := NULL; END IF;
+  NEW.carrera_tecnica := nullif(regexp_replace(trim(coalesce(NEW.carrera_tecnica, '')), '\s+', ' ', 'g'), '');
   NEW.carrera := nullif(regexp_replace(trim(coalesce(NEW.carrera, '')), '\s+', ' ', 'g'), '');
   NEW.carrera_id := NULL;
   IF NEW.carrera IS NOT NULL THEN
@@ -640,11 +643,13 @@ END $$;
 CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE faltan text; perfil text;
 BEGIN
-  -- Estudios: en los dos tipos, el nivel y, con licenciatura o posgrado, la carrera y su situación
+  -- Estudios: en los dos tipos, el nivel; con licenciatura o posgrado, la carrera y su situación; con carrera técnica,
+  -- cuál (decisión 2026-10-17)
   IF s.nivel_estudios IS NULL
      OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado')
-         AND (coalesce(trim(s.carrera), '') = '' OR s.estatus_estudios IS NULL)) THEN
-    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios y, si es licenciatura o posgrado, tu carrera y su situación');
+         AND (coalesce(trim(s.carrera), '') = '' OR s.estatus_estudios IS NULL))
+     OR (s.nivel_estudios = 'tecnica' AND coalesce(trim(s.carrera_tecnica), '') = '') THEN
+    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios; si es licenciatura o posgrado, tu carrera y su situación; si es carrera técnica, cuál');
   END IF;
   IF s.tipo_acreditacion = 'dictaminador' THEN
     IF s.anios_experiencia IS NULL THEN
@@ -687,10 +692,10 @@ BEGIN
   END IF;
   IF OLD.estado NOT IN ('borrador', 'con_observaciones')
      AND (NEW.tipo_acreditacion, NEW.modalidad, NEW.acreditacion_anterior_id, NEW.adscripcion, NEW.organizacion_id,
-          NEW.nivel_estudios, NEW.carrera, NEW.estatus_estudios, NEW.anios_experiencia)
+          NEW.nivel_estudios, NEW.carrera, NEW.carrera_tecnica, NEW.estatus_estudios, NEW.anios_experiencia)
          IS DISTINCT FROM
          (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id, OLD.adscripcion, OLD.organizacion_id,
-          OLD.nivel_estudios, OLD.carrera, OLD.estatus_estudios, OLD.anios_experiencia) THEN
+          OLD.nivel_estudios, OLD.carrera, OLD.carrera_tecnica, OLD.estatus_estudios, OLD.anios_experiencia) THEN
     PERFORM apd.error('solicitud_cerrada', 'Los datos de la solicitud sólo se cambian en borrador o con observaciones');
   END IF;
   IF OLD.estado <> 'borrador' AND (NEW.tipo_acreditacion, NEW.modalidad) IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad) THEN

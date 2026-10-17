@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-16",
+  "actualizado": "2026-10-17",
   "grupos": [
     {
       "id": "direccion",
@@ -530,6 +530,22 @@
       "desde": "2026-10-16",
       "titulo": "El formato «fecha» del estándar sólo acepta AAAA-MM-DD escrito, o el calendario del navegador",
       "recomendacion": "Proponer un formato de fecha escrita como día/mes/año (acepta 23/07/1985, 23-07-1985 o 23071985 y la deja como 23/07/1985), con su cruzada contra la CURP y el límite «no posterior a hoy», a partir de app/fecha-dma.js de este proyecto. Para la fecha de nacimiento, el calendario obliga a recorrer décadas."
+    },
+    {
+      "id": "P71",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Módulo «archivos»: «Elegir archivo» sigue a la vista con el máximo ya cargado, y dice «Hasta 1 archivos»",
+      "recomendacion": "Proponer que el módulo oculte la zona de carga (y la cámara) cuando el campo llega a data-max y la muestre al quitar el archivo; que el archivo listo se vea como cargado; y que con data-max=\"1\" el texto diga «Un archivo de hasta N MB». Base: app/archivos-lleno.js y apd.css de este proyecto."
+    },
+    {
+      "id": "P72",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Acuse y revisión: botones pegados o desalineados",
+      "recomendacion": "Proponer tres ajustes: (1) .acuse quita el relleno lateral de la tarjeta y en teléfono un botón queda pegado a la orilla: conservar el relleno; (2) el acuse no prevé una acción para continuar («Ir a mis trámites»): documentar que va en .acuse-acciones; (3) en la revisión, «Editar» baja de renglón con valores largos: que .rev-dato-valor no se parta y deje «Editar» arriba a la derecha. Base: apd.css de este proyecto y la comprobación automática de aire de probar-sitio.mjs."
     }
   ],
   "resueltos": [

@@ -4,7 +4,7 @@
        queda deshabilitada con su motivo. Si es nueva o renovación no se pregunta: se informa y se guarda en
        el campo auxiliar «tramite», del que dependen los documentos;
      · la acreditación que se renueva (sólo lectura);
-     · la adscripción con la que se enviará (es de la persona; se cambia en «Mis datos»);
+     · la adscripción con la que se enviará (es de la persona; se cambia en «Mi perfil»);
      · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, lo que hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de
        ser obligatorios;
      · en la revisión, el nombre con que se guarda cada documento (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo pone la
@@ -29,10 +29,10 @@
     const elegido = radios(nombre).find((r) => r.checked);
     if (elegido) avisa(elegido);
   }
-  /* La adscripción es de la persona («Mis datos»); aquí sólo se muestra con cuál se enviará. */
+  /* La adscripción es de la persona («Mi perfil»); aquí sólo se muestra con cuál se enviará. */
   function pintaAdscripcion(datos, persona) {
     const texto = APD.adscripcionTexto(datos, persona);
-    document.querySelector('[data-adscripcion-texto]').textContent = texto || 'sin indicar. Antes de enviar, indica en «Mis datos» si trabajas para alguna empresa, institución o dependencia.';
+    document.querySelector('[data-adscripcion-texto]').textContent = texto || 'sin indicar. Antes de enviar, indica en «Mi perfil» si trabajas para alguna empresa, institución o dependencia.';
     document.querySelector('[data-adscripcion-info]').classList.toggle('aviso-advertencia', !texto);
   }
 
@@ -134,6 +134,7 @@
     const st = radios('estatus_estudios').find((x) => x.value === s.estatus_estudios);
     if (st) { st.checked = true; avisa(st); }
     ponValor('carrera', s.carrera);
+    ponValor('carrera_tecnica', s.carrera_tecnica);
     if (s.tipo_acreditacion === 'dictaminador') ponValor('anios_experiencia', s.anios_experiencia);
 
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);

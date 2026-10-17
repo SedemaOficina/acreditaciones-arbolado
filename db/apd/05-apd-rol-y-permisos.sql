@@ -55,7 +55,7 @@ GRANT UPDATE (estado, vigente) ON apd.fotografia TO apd_api;
 GRANT SELECT, INSERT ON apd.solicitud TO apd_api;
 GRANT UPDATE (tipo_acreditacion, modalidad, acreditacion_anterior_id,
               factura_rfc, factura_razon_social, factura_folio_fiscal,
-              nivel_estudios, carrera, estatus_estudios, anios_experiencia, estado, cita_en, motivo_cierre)
+              nivel_estudios, carrera, carrera_tecnica, estatus_estudios, anios_experiencia, estado, cita_en, motivo_cierre)
   ON apd.solicitud TO apd_api;
 GRANT SELECT, INSERT ON apd.revision TO apd_api;
 GRANT SELECT, INSERT ON apd.documento TO apd_api;

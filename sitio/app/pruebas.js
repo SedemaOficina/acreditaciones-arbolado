@@ -62,8 +62,8 @@
         DOMContentLoaded), así no se pintan asteriscos ni se exige nada. Recargar devuelve el HTML original. */
   const sinObligatorias = lee();
   if (sinObligatorias && form) {
-    for (const c of form.querySelectorAll('[data-requerido]')) c.removeAttribute('data-requerido');
-    for (const c of form.querySelectorAll('[required]')) c.removeAttribute('required');
+    for (const c of document.querySelectorAll('form [data-requerido]')) c.removeAttribute('data-requerido');
+    for (const c of document.querySelectorAll('form [required]')) c.removeAttribute('required');
     for (const l of document.querySelectorAll('.leyenda-oblig')) l.hidden = true;
     const main = document.querySelector('main');
     if (main) main.prepend(APD.el('p', { class: 'aviso aviso-advertencia', role: 'status', texto: 'Modo de prueba: las preguntas obligatorias están desactivadas. Los formatos y las comprobaciones de la CURP siguen activos.' }));
@@ -181,7 +181,7 @@
   const { el } = APD;
   const PANTALLAS = [
     ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación']]],
-    ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mis datos'], ['solicitud.html', 'Solicitud']]],
+    ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
     ['Personal', [['revision.html', 'Solicitudes por revisar']]]
   ];
   const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
@@ -194,11 +194,12 @@
   function guardado() {
     let revisiones = 0;
     try { revisiones = Object.keys(JSON.parse(window.sessionStorage.getItem('apd.personal.revisiones') || '{}')).length; } catch (e) { /* sin almacenamiento */ }
-    const envios = typeof APD_ARCHIVOS_PRUEBA === 'undefined' ? Promise.resolve([]) : APD_ARCHIVOS_PRUEBA.solicitudes();
-    return envios.then((l) => ({ envios: l.length, revisiones }));
+    if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve({ envios: 0, fotos: 0, revisiones });
+    return Promise.all([APD_ARCHIVOS_PRUEBA.solicitudes(), APD_ARCHIVOS_PRUEBA.fotos()]).then(([l, fotos]) => ({ envios: l.length, fotos, revisiones }));
   }
-  function textoGuardado({ envios, revisiones }) {
+  function textoGuardado({ envios, fotos, revisiones }) {
     const partes = [];
+    if (fotos) partes.push(fotos === 1 ? '1 fotografía de perfil' : `${fotos} fotografías de perfil`);
     if (envios) partes.push(envios === 1 ? '1 solicitud enviada con sus documentos' : `${envios} solicitudes enviadas con sus documentos`);
     if (revisiones) partes.push(revisiones === 1 ? '1 revisión' : `${revisiones} revisiones`);
     return partes.length ? partes.join(' y ') : 'nada';
@@ -307,7 +308,7 @@
       try { window.sessionStorage.removeItem('apd.personal.revisiones'); } catch (e) { /* sin almacenamiento */ }
       docs.then(() => { di('Se borró lo guardado en este navegador.'); pintaGuardado(); }, () => di('No se pudo borrar.'));
     });
-    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.envios && !g.revisiones; }); }
+    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !g.envios && !g.fotos && !g.revisiones; }); }
     pintaGuardado();
 
     const hijos = [

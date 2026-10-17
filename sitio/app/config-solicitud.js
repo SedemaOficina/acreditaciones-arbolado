@@ -18,7 +18,8 @@
      · alcaldia                                        → la de esa clave (lista de las 16);
      · dependencia_federal = cfe | otro (+ nombre)     → la de clave cfe o la del nombre escrito;
      · educativa = unam | otro (+ nombre)              → la de clave unam o la del nombre escrito.
-   Estudios, en los dos tipos: nivel_estudios y, con licenciatura o posgrado, carrera y estatus_estudios.
+   Estudios, en los dos tipos: nivel_estudios; con licenciatura o posgrado, carrera y estatus_estudios; con carrera
+   técnica, carrera_tecnica (escrita, sin catálogo).
    Van tal cual; en dictaminador la base calcula
    perfil_academico y experiencia_minima (apd.perfil_academico) y liga la carrera a apd.carrera.
 
@@ -72,7 +73,7 @@ window.FORMKIT_OPCIONES = {
           const registro = {
             folio, existente: Boolean(previa), tipo_acreditacion: tipo, modalidad,
             enviada_en: previa ? previa.enviada_en : ahora, estado_desde: ahora,
-            nivel_estudios: d.nivel_estudios || null, carrera: d.carrera || null, estatus_estudios: d.estatus_estudios || null,
+            nivel_estudios: d.nivel_estudios || null, carrera: d.carrera || null, carrera_tecnica: d.carrera_tecnica || null, estatus_estudios: d.estatus_estudios || null,
             anios_experiencia: d.anios_experiencia ? Number(d.anios_experiencia) : null,
             persona: { id: p.id, nombre: p.nombre, primer_apellido: p.primer_apellido, segundo_apellido: p.segundo_apellido || null, curp: p.curp,
               correo: p.correo, telefono: p.telefono, adscripcion: p.adscripcion, organizacion_id: p.organizacion_id || null,

@@ -302,6 +302,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `nivel_estudios` | `text` | No | Último nivel o grado de estudios, en poda y en dictaminador (ninguna, preescolar, primaria, secundaria, preparatoria, tecnica, licenciatura, maestria, doctorado). En poda es dato del padrón; en dictaminador, requisito |
 | `carrera` | `text` | No | Con licenciatura o posgrado, en poda y en dictaminador: la carrera que estudió, elegida del catálogo o escrita |
 | `carrera_id` | `uuid` | No | Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo) |
+| `carrera_tecnica` | `text` | No | Con carrera técnica, en poda y en dictaminador: el nombre de la carrera técnica, escrito; sin catálogo (decisión 2026-10-17, Liber) |
 | `estatus_estudios` | `text` | No | Con licenciatura o posgrado, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado) |
 | `perfil_academico` | `text` | No | Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple. No impide enviar: el personal lo revisa en la revisión documental |
 | `experiencia_minima` | `numeric(3,1)` | No | Años de experiencia que pide el perfil; la calcula la base: 2 con licenciatura o posgrado en carrera principal o afín; 5 en todo lo demás, también cuando lo decide el personal (por clasificar o no cumple) |

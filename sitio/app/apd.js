@@ -76,7 +76,7 @@
   function personaDeSesion(datos) {
     const s = leeSesion();
     if (!s) return null;
-    // Lo que la persona cambió en «Mis datos» durante la prueba (s.datos) se aplica encima de lo guardado
+    // Lo que la persona cambió en «Mi perfil» durante la prueba (s.datos) se aplica encima de lo guardado
     if (s.nueva) return Object.assign({ id: 'nueva', estado: 'activa' }, s.nueva, s.datos || {});
     const p = datos.solicitante.find((x) => x.id === s.id);
     return p ? Object.assign({}, p, s.datos || {}) : null;
@@ -235,7 +235,7 @@
       el('p', { class: 'sesion-nombre', texto: nombreCompleto(persona) }),
       el('div', { class: 'sesion-enlaces' }, [
         el('a', { class: 'btn-enlace', href: 'tramites.html', texto: 'Mis trámites' }),
-        el('a', { class: 'btn-enlace', href: 'datos.html', texto: 'Mis datos' }),
+        el('a', { class: 'btn-enlace', href: 'datos.html', texto: 'Mi perfil' }),
         salir
       ])
     );

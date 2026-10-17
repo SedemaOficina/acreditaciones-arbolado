@@ -91,7 +91,7 @@
       ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : ''],
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, vigente hasta el ${fecha(podaVigente.vence_en)}` : ''],
-      ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
+      ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
       ['Contacto', `${p.correo} · ${p.telefono}`]
     ])]));
     $('[data-cabeza]').hidden = false;
@@ -120,7 +120,7 @@
       const declarado = [NIVELES[s.nivel_estudios], estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ');
       $('[data-perfil-datos]').replaceChildren(el('div', { class: 'datos-dos-columnas' }, [datosLista([
         ['Último grado declarado', declarado],
-        ['Carrera', s.carrera || ''],
+        ['Carrera', s.carrera || s.carrera_tecnica || ''],
         ['Experiencia declarada', s.anios_experiencia != null ? `${Number(s.anios_experiencia)} años` : ''],
         ['Experiencia que se pide', `${Number(s.experiencia_minima)} años${perfil === 'por_clasificar' ? ', mientras la carrera no se clasifique' : ''}`]
       ])]));

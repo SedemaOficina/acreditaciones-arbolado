@@ -1,0 +1,21 @@
+{
+  "formulario": "foto.html",
+  "generado": "2026-10-17T14:40:14.390Z",
+  "campos": {
+    "foto": {
+      "etiqueta": "Tu nueva fotografía",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Sustituir la fotografía de la persona antes de que se confirme en la cita.",
+      "finalidad": "Reconocer a la persona en la cita de cotejo, en el curso y en el examen.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": []
+}

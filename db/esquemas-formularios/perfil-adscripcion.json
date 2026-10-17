@@ -1,53 +1,7 @@
 {
-  "formulario": "datos.html",
-  "generado": "2026-10-16T17:56:53.137Z",
+  "formulario": "adscripcion.html",
+  "generado": "2026-10-17T14:40:14.327Z",
   "campos": {
-    "correo": {
-      "etiqueta": "Correo electrónico",
-      "tipo": "texto",
-      "requerido": true,
-      "formato": "correo",
-      "sensible": true,
-      "uso": "Avisos del trámite y recuperación del acceso.",
-      "finalidad": "Avisar a la persona el avance de su trámite y recuperar el acceso a su cuenta.",
-      "atributos": {
-        "maxlength": "120"
-      },
-      "autocomplete": "email"
-    },
-    "correo2": {
-      "etiqueta": "Confirma tu correo",
-      "tipo": "texto",
-      "requerido": true,
-      "formato": "correo",
-      "sensible": true,
-      "uso": "Evitar errores de captura en el correo.",
-      "atributos": {
-        "maxlength": "120"
-      },
-      "autocomplete": "off",
-      "cruzadas": [
-        {
-          "clave": "igual",
-          "mapa": {
-            "original": "correo",
-            "confirmacion": "correo2"
-          },
-          "nivel": "error"
-        }
-      ]
-    },
-    "telefono": {
-      "etiqueta": "Teléfono",
-      "tipo": "texto",
-      "requerido": true,
-      "formato": "telefono",
-      "sensible": true,
-      "uso": "Contacto por la cita de cotejo y el curso.",
-      "finalidad": "Confirmar o reprogramar la cita de cotejo y avisar cambios del curso.",
-      "atributos": {},
-      "autocomplete": "tel-national"
-    },
     "adscrito": {
       "etiqueta": "¿Trabajas para alguna empresa, institución o dependencia?",
       "tipo": "opcion",
@@ -150,12 +104,12 @@
       "uso": "Identificar la Dirección General de la SEDEMA para integrar grupos.",
       "atributos": {},
       "opciones": [
-        "dgeira",
-        "dgzcfs",
         "dgsanpava",
-        "dgcpca",
+        "dgcorenadr",
+        "dgeira",
         "dgiva",
-        "dgcorenadr"
+        "dgcpca",
+        "dgzcfs"
       ],
       "autocomplete": "off",
       "si": {
@@ -271,20 +225,6 @@
           "otro"
         ]
       }
-    },
-    "foto": {
-      "etiqueta": "Cambiar fotografía",
-      "tipo": "archivos",
-      "requerido": false,
-      "sensible": true,
-      "uso": "Sustituir la fotografía de la persona antes de que se confirme en la cita.",
-      "finalidad": "Reconocer a la persona en la cita de cotejo, en el curso y en el examen.",
-      "atributos": {
-        "max": "1",
-        "extensiones": "jpg,jpeg,png",
-        "mb": "5"
-      },
-      "autocomplete": "off"
     }
   },
   "repetibles": []

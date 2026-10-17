@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-16T17:56:53.270Z",
+  "generado": "2026-10-17T14:40:14.121Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -62,6 +62,24 @@
         "doctorado"
       ],
       "autocomplete": "off"
+    },
+    "carrera_tecnica": {
+      "etiqueta": "¿Qué carrera técnica estudiaste?",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Conocer tu formación técnica; en dictaminador, para que la Secretaría la revise con tu comprobante de estudios.",
+      "finalidad": "Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos.",
+      "atributos": {
+        "maxlength": "120"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "nivel_estudios",
+        "valores": [
+          "tecnica"
+        ]
+      }
     },
     "carrera": {
       "etiqueta": "¿Qué carrera estudiaste?",

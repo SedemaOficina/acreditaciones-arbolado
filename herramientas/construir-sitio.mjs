@@ -196,7 +196,7 @@ const auxiliares = enLinea.map((r) => `      <div class="solo-lector" aria-hidde
   writeFileSync(r, h);
 }
 
-// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mis datos»
+// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mi perfil»
 const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd()
   .replace(/^( *)<!-- alcaldias:opciones -->$/m, (_, s) => alcaldias.map((o) => `${s}<option value="${esc(o.clave)}">${esc(o.nombre)}</option>`).join('\n'));
 for (const p of ['cuenta.html', 'datos.html']) {

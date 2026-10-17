@@ -424,7 +424,7 @@ const casos = [
      UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'cfe') WHERE id = ${PERSONA_VIGENTE};`],
   ['Quien dice estar adscrita lleva su institución; la independiente no', { sqlstate: '23514' }, null, `
      UPDATE apd.solicitante SET adscripcion = 'privada', organizacion_id = NULL WHERE id = ${PERSONA_VIGENTE};`],
-  ['La persona cambia su adscripción en «Mis datos» y queda en la bitácora', 'ok', null, `
+  ['La persona cambia su adscripción en «Mi perfil» y queda en la bitácora', 'ok', null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitante SET adscripcion = 'alcaldia', organizacion_id = (SELECT id FROM apd.organizacion WHERE clave = 'tlalpan') WHERE id = ${PERSONA_VIGENTE};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'adscripcion' AND detalle LIKE '%alcaldia: Tlalpan'); END $$;`],
@@ -461,8 +461,19 @@ const casos = [
   ['Sin nivel de estudios no se envía (poda y dictaminador)', { codigo: 'faltan_estudios' }, null, `
      UPDATE apd.solicitud SET nivel_estudios = NULL WHERE id = ${DICT_OBS};
      UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+  ['Con carrera técnica, sin decir cuál no se envía', { codigo: 'faltan_estudios' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'tecnica', carrera_tecnica = '  ' WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+  ['La carrera técnica se escribe sin catálogo y se descarta con otro nivel', 'ok', null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'tecnica', carrera_tecnica = 'Técnico  en jardinería' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT carrera_tecnica = 'Técnico en jardinería' AND carrera IS NULL AND carrera_id IS NULL
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;
+     DO $$ BEGIN ASSERT NOT EXISTS (SELECT 1 FROM apd.carrera WHERE nombre ILIKE 'Técnico%'); END $$;
+     UPDATE apd.solicitud SET nivel_estudios = 'preparatoria' WHERE id = ${DICT_OBS};
+     DO $$ BEGIN ASSERT (SELECT carrera_tecnica IS NULL
+                           FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Carrera técnica pide 5 años', 'ok', null, `
-     UPDATE apd.solicitud SET nivel_estudios = 'tecnica' WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET nivel_estudios = 'tecnica', carrera_tecnica = 'Técnico forestal' WHERE id = ${DICT_OBS};
      DO $$ BEGIN ASSERT (SELECT perfil_academico = 'tecnica' AND experiencia_minima = 5
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   ['Una carrera escrita nueva se agrega sin grupo; al clasificarla la Secretaría, el perfil se actualiza', 'ok', null, `

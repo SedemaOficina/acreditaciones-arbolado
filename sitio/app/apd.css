@@ -212,3 +212,34 @@
 /* En la barra del visor los botones son del tamaño de su texto, también en teléfono */
 .visor-barra .btn { width: auto; min-inline-size: var(--objetivo-min); }
 .visor-paso { font-size: var(--t-lg); line-height: 1; }
+
+/* Revisión antes de enviar: «Editar» siempre arriba a la derecha del valor, aunque el texto sea largo (2026-10-17) */
+.rev-dato-valor { flex-wrap: nowrap; align-items: flex-start; }
+.rev-dato-valor > span { flex: 1 1 auto; min-width: 0; }
+.rev-dato-valor > .btn-enlace { flex: none; }
+
+/* Carga de archivos: con el máximo alcanzado se oculta «Elegir archivo» y el archivo se ve cargado (app/archivos-lleno.js) */
+[data-archivos][data-lleno] > .zona-carga, [data-archivos][data-lleno] > .zona-camara { display: none; }
+.lista-arch > li[data-estado="listo"] { border-color: var(--ok); background: var(--ok-bg); }
+
+/* Mi perfil (2026-10-17): fotografía y nombre arriba; cada parte se ve escrita y se edita con «Editar» */
+.perfil-cabeza { display: grid; gap: var(--e-4); justify-items: center; text-align: center; }
+.perfil-foto { position: relative; display: grid; place-items: center; width: calc(var(--e-11) * 1.5); aspect-ratio: 4 / 5; overflow: hidden; border: var(--b-2) solid var(--dorado); border-radius: var(--r-caja); background: var(--fondo); }
+.perfil-iniciales { font: var(--peso-fuerte) var(--t-xl)/1 var(--fuente-titulo); color: var(--guinda); }
+.perfil-imagen { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.perfil-quien { display: grid; gap: var(--e-2); justify-items: center; }
+.perfil-quien p { margin: 0; }
+.perfil-nombre { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); overflow-wrap: anywhere; }
+.perfil-guardado { width: 100%; text-align: start; }
+.perfil-form { width: 100%; text-align: start; }
+.perfil-seccion-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-block-end: var(--e-3); }
+.perfil-seccion-cabeza .titulo-bloque { margin-block: 0; }
+.perfil-seccion-cabeza .btn { width: auto; }
+@media (min-width: 560px) {
+  .perfil-cabeza { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: start; }
+  .perfil-quien { justify-items: start; }
+  .perfil-guardado, .perfil-form { grid-column: 1 / -1; }
+}
+
+/* Acuse: el estándar le quita el relleno lateral a la tarjeta (.acuse) y en teléfono el botón queda pegado a la orilla */
+.tarjeta.acuse { padding-inline: var(--e-seccion); }

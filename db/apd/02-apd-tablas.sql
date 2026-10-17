@@ -309,6 +309,7 @@ CREATE TABLE apd.solicitud (
   nivel_estudios             text          NULL,
   carrera                    text          NULL,
   carrera_id                 uuid          NULL,
+  carrera_tecnica            text          NULL,
   estatus_estudios           text          NULL,
   perfil_academico           text          NULL,
   experiencia_minima         numeric(3,1)  NULL,
@@ -366,6 +367,7 @@ COMMENT ON COLUMN apd.solicitud.factura_folio_fiscal IS 'Folio fiscal (UUID) de 
 COMMENT ON COLUMN apd.solicitud.nivel_estudios IS 'Último nivel o grado de estudios, en poda y en dictaminador (ninguna, preescolar, primaria, secundaria, preparatoria, tecnica, licenciatura, maestria, doctorado). En poda es dato del padrón; en dictaminador, requisito';
 COMMENT ON COLUMN apd.solicitud.carrera IS 'Con licenciatura o posgrado, en poda y en dictaminador: la carrera que estudió, elegida del catálogo o escrita';
 COMMENT ON COLUMN apd.solicitud.carrera_id IS 'Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo)';
+COMMENT ON COLUMN apd.solicitud.carrera_tecnica IS 'Con carrera técnica, en poda y en dictaminador: el nombre de la carrera técnica, escrito; sin catálogo (decisión 2026-10-17, Liber)';
 COMMENT ON COLUMN apd.solicitud.estatus_estudios IS 'Con licenciatura o posgrado, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado)';
 COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple. No impide enviar: el personal lo revisa en la revisión documental';
 COMMENT ON COLUMN apd.solicitud.experiencia_minima IS 'Años de experiencia que pide el perfil; la calcula la base: 2 con licenciatura o posgrado en carrera principal o afín; 5 en todo lo demás, también cuando lo decide el personal (por clasificar o no cumple)';

@@ -152,12 +152,14 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   const perfil = tipo === 'dictaminador'
     ? { nivel: opciones.nivel || 'licenciatura', carrera: opciones.carrera || 'Biología', estatus: opciones.estatus || 'titulado', anios: opciones.anios ?? 4 }
     : { nivel: nivelPoda, carrera: nivelPoda === 'licenciatura' ? (opciones.carrera || 'Arquitectura de Paisaje') : null, estatus: nivelPoda === 'licenciatura' ? 'titulado' : null, anios: null };
-  // La adscripción es de la persona («Mis datos»); la solicitud la copia
+  // Con carrera técnica, su nombre escrito, sin catálogo (decisión 2026-10-17); nombres ficticios de ejemplo
+  perfil.tecnica = perfil.nivel === 'tecnica' ? (opciones.tecnica || (tipo === 'dictaminador' ? 'Técnico forestal' : 'Técnico en jardinería')) : null;
+  // La adscripción es de la persona («Mi perfil»); la solicitud la copia
   if (opciones.org) emitir(`UPDATE apd.solicitante SET adscripcion = ${q(ORG[opciones.org].tipo)}, organizacion_id = ${orgId(opciones.org)} WHERE id = ${q(p.id)}`);
   emitir(`INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id,
-    nivel_estudios, carrera, estatus_estudios, anios_experiencia, es_ficticio)
+    nivel_estudios, carrera, carrera_tecnica, estatus_estudios, anios_experiencia, es_ficticio)
   VALUES (${q(s.id)}, ${q(p.id)}, ${q(tipo)}, ${q(modalidad)},
-    ${q(opciones.anterior)}, ${q(perfil.nivel)}, ${q(perfil.carrera)}, ${q(perfil.estatus)}, ${perfil.anios ?? 'NULL'}, true)`);
+    ${q(opciones.anterior)}, ${q(perfil.nivel)}, ${q(perfil.carrera)}, ${q(perfil.tecnica)}, ${q(perfil.estatus)}, ${perfil.anios ?? 'NULL'}, true)`);
   // Documentos obligatorios que se cargan en línea, tomados del catálogo de la base (fuente única)
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
   SELECT md5('doc' || ${q(s.id)} || rc.requisito)::uuid, ${q(s.id)}, rc.requisito,

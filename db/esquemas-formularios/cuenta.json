@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-16T17:56:53.079Z",
+  "generado": "2026-10-17T14:40:14.011Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -304,12 +304,12 @@
       "uso": "Identificar la Dirección General de la SEDEMA para integrar grupos.",
       "atributos": {},
       "opciones": [
-        "dgeira",
-        "dgzcfs",
         "dgsanpava",
-        "dgcpca",
+        "dgcorenadr",
+        "dgeira",
         "dgiva",
-        "dgcorenadr"
+        "dgcpca",
+        "dgzcfs"
       ],
       "autocomplete": "off",
       "si": {

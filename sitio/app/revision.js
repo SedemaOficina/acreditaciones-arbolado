@@ -37,7 +37,9 @@
     const revisadas = P.revisiones();
 
     const enviadas = datos.solicitud.filter((s) => s.estado === 'enviada' && !revisadas[s.folio])
-      .sort((a, b) => a.estado_desde.localeCompare(b.estado_desde));
+      // Lo enviado en este navegador durante la prueba va primero, para encontrarlo (decisión 2026-10-17); lo demás, de la
+      // que más espera a la más reciente
+      .sort((a, b) => Number(Boolean(b.de_prueba)) - Number(Boolean(a.de_prueba)) || a.estado_desde.localeCompare(b.estado_desde));
     const filas = enviadas.map((s) => {
       const p = persona[s.solicitante_id];
       const v = P.vuelta(datos, s);

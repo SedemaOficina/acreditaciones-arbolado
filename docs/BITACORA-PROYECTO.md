@@ -459,3 +459,22 @@ campos correctos.
 - Comprobaciones nuevas: orden de los bloques, todos los casos con persona, entrar con un caso desde «Entrar», el personal
   sin «En esta pantalla», «Empezar de cero», cuenta del registro anterior desde el menú; axe con el menú abierto en tres
   pantallas (311 comprobaciones).
+
+## 2026-10-17 · Bloque 37 · Mi perfil, carrera técnica, carga de archivos y botones
+
+- Direcciones Generales de la SEDEMA en el orden de Liber (fragmento `herramientas/plantillas/adscripcion.html`).
+- Carrera técnica: campo `carrera_tecnica` (texto libre, obligatorio con nivel técnico). Base: columna nueva, la regla
+  `solicitud_perfil` la limpia y la descarta con otro nivel, `comprobar_envio` la exige, permiso de actualización y
+  `solicitud_cerrada` la protegen; no entra a `apd.carrera` (130 casos de reglas). Ficticios con «Técnico en jardinería» y
+  «Técnico forestal». Revisión del personal la muestra como carrera.
+- Ayuda de «¿Qué carrera estudiaste?»: sólo «Al escribir te sugerimos las ya registradas».
+- «Mi perfil» (`datos.html`, `app/datos.js`, `app/config-datos.js`): cabeza con fotografía (o iniciales), nombre y estado de la
+  fotografía; datos de identidad de sólo lectura; contacto y adscripción escritos, cada uno con «Editar» que abre su
+  formulario (`form-contacto`, `form-adscripcion`, `form-foto`, arranque manual); «Cancelar»; al guardar, la vista se
+  actualiza y lo dice. Esquemas del servidor por parte: `perfil-contacto.json`, `perfil-adscripcion.json`, `perfil-foto.json`.
+  La fotografía de la cuenta se guarda en IndexedDB (`archivos-prueba.js`, almacén `fotos`) y se ve en el perfil.
+- Carga de archivos (`app/archivos-lleno.js`): con el máximo cargado se oculta «Elegir archivo»; «Un archivo de hasta 5 MB».
+  Hallazgo P71.
+- Botones: comprobación automática de aire en cada captura de `probar-sitio.mjs`; acuses con `.acuse-acciones` y relleno
+  lateral; «Editar» parejo en la revisión antes de enviar. Hallazgo P72.
+- Bandeja: lo enviado en este navegador va primero y con la fecha simulada.

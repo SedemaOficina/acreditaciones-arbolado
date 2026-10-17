@@ -52,7 +52,10 @@ window.FORMKIT_OPCIONES = {
             APD.guardaSesion({ nueva: { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null,
               curp: d.curp, sexo: d.curp[10], correo: d.correo, telefono: d.telefono, ...APD.adscripcionDe(datos, d) } });
           }
-          ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
+          // Versión de prueba: la fotografía se guarda sólo en este navegador, para verla en «Mi perfil»
+          const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
+          const guarda = foto && typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA.guardaFoto(d.curp, foto).catch(() => {}) : Promise.resolve();
+          guarda.then(() => ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) }));
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });

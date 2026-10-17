@@ -143,7 +143,7 @@
 
     <h3 class="titulo-bloque">Tu adscripción</h3>
     <!-- adscripcion:inicio (fragmento de herramientas/plantillas/adscripcion.html; lo inserta construir-sitio.mjs) -->
-    <!-- Adscripción (decisiones 2026-10-15): es de la persona. Se pide al crear la cuenta y se cambia en «Mis datos»;
+    <!-- Adscripción (decisiones 2026-10-15): es de la persona. Se pide al crear la cuenta y se cambia en «Mi perfil»;
          cada solicitud guarda la que tenía al enviarse. Primero si trabaja para alguien («No» = independiente); luego
          el tipo y, según el tipo, la pregunta que corresponde. Sirve para integrar grupos por institución y para la
          estadística de la demanda. Este bloque es un fragmento compartido: herramientas/plantillas/adscripcion.html,
@@ -203,18 +203,18 @@
         <!-- autocomplete off: es el nombre de una dependencia; el navegador no tiene nada que proponer. -->
         <input class="control" id="dependencia_cdmx_otra" name="dependencia_cdmx_otra" type="text" maxlength="160" autocomplete="off">
       </div>
-      <!-- Si es la SEDEMA, la Dirección General (decisión 2026-10-15). -->
+      <!-- Si es la SEDEMA, la Dirección General (decisión 2026-10-15), en el orden que fijó Liber el 2026-10-17: DGSANPAVA, DGCORENADR, DGEIRA, DGIVA, DGCPCA, DGZCFS. -->
       <div data-si="dependencia_cdmx=sedema">
         <fieldset class="grupo" data-campo="direccion_sedema" data-requerido data-uso="Identificar la Dirección General de la SEDEMA para integrar grupos.">
           <legend class="etiqueta">¿A qué Dirección General de la SEDEMA perteneces?</legend>
           <!-- autocomplete off: es una respuesta del trámite; el navegador no tiene nada que proponer. -->
           <div class="opciones-lista">
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgeira"><span><span class="opcion-nombre">Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgzcfs"><span><span class="opcion-nombre">Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgsanpava"><span><span class="opcion-nombre">Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcpca"><span><span class="opcion-nombre">Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgiva"><span><span class="opcion-nombre">Dirección General de Vigilancia Ambiental (DGIVA)</span></span></label>
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcorenadr"><span><span class="opcion-nombre">Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgeira"><span><span class="opcion-nombre">Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgiva"><span><span class="opcion-nombre">Dirección General de Vigilancia Ambiental (DGIVA)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgcpca"><span><span class="opcion-nombre">Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="direccion_sedema" autocomplete="off" value="dgzcfs"><span><span class="opcion-nombre">Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)</span></span></label>
           </div>
         </fieldset>
       </div>
@@ -330,7 +330,7 @@
       <li class="secuencia-item">Entra con tu CURP y tu contraseña.</li>
       <li class="secuencia-item">Inicia tu solicitud y carga tus documentos.</li>
     </ol>
-    <div class="acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
+    <div class="acuse-acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
   </section>
 </main>
 
@@ -358,6 +358,7 @@
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/copiar/copiar.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="app/archivos-lleno.js?v=0.20"></script>
 <script src="formkit/modulos/combo/combo.js"></script>
 <script src="formkit/modulos/otro/otro.js"></script>
 <script src="formkit/modulos/acuse/acuse.js"></script>

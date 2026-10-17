@@ -84,10 +84,15 @@
       APD_ARCHIVOS_PRUEBA.documentos(r.folio).then((docs) => ({ r, docs }))))).then((lista) => {
       if (!lista.length) return datos;
       const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice() });
-      for (const { r, docs } of lista) {
+      // La prueba vive en una fecha simulada (fecha_corte): lo enviado hoy de verdad cuenta como enviado ese día, para que
+      // la espera no salga negativa (decisión 2026-10-17)
+      const tope = `${datos.fecha_corte}T19:00:00-06:00`;
+      const alCorte = (iso) => (iso && new Date(iso) > new Date(tope) ? new Date(tope).toISOString() : iso);
+      for (const { r: original, docs } of lista) {
+        const r = Object.assign({}, original, { estado_desde: alCorte(original.estado_desde), enviada_en: alCorte(original.enviada_en) });
         let s = d.solicitud.find((x) => x.folio === r.folio);
         if (s) {
-          s = Object.assign({}, s, { estado: 'enviada', estado_desde: r.estado_desde });
+          s = Object.assign({}, s, { estado: 'enviada', estado_desde: r.estado_desde, de_prueba: true });
           d.solicitud[d.solicitud.findIndex((x) => x.folio === r.folio)] = s;
         } else {
           const persona = d.solicitante.find((x) => x.id && x.id === r.persona.id) || Object.assign({ id: `prueba:${r.folio}` }, r.persona);
@@ -95,15 +100,15 @@
           const perfil = r.tipo_acreditacion === 'dictaminador' ? APD.perfilAcademico(datos, r.nivel_estudios, r.estatus_estudios, r.carrera) : null;
           s = { id: `prueba:${r.folio}`, folio: r.folio, solicitante_id: persona.id, estado: 'enviada', estado_desde: r.estado_desde,
             enviada_en: r.enviada_en, creada_en: r.enviada_en, tipo_acreditacion: r.tipo_acreditacion, modalidad: r.modalidad,
-            nivel_estudios: r.nivel_estudios, carrera: r.carrera, estatus_estudios: r.estatus_estudios, anios_experiencia: r.anios_experiencia,
+            nivel_estudios: r.nivel_estudios, carrera: r.carrera, carrera_tecnica: r.carrera_tecnica || null, estatus_estudios: r.estatus_estudios, anios_experiencia: r.anios_experiencia,
             perfil_academico: perfil ? perfil.perfil : null, experiencia_minima: perfil ? perfil.minimo : null,
             adscripcion: r.persona.adscripcion, organizacion_id: r.persona.organizacion_id, organizacion_nombre: r.persona.organizacion_nombre,
-            acreditacion_anterior_id: null };
+            acreditacion_anterior_id: null, de_prueba: true };
           d.solicitud.push(s);
         }
         for (const a of docs) {
           d.documento = d.documento.map((x) => (x.solicitud_id === s.id && x.requisito === a.requisito && x.vigente ? Object.assign({}, x, { vigente: false }) : x));
-          d.documento.push({ solicitud_id: s.id, requisito: a.requisito, vigente: true, estado: 'pendiente', cargado_en: a.cargado_en,
+          d.documento.push({ solicitud_id: s.id, requisito: a.requisito, vigente: true, estado: 'pendiente', cargado_en: alCorte(a.cargado_en),
             nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob });
         }
       }

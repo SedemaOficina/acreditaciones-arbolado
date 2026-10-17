@@ -5,7 +5,7 @@ mismo contenido está en el tablero «Pendientes del sistema», donde se marca c
 pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resueltos» y la decisión se anota en
 `docs/DECISIONES.md`.
 
-Actualizado: 16/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
+Actualizado: 17/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
 primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa etapa; *no* = se puede avanzar.
 
 ## Dirección de Infraestructura Verde (contenido del trámite)
@@ -108,6 +108,8 @@ primer dato real; *SIA* = antes de pasar al SIA; *etapa N* = antes de cerrar esa
 | P66 | Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto | Reportarlo: alternar con :nth-child no cuenta las filas ocultas; y una columna cuyo encabezado es sólo para lector de pantalla no debería mostrar su rótulo en la vista de fichas. | no |
 | P67 | El estándar no tiene visor de documentos para revisar lo que se carga | Proponer un módulo «visor» (todas las hojas, contador, acercar, girar, abrir en otra pestaña; fijo junto al formulario en computadora y a pantalla completa en teléfono) con pdf.js incluido en el paquete, a partir de app/visor.js de este proyecto. | no |
 | P70 | El formato «fecha» del estándar sólo acepta AAAA-MM-DD escrito, o el calendario del navegador | Proponer un formato de fecha escrita como día/mes/año (acepta 23/07/1985, 23-07-1985 o 23071985 y la deja como 23/07/1985), con su cruzada contra la CURP y el límite «no posterior a hoy», a partir de app/fecha-dma.js de este proyecto. Para la fecha de nacimiento, el calendario obliga a recorrer décadas. | no |
+| P71 | Módulo «archivos»: «Elegir archivo» sigue a la vista con el máximo ya cargado, y dice «Hasta 1 archivos» | Proponer que el módulo oculte la zona de carga (y la cámara) cuando el campo llega a data-max y la muestre al quitar el archivo; que el archivo listo se vea como cargado; y que con data-max="1" el texto diga «Un archivo de hasta N MB». Base: app/archivos-lleno.js y apd.css de este proyecto. | no |
+| P72 | Acuse y revisión: botones pegados o desalineados | Proponer tres ajustes: (1) .acuse quita el relleno lateral de la tarjeta y en teléfono un botón queda pegado a la orilla: conservar el relleno; (2) el acuse no prevé una acción para continuar («Ir a mis trámites»): documentar que va en .acuse-acciones; (3) en la revisión, «Editar» baja de renglón con valores largos: que .rev-dato-valor no se parta y deje «Editar» arriba a la derecha. Base: apd.css de este proyecto y la comprobación automática de aire de probar-sitio.mjs. | no |
 
 ## Resueltos
 

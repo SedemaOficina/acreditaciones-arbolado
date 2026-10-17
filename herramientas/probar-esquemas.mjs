@@ -6,7 +6,8 @@
 // Escribe db/esquemas-formularios/<formulario>.json (generados; no se editan a mano).
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -24,10 +25,22 @@ const config = { ...cfgEstandar, cruzadas: { ...cfgEstandar.cruzadas, ...globalT
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-for (const f of ['cuenta', 'datos', 'entrar', 'solicitud', 'verificar', 'revisar']) {
+for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
+// «Mi perfil» tiene un formulario por parte (contacto, adscripción, fotografía): cada uno con su esquema, como
+// cada parte se guarda por separado en la API
+const perfilHtml = readFileSync(join(raiz, 'sitio/datos.html'), 'utf8');
+const temporal = mkdtempSync(join(tmpdir(), 'perfil-'));
+for (const parte of ['contacto', 'adscripcion', 'foto']) {
+  const m = perfilHtml.match(new RegExp(`<form id="form-${parte}"[\\s\\S]*?</form>`));
+  const html = join(temporal, `${parte}.html`);
+  writeFileSync(html, `<!DOCTYPE html><html lang="es-MX"><body>${m[0]}</body></html>`);
+  execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), html, join(salida, `perfil-${parte}.json`)]);
+  esquema[`perfil-${parte}`] = JSON.parse(readFileSync(join(salida, `perfil-${parte}.json`), 'utf8'));
+}
+rmSync(join(salida, 'datos.json'), { force: true });
 
 let fallas = 0;
 const meta = { trampa: '', ms_en_formulario: 90000, idempotencia: 'prueba' };
@@ -120,7 +133,8 @@ caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (
 const dictRenov = { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', anios_experiencia: '3', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' };
 const csf = [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')];
 caso('Perfil: licenciatura pide carrera y situación de los estudios', 'solicitud', { ...dictRenov, nivel_estudios: 'licenciatura' }, ['carrera', 'estatus_estudios'], csf);
-caso('Perfil: carrera técnica no pide carrera ni situación', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica' }, true, csf);
+caso('Perfil: carrera técnica pide cuál, no la carrera ni la situación', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica' }, ['carrera_tecnica'], csf);
+caso('Perfil: carrera técnica escrita, sin catálogo, se acepta', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal' }, true, csf);
 caso('Poda: licenciatura pide la carrera y su situación', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera', 'estatus_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Poda: sin nivel de estudios se rechaza', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['nivel_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso' }, true, csf);
@@ -129,7 +143,7 @@ caso('Solicitud sin la declaración bajo protesta de decir verdad se rechaza', '
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
 
-// Adscripción (en la cuenta y en «Mis datos»): según el tipo, su pregunta; lo que depende de una respuesta se oculta con ella
+// Adscripción (en la cuenta y en «Mi perfil»): según el tipo, su pregunta; lo que depende de una respuesta se oculta con ella
 const conFoto = foto();
 const cta = (extra) => ({ ...cuenta, ...extra });
 caso('Cuenta: sin decir si trabaja para alguien se rechaza', 'cuenta', cta({ adscrito: '' }), ['adscrito'], conFoto);
@@ -146,10 +160,15 @@ caso('Cuenta: UNAM se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion:
 caso('Cuenta: otra institución educativa sin su nombre se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'otro' }), ['institucion_educativa_otra'], conFoto);
 caso('Cuenta: la Dirección General «otro» ya no existe y se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'otro' }), ['direccion_sedema'], conFoto);
 caso('Cuenta: independiente, lo que dependía de la adscripción no cuenta (se descarta)', 'cuenta', cta({ adscrito: 'no', tipo_adscripcion: 'alcaldia', alcaldia: 'Inventada' }), true, conFoto);
-const misDatos = { correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077', adscrito: 'si', tipo_adscripcion: 'dependencia_federal', dependencia_federal: 'cfe' };
-caso('Mis datos: cambio de adscripción a CFE se acepta, sin fotografía nueva', 'datos', misDatos, true);
-caso('Mis datos: otra dependencia federal sin su nombre se rechaza', 'datos', { ...misDatos, dependencia_federal: 'otro' }, ['dependencia_federal_otra']);
-caso('Mis datos: la CURP o el nombre no se cambian aquí (campo no declarado)', 'datos', { ...misDatos, curp: curpNadia }, ['curp']);
+const contacto = { correo: 'nadia@ejemplo.local', correo2: 'nadia@ejemplo.local', telefono: '5500000077' };
+const adscripcion = { adscrito: 'si', tipo_adscripcion: 'dependencia_federal', dependencia_federal: 'cfe' };
+caso('Mi perfil: contacto completo se acepta', 'perfil-contacto', contacto, true);
+caso('Mi perfil: correo y confirmación distintos se rechazan', 'perfil-contacto', { ...contacto, correo2: 'otra@ejemplo.local' }, ['correo2']);
+caso('Mi perfil: cambio de adscripción a CFE se acepta', 'perfil-adscripcion', adscripcion, true);
+caso('Mi perfil: otra dependencia federal sin su nombre se rechaza', 'perfil-adscripcion', { ...adscripcion, dependencia_federal: 'otro' }, ['dependencia_federal_otra']);
+caso('Mi perfil: la CURP o el nombre no se cambian aquí (campo no declarado)', 'perfil-contacto', { ...contacto, curp: curpNadia }, ['curp']);
+caso('Mi perfil: cambiar la fotografía pide la fotografía', 'perfil-foto', {}, ['foto']);
+caso('Mi perfil: una fotografía JPG se acepta', 'perfil-foto', {}, true, foto());
 
 // Revisión documental (personal): validar, observar o rechazar, con lo que cada resultado pide
 const PODA = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
