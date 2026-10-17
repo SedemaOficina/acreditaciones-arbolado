@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.24 | 17/10/26, 9:36 a.m. | Bloque 40: seguir después de observar; el resultado de la revisión llega a la persona |
 | 0.23 | 17/10/26, 9:20 a.m. | Bloque 39: días para vencer; recorrido de prueba guardado en el navegador |
 | 0.22 | 17/10/26, 9:00 a.m. | Bloque 38: mostrar la contraseña; adscripción directa en Mi perfil |
 | 0.21 | 17/10/26, 8:48 a.m. | Bloque 37: Mi perfil, carrera técnica, carga de archivos, botones con aire y bandeja de prueba |
