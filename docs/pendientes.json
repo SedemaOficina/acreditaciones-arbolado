@@ -719,6 +719,14 @@
       "desde": "2026-10-17",
       "titulo": "Anticipación mínima para confirmar un grupo: 7 días (confirmar el número con el área)",
       "recomendacion": "Qué es: entre el día en que el personal confirma un grupo y el primer día de su curso deben pasar al menos 7 días. Por ejemplo, un grupo confirmado el lunes 19 de octubre puede empezar el lunes 26 o después, pero no el viernes 23; si se intenta, la base lo rechaza con el mensaje «El curso debe empezar al menos 7 días después de confirmar el grupo». Para qué: que la persona se entere (por «Mis trámites» y, con el servicio de correo, por correo, P23), pida permiso en su trabajo y se organice. Cómo se cambia: el 7 es el parámetro dias_anticipacion_grupo de la base; la administración puede cambiarlo sin programar y el cambio queda en la bitácora. Sólo se revisa al confirmar: no afecta a los grupos ya confirmados. Falta: que el área confirme si 7 días es el número correcto."
+    },
+    {
+      "id": "P94",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-17",
+      "titulo": "¿Dónde se registra la asistencia del último día del curso: en el aula o al pasar lista en el PILARES?",
+      "recomendacion": "Hoy el prototipo del examen la registra al pasar lista en el salón de cómputo del PILARES (cada persona marcada «Presente» cuenta como asistida ese día y recibe su código); la pantalla de grupos y asistencia la captura día por día en el aula. Hay que escoger una para que no se capture dos veces ni haya dos datos distintos. Opciones: (a) el último día se captura sólo al pasar lista en el PILARES (recomendada: es una sola captura y coincide con quien de verdad presentó el examen); (b) se captura en el aula como los demás días y en el PILARES sólo se comprueba la identidad y se genera el código; (c) las dos, y quien falta a una de ellas no tiene derecho a examen. Coordinar la decisión con la pantalla de grupos y asistencia."
     }
   ],
   "resueltos": [
