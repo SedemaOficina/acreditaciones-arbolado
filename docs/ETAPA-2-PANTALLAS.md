@@ -12,6 +12,10 @@ sitio con sus pruebas (decisiones del 2026-10-16). Acceso simulado mientras no h
 | Citas de cotejo | `sitio/citas.html` · `app/citas.js` | Agenda del día por hora (sede única), con la situación de cada cita: por atender, en pausa, documento cargado (retomar), atendida con su expediente, no se presentó, sin pago, regresó con observaciones, no era la persona. Día anterior y siguiente con citas; la búsqueda (nombre, CURP, folio o expediente) busca en todos los días |
 | Atender una cita de cotejo | `sitio/cotejo.html?folio=…` · `app/cotejo.js` | Llegada; identidad (es la persona de la fotografía o no); cotejo de cada documento contra lo que cargó (visor); pago; factura. Resultado: terminar (abre el expediente), pausa, regresar con observaciones, otra cita (sin pago o primera inasistencia), cerrar (segunda inasistencia) o no atender (no es la persona). Retomar una pausa coteja sólo lo que no coincidió |
 | Cargar el documento correcto (persona) | `sitio/corregir.html?folio=…` · `app/corregir.js` | Con la cita en pausa, la persona carga ese mismo día el documento que no coincidió; se pide sólo ése |
+| Grupos | `sitio/grupos.html` · `app/grupos.js` | La espera de cada uno de los cuatro cursos (cuántas personas, cuántas esperan más de 31 días, renovaciones con la acreditación vencida, si alcanza para un grupo y el grupo que se está armando) y los grupos, de los que están en curso a los cerrados, con integración, cupo, inicio, instructor y situación |
+| En espera de un curso | `sitio/espera.html?curso=…` · `app/espera.js` | Personas en espera de un curso, de la que más espera a la más reciente (en renovación, por la fecha en que vence su acreditación). Se eligen y se agregan a un grupo que recibe personas, o se crea un grupo nuevo con ellas: específico (si todas son de la misma organización) o combinado |
+| Un grupo | `sitio/grupo.html?folio=…` · `app/grupo.js` | Situación, cupo y personas. En integración: agregar de la espera, dar de baja (con motivo), confirmar con primer día (7 días de anticipación), hora de entrada (lista cerrada de 24 horas) e instructor, o cancelar (con motivo). Confirmado: agregar hasta el día anterior al inicio y dar de baja; si queda por debajo del mínimo regresa a integración con su fecha. En curso: asistencia y examen |
+| Asistencia (instructor) | `sitio/asistencia.html` · `app/asistencia.js` | Perfil simulado «instructor». Un botón por día: se capturan los días que ya pasaron, del primero al penúltimo, y se corrigen mientras el curso siga; «Asistió» o «Faltó» a cada persona, con su fotografía; no se guarda con alguien sin marcar. Avisa a quién ya no puede faltar y a quién ya no le alcanza para el examen. El último día se registra al pasar lista en el examen (P94) |
 | Aplicar el examen | `sitio/aplicar.html` · `app/aplicar.js` | Quien aplica el examen (perfil simulado «instructor»): grupo en curso con fecha (último día) y lugar (salón de cómputo del PILARES), personas con su asistencia y derecho a examen, pase de lista con la fotografía de cada persona («Presente» genera su código; «No llegó»; «Llegó: marcar presente»), avance al momento (sin empezar, contestando con cuántas lleva y el tiempo, calificación al enviar, suspendido, veces que salió de la ventana), reponer un código, suspender con motivo e imprimir papeletas con los códigos |
 | Examen en línea (persona) | `sitio/examen.html` · `app/examen.js` | En las computadoras del salón, sin cuenta: entrar con el código → ¿eres tú? → instrucciones → una pregunta por pantalla (reloj, avance, mapa de preguntas, marcar para revisar) → revisar y enviar → calificación y qué sigue. Una recarga o el cambio de computadora vuelven al examen con lo contestado. Las preguntas de un caso (enunciado y tablas compartidos, como los ejercicios de valoración del examen de poda) salen juntas y en orden, con el caso arriba de cada una |
 | Lo común del examen | `app/examen-servidor.js` · `app/examen-grupo.js` · `app/codigo-examen.js` · `datos/examen-ficticio.js` | Servidor simulado del examen (códigos, orden por persona, respuestas, tiempo, calificación, suspensión, reposición), quién presenta el examen de un grupo, formato propio del código y banco ficticio (24 preguntas sobre el propio trámite; el real nunca entra al repositorio, P85) |
@@ -62,6 +66,24 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 - En la etapa 3 hacen falta en la base: el banco de reactivos (sin exponer la clave), los códigos con su orden y
   tiempo, y las respuestas con su hora; la API del módulo hace lo que hoy simula `app/examen-servidor.js` (P29).
 
+## 2c. Reglas de grupos y asistencia (maqueta aprobada y decisiones del 2026-10-17)
+
+- Los cuatro cursos nunca se mezclan. Un grupo nace en integración; se confirma con al menos 5 personas (ningún grupo
+  abre con menos), con primer día al menos 7 días después de confirmar (`dias_anticipacion_grupo`), hora de entrada
+  (`apd.grupo.hora_entrada`, la misma todos los días; P91) e instructor. Recibe hasta 25.
+- Específico (una organización) o combinado (cualquier mezcla de organizaciones e independientes). Si una organización
+  no llega a 5, sus personas van a un grupo combinado.
+- A un grupo confirmado se agregan personas hasta el día anterior al inicio, sin pasar de 25.
+- Dar de baja y cancelar piden motivo; las personas regresan a la espera con su antigüedad. Si una baja deja a un grupo
+  confirmado por debajo del mínimo, regresa a integración y conserva su fecha, hora e instructor como propuesta (propuesta
+  de Claude, bloque 53; la base lo hace sola).
+- Asistencia: la captura el instructor, día por día, sólo de los días que ya ocurrieron; se corrige mientras el curso
+  siga y no haya examen. El último día se registra al pasar lista en el salón de cómputo, no en el aula (P94, por
+  decidir; opción recomendada), para no capturarlo dos veces.
+- Quién arma los grupos: P92 (hoy, el perfil de revisión y cotejo). Horarios: P91.
+- La base lo vuelve a aplicar: `apd.grupo_cambio`, `apd.inscripcion_alta`, `apd.inscripcion_cambio`, `apd.asistencia_captura`.
+  En la prueba, lo hecho se guarda en el navegador («apd.personal.grupos») y `app/archivos-prueba.js` lo aplica como la base.
+
 ## 2 bis. Visor de documentos
 
 El módulo `visor` del estándar (desde la 1.2.0, P67; antes `app/visor.js`, del que salió) muestra todas las hojas del PDF
@@ -94,12 +116,19 @@ El cotejo sigue el mismo patrón: auxiliares `pedir_llegada`, `pedir_identidad`,
 estándar (1.3.0, P82). Esquemas `cotejo.json` y `corregir.json` (19 casos). El examen tiene dos formularios del estándar: «Entra a tu examen» (formato propio `codigo-examen`, `app/codigo-examen.js`) y «Suspender el examen» (diálogo en `aplicar.html`); esquemas `examen-entrar.json` y `examen-suspender.json` (6 casos). Las condiciones van en `div[data-si]`; desde la 1.3.0
 la herramienta del esquema las lee en cualquier etiqueta (P81) y los `div` se quedan.
 
+Grupos: cuatro formularios del estándar en `espera.html` y `grupo.html`, que arrancan a mano después de pintar la página
+(`data-formkit="manual"`): crear un grupo (específico o combinado), confirmar (primer día, hora de entrada de una lista
+cerrada e instructor), dar de baja y cancelar (motivo). Esquemas `grupo-crear.json`, `grupo-confirmar.json`,
+`grupo-baja.json` y `grupo-cancelar.json` (10 casos). Elegir personas de la espera y capturar la asistencia son
+acciones sobre listas, no formularios de datos: la base las revisa (`apd.inscripcion_alta`, `apd.asistencia_captura`).
+
 ## 4. Lo que falta
 
 - Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); dirección del Vivero Nezahualcóyotl (P68);
   motivos frecuentes y quién fija la fecha (P64).
 - Visor de documentos: en la prueba muestra el archivo cargado en el navegador o un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
-- Siguientes pantallas: grupos y asistencia, emisión y entrega el mismo día. Examen: tablas en la base y API (etapa 3), banco real (P74), regla con la práctica (P83), redondeo (P88) y tiempo adicional (P89).
+- Siguiente pantalla: emisión y entrega el mismo día (P10). Grupos: cambiar el instructor de un grupo confirmado o en
+  curso (la base ya lo permite), quién arma los grupos (P92) y horarios (P91). Examen: tablas en la base y API (etapa 3), banco real (P74), regla con la práctica (P83), redondeo (P88) y tiempo adicional (P89).
 - Cotejo: aviso a la Dirección y desbloqueo (P79); tarea nocturna de pausas vencidas (P80); días, horario y cupo de citas (P69).
 - Hallazgos del estándar abiertos: P90 (esquema con controles fuera del formulario), P95 (mensajes de formatos fuera de
   «mensajes»), P96 (ruta de pdf.js), P97 (nombre del grupo de chips), P98 (dos «Mostrar» con el mismo nombre) y P99 (el

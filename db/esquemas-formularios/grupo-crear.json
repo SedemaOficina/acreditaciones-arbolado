@@ -1,0 +1,21 @@
+{
+  "formulario": "grupo-crear.html",
+  "generado": "2026-10-17T23:27:11.567Z",
+  "campos": {
+    "integracion": {
+      "etiqueta": "¿De quiénes es el grupo?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).",
+      "atributos": {},
+      "opciones": [
+        "especifico",
+        "combinado"
+      ],
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

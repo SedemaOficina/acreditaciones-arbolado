@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grupos · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Espera de grupo por curso y grupos del curso de acreditación, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="app/apd.css?v=0.34">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+
+  <section class="tarjeta" aria-labelledby="t-grupos">
+    <h2 class="titulo-paso" id="t-grupos">Grupos</h2>
+    <p class="bajada">Las personas con el cotejo terminado esperan grupo en su curso. Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas y recibe hasta <span data-cupo-max>25</span>.</p>
+
+    <h3 class="titulo-bloque" id="t-espera">Personas en espera de grupo</h3>
+    <ul class="cursos" data-cursos aria-labelledby="t-espera"></ul>
+
+    <h3 class="titulo-bloque" id="t-lista">Grupos de los cuatro cursos</h3>
+    <p class="resumen-filtro" role="status" data-cuenta>Cargando los grupos…</p>
+    <div class="tabla-marco" data-tabla data-clave="grupo">
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector">Grupos de los cuatro cursos</caption>
+        <thead><tr><th scope="col">Grupo</th><th scope="col">Curso</th><th scope="col">Tipo de grupo</th><th scope="col">Personas</th><th scope="col">Inicia</th><th scope="col">Instructor</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+    </div>
+    <p class="ayuda">Para armar un grupo nuevo, abra «Ver la espera» del curso y elija a las personas. <span class="pendiente">Pendiente (P92): quién arma los grupos; hoy, el perfil de revisión y cotejo.</span></p>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.34"></script>
+<script src="app/apd.js?v=0.34"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.34"></script>
+<script src="app/personal.js?v=0.34"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="app/config-usted.js?v=0.34"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/tabla/tabla.js"></script>
+<script src="app/grupos.js?v=0.34"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.34"></script>
+<script src="app/pruebas.js?v=0.34"></script>
+<script src="app/version-visible.js?v=0.34"></script>
+</body>
+</html>

@@ -24,21 +24,21 @@
         (p, s, acs, d) => s && s.estado === 'enviada' && s.modalidad !== 'renovacion' && s.tipo_acreditacion === 'poda' && vueltas(d, s) === 0],
       ['reenviada', 'Reenviada con correcciones (2.ª vuelta)', 'Ver la solicitud que vuelve a revisión con lo corregido.',
         (p, s, acs, d) => s && s.estado === 'enviada' && vueltas(d, s) > 0],
-      ['obs-poda', 'Poda y derribo · con observaciones', 'Corregir los documentos observados y reenviar.',
+      ['obs-poda', 'Poda y derribo · con observaciones', 'Corregir los documentos con observaciones y reenviar.',
         (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda'],
-      ['obs-dict', 'Dictaminador técnico · con observaciones', 'Corregir lo observado de una solicitud de dictaminador.',
+      ['obs-dict', 'Dictaminador técnico · con observaciones', 'Corregir las observaciones de una solicitud de dictaminador.',
         (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'dictaminador'],
       ['perfil', 'Dictaminador que podría no cumplir el perfil, en revisión', 'Ver el aviso de perfil; en la revisión, decidir con el comprobante de estudios.',
         (p, s) => s && s.estado === 'enviada' && s.perfil_academico === 'no_cumple'],
       ['cita', 'Cita de cotejo asignada', 'Ver la fecha, la sede y los datos de pago.', (p, s) => s && s.estado === 'validada_en_linea'],
-      ['espera', 'En espera de grupo', 'Ver qué sigue después del cotejo.',
+      ['espera', 'Cotejo terminado, en espera de grupo', 'Ver qué sigue después del cotejo: que se le asigne un grupo del curso.',
         (p, s) => s && s.estado === 'lista_para_curso' && s.modalidad !== 'renovacion'],
       ['grupo', 'Con grupo asignado', 'Ver las fechas del curso y la asistencia.', (p, s) => s && s.estado === 'inscrita']
     ]],
     ['Renovación', [
       ['renov-enviada', 'Renovación enviada, en revisión', 'Ver una renovación mientras se revisa.',
         (p, s) => s && s.modalidad === 'renovacion' && s.estado === 'enviada'],
-      ['renov-espera', 'Renovación en espera de grupo', 'Ver una renovación ya cotejada.',
+      ['renov-espera', 'Renovación con cotejo terminado, en espera de grupo', 'Ver una renovación que ya pasó el cotejo.',
         (p, s) => s && s.modalidad === 'renovacion' && s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda'],
       ['dict-renov', 'Renovación de dictaminador', 'Ver la renovación de dictaminador con la poda vigente.',
         (p, s) => s && s.modalidad === 'renovacion' && s.tipo_acreditacion === 'dictaminador']
@@ -49,7 +49,7 @@
       ['sin-examen', 'Sin derecho a examen (asistencia insuficiente)', 'Ver el resultado por asistencia.', (p, s) => s && s.estado === 'sin_derecho_examen'],
       ['rechazada', 'Dictaminador rechazado por perfil', 'Leer el motivo del rechazo.', (p, s) => s && s.estado === 'rechazada'],
       ['cancelada', 'Cancelada por la persona', 'Ver una solicitud cancelada.', (p, s) => s && s.estado === 'cancelada'],
-      ['sin-atender', 'Concluida sin atender las observaciones', 'Ver el cierre por plazo.', (p, s) => s && s.estado === 'concluida_sin_atender']
+      ['sin-atender', 'Cerrada por no corregir las observaciones a tiempo', 'Ver la solicitud que se cerró porque venció el plazo para corregir.', (p, s) => s && s.estado === 'concluida_sin_atender']
     ]]
   ];
   const PERSONAL = ['personal', 'Revisión documental — María Ejemplo Revisora', 'Revisar las solicitudes enviadas.'];

@@ -29,7 +29,7 @@
 
   <section class="tarjeta" aria-labelledby="t-bandeja">
     <h2 class="titulo-paso" id="t-bandeja">Solicitudes por revisar</h2>
-    <p class="bajada">Ordenadas por antigüedad: la que más tiempo lleva esperando va primero. Las reenviadas con correcciones se distinguen por su número de vuelta.</p>
+    <p class="bajada">Ordenadas por antigüedad: la que más tiempo lleva esperando va primero. Las que la persona reenvió con correcciones lo indican en la columna «Vuelta».</p>
 
     <!-- Búsqueda y filtros: no se envían, sólo ordenan la vista. En teléfono, los filtros quedan plegados bajo «Filtrar». -->
     <form id="filtros" class="filtros-bandeja" data-formkit role="search" aria-label="Buscar y filtrar las solicitudes" action="#">
@@ -72,7 +72,7 @@
     <!-- Versión de prueba: lo revisado en este navegador, mientras no existan las pantallas que siguen (2026-10-17) -->
     <div class="revisadas" data-revisadas hidden>
       <h3 class="titulo-bloque">Revisadas en esta prueba</h3>
-      <p class="ayuda">Ya no están por revisar: siguen su camino. Las validadas pasan a la cita de cotejo; las observadas regresan a la persona y vuelven aquí si las reenvía. <span class="pendiente">Pendiente: las pantallas de citas de cotejo, grupos, calificación y entrega.</span></p>
+      <p class="ayuda">Ya no están por revisar. Las validadas ya tienen su cita de cotejo; las que tienen observaciones regresan a la persona y vuelven aquí cuando las reenvía. <span class="pendiente">Pendiente: las pantallas de citas de cotejo, grupos, calificación y entrega.</span></p>
       <ul class="lista-obs" data-revisadas-lista></ul>
     </div>
   </section>

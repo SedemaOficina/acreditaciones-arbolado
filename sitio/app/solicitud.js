@@ -171,7 +171,7 @@
     if (!texto.dataset.original) texto.dataset.original = texto.textContent;
     texto.textContent = !p ? texto.dataset.original
       : p.perfil === 'por_clasificar'
-        ? 'Se piden al menos cinco años: la Secretaría revisará tu carrera en la revisión documental.'
+        ? 'Se piden al menos cinco años: la Secretaría revisará tu carrera cuando revise tus documentos.'
         : `Con tu perfil se piden al menos ${p.minimo === 2 ? 'dos' : 'cinco'} años.`;
     const interno = document.querySelector('[data-interno-texto]');
     if (interno) interno.dataset.internoTexto = p ? `${p.perfil} (${TEXTO_PERFIL[p.perfil]}) · experiencia mínima: ${p.minimo ? `${p.minimo} años` : '—'}` : '';

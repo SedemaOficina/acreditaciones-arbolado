@@ -21,7 +21,7 @@
     enviada: { texto: 'En revisión documental', tono: '', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
     con_observaciones: { texto: 'Con observaciones', tono: 'pend', sigue: 'Corrige lo que se indica abajo y vuelve a enviar tu solicitud.' },
     validada_en_linea: { texto: 'Cita asignada', tono: 'pend', sigue: 'Acude a tu cita con los mismos documentos que cargaste, impresos, y con tu comprobante de pago.' },
-    lista_para_curso: { texto: 'En espera de grupo', tono: '', sigue: 'Tu expediente está completo. La Secretaría te asignará un grupo de curso.' },
+    lista_para_curso: { texto: 'En espera de grupo', tono: '', sigue: 'Tu cotejo terminó. El siguiente paso es que la Secretaría te asigne un grupo del curso; te avisará las fechas y la sede.' },
     inscrita: { texto: 'Con grupo asignado', tono: 'ok', sigue: 'Asiste a tu curso en las fechas indicadas.' },
     aprobada: { texto: 'Aprobada', tono: 'ok', sigue: 'La Secretaría emite tu acreditación.' },
     acreditada: { texto: 'Acreditación emitida', tono: 'ok', sigue: 'Recoge tu acreditación en persona.' },

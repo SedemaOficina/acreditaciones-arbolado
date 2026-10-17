@@ -45,7 +45,10 @@ rmSync(join(salida, 'datos.json'), { force: true });
 // Examen en línea: el formulario de la persona (entrar con su código) y el de quien aplica (suspender un examen).
 // Se toma sólo el formulario: la herramienta del estándar lee como parte del último campo un control que está fuera
 // del formulario (la casilla «Marcarla para revisar» de examen.html la volvía «casilla»; hallazgo P90).
-for (const [archivo, id, nombre] of [['examen.html', 'entrar', 'examen-entrar'], ['aplicar.html', 'suspender', 'examen-suspender']]) {
+// Grupos (bloque 53): crear un grupo (específico o combinado), confirmarlo, dar de baja y cancelar. La base revisa además
+// cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
+for (const [archivo, id, nombre] of [['examen.html', 'entrar', 'examen-entrar'], ['aplicar.html', 'suspender', 'examen-suspender'],
+  ['espera.html', 'crear', 'grupo-crear'], ['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar']]) {
   const m = readFileSync(join(raiz, 'sitio', archivo), 'utf8').match(new RegExp(`<form id="${id}"[\\s\\S]*?</form>`));
   const html = join(temporal, `${nombre}.html`);
   writeFileSync(html, `<!DOCTYPE html><html lang="es-MX"><body>${m[0]}</body></html>`);
@@ -263,6 +266,17 @@ caso('Examen: un código con letras que se confunden (O, I, 0, 1) se rechaza', '
 caso('Examen: sin código se rechaza', 'examen-entrar', {}, ['codigo']);
 caso('Examen: suspender sin motivo se rechaza', 'examen-suspender', {}, ['motivo']);
 caso('Examen: suspender con su motivo se acepta', 'examen-suspender', { motivo: 'Consultó su teléfono durante el examen.' }, true);
+caso('Grupo: crear sin decir si es específico o combinado se rechaza', 'grupo-crear', {}, ['integracion']);
+caso('Grupo: crear un grupo combinado se acepta', 'grupo-crear', { integracion: 'combinado' }, true);
+caso('Grupo: otra integración se rechaza', 'grupo-crear', { integracion: 'mixto' }, ['integracion']);
+const confirma = { fecha_inicio: '2026-10-26', hora_entrada: '09:00', instructor: 'instructor.ficticio' };
+caso('Grupo: confirmar con primer día, hora e instructor se acepta', 'grupo-confirmar', confirma, true);
+caso('Grupo: confirmar sin hora de entrada ni instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '2026-10-26' }, ['hora_entrada', 'instructor']);
+caso('Grupo: una hora de entrada fuera de la lista se rechaza', 'grupo-confirmar', { ...confirma, hora_entrada: '09:15' }, ['hora_entrada']);
+caso('Grupo: dar de baja sin motivo se rechaza', 'grupo-baja', {}, ['motivo']);
+caso('Grupo: dar de baja con motivo se acepta', 'grupo-baja', { motivo: 'Pidió cambiar de fecha por trabajo.' }, true);
+caso('Grupo: cancelar sin motivo se rechaza', 'grupo-cancelar', {}, ['motivo']);
+caso('Grupo: cancelar con motivo se acepta', 'grupo-cancelar', { motivo: 'No se reunió el cupo mínimo en el plazo previsto.' }, true);
 
 console.log(fallas ? `\n${fallas} caso(s) fallido(s).` : '\nTodos los casos correctos.');
 process.exit(fallas ? 1 : 0);

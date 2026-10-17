@@ -732,3 +732,42 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   (FC1); el examen de poda se aplica completo, como el cuadernillo; dictaminador, un solo examen con valores de prueba.
 - `probar-examen.mjs`: el caso va seguido y en orden, opciones de orden fijo, tabla con etiquetas en teléfono y axe en la
   pregunta del caso; 63 comprobaciones, 0 fallas. Auditor de CSS sin hallazgos.
+
+## 2026-10-17 · Bloque 55 · Grupos y asistencia; textos claros para el personal
+
+- Pantallas nuevas del personal, según la maqueta aprobada (`maquetas/etapa2-grupos/`):
+  - «Grupos» (`grupos.html`): la espera de los cuatro cursos (prioritarias, renovaciones con la acreditación vencida,
+    si alcanza para un grupo y el grupo que se está armando) y los grupos con tipo, cupo, inicio, instructor y situación;
+  - «En espera» de un curso (`espera.html`): elegir personas y agregarlas a un grupo que recibe, o crear un grupo nuevo
+    (de una organización o combinado);
+  - un grupo (`grupo.html`): personas, dar de baja y cancelar con motivo, confirmar con primer día (7 días de
+    anticipación), hora de entrada e instructor;
+  - «Asistencia» (`asistencia.html`, perfil simulado «instructor»): un botón por día, «Asistió» o «Faltó» con la
+    fotografía de cada persona, corrección mientras el curso siga, aviso de quién ya no puede faltar o ya no tiene
+    derecho a examen; el último día se registra al pasar lista en el examen (P94, opción recomendada mientras Liber
+    decide). «Aplicar el examen» usa la misma cabecera del instructor.
+- En la prueba, lo hecho se guarda en el navegador («apd.personal.grupos») y `app/archivos-prueba.js` lo aplica como la
+  base; «Mis trámites» muestra el grupo confirmado con fecha y hora de entrada, y «Aplicar el examen» usa la asistencia
+  capturada.
+- Base: `apd.grupo.hora_entrada` (obligatoria para confirmar, P91); confirmar exige primer día, hora e instructor
+  (`datos_para_confirmar`); una baja que deja a un grupo confirmado por debajo del mínimo lo regresa a integración con su
+  fecha (propuesta de Claude). 162 casos de reglas.
+- Liber: la hora de la cita de cotejo y la de entrada del curso se eligen de una lista cerrada de 24 horas, sin texto
+  libre; los horarios son de prueba hasta que el área los defina (P69, P91). La revisión del personal ya no muestra el
+  nombre del archivo original (queda en la base para aclaraciones).
+- Liber: los textos no deben usar nombres de estados del sistema («pasa a "En espera de grupo"») sino decir qué pasa y
+  qué sigue. Revisión de todos los textos de las pantallas, de los mensajes de la base (nueva `apd.nombre_estado` para
+  los cambios no permitidos) y de `docs/AVISOS-POR-CORREO.md`: «expediente físico», «el siguiente paso es asignarle un
+  grupo del curso», «Por confirmar» en lugar de «En integración», «De una organización» en lugar de «Específico»,
+  «Queda registrado en el sistema» en lugar de «Queda en la bitácora». El inventario de textos (`docs/textos/`) no se
+  regeneró: espera las correcciones de Liber.
+- Formularios del estándar: crear, confirmar, dar de baja y cancelar (esquemas `grupo-*.json`, 10 casos nuevos; 104 en
+  total). Arrancan a mano después de pintar la página (`data-formkit="manual"`), igual que «Suspender el examen».
+- Pruebas: `probar-sitio.mjs` 522 de 522 con axe (grupos, espera, grupo, asistencia en teléfono y escritorio);
+  `probar-examen.mjs` 53 de 53 con axe; `probar-esquemas.mjs` 104; `probar-base` 162; auditor de CSS sin hallazgos;
+  `auditar-campos` 166 campos en 12 archivos; `npm run auditar` 25 estados × 2 tamaños, 138 botones, sólo los dos
+  encimados conocidos del menú de pruebas.
+- Hallazgos nuevos para el estándar: P106 (el módulo tabla sólo se inicia con un formulario), P107 (un formulario
+  iniciado dos veces) y P108 (el límite de una fecha en AAAA-MM-DD).
+- Pendientes: P105 (quitar el correo personal de Liber del historial, espera su autorización); P94 y P100 siguen para
+  decisión de Liber.

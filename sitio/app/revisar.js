@@ -63,8 +63,8 @@
     const ya = P.revisiones()[folio];
     if (s.estado !== 'enviada') {
       const actual = (APD.ESTADOS[s.estado] || { texto: s.estado }).texto;
-      return falla(ya ? `Ya registró la revisión de esta solicitud en esta prueba (${ya.texto}). Ahora está «${actual}».`
-        : `Esta solicitud no está en revisión documental: su estado es «${actual}».`);
+      return falla(ya ? `Ya registró la revisión de esta solicitud en esta prueba (${ya.texto}). Su situación actual es «${actual}».`
+        : `Esta solicitud no está pendiente de revisión documental. Su situación actual es «${actual}».`);
     }
     const p = datos.solicitante.find((x) => x.id === s.solicitante_id);
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
@@ -94,7 +94,7 @@
     $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', { class: 'datos-dos-columnas' }, [datosLista([
       ['Persona', APD.nombreCompleto(p)],
       ['CURP', p.curp],
-      ['Número de expediente', p.numero_expediente || 'Se abre en su primer cotejo'],
+      ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre en su primer cotejo'],
       ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : ''],
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, vigente hasta el ${fecha(podaVigente.vence_en)}` : ''],
@@ -104,7 +104,7 @@
     // En una renovación sólo la constancia fiscal es obligatoria; lo demás se carga si la persona lo actualizó
     // (decisión 2026-10-14): se dice aquí para que no parezca que faltan documentos
     if (s.modalidad === 'renovacion') {
-      $('[data-docs-ayuda]').textContent = 'Es una renovación: sólo la constancia de situación fiscal es obligatoria. Los demás documentos se revisaron en su trámite anterior y aparecen aquí sólo si la persona los actualizó. Abra cada documento y acéptelo, u observe lo que debe corregir la persona.';
+      $('[data-docs-ayuda]').textContent = 'Es una renovación: sólo la constancia de situación fiscal es obligatoria. Los demás documentos se revisaron en su trámite anterior y aparecen aquí sólo si la persona los actualizó. Abra cada documento y acéptelo, o escriba lo que debe corregir la persona.';
     }
     $('[data-cabeza]').hidden = false;
 
@@ -118,7 +118,7 @@
         return el('div', { class: 'revision-anterior' }, [
           // Una vuelta puede venir del cotejo: un documento que no coincidió con el que trajo la persona
           el('p', {}, [el('strong', { texto: r.en_cotejo ? `Cotejo · ${fechaHora(r.revisada_en)}` : `${i + 1}.ª revisión · ${fechaHora(r.revisada_en)}` }),
-            document.createTextNode(` · ${r.en_cotejo ? 'regresó con observaciones: un documento no coincidió' : r.resultado === 'validada' ? 'validada' : r.resultado === 'rechazada' ? 'rechazada' : 'con observaciones'}`)]),
+            document.createTextNode(` · ${r.en_cotejo ? 'regresó con observaciones: un documento no coincidió' : r.resultado === 'validada' ? 'validada, con cita de cotejo' : r.resultado === 'rechazada' ? 'rechazada' : 'con observaciones'}`)]),
           obs.length ? el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${nombre(d.requisito)}: ${d.observacion}${corregidos.has(d.requisito) ? ' — la persona cargó uno nuevo' : ''}` }))) : null,
           r.observacion_general && !obs.some((d) => d.observacion === r.observacion_general) ? el('p', { class: 'texto-gris', texto: `Mensaje general: ${r.observacion_general}` }) : null
         ]);
@@ -166,7 +166,7 @@
         // Sólo el nombre con que se guarda: el del archivo original no le sirve a quien revisa y puede traer datos ajenos
         // al trámite (decisión de Liber, 2026-10-17); queda en la base (apd.documento.nombre_original) para aclaraciones
         document.createTextNode(` · ${peso}`),
-        corregidos.has(k) ? el('span', { class: 'doc-corregido' }, [APD.estado('Corregido en esta vuelta', 'pend')]) : null
+        corregidos.has(k) ? el('span', { class: 'doc-corregido' }, [APD.estado('Corregido para esta revisión', 'pend')]) : null
       ].filter(Boolean));
     }
     // El mensaje de rechazo propuesto: la persona lo lee tal cual, por eso le habla de tú (auditoría 2026-10-17)
@@ -285,7 +285,7 @@
         };
         const textos = {
           validada: `${nombre} recibe su cita de cotejo en el ${APD.sede(datos).nombre} para el ${fecha(d.cita_fecha)} a las ${d.cita_hora}, con los datos para pagar.`,
-          con_observaciones: `${nombre} ve en «Mis trámites» lo que debe corregir y puede reenviar su solicitud. Volverá a esta bandeja como reenviada.`,
+          con_observaciones: `${nombre} ve en «Mis trámites» lo que debe corregir y puede reenviar su solicitud. Cuando la reenvíe, volverá a «Solicitudes por revisar», marcada como reenviada.`,
           rechazada: `${nombre} ve en «Mis trámites» que su solicitud fue rechazada y el motivo. Puede iniciar una solicitud nueva.`
         };
         form.hidden = true;

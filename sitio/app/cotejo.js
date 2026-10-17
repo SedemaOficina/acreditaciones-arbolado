@@ -56,7 +56,7 @@
     const p = datos.solicitante.find((x) => x.id === s.solicitante_id);
     if (p.estado === 'bloqueada' || s.cotejo_bloqueado) return falla('Esta cita no se atendió: no era la persona de la fotografía. La cuenta está bloqueada hasta que la Dirección lo aclare.');
     if (s.estado !== 'validada_en_linea' || !s.cita_en) {
-      return falla(`Esta solicitud no tiene una cita de cotejo por atender: su estado es «${(APD.ESTADOS[s.estado] || { texto: s.estado }).texto}».`);
+      return falla(`Esta solicitud no tiene una cita de cotejo por atender. Su situación actual es «${(APD.ESTADOS[s.estado] || { texto: s.estado }).texto}».`);
     }
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && req[d.requisito] && req[d.requisito].momento === 'en_linea');
@@ -74,7 +74,7 @@
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
     $('[data-bajada]').replaceChildren(
       document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio }),
-      document.createTextNode(` · cita del ${fechaHora(s.cita_en)} · validada en línea el ${fecha(s.estado_desde)}`)
+      document.createTextNode(` · cita del ${fechaHora(s.cita_en)} · documentos validados en línea el ${fecha(s.estado_desde)}`)
     );
     $('[data-estado]').replaceChildren(APD.estado(retoma ? 'Cita en pausa' : 'Cita asignada', 'pend'));
     const iniciales = `${(p.nombre || '').charAt(0)}${(p.primer_apellido || '').charAt(0)}`;
@@ -91,7 +91,7 @@
     $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', { class: 'datos-dos-columnas' }, [datosLista([
       ['Persona', nombre],
       ['CURP', p.curp],
-      ['Número de expediente', p.numero_expediente || 'Se abre al terminar este cotejo: es su primer trámite'],
+      ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre al terminar este cotejo (es su primer trámite)'],
       ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : '']
     ])])]));
@@ -190,14 +190,14 @@
       if (sinCotejar) faltan.push(`el cotejo de ${sinCotejar === 1 ? 'un documento' : `${sinCotejar} documentos`}`);
       if (conDocs && noCoinciden && !elegido('hoy_documento')) faltan.push('si puede traer hoy el documento correcto');
       if (conDocs && !noCoinciden && !elegido('pago')) faltan.push('el pago');
-      const nuevo = p.numero_expediente ? `la solicitud se agrega a su expediente ${expediente}` : `se abre el expediente ${expediente}`;
+      const nuevo = p.numero_expediente ? `esta solicitud se agrega a su expediente físico ${expediente}` : `se abre el expediente físico ${expediente}`;
       const TEXTOS = {
-        terminado: `Todo coincide y el pago está verificado. Al terminar, ${nuevo} y la solicitud pasa a «En espera de grupo».`,
+        terminado: `Todo coincide y el pago está verificado. Al terminar, ${nuevo} y el siguiente paso es asignarle un grupo del curso.`,
         pausa: `${noCoinciden === 1 ? 'Un documento no coincide' : `${noCoinciden} documentos no coinciden`}: la cita queda en pausa. La persona carga hoy en «Mis trámites» el documento correcto y usted retoma el cotejo cuando regrese.`,
         con_observaciones: `${noCoinciden === 1 ? 'Un documento no coincide' : `${noCoinciden} documentos no coinciden`}: la solicitud regresa con observaciones. La persona corrige en línea y, después de una nueva revisión, recibe otra cita. El pago y la factura se ven en esa cita.`,
         otra_cita: 'Sin el comprobante de pago no se termina el cotejo: se le da otra cita y conserva el monto que se le indicó.',
         no_se_presento: 'Es su primera inasistencia: se le da una cita nueva, una sola vez. Si tampoco se presenta, la solicitud se cierra.',
-        cerrar: 'Es su segunda inasistencia: la solicitud se cierra como «concluida sin atender». La persona puede iniciar una solicitud nueva.',
+        cerrar: 'Es su segunda inasistencia: la solicitud se cierra y el trámite termina sin acreditación. La persona puede iniciar una solicitud nueva.',
         no_es_la_persona: 'No se atiende la cita. La cuenta queda bloqueada y se avisa a la Dirección para aclararlo.'
       };
       $('[data-resumen]').textContent = faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado)
@@ -269,9 +269,9 @@
       alEnviar({ resultado, d }) {
         const cita = d.cita_fecha ? `${fecha(d.cita_fecha)} a las ${d.cita_hora}` : '';
         const HECHO = {
-          terminado: ['El cotejo quedó terminado', `${p.numero_expediente ? 'Agregue esta solicitud a la carpeta física' : 'Anote el número de expediente en la carpeta física'} de ${nombre}. La persona ya ve en «Mis trámites» que espera grupo y su número de expediente.`],
+          terminado: ['El cotejo quedó terminado', `${p.numero_expediente ? 'Agregue esta solicitud al expediente físico' : 'Abra el expediente físico'} de ${nombre} con el número que aparece arriba. El siguiente paso es asignarle un grupo del curso: ya aparece en «Grupos», entre las personas en espera de grupo. La persona ve su número de expediente en «Mis trámites».`],
           pausa: ['La cita quedó en pausa', `${nombre} ve en «Mis trámites» qué no coincidió y puede cargar el documento correcto. Cuando regrese, búsquela en las citas del día y retome el cotejo.`],
-          con_observaciones: ['La solicitud regresó con observaciones', `${nombre} ve en «Mis trámites» qué no coincidió. Cuando corrija y reenvíe, vuelve a la revisión documental como reenviada.`],
+          con_observaciones: ['La solicitud regresó con observaciones', `${nombre} ve en «Mis trámites» qué no coincidió. Cuando corrija y reenvíe su solicitud, aparecerá de nuevo en «Revisión documental», marcada como reenviada.`],
           otra_cita: ['Se le dio otra cita', `Cita nueva: ${cita}. ${nombre} la ve en «Mis trámites», con los mismos datos para pagar.`],
           no_se_presento: ['Se registró la inasistencia', `Cita nueva: ${cita}. ${nombre} la ve en «Mis trámites». Si tampoco se presenta, la solicitud se cierra.`],
           cerrar: ['La solicitud quedó cerrada', `${nombre} ve en «Mis trámites» que su solicitud se cerró por no presentarse a su cita. Puede iniciar una solicitud nueva.`],
@@ -283,7 +283,7 @@
         $('[data-hecho-texto]').textContent = texto;
         $('[data-hecho-datos]').replaceChildren(resultado === 'terminado' ? datosLista([
           ['Número de expediente', expediente],
-          ['Situación', `En espera de grupo · ${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`]
+          ['Siguiente paso', `Asignarle un grupo del curso de ${APD.TIPOS[s.tipo_acreditacion].toLowerCase()} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`]
         ]) : document.createTextNode(''));
         if (resultado === 'terminado') { const v = $('[data-hecho-datos] .datos-valor'); if (v) v.classList.add('mono'); }
         if (resultado === 'no_es_la_persona') $('[data-hecho-texto]').after(el('p', { class: 'pendiente', texto: 'Pendiente (P79): a quién de la Dirección se avisa y por qué medio.' }));
@@ -310,7 +310,7 @@
       if (instancia.valida().length) return false; // con errores, el núcleo muestra el resumen
       const boton = $('[data-accion="enviar"]', form);
       const CONFIRMA = {
-        cerrar: { titulo: '¿Cerrar la solicitud?', texto: `${nombre} no se presentó por segunda vez. La solicitud ${s.folio} queda «concluida sin atender» y no se puede reabrir.`, si: 'Cerrar la solicitud' },
+        cerrar: { titulo: '¿Cerrar la solicitud?', texto: `${nombre} no se presentó por segunda vez. La solicitud ${s.folio} se cierra sin acreditación y no se puede reabrir; la persona podrá iniciar una solicitud nueva.`, si: 'Cerrar la solicitud' },
         no_es_la_persona: { titulo: '¿No atender la cita?', texto: `La cuenta de ${nombre} queda bloqueada hasta que la Dirección lo aclare. La persona no podrá entrar a su cuenta.`, si: 'No atender y avisar' }
       }[resultado];
       FormKit.confirma(boton, Object.assign({ no: 'Cancelar', peligro: true }, CONFIRMA)).then((si) => { if (si) enviar(); });

@@ -1,0 +1,20 @@
+{
+  "formulario": "grupo-cancelar.html",
+  "generado": "2026-10-17T23:11:51.917Z",
+  "campos": {
+    "motivo": {
+      "etiqueta": "Motivo",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Registrar por qué se cancela el grupo (apd.grupo.motivo_cancelacion).",
+      "atributos": {
+        "maxlength": "300"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

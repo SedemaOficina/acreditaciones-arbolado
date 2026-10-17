@@ -583,6 +583,30 @@
       "desde": "2026-10-17",
       "titulo": "Quitar el correo personal de Liber del historial del repositorio público",
       "recomendacion": "Nueve cambios de la rama principal llevan como autor el correo personal de Liber (se guardaron desde el chat del examen). Quitarlo exige reescribir el historial ya publicado y volver a subir la rama encima de la existente; el sistema lo bloquea mientras Liber no lo autorice de forma expresa. Antes: respaldo completo del repositorio. Después: el chat del examen se vuelve a sincronizar; GitHub puede conservar un tiempo los cambios antiguos y quien ya descargó el repositorio conserva la copia vieja. Para que no vuelva a pasar: configurar en ese chat un correo sin datos personales para los cambios y activar en GitHub la opción de mantener privado el correo."
+    },
+    {
+      "id": "P106",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: el módulo «tabla» sólo se inicia si la página tiene un formulario",
+      "recomendacion": "El módulo tabla (fueraDelFormulario) se activa al iniciar un formulario; en una página de pura consulta (grupos.html) nadie lo inicia y en teléfono las celdas no muestran su encabezado. Además, si el formulario se inicia solo al cargar (data-formkit) antes de que la página pinte un encabezado de tabla calculado, el módulo guarda el encabezado vacío y el evento formkit:tabla ya no lo vuelve a leer. Solución provisional: grupos.html pone data-etiqueta como el módulo, y los formularios de espera.html y grupo.html arrancan a mano (data-formkit=\"manual\") después de pintar. Propuesta para el estándar: FormKit.tabla(marco) para iniciar el módulo sin formulario, y que formkit:tabla vuelva a leer los encabezados."
+    },
+    {
+      "id": "P107",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: un formulario con data-formkit que la página inicia a mano después de cargar sus datos queda iniciado dos veces",
+      "recomendacion": "El arranque automático (DOMContentLoaded) sólo omite los formularios ya marcados «listo»; FormKit.iniciar no lo revisa. Si la página inicia el formulario con sus opciones después de cargar datos (una promesa), el núcleo ya lo inició solo y lo inicia otra vez, con los escuchas duplicados. Pasaba en «Suspender el examen» (aplicar.html); se cambia a data-formkit=\"manual\". Los formularios de grupos ya arrancan así. Propuesta para el estándar: que iniciar devuelva la instancia existente o avise en la consola."
+    },
+    {
+      "id": "P108",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: el formato «fecha» da su límite en AAAA-MM-DD («no puede ser anterior al 2026-10-21»)",
+      "recomendacion": "El formato fecha-dma ya lo convierte a día/mes/año (dmaDeIso); el formato fecha no. Solución provisional: app/config-usted.js lo convierte al pasar el mensaje a usted. Propuesta para el estándar: usar dmaDeIso también en el formato fecha."
     }
   ],
   "resueltos": [

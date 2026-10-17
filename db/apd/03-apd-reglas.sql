@@ -24,13 +24,46 @@ COMMENT ON FUNCTION apd.error(text, text) IS 'Levanta una regla incumplida con s
 CREATE FUNCTION apd.contexto(nombre text) RETURNS text
   LANGUAGE sql STABLE AS $$ SELECT coalesce(current_setting('apd.' || nombre, true), '') $$;
 
+-- Nombre de un estado como lo lee el personal en pantalla (los de la solicitud, como APD.ESTADOS en sitio/app/apd.js):
+-- los mensajes de error no muestran la clave interna (revisión de textos, 2026-10-17).
+CREATE FUNCTION apd.nombre_estado(p_estado text) RETURNS text
+  LANGUAGE sql IMMUTABLE AS $$
+  SELECT CASE p_estado
+    WHEN 'borrador' THEN 'Borrador'
+    WHEN 'enviada' THEN 'En revisión documental'
+    WHEN 'con_observaciones' THEN 'Con observaciones'
+    WHEN 'validada_en_linea' THEN 'Cita asignada'
+    WHEN 'lista_para_curso' THEN 'En espera de grupo'
+    WHEN 'inscrita' THEN 'Con grupo asignado'
+    WHEN 'aprobada' THEN 'Aprobada'
+    WHEN 'acreditada' THEN 'Acreditación emitida'
+    WHEN 'no_acreditada' THEN 'No acreditada'
+    WHEN 'sin_derecho_examen' THEN 'Sin derecho a examen'
+    WHEN 'cancelada' THEN 'Cancelada'
+    WHEN 'concluida_sin_atender' THEN 'Concluida sin atender'
+    WHEN 'rechazada' THEN 'Rechazada'
+    WHEN 'en_integracion' THEN 'En integración'
+    WHEN 'confirmado' THEN 'Confirmado'
+    WHEN 'en_curso' THEN 'En curso'
+    WHEN 'concluido' THEN 'Concluido'
+    WHEN 'cancelado' THEN 'Cancelado'
+    WHEN 'pendiente' THEN 'Por atender'
+    WHEN 'en_pausa' THEN 'En pausa'
+    WHEN 'atendida' THEN 'Atendida'
+    WHEN 'sin_pago' THEN 'Sin pago'
+    WHEN 'no_se_presento' THEN 'No se presentó'
+    WHEN 'no_es_la_persona' THEN 'No era la persona'
+    ELSE p_estado
+  END $$;
+COMMENT ON FUNCTION apd.nombre_estado(text) IS 'Nombre en pantalla de un estado de solicitud, grupo o cita, para los mensajes de error.';
+
 CREATE FUNCTION apd.parametro_texto(p_clave text) RETURNS text
   LANGUAGE plpgsql STABLE AS $$
 DECLARE v text;
 BEGIN
   SELECT valor INTO v FROM apd.parametro WHERE clave = p_clave;
   IF v IS NULL THEN
-    PERFORM apd.error('parametro_inexistente', format('Falta el parámetro %s en apd.parametro', p_clave));
+    PERFORM apd.error('parametro_inexistente', format('Falta configurar el parámetro %s del sistema', p_clave));
   END IF;
   RETURN v;
 END $$;
@@ -270,7 +303,7 @@ BEGIN
   IF n IS NULL THEN
     n := 'EXP-' || anio || '-' || lpad(apd.siguiente_folio('E', anio)::text, 4, '0');
     UPDATE apd.solicitante SET numero_expediente = n WHERE id = p_solicitante;
-    PERFORM apd.registrar('expediente', 'solicitante', p_solicitante::text, 'Abre el expediente ' || n);
+    PERFORM apd.registrar('expediente', 'solicitante', p_solicitante::text, 'Se abre el expediente físico ' || n);
   END IF;
   RETURN n;
 END $$;
@@ -355,7 +388,7 @@ BEGIN
       concat_ws(' · ', coalesce(NEW.bloqueo_motivo, 'desbloqueo'), nullif(apd.contexto('motivo'), '')));
   END IF;
   IF OLD.bloqueo_motivo IS NOT NULL AND NEW.bloqueo_motivo IS NOT NULL AND NEW.estado <> 'bloqueada' THEN
-    PERFORM apd.error('bloqueo_por_identidad', 'La cuenta sigue bloqueada mientras la Dirección aclara la identidad de la persona');
+    PERFORM apd.error('bloqueo_por_identidad', 'La cuenta sigue bloqueada mientras la Secretaría aclara la identidad de la persona');
   END IF;
   IF NEW.curp <> OLD.curp THEN
     IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('motivo') = '' THEN
@@ -725,7 +758,7 @@ BEGIN
          IS DISTINCT FROM
          (OLD.tipo_acreditacion, OLD.modalidad, OLD.acreditacion_anterior_id, OLD.adscripcion, OLD.organizacion_id,
           OLD.nivel_estudios, OLD.carrera, OLD.carrera_tecnica, OLD.estatus_estudios, OLD.anios_experiencia) THEN
-    PERFORM apd.error('solicitud_cerrada', 'Los datos de la solicitud sólo se cambian en borrador o con observaciones');
+    PERFORM apd.error('solicitud_cerrada', 'Los datos de la solicitud sólo se pueden cambiar mientras es borrador o cuando tiene observaciones por corregir');
   END IF;
   IF OLD.estado <> 'borrador' AND (NEW.tipo_acreditacion, NEW.modalidad) IS DISTINCT FROM (OLD.tipo_acreditacion, OLD.modalidad) THEN
     PERFORM apd.error('curso_fijo', 'El curso de una solicitud enviada no cambia: cancélala y crea otra');
@@ -775,7 +808,7 @@ BEGIN
     ELSE ARRAY[]::text[]
   END;
   IF NOT NEW.estado = ANY (permitidas) THEN
-    PERFORM apd.error('transicion_invalida', format('Una solicitud no pasa de «%s» a «%s»', OLD.estado, NEW.estado));
+    PERFORM apd.error('transicion_invalida', format('Este cambio no está permitido: una solicitud «%s» no puede pasar a «%s»', apd.nombre_estado(OLD.estado), apd.nombre_estado(NEW.estado)));
   END IF;
 
   -- La revisión que corresponde a este turno: registrada desde que la solicitud llegó a su estado actual
@@ -801,14 +834,14 @@ BEGIN
       IF NEW.enviada_en IS NULL THEN NEW.enviada_en := apd.ahora(); END IF;
     WHEN 'con_observaciones' THEN
       IF OLD.estado = 'enviada' AND ultima IS DISTINCT FROM 'con_observaciones' THEN
-        PERFORM apd.error('sin_revision', 'Las observaciones se emiten con una revisión');
+        PERFORM apd.error('sin_revision', 'Para enviar observaciones, registre la revisión de la solicitud');
       END IF;
       IF OLD.estado = 'validada_en_linea' AND apd.contexto('motivo') = '' THEN
         PERFORM apd.error('cotejo_sin_motivo', 'Indica qué no coincidió en el cotejo');
       END IF;
     WHEN 'validada_en_linea' THEN
       IF ultima IS DISTINCT FROM 'validada' THEN
-        PERFORM apd.error('sin_revision', 'La validación se registra con una revisión');
+        PERFORM apd.error('sin_revision', 'Para validar la solicitud, registre su revisión');
       END IF;
       IF EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.id AND d.vigente AND d.estado <> 'aceptado') THEN
         PERFORM apd.error('documentos_sin_aceptar', 'Para validar, todos los documentos deben estar aceptados');
@@ -836,7 +869,7 @@ BEGIN
       IF NEW.pago_monto IS NULL THEN NEW.pago_monto := curso.pago_monto; END IF;
     WHEN 'lista_para_curso' THEN
       IF OLD.estado = 'inscrita' AND ins.id IS NOT NULL THEN
-        PERFORM apd.error('sigue_inscrita', 'La solicitud regresa a la bandeja sólo al darla de baja del grupo');
+        PERFORM apd.error('sigue_inscrita', 'La solicitud vuelve a la espera de grupo sólo si se da de baja del grupo');
       END IF;
       -- Sin factura no hay bandeja, y sin bandeja no hay grupo ni fecha de curso
       IF OLD.estado = 'validada_en_linea' AND EXISTS (
@@ -871,12 +904,12 @@ BEGIN
       IF NEW.lista_para_curso_en IS NULL THEN NEW.lista_para_curso_en := apd.ahora(); END IF;
     WHEN 'inscrita' THEN
       IF ins.id IS NULL THEN
-        PERFORM apd.error('sin_inscripcion', 'Una solicitud queda inscrita al darla de alta en un grupo');
+        PERFORM apd.error('sin_inscripcion', 'La solicitud queda con grupo asignado sólo al agregarla a un grupo');
       END IF;
     WHEN 'aprobada', 'no_acreditada' THEN
       SELECT e.calificacion INTO cal FROM apd.examen e WHERE e.inscripcion_id = ins.id;
       IF cal IS NULL THEN
-        PERFORM apd.error('sin_examen', 'El resultado sale de la calificación del examen');
+        PERFORM apd.error('sin_examen', 'El resultado se registra a partir de la calificación del examen');
       END IF;
       IF (NEW.estado = 'aprobada') <> (cal >= curso.calificacion_minima) THEN
         PERFORM apd.error('resultado_no_corresponde', 'El resultado no corresponde a la calificación');
@@ -888,7 +921,7 @@ BEGIN
       END IF;
     WHEN 'acreditada' THEN
       IF NOT EXISTS (SELECT 1 FROM apd.acreditacion a WHERE a.solicitud_id = NEW.id) THEN
-        PERFORM apd.error('sin_acreditacion', 'Una solicitud queda acreditada al emitir la acreditación');
+        PERFORM apd.error('sin_acreditacion', 'La solicitud queda como acreditada sólo al emitir la acreditación');
       END IF;
     WHEN 'rechazada' THEN
       -- Sólo con una revisión de rechazo, y sólo por perfil de dictaminador que no cumple (decisión 2026-10-16, Liber):
@@ -957,7 +990,7 @@ DECLARE s apd.solicitud;
 BEGIN
   SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id;
   IF s.estado <> 'validada_en_linea' OR s.cita_en IS DISTINCT FROM NEW.programada_en THEN
-    PERFORM apd.error('cita_fuera_de_turno', 'Una cita se crea al asignarla a una solicitud validada');
+    PERFORM apd.error('cita_fuera_de_turno', 'Una cita de cotejo sólo se crea al asignarla a una solicitud con sus documentos validados');
   END IF;
   NEW.resultado := 'pendiente';
   NEW.observacion := '';
@@ -991,7 +1024,7 @@ BEGIN
   END IF;
   IF NEW.resultado = 'pendiente'
      OR (OLD.resultado = 'en_pausa' AND NEW.resultado IN ('no_se_presento', 'no_es_la_persona')) THEN
-    PERFORM apd.error('cita_transicion', format('Una cita no pasa de «%s» a «%s»', OLD.resultado, NEW.resultado));
+    PERFORM apd.error('cita_transicion', format('Este cambio no está permitido: una cita «%s» no puede pasar a «%s»', apd.nombre_estado(OLD.resultado), apd.nombre_estado(NEW.resultado)));
   END IF;
   -- Lo que no coincidió queda marcado en el documento (la persona lo ve) antes de pausar o regresar
   IF NEW.resultado IN ('en_pausa', 'con_observaciones') AND NOT EXISTS (
@@ -1072,7 +1105,7 @@ BEGIN
   END IF;
   IF NEW.resultado = 'con_observaciones' AND trim(NEW.observacion_general) = ''
      AND NOT EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND d.estado = 'con_observacion') THEN
-    PERFORM apd.error('observaciones_vacias', 'Indica qué debe corregirse');
+    PERFORM apd.error('observaciones_vacias', 'Indique qué debe corregir la persona');
   END IF;
   IF NEW.resultado = 'rechazada' AND trim(NEW.observacion_general) = '' THEN
     PERFORM apd.error('rechazo_sin_motivo', 'Escriba el motivo del rechazo: la persona lo leerá');
@@ -1210,7 +1243,7 @@ BEGIN
     PERFORM apd.error('curso_inactivo', 'Este curso no está abriendo grupos');
   END IF;
   IF NEW.estado <> 'en_integracion' THEN
-    PERFORM apd.error('alta_fuera_de_integracion', 'Un grupo nace en integración');
+    PERFORM apd.error('alta_fuera_de_integracion', 'Un grupo nuevo se crea sin confirmar («En integración»)');
   END IF;
   NEW.cupo_minimo := c.cupo_minimo;
   NEW.cupo_maximo := c.cupo_maximo;
@@ -1235,7 +1268,7 @@ BEGIN
      IS DISTINCT FROM
      (OLD.folio, OLD.tipo_acreditacion, OLD.modalidad, OLD.integracion, OLD.organizacion_id, OLD.cupo_minimo,
       OLD.cupo_maximo, OLD.creado_en, OLD.es_ficticio) THEN
-    PERFORM apd.error('campo_inmutable', 'El curso, la integración y los cupos de un grupo no cambian después de crearlo');
+    PERFORM apd.error('campo_inmutable', 'El curso, el tipo de grupo (específico o combinado) y los cupos no cambian después de crearlo');
   END IF;
   IF OLD.estado IN ('en_curso', 'concluido', 'cancelado')
      AND (NEW.sede, NEW.fecha_inicio, NEW.hora_entrada) IS DISTINCT FROM (OLD.sede, OLD.fecha_inicio, OLD.hora_entrada) THEN
@@ -1263,7 +1296,7 @@ BEGIN
     ELSE ARRAY[]::text[]
   END;
   IF NOT NEW.estado = ANY (permitidas) THEN
-    PERFORM apd.error('transicion_invalida', format('Un grupo no pasa de «%s» a «%s»', OLD.estado, NEW.estado));
+    PERFORM apd.error('transicion_invalida', format('Este cambio no está permitido: un grupo «%s» no puede pasar a «%s»', apd.nombre_estado(OLD.estado), apd.nombre_estado(NEW.estado)));
   END IF;
 
   SELECT count(*) INTO inscritos FROM apd.inscripcion WHERE grupo_id = NEW.id AND activa;
@@ -1353,7 +1386,7 @@ BEGIN
     PERFORM apd.error('grupo_por_iniciar', 'A un grupo confirmado se agregan personas hasta el día anterior al inicio del curso');
   END IF;
   IF s.estado <> 'lista_para_curso' THEN
-    PERFORM apd.error('solicitud_no_lista', format('La solicitud %s no está en espera de grupo', s.folio));
+    PERFORM apd.error('solicitud_no_lista', format('La solicitud %s no se puede agregar: sólo se agregan solicitudes con el cotejo terminado y sin grupo', s.folio));
   END IF;
   IF (s.tipo_acreditacion, s.modalidad) <> (g.tipo_acreditacion, g.modalidad) THEN
     PERFORM apd.error('otro_curso', format('La solicitud %s es de otro curso', s.folio));
@@ -1378,7 +1411,7 @@ CREATE FUNCTION apd.inscripcion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   IF (NEW.solicitud_id, NEW.grupo_id, NEW.inscrita_en) IS DISTINCT FROM (OLD.solicitud_id, OLD.grupo_id, OLD.inscrita_en)
      OR (NEW.activa AND NOT OLD.activa) OR (NOT OLD.activa AND NEW.motivo_baja IS DISTINCT FROM OLD.motivo_baja) THEN
-    PERFORM apd.error('inscripcion_inmutable', 'Una inscripción sólo cambia para darla de baja');
+    PERFORM apd.error('inscripcion_inmutable', 'La inscripción a un grupo sólo se modifica para dar de baja a la persona');
   END IF;
   IF OLD.activa AND NOT NEW.activa THEN
     IF coalesce(trim(NEW.motivo_baja), '') = '' THEN

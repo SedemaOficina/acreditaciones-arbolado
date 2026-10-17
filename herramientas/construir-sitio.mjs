@@ -46,7 +46,7 @@ const plantillaVersion = join(raiz, 'herramientas/plantillas/version');
 cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-visible.js'));
 // La hoja del distintivo es el módulo «version» del estándar (formkit/modulos/version/version.css, mismas clases)
 // El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
-const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'aplicar.html', 'examen.html'];
+const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'espera.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'examen.html'];
 for (const p of paginas) {
   const ruta = join(sitio, p);
   const html = readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${version}`);
@@ -164,7 +164,7 @@ const revisionDocs = enLinea.map((r) => {
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-chips-fijos="${MOTIVOS.map(esc).join('|')}" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">

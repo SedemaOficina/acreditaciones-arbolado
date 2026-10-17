@@ -99,7 +99,7 @@
         const s = porFolio[folio];
         const p = s ? persona[s.solicitante_id] : null;
         const actual = s ? (APD.ESTADOS[s.estado] || { texto: s.estado }) : { texto: '—' };
-        return el('li', {}, [el('span', { class: 'mono', texto: folio }), document.createTextNode(` · ${p ? APD.nombreCompleto(p) : ''} · ${r.texto || r.resultado} · ahora: ${actual.texto}`)]);
+        return el('li', {}, [el('span', { class: 'mono', texto: folio }), document.createTextNode(` · ${p ? APD.nombreCompleto(p) : ''} · ${r.texto || r.resultado} · situación actual: ${actual.texto}`)]);
       }));
       $('[data-revisadas]').hidden = false;
     }

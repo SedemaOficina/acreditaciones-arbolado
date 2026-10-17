@@ -1160,8 +1160,9 @@ async function personal(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('#formulario:not([hidden])');
   await page.click('[data-ver="curp"]');
   await page.waitForFunction(() => document.querySelectorAll('.visor-lienzo').length === 3);
-  comprueba(/se cargó en este navegador/.test(await page.textContent('[data-visor-nota]')) && /constancia-escaneada\.pdf/.test(await page.textContent('[data-doc="curp"] [data-doc-archivo]')),
-    t('el visor muestra el archivo real que se cargó, con sus tres hojas'));
+  const lineaDoc = await page.textContent('[data-doc="curp"] [data-doc-archivo]');
+  comprueba(/se cargó en este navegador/.test(await page.textContent('[data-visor-nota]')) && /^CURP_/.test(lineaDoc.trim()) && !/constancia-escaneada/.test(lineaDoc),
+    t('el visor muestra el archivo real que se cargó, con sus tres hojas; la revisión muestra el nombre nuevo, no el original (decisión 2026-10-17)'));
   await captura(page, `44-personal-archivo-real-${sufijo}`);
 
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
@@ -1170,6 +1171,124 @@ async function personal(navegador, ancho, alto, sufijo) {
 
 // CHROMIUM: ruta a un Chromium ya instalado, si no coincide con la versión que espera Playwright
 // Accesibilidad con axe-core (el del Estándar: AXE=<ruta>/vendor/axe-core/axe.min.js). Sin AXE, se omite y se dice.
+/* ── Etapa 2 · grupos y asistencia (bloque 53; maqueta aprobada y decisiones del 2026-10-17) ──
+   Completa el grupo en integración con una persona de la espera, lo confirma (fecha a 7 días, hora de entrada de la
+   lista, instructor), da de baja a una persona (el grupo regresa a integración con su fecha), crea un grupo combinado
+   de renovación y lo cancela; la persona ve su grupo en «Mis trámites». El instructor captura un día de asistencia. */
+async function caminosGrupos(navegador, ancho, alto, sufijo) {
+  const t = (m) => `[grupos ${sufijo}] ${m}`;
+  const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const pg = await c.newPage();
+  const errores = [];
+  pg.on('pageerror', (e) => errores.push(e.message));
+  pg.on('console', (m) => { if (m.type() === 'error' || (m.type() === 'warning' && /no se pudo aplicar/.test(m.text()))) errores.push(m.text()); });
+  const texto = async (sel) => (await pg.textContent(sel)) || '';
+  const integracion = datos.grupo.find((g) => g.estado === 'en_integracion');
+  const enCurso = datos.grupo.find((g) => g.estado === 'en_curso');
+
+  await pg.goto(BASE + 'grupos.html');
+  await pg.waitForSelector('[data-filas] tr');
+  comprueba((await pg.$$('.curso')).length === 4, t('la espera se muestra por cada uno de los cuatro cursos'));
+  comprueba((await pg.$$('[data-filas] tr')).length === datos.grupo.length, t('la lista muestra todos los grupos'));
+  comprueba(/con la acreditación vencida/.test(await texto('[data-cursos]')), t('renovación: avisa de quien espera con la acreditación vencida'));
+  await sinDesborde(pg, t('grupos'));
+  await captura(pg, `grupos-${sufijo}`);
+
+  // Completar el grupo en integración con la persona que más espera
+  await pg.goto(BASE + 'espera.html?curso=poda-nueva');
+  await pg.waitForSelector('[data-filas] tr');
+  const primero = await pg.getAttribute('[data-filas] tr:first-child', 'data-folio');
+  await pg.click(`[data-destinos] button:has-text("${integracion.folio}")`);
+  comprueba(/Elija al menos una persona/.test(await texto('[data-elegidas]')), t('sin elegir a nadie, avisa y no agrega'));
+  await pg.check('[data-filas] tr:first-child input');
+  await sinDesborde(pg, t('espera'));
+  await captura(pg, `grupos-espera-${sufijo}`);
+  await pg.click(`[data-destinos] button:has-text("${integracion.folio}")`);
+  await pg.waitForURL(/grupo\.html.*hecho=agregadas/);
+  await pg.waitForSelector('[data-filas] tr');
+  comprueba(await pg.isVisible(`[data-filas] tr[data-folio="${primero}"]`), t('la persona elegida queda en el grupo'));
+
+  // Confirmar: la fecha debe dar 7 días de anticipación
+  const fechaMas = (n) => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  await pg.fill('#fecha_inicio', fechaMas(3));
+  await pg.selectOption('#hora_entrada', '09:00');
+  await pg.selectOption('#instructor', 'instructor.ficticio');
+  await pg.click('#confirmar [data-accion="enviar"]');
+  await pg.waitForTimeout(300);
+  comprueba(!/hecho=confirmado/.test(pg.url()) && (await pg.getAttribute('#fecha_inicio', 'aria-invalid')) === 'true', t('confirmar con menos de 7 días de anticipación marca el error junto a la fecha'));
+  await captura(pg, `grupos-confirmar-error-${sufijo}`);
+  await pg.fill('#fecha_inicio', fechaMas(12));
+  await pg.click('#confirmar [data-accion="enviar"]');
+  await pg.waitForURL(/hecho=confirmado/);
+  await pg.waitForSelector('[data-situacion] .estado');
+  comprueba(/Confirmado/.test(await texto('[data-situacion]')) && /09:00/.test(await texto('[data-datos]')), t('el grupo queda confirmado con su hora de entrada'));
+  await sinDesborde(pg, t('grupo confirmado'));
+  await captura(pg, `grupos-confirmado-${sufijo}`);
+
+  // La persona ve su grupo con fecha y hora en «Mis trámites»
+  const sol = datos.solicitud.find((x) => x.folio === primero);
+  await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sol.solicitante_id);
+  await pg.goto(BASE + 'tramites.html');
+  await pg.waitForSelector('[data-solicitudes] .ficha');
+  const tram = await texto('main');
+  comprueba(tram.includes(APDfecha(fechaMas(12))) && /09:00/.test(tram), t('«Mis trámites»: la persona ve el primer día del curso y la hora de entrada'));
+  await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
+
+  // Baja: el grupo queda por debajo del mínimo y regresa a integración
+  await pg.goto(BASE + `grupo.html?folio=${integracion.folio}`);
+  await pg.waitForSelector('[data-filas] tr');
+  await pg.click('[data-filas] tr:first-child button');
+  await pg.click('#baja [data-accion="enviar"]');
+  await pg.waitForTimeout(200);
+  comprueba(await pg.isVisible('#dlg-baja[open]') && !/hecho=/.test(pg.url()), t('dar de baja sin motivo no se guarda'));
+  await captura(pg, `grupos-baja-${sufijo}`);
+  await pg.fill('#motivo-baja', 'Pidió cambiar de fecha por trabajo.');
+  await pg.click('#baja [data-accion="enviar"]');
+  await pg.waitForURL(/hecho=baja_integracion/);
+  await pg.waitForSelector('[data-situacion] .estado');
+  comprueba(/Por confirmar/.test(await texto('[data-situacion]')) && await pg.isVisible('[data-confirmar]'), t('la baja deja al grupo por debajo del mínimo: regresa a integración'));
+
+  // Crear un grupo combinado de renovación con toda la espera y cancelarlo
+  await pg.goto(BASE + 'espera.html?curso=poda-renovacion');
+  await pg.waitForSelector('[data-filas] tr');
+  const enEspera = (await pg.$$('[data-filas] tr')).length;
+  for (const k of await pg.$$('[data-filas] input')) await k.check();
+  await pg.click('[data-destinos] button:has-text("Crear un grupo")');
+  await pg.waitForSelector('dialog[open]');
+  await pg.click('dialog[open] .btn-primario');
+  await pg.waitForURL(/hecho=creado/);
+  await pg.waitForSelector('[data-filas] tr');
+  comprueba((await pg.$$('[data-filas] tr')).length === enEspera, t('el grupo nuevo tiene a las personas elegidas'));
+  await pg.click('[data-acciones] button:has-text("Cancelar el grupo")');
+  await pg.fill('#motivo-cancelar', 'No se reunió el cupo mínimo en el plazo previsto.');
+  await pg.click('#cancelar [data-accion="enviar"]');
+  await pg.waitForURL(/hecho=cancelado/);
+  await pg.goto(BASE + 'espera.html?curso=poda-renovacion');
+  await pg.waitForSelector('[data-filas] tr');
+  comprueba((await pg.$$('[data-filas] tr')).length === enEspera, t('al cancelar, las personas regresan a la espera'));
+
+  // Asistencia del instructor: no guarda con alguien sin marcar; guarda el día y avisa a quien ya no tiene derecho
+  await pg.goto(BASE + 'asistencia.html');
+  await pg.waitForSelector('.asistencia-fila');
+  comprueba(/examen/.test(await texto('[data-dias]')) && await pg.isDisabled('.dia-btn:last-child'), t('el último día no se captura aquí (se registra al pasar lista en el examen)'));
+  await pg.click('[data-guardar]');
+  comprueba(await pg.isVisible('[data-falta-marcar]'), t('no se guarda la asistencia con personas sin marcar'));
+  await captura(pg, `asistencia-${sufijo}`);
+  await pg.click('[data-todas]');
+  const falto = await pg.$('.asistencia-fila:has-text("Faltó el día 1")');
+  if (falto) await (await falto.$('input[value="no"]')).check();
+  await pg.click('[data-guardar]');
+  await pg.waitForURL(/hecho=asistencia/);
+  await pg.waitForSelector('.asistencia-fila');
+  comprueba(/guardada/.test(await texto('[data-hecho]')), t('la asistencia del día se guarda'));
+  if (falto) comprueba(/Ya no tiene derecho a examen/.test(await texto('[data-personas]')), t('quien faltó dos días ve que ya no tiene derecho a examen'));
+  await sinDesborde(pg, t('asistencia'));
+  await captura(pg, `asistencia-guardada-${sufijo}`);
+  comprueba(enCurso && errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+}
+const APDfecha = (iso) => iso.split('-').reverse().join('/');
+
 async function accesibilidad(navegador) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
@@ -1178,6 +1297,8 @@ async function accesibilidad(navegador) {
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
     ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
+    ['grupos.html'], ['espera.html?curso=poda-nueva'], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`],
+    ['asistencia.html'], ['asistencia.html', 'sin marcar'],
     ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
   for (const [url, estado] of pantallas) {
@@ -1190,7 +1311,8 @@ async function accesibilidad(navegador) {
       await page.check('input[name="identidad"][value="misma"]');
       for (const k of await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await page.check(`input[name="coincide_${k}"][value="si"]`);
       await page.check('input[name="pago"][value="si"]');
-    } else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
+    } else if (estado === 'sin marcar') await page.click('[data-guardar]');
+    else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.addScriptTag({ content: axe });
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
@@ -1202,16 +1324,23 @@ async function accesibilidad(navegador) {
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 try {
-  // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo (para depurar)
-  if (process.env.SOLO !== 'guardado') {
+  // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
+  const solo = process.env.SOLO || '';
+  if (!solo) {
     await recorrido(navegador, 390, 844, 'telefono');
     await recorrido(navegador, 1280, 900, 'escritorio');
     await personal(navegador, 390, 844, 'telefono');
     await personal(navegador, 1440, 900, 'escritorio');
   }
-  await recorridoGuardado(navegador);
-  await caminosCotejo(navegador);
-  if (process.env.SOLO !== 'guardado') await accesibilidad(navegador);
+  if (!solo || solo === 'guardado') {
+    await recorridoGuardado(navegador);
+    await caminosCotejo(navegador);
+  }
+  if (!solo || solo === 'grupos') {
+    await caminosGrupos(navegador, 390, 844, 'telefono');
+    await caminosGrupos(navegador, 1280, 900, 'escritorio');
+  }
+  if (!solo) await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
 } finally {

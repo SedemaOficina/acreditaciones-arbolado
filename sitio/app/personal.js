@@ -127,17 +127,107 @@
     return `EXP-${anio}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(4, '0')}`;
   }
 
-  /* Cabecera de sesión del personal */
-  function pintaSesion(contenedor, actual) {
+  /* ----- Grupos (maqueta aprobada y decisiones del 2026-10-17) -----
+     La espera de cada curso, los grupos y su situación. Quién arma los grupos está por decidir (P92): mientras, el mismo
+     perfil «revisión y cotejo». Lo hecho en la prueba se guarda en «apd.personal.grupos» (una lista de eventos, en
+     orden) y APD.cargar lo aplica como la base (app/archivos-prueba.js, aplicaGrupos). */
+  const GRUPOS = 'apd.personal.grupos';
+  /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27) */
+  const INSTRUCTORES = [
+    { usuario: 'instructor.ficticio', nombre: 'Laura Ejemplo Instructora' },
+    { usuario: 'instructor2.ficticio', nombre: 'Instructor Ejemplo Dos' }
+  ];
+  const INSTRUCTORA = Object.assign({ perfil: 'Instructor' }, INSTRUCTORES[0]);
+  const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
+  function eventosGrupos() { try { const v = JSON.parse(global.localStorage.getItem(GRUPOS) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function guardaGrupo(evento) {
+    const lista = eventosGrupos().concat([Object.assign({ en: new Date().toISOString() }, evento)]);
+    try { global.localStorage.setItem(GRUPOS, JSON.stringify(lista)); return Promise.resolve(true); } catch (e) { return Promise.reject(new Error('almacenamiento')); }
+  }
+
+  const CURSOS = [['poda', 'nueva'], ['poda', 'renovacion'], ['dictaminador', 'nueva'], ['dictaminador', 'renovacion']];
+  const claveCurso = (t, m) => `${t}-${m}`;
+  const deClave = (k) => CURSOS.find(([t, m]) => claveCurso(t, m) === k) || null;
+  const nombreCurso = (t, m) => `${APD.TIPOS[t]} · ${m === 'renovacion' ? 'renovación' : 'nueva'}`;
+  const INTEGRACION = { especifico: 'De una organización', combinado: 'Combinado' };
+
+  /* Adscripción con la que se envió la solicitud (copia de la de la cuenta) */
+  function organizacionDe(datos, s) {
+    if (!s.organizacion_id) return s.adscripcion && s.adscripcion !== 'independiente' && s.organizacion_nombre ? s.organizacion_nombre : 'Independiente';
+    const o = datos.organizacion.find((x) => x.id === s.organizacion_id);
+    return o ? o.nombre : s.organizacion_nombre || 'Independiente';
+  }
+
+  /* Personas en espera de grupo de un curso: de la que más espera a la más reciente; desde dias_alerta_espera días es
+     prioritaria. En renovación, por la fecha en que vence su acreditación (decisión 2026-10-14). */
+  function enEspera(datos, tipo, modalidad) {
+    const hoy = APD.hoy(datos);
+    const alerta = APD.parametro(datos, 'dias_alerta_espera') || 31;
+    const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
+    const lista = datos.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === tipo && s.modalidad === modalidad).map((s) => {
+      const desde = s.lista_para_curso_en || s.estado_desde;
+      const n = dias(desde, hoy);
+      const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
+      const vence = ant ? ant.vence_en : null;
+      return { s, p: persona[s.solicitante_id] || {}, organizacion: organizacionDe(datos, s), desde, dias: n, prioritaria: n >= alerta,
+        vence, vencida: vence ? vence < hoy : false };
+    });
+    return lista.sort((a, b) => (modalidad === 'renovacion' && a.vence && b.vence ? a.vence.localeCompare(b.vence) : 0)
+      || String(a.desde).localeCompare(String(b.desde)) || a.s.folio.localeCompare(b.s.folio));
+  }
+
+  /* Un grupo con su curso, sus personas y su situación */
+  const SITUACION_GRUPO = {
+    en_integracion: { texto: 'Por confirmar', tono: 'pend' },
+    confirmado: { texto: 'Confirmado', tono: 'ok' },
+    en_curso: { texto: 'En curso', tono: 'ok' },
+    concluido: { texto: 'Concluido', tono: '' },
+    cancelado: { texto: 'Cancelado', tono: '' }
+  };
+  function grupo(datos, g) {
+    const c = APD.curso(datos, g.tipo_acreditacion, g.modalidad);
+    const inscritas = datos.inscripcion.filter((i) => i.grupo_id === g.id && i.activa);
+    const hoy = APD.hoy(datos);
+    const ultimo = g.fecha_inicio && c ? APD.sumaDias(g.fecha_inicio, c.dias_duracion - 1) : null;
+    const dia = g.estado === 'en_curso' && g.fecha_inicio ? Math.min(dias(g.fecha_inicio, hoy) + 1, c.dias_duracion) : null;
+    const sit = SITUACION_GRUPO[g.estado] || { texto: g.estado, tono: '' };
+    const texto = dia ? `${sit.texto} · día ${dia} de ${c.dias_duracion}` : sit.texto;
+    // Recibe personas en integración o, confirmado, hasta el día anterior al inicio, sin pasar del máximo
+    const recibe = (g.estado === 'en_integracion' || (g.estado === 'confirmado' && hoy < g.fecha_inicio)) && inscritas.length < g.cupo_maximo;
+    const org = g.organizacion_id ? datos.organizacion.find((o) => o.id === g.organizacion_id) : null;
+    return { g, c, inscritas, n: inscritas.length, ultimo, dia, situacion: { texto, tono: sit.tono }, recibe, lugar: g.cupo_maximo - inscritas.length,
+      integracion: g.integracion === 'especifico' ? `De una organización · ${org ? org.nombre : ''}` : 'Combinado',
+      nombre: nombreCurso(g.tipo_acreditacion, g.modalidad) };
+  }
+  const ORDEN_GRUPO = { en_curso: 0, confirmado: 1, en_integracion: 2, concluido: 3, cancelado: 4 };
+  function grupos(datos) {
+    return datos.grupo.map((g) => grupo(datos, g))
+      .sort((a, b) => ORDEN_GRUPO[a.g.estado] - ORDEN_GRUPO[b.g.estado] || String(b.g.folio).localeCompare(String(a.g.folio)));
+  }
+  /* Folio que la base le daría al siguiente grupo del año (APD-G-AAAA-NNN) */
+  function siguienteFolioGrupo(datos) {
+    const anio = String(APD.hoy(datos)).slice(0, 4);
+    const n = datos.grupo.map((g) => String(g.folio).match(new RegExp(`^APD-G-${anio}-(\\d+)$`))).filter(Boolean).map((m) => Number(m[1]));
+    return `APD-G-${anio}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3, '0')}`;
+  }
+  /* Texto del cupo: «4 de 25 · falta 1 para el mínimo de 5» */
+  function cupoTexto(x) {
+    const falta = x.g.cupo_minimo - x.n;
+    return falta > 0 ? `${x.n} de ${x.g.cupo_maximo} · ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${x.g.cupo_minimo}` : `${x.n} de ${x.g.cupo_maximo}`;
+  }
+
+  /* Cabecera de sesión del personal. El perfil «instructor» sólo ve sus grupos (asistencia y examen). */
+  function pintaSesion(contenedor, actual, perfil) {
     if (!contenedor) return;
     const salir = el('a', { class: 'btn-enlace', href: 'index.html', texto: 'Salir' });
+    const quien = perfil === 'instructor' ? INSTRUCTORA : REVISORA;
+    const enlace = (href, clave, texto) => el('a', { class: 'btn-enlace', href, 'aria-current': actual === clave ? 'page' : null, texto });
+    const enlaces = perfil === 'instructor'
+      ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen')]
+      : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos')];
     contenedor.replaceChildren(
-      el('p', { class: 'sesion-nombre' }, [document.createTextNode(`${REVISORA.nombre} `), APD.estado(`Perfil: ${REVISORA.perfil.toLowerCase()}`)]),
-      el('nav', { class: 'sesion-enlaces', 'aria-label': 'Secciones del personal' }, [
-        el('a', { class: 'btn-enlace', href: 'revision.html', 'aria-current': actual === 'revision' ? 'page' : null, texto: 'Revisión documental' }),
-        el('a', { class: 'btn-enlace', href: 'citas.html', 'aria-current': actual === 'citas' ? 'page' : null, texto: 'Citas de cotejo' }),
-        salir
-      ])
+      el('p', { class: 'sesion-nombre' }, [document.createTextNode(`${quien.nombre} `), APD.estado(`Perfil: ${quien.perfil.toLowerCase()}`)]),
+      el('nav', { class: 'sesion-enlaces', 'aria-label': 'Secciones del personal' }, enlaces.concat([salir]))
     );
   }
 
@@ -147,5 +237,6 @@
   /* Lo registrado en este navegador durante la prueba ya viene en los datos (APD.cargar → APD_ARCHIVOS_PRUEBA.mezcla) */
   function datosConPrueba(datos) { return Promise.resolve(datos); }
 
-  global.APD_PERSONAL = { datosConPrueba, REVISORA, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, dias, espera, vuelta, corregidos, senales, pintaSesion };
+  global.APD_PERSONAL = { datosConPrueba, REVISORA, INSTRUCTORES, INSTRUCTORA, nombreInstructor, eventosGrupos, guardaGrupo, CURSOS, claveCurso, deClave,
+    nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, dias, espera, vuelta, corregidos, senales, pintaSesion };
 }(window));

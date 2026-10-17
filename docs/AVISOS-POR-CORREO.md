@@ -24,8 +24,8 @@ Prioridad:
 | S1 | Solicitud enviada | Acuse con folio, acreditación y fecha | Recomendable |
 | S2 | Solicitud con observaciones | Qué corregir en cada documento y hasta cuándo (plazo, P02) | Indispensable |
 | S3 | Observaciones por vencer | Recordatorio antes de que venza el plazo para corregir | Recomendable |
-| S4 | Concluida sin atender | Que se cerró y que puede iniciar otra | Indispensable |
-| S5 | Solicitud validada | Cita de cotejo (día, hora, lugar y cómo llegar), qué llevar y datos para pagar (concepto, monto, referencia) | Indispensable |
+| S4 | Solicitud cerrada por no corregir a tiempo | Que su solicitud se cerró porque no corrigió las observaciones dentro del plazo, y que puede iniciar una nueva | Indispensable |
+| S5 | Documentos validados: cita de cotejo | Cita de cotejo (día, hora, lugar y cómo llegar), qué llevar y datos para pagar (concepto, monto, referencia) | Indispensable |
 | S6 | Solicitud rechazada | Motivo, tal como lo escribió quien revisó | Indispensable |
 
 ## 3. Cita de cotejo
@@ -33,17 +33,17 @@ Prioridad:
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
 | T1 | Un día antes de la cita | Recordatorio con hora, lugar, documentos impresos, comprobante de pago e identificación | Recomendable |
-| T2 | **Resultado de la cita** | Según lo que pasó: cotejo terminado con su número de expediente y «en espera de grupo»; en pausa, qué documento cargar hoy y dónde; regresó con observaciones; sin pago o sin presentarse, su cita nueva; solicitud cerrada por segunda inasistencia | Indispensable |
+| T2 | **Resultado de la cita** | Según lo que pasó: cotejo terminado, con el número de su expediente físico y que el siguiente paso es que la Secretaría le asigne un grupo del curso; cita en pausa, qué documento cargar hoy y dónde; regresó con observaciones, qué corregir en línea; sin pago o sin presentarse, su cita nueva; solicitud cerrada por segunda inasistencia | Indispensable |
 | T3 | Cuenta bloqueada por identidad | Que la cuenta está bloqueada mientras la Secretaría aclara el caso y cómo comunicarse (P79). No se le dice qué observó el personal | Indispensable |
 
 ## 4. Grupo, curso y examen
 
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
-| G1 | Inscrita en un grupo | Se envía al confirmar el grupo, al menos 7 días antes del curso (`dias_anticipacion_grupo`), o al agregarla a un grupo ya confirmado: fechas del curso, horario de entrada, sede y asistencia mínima | Indispensable |
-| G2 | Cambio o cancelación del grupo, o baja | Qué cambió y qué sigue (regresa a la espera con su antigüedad) | Indispensable |
+| G1 | Grupo asignado | Se envía al confirmar el grupo, al menos 7 días antes del curso, o al agregar a la persona a un grupo ya confirmado: fechas del curso, hora de entrada, sede y asistencia mínima | Indispensable |
+| G2 | Cambio o cancelación del grupo, o baja | Qué cambió y qué sigue: vuelve a esperar grupo y conserva su lugar por antigüedad | Indispensable |
 | G3 | Un día antes del curso | Recordatorio | Recomendable |
-| G4 | Resultado del examen | Aprobada, no acreditada o sin derecho a examen, con calificación y asistencia; si aprobó, que recoge su credencial ese mismo día | Recomendable (se le dice el mismo día en la sede) |
+| G4 | Resultado del examen | Si aprobó, si no alcanzó la calificación mínima o si no tuvo derecho a examen por faltas, con su calificación y asistencia; si aprobó, que recoge su credencial ese mismo día | Recomendable (se le dice el mismo día en la sede) |
 
 ## 5. Acreditación y vigencia
 
@@ -65,10 +65,10 @@ Prioridad:
 ## Reglas para todos los correos
 
 - Remitente institucional único y una plantilla con la identidad gráfica de la Secretaría.
-- Sin datos sensibles en el cuerpo: folio, estado y fechas sí; CURP completa, documentos o fotografías, no. El detalle se
+- Sin datos sensibles en el cuerpo: folio, situación del trámite y fechas sí; CURP completa, documentos o fotografías, no. El detalle se
   consulta entrando a «Mis trámites».
 - Cada correo enlaza a «Mis trámites»; nunca pide contraseñas ni datos.
-- Los envíos quedan en la bitácora (a quién, cuándo, qué aviso, si rebotó).
+- Cada envío queda registrado en el sistema: a quién, cuándo, qué aviso y si rebotó.
 - Si un correo rebota, se marca en la cuenta para que el personal lo vea y pida uno nuevo.
 
 ## Lanzamiento

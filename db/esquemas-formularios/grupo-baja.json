@@ -1,0 +1,20 @@
+{
+  "formulario": "grupo-baja.html",
+  "generado": "2026-10-17T23:11:51.858Z",
+  "campos": {
+    "motivo": {
+      "etiqueta": "Motivo",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Registrar por qué la persona sale del grupo (apd.inscripcion.motivo_baja).",
+      "atributos": {
+        "maxlength": "300"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

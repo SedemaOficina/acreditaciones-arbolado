@@ -237,3 +237,43 @@ body > main { flex: 1 0 auto; width: 100%; }
 .aviso-pila > * { margin: 0; }
 /* Cabecera de la solicitud en revisión y cotejo: en teléfono la etiqueta de estado no queda pegada a la fotografía */
 .revision-cabeza .bajada { margin-block-end: 0; }
+
+/* ----- Grupos y asistencia (etapa 2, maqueta aprobada el 2026-10-17) ----- */
+/* Espera por curso: una ficha por curso */
+.cursos { display: grid; gap: var(--e-4); margin: 0 0 var(--e-5); padding: 0; list-style: none; }
+.curso { display: grid; gap: var(--e-2); align-content: start; padding: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); background: var(--blanco); }
+.curso > * { margin: 0; }
+.curso-nombre { font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.curso-cifra { font: var(--peso-fuerte) var(--t-xl)/1 var(--fuente-titulo); }
+.curso-cifra span { font: var(--peso-normal) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--gris); }
+.curso .btn { width: auto; justify-self: start; }
+@media (min-width: 760px) { .cursos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .cursos { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Elegir personas de la espera */
+.seleccion { display: grid; gap: var(--e-3); margin-block-start: var(--e-4); padding: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); background: var(--blanco); }
+.seleccion > * { margin: 0; }
+.seleccion .btn { width: auto; justify-self: start; }
+.seleccion-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
+.elegir { display: inline-flex; align-items: center; min-width: var(--objetivo-min); min-height: var(--objetivo-min); }
+/* Un grupo: encabezado con su situación, cupo y acciones */
+.grupo-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
+.grupo-cabeza .bajada { margin-block-end: 0; }
+.cupo { display: grid; gap: var(--e-1); margin-block: var(--e-4); }
+.cupo-barra { height: var(--e-2); border-radius: var(--r-pill); background: var(--linea); overflow: hidden; }
+.cupo-lleno { display: block; height: 100%; background: var(--dorado); }
+.cupo > p { margin: 0; }
+.acciones-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-block-start: var(--e-4); }
+.acciones-grupo .btn { width: auto; }
+/* Asistencia: días del curso y una fila por persona */
+.dias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block: var(--e-3); }
+.dia-btn { min-height: var(--objetivo-min); padding: var(--e-1) var(--e-4); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto); font: inherit; font-size: var(--t-sm); cursor: pointer; }
+.dia-btn[aria-pressed="true"] { border-color: var(--guinda); box-shadow: inset 0 calc(var(--b-2) * -1) 0 var(--guinda); font-weight: var(--peso-semi); }
+.dia-btn:disabled { color: var(--gris); border-style: dashed; cursor: default; }
+.dia-btn:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+.asistencia-fila { display: grid; gap: var(--e-3); padding-block: var(--e-3); border-bottom: var(--b-1) solid var(--linea); }
+.asistencia-quien { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-3); align-items: center; }
+.asistencia-quien p { margin: 0; }
+.asistencia-foto { width: var(--objetivo-min); height: calc(var(--objetivo-min) * 1.25); object-fit: cover; border-radius: var(--r-ctrl); border: var(--b-1) solid var(--linea); }
+.asistencia-fila .grupo { margin: 0; }
+@media (min-width: 760px) { .asistencia-fila { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
+.acciones-grupo + .ayuda { margin-block-start: var(--e-4); }

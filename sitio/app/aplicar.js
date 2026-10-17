@@ -21,17 +21,8 @@
   /* Perfil ficticio de quien aplica el examen (no es una persona real) */
   const INSTRUCTOR = { usuario: 'instructor.ficticio', nombre: 'Laura Ejemplo Instructora', perfil: 'Instructor' };
 
-  function pintaSesion(contenedor) {
-    contenedor.replaceChildren(
-      el('p', { class: 'sesion-nombre' }, [document.createTextNode(`${INSTRUCTOR.nombre} `), estado(`Perfil: ${INSTRUCTOR.perfil.toLowerCase()}`)]),
-      el('nav', { class: 'sesion-enlaces', 'aria-label': 'Secciones del personal' }, [
-        el('a', { class: 'btn-enlace', href: 'revision.html', texto: 'Revisión documental' }),
-        el('a', { class: 'btn-enlace', href: 'citas.html', texto: 'Citas de cotejo' }),
-        el('a', { class: 'btn-enlace', href: 'aplicar.html', 'aria-current': 'page', texto: 'Aplicar el examen' }),
-        el('a', { class: 'btn-enlace', href: 'index.html', texto: 'Salir' })
-      ])
-    );
-  }
+  /* Cabecera del perfil «instructor»: asistencia y examen (app/personal.js) */
+  const pintaSesion = (contenedor) => APD_PERSONAL.pintaSesion(contenedor, 'aplicar', 'instructor');
   const decimal = (n) => Number(n).toFixed(1);
   const minutos = (ms) => { const m = Math.ceil(ms / 60000); return m === 1 ? 'queda 1 minuto' : `quedan ${m} minutos`; };
   const veces = (n) => (n === 1 ? '1 vez' : `${n} veces`);

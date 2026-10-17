@@ -47,7 +47,7 @@
     </div>
 
     <p class="resumen-filtro" role="status" data-cuenta>Cargando el grupo…</p>
-    <div class="aviso aviso-ok" data-todos hidden><svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg><p class="aviso-texto">Todas las personas con derecho a examen terminaron. Las calificaciones quedaron registradas como «examen en línea» y no se modifican. Sigue la entrega de credenciales a quienes aprobaron. <span class="pendiente">Pendiente: la pantalla de emisión y entrega es el siguiente bloque.</span></p></div>
+    <div class="aviso aviso-ok" data-todos hidden><svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg><p class="aviso-texto">Todas las personas con derecho a examen terminaron. Las calificaciones quedaron registradas desde el examen en línea y ya no se pueden modificar. Sigue la entrega de credenciales a quienes aprobaron. <span class="pendiente">Pendiente: la pantalla de emisión y entrega es el siguiente bloque.</span></p></div>
 
     <div class="tabla-marco" data-tabla data-clave="persona">
       <table class="tabla tabla-bandeja">
@@ -66,7 +66,7 @@
 
   <!-- Suspender: el motivo queda en la bitácora del examen -->
   <dialog class="dialogo" id="dlg-suspender" aria-labelledby="t-suspender">
-    <form id="suspender" data-formkit action="#" method="post">
+    <form id="suspender" data-formkit="manual" action="#" method="post">
       <h2 class="titulo-bloque dialogo-titulo" id="t-suspender">Suspender el examen</h2>
       <p class="texto-gris" data-suspender-de></p>
       <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué se suspendió el examen (bitácora); la persona lo lee tal cual.">
@@ -96,6 +96,7 @@
 <script src="app/apd.js?v=0.35"></script>
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.35"></script>
+<script src="app/personal.js?v=0.35"></script>
 <script src="app/codigo-examen.js?v=0.35"></script>
 <script src="app/config-examen.js?v=0.35"></script>
 <script src="formkit/js/validaciones.config.js"></script>

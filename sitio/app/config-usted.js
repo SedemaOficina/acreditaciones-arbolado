@@ -46,7 +46,9 @@
   /* Mensajes de los formatos: mismo cálculo del estándar, con el texto en usted. */
   const enUsted = (t) => String(t)
     .replace(/\bEscribe\b/g, 'Escriba').replace(/\bescribe\b/g, 'escriba').replace(/\bRevisa\b/g, 'Revise')
-    .replace(/\bRevísala\b/g, 'Revísela').replace(/\bCópialo\b/g, 'Cópielo').replace(/\bUsa\b/g, 'Use').replace(/\busa\b/g, 'use');
+    .replace(/\bRevísala\b/g, 'Revísela').replace(/\bCópialo\b/g, 'Cópielo').replace(/\bUsa\b/g, 'Use').replace(/\busa\b/g, 'use')
+    // El límite de una fecha se lee día/mes/año, como en el resto del sitio (el formato «fecha» lo da en AAAA-MM-DD, P108)
+    .replace(/(anterior|posterior) al (\d{4})-(\d{2})-(\d{2})/g, '$1 al $4/$3/$2');
   const formatos = {};
   for (const f of ['fecha', 'hora', 'rfc', 'folio-fiscal', 'numero']) {
     const original = BASE && BASE.formatos[f] && BASE.formatos[f].valida;

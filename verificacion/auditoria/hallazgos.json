@@ -34,6 +34,26 @@
       "citas.html"
     ],
     [
+      "grupos",
+      "grupos.html"
+    ],
+    [
+      "espera-grupo",
+      "espera.html?curso=poda-nueva"
+    ],
+    [
+      "grupo-integracion",
+      "grupo.html?folio=APD-G-2026-004"
+    ],
+    [
+      "grupo-en-curso",
+      "grupo.html?folio=APD-G-2026-003"
+    ],
+    [
+      "asistencia",
+      "asistencia.html"
+    ],
+    [
       "revisar-dictaminador",
       "revisar.html?folio=APD-S-2026-00020"
     ],
@@ -82,8 +102,8 @@
       "corregir.html"
     ]
   ],
-  "paginas": 40,
-  "presionados": 117,
+  "paginas": 50,
+  "presionados": 138,
   "porTipo": {
     "encimado": 2
   },
@@ -101,5 +121,5 @@
       "detalle": "p.visor-pagina «Hoja 1 de 3» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (123×20 px)"
     }
   ],
-  "nota": "«Ir al contenido» se marcó por error en esta corrida (la herramienta esperaba el foco en main); comprobado a mano en todas las pantallas: con Tab y Enter el siguiente Tab cae en el contenido. La herramienta ya lo comprueba así. Los dos encimados que quedan son el botón flotante «Menú de pruebas» (sólo en la versión de prueba) sobre el visor antes de desplazarse."
+  "nota": "Los dos encimados son el botón flotante «Menú de pruebas» (sólo en la versión de prueba; se quita al pasar al SIA) sobre el visor de «Revisar», con la página sin desplazar; los mismos que en la auditoría del 2026-10-17 (0.34)."
 }

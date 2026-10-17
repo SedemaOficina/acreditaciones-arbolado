@@ -96,7 +96,7 @@
           <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
           <div class="opciones-lista">
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="comprobante_confirma" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí: no cumple el perfil</span><span class="opcion-desc">La solicitud se rechaza.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="comprobante_confirma" autocomplete="off" value="no"><span><span class="opcion-nombre">No: muestra otro grado</span><span class="opcion-desc">Se observa el comprobante para que la persona corrija su último grado de estudios.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="comprobante_confirma" autocomplete="off" value="no"><span><span class="opcion-nombre">No: muestra otro grado</span><span class="opcion-desc">Se marca una observación en el comprobante para que la persona corrija su último grado de estudios.</span></span></label>
           </div>
         </fieldset>
       </div>
@@ -104,7 +104,7 @@
 
     <section class="tarjeta" aria-labelledby="t-documentos">
       <h3 class="titulo-paso" id="t-documentos">Documentos</h3>
-      <p class="ayuda ayuda-bloque" data-docs-ayuda>Abra cada documento y acéptelo, u observe lo que debe corregir la persona.</p>
+      <p class="ayuda ayuda-bloque" data-docs-ayuda>Abra cada documento y acéptelo, o escriba lo que debe corregir la persona.</p>
       <p class="aviso" data-docs-rechazo hidden>No hace falta revisar los documentos: la solicitud se rechaza por el perfil.</p>
       <!-- revision-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
         <div data-si="revisar_identificacion_oficial=si">
@@ -120,7 +120,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_identificacion_oficial" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_identificacion_oficial" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_identificacion_oficial" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_identificacion_oficial" data-requerido data-si="decision_identificacion_oficial=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).">
@@ -146,7 +146,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curp" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curp" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curp" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_curp" data-requerido data-si="decision_curp=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).">
@@ -172,7 +172,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_domicilio" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_domicilio" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_domicilio" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_comprobante_domicilio" data-requerido data-si="decision_comprobante_domicilio=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).">
@@ -198,7 +198,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_constancia_situacion_fiscal" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_constancia_situacion_fiscal" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_constancia_situacion_fiscal" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_constancia_situacion_fiscal" data-requerido data-si="decision_constancia_situacion_fiscal=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).">
@@ -224,7 +224,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_estudios" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_estudios" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobante_estudios" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_comprobante_estudios" data-requerido data-si="decision_comprobante_estudios=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).">
@@ -250,7 +250,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curriculum_vitae" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curriculum_vitae" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_curriculum_vitae" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_curriculum_vitae" data-requerido data-si="decision_curriculum_vitae=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).">
@@ -276,7 +276,7 @@
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobantes_experiencia" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobantes_experiencia" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, observarlo</span></span></label>
+                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_comprobantes_experiencia" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_comprobantes_experiencia" data-requerido data-si="decision_comprobantes_experiencia=con_observacion" data-chips-fijos="No se lee completo|Está vencido|No corresponde al requisito|Falta una página|No coincide con el nombre de la cuenta" data-uso="Decirle a la persona qué debe corregir de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).">
@@ -309,7 +309,7 @@
             <p class="ayuda" id="ay-cita-hora">De 24 horas. <span class="pendiente">Horarios de prueba: los define el área (P69).</span></p>
             <!-- Lista cerrada de horarios (Liber, 2026-10-17): sin texto libre. Se sustituye por los horarios de citas que
                  defina el área (P69). autocomplete off: la hora la elige quien revisa. -->
-            <div class="select control-corto"><select class="control" id="cita_hora" name="cita_hora" autocomplete="off" aria-describedby="ay-cita-hora">
+            <div class="select control-corto"><select class="control control-select" id="cita_hora" name="cita_hora" autocomplete="off" aria-describedby="ay-cita-hora">
               <option value="">Elija</option>
               <option value="09:00">09:00</option>
               <option value="09:30">09:30</option>
@@ -355,7 +355,7 @@
       <div class="acciones">
         <button type="submit" class="btn btn-primario" data-accion="enviar">Registrar la revisión</button>
       </div>
-      <p class="ayuda">Queda en la bitácora quién revisó, cuándo y qué decidió en cada documento.</p>
+      <p class="ayuda">El sistema guarda quién revisó, cuándo y qué decidió en cada documento.</p>
     </section>
   </form>
 

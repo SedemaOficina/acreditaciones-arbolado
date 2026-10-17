@@ -1,0 +1,50 @@
+{
+  "formulario": "grupo-confirmar.html",
+  "generado": "2026-10-17T23:11:51.809Z",
+  "campos": {
+    "fecha_inicio": {
+      "etiqueta": "Primer día del curso",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha",
+      "sensible": false,
+      "uso": "Fijar el primer día del curso (apd.grupo.fecha_inicio).",
+      "atributos": {},
+      "autocomplete": "off"
+    },
+    "hora_entrada": {
+      "etiqueta": "Hora de entrada",
+      "tipo": "select",
+      "requerido": true,
+      "formato": "hora",
+      "sensible": false,
+      "uso": "Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).",
+      "atributos": {},
+      "opciones": [
+        "07:00",
+        "07:30",
+        "08:00",
+        "08:30",
+        "09:00",
+        "09:30",
+        "10:00"
+      ],
+      "autocomplete": "off"
+    },
+    "instructor": {
+      "etiqueta": "Instructor",
+      "tipo": "select",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).",
+      "atributos": {},
+      "opciones": [
+        "instructor.ficticio",
+        "instructor2.ficticio"
+      ],
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}
