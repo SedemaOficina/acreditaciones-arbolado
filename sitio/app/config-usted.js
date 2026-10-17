@@ -47,7 +47,7 @@
   const enUsted = (t) => String(t)
     .replace(/\bEscribe\b/g, 'Escriba').replace(/\bescribe\b/g, 'escriba').replace(/\bRevisa\b/g, 'Revise')
     .replace(/\bRevísala\b/g, 'Revísela').replace(/\bCópialo\b/g, 'Cópielo').replace(/\bUsa\b/g, 'Use').replace(/\busa\b/g, 'use')
-    // El límite de una fecha se lee día/mes/año, como en el resto del sitio (el formato «fecha» lo da en AAAA-MM-DD, P108)
+    // El límite de una fecha se lee día/mes/año, como en el resto del sitio (el formato «fecha» lo da en AAAA-MM-DD, P112)
     .replace(/(anterior|posterior) al (\d{4})-(\d{2})-(\d{2})/g, '$1 al $4/$3/$2');
   const formatos = {};
   for (const f of ['fecha', 'hora', 'rfc', 'folio-fiscal', 'numero']) {

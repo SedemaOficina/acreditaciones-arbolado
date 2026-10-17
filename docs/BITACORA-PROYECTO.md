@@ -735,6 +735,8 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 
 ## 2026-10-17 · Bloque 55 · Grupos y asistencia; textos claros para el personal
 
+(Hecho en paralelo a los bloques 53 y 54 del otro chat; los hallazgos se renumeraron P109 a P112 porque P105 ya era del examen.)
+
 - Pantallas nuevas del personal, según la maqueta aprobada (`maquetas/etapa2-grupos/`):
   - «Grupos» (`grupos.html`): la espera de los cuatro cursos (prioritarias, renovaciones con la acreditación vencida,
     si alcanza para un grupo y el grupo que se está armando) y los grupos con tipo, cupo, inicio, instructor y situación;
@@ -767,7 +769,7 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   `probar-examen.mjs` 53 de 53 con axe; `probar-esquemas.mjs` 104; `probar-base` 162; auditor de CSS sin hallazgos;
   `auditar-campos` 166 campos en 12 archivos; `npm run auditar` 25 estados × 2 tamaños, 138 botones, sólo los dos
   encimados conocidos del menú de pruebas.
-- Hallazgos nuevos para el estándar: P106 (el módulo tabla sólo se inicia con un formulario), P107 (un formulario
-  iniciado dos veces) y P108 (el límite de una fecha en AAAA-MM-DD).
-- Pendientes: P105 (quitar el correo personal de Liber del historial, espera su autorización); P94 y P100 siguen para
+- Hallazgos nuevos para el estándar: P110 (el módulo tabla sólo se inicia con un formulario), P111 (un formulario
+  iniciado dos veces) y P112 (el límite de una fecha en AAAA-MM-DD).
+- Pendientes: P109 (quitar el correo personal de Liber del historial, espera su autorización); P94 y P100 siguen para
   decisión de Liber.

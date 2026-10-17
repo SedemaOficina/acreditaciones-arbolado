@@ -577,7 +577,7 @@
       "recomendacion": "Hallazgo para el estándar (auditoría visual 2026-10-17). Cada celda apilada es flex con wrap: si el valor no cabe junto a su etiqueta (40 %), baja completo a otro renglón, y en una misma tarjeta unos valores van al lado y otros abajo. Propuesta: rejilla fija de dos columnas (etiqueta | valor) en la que el valor se ajusta dentro de su columna. El proyecto no lo cambia para no romper celdas con varios elementos."
     },
     {
-      "id": "P105",
+      "id": "P109",
       "grupo": "liber",
       "bloquea": "no",
       "desde": "2026-10-17",
@@ -585,7 +585,7 @@
       "recomendacion": "Nueve cambios de la rama principal llevan como autor el correo personal de Liber (se guardaron desde el chat del examen). Quitarlo exige reescribir el historial ya publicado y volver a subir la rama encima de la existente; el sistema lo bloquea mientras Liber no lo autorice de forma expresa. Antes: respaldo completo del repositorio. Después: el chat del examen se vuelve a sincronizar; GitHub puede conservar un tiempo los cambios antiguos y quien ya descargó el repositorio conserva la copia vieja. Para que no vuelva a pasar: configurar en ese chat un correo sin datos personales para los cambios y activar en GitHub la opción de mantener privado el correo."
     },
     {
-      "id": "P106",
+      "id": "P110",
       "grupo": "estandar",
       "bloquea": "no",
       "desde": "2026-10-17",
@@ -593,7 +593,7 @@
       "recomendacion": "El módulo tabla (fueraDelFormulario) se activa al iniciar un formulario; en una página de pura consulta (grupos.html) nadie lo inicia y en teléfono las celdas no muestran su encabezado. Además, si el formulario se inicia solo al cargar (data-formkit) antes de que la página pinte un encabezado de tabla calculado, el módulo guarda el encabezado vacío y el evento formkit:tabla ya no lo vuelve a leer. Solución provisional: grupos.html pone data-etiqueta como el módulo, y los formularios de espera.html y grupo.html arrancan a mano (data-formkit=\"manual\") después de pintar. Propuesta para el estándar: FormKit.tabla(marco) para iniciar el módulo sin formulario, y que formkit:tabla vuelva a leer los encabezados."
     },
     {
-      "id": "P107",
+      "id": "P111",
       "grupo": "estandar",
       "bloquea": "no",
       "desde": "2026-10-17",
@@ -601,7 +601,7 @@
       "recomendacion": "El arranque automático (DOMContentLoaded) sólo omite los formularios ya marcados «listo»; FormKit.iniciar no lo revisa. Si la página inicia el formulario con sus opciones después de cargar datos (una promesa), el núcleo ya lo inició solo y lo inicia otra vez, con los escuchas duplicados. Pasaba en «Suspender el examen» (aplicar.html); se cambia a data-formkit=\"manual\". Los formularios de grupos ya arrancan así. Propuesta para el estándar: que iniciar devuelva la instancia existente o avise en la consola."
     },
     {
-      "id": "P108",
+      "id": "P112",
       "grupo": "estandar",
       "bloquea": "no",
       "desde": "2026-10-17",

@@ -63,7 +63,7 @@
       ]);
     }));
     // En teléfono cada celda muestra su encabezado (data-etiqueta). El módulo tabla del estándar lo hace sólo cuando la
-    // página tiene un formulario que lo inicie; esta no tiene (hallazgo P106): se pone aquí igual que el módulo.
+    // página tiene un formulario que lo inicie; esta no tiene (hallazgo P110): se pone aquí igual que el módulo.
     const ths = Array.from(document.querySelectorAll('[data-tabla] thead th'));
     for (const tr of document.querySelectorAll('[data-filas] tr')) {
       Array.from(tr.children).forEach((td, i) => {
