@@ -7,6 +7,11 @@
       "nota": "contenido del trámite"
     },
     {
+      "id": "pilares",
+      "nombre": "PILARES Vivero Nezahualcóyotl",
+      "nota": "salón de cómputo del examen en línea"
+    },
+    {
       "id": "liber",
       "nombre": "Liber",
       "nota": "formatos y definiciones del sistema"
@@ -513,7 +518,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-16",
       "titulo": "Dirección del Vivero Nezahualcóyotl y referencias para llegar",
-      "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega."
+      "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega. Dato recibido (2026-10-17): el PILARES Vivero Nezahualcóyotl, dentro del predio, está en Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco; falta confirmar que el acceso al público del Vivero sea el mismo."
     },
     {
       "id": "P69",
@@ -554,6 +559,46 @@
       "desde": "2026-10-17",
       "titulo": "El estándar no trae botón para mostrar la contraseña",
       "recomendacion": "Proponer «Mostrar» / «Ocultar» dentro del campo de contraseña (botón con aria-pressed y nombre accesible, vuelve a ocultarla al enviar) y que el envoltorio respete el renglón del control en .fila. Base: app/ver-contrasena.js y apd.css de este proyecto."
+    },
+    {
+      "id": "P74",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Banco de reactivos de los cuatro exámenes (poda nueva y renovación, dictaminador nuevo y renovación)",
+      "recomendacion": "Pedirlo a quien imparte los cursos en una plantilla de captura (pregunta, opciones, respuesta correcta, tema y examen al que pertenece). Para que el examen no se repita entre grupos, el banco debe tener al menos el triple de las preguntas que se aplican (por ejemplo, 90 para un examen de 30). Definir también número de preguntas y tiempo límite de cada examen. Es lo que más puede retrasar el examen en línea."
+    },
+    {
+      "id": "P75",
+      "grupo": "pilares",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Visita técnica al salón de cómputo del PILARES",
+      "recomendacion": "Revisar en sitio: computadoras que funcionan, sistema operativo, navegador y versión; velocidad de la red con todos los equipos conectados; filtros de contenido (abrir la página de prueba del sistema y, después, el dominio del SIA); quién administra los equipos y si el navegador puede abrirse a pantalla completa sin instalar nada; no-break o qué ocurre si se va la luz."
+    },
+    {
+      "id": "P76",
+      "grupo": "pilares",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Acuerdo con la coordinación de PILARES para usar el salón en las fechas de examen",
+      "recomendacion": "Oficio de la Secretaría que pida el salón reservado y cerrado a otras personas usuarias durante cada examen, con un calendario por grupo (el último día del curso) y un enlace del PILARES para abrir el salón y los equipos."
+    },
+    {
+      "id": "P77",
+      "grupo": "pilares",
+      "bloquea": "datos reales",
+      "desde": "2026-10-17",
+      "titulo": "Computadoras útiles frente al cupo máximo del grupo (25)",
+      "recomendacion": "Si el salón tiene menos equipos que el grupo, aplicar el examen en dos turnos el mismo día con preguntas en distinto orden, o bajar el cupo máximo a las computadoras disponibles (el cupo ya es un parámetro editable)."
+    },
+    {
+      "id": "P78",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Entrada al examen: código de un solo uso que entrega el aplicador",
+      "recomendacion": "El aplicador pasa lista con identificación oficial y entrega a cada persona un código de examen de un solo uso generado para el grupo; no se entra con la contraseña de la cuenta, para que nadie lo presente fuera del salón. Cada respuesta se guarda en el servidor al contestarla, así quien cambia de computadora sigue con el mismo código; la calificación la calcula el servidor (P29)."
     }
   ],
   "resueltos": [

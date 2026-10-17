@@ -137,6 +137,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Calificación mínima: 7.0 poda, 8.0 dictaminador (mapa, R34, segunda corrección) | Liber Saltijeral |
 | 2026-10-14 | Habrá un examen en línea, en salones de cómputo, que registrará la calificación en esta base de forma automática. La base ya distingue el origen de cada calificación (captura o examen en línea) (mapa, R36) | Liber Saltijeral |
 | 2026-10-14 | El resultado del examen es inapelable: una calificación registrada no se modifica (mapa, R37) | Liber Saltijeral |
+| 2026-10-17 | Lugares dentro de la sede única: el curso se imparte en el aula de capacitación del Vivero Nezahualcóyotl y el examen en línea se presenta en el salón de cómputo del PILARES Vivero Nezahualcóyotl, a unos metros, dentro del mismo predio (Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco). La sede sigue siendo una sola (P09) | Liber Saltijeral |
 
 ## Vigencia y renovación
 
