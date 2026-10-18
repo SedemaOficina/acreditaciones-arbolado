@@ -40,22 +40,20 @@ formulario del material.
 
 ## Lo que queda abierto
 
-**Para decisión de Liber**
+**Para decisión de Liber** (decidido después: no habrá perfil de supervisor; se quitó lo que había sobre él)
 
 1. Guía de proyectos del SIA (`docs/GUIA-PROYECTOS-SIA.md`): en un repositorio público describe detalles de la
    infraestructura. ¿Se quedan o se quitan de la copia pública? (detalle en los documentos del proyecto).
 2. Borrador interno de lineamientos (`docs/insumos-lineamientos-borrador.txt`) publicado en el repositorio: ¿se mueve a
    los documentos del proyecto, junto al anteproyecto?
-3. Redacción sobre el supervisor (DECISIONES, lineamientos): la NADF-001-RNAT-2015, numeral 5.9, sí le fija un perfil;
-   confirmar la redacción propuesta.
-4. Números de regla R01–R57: viven en el mapa del trámite (artefacto privado); propuesta: pasar al repositorio la tabla de
+3. Números de regla R01–R57: viven en el mapa del trámite (artefacto privado); propuesta: pasar al repositorio la tabla de
    equivalencias.
-5. Quién pasa un grupo a «en curso» en el sistema (la base no lo hace por fecha; en la prueba hay un botón «Iniciar el
+4. Quién pasa un grupo a «en curso» en el sistema (la base no lo hace por fecha; en la prueba hay un botón «Iniciar el
    curso hoy (simulado)») — P92.
-6. Plazo para corregir observaciones (P02): mientras, «Mis trámites» dice «Fecha por definir».
-7. Contacto de la Secretaría para aclaraciones (P132): «Mi perfil» remite a la cita de cotejo.
-8. Con la poda por vencer, «Mis trámites» muestra dos botones principales («Iniciar una solicitud» y «Renovar»).
-9. Decisiones que tomaron los equipos y conviene confirmar: la lista «Revisadas en esta prueba» de la bandeja se
+5. Plazo para corregir observaciones (P02): mientras, «Mis trámites» dice «Fecha por definir».
+6. Contacto de la Secretaría para aclaraciones (P132): «Mi perfil» remite a la cita de cotejo.
+7. Con la poda por vencer, «Mis trámites» muestra dos botones principales («Iniciar una solicitud» y «Renovar»).
+8. Decisiones que tomaron los equipos y conviene confirmar: la lista «Revisadas en esta prueba» de la bandeja se
    conservó; el primer día del curso también pasó a dd/mm/aaaa; un solo esquema del servidor para el material;
    revisión, cotejo y asistencia avisan antes de salir pero no guardan borrador.
 

@@ -272,7 +272,7 @@ el mismo bloque el artículo del anteproyecto, su versión de trabajo y el campo
 
 | Fecha | Decisión | Quién |
 |---|---|---|
-| 2026-10-18 | Alcance: los lineamientos regulan sólo poda y derribo y dictaminador técnico; el supervisor (NADF, 5.9) queda fuera por ahora, porque ni la Ley ni la norma lo desarrollan | Liber Saltijeral |
+| 2026-10-18 | Alcance: sólo hay dos acreditaciones, poda y derribo y dictaminador técnico. No habrá perfil ni acreditación de supervisor, ni en el sistema ni en los lineamientos (decisión definitiva) | Liber Saltijeral |
 | 2026-10-18 | Dictaminar con la de poda vencida (P133): la de dictaminador conserva su vigencia y la persona debe renovar la de poda; para renovar la de dictaminador necesita la de poda vigente | Liber Saltijeral |
 | 2026-10-18 | El anteproyecto incluye un capítulo completo de suspensión y revocación (P120), con valores propuestos para revisión jurídica | Liber Saltijeral |
 | 2026-10-18 | El anteproyecto se trabaja en Word con la identidad de la Secretaría; en el repositorio sólo van el cruce (campo `lineamientos`) y los pendientes que abre (P137 a P144) | Liber Saltijeral |
