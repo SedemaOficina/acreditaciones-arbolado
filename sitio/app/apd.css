@@ -44,7 +44,7 @@
 .nota-prueba { margin: 0; padding: var(--e-3); border: var(--b-1) dashed var(--pend); border-radius: var(--r-caja); background: var(--pend-bg); color: var(--pend-txt); font-size: var(--t-sm); }
 
 .resultado { display: grid; gap: var(--e-3); margin-block-start: var(--e-5); padding: var(--e-seccion); border-radius: var(--r-caja); border: var(--b-2) solid var(--borde); background: var(--blanco); }
-.resultado-situacion { font: var(--peso-fuerte) var(--t-xl)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
+.resultado-situacion { display: flex; align-items: center; gap: var(--e-2); font: var(--peso-fuerte) var(--t-xl)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
 
 .pasos-tramite { list-style: decimal; margin: 0; padding-inline-start: var(--e-6); display: grid; gap: var(--e-3); }
 
@@ -277,3 +277,51 @@ body > main { flex: 1 0 auto; width: 100%; }
 .asistencia-fila .grupo { margin: 0; }
 @media (min-width: 760px) { .asistencia-fila { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
 .acciones-grupo + .ayuda { margin-block-start: var(--e-4); }
+
+/* ───── Avisos y confirmaciones (propuesta aprobada por Liber el 2026-10-17) ─────
+   Dos preguntas, dos respuestas: «Quedó guardado» dice que el sistema registró la acción; el título dice el desenlace
+   del trámite con su color e icono. Etiquetas de estado por familia, siempre con icono. Hallazgos P113 a P118. */
+/* Etiquetas: familias «en marcha» (azul) y «cerrado» (gris); el icono va antes del texto */
+.estado[data-tono="marcha"] { background: var(--azul-cl); border-color: var(--azul); color: var(--azul); }
+.estado[data-tono="cerrado"] { background: var(--aviso-bg); border-color: var(--borde); color: var(--gris); }
+.icono-estado { width: var(--e-4); height: var(--e-4); flex: none; }
+/* Aviso con título */
+.aviso-titulo { display: block; margin: 0; font-weight: var(--peso-fuerte); }
+.aviso-texto > p { margin: 0; }
+.aviso-texto > p:not(:first-child) { margin-block-start: var(--e-1); }
+/* Resultado de una decisión: filete y título en el color del desenlace */
+.desenlace { border-inline-start: var(--b-4) solid var(--borde); }
+.desenlace[data-tono="ok"] { border-inline-start-color: var(--ok); }
+.desenlace[data-tono="error"] { border-inline-start-color: var(--error); }
+.desenlace[data-tono="pend"] { border-inline-start-color: var(--pend); }
+.desenlace[data-tono="marcha"] { border-inline-start-color: var(--azul); }
+.desenlace-guardado { display: flex; align-items: center; gap: var(--e-2); margin: 0 0 var(--e-3); font-size: var(--t-sm); color: var(--ok-txt); }
+.desenlace .titulo-paso { display: flex; align-items: flex-start; gap: var(--e-3); }
+.desenlace[data-tono="ok"] .titulo-paso { color: var(--ok-txt); }
+.desenlace[data-tono="error"] .titulo-paso { color: var(--error-txt); }
+.desenlace[data-tono="pend"] .titulo-paso { color: var(--pend-txt); }
+.desenlace[data-tono="marcha"] .titulo-paso { color: var(--azul); }
+.desenlace-marca { display: inline-grid; place-items: center; flex: none; width: var(--e-7); height: var(--e-7); border: var(--b-2) solid currentColor; border-radius: var(--r-pill); }
+.desenlace-marca .icono { width: var(--e-5); height: var(--e-5); }
+.desenlace-cita { margin: 0 0 var(--e-4); padding: var(--e-3) var(--e-4); border-inline-start: var(--b-4) solid var(--error); background: var(--error-bg); color: var(--error-txt); border-radius: 0 var(--r-ctrl) var(--r-ctrl) 0; }
+/* Confirmar antes de actuar: icono, pregunta, consecuencias en texto normal y «No se puede deshacer» */
+.confirmacion-cabeza { display: flex; align-items: flex-start; gap: var(--e-3); }
+.confirmacion-cabeza .dialogo-titulo { margin: 0; }
+.desenlace-marca[data-tono="error"] { color: var(--error); }
+.desenlace-marca[data-tono="info"] { color: var(--guinda); }
+.confirmacion-lista { margin: var(--e-4) 0 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-2); list-style: disc; color: var(--texto); }
+.confirmacion-irreversible { display: flex; align-items: center; gap: var(--e-2); margin: var(--e-4) 0 0; font-weight: var(--peso-medio); color: var(--error-txt); }
+/* La acción de peligro pesa más que una acción normal: rojo relleno (el estándar la pinta sólo de contorno, P114) */
+.btn-peligro { background: var(--error); border-color: var(--error); color: var(--blanco); }
+.btn-peligro:hover { background: var(--error-txt); border-color: var(--error-txt); color: var(--blanco); }
+/* Filas que faltan por marcar (asistencia, espera) */
+.falta-marcar { background: var(--error-bg); box-shadow: inset var(--b-4) 0 0 var(--error); }
+/* Un elemento que cambió en una fila (código repuesto): se señala un momento */
+.recien-cambiado { outline: var(--b-2) solid var(--ok); outline-offset: var(--b-2); border-radius: var(--r-ctrl); }
+/* El resumen de errores nombra el documento de cada pregunta repetida («¿El documento cumple? · CURP»): el nombre va
+   en la etiqueta, oculto a la vista porque el título del documento ya está arriba (hallazgo P116) */
+.contexto-resumen { position: absolute; width: var(--b-1); height: var(--b-1); overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Verificar: el desenlace lleva icono, no sólo color */
+.resultado-icono { width: var(--e-6); height: var(--e-6); flex: none; }
+.resultado[data-tono="ok"] .resultado-situacion { color: var(--ok-txt); }
+.resultado[data-tono="error"] .resultado-situacion { color: var(--error-txt); }

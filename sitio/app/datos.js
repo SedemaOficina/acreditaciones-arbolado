@@ -131,12 +131,14 @@
     if (est) est.hidden = true;
     if (enfoca) { const b = $(`[data-editar="${k}"]`); if (b) b.focus(); }
   }
-  function guardado(k, texto) {
-    const aviso = $(`[data-guardado="${k}"]`);
-    const partes = [document.createTextNode(texto)];
-    if (volverA) partes.push(document.createTextNode(' '), el('a', { href: volverA, texto: volverA === 'solicitud.html' ? 'Volver a tu solicitud' : 'Volver' }));
-    aviso.replaceChildren(...partes);
-    aviso.hidden = false;
+  /* «Hecho»: aviso verde con palomita y título, junto a la sección que se guardó (propuesta «Avisos y confirmaciones»,
+     2026-10-17; antes salía sin icono) */
+  function guardado(k, [titulo, texto]) {
+    const caja = $(`[data-guardado="${k}"]`);
+    const extra = volverA ? [el('p', {}, [el('a', { href: volverA, texto: volverA === 'solicitud.html' ? 'Volver a tu solicitud' : 'Volver' })])] : [];
+    const a = APD.aviso('ok', titulo, texto, extra);
+    caja.replaceChildren(...a.childNodes);
+    caja.hidden = false;
   }
 
   APD.cargar().then((datos) => {
@@ -144,9 +146,9 @@
     if (!p) return;
     pinta(datos, p);
     const TEXTOS = {
-      contacto: 'Se guardó tu contacto.',
-      adscripcion: 'Se guardó tu adscripción. Tus próximas solicitudes se envían con ella.',
-      foto: 'Se guardó tu nueva fotografía. Se confirma en tu cita de cotejo.'
+      contacto: ['Se guardó tu contacto', ''],
+      adscripcion: ['Se guardó tu adscripción', 'Tus próximas solicitudes se envían con ella.'],
+      foto: ['Se guardó tu nueva fotografía', 'Se confirma en tu cita de cotejo.']
     };
     for (const k of SECCIONES) {
       const f = formDe(k);

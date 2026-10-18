@@ -38,10 +38,9 @@
 
     // Lo que ya se revisó cambió de estado (APD.cargar aplica las revisiones de la prueba); si la persona lo reenvió,
     // vuelve a estar enviada y regresa a la bandeja como reenviada
-    const enviadas = datos.solicitud.filter((s) => s.estado === 'enviada')
-      // Lo enviado en este navegador durante la prueba va primero, para encontrarlo (decisión 2026-10-17); lo demás, de la
-      // que más espera a la más reciente
-      .sort((a, b) => Number(Boolean(b.de_prueba)) - Number(Boolean(a.de_prueba)) || a.estado_desde.localeCompare(b.estado_desde));
+    // Lo enviado en este navegador durante la prueba va primero, para encontrarlo (decisión 2026-10-17); lo demás, de la
+    // que más espera a la más reciente
+    const enviadas = P.porRevisar(datos);
     const filas = enviadas.map((s) => {
       const p = persona[s.solicitante_id];
       const v = P.vuelta(datos, s);
@@ -53,7 +52,7 @@
         el('td', { texto: APD.nombreCompleto(p) }),
         el('td', { texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${s.modalidad === 'renovacion' ? 'renovación' : 'nueva'}` }),
         el('td', { texto: fecha(s.estado_desde) }),
-        el('td', {}, [estado(e.texto, e.tono)]),
+        el('td', {}, [estado(e.texto, e.tono || 'marcha', 'reloj')]),
         el('td', { texto: v.texto }),
         el('td', {}, sen.length ? el('span', { class: 'senales' }, sen.map(([t, tono]) => (tono ? estado(t, tono) : el('span', { texto: t })))) : el('span', { class: 'texto-gris', texto: '—' })),
         el('td', {}, [enlace])
@@ -98,8 +97,8 @@
       $('[data-revisadas-lista]').replaceChildren(...hechas.map(([folio, r]) => {
         const s = porFolio[folio];
         const p = s ? persona[s.solicitante_id] : null;
-        const actual = s ? (APD.ESTADOS[s.estado] || { texto: s.estado }) : { texto: '—' };
-        return el('li', {}, [el('span', { class: 'mono', texto: folio }), document.createTextNode(` · ${p ? APD.nombreCompleto(p) : ''} · ${r.texto || r.resultado} · situación actual: ${actual.texto}`)]);
+        const actual = s ? APD.nombrePersonal(s.estado) : '—';
+        return el('li', {}, [el('span', { class: 'mono', texto: folio }), document.createTextNode(` · ${p ? APD.nombreCompleto(p) : ''} · ${r.texto || r.resultado} · situación actual: ${actual}`)]);
       }));
       $('[data-revisadas]').hidden = false;
     }

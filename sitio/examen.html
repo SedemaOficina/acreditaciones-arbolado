@@ -95,7 +95,8 @@
       <progress class="examen-progreso" data-progreso max="1" value="0" aria-label="Preguntas contestadas"></progress>
     </div>
     <!-- El aviso de tiempo se anuncia sólo a los 15, 5 y 1 minutos, para no interrumpir a quien usa lector de pantalla. -->
-    <p class="solo-lector" role="status" data-aviso-tiempo></p>
+    <!-- Visible, no sólo para el lector de pantalla (hallazgo P117) -->
+    <p class="examen-aviso-tiempo" role="status" data-aviso-tiempo></p>
 
     <div class="tarjeta" tabindex="-1" data-tarjeta-pregunta>
       <!-- Caso: enunciado y tablas que comparten varias preguntas seguidas; se repite arriba de cada una. -->
@@ -142,7 +143,7 @@
     <p class="examen-calificacion"><span class="examen-calificacion-etq">Calificación</span><span class="examen-calificacion-valor" data-calificacion></span></p>
     <p class="examen-veredicto" data-veredicto></p>
     <div data-resultado-datos></div>
-    <p data-resultado-sigue></p>
+    <div data-resultado-sigue></div>
     <div class="acciones">
       <button type="button" class="btn btn-primario" data-salir>Terminar</button>
     </div>

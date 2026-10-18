@@ -43,6 +43,8 @@
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
     ]));
     const filas = G.personas(datos, g);
+    // Códigos repuestos hace poco (inscripción → hora), para señalarlos en su fila
+    const recientes = {};
     // Fotografías de la cuenta (las confirmadas en el cotejo), para pasar lista
     const fotos = {};
     Promise.all(filas.map((f) => G.fotoDe(f.persona.curp, APD.nombreCompleto(f.persona)).then((u) => { fotos[f.inscripcion.id] = u; })))
@@ -88,7 +90,10 @@
             el('button', { type: 'button', class: 'btn-enlace', 'data-accion': 'presente', 'data-ins': id, 'aria-label': `Llegó: marcar presente a ${nombre}`, texto: 'Llegó: marcar presente' })])]);
         } else {
           cuenta.derecho += 1; cuenta.presentes += 1;
-          paseLista = el('td', {}, [el('div', { class: 'examen-avance-celda' }, [estado('Presente', 'ok'), r ? el('span', { class: 'mono examen-codigo', texto: r.codigo }) : null])]);
+          // Un código recién repuesto se señala en su fila durante un minuto, para que se vea el cambio (hallazgo P117)
+          const repuesto = recientes[id] && Date.now() - recientes[id] < 60000;
+          paseLista = el('td', {}, [el('div', { class: `examen-avance-celda${repuesto ? ' recien-cambiado' : ''}` }, [estado('Presente', 'ok'),
+            r ? el('span', { class: 'mono examen-codigo', texto: r.codigo }) : null, repuesto ? estado('Código nuevo: el anterior ya no sirve', 'ok') : null])]);
           if (r) {
             const partes = [];
             if (r.situacion === 'sin_empezar') { cuenta.sinEmpezar += 1; partes.push(estado('Sin empezar', '')); }
@@ -166,11 +171,14 @@
         G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); });
       } else if (b.dataset.accion === 'reponer') {
         const r = codigoDe(f.inscripcion.id);
-        FormKit.confirma(b, { titulo: '¿Reponer el código?', texto: `El código ${r.codigo} de ${nombre} deja de servir. El examen sigue igual con el código nuevo: mismas preguntas, respuestas guardadas y el tiempo que le quede.`, si: 'Reponer el código', no: 'Cancelar' })
-          .then((si) => { if (si) API.reponer(r.codigo, INSTRUCTOR.usuario).then((nuevo) => { pinta(true); FormKit.anuncia(`Código nuevo de ${nombre}: ${nuevo.codigo.split('').join(' ')}.`); }); });
+        APD.confirma(b, { titulo: `¿Reponer el código de ${nombre}?`,
+          consecuencias: [`El código ${r.codigo} deja de servir.`, 'El examen sigue igual con el código nuevo: mismas preguntas, respuestas guardadas y el tiempo que le quede.'],
+          si: 'Sí, reponer el código' })
+          .then((si) => { if (si) API.reponer(r.codigo, INSTRUCTOR.usuario).then((nuevo) => { recientes[f.inscripcion.id] = Date.now(); pinta(true); FormKit.anuncia(`Código nuevo de ${nombre}: ${nuevo.codigo.split('').join(' ')}.`); }); });
       } else if (b.dataset.accion === 'suspender') {
         suspenderA = { codigo: codigoDe(f.inscripcion.id).codigo, nombre, boton: b };
-        $('[data-suspender-de]').textContent = `${nombre} ya no podrá contestar. Lo contestado no se califica. Esta acción no se deshace.`;
+        $('[data-suspender-titulo]').textContent = `¿Suspender el examen de ${nombre}?`;
+        $('[data-suspender-de]').replaceChildren(...['Ya no podrá contestar y lo contestado no se califica.', 'La persona lee el motivo en su pantalla.'].map((t) => el('li', { texto: t })));
         $('#dlg-suspender').showModal();
         $('#motivo').focus();
       }
@@ -187,7 +195,7 @@
         formSusp.reset();
         instSusp.ctx.limpia('motivo');
         pinta(true);
-        FormKit.anuncia(`El examen de ${nombre} quedó suspendido.`);
+        APD.pintaAviso($('[data-aviso-accion]'), 'info', `Examen de ${nombre} suspendido`, 'Queda registrado con su motivo; lo contestado no se califica.', false);
       },
       alFallar(err) { const a = $('[data-estado-envio] .aviso-texto', formSusp); if (err && err.mensaje && a) a.textContent = err.mensaje; }
     });
@@ -195,7 +203,7 @@
 
     /* Imprimir sólo las papeletas */
     $('[data-imprimir]').addEventListener('click', () => {
-      if (!$('[data-papeletas]').children.length) { FormKit.anuncia('No hay códigos por imprimir: primero pase lista.'); $('[data-cuenta]').textContent = 'No hay códigos por imprimir: primero pase lista; el código sale al marcar a cada persona presente.'; return; }
+      if (!$('[data-papeletas]').children.length) { APD.pintaAviso($('[data-aviso-accion]'), 'error', 'No hay códigos por imprimir', 'Primero pase lista: el código sale al marcar a cada persona «Presente».', true); return; }
       document.body.classList.add('imprime-papeletas');
       window.print();
     });

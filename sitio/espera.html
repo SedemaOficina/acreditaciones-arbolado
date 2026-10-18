@@ -45,6 +45,8 @@
 
     <div class="seleccion" data-seleccion hidden>
       <p role="status" data-elegidas>Ninguna persona elegida.</p>
+      <!-- Lo que impidió agregar o crear, junto a los botones (APD.pintaAviso) -->
+      <div data-error-eleccion hidden></div>
       <div class="seleccion-acciones" data-destinos></div>
       <p class="ayuda" data-destino-ayuda>Un grupo combinado recibe cualquier mezcla de organizaciones e independientes. Si una organización no llega al mínimo, sus personas van a un grupo combinado.</p>
     </div>
@@ -54,7 +56,7 @@
   <dialog class="dialogo" id="dlg-crear" aria-labelledby="t-crear">
     <form id="crear" data-formkit="manual" action="#" method="post">
       <h2 class="titulo-bloque dialogo-titulo" id="t-crear">Crear un grupo</h2>
-      <p class="texto-gris" data-crear-de></p>
+      <p data-crear-de></p>
       <fieldset class="grupo" data-campo="integracion" data-requerido data-uso="Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).">
         <legend class="etiqueta">¿De quiénes es el grupo?</legend>
         <!-- autocomplete off: decisión de quien arma el grupo. -->
@@ -65,7 +67,7 @@
       </fieldset>
       <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
       <div class="acciones dialogo-acciones">
-        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Cancelar</button>
+        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Volver sin cambios</button>
         <button type="submit" class="btn btn-primario" data-accion="enviar">Crear el grupo</button>
       </div>
     </form>

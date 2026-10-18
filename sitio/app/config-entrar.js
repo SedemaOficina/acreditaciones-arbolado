@@ -24,7 +24,7 @@ window.FORMKIT_OPCIONES = {
           if (p && p.estado === 'sin_activar') {
             return mal({ mensaje: 'Esta CURP tiene acreditaciones anteriores, pero todavía no tiene cuenta. Crea tu cuenta con ella para verlas.' });
           }
-          const falla = () => mal({ mensaje: 'La CURP o la contraseña no coinciden. Revisa ambas e intenta de nuevo.' });
+          const falla = () => mal({ titulo: 'No pudiste entrar', mensaje: 'La CURP o la contraseña no coinciden. Revisa ambas e intenta de nuevo.' });
           // Sólo en la versión de prueba (2026-10-17): si la CURP no tiene cuenta en ESTE navegador se dice, porque las
           // cuentas de la prueba no se comparten entre navegadores ni entre direcciones. En el SIA el mensaje es siempre
           // el general, para no revelar qué CURP tienen cuenta.
@@ -40,7 +40,8 @@ window.FORMKIT_OPCIONES = {
               // Cuenta bloqueada en el cotejo: no era la persona de la fotografía (decisión 2026-10-17). Sólo se dice
               // a quien ya dio la contraseña correcta. Pendiente (P79): cómo se comunica con la Dirección.
               if (p.estado === 'bloqueada') {
-                return mal({ mensaje: 'Tu cuenta está bloqueada mientras la Secretaría aclara tu identidad, que no se pudo confirmar en tu cita de cotejo.' });
+                return mal({ titulo: 'Tu cuenta está bloqueada', pendiente: 'Pendiente (P79): a quién acudir para aclararlo.',
+                  mensaje: 'En tu cita de cotejo no se pudo confirmar tu identidad. La Secretaría lo está aclarando; mientras, no puedes entrar.' });
               }
               APD.guardaSesion({ id: p.id });
               ok({ ok: true });
@@ -56,7 +57,12 @@ window.FORMKIT_OPCIONES = {
     location.href = /^[a-z]+\.html$/.test(volver || '') ? volver : 'tramites.html';
   },
   alFallar(error, form) {
+    // Con título: qué pasó y qué hacer (propuesta «Avisos y confirmaciones», 2026-10-17); la cuenta bloqueada ya no se ve
+    // igual que una contraseña equivocada
     const aviso = form.querySelector('[data-estado-envio] .aviso-texto');
-    if (error && error.mensaje && aviso) aviso.textContent = error.mensaje;
+    if (!(error && error.mensaje && aviso)) return;
+    const { el } = APD;
+    aviso.replaceChildren(...[error.titulo ? el('span', { class: 'aviso-titulo', texto: error.titulo }) : null, document.createTextNode(error.mensaje),
+      error.pendiente ? el('span', { class: 'aviso-titulo pendiente', texto: error.pendiente }) : null].filter(Boolean));
   }
 };

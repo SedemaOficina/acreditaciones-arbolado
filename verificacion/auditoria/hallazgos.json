@@ -120,6 +120,5 @@
       "tipo": "encimado",
       "detalle": "p.visor-pagina «Hoja 1 de 3» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (123×20 px)"
     }
-  ],
-  "nota": "Los dos encimados son el botón flotante «Menú de pruebas» (sólo en la versión de prueba; se quita al pasar al SIA) sobre el visor de «Revisar», con la página sin desplazar; los mismos que en la auditoría del 2026-10-17 (0.34)."
+  ]
 }

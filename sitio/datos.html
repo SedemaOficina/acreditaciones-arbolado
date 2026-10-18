@@ -42,7 +42,7 @@
       <p class="perfil-foto-estado" data-foto-estado></p>
       <p data-foto-cambio hidden><button type="button" class="btn btn-secundario btn-chico" data-editar="foto"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-camara"></use></svg>Cambiar fotografía</button></p>
     </div>
-    <p class="aviso aviso-ok perfil-guardado" role="status" data-guardado="foto" hidden></p>
+    <div class="aviso aviso-ok perfil-guardado" role="status" data-guardado="foto" hidden></div>
     <!-- Sólo mientras la Secretaría no la confirme. Cómo se actualiza una fotografía ya confirmada: P100 (en la cita no se toma otra). -->
     <form id="form-foto" class="perfil-form" data-formkit="manual" data-seccion="foto" action="#" method="post" aria-label="Cambiar fotografía" hidden>
       <div class="campo" data-campo="foto" data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
@@ -86,7 +86,7 @@
       <button type="button" class="btn btn-secundario btn-chico" data-editar="contacto"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-editar"></use></svg>Editar<span class="solo-lector"> contacto</span></button>
     </div>
     <div data-vista="contacto"></div>
-    <p class="aviso aviso-ok perfil-guardado" role="status" data-guardado="contacto" hidden></p>
+    <div class="aviso aviso-ok perfil-guardado" role="status" data-guardado="contacto" hidden></div>
     <form id="form-contacto" class="perfil-form" data-formkit="manual" data-seccion="contacto" action="#" method="post" aria-labelledby="t-contacto" hidden>
       <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
       <div class="fila">
@@ -124,7 +124,7 @@
     </div>
     <div data-vista="adscripcion"></div>
     <p class="ayuda">Tus solicitudes se envían con la adscripción que tengas ese día; las que ya enviaste conservan la suya.</p>
-    <p class="aviso aviso-ok perfil-guardado" role="status" data-guardado="adscripcion" hidden></p>
+    <div class="aviso aviso-ok perfil-guardado" role="status" data-guardado="adscripcion" hidden></div>
     <form id="form-adscripcion" class="perfil-form" data-formkit="manual" data-seccion="adscripcion" action="#" method="post" aria-labelledby="t-adscripcion" hidden>
       <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
       <!-- adscripcion:inicio (fragmento de herramientas/plantillas/adscripcion.html; lo inserta construir-sitio.mjs) -->

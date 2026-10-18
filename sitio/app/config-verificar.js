@@ -24,17 +24,20 @@ window.FORMKIT_OPCIONES = {
     const { el } = APD;
     const caja = document.querySelector('[data-resultado]');
     const f = r.fila;
+    // El desenlace con su color e icono (propuesta «Avisos y confirmaciones», 2026-10-17): para quien verifica, una
+    // acreditación que no existe es una alerta, como una que ya no está vigente
+    const situacion = (texto, icono) => el('p', { class: 'resultado-situacion' }, [APD.icono(icono, 'icono resultado-icono'), document.createTextNode(texto)]);
     if (!f) {
-      caja.removeAttribute('data-tono');
+      caja.setAttribute('data-tono', 'error');
       caja.replaceChildren(
-        el('p', { class: 'resultado-situacion', texto: 'No encontramos esa acreditación' }),
-        el('p', { texto: `Revisa que el número ${r.numero} esté escrito tal como aparece impreso. Si es correcto, la acreditación no está registrada en la Secretaría.` })
+        situacion(`${r.numero} no está registrada`, 'cerrar'),
+        el('p', { texto: 'Revisa que el número esté escrito tal como aparece en la credencial. Si es correcto, esta persona no tiene una acreditación de la Secretaría.' })
       );
     } else {
       const vigente = f.situacion === 'Vigente';
       caja.setAttribute('data-tono', vigente ? 'ok' : 'error');
       caja.replaceChildren(
-        el('p', { class: 'resultado-situacion', texto: vigente ? 'Vigente' : 'No vigente' }),
+        situacion(vigente ? `Vigente hasta el ${APD.fecha(f.vence_en)}` : 'No vigente', vigente ? 'palomita' : 'cerrar'),
         APD.datosLista([
           ['Nombre', f.nombre],
           ['Acreditación', f.tipo],

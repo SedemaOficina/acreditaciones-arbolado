@@ -48,9 +48,9 @@
 .examen-repaso-fila > .estado { grid-column: 2; grid-row: 1; }
 .examen-repaso-texto { grid-column: 1 / -1; grid-row: 2; padding-block-end: var(--e-2); font-size: var(--t-sm); color: var(--gris); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.examen-resultado .titulo-paso { text-align: center; }
+.examen-resultado .titulo-paso { display: flex; justify-content: center; align-items: center; gap: var(--e-2); text-align: center; }
 .examen-calificacion { display: grid; gap: var(--e-1); margin-block: var(--e-5) var(--e-3); text-align: center; }
-.examen-veredicto { margin-block-end: var(--e-5); text-align: center; }
+.examen-veredicto { margin-block-end: var(--e-5); text-align: center; color: var(--gris); }
 .examen-calificacion-etq { font: var(--peso-semi) var(--t-sm)/1 var(--fuente-titulo); letter-spacing: var(--tracking-rotulo); text-transform: uppercase; color: var(--gris); }
 .examen-calificacion-valor { font: var(--peso-fuerte) calc(var(--t-2xl) * 2)/1 var(--fuente-titulo); color: var(--guinda); }
 
@@ -105,3 +105,15 @@
   .papeleta-dato { margin: var(--e-1) 0; font-size: var(--t-xs); }
   .papeleta-codigo { margin: var(--e-3) 0; font-size: var(--t-2xl); font-weight: var(--peso-fuerte); letter-spacing: var(--tracking-rotulo); }
 }
+
+/* Resultado (propuesta «Avisos y confirmaciones», 2026-10-17): el veredicto es el título, con su color e icono; la
+   calificación, en el color del texto; una franja arriba en el color del desenlace */
+.examen-resultado[data-tono="ok"] { border-block-start: var(--b-4) solid var(--ok); }
+.examen-resultado[data-tono="error"] { border-block-start: var(--b-4) solid var(--error); }
+.examen-resultado[data-tono="ok"] .titulo-paso { color: var(--ok-txt); }
+.examen-resultado[data-tono="error"] .titulo-paso { color: var(--error-txt); }
+.examen-veredicto-icono { width: var(--e-6); height: var(--e-6); }
+.examen-resultado[data-tono] .examen-calificacion-valor { color: var(--texto); }
+/* Aviso de minutos restantes: se ve junto al reloj, no sólo lo oye el lector de pantalla (hallazgo P117) */
+.examen-aviso-tiempo { margin: 0; font-weight: var(--peso-semi); color: var(--pend-txt); }
+.examen-aviso-tiempo:empty { display: none; }

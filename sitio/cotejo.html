@@ -41,15 +41,16 @@
       </div>
       <span data-estado></span>
     </div>
-    <div data-persona></div>
+    <!-- Lo que cambia esta cita va antes de la ficha, a la vista sin desplazar (propuesta «Avisos y confirmaciones») -->
     <div class="aviso aviso-advertencia" data-retoma hidden>
-      <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+      <svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg>
       <div class="aviso-texto" data-retoma-texto></div>
     </div>
-    <div class="aviso" data-antecedente hidden>
-      <svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg>
+    <div class="aviso aviso-advertencia" data-antecedente hidden>
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
       <div class="aviso-texto" data-antecedente-texto></div>
     </div>
+    <div data-persona></div>
   </section>
 
   <!-- El cotejo (decisiones 2026-10-17): llegada, identidad, documentos, pago y factura. Una sola acción principal,
@@ -135,7 +136,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver lo que cargó<span class="solo-lector">: Identificación oficial</span></button></p>
           <fieldset class="grupo" data-campo="coincide_identificacion_oficial" data-requerido data-uso="Registrar si «Identificación oficial» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Identificación oficial</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_identificacion_oficial" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -143,7 +144,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_identificacion_oficial" data-requerido data-si="coincide_identificacion_oficial=no" data-uso="Decirle a la persona qué no coincidió de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_identificacion_oficial">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_identificacion_oficial">¿Qué no coincide?<span class="contexto-resumen"> · Identificación oficial</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_identificacion_oficial" name="diferencia_identificacion_oficial" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
@@ -158,7 +159,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver lo que cargó<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
           <fieldset class="grupo" data-campo="coincide_curp" data-requerido data-uso="Registrar si «Clave Única de Registro de Población (CURP)» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Clave Única de Registro de Población (CURP)</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_curp" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -166,7 +167,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_curp" data-requerido data-si="coincide_curp=no" data-uso="Decirle a la persona qué no coincidió de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_curp">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_curp">¿Qué no coincide?<span class="contexto-resumen"> · Clave Única de Registro de Población (CURP)</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_curp" name="diferencia_curp" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
@@ -181,7 +182,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver lo que cargó<span class="solo-lector">: Comprobante de domicilio</span></button></p>
           <fieldset class="grupo" data-campo="coincide_comprobante_domicilio" data-requerido data-uso="Registrar si «Comprobante de domicilio» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Comprobante de domicilio</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobante_domicilio" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -189,7 +190,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_comprobante_domicilio" data-requerido data-si="coincide_comprobante_domicilio=no" data-uso="Decirle a la persona qué no coincidió de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_comprobante_domicilio">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_comprobante_domicilio">¿Qué no coincide?<span class="contexto-resumen"> · Comprobante de domicilio</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_comprobante_domicilio" name="diferencia_comprobante_domicilio" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
@@ -204,7 +205,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver lo que cargó<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
           <fieldset class="grupo" data-campo="coincide_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Constancia de situación fiscal</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_constancia_situacion_fiscal" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -212,7 +213,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_constancia_situacion_fiscal" data-requerido data-si="coincide_constancia_situacion_fiscal=no" data-uso="Decirle a la persona qué no coincidió de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_constancia_situacion_fiscal">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_constancia_situacion_fiscal">¿Qué no coincide?<span class="contexto-resumen"> · Constancia de situación fiscal</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_constancia_situacion_fiscal" name="diferencia_constancia_situacion_fiscal" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
@@ -227,7 +228,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver lo que cargó<span class="solo-lector">: Comprobante de estudios</span></button></p>
           <fieldset class="grupo" data-campo="coincide_comprobante_estudios" data-requerido data-uso="Registrar si «Comprobante de estudios» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Comprobante de estudios</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobante_estudios" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -235,7 +236,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_comprobante_estudios" data-requerido data-si="coincide_comprobante_estudios=no" data-uso="Decirle a la persona qué no coincidió de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_comprobante_estudios">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_comprobante_estudios">¿Qué no coincide?<span class="contexto-resumen"> · Comprobante de estudios</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_comprobante_estudios" name="diferencia_comprobante_estudios" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
@@ -250,7 +251,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver lo que cargó<span class="solo-lector">: Currículum vitae</span></button></p>
           <fieldset class="grupo" data-campo="coincide_curriculum_vitae" data-requerido data-uso="Registrar si «Currículum vitae» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Currículum vitae</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_curriculum_vitae" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -258,7 +259,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_curriculum_vitae" data-requerido data-si="coincide_curriculum_vitae=no" data-uso="Decirle a la persona qué no coincidió de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_curriculum_vitae">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_curriculum_vitae">¿Qué no coincide?<span class="contexto-resumen"> · Currículum vitae</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_curriculum_vitae" name="diferencia_curriculum_vitae" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
@@ -273,7 +274,7 @@
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver lo que cargó<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
           <fieldset class="grupo" data-campo="coincide_comprobantes_experiencia" data-requerido data-uso="Registrar si «Comprobantes de experiencia» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Comprobantes de experiencia</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobantes_experiencia" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -281,7 +282,7 @@
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_comprobantes_experiencia" data-requerido data-si="coincide_comprobantes_experiencia=no" data-uso="Decirle a la persona qué no coincidió de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_comprobantes_experiencia">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_comprobantes_experiencia">¿Qué no coincide?<span class="contexto-resumen"> · Comprobantes de experiencia</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_comprobantes_experiencia" name="diferencia_comprobantes_experiencia" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>

@@ -80,15 +80,17 @@
      Las por atender son las solicitudes validadas con su cita; una cita en pausa espera el documento correcto que la
      persona carga el mismo día. Las ya atendidas quedan como registro de la cita (apd.cita), con lo que pasó. */
   const SITUACION = {
-    pendiente: { texto: 'Por atender', tono: '' },
-    en_pausa: { texto: 'En pausa · esperando el documento', tono: 'pend' },
+    // Familias de etiqueta (propuesta «Avisos y confirmaciones», 2026-10-17): pend = le toca a usted, marcha = le toca a
+    // otra parte, ok = logro, error = cerrada sin acreditación
+    pendiente: { texto: 'Por atender', tono: 'pend' },
+    en_pausa: { texto: 'En pausa · esperando el documento', tono: 'marcha' },
     documento_nuevo: { texto: 'Documento cargado · retomar', tono: 'pend' },
     atendida: { texto: 'Atendida', tono: 'ok' },
-    no_se_presento: { texto: 'No se presentó · cita nueva', tono: '' },
+    no_se_presento: { texto: 'No se presentó · cita nueva', tono: 'pend', icono: 'fecha' },
     cerrada: { texto: 'No se presentó · solicitud cerrada', tono: 'error' },
-    sin_pago: { texto: 'Sin pago · cita nueva', tono: '' },
-    con_observaciones: { texto: 'Regresó con observaciones', tono: 'pend' },
-    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error' }
+    sin_pago: { texto: 'Sin pago · cita nueva', tono: 'pend', icono: 'fecha' },
+    con_observaciones: { texto: 'Regresó con observaciones', tono: 'marcha' },
+    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error', icono: 'candado' }
   };
   /* Documentos que la persona cargó después de que su cita quedó en pausa */
   function cargadosEnPausa(datos, s) {
@@ -125,6 +127,13 @@
     const n = datos.solicitante.map((p) => String(p.numero_expediente || '').match(new RegExp(`^EXP-${anio}-(\\d+)$`)))
       .filter(Boolean).map((m) => Number(m[1]));
     return `EXP-${anio}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(4, '0')}`;
+  }
+
+  /* Solicitudes por revisar, en el orden de la bandeja: lo enviado en este navegador primero (para encontrarlo), luego
+     de la que más espera a la más reciente. La usan la bandeja y «Revisar la siguiente». */
+  function porRevisar(datos) {
+    return datos.solicitud.filter((s) => s.estado === 'enviada')
+      .sort((a, b) => Number(Boolean(b.de_prueba)) - Number(Boolean(a.de_prueba)) || a.estado_desde.localeCompare(b.estado_desde));
   }
 
   /* ----- Grupos (maqueta aprobada y decisiones del 2026-10-17) -----
@@ -180,9 +189,9 @@
   const SITUACION_GRUPO = {
     en_integracion: { texto: 'Por confirmar', tono: 'pend' },
     confirmado: { texto: 'Confirmado', tono: 'ok' },
-    en_curso: { texto: 'En curso', tono: 'ok' },
-    concluido: { texto: 'Concluido', tono: '' },
-    cancelado: { texto: 'Cancelado', tono: '' }
+    en_curso: { texto: 'En curso', tono: 'marcha' },
+    concluido: { texto: 'Concluido', tono: 'cerrado' },
+    cancelado: { texto: 'Cancelado', tono: 'cerrado' }
   };
   function grupo(datos, g) {
     const c = APD.curso(datos, g.tipo_acreditacion, g.modalidad);
@@ -237,6 +246,6 @@
   /* Lo registrado en este navegador durante la prueba ya viene en los datos (APD.cargar → APD_ARCHIVOS_PRUEBA.mezcla) */
   function datosConPrueba(datos) { return Promise.resolve(datos); }
 
-  global.APD_PERSONAL = { datosConPrueba, REVISORA, INSTRUCTORES, INSTRUCTORA, nombreInstructor, eventosGrupos, guardaGrupo, CURSOS, claveCurso, deClave,
+  global.APD_PERSONAL = { datosConPrueba, porRevisar, REVISORA, INSTRUCTORES, INSTRUCTORA, nombreInstructor, eventosGrupos, guardaGrupo, CURSOS, claveCurso, deClave,
     nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, dias, espera, vuelta, corregidos, senales, pintaSesion };
 }(window));

@@ -44,7 +44,7 @@
         el('td', { texto: APD.nombreCompleto(p) }),
         el('td', {}, [el('span', { class: 'mono', texto: s.folio })]),
         el('td', { texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${s.modalidad === 'renovacion' ? 'renovación' : 'nueva'}` }),
-        el('td', {}, [estado(texto, sit.tono)]),
+        el('td', {}, [estado(texto, sit.tono, sit.icono)]),
         el('td', {}, [accion])
       ]);
       return { tr, hora, c, dia: P.diaDe(c.en), texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' ')) };

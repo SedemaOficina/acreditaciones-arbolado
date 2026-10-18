@@ -62,7 +62,7 @@
     // Una solicitud se revisa mientras está enviada: si la persona la reenvió después de una revisión, se revisa otra vez
     const ya = P.revisiones()[folio];
     if (s.estado !== 'enviada') {
-      const actual = (APD.ESTADOS[s.estado] || { texto: s.estado }).texto;
+      const actual = APD.nombrePersonal(s.estado);
       return falla(ya ? `Ya registró la revisión de esta solicitud en esta prueba (${ya.texto}). Su situación actual es «${actual}».`
         : `Esta solicitud no está pendiente de revisión documental. Su situación actual es «${actual}».`);
     }
@@ -82,7 +82,7 @@
         ? ` · enviada el ${fecha(s.enviada_en)} · reenviada con correcciones el ${fecha(s.estado_desde)} · ${v.n}.ª revisión`
         : ` · enviada el ${fecha(s.enviada_en)} · primera revisión`)
     );
-    $('[data-estado]').replaceChildren(APD.estado('En revisión documental'));
+    $('[data-estado]').replaceChildren(APD.estado('En revisión documental', 'marcha'));
     const podaVigente = datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda')
       .sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];
     const anterior = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
@@ -215,9 +215,10 @@
       // Estado de cada documento, a la vista
       for (const art of $$('[data-doc]', form)) {
         const dec = elegido(`decision_${art.dataset.doc}`);
-        const chip = $('[data-doc-estado]', art);
-        chip.textContent = dec === 'aceptado' ? 'Aceptado' : dec === 'con_observacion' ? 'Con observación' : 'Por revisar';
-        if (dec) chip.dataset.tono = dec === 'aceptado' ? 'ok' : 'error'; else chip.removeAttribute('data-tono');
+        // Etiqueta con icono de su familia: por revisar (le toca), aceptado (logro), con observación (atención)
+        const tono = dec === 'aceptado' ? 'ok' : dec === 'con_observacion' ? 'pend' : 'marcha';
+        $('[data-doc-estado]', art).replaceWith(APD.estado(dec === 'aceptado' ? 'Aceptado' : dec === 'con_observacion' ? 'Con observación' : 'Por revisar', tono));
+        $('.doc-cabeza .estado', art).setAttribute('data-doc-estado', '');
       }
       $('[data-docs-rechazo]').hidden = !rechazo;
       $('[data-docs-ayuda]').hidden = rechazo;
@@ -227,8 +228,11 @@
         const c = elegido('clasificacion');
         dd.textContent = c === 'afin' ? '2 años (carrera afín)' : c === 'disciplina_afin' ? '5 años (disciplina afín)' : c === 'no_afin' ? 'No cumple el perfil: se rechaza' : `${Number(s.experiencia_minima)} años, mientras la carrera no se clasifique`;
       }
+      // Lo que antes sólo se anunciaba al lector de pantalla también se ve (hallazgo P117): con todo decidido, lo dice
       $('[data-resumen]').textContent = rechazo ? 'La solicitud se rechaza por el perfil.'
-        : `${hechos} de ${cargados.length} documentos revisados${observados ? ` · ${observados} con observación` : ''}.`;
+        : hechos === cargados.length && cargados.length
+          ? `Los ${cargados.length} documentos están revisados${observados ? `: ${observados} con observación` : ''}. Elija abajo cómo termina la revisión.`
+          : `${hechos} de ${cargados.length} documentos revisados${observados ? ` · ${observados} con observación` : ''}.`;
       const r = RESULTADOS[resultado];
       const boton = $('[data-accion="enviar"]', form);
       if (boton.getAttribute('aria-busy') !== 'true') boton.textContent = r.boton;
@@ -278,27 +282,28 @@
       },
       alEnviar({ resultado, d }) {
         const nombre = APD.nombreCompleto(p);
-        const titulos = {
-          validada: 'La solicitud quedó validada',
-          con_observaciones: 'Las observaciones se enviaron a la persona',
-          rechazada: 'La solicitud quedó rechazada'
-        };
-        const textos = {
-          validada: `${nombre} recibe su cita de cotejo en el ${APD.sede(datos).nombre} para el ${fecha(d.cita_fecha)} a las ${d.cita_hora}, con los datos para pagar.`,
-          con_observaciones: `${nombre} ve en «Mis trámites» lo que debe corregir y puede reenviar su solicitud. Cuando la reenvíe, volverá a «Solicitudes por revisar», marcada como reenviada.`,
-          rechazada: `${nombre} ve en «Mis trámites» que su solicitud fue rechazada y el motivo. Puede iniciar una solicitud nueva.`
-        };
+        // Resultado de la decisión (propuesta «Avisos y confirmaciones», 2026-10-17): «Quedó guardado» y, en el título,
+        // el desenlace con su color e icono; debajo, lo que ve la persona y el botón a la siguiente solicitud
+        const observados = Object.keys(d).filter((k) => k.startsWith('decision_') && d[k] === 'con_observacion').length;
+        const desenlace = {
+          validada: { tono: 'ok', titulo: `Validada: cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
+            texto: `${nombre} ya ve en «Mis trámites» su cita de cotejo en el ${APD.sede(datos).nombre} y los datos para pagar.` },
+          con_observaciones: { tono: 'pend', titulo: `Con observaciones: ${observados === 1 ? '1 documento regresa' : `${observados} documentos regresan`} a la persona`,
+            texto: `${nombre} ve en «Mis trámites» qué debe corregir. Cuando reenvíe su solicitud, volverá a «Solicitudes por revisar», marcada como reenviada.` },
+          rechazada: { tono: 'error', titulo: 'Rechazada por perfil', cita: d.motivo_rechazo || '',
+            texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` }
+        }[resultado];
         form.hidden = true;
-        $('[data-hecho-titulo]').textContent = titulos[resultado];
-        $('[data-hecho-texto]').textContent = textos[resultado];
-        const hecho = $('[data-hecho]');
-        // El visor se cierra (en computadora queda fijo y empujaba la confirmación hasta abajo) y la confirmación
-        // queda arriba, a la vista (2026-10-17)
+        // El visor se cierra (en computadora queda fijo y empujaba el resultado hasta abajo)
         const visor = $('[data-visor]');
         if (visor && visor.open) visor.close();
-        hecho.hidden = false;
-        hecho.focus();
-        hecho.scrollIntoView({ block: 'start' });
+        const siguiente = P.porRevisar(datos).find((x) => x.folio !== folio);
+        const acciones = $('[data-hecho-acciones]');
+        if (siguiente && !acciones.querySelector('[data-siguiente]')) {
+          acciones.prepend(el('a', { class: 'btn btn-primario', 'data-siguiente': '', href: `revisar.html?folio=${encodeURIComponent(siguiente.folio)}`, texto: 'Revisar la siguiente' }));
+          acciones.before(el('p', { class: 'texto-gris', texto: `Siguiente en la bandeja: ${siguiente.folio}, en espera desde el ${fecha(siguiente.estado_desde)}.` }));
+        }
+        APD.pintaDesenlace($('[data-hecho]'), Object.assign({ quien: P.REVISORA.nombre }, desenlace));
       }
     });
 
@@ -307,10 +312,10 @@
       if (f !== form || document.getElementById('resultado').value !== 'rechazada') return false;
       if (instancia.valida().length) return false; // con errores, el núcleo muestra el resumen
       const boton = $('[data-accion="enviar"]', form);
-      FormKit.confirma(boton, {
-        titulo: '¿Rechazar la solicitud?',
-        texto: `${APD.nombreCompleto(p)} verá el motivo en «Mis trámites». La solicitud ${s.folio} se cierra y no se puede reabrir.`,
-        si: 'Rechazar la solicitud', no: 'Cancelar', peligro: true
+      APD.confirma(boton, {
+        titulo: `¿Rechazar la solicitud ${s.folio}?`,
+        consecuencias: [`${APD.nombreCompleto(p)} verá el motivo en «Mis trámites».`, 'La solicitud se cierra sin acreditación; la persona puede iniciar una nueva.'],
+        irreversible: true, si: 'Sí, rechazar la solicitud', peligro: true
       }).then((si) => { if (si) enviar(); });
       return true;
     };
@@ -339,8 +344,9 @@
       const k = b.dataset.seguir;
       const texto = document.getElementById(`observacion_${k}`);
       if (texto.value.trim().length < 10) {
+        // El error se ve junto al campo, no sólo se anuncia (hallazgo P117)
+        FormKit.marcaError(`observacion_${k}`, 'Antes de seguir, escriba qué debe corregir la persona (al menos 10 caracteres).');
         texto.focus();
-        FormKit.anuncia('Antes de seguir, escriba qué debe corregir la persona (al menos 10 caracteres).');
         return;
       }
       avanza(k);
@@ -352,7 +358,7 @@
       const siguiente = orden.slice(i + 1).find(pendiente) || orden.slice(0, i).find(pendiente);
       if (!siguiente) {
         $('#t-resultado').scrollIntoView({ behavior: suave, block: 'start' });
-        FormKit.anuncia('Todos los documentos están revisados. Sigue el resultado de la revisión.');
+        FormKit.anuncia($('[data-resumen]').textContent);
         return;
       }
       const art = $(`[data-doc="${siguiente}"]`, form);

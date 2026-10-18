@@ -471,6 +471,7 @@
    "integracion": "combinado",
    "estado_desde": "2026-09-12T08:30:00-06:00",
    "fecha_inicio": "2026-09-07",
+   "hora_entrada": "09:00:00",
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null
@@ -489,6 +490,7 @@
    "integracion": "combinado",
    "estado_desde": "2026-10-12T08:30:00-06:00",
    "fecha_inicio": null,
+   "hora_entrada": null,
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": "No se reunió el cupo mínimo en el plazo previsto; las personas regresan a la bandeja."
@@ -507,6 +509,7 @@
    "integracion": "especifico",
    "estado_desde": "2026-10-13T08:30:00-06:00",
    "fecha_inicio": "2026-10-13",
+   "hora_entrada": "09:00:00",
    "organizacion_id": "43a4d636-7b82-449c-844d-444762f97cb2",
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null
@@ -525,6 +528,7 @@
    "integracion": "combinado",
    "estado_desde": "2026-10-07T09:00:00-06:00",
    "fecha_inicio": null,
+   "hora_entrada": null,
    "organizacion_id": null,
    "tipo_acreditacion": "poda",
    "motivo_cancelacion": null
@@ -1556,7 +1560,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0004",
+   "detalle": "Se abre el expediente físico EXP-2026-0004",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "75329da4-21e1-4f10-a07d-213a7ffda09a",
@@ -1566,7 +1570,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0001",
+   "detalle": "Se abre el expediente físico EXP-2026-0001",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "75ba2751-9798-44db-ac72-842d5c1b0c3f",
@@ -1576,7 +1580,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0007",
+   "detalle": "Se abre el expediente físico EXP-2026-0007",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "7cfb2a2d-d797-42d4-a53c-94758ea964a9",
@@ -1586,7 +1590,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0006",
+   "detalle": "Se abre el expediente físico EXP-2026-0006",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "90c0ea92-100b-499c-aea9-ec9f2cbbc0f5",
@@ -1596,7 +1600,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0005",
+   "detalle": "Se abre el expediente físico EXP-2026-0005",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "94586179-43d4-4d00-af2a-848d1860a484",
@@ -1606,7 +1610,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0003",
+   "detalle": "Se abre el expediente físico EXP-2026-0003",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "af0df2ec-006a-4fc4-a275-2f711aed3532",
@@ -1616,7 +1620,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0010",
+   "detalle": "Se abre el expediente físico EXP-2026-0010",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "b758208c-1561-4de7-a555-ca182e501e14",
@@ -1626,7 +1630,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0009",
+   "detalle": "Se abre el expediente físico EXP-2026-0009",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "c16b4c47-728c-4910-a5b9-efe26efe0d46",
@@ -1636,7 +1640,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0002",
+   "detalle": "Se abre el expediente físico EXP-2026-0002",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "c37c7829-b41c-4d37-a7d0-44d2628cb21e",
@@ -1646,7 +1650,7 @@
   {
    "fecha": "2026-08-18T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0008",
+   "detalle": "Se abre el expediente físico EXP-2026-0008",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93",
@@ -1986,7 +1990,7 @@
   {
    "fecha": "2026-08-21T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0034",
+   "detalle": "Se abre el expediente físico EXP-2026-0034",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "5ec69233-0cd1-4157-a23c-adfb1acda361",
@@ -2096,7 +2100,7 @@
   {
    "fecha": "2026-09-01T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0011",
+   "detalle": "Se abre el expediente físico EXP-2026-0011",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "5ea01eb2-de13-462a-a4ca-4667ef0a8b3c",
@@ -2976,7 +2980,7 @@
   {
    "fecha": "2026-09-23T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0014",
+   "detalle": "Se abre el expediente físico EXP-2026-0014",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
@@ -3486,7 +3490,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0024",
+   "detalle": "Se abre el expediente físico EXP-2026-0024",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "08193753-7b69-4ee7-a162-3e4eb14ebfc0",
@@ -3496,7 +3500,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0019",
+   "detalle": "Se abre el expediente físico EXP-2026-0019",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "0efcf35f-4b5a-41fa-a1a5-294fc26a2732",
@@ -3506,7 +3510,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0025",
+   "detalle": "Se abre el expediente físico EXP-2026-0025",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "19e97f98-8eb5-4f5e-ab8e-942a038df7db",
@@ -3516,7 +3520,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0023",
+   "detalle": "Se abre el expediente físico EXP-2026-0023",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "2ffbc313-3a83-4728-a21d-b952eb9efbf6",
@@ -3526,7 +3530,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0027",
+   "detalle": "Se abre el expediente físico EXP-2026-0027",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "42a4a0dd-6906-434c-ad6e-2f7b7090c018",
@@ -3536,7 +3540,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0017",
+   "detalle": "Se abre el expediente físico EXP-2026-0017",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "4de12634-5f50-414f-a9cc-ebb97a1b3a92",
@@ -3546,7 +3550,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0020",
+   "detalle": "Se abre el expediente físico EXP-2026-0020",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "5bb60068-0ca4-4d84-ad08-9901a54cceb7",
@@ -3556,7 +3560,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0018",
+   "detalle": "Se abre el expediente físico EXP-2026-0018",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "60237a0f-dc58-4eea-afe1-2c7ad8f09217",
@@ -3566,7 +3570,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0021",
+   "detalle": "Se abre el expediente físico EXP-2026-0021",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "6295db4a-f71f-4277-a0f4-3010922a9003",
@@ -3576,7 +3580,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0026",
+   "detalle": "Se abre el expediente físico EXP-2026-0026",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "8eae0ed1-fca7-4ed0-a315-d6361c87c422",
@@ -3586,7 +3590,7 @@
   {
    "fecha": "2026-09-30T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0022",
+   "detalle": "Se abre el expediente físico EXP-2026-0022",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "c52ae32f-f47f-480b-aa40-d3940ce006d4",
@@ -4256,7 +4260,7 @@
   {
    "fecha": "2026-10-05T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0012",
+   "detalle": "Se abre el expediente físico EXP-2026-0012",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "67cf436a-a0ce-4d00-ae82-d0b40d575058",
@@ -4486,7 +4490,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0032",
+   "detalle": "Se abre el expediente físico EXP-2026-0032",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "0c4b2abe-27a4-4cd0-ac9f-43c498b74ee4",
@@ -4496,7 +4500,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0031",
+   "detalle": "Se abre el expediente físico EXP-2026-0031",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "39310c7d-1b11-43f6-a11c-af0d874eed33",
@@ -4506,7 +4510,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0016",
+   "detalle": "Se abre el expediente físico EXP-2026-0016",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "751cf4e1-256e-4484-a6e2-63d2235bb70b",
@@ -4516,7 +4520,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0028",
+   "detalle": "Se abre el expediente físico EXP-2026-0028",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "a2666a5a-0277-4583-a442-a5c27731ee36",
@@ -4526,7 +4530,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0030",
+   "detalle": "Se abre el expediente físico EXP-2026-0030",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "b0533310-0bda-4e7b-af42-3cd15c73f2d6",
@@ -4536,7 +4540,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0033",
+   "detalle": "Se abre el expediente físico EXP-2026-0033",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "b4911a5b-1aa9-4e14-a874-b7cd82282c1a",
@@ -4546,7 +4550,7 @@
   {
    "fecha": "2026-10-06T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0029",
+   "detalle": "Se abre el expediente físico EXP-2026-0029",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "eda1b6b4-6960-4da1-a106-f775cf1679e1",
@@ -4866,7 +4870,7 @@
   {
    "fecha": "2026-10-08T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0013",
+   "detalle": "Se abre el expediente físico EXP-2026-0013",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "a5f29365-181a-4c92-a268-4a4029c2c9f5",
@@ -4946,7 +4950,7 @@
   {
    "fecha": "2026-10-09T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0015",
+   "detalle": "Se abre el expediente físico EXP-2026-0015",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
@@ -5266,7 +5270,7 @@
   {
    "fecha": "2026-10-13T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0036",
+   "detalle": "Se abre el expediente físico EXP-2026-0036",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "05bb32ae-8d1a-4c3e-a47a-5c8860aee092",
@@ -5276,7 +5280,7 @@
   {
    "fecha": "2026-10-13T10:30:00-06:00",
    "accion": "expediente",
-   "detalle": "Abre el expediente EXP-2026-0035",
+   "detalle": "Se abre el expediente físico EXP-2026-0035",
    "entidad": "solicitante",
    "usuario": "cotejo.ficticio",
    "entidad_id": "7eee6731-4ea8-4916-a078-800b1ca7e703",

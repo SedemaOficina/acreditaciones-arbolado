@@ -53,11 +53,8 @@
       },
       alEnviar() {
         form.hidden = true;
-        $('[data-hecho-texto]').textContent = `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}, con el documento impreso, para terminar tu cotejo.`;
-        const hecho = $('[data-hecho]');
-        hecho.hidden = false;
-        hecho.focus();
-        hecho.scrollIntoView({ block: 'start' });
+        APD.pintaDesenlace($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento',
+          texto: `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}, con el documento impreso, para terminar tu cotejo.` });
       }
     });
   }).catch(() => falla('No se pudo cargar tu información. Intenta de nuevo más tarde.'));

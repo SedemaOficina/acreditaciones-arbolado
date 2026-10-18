@@ -79,8 +79,8 @@
     if (params.get('hecho') === 'asistencia' && dia) {
       const n = Number(params.get('dia'));
       const asistieron = personas.filter((f) => capturada(f.i.id, n) === true).length;
-      $('[data-hecho] .aviso-texto').textContent = `Asistencia del día ${n} guardada: ${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}.`;
-      $('[data-hecho]').hidden = false;
+      APD.pintaAviso($('[data-hecho]'), 'ok', `Asistencia del día ${n} guardada`,
+        `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.`, true);
       params.delete('hecho');
       history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
     }
@@ -145,7 +145,9 @@
 
     $('[data-todas]').addEventListener('click', () => {
       for (const r of document.querySelectorAll('[data-personas] input[value="si"]')) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
-      FormKit.anuncia(`${plural(personas.length, 'persona marcada', 'personas marcadas')} «Asistió». Cambie a «Faltó» a quien no vino y guarde.`);
+      for (const f of document.querySelectorAll('.falta-marcar')) f.classList.remove('falta-marcar');
+      // Lo que antes sólo oía el lector de pantalla también se ve (hallazgo P117)
+      APD.pintaAviso($('[data-falta-marcar]'), 'info', `${plural(personas.length, 'persona marcada', 'personas marcadas')} «Asistió»`, 'Cambie a «Faltó» a quien no vino y guarde.');
     });
     $('[data-guardar]').addEventListener('click', () => {
       const lista = {};
@@ -155,18 +157,18 @@
         if (r) lista[f.i.id] = r.value === 'si'; else sinMarcar.push(f);
       }
       const aviso = $('[data-falta-marcar]');
+      for (const f of document.querySelectorAll('.falta-marcar')) f.classList.remove('falta-marcar');
       if (sinMarcar.length) {
-        $('.aviso-texto', aviso).textContent = `Falta marcar a ${sinMarcar.length === 1 ? sinMarcar[0].quien : `${sinMarcar.length} personas`}. Marque «Asistió» o «Faltó» a cada persona antes de guardar.`;
-        aviso.hidden = false;
-        const primera = document.querySelector(`[data-personas] input[name="a-${CSS.escape(sinMarcar[0].i.id)}"]`);
-        if (primera) primera.focus();
+        // El error queda junto al botón, con el foco ahí, y cada persona sin marcar se señala en su fila
+        for (const f of sinMarcar) { const fila = document.querySelector(`[data-ins="${CSS.escape(f.i.id)}"]`); if (fila) fila.classList.add('falta-marcar'); }
+        APD.pintaAviso(aviso, 'error', 'No se guardó la asistencia',
+          `Falta marcar a ${sinMarcar.length === 1 ? sinMarcar[0].quien : `${sinMarcar.length} personas, señaladas en rojo`}. Marque «Asistió» o «Faltó» a cada una.`, true);
         return;
       }
       P.guardaGrupo({ tipo: 'asistencia', grupo_id: g.id, dia, lista, por: P.INSTRUCTORA.usuario }).then(() => {
         location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${dia}&hecho=asistencia`;
       }).catch(() => {
-        $('.aviso-texto', aviso).textContent = 'No se pudo guardar la asistencia. Intente de nuevo.';
-        aviso.hidden = false;
+        APD.pintaAviso(aviso, 'error', 'No se pudo guardar la asistencia', 'Lo marcado sigue aquí; intente de nuevo.', true);
       });
     });
     pinta();

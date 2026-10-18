@@ -21,18 +21,18 @@
   function avisoHecho() {
     const hecho = params.get('hecho');
     const n = Number(params.get('n')) || 0;
+    // [tono, título, texto]: aviso con título e icono (propuesta «Avisos y confirmaciones», 2026-10-17)
     const textos = {
-      creado: `Grupo creado con ${plural(n, 'persona', 'personas')}. Todavía no está confirmado: se confirma cuando tenga al menos el mínimo de personas, con su fecha, hora de entrada e instructor.`,
-      agregadas: `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo.`,
-      confirmado: 'Grupo confirmado. Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
-      baja: 'La persona salió del grupo y regresó a la espera con su antigüedad.',
-      baja_integracion: 'La persona salió del grupo. El grupo quedó por debajo del mínimo y dejó de estar confirmado; conserva su fecha, hora e instructor como propuesta. Vuelva a confirmarlo cuando se complete.',
-      cancelado: 'Grupo cancelado. Las personas regresaron a la espera con su antigüedad.'
+      creado: ['ok', `Grupo creado con ${plural(n, 'persona', 'personas')}`, 'Todavía no está confirmado: se confirma cuando tenga al menos el mínimo de personas, con su fecha, hora de entrada e instructor.'],
+      agregadas: ['ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`, ''],
+      confirmado: ['ok', 'Grupo confirmado', 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.'],
+      baja: ['ok', 'La persona salió del grupo', 'Regresó a la espera con su antigüedad.'],
+      baja_integracion: ['pend', 'El grupo dejó de estar confirmado', 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta: vuelva a confirmarlo cuando se complete.'],
+      cancelado: ['info', 'Grupo cancelado', 'Las personas regresaron a la espera con su antigüedad.']
     };
     if (!textos[hecho]) return;
-    const caja = $('[data-hecho]');
-    $('.aviso-texto', caja).textContent = textos[hecho];
-    caja.hidden = false;
+    const [tono, titulo, texto] = textos[hecho];
+    APD.pintaAviso($('[data-hecho]'), tono, titulo, texto, true);
     // Que recargar la página no repita el aviso
     params.delete('hecho'); params.delete('n');
     history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
@@ -97,13 +97,16 @@
         el('td', { texto: P.organizacionDe(datos, s) }),
         el('td', { texto: fecha(i.inscrita_en) })
       ];
-      if (conSituacion) { const e = ESTADO_SOLICITUD[s.estado] || [APD.ESTADOS[s.estado] ? APD.ESTADOS[s.estado].texto : s.estado, '']; celdas.push(el('td', {}, [estado(e[0], e[1])])); }
+      if (conSituacion) { const e = ESTADO_SOLICITUD[s.estado] || [APD.nombrePersonal(s.estado), (APD.ESTADOS[s.estado] || {}).tono || '']; celdas.push(el('td', {}, [estado(e[0], e[1])])); }
       if (puedeBaja) {
         const b = el('button', { type: 'button', class: 'btn-enlace sin-corte', 'aria-label': `Dar de baja a ${quien}`, texto: 'Dar de baja' });
         b.addEventListener('click', () => {
           bajaDe = { folio: s.folio, quien, boton: b };
           const queda = x.n - 1;
-          $('[data-baja-de]').textContent = `${quien} regresa a la espera con su antigüedad.${g.estado === 'confirmado' && queda < g.cupo_minimo ? ` El grupo queda con ${plural(queda, 'persona', 'personas')}, menos del mínimo de ${g.cupo_minimo}: deja de estar confirmado y conserva su fecha como propuesta.` : ''}`;
+          $('[data-baja-titulo]').textContent = `¿Dar de baja a ${quien}?`;
+          $('[data-baja-de]').replaceChildren(...[`Regresa a la espera con su antigüedad y deja de ver el grupo en «Mis trámites».`,
+            g.estado === 'confirmado' && queda < g.cupo_minimo ? `El grupo queda con ${plural(queda, 'persona', 'personas')}, menos del mínimo de ${g.cupo_minimo}: deja de estar confirmado y conserva su fecha como propuesta.` : '']
+            .filter(Boolean).map((t) => el('li', { texto: t })));
           $('#dlg-baja').showModal();
         });
         celdas.push(el('td', {}, [b]));
@@ -135,7 +138,9 @@
     if (antesDeIniciar) {
       cancelar = el('button', { type: 'button', class: 'btn btn-secundario', texto: 'Cancelar el grupo' });
       cancelar.addEventListener('click', () => {
-        $('[data-cancelar-de]').textContent = `${x.n ? `${plural(x.n, 'persona regresa', 'personas regresan')} a la espera con su antigüedad.` : 'El grupo no tiene personas.'} Esta acción no se deshace.`;
+        $('[data-cancelar-titulo]').textContent = `¿Cancelar el grupo ${g.folio}?`;
+        $('[data-cancelar-de]').replaceChildren(...[x.n ? `${x.n === 1 ? 'La persona regresa' : `Las ${x.n} personas regresan`} a la espera, con su antigüedad.` : 'El grupo no tiene personas.',
+          x.n && g.estado === 'confirmado' ? 'Dejan de ver fechas y sede en «Mis trámites».' : ''].filter(Boolean).map((t) => el('li', { texto: t })));
         $('#dlg-cancelar').showModal();
       });
       acciones.push(cancelar);

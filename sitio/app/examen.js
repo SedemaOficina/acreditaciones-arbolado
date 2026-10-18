@@ -220,10 +220,11 @@
   $('[data-volver-preguntas]').addEventListener('click', () => pintaPregunta(actual));
   $('[data-enviar]').addEventListener('click', (e) => {
     const faltan = ex.preguntas.length - contestadas();
-    FormKit.confirma(e.currentTarget, {
+    APD.confirma(e.currentTarget, {
       titulo: '¿Enviar tus respuestas?',
-      texto: `${faltan ? `Te ${faltan === 1 ? 'falta 1 pregunta' : `faltan ${faltan} preguntas`} sin contestar: ${faltan === 1 ? 'cuenta' : 'cuentan'} como incorrecta${faltan === 1 ? '' : 's'}. ` : ''}Después de enviar ya no puedes cambiar tus respuestas.`,
-      si: 'Enviar mis respuestas', no: 'Seguir revisando'
+      consecuencias: [faltan ? `Te ${faltan === 1 ? 'falta 1 pregunta' : `faltan ${faltan} preguntas`} sin contestar: ${faltan === 1 ? 'cuenta' : 'cuentan'} como incorrecta${faltan === 1 ? '' : 's'}.` : 'Contestaste todas las preguntas.',
+        'Al enviar ves tu calificación.'],
+      irreversible: true, si: 'Sí, enviar mis respuestas', no: 'Seguir revisando'
     }).then((si) => { if (si) termina('enviado'); });
   });
   function termina(motivo) {
@@ -237,19 +238,21 @@
     paraReloj();
     $('[data-por-tiempo]').hidden = ex.motivo_fin !== 'tiempo';
     $('[data-calificacion]').textContent = decimal(ex.calificacion);
-    $('[data-veredicto]').replaceChildren(
-      APD.estado(ex.aprobado ? 'Aprobado' : 'No aprobado', ex.aprobado ? 'ok' : 'error'),
-      document.createTextNode(` La calificación mínima es ${decimal(ex.minima)}.`)
-    );
+    // El veredicto es el título, con su color e icono (propuesta «Avisos y confirmaciones», 2026-10-17): antes el título
+    // era el mismo para quien aprobaba y para quien no
+    const vista = $('[data-vista="resultado"]');
+    vista.dataset.tono = ex.aprobado ? 'ok' : 'error';
+    $('[data-resultado-titulo]').replaceChildren(APD.icono(ex.aprobado ? 'palomita' : 'cerrar', 'icono examen-veredicto-icono'), document.createTextNode(ex.aprobado ? 'Aprobaste' : 'No aprobaste'));
+    $('[data-veredicto]').textContent = `La calificación mínima es ${decimal(ex.minima)} · ${ex.aciertos} de ${ex.total} correctas`;
     $('[data-resultado-datos]').replaceChildren(datosLista([
       ['Nombre', ex.persona.nombre],
       ['Examen', nombreExamen()],
       ['Respuestas correctas', `${ex.aciertos} de ${ex.total}`],
       ['Enviado', APD.fechaHora(ex.terminado_en)]
     ]));
-    $('[data-resultado-sigue]').textContent = ex.aprobado
-      ? 'Tu calificación quedó registrada. Avisa a quien aplica el examen: hoy mismo, en la sede, se te toma la fotografía de tu credencial y se te entrega.'
-      : 'Tu calificación quedó registrada y no se puede cambiar. Para intentarlo de nuevo, inicia una solicitud nueva desde tu cuenta, con su pago de derechos.';
+    $('[data-resultado-sigue]').replaceChildren(ex.aprobado
+      ? APD.aviso('ok', 'Quédate en la sede', 'Avisa a quien aplica el examen: hoy mismo se te toma la fotografía de tu credencial y se te entrega.')
+      : APD.aviso('info', 'Tu calificación quedó registrada', 'No se puede cambiar. Para intentarlo de nuevo, inicia una solicitud nueva desde tu cuenta, con su pago de derechos.'));
     muestra('resultado');
   }
   function pintaSuspendido() {

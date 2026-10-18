@@ -151,7 +151,7 @@ async function enviar(ex) {
   await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
   await enviar(ex);
   ok((await ex.textContent('[data-calificacion]')) === '10.0', 'todas bien: calificación 10.0');
-  ok((await ex.textContent('[data-veredicto]')).includes('Aprobado'), 'todas bien: aprobado');
+  ok((await ex.textContent('[data-resultado-titulo]')).includes('Aprobaste') && (await ex.getAttribute('[data-vista="resultado"]', 'data-tono')) === 'ok', 'todas bien: el título dice «Aprobaste», en verde');
   await captura(ex, 'resultado-aprobado-escritorio');
   await ap.waitForFunction(() => document.querySelector('[data-filas]').textContent.includes('10.0 · aprobado'));
   ok(true, 'aplicar: ve «10.0 · aprobado»');
@@ -172,7 +172,7 @@ async function enviar(ex) {
   await enviar(ex);
   const cal2 = Number(await ex.textContent('[data-calificacion]'));
   ok(cal2 < 7, `una de cada tres bien: no alcanza 7.0 (${cal2})`);
-  ok((await ex.textContent('[data-veredicto]')).includes('No aprobado'), 'no aprobado');
+  ok((await ex.textContent('[data-resultado-titulo]')).includes('No aprobaste') && (await ex.getAttribute('[data-vista="resultado"]', 'data-tono')) === 'error', 'no aprobado: el título dice «No aprobaste», en rojo');
   ok((await ex.textContent('[data-resultado-sigue]')).includes('solicitud nueva'), 'no aprobado: dice que inicie una solicitud nueva');
   await ex.click('[data-vista="resultado"] [data-salir]');
 

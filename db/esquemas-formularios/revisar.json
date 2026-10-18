@@ -1,6 +1,6 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-17T23:02:22.633Z",
+  "generado": "2026-10-18T00:57:17.724Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
@@ -148,7 +148,7 @@
       ]
     },
     "decision_identificacion_oficial": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Identificación oficial",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -175,7 +175,7 @@
       ]
     },
     "observacion_identificacion_oficial": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Identificación oficial",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -209,7 +209,7 @@
       ]
     },
     "decision_curp": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Clave Única de Registro de Población (CURP)",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -236,7 +236,7 @@
       ]
     },
     "observacion_curp": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Clave Única de Registro de Población (CURP)",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -270,7 +270,7 @@
       ]
     },
     "decision_comprobante_domicilio": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Comprobante de domicilio",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -297,7 +297,7 @@
       ]
     },
     "observacion_comprobante_domicilio": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Comprobante de domicilio",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -331,7 +331,7 @@
       ]
     },
     "decision_constancia_situacion_fiscal": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Constancia de situación fiscal",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -358,7 +358,7 @@
       ]
     },
     "observacion_constancia_situacion_fiscal": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Constancia de situación fiscal",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -392,7 +392,7 @@
       ]
     },
     "decision_comprobante_estudios": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Comprobante de estudios",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -419,7 +419,7 @@
       ]
     },
     "observacion_comprobante_estudios": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Comprobante de estudios",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -453,7 +453,7 @@
       ]
     },
     "decision_curriculum_vitae": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Currículum vitae",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -480,7 +480,7 @@
       ]
     },
     "observacion_curriculum_vitae": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Currículum vitae",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -514,7 +514,7 @@
       ]
     },
     "decision_comprobantes_experiencia": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento cumple? · Comprobantes de experiencia",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -541,7 +541,7 @@
       ]
     },
     "observacion_comprobantes_experiencia": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué debe corregir la persona? · Comprobantes de experiencia",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",

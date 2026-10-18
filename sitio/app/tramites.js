@@ -119,11 +119,17 @@
         ]));
       }
     }
-    // Cita nueva: por no presentarse o por no traer el comprobante de pago
+    // Lo que cambió va arriba de la ficha, antes de los datos (propuesta «Avisos y confirmaciones», 2026-10-17): cita
+    // nueva por no presentarse o por no traer el comprobante de pago, observaciones del cotejo, grupo cancelado
+    const cambio = [];
     if (s.estado === 'validada_en_linea' && s.cita_motivo && s.cita_anterior) {
-      extra.push(el('p', { class: 'texto-gris', texto: s.cita_motivo === 'sin_pago'
-        ? `En tu cita del ${fechaHora(s.cita_anterior)} no presentaste tu comprobante de pago. Ésta es tu cita nueva; el monto es el mismo.`
-        : `No te presentaste a tu cita del ${fechaHora(s.cita_anterior)}. Ésta es tu cita nueva: si tampoco te presentas, tu solicitud se cierra.` }));
+      cambio.push(s.cita_motivo === 'sin_pago'
+        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', `Tu cita nueva es el ${fechaHora(s.cita_en)}. El monto es el mismo; lleva el comprobante impreso.`)
+        : APD.aviso('pend', `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.`));
+    }
+    const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
+    if (s.estado === 'lista_para_curso' && ultimaIns && !ultimaIns.activa && /^Grupo cancelado/.test(ultimaIns.motivo_baja || '')) {
+      cambio.push(APD.aviso('pend', 'Tu grupo se canceló', 'Sigues en espera de grupo con tu misma antigüedad. La Secretaría te asignará otro y te avisará las fechas.'));
     }
     if (s.estado === 'concluida_sin_atender' && s.cierre_por === 'inasistencia') {
       sigue = 'No te presentaste a tu cita de cotejo por segunda vez y tu solicitud se cerró. Puedes iniciar una solicitud nueva.';
@@ -133,12 +139,8 @@
       const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && d.estado === 'con_observacion' && d.observacion);
       const enCotejo = obs.some((d) => d.en_cotejo);
       if (obs.length) {
-        extra.push(el('div', { class: 'aviso aviso-advertencia' }, [
-          el('div', { class: 'aviso-texto' }, [
-            el('p', {}, [el('strong', { texto: enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste. Corrígelo:' : 'Lo que debes corregir:' })]),
-            el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion}` })))
-          ])
-        ]));
+        cambio.push(APD.aviso('pend', enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste' : 'Lo que debes corregir', '',
+          [el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion}` })))]));
       }
     }
 
@@ -183,11 +185,17 @@
       acciones.push(el('a', { class: 'btn btn-primario', href: `solicitud.html?folio=${encodeURIComponent(s.folio)}`, texto: s.estado === 'borrador' ? 'Continuar solicitud' : 'Corregir y reenviar' }));
     }
 
+    // Etiqueta por familia, con icono; la cita nueva y el cierre por inasistencia dicen lo que pasó
+    const etiqueta = s.estado === 'validada_en_linea' && s.cotejo_pausa ? estado('Cita en pausa: carga el documento', 'pend')
+      : s.estado === 'validada_en_linea' && s.cita_motivo ? estado('Acude a tu cita nueva', 'pend', 'fecha')
+        : s.estado === 'concluida_sin_atender' && s.cierre_por === 'inasistencia' ? estado('Cerrada: no te presentaste', 'error')
+          : APD.estadoSolicitud(s);
     return el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [
         el('h4', { class: 'ficha-titulo', texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}` }),
-        estado(s.estado === 'validada_en_linea' && s.cotejo_pausa ? 'Cita en pausa' : e.texto, e.tono)
+        etiqueta
       ]),
+      ...cambio,
       sigue ? el('p', { class: 'ficha-sigue', texto: sigue }) : null,
       ...extra,
       datosLista(pares),

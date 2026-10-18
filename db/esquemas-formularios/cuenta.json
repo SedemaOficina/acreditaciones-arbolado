@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-17T19:04:45.752Z",
+  "generado": "2026-10-18T00:57:17.484Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -71,17 +71,6 @@
       "autocomplete": "off",
       "cruzadas": [
         {
-          "clave": "curp-fecha-dma",
-          "mapa": {
-            "curp": "curp",
-            "fecha": "fecha_nacimiento",
-            "nombre": "nombre",
-            "primer": "primer_apellido",
-            "segundo": "segundo_apellido"
-          },
-          "nivel": "error"
-        },
-        {
           "clave": "curp-nombre",
           "mapa": {
             "curp": "curp",
@@ -94,6 +83,17 @@
         },
         {
           "clave": "curp-segundo-apellido",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-fecha-dma",
           "mapa": {
             "curp": "curp",
             "fecha": "fecha_nacimiento",

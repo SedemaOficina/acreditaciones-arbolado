@@ -47,8 +47,8 @@
         el('td', { texto: quien }),
         el('td', {}, [el('span', { class: 'mono', texto: x.s.folio })]),
         el('td', { texto: x.organizacion }),
-        ...(renov ? [el('td', {}, [x.vence ? estado(`${fecha(x.vence)}${x.vencida ? ' · vencida' : ''}`, x.vencida ? 'error' : '') : document.createTextNode('')])] : []),
-        el('td', {}, [estado(espera, x.prioritaria ? 'pend' : '')])
+        ...(renov ? [el('td', {}, [x.vence ? estado(`${fecha(x.vence)}${x.vencida ? ' · vencida' : ''}`, x.vencida ? 'error' : 'marcha', x.vencida ? undefined : 'fecha') : document.createTextNode('')])] : []),
+        el('td', {}, [estado(espera, x.prioritaria ? 'pend' : 'marcha')])
       ]);
       return { x, tr, casilla };
     });
@@ -64,29 +64,32 @@
     const elegidas = () => filas.filter((f) => f.casilla.checked);
     const aviso = $('[data-elegidas]');
 
+    const error = $('[data-error-eleccion]');
     function pintaEleccion() {
       const n = elegidas().length;
       aviso.textContent = n ? `${plural(n, 'persona elegida', 'personas elegidas')}.` : 'Ninguna persona elegida.';
+      if (n) { error.hidden = true; for (const x of document.querySelectorAll('.falta-marcar')) x.classList.remove('falta-marcar'); }
     }
     for (const f of filas) f.casilla.addEventListener('change', pintaEleccion);
 
-    /* Comprueba la elección contra un grupo (o contra un grupo nuevo); devuelve el problema o '' */
+    /* Comprueba la elección contra un grupo (o contra un grupo nuevo); devuelve el problema [título, texto] o null */
     function problema(eleg, g) {
-      if (!eleg.length) return 'Elija al menos una persona de la lista.';
+      if (!eleg.length) return ['No se agregó a nadie', 'Marque la casilla junto al nombre de cada persona que quiere agregar.'];
       const lugar = g ? g.lugar : c.cupo_maximo;
-      if (eleg.length > lugar) return `${g ? `El grupo ${g.g.folio}` : 'Un grupo'} tiene lugar para ${plural(lugar, 'persona', 'personas')}; eligió ${eleg.length}.`;
+      if (eleg.length > lugar) return ['Eligió más personas de las que caben', `${g ? `El grupo ${g.g.folio}` : 'Un grupo'} tiene lugar para ${plural(lugar, 'persona', 'personas')}; eligió ${eleg.length}.`];
       if (g && g.g.integracion === 'especifico') {
         const fuera = eleg.filter((f) => (f.x.s.organizacion_id || null) !== g.g.organizacion_id);
-        if (fuera.length) return `El grupo ${g.g.folio} es sólo de ${g.integracion.replace('De una organización · ', '')}: ${fuera.map((f) => APD.nombreCompleto(f.x.p)).join(', ')} no ${fuera.length === 1 ? 'es' : 'son'} de esa organización.`;
+        if (fuera.length) return [`No se agregó a nadie al grupo ${g.g.folio}`, `Ese grupo es sólo de ${g.integracion.replace('De una organización · ', '')}: ${fuera.map((f) => APD.nombreCompleto(f.x.p)).join(', ')} no ${fuera.length === 1 ? 'es' : 'son'} de esa organización.`];
       }
-      return '';
+      return null;
     }
-    function falla(texto) {
-      aviso.textContent = texto;
-      FormKit.anuncia(texto);
-      const primera = filas.find((f) => !f.casilla.checked);
-      if (!elegidas().length && filas[0]) (primera || filas[0]).casilla.focus();
+    /* El error queda junto a los botones, con el foco ahí; sin nadie elegido, se señalan las casillas (propuesta «Avisos y
+       confirmaciones»: antes el foco saltaba a la primera casilla, lejos del mensaje) */
+    function falla([titulo, texto]) {
+      if (!elegidas().length) for (const f of filas) f.casilla.closest('.elegir').classList.add('falta-marcar');
+      APD.pintaAviso(error, 'error', titulo, texto, true);
     }
+    const noSeGuardo = ['No se pudo guardar', 'La elección sigue aquí; intente de nuevo.'];
     const irAlGrupo = (folio, hecho, n) => { location.href = `grupo.html?folio=${encodeURIComponent(folio)}&hecho=${hecho}&n=${n}`; };
 
     /* Agregar a un grupo que recibe personas */
@@ -98,7 +101,7 @@
         if (mal) { falla(mal); return; }
         P.guardaGrupo({ tipo: 'agregar', grupo_id: g.g.id, folios: eleg.map((f) => f.x.s.folio), por: P.REVISORA.usuario })
           .then(() => irAlGrupo(g.g.folio, 'agregadas', eleg.length))
-          .catch(() => falla('No se pudo guardar. Intente de nuevo.'));
+          .catch(() => falla(noSeGuardo));
       });
       return b;
     });
@@ -127,8 +130,11 @@
           dialogo.showModal();
           return;
         }
-        FormKit.confirma(nuevo, { titulo: '¿Crear un grupo combinado?', texto: `Con ${plural(eleg.length, 'persona', 'personas')} de ${nombre.toLowerCase()}. El grupo se crea sin confirmar: se confirma cuando tenga al menos ${c.cupo_minimo} personas, con su fecha, hora de entrada e instructor.`, si: 'Crear el grupo', no: 'Cancelar' })
-          .then((si) => { if (si) crea('combinado', eleg).catch(() => falla('No se pudo guardar. Intente de nuevo.')); });
+        APD.confirma(nuevo, { titulo: `¿Crear un grupo combinado con ${plural(eleg.length, 'persona', 'personas')}?`,
+          consecuencias: [`Es un grupo de ${nombre.toLowerCase()} que recibe personas de cualquier organización e independientes.`,
+            `Se crea sin confirmar: se confirma cuando tenga al menos ${c.cupo_minimo} personas, con su fecha, hora de entrada e instructor.`],
+          si: 'Sí, crear el grupo' })
+          .then((si) => { if (si) crea('combinado', eleg).catch(() => falla(noSeGuardo)); });
       });
       acciones.push(nuevo);
     }

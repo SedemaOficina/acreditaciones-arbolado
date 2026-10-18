@@ -17,6 +17,9 @@
   'use strict';
   const BASE = global.FORMKIT_VALIDACIONES;
   const M = {
+    // El resumen de errores habla de respuestas, no de «campos» (propuesta «Avisos y confirmaciones», hallazgo P116)
+    resumenUno: 'Para continuar, falta 1 respuesta.',
+    resumenVarios: 'Para continuar, faltan {n} respuestas.',
     obligatorioTexto: 'Complete «{etiqueta}».',
     obligatorioOpcion: 'Elija una opción en «{etiqueta}».',
     obligatorioCasilla: 'Marque la casilla «{etiqueta}» para continuar.',

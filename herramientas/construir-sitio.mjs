@@ -160,7 +160,7 @@ const revisionDocs = enLinea.map((r) => {
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
             <fieldset class="grupo" data-campo="decision_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» cumple el requisito (apd.documento.estado).">
-              <legend class="etiqueta">¿El documento cumple?</legend>
+              <legend class="etiqueta">¿El documento cumple?<span class="contexto-resumen"> · ${esc(r.nombre)}</span></legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
               <div class="opciones-lista opciones-en-linea">
                 <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
@@ -168,7 +168,7 @@ const revisionDocs = enLinea.map((r) => {
               </div>
             </fieldset>
             <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-chips-fijos="${MOTIVOS.map(esc).join('|')}" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
-              <label class="etiqueta" for="observacion_${k}">¿Qué debe corregir la persona?</label>
+              <label class="etiqueta" for="observacion_${k}">¿Qué debe corregir la persona?<span class="contexto-resumen"> · ${esc(r.nombre)}</span></label>
               <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
@@ -205,7 +205,7 @@ const cotejoDocs = enLinea.map((r) => {
           <p class="doc-archivo" data-doc-archivo></p>
           <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver lo que cargó<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
           <fieldset class="grupo" data-campo="coincide_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · ${esc(r.nombre)}</span></legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
               <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
@@ -213,7 +213,7 @@ const cotejoDocs = enLinea.map((r) => {
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_${k}" data-requerido data-si="coincide_${k}=no" data-uso="Decirle a la persona qué no coincidió de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_${k}">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_${k}">¿Qué no coincide?<span class="contexto-resumen"> · ${esc(r.nombre)}</span></label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_${k}" name="diferencia_${k}" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>

@@ -27,7 +27,8 @@
 
 <main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
-  <div class="aviso aviso-ok" role="status" data-hecho hidden><svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg><p class="aviso-texto"></p></div>
+  <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
+  <div data-hecho hidden></div>
 
   <section class="tarjeta" aria-labelledby="t-asistencia" data-con-grupo hidden>
     <div class="grupo-cabeza">
@@ -43,7 +44,8 @@
     <h3 class="titulo-bloque" id="t-dia" data-titulo-dia>Día</h3>
     <p class="ayuda" data-ayuda-dia></p>
     <div data-personas aria-labelledby="t-dia"></div>
-    <p class="aviso aviso-bloqueo" role="alert" data-falta-marcar hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+    <!-- Junto al botón: lo que no se pudo guardar o lo que se acaba de marcar (APD.pintaAviso) -->
+    <div data-falta-marcar hidden></div>
     <div class="acciones-grupo" data-acciones>
       <button type="button" class="btn btn-secundario" data-todas>Marcar a todas «Asistió»</button>
       <button type="button" class="btn btn-primario" data-guardar>Guardar la asistencia</button>

@@ -73,7 +73,7 @@
     <!-- Tres validaciones cruzadas del estándar: la fecha escrita como día/mes/año (curp-fecha-dma), el nombre y
          el primer apellido (curp-nombre) y el segundo apellido, o X si no tiene (curp-segundo-apellido). -->
     <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
-         data-deriva="sexo=sexo" data-cruzada="curp-fecha-dma curp-nombre curp-segundo-apellido"
+         data-deriva="sexo=sexo" data-cruzada="curp-nombre curp-segundo-apellido curp-fecha-dma"
          data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido"
          data-finalidad="Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona." data-uso="Identificador único de la cuenta y llave del historial de acreditaciones.">
       <label class="etiqueta" for="curp">CURP</label>

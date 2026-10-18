@@ -15,22 +15,27 @@
   const CLAVE_SESION = 'apd.sesion';
   const CONTRASENA_FICTICIA = 'Prueba-ficticia-2026'; // sólo para el acceso simulado con datos ficticios
 
-  /* Qué ve la persona en cada estado de su solicitud y qué sigue. */
+  /* Qué ve la persona en cada estado de su solicitud y qué sigue. La etiqueta va por familia (propuesta «Avisos y
+     confirmaciones», aprobada por Liber el 2026-10-17): pend = te toca, marcha = en marcha, ok = logro, error = cerrada
+     sin acreditación, cerrado = cerrada por decisión propia. Cada familia lleva su icono; «personal» es el nombre que
+     ve el personal cuando el de la persona le habla a ella («Acude a tu cita»). */
   const ESTADOS = {
     borrador: { texto: 'Borrador', tono: 'pend', sigue: 'Termina de cargar tus documentos y envía tu solicitud.' },
-    enviada: { texto: 'En revisión documental', tono: '', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
-    con_observaciones: { texto: 'Con observaciones', tono: 'pend', sigue: 'Corrige lo que se indica abajo y vuelve a enviar tu solicitud.' },
-    validada_en_linea: { texto: 'Cita asignada', tono: 'pend', sigue: 'Acude a tu cita con los mismos documentos que cargaste, impresos, y con tu comprobante de pago.' },
-    lista_para_curso: { texto: 'En espera de grupo', tono: '', sigue: 'Tu cotejo terminó. El siguiente paso es que la Secretaría te asigne un grupo del curso; te avisará las fechas y la sede.' },
+    enviada: { texto: 'En revisión documental', tono: 'marcha', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
+    con_observaciones: { texto: 'Corrige y reenvía', personal: 'Con observaciones', tono: 'pend', sigue: 'Corrige lo que se indica abajo y vuelve a enviar tu solicitud.' },
+    validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', icono: 'fecha', sigue: 'Acude a tu cita con los mismos documentos que cargaste, impresos, y con tu comprobante de pago.' },
+    lista_para_curso: { texto: 'En espera de grupo', tono: 'marcha', sigue: 'Tu cotejo terminó. El siguiente paso es que la Secretaría te asigne un grupo del curso; te avisará las fechas y la sede.' },
     inscrita: { texto: 'Con grupo asignado', tono: 'ok', sigue: 'Asiste a tu curso en las fechas indicadas.' },
     aprobada: { texto: 'Aprobada', tono: 'ok', sigue: 'La Secretaría emite tu acreditación.' },
     acreditada: { texto: 'Acreditación emitida', tono: 'ok', sigue: 'Recoge tu acreditación en persona.' },
     no_acreditada: { texto: 'No acreditada', tono: 'error', sigue: 'No alcanzaste la calificación mínima. Puedes iniciar una solicitud nueva.' },
     sin_derecho_examen: { texto: 'Sin derecho a examen', tono: 'error', sigue: 'No alcanzaste la asistencia mínima. Puedes iniciar una solicitud nueva.' },
-    cancelada: { texto: 'Cancelada', tono: '', sigue: '' },
-    concluida_sin_atender: { texto: 'Concluida sin atender', tono: '', sigue: 'Las observaciones no se atendieron a tiempo. Puedes iniciar una solicitud nueva.' },
+    cancelada: { texto: 'Cancelada', tono: 'cerrado', sigue: '' },
+    concluida_sin_atender: { texto: 'Cerrada: no se corrigió a tiempo', tono: 'error', sigue: 'Las observaciones no se atendieron a tiempo. Puedes iniciar una solicitud nueva.' },
     rechazada: { texto: 'Rechazada', tono: 'error', sigue: 'Tu perfil no cumple los requisitos de esta acreditación. Abajo está el motivo.' }
   };
+  /* El nombre del estado para el personal */
+  const nombrePersonal = (estado) => { const e = ESTADOS[estado]; return e ? e.personal || e.texto : estado; };
   const FINALES = ['acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada'];
 
   /* Situación de una acreditación, tal como la calcula la base. */
@@ -39,7 +44,7 @@
     por_vencer: { texto: 'Vigente · por vencer', tono: 'pend' },
     vencida_renovable: { texto: 'No vigente', tono: 'error' },
     vencida_no_renovable: { texto: 'No vigente', tono: 'error' },
-    no_emitida: { texto: 'Todavía no vigente', tono: '' }
+    no_emitida: { texto: 'Todavía no vigente', tono: 'marcha' }
   };
 
   const TIPOS = { poda: 'Poda y derribo', dictaminador: 'Dictaminador técnico' };
@@ -64,7 +69,8 @@
   }
   function fechaHora(iso) {
     const d = aFecha(iso);
-    return d ? d.toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' }) : '';
+    // Hora de 24 horas, como en todo el sistema (decisión 2026-10-17); sin «a.m.», que dejaba «a.m..» al final de una frase
+    return d ? d.toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }) : '';
   }
   function sumaDias(iso, dias) { const d = aFecha(iso); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); }
   function sumaMeses(iso, meses) { const d = aFecha(iso); d.setMonth(d.getMonth() + meses); return d.toISOString().slice(0, 10); }
@@ -209,7 +215,97 @@
     for (const h of [].concat(hijos || [])) if (h) e.append(h);
     return e;
   }
-  function estado(texto, tono) { return el('span', { class: 'estado', 'data-tono': tono || null, texto }); }
+  /* ----- Mensajes de resultado (propuesta «Avisos y confirmaciones», aprobada por Liber el 2026-10-17) -----
+     Un icono por familia, para que el color nunca sea la única señal. Los iconos son los del estándar (sprite del
+     núcleo) más dos propios (candado y cierre), que se agregan aquí. */
+  const ICONO_TONO = { ok: 'palomita', pend: 'alerta', error: 'cerrar', marcha: 'reloj', cerrado: 'fin', info: 'info' };
+  function icono(nombre, clase) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const s = document.createElementNS(ns, 'svg');
+    s.setAttribute('class', clase || 'icono');
+    s.setAttribute('aria-hidden', 'true');
+    const u = document.createElementNS(ns, 'use');
+    u.setAttribute('href', `#i-${nombre}`);
+    s.appendChild(u);
+    return s;
+  }
+  /* Etiqueta de estado: texto + icono de su familia (o el que se indique) */
+  function estado(texto, tono, nombreIcono) {
+    const n = nombreIcono || ICONO_TONO[tono];
+    return el('span', { class: 'estado', 'data-tono': tono || null }, [n ? icono(n, 'icono icono-estado') : null, document.createTextNode(texto)]);
+  }
+  /* Etiqueta del estado de una solicitud; para el personal, con su nombre de personal */
+  function estadoSolicitud(s, paraPersonal) {
+    const e = ESTADOS[s.estado] || { texto: s.estado, tono: '' };
+    return estado(paraPersonal ? e.personal || e.texto : e.texto, e.tono, e.icono);
+  }
+  /* Aviso con título: tono ok (hecho), error (no se pudo), pend (atención), info. Devuelve el elemento. */
+  const CLASE_AVISO = { ok: 'aviso-ok', error: 'aviso-bloqueo', pend: 'aviso-advertencia', info: '' };
+  const ICONO_AVISO = { ok: 'ok', error: 'error', pend: 'alerta', info: 'info' };
+  function aviso(tono, titulo, texto, extra) {
+    return el('div', { class: `aviso ${CLASE_AVISO[tono] || ''}`.trim(), 'data-aviso': tono }, [
+      icono(ICONO_AVISO[tono] || 'info'),
+      el('div', { class: 'aviso-texto' }, [titulo ? el('p', { class: 'aviso-titulo', texto: titulo }) : null, texto ? el('p', { texto }) : null].concat(extra || []))
+    ]);
+  }
+  /* Pinta un aviso en un contenedor existente (lo crea dentro si hace falta), lo muestra y, si se pide, le da el foco */
+  function pintaAviso(contenedor, tono, titulo, texto, enfoca) {
+    const a = aviso(tono, titulo, texto);
+    a.setAttribute('role', tono === 'error' ? 'alert' : 'status');
+    a.tabIndex = -1;
+    contenedor.replaceChildren(a);
+    contenedor.hidden = false;
+    if (enfoca) { a.focus({ preventScroll: true }); a.scrollIntoView({ block: 'nearest' }); }
+    return a;
+  }
+  /* Resultado de una decisión: «Quedó guardado» (lo hizo el sistema) y, en el título, el desenlace del trámite con su
+     color e icono. seccion: la tarjeta [data-hecho] con [data-hecho-titulo] y [data-hecho-texto]. */
+  const horaCorta = (d) => d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+  function pintaDesenlace(seccion, { tono, titulo, texto, cita, quien, icono: nombreIcono }) {
+    seccion.classList.add('desenlace');
+    seccion.dataset.tono = tono;
+    let guardado = seccion.querySelector('[data-desenlace-guardado]');
+    if (!guardado) { guardado = el('p', { class: 'desenlace-guardado', 'data-desenlace-guardado': '' }); seccion.prepend(guardado); }
+    guardado.replaceChildren(icono('ok'), document.createTextNode(`Quedó guardado a las ${horaCorta(new Date())}${quien ? ` · ${quien}` : ''}`));
+    const t = seccion.querySelector('[data-hecho-titulo]');
+    if (t) t.replaceChildren(el('span', { class: 'desenlace-marca' }, [icono(nombreIcono || ICONO_TONO[tono] || 'info')]), document.createTextNode(titulo));
+    const p = seccion.querySelector('[data-hecho-texto]');
+    if (p && texto !== undefined) p.textContent = texto;
+    const previa = seccion.querySelector('[data-desenlace-cita]');
+    if (previa) previa.remove();
+    if (cita && t) t.after(el('blockquote', { class: 'desenlace-cita', 'data-desenlace-cita': '', texto: cita }));
+    seccion.hidden = false;
+    seccion.focus();
+    seccion.scrollIntoView({ block: 'start' });
+  }
+  /* Confirmar antes de actuar (sustituye a FormKit.confirma mientras el estándar no lo trae, hallazgo P113): pregunta
+     con lo que se afecta, consecuencias en lista y en texto normal, «No se puede deshacer» con icono, botón con el
+     verbo exacto (rojo relleno si es de peligro) y «Volver sin cambios», que recibe el foco. */
+  function confirma(ancla, cfg) {
+    return new Promise((resolve) => {
+      const d = el('dialog', { class: 'dialogo dialogo-confirma confirmacion', role: 'alertdialog' });
+      const idT = `conf-t-${Date.now()}`;
+      d.setAttribute('aria-labelledby', idT);
+      const no = el('button', { type: 'button', class: 'btn btn-secundario', 'data-r': 'no', texto: cfg.no || 'Volver sin cambios' });
+      const si = el('button', { type: 'button', class: `btn ${cfg.peligro ? 'btn-peligro' : 'btn-primario'}`, 'data-r': 'si', texto: cfg.si });
+      const lista = (cfg.consecuencias || []).filter(Boolean);
+      d.append(
+        el('div', { class: 'confirmacion-cabeza' }, [el('span', { class: 'desenlace-marca', 'data-tono': cfg.peligro ? 'error' : 'info' }, [icono(cfg.peligro ? 'alerta' : 'info')]),
+          el('h2', { class: 'titulo-bloque dialogo-titulo', id: idT, texto: cfg.titulo })]),
+        lista.length ? el('ul', { class: 'confirmacion-lista' }, lista.map((c) => el('li', { texto: c }))) : null,
+        cfg.irreversible ? el('p', { class: 'confirmacion-irreversible' }, [icono('alerta'), document.createTextNode('No se puede deshacer.')]) : null,
+        el('div', { class: 'acciones dialogo-acciones' }, [no, si])
+      );
+      document.body.appendChild(d);
+      const termina = (ok) => { if (d.open) d.close(); d.remove(); if (ancla && ancla.focus) ancla.focus(); resolve(ok); };
+      no.addEventListener('click', () => termina(false));
+      si.addEventListener('click', () => termina(true));
+      d.addEventListener('cancel', (e) => { e.preventDefault(); termina(false); });
+      d.showModal();
+      no.focus();
+      if (global.FormKit) global.FormKit.anuncia(`${cfg.titulo} ${lista.join(' ')}${cfg.irreversible ? ' No se puede deshacer.' : ''}`, true);
+    });
+  }
   /* Pares [etiqueta, valor, porConfirmar]: con el tercero, el valor se marca en amarillo (.pendiente del estándar)
      con lo que falta confirmar; así se ve en cualquier versión hasta que la Secretaría lo confirme. */
   function datosLista(pares) {
@@ -246,6 +342,15 @@
   /* Iconos del estándar en las pantallas sin formulario: el mismo sprite y la misma marca que usa el
      núcleo, de modo que nunca se inyecta dos veces. */
   function ponIconos() {
+    // Iconos propios que el estándar no trae: candado (cuenta bloqueada) y cierre (trámite cerrado)
+    if (!document.querySelector('[data-sprite-propio]')) {
+      const propio = document.createElement('div');
+      propio.setAttribute('data-sprite-propio', '');
+      propio.hidden = true;
+      propio.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg"><symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>'
+        + '<symbol id="i-fin" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol></svg>';
+      document.body.prepend(propio);
+    }
     if (!global.FORMKIT_ICONOS || document.querySelector('[data-sprite-iconos]')) return;
     const cont = document.createElement('div');
     cont.setAttribute('data-sprite-iconos', '');
@@ -283,7 +388,7 @@
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, estado, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
+    el, estado, estadoSolicitud, nombrePersonal, icono, aviso, pintaAviso, pintaDesenlace, confirma, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));
