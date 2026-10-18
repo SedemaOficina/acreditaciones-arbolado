@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <title>Crear tu cuenta · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Crea tu cuenta para solicitar o renovar tu acreditación de arbolado urbano. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
@@ -22,7 +23,7 @@
 </head>
 <body>
 <a class="salto" href="#contenido">Ir al contenido</a>
-<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · usa datos inventados, nunca los tuyos · nada se envía · fecha simulada: <span data-corte></span></aside>
 
 <header class="cabecera">
   <div class="cabecera-int">
@@ -37,11 +38,17 @@
   <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
     <h2 class="titulo-paso">Crea tu cuenta</h2>
     <p class="bajada">Una cuenta por persona, ligada a tu CURP. Ten a la mano tu CURP y una fotografía de frente, o tómala con tu teléfono. Si ya tuviste una acreditación de la Secretaría, la verás en tu historial.</p>
-    <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+    <!-- Sólo en la versión de prueba (auditoría integral, alta 1): lo cargado se queda en este navegador. -->
+    <div class="aviso aviso-advertencia" data-aviso-prueba>
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+      <div class="aviso-texto"><strong class="aviso-titulo">Versión de prueba: usa datos inventados</strong>
+        <p>No escribas tu CURP ni cargues tu fotografía real: el «Menú de pruebas» llena la cuenta con datos de ejemplo. Lo que cargues se guarda sólo en este navegador y se borra solo cuando pasan 7 días sin usar la prueba.</p></div>
+    </div>
+    <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
 
     <!-- Estilo (decisión 2026-10-16, Liber): secciones con título, datos hermanos en una fila y una ayuda por bloque. -->
     <h3 class="titulo-bloque titulo-primero">Tus datos</h3>
-    <p class="ayuda ayuda-bloque">Escríbelos como aparecen en tu CURP. Si no tienes segundo apellido, déjalo vacío.</p>
+    <p class="ayuda ayuda-bloque">Escríbelos como aparecen en tu CURP. Si ya tuviste una acreditación de la Secretaría, se comparan con su registro anterior. Si no tienes segundo apellido, déjalo vacío.</p>
     <div class="fila-3">
     <div class="campo" data-campo="nombre" data-formato="nombre" data-requerido data-sensible
          data-finalidad="Identificar a la persona en su expediente y en la acreditación que se emita." data-uso="Nombre que aparece en el expediente y en la acreditación.">
@@ -323,10 +330,11 @@
       <div class="acuse-dato"><span class="acuse-etq">Entras con tu CURP</span><span class="acuse-valor" data-acuse-folio></span></div>
       <div class="acuse-dato"><span class="acuse-etq">Creada el</span><span data-acuse-fecha></span></div>
     </div>
-    <p class="bajada" data-cuenta-historial hidden>Encontramos acreditaciones anteriores con tu CURP. Las verás en «Mis trámites».</p>
+    <p class="bajada" data-cuenta-historial hidden>Con tu CURP hay acreditaciones anteriores de la Secretaría: las verás en «Mis trámites».</p>
+    <!-- La sesión ya queda abierta al crear la cuenta: no se pide entrar (auditoría integral, textos) -->
     <ol class="secuencia">
-      <li class="secuencia-item">Entra con tu CURP y tu contraseña.</li>
-      <li class="secuencia-item">Inicia tu solicitud y carga tus documentos.</li>
+      <li class="secuencia-item">En «Mis trámites», inicia tu solicitud.</li>
+      <li class="secuencia-item">Carga tus documentos y envíala.</li>
     </ol>
     <div class="acuse-acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
   </section>

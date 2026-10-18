@@ -175,21 +175,27 @@ caso('Solicitud poda renovación pide sólo la constancia de situación fiscal (
 // Perfil del dictaminador: carrera y situación sólo desde licenciatura
 const dictRenov = { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', anios_experiencia: '3', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' };
 const csf = [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')];
+// La experiencia sólo se pide en la primera vez (decisión 2026-10-18): sus casos van con dictaminador nueva
+const dictSiete = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal', 'comprobante_estudios', 'curriculum_vitae', 'comprobantes_experiencia'];
+const dictNueva = { ...base, tipo: 'dictaminador', ...docs('dictaminador_nueva', dictSiete) };
+const sieteDocs = dictSiete.map((r) => pdf(`doc_dictaminador_nueva_${r}`));
 caso('Perfil: licenciatura pide carrera y situación de los estudios', 'solicitud', { ...dictRenov, nivel_estudios: 'licenciatura' }, ['carrera', 'estatus_estudios'], csf);
 caso('Perfil: carrera técnica pide cuál, no la carrera ni la situación', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', anios_experiencia: '5' }, ['carrera_tecnica'], csf);
 caso('Perfil: carrera técnica escrita, sin catálogo, con cinco años se acepta', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '5' }, true, csf);
 // Mínimo de experiencia según el perfil (data-min-segun, estándar 1.1.0, P61): el servidor lo calcula con la misma regla
-caso('Experiencia: con carrera técnica, tres años se rechazan (se piden cinco)', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal' }, ['anios_experiencia'], csf);
-caso('Experiencia: titulada en Biología, dos años se aceptan', 'solicitud', { ...dictRenov, nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '2' }, true, csf);
+caso('Experiencia: con carrera técnica, tres años se rechazan (se piden cinco)', 'solicitud', { ...dictNueva, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '3' }, ['anios_experiencia'], sieteDocs);
+caso('Experiencia: titulada en Biología, dos años se aceptan', 'solicitud', { ...dictNueva, nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '2' }, true, sieteDocs);
+caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...dictNueva, nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '80' }, ['anios_experiencia'], sieteDocs);
 // Un dato que calcula la página no se recibe: si el navegador lo manda, el envío se rechaza (estándar 1.1.0)
 caso('Solicitud: el curso calculado enviado por el navegador se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '5', tramite: 'poda_nueva' }, ['tramite'], csf);
 caso('Poda: licenciatura pide la carrera y su situación', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera', 'estatus_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Poda: sin nivel de estudios se rechaza', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['nivel_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
+caso('Posgrado: no se pregunta la situación del grado (se asume la licenciatura titulada)', 'solicitud', { ...dictRenov, nivel_estudios: 'doctorado', carrera: 'Biología', anios_experiencia: '2' }, true, csf);
 caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso', anios_experiencia: '5' }, true, csf);
 caso('Perfil: un nivel que no existe se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'posdoctorado' }, ['nivel_estudios'], csf);
 caso('Solicitud sin la declaración bajo protesta de decir verdad se rechaza', 'solicitud', { ...base, protesta: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['protesta'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
-caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...base, tipo: 'dictaminador', _modalidad: 'renovacion', anterior: 'DT-2025-K109', nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '80', doc_dictaminador_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['anios_experiencia'], [pdf('doc_dictaminador_renovacion_constancia_situacion_fiscal')]);
+caso('Renovación de dictaminador: no vuelve a pedir los años de experiencia', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '' }, true, csf);
 
 // Adscripción (en la cuenta y en «Mi perfil»): según el tipo, su pregunta; lo que depende de una respuesta se oculta con ella
 const conFoto = foto();

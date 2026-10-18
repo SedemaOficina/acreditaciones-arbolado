@@ -21,7 +21,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Paso | Lo mueve | La base exige |
 |---|---|---|
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación |
-| → enviada | Persona solicitante | Documentos obligatorios en línea; estudios en los dos tipos (nivel y, con licenciatura o posgrado, carrera y situación: `faltan_estudios`); en dictaminador, la experiencia mínima de su perfil (`experiencia_insuficiente`; un perfil que no cumple sí se envía y lo revisa el personal); fotografía de frente de la persona; adscripción de la persona, que se copia a la solicitud. La elegibilidad no se vuelve a comprobar |
+| → enviada | Persona solicitante | Documentos obligatorios en línea; estudios en los dos tipos (nivel; con licenciatura o posgrado, la carrera; con licenciatura, además, su situación —con posgrado se asume titulada—: `faltan_estudios`); en dictaminador nueva, la experiencia mínima de su perfil (`experiencia_insuficiente`; un perfil que no cumple sí se envía y lo revisa el personal; la renovación no vuelve a pedir la experiencia); en la primera renovación de quien viene de Kobo sin archivos en el sistema, todos los documentos, como una nueva (`faltan_documentos_kobo`); fotografía de frente de la persona; adscripción de la persona, que se copia a la solicitud. La elegibilidad no se vuelve a comprobar |
 | → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada; en dictaminador, la carrera clasificada (`carrera_sin_clasificar`) y un perfil que cumple (`perfil_no_cumple`). Las observaciones necesitan un texto general o un documento observado |
 | → rechazada | Revisión (revisión con resultado `rechazada`) | Sólo dictaminador cuyo perfil no cumple (`rechazo_sin_causa`): carrera clasificada como no afín, o estudios que el comprobante confirma por debajo del lineamiento. Motivo obligatorio (`rechazo_sin_motivo`), que se copia a `motivo_cierre`. Es final: la persona puede iniciar otra solicitud |
 | Clasificar una carrera | Personal (`apd.carrera.grupo`) | Sólo el personal (`clasificacion_sin_permiso`); queda en la bitácora y las solicitudes abiertas con esa carrera recalculan perfil y experiencia mínima |
@@ -71,7 +71,9 @@ Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `
 Cursos: 5 días los nuevos y 1 día las renovaciones. El instructor puede cambiar hasta concluir el grupo, con
 constancia en la bitácora; sede y fecha no cambian una vez iniciado.
 
-Asistencia: por día, nunca de un día que no ha ocurrido. Examen: sólo con la asistencia mínima del curso;
+Asistencia: por día, nunca de un día que no ha ocurrido; la del último día se registra al pasar lista en el examen
+(P94). Examen: el último día del curso (`fecha_examen`), con el pase de lista de ese día (`sin_pase_de_lista`) y la
+asistencia mínima del curso;
 calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación registrada no se modifica
 (resultado inapelable). Cada calificación guarda su origen: captura del instructor o examen en línea.
 
@@ -98,7 +100,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 - **Perfil del dictaminador** (`apd.perfil_academico`, `apd.experiencia_minima`): con nivel, situación de los estudios y
   grupo de la carrera (`apd.carrera`) la base calcula el perfil y la experiencia mínima: licenciatura titulada en carrera
   principal o afín, 2 años; carta de pasante, carrera técnica o disciplina afín, 5. Un posgrado cuenta como licenciatura
-  titulada en su área aunque la licenciatura sea de otra (p. ej. Química con maestría en Ciencias Forestales: 2 años). Hasta preparatoria, licenciatura en curso o trunca, o carrera no afín: «no cumple», que no impide enviar: lo decide el personal en la revisión documental. Lo que decide el personal (por clasificar o no cumple) pide 5 años. En poda se guardan nivel, carrera y situación, sin perfil (no hay estudios mínimos). Una carrera
+  titulada en su área aunque la licenciatura sea de otra (p. ej. Química con maestría en Ciencias Forestales: 2 años). La situación del grado sólo se pregunta con licenciatura (decisión 2026-10-18). Hasta preparatoria, licenciatura en curso o trunca, o carrera no afín: «no cumple», que no impide enviar: lo decide el personal en la revisión documental. Lo que decide el personal (por clasificar o no cumple) pide 5 años. En poda se guardan nivel, carrera y situación, sin perfil (no hay estudios mínimos). Una carrera
   escrita que no está en el catálogo se agrega sin grupo («por clasificar»); al clasificarla, el perfil se recalcula.
 - **Adscripción**: es de la persona (`solicitante.adscripcion` y `organizacion_id`); toda cuenta activa la tiene
   (`independiente` incluido) y cada cambio queda en la bitácora. La solicitud la copia al darse de alta y en cada
@@ -124,7 +126,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 160 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 165 casos con fechas
 movidas, cupos, permisos y bitácora (resultados de la última corrida: `docs/BITACORA-PROYECTO.md`).
 
 Las pantallas se prueban aparte (`herramientas/probar-sitio.mjs`, `herramientas/probar-esquemas.mjs` y

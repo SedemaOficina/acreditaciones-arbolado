@@ -29,6 +29,11 @@ correcciones de la auditoría de tareas están en el código.
 
 ## Alta: pueden hacer que una persona pierda el trámite, pague dos veces, falte o quede bloqueada
 
+**Estado al 2026-10-18 (versión 0.43, bloque 62):** corregidas 1 a 7, 10 y 11. La 4 y la 7 con las decisiones de Liber
+(P94 y P14). La 1 sigue necesitando que Liber borre lo guardado en sus navegadores. Abiertas: 8 (P124) y 9 (informe de
+seguridad, antes de instalar la base en el SIA). De la 5 falta escribir el contrato de la API (los campos que leen las
+pantallas), que es trabajo de la etapa 3. La 7 deja un pendiente nuevo: el contacto de la Secretaría (P132).
+
 | # | Qué pasa | Dónde | Propuesta |
 |---|---|---|---|
 | 1 | Lo cargado en la prueba (documentos, fotografía, CURP) queda en el navegador sin caducidad, en una dirección que comparten todos los sitios de SedemaOficina en GitHub Pages. Ninguna pantalla dice «no uses documentos reales» y las páginas se pueden indexar en buscadores | Prototipo | **Liber: borrar lo guardado en sus navegadores.** Caducidad de lo guardado, advertencia visible en cuenta y solicitud, `noindex` en todas las páginas |

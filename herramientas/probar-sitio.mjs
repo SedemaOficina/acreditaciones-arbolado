@@ -183,6 +183,13 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/Versión de prueba 0\.\d+/.test(await page.textContent('#version-sia')), t('inicio: versión de prueba visible'));
   await sinDesborde(page, t('inicio'));
   await captura(page, `01-inicio-${sufijo}`);
+  // Alta 1 de la auditoría integral: no se indexa y lo guardado caduca a los 7 días sin uso
+  comprueba((await page.getAttribute('meta[name="robots"]', 'content')) === 'noindex, nofollow', t('inicio: los buscadores no indexan la prueba'));
+  await page.evaluate(() => { localStorage.setItem('apd.perfiles', '{"x":{"telefono":"5500000000"}}'); localStorage.setItem('apd.prueba.ultimo_uso', String(Date.now() - 8 * 864e5)); });
+  await page.reload();
+  await page.waitForSelector('[data-requisitos] details');
+  await page.waitForFunction(() => Number(localStorage.getItem('apd.prueba.ultimo_uso')) > Date.now() - 6e4);
+  comprueba(await page.evaluate(() => localStorage.getItem('apd.perfiles') === null), t('lo guardado en el navegador se borra solo a los 7 días sin usar la prueba'));
 
   // Cuenta nueva
   await page.goto(BASE + 'cuenta.html');
@@ -408,9 +415,17 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 
     // Padrón migrado: crea su cuenta con su CURP, ve su historial y renueva
   await page.goto(BASE + 'cuenta.html');
-  await llenaCuenta(page, renovable);
+  // P14 (decisión 2026-10-18): el nombre se compara con el registro sin acentos y con una letra de tolerancia
+  // Cambia la última letra (y con n = 2 agrega otra): no toca las letras que usa la CURP, que se comprueban antes
+  const cambia = (t, n) => t.slice(0, -1) + (t.endsWith('E') ? 'A' : 'E').repeat(n);
+  await llenaCuenta(page, Object.assign({}, renovable, { nombre: cambia(renovable.nombre, 2) }), renovable.curp);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForFunction(() => /no coincide con el que tiene la Secretaría/.test(document.body.textContent));
+  comprueba(await page.isHidden('[data-acuse]') && (await page.getAttribute('#nombre', 'aria-invalid')) === 'true', t('cuenta del padrón migrado: con dos letras distintas en el nombre no se activa y lo marca junto al nombre'));
+  await page.fill('#nombre', cambia(renovable.nombre, 1));
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
+  comprueba(true, t('cuenta del padrón migrado: con una letra distinta en el nombre sí se activa (P14)'));
   comprueba(await page.isVisible('[data-cuenta-historial]'), t('cuenta del padrón migrado: avisa que encontró acreditaciones anteriores'));
   await page.click('[data-acuse] a[href="tramites.html"]');
   await page.waitForSelector('[data-acreditaciones] .ficha');
@@ -424,6 +439,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/^PD-/.test(await page.inputValue('#anterior')), t('solicitud renovación: acreditación anterior en sólo lectura'));
   comprueba(/renovación de tu acreditación PD-/.test(await page.textContent('[data-modalidad-texto]')), t('solicitud renovación: informa qué acreditación renueva'));
   await siguiente(page);
+  // Decisión 2026-10-18: en su primera renovación, quien viene de Kobo (sin archivos) carga todos los documentos
+  comprueba(await page.isVisible('[data-kobo-docs]') && await page.locator('[data-si="tramite=poda_renovacion"] [data-campo^="doc_"][data-requerido]').count() === 4
+    && !/si aplica/.test(await page.textContent('[data-campo="doc_poda_renovacion_identificacion_oficial"] .etiqueta')),
+    t('primera renovación de quien viene del registro anterior: pide todos los documentos, como una nueva'));
   await cargaObligatorios(page);
   await siguiente(page);
   await marcaCasillas(page);
@@ -450,6 +469,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.selectOption('#nivel_estudios', 'licenciatura');
   comprueba(await page.isVisible('[data-campo="carrera"]') && await page.isVisible('[data-campo="estatus_estudios"]') && !(await page.isVisible('[data-perfil-no-cumple]')),
     t('perfil: con licenciatura pregunta la carrera y luego su situación'));
+  await page.selectOption('#nivel_estudios', 'maestria');
+  comprueba(await page.isVisible('[data-campo="carrera"]') && !(await page.isVisible('[data-campo="estatus_estudios"]')),
+    t('perfil: con posgrado no se pregunta la situación del grado (se asume la licenciatura titulada)'));
+  await page.selectOption('#nivel_estudios', 'licenciatura');
   await page.fill('#carrera', 'Biología');
   await page.check('input[name="estatus_estudios"][value="concluido"]', { force: true });
   comprueba(/cinco años/.test(await page.textContent('[data-experiencia-minima]')), t('perfil: con carta de pasante se piden cinco años'));
@@ -637,7 +660,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('menú de pruebas: en la bandeja del personal no ofrece llenar ni simular el envío'));
   await page.click('dialog.menu-pruebas >> text=Empezar de cero');
   await page.waitForURL(/index\.html|\/$/);
-  comprueba(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('apd.')).length === 0
+  comprueba(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('apd.') && k !== 'apd.prueba.ultimo_uso').length === 0
     && APD_ARCHIVOS_PRUEBA.guardado().then((g) => !g.cuentas && !g.envios && !g.fotos)), t('menú de pruebas: «Empezar de cero» limpia la sesión y lo guardado'));
   // Crear cuenta: «Llenar con su CURP» crea la cuenta de alguien del registro anterior
   await page.goto(BASE + 'cuenta.html');
@@ -671,17 +694,19 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   if (emitida) {
     await entra(page, emitida.curp);
     const f = await fichaDe('Acreditación emitida').textContent();
-    comprueba(/Inicio de vigencia/.test(f) && /Fin de vigencia/.test(f) && /Número de acreditación/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f),
+    comprueba(/Emitida el/.test(f) && /Vence el/.test(f) && /Número de acreditación/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f),
       t('mis solicitudes: la acreditación emitida muestra su folio y vigencia, sin los datos del curso'));
     await page.click('[data-sesion] button');
   }
-  const conGrupo = personaCon('inscrita', (x) => datos.inscripcion.some((i) => i.solicitud_id === x.id && i.activa && datos.grupo.find((g) => g.id === i.grupo_id).fecha_inicio));
+  const conGrupo = personaCon('inscrita', (x) => datos.inscripcion.some((i) => i.solicitud_id === x.id && i.activa && ['confirmado', 'en_curso'].includes(datos.grupo.find((g) => g.id === i.grupo_id).estado)));
   if (conGrupo) {
     await entra(page, conGrupo.curp);
     const ficha = fichaDe('Con grupo asignado');
     const f = await ficha.textContent();
-    comprueba(/Preséntate el/.test(f) && /El curso termina el/.test(f) && /Sede/.test(f) && !/Duración|Inicia el/.test(f),
+    comprueba(/Preséntate el/.test(f) && /El curso termina el/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
       t('mis solicitudes: con grupo, dice cuándo presentarse, cuándo termina el curso y dónde'));
+    comprueba(/identificación oficial/.test(f) && /examen/.test(f) && /al menos \d\.\d/.test(f) && await ficha.locator('ol.secuencia > li').count() >= 4,
+      t('mis solicitudes: con grupo, «Qué sigue» dice que lleve la identificación, cuándo es el examen y la calificación mínima'));
     comprueba(/a las \d{2}:\d{2}/.test(f) && await ficha.locator('.datos-por-confirmar', { hasText: 'hora de entrada' }).count() === 0, t('mis solicitudes: con grupo confirmado, dice la hora de entrada (apd.grupo.hora_entrada)'));
     await page.click('[data-sesion] button');
   }
@@ -847,6 +872,19 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector('[data-solicitudes] .ficha');
   const enPausa = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
   comprueba(/Cita en pausa/.test(enPausa) && /versión distinta/.test(enPausa), t('la persona ve «Cita en pausa» y qué no coincidió'));
+  // Alta 6 de la auditoría integral: al día siguiente, la persona ve que la pausa venció y ya no puede cargar
+  const otroDia = (() => { const d = new Date(`${dia}T12:00:00-06:00`); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
+  await page.route('**/datos/ficticios.json*', async (r) => { const res = await r.fetch(); const j = await res.json(); j.fecha_corte = otroDia; await r.fulfill({ response: res, json: j }); });
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
+  const vencida = page.locator('[data-solicitudes] .ficha', { hasText: folio });
+  comprueba(/La pausa venció/.test(await vencida.textContent()) && await vencida.locator(`a[href^="corregir.html"]`).count() === 0, t('al día siguiente: «La pausa venció», sin «Cargar el documento»'));
+  await page.goto(BASE + `corregir.html?folio=${folio}`);
+  await page.waitForFunction(() => /venció/.test(document.querySelector('[data-cargando]').textContent));
+  comprueba(await page.isHidden('#formulario'), t('al día siguiente, «Cargar el documento» dice que la pausa venció y no deja cargar'));
+  await page.unroute('**/datos/ficticios.json*');
+  await page.goto(BASE + 'tramites.html');
+  await page.waitForSelector('[data-solicitudes] .ficha');
   await page.click(`a[href="corregir.html?folio=${folio}"]`);
   await page.waitForSelector('#formulario:not([hidden])');
   comprueba(await page.$$eval('[data-campo^="doc_"]', (els) => els.filter((e) => e.offsetParent !== null).length) === 1, t('«Cargar el documento correcto» pide sólo el que no coincidió'));
@@ -921,6 +959,7 @@ async function caminosCotejo(navegador) {
   const f1 = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
   comprueba(/No te presentaste/.test(f1) && /09:30/.test(f1) && f1.indexOf('No te presentaste') < f1.indexOf('Datos para tu pago') && /Acude a tu cita nueva/.test(f1) && !/\.\./.test(f1),
     t('la persona ve arriba de la ficha que no se presentó y su cita nueva, con la etiqueta «Acude a tu cita nueva» y sin «..»'));
+  comprueba(/no pagues otra vez/.test(f1) && !/Paga los derechos e imprime/.test(f1), t('cita nueva: si ya pagó, se le dice que no pague otra vez (alta 3)'));
   await abre(pg, s1.folio);
   comprueba(/No se presentó a su cita/.test(await pg.textContent('[data-antecedente]')), t('la segunda cita avisa la inasistencia anterior'));
   await pg.check('input[name="se_presento"][value="no"]');
@@ -950,6 +989,9 @@ async function caminosCotejo(navegador) {
   // La misma solicitud tiene dos filas: la cita atendida (ese día) y la nueva (otro día)
   await pg.waitForSelector(`[data-filas] tr[data-folio="${s1.folio}"]:not([hidden])`);
   comprueba(/Sin pago/.test(await pg.textContent(`[data-filas] tr[data-folio="${s1.folio}"]:not([hidden])`)), t('la agenda registra la cita como «Sin pago · cita nueva»'));
+  await entra(pg, p1.curp);
+  const f2 = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
+  comprueba(/No presentaste tu comprobante/.test(f2) && /no pagues otra vez/.test(f2) && !/Paga los derechos con los mismos datos/.test(f2), t('sin comprobante: «Si ya pagaste… no pagues otra vez» (alta 3)'));
   await c.close();
 
   // Un documento no coincide y no lo puede traer hoy: regresa con observaciones
@@ -964,8 +1006,8 @@ async function caminosCotejo(navegador) {
   await pg.check('input[name="hoy_documento"][value="no"]');
   await registra(pg);
   await entra(pg, p1.curp);
-  const f2 = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
-  comprueba(/Corrige y reenvía/.test(f2) && /cita de cotejo/.test(f2) && /otra fecha de expedición/.test(f2), t('la persona ve que en su cotejo un documento no coincidió'));
+  const fPago = await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent();
+  comprueba(/Corrige y reenvía/.test(fPago) && /cita de cotejo/.test(fPago) && /otra fecha de expedición/.test(fPago), t('la persona ve que en su cotejo un documento no coincidió'));
   await c.close();
 
   // No es la persona: no se atiende, se confirma y la cuenta queda bloqueada
@@ -1275,6 +1317,17 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.waitForURL(/hecho=baja_integracion/);
   await pg.waitForSelector('[data-situacion] .estado');
   comprueba(/Por confirmar/.test(await texto('[data-situacion]')) && await pg.isVisible('[data-confirmar]'), t('la baja deja al grupo por debajo del mínimo: regresa a integración'));
+  // Alta 2 de la auditoría integral: quien sigue en el grupo ya no ve la fecha como segura
+  const queda = (await pg.textContent('[data-filas] tr:first-child .mono')).trim();
+  const solQueda = datos.solicitud.find((x) => x.folio === queda);
+  if (solQueda) {
+    await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), solQueda.solicitante_id);
+    await pg.goto(BASE + 'tramites.html');
+    await pg.waitForSelector('[data-solicitudes] .ficha');
+    const fq = await pg.locator('[data-solicitudes] .ficha', { hasText: queda }).textContent();
+    comprueba(!/Preséntate el/.test(fq) && /todavía no está confirmado/.test(fq), t('«Mis trámites»: con el grupo de nuevo por confirmar, la persona ya no ve la fecha como segura'));
+    await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
+  }
 
   // Crear un grupo combinado de renovación con toda la espera y cancelarlo
   await pg.goto(BASE + 'espera.html?curso=poda-renovacion');

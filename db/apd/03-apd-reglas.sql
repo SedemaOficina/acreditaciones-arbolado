@@ -229,7 +229,8 @@ CREATE FUNCTION apd.perfil_academico(p_nivel text, p_estatus text, p_grupo text)
     WHEN p_nivel IS NULL THEN NULL
     WHEN p_nivel IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria') THEN 'no_cumple'
     WHEN p_nivel = 'tecnica' THEN 'tecnica'
-    WHEN p_estatus IS NULL THEN NULL
+    -- La situación del grado sólo se pregunta con licenciatura; con posgrado se asume titulada (decisión 2026-10-18)
+    WHEN p_nivel = 'licenciatura' AND p_estatus IS NULL THEN NULL
     WHEN p_nivel = 'licenciatura' AND p_estatus IN ('en_curso', 'trunco') THEN 'no_cumple'
     WHEN p_grupo IS NULL THEN 'por_clasificar'
     WHEN p_grupo = 'no_afin' THEN 'no_cumple'
@@ -254,8 +255,10 @@ CREATE FUNCTION apd.solicitud_perfil() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE c apd.carrera;
 BEGIN
   IF NEW.nivel_estudios IS NULL OR NEW.nivel_estudios NOT IN ('licenciatura', 'maestria', 'doctorado') THEN
-    NEW.carrera := NULL; NEW.estatus_estudios := NULL;
+    NEW.carrera := NULL;
   END IF;
+  -- La situación del grado, sólo con licenciatura: con maestría o doctorado se asume la licenciatura titulada (2026-10-18)
+  IF NEW.nivel_estudios IS DISTINCT FROM 'licenciatura' THEN NEW.estatus_estudios := NULL; END IF;
   IF NEW.nivel_estudios IS DISTINCT FROM 'tecnica' THEN NEW.carrera_tecnica := NULL; END IF;
   NEW.carrera_tecnica := nullif(regexp_replace(trim(coalesce(NEW.carrera_tecnica, '')), '\s+', ' ', 'g'), '');
   NEW.carrera := nullif(regexp_replace(trim(coalesce(NEW.carrera, '')), '\s+', ' ', 'g'), '');
@@ -611,9 +614,9 @@ BEGIN
          AND NOT EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = s.id AND d.requisito = rc.requisito AND d.vigente)
        ORDER BY rc.orden LIMIT 1;
       IF falta = 'foto_credencial' THEN
-        PERFORM apd.error('sin_foto_credencial', 'Carga la fotografía tomada para la credencial antes de registrar la entrega');
+        PERFORM apd.error('sin_foto_credencial', 'Cargue la fotografía tomada para la credencial antes de registrar la entrega');
       ELSIF falta IS NOT NULL THEN
-        PERFORM apd.error('sin_acuse_entrega', 'Carga el comprobante de recepción firmado antes de registrar la entrega');
+        PERFORM apd.error('sin_acuse_entrega', 'Cargue el comprobante de recepción firmado antes de registrar la entrega');
       END IF;
     END IF;
     PERFORM apd.registrar('entrega', 'acreditacion', NEW.id::text, format('%s entregada el %s', NEW.numero, NEW.entregada_en));
@@ -705,15 +708,16 @@ END $$;
 CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE faltan text; perfil text;
 BEGIN
-  -- Estudios: en los dos tipos, el nivel; con licenciatura o posgrado, la carrera y su situación; con carrera técnica,
-  -- cuál (decisión 2026-10-17)
+  -- Estudios: en los dos tipos, el nivel; con licenciatura o posgrado, la carrera; con licenciatura, además, su
+  -- situación (con posgrado se asume titulada, 2026-10-18); con carrera técnica, cuál (decisión 2026-10-17)
   IF s.nivel_estudios IS NULL
-     OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado')
-         AND (coalesce(trim(s.carrera), '') = '' OR s.estatus_estudios IS NULL))
+     OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado') AND coalesce(trim(s.carrera), '') = '')
+     OR (s.nivel_estudios = 'licenciatura' AND s.estatus_estudios IS NULL)
      OR (s.nivel_estudios = 'tecnica' AND coalesce(trim(s.carrera_tecnica), '') = '') THEN
-    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios; si es licenciatura o posgrado, tu carrera y su situación; si es carrera técnica, cuál');
+    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios; si es licenciatura o posgrado, tu carrera (y, con licenciatura, su situación); si es carrera técnica, cuál');
   END IF;
-  IF s.tipo_acreditacion = 'dictaminador' THEN
+  -- La experiencia se comprueba en la primera vez; la renovación no la vuelve a pedir (decisión 2026-10-18)
+  IF s.tipo_acreditacion = 'dictaminador' AND s.modalidad = 'nueva' THEN
     IF s.anios_experiencia IS NULL THEN
       PERFORM apd.error('falta_perfil', 'Indica tus años de experiencia en manejo de arbolado');
     END IF;
@@ -734,6 +738,22 @@ BEGIN
                       WHERE d.solicitud_id = s.id AND d.requisito = rc.requisito AND d.vigente);
   IF faltan IS NOT NULL THEN
     PERFORM apd.error('faltan_documentos', 'Faltan documentos: ' || faltan);
+  END IF;
+  -- Quien viene del registro anterior (Kobo), que no guardó archivos, en su primera renovación en el sistema carga todos
+  -- los documentos, como una solicitud nueva (decisión 2026-10-18): los «si aplica» se vuelven obligatorios
+  IF s.modalidad = 'renovacion'
+     AND (SELECT origen FROM apd.acreditacion WHERE id = s.acreditacion_anterior_id) = 'kobo'
+     AND NOT EXISTS (SELECT 1 FROM apd.documento d JOIN apd.solicitud o ON o.id = d.solicitud_id
+                      WHERE o.solicitante_id = s.solicitante_id AND o.id <> s.id) THEN
+    SELECT string_agg(r.nombre, ', ' ORDER BY rc.orden) INTO faltan
+      FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+     WHERE rc.tipo_acreditacion = s.tipo_acreditacion AND rc.modalidad = s.modalidad
+       AND r.forma = 'documento' AND r.momento = 'en_linea'
+       AND NOT EXISTS (SELECT 1 FROM apd.documento d
+                        WHERE d.solicitud_id = s.id AND d.requisito = rc.requisito AND d.vigente);
+    IF faltan IS NOT NULL THEN
+      PERFORM apd.error('faltan_documentos_kobo', 'Tu acreditación viene del registro anterior, que no guardó tus documentos: en esta primera renovación cárgalos todos. Faltan: ' || faltan);
+    END IF;
   END IF;
 END $$;
 
@@ -842,7 +862,7 @@ BEGIN
         PERFORM apd.error('sin_revision', 'Para enviar observaciones, registre la revisión de la solicitud');
       END IF;
       IF OLD.estado = 'validada_en_linea' AND apd.contexto('motivo') = '' THEN
-        PERFORM apd.error('cotejo_sin_motivo', 'Indica qué no coincidió en el cotejo');
+        PERFORM apd.error('cotejo_sin_motivo', 'Indique qué no coincidió en el cotejo');
       END IF;
     WHEN 'validada_en_linea' THEN
       IF ultima IS DISTINCT FROM 'validada' THEN
@@ -1506,8 +1526,13 @@ BEGIN
     PERFORM apd.error('sin_derecho_examen', format('Asistió %s de %s días; se necesitan %s para tener derecho a examen',
       asistidos, c.dias_duracion, c.dias_minimos_asistencia));
   END IF;
-  IF NEW.presentado_en > apd.hoy() OR NEW.presentado_en < g.fecha_inicio THEN
-    PERFORM apd.error('fecha_examen', 'La fecha del examen debe estar entre el inicio del curso y hoy');
+  -- El examen es el último día del curso, en el salón de cómputo (R36), y la asistencia de ese día se registra al
+  -- pasar lista ahí, antes de dar el código (P94, decisión 2026-10-18): sin ese pase de lista no hay examen
+  IF NEW.presentado_en <> g.fecha_inicio + (c.dias_duracion - 1) THEN
+    PERFORM apd.error('fecha_examen', format('El examen se presenta el último día del curso (%s)', to_char(g.fecha_inicio + (c.dias_duracion - 1), 'DD/MM/YYYY')));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM apd.asistencia WHERE inscripcion_id = NEW.inscripcion_id AND dia = c.dias_duracion AND asistio) THEN
+    PERFORM apd.error('sin_pase_de_lista', 'Sin el pase de lista del día del examen no hay examen: primero se registra su asistencia de ese día');
   END IF;
   NEW.capturado_en := apd.ahora();
   RETURN NEW;

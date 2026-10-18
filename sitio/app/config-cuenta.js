@@ -27,6 +27,21 @@
 window.FORMKIT_CONFIG = {};
 /* Nombre comparable con el registro anterior: mayúsculas, sin acentos ni signos. */
 const limpiaNombre = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z ]/g, ' ').replace(/\s+/g, ' ').trim();
+/* Letras distintas entre dos textos (distancia de edición: cambiar, sobrar o faltar una letra cuenta 1) */
+function distancia(a, b) {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const fila = [i];
+    for (let j = 1; j <= b.length; j++) fila[j] = Math.min(prev[j] + 1, fila[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = fila;
+  }
+  return prev[b.length];
+}
+/* Activar una cuenta del registro anterior (P14, decisión 2026-10-18): la CURP ya coincide; el nombre completo se
+   compara sin acentos ni signos y admite una letra distinta. La identidad se confirma en el cotejo, con la
+   identificación oficial. */
+const nombreCompleto = (p) => limpiaNombre([p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' '));
+const coincideConRegistro = (d, e) => distancia(nombreCompleto(d), nombreCompleto(e)) <= 1;
 
 window.FORMKIT_OPCIONES = {
   enviar(payload, { signal }) {
@@ -46,11 +61,11 @@ window.FORMKIT_OPCIONES = {
             return mal({ mensaje: APD.CORREO_EN_USO, errores: [{ campo: 'correo', mensaje: APD.CORREO_EN_USO }] });
           }
           if (existente) {
-            // Registro anterior (Kobo): además de la CURP, el nombre debe ser el del registro
-            const igual = (a, b) => limpiaNombre(a) === limpiaNombre(b);
-            if (!igual(d.nombre, existente.nombre) || !igual(d.primer_apellido, existente.primer_apellido)
-                || !igual(d.segundo_apellido || '', existente.segundo_apellido || '')) {
-              return mal({ mensaje: 'Tu nombre no coincide con el registro anterior de la Secretaría para esta CURP. Acude a la Secretaría para aclararlo.' });
+            // Registro anterior (Kobo): además de la CURP, el nombre, con una letra de tolerancia (P14)
+            if (!coincideConRegistro(d, existente)) {
+              const NO = 'No coincide con el nombre que tiene la Secretaría para esta CURP.';
+              return mal({ mensaje: 'Tu nombre no coincide con el que tiene la Secretaría para esta CURP en su registro anterior. Revisa tu nombre y tus apellidos; si están bien escritos, acude a la Secretaría para aclararlo. Pendiente: teléfono y correo para estas aclaraciones (P132).',
+                errores: [{ campo: 'nombre', mensaje: NO }, { campo: 'primer_apellido', mensaje: NO }] });
             }
           }
           // Versión de prueba: la cuenta (con la contraseña sólo como resumen) y la fotografía se guardan en este

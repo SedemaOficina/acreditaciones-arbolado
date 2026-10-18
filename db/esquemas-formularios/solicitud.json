@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-17T20:32:17.012Z",
+  "generado": "2026-10-18T07:58:10.085Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -129,7 +129,7 @@
       ]
     },
     "estatus_estudios": {
-      "etiqueta": "¿En qué situación está ese último grado de estudios?",
+      "etiqueta": "¿En qué situación está tu licenciatura?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -146,9 +146,7 @@
       "si": {
         "campo": "nivel_estudios",
         "valores": [
-          "licenciatura",
-          "maestria",
-          "doctorado"
+          "licenciatura"
         ]
       },
       "condiciones": [
@@ -158,6 +156,12 @@
             "licenciatura",
             "maestria",
             "doctorado"
+          ]
+        },
+        {
+          "campo": "nivel_estudios",
+          "valores": [
+            "licenciatura"
           ]
         }
       ]
@@ -178,9 +182,9 @@
       },
       "autocomplete": "off",
       "si": {
-        "campo": "tipo",
+        "campo": "tramite",
         "valores": [
-          "dictaminador"
+          "dictaminador_nueva"
         ]
       },
       "condiciones": [
@@ -188,6 +192,12 @@
           "campo": "tipo",
           "valores": [
             "dictaminador"
+          ]
+        },
+        {
+          "campo": "tramite",
+          "valores": [
+            "dictaminador_nueva"
           ]
         }
       ]

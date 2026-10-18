@@ -77,6 +77,29 @@
     if (ayuda) ayuda.prepend(el('strong', { texto: `${texto} ` }));
   }
 
+  /* Primera renovación de quien viene del registro anterior (Kobo), que no guardó archivos (decisión 2026-10-18): los
+     documentos «si aplica» de su renovación se vuelven obligatorios, como en una solicitud nueva. La base lo vuelve a
+     comprobar al enviar (faltan_documentos_kobo). */
+  function docsKobo(datos, tipo, modalidad, anterior) {
+    const a = modalidad === 'renovacion' ? datos.acreditacion.find((x) => x.numero === anterior) : null;
+    const sinArchivos = a && a.origen === 'kobo'
+      && !datos.solicitud.some((s) => s.solicitante_id === a.solicitante_id && datos.documento.some((d) => d.solicitud_id === s.id));
+    document.querySelector('[data-kobo-docs]').hidden = !sinArchivos;
+    if (!sinArchivos) return;
+    const M = FormKit.config.mensajes;
+    for (const campo of form.querySelectorAll(`[data-si="tramite=${tipo}_renovacion"] [data-campo^="doc_"]`)) {
+      if (campo.hasAttribute('data-requerido')) continue;
+      campo.setAttribute('data-requerido', '');
+      const etq = campo.querySelector('.etiqueta');
+      if (etq) {
+        for (const n of etq.childNodes) if (n.nodeType === 3) n.textContent = n.textContent.replace(' (si aplica)', '');
+        etq.append(el('span', { class: 'marca-oblig', 'aria-hidden': 'true', texto: '*' }), el('span', { class: 'solo-lector', texto: ` (${M.palabraObligatorio})` }));
+      }
+      const ayuda = campo.querySelector('.ayuda');
+      if (ayuda) for (const n of ayuda.childNodes) if (n.nodeType === 3) n.textContent = n.textContent.replace(' Sólo si cambió o ya no está vigente.', '');
+    }
+  }
+
   /* El curso que corresponde (tipo + nueva o renovación) va en el campo auxiliar «tramite»: de él dependen
      los documentos. Se informa a la persona; no se le pregunta. */
   function ponTramite(tipo, modalidad, anterior, datos) {
@@ -90,6 +113,7 @@
       ? `Te corresponde la renovación de tu acreditación ${anterior}. Curso de ${dias}.`
       : `Te corresponde una solicitud nueva: es tu primera vez o tu acreditación anterior venció hace más de un año. Curso de ${dias}.`;
     caja.hidden = false;
+    docsKobo(datos, tipo, modalidad, anterior);
   }
 
   function nueva(datos, persona) {

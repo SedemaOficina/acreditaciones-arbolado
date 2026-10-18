@@ -168,8 +168,13 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
          180000 + ('x' || substr(md5(${q(s.id)} || rc.requisito), 1, 5))::bit(20)::int,
          encode(sha256(convert_to(${q(s.id)} || rc.requisito, 'UTF8')), 'hex')
     FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
-   WHERE rc.tipo_acreditacion = ${q(tipo)} AND rc.modalidad = ${q(modalidad)} AND rc.obligatorio
-     AND r.forma = 'documento' AND r.momento = 'en_linea'`);
+   WHERE rc.tipo_acreditacion = ${q(tipo)} AND rc.modalidad = ${q(modalidad)}
+     AND r.forma = 'documento' AND r.momento = 'en_linea'
+     -- Primera renovación de quien viene de Kobo (sin archivos en el sistema): todos, como una nueva (decisión 2026-10-18)
+     AND (rc.obligatorio OR (${q(modalidad)} = 'renovacion'
+          AND (SELECT origen FROM apd.acreditacion WHERE id = ${q(opciones.anterior)}) = 'kobo'
+          AND NOT EXISTS (SELECT 1 FROM apd.documento d JOIN apd.solicitud o ON o.id = d.solicitud_id
+                           WHERE o.solicitante_id = ${q(p.id)} AND o.id <> ${q(s.id)})))`);
   return s;
 }
 
@@ -324,7 +329,7 @@ function costo(tipo, modalidad, monto, desde) {
   en(desde, '08:00');
   como(ADMINISTRACION, 'personal');
   emitir(`UPDATE apd.curso SET pago_monto = ${monto}, pago_vigente_desde = ${q(desde)},
-    pago_fundamento = 'MONTO FICTICIO DE PRUEBA, vigente desde ${desde}. El real lo fija la Gaceta Oficial.'
+    pago_fundamento = 'Monto ficticio de prueba, vigente desde el ${desde.split('-').reverse().join('/')}. El real lo fija la Gaceta Oficial.'
     WHERE tipo_acreditacion = ${q(tipo)} AND modalidad = ${q(modalidad)}`);
 }
 costo('poda', 'nueva', 1200, '2026-07-01');

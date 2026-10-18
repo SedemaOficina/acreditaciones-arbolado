@@ -372,7 +372,7 @@ COMMENT ON COLUMN apd.solicitud.nivel_estudios IS 'Último nivel o grado de estu
 COMMENT ON COLUMN apd.solicitud.carrera IS 'Con licenciatura o posgrado, en poda y en dictaminador: la carrera que estudió, elegida del catálogo o escrita';
 COMMENT ON COLUMN apd.solicitud.carrera_id IS 'Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo)';
 COMMENT ON COLUMN apd.solicitud.carrera_tecnica IS 'Con carrera técnica, en poda y en dictaminador: el nombre de la carrera técnica, escrito; sin catálogo (decisión 2026-10-17, Liber)';
-COMMENT ON COLUMN apd.solicitud.estatus_estudios IS 'Con licenciatura o posgrado, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado)';
+COMMENT ON COLUMN apd.solicitud.estatus_estudios IS 'Sólo con licenciatura, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado). Con posgrado no se pregunta: se asume la licenciatura titulada (decisión 2026-10-18)';
 COMMENT ON COLUMN apd.solicitud.perfil_academico IS 'Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple. No impide enviar: el personal lo revisa en la revisión documental';
 COMMENT ON COLUMN apd.solicitud.experiencia_minima IS 'Años de experiencia que pide el perfil; la calcula la base: 2 con licenciatura o posgrado en carrera principal o afín; 5 en todo lo demás, también cuando lo decide el personal (por clasificar o no cumple)';
 COMMENT ON COLUMN apd.solicitud.anios_experiencia IS 'Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban';
@@ -567,7 +567,7 @@ CREATE TABLE apd.asistencia (
   CONSTRAINT asistencia_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id),
   CONSTRAINT asistencia_dia_ck CHECK (dia >= 1)
 );
-COMMENT ON TABLE apd.asistencia IS 'Asistencia por día de curso, capturada por el instructor.';
+COMMENT ON TABLE apd.asistencia IS 'Asistencia por día de curso, capturada por el instructor; la del último día se registra al pasar lista en el examen (P94).';
 COMMENT ON COLUMN apd.asistencia.inscripcion_id IS 'Inscripción';
 COMMENT ON COLUMN apd.asistencia.dia IS 'Día del curso, desde 1';
 COMMENT ON COLUMN apd.asistencia.asistio IS 'Asistió ese día';

@@ -17,6 +17,8 @@
   const MINIMOS = { licenciatura_afin: 2, disciplina_afin: 5, pasante: 5, tecnica: 5 };
   function perfilAcademico(datos, nivel, estatus, carrera) {
     if (!nivel) return null;
+    // Con posgrado no se pregunta la situación: se asume la licenciatura titulada (decisión 2026-10-18)
+    if (nivel === 'maestria' || nivel === 'doctorado') estatus = 'titulado';
     let perfil;
     if (BASICOS.includes(nivel)) perfil = 'no_cumple';
     else if (nivel === 'tecnica') perfil = 'tecnica';

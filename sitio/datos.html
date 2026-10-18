@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <title>Mi perfil · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Consulta tu perfil y actualiza tu contacto, tu adscripción y tu fotografía. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
@@ -18,7 +19,7 @@
 </head>
 <body>
 <a class="salto" href="#contenido">Ir al contenido</a>
-<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · usa datos inventados, nunca los tuyos · nada se envía · fecha simulada: <span data-corte></span></aside>
 
 <header class="cabecera">
   <div class="cabecera-int">
@@ -89,7 +90,7 @@
     <div data-vista="contacto"></div>
     <div class="aviso aviso-ok perfil-guardado" role="status" data-guardado="contacto" hidden></div>
     <form id="form-contacto" class="perfil-form" data-formkit="manual" data-seccion="contacto" action="#" method="post" aria-labelledby="t-contacto" hidden>
-      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+      <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <div class="fila">
         <div class="campo" data-campo="correo" data-formato="correo" data-requerido data-sensible
              data-finalidad="Avisar a la persona el avance de su trámite y recuperar el acceso a su cuenta." data-uso="Avisos del trámite y recuperación del acceso.">
@@ -127,7 +128,7 @@
     <p class="ayuda">Tus solicitudes se envían con la adscripción que tengas ese día; las que ya enviaste conservan la suya.</p>
     <div class="aviso aviso-ok perfil-guardado" role="status" data-guardado="adscripcion" hidden></div>
     <form id="form-adscripcion" class="perfil-form" data-formkit="manual" data-seccion="adscripcion" action="#" method="post" aria-labelledby="t-adscripcion" hidden>
-      <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+      <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <!-- adscripcion:inicio (fragmento de herramientas/plantillas/adscripcion.html; lo inserta construir-sitio.mjs) -->
       <!-- Adscripción (decisiones 2026-10-15): es de la persona. Se pide al crear la cuenta y se cambia en «Mi perfil»;
            cada solicitud guarda la que tenía al enviarse. Primero si trabaja para alguien («No» = independiente); luego

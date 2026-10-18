@@ -583,6 +583,14 @@
       "desde": "2026-10-18",
       "titulo": "Hallazgo del estándar: FormKit.aviso sólo recibe texto",
       "recomendacion": "No puede llevar la secuencia «qué sigue» (P119) ni un enlace, y arma span.aviso-texto, donde una lista no es válida. Solución provisional: APD.aviso arma el marcado del contrato (div.aviso-texto con ol.secuencia) para los avisos con pasos o enlaces; los de sólo texto usan FormKit.aviso. Propuesta: aceptar pasos y un nodo como texto, con div.aviso-texto."
+    },
+    {
+      "id": "P132",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Teléfono, correo y horario de la Secretaría para aclaraciones del trámite",
+      "recomendacion": "Ninguna pantalla de la persona da un medio de contacto, y varias la mandan a «acudir a la Secretaría» (activar una cuenta del registro anterior cuyo nombre no coincide, cuenta bloqueada, dudas del pago). Hace falta el teléfono, el correo y el horario de atención que se publicarán, para ponerlos en «Mis trámites», «Crea tu cuenta» y «Entrar» (auditoría integral, alta 7)."
     }
   ],
   "resueltos": [
@@ -984,6 +992,11 @@
     {
       "titulo": "Estándar: la secuencia numerada de «qué sigue» sólo existe dentro del acuse (P119)",
       "como": "Lo resolvió la versión 1.4.1 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
+      "fecha": "2026-10-18"
+    },
+    {
+      "titulo": "Altas de la auditoría integral del 2026-10-17 (1, 2, 3, 5, 6, 10 y 11) y P94, P14 en pantallas y base",
+      "como": "Versión 0.43 (bloque 62): noindex, aviso de datos inventados y caducidad de 7 días de lo guardado; fecha del grupo sólo confirmado; sin pagar dos veces; cierre por inasistencia leído del motivo de la base; pausa vencida del lado de la persona; plazo para corregir; identificación, último día y calificación en «Qué sigue»; pase de lista = asistencia del último día; nombre del registro anterior con una letra de tolerancia.",
       "fecha": "2026-10-18"
     }
   ]

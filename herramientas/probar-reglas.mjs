@@ -105,6 +105,13 @@ const casos = [
   ['La misma renovación se acepta desde el primer día de la ventana', 'ok', '2026-10-20 10:00', `
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id)
      VALUES (${PERSONA_VIGENTE}, 'poda', 'renovacion', (SELECT id FROM apd.acreditacion WHERE numero = 'PD-2025-K100'));`],
+  ['Primera renovación de quien viene de Kobo: sin todos los documentos no se envía (decisión 2026-10-18)', { codigo: 'faltan_documentos_kobo' }, '2026-10-20 10:00', `
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id, nivel_estudios)
+     VALUES (${PERSONA_VIGENTE}, 'poda', 'renovacion', (SELECT id FROM apd.acreditacion WHERE numero = 'PD-2025-K100'), 'preparatoria');
+     CREATE TEMP TABLE s AS SELECT id FROM apd.solicitud
+      WHERE acreditacion_anterior_id = (SELECT id FROM apd.acreditacion WHERE numero = 'PD-2025-K100') AND estado = 'borrador';
+     ${DOC_PEQUENO('(SELECT id FROM s)', 'constancia_situacion_fiscal')}
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = (SELECT id FROM s);`],
   ['Renovar una vencida hace más de un año se rechaza: va como nueva', { codigo: 'renovacion_vencida' }, null, `
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id)
      VALUES (${PERSONA_NO_RENOVABLE}, 'poda', 'renovacion', ${ACRED_NO_RENOVABLE});`],
@@ -480,6 +487,20 @@ const casos = [
      SELECT i.id, '2026-10-15', 9, 'i' FROM apd.inscripcion i
       WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
         AND EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND NOT a.asistio) LIMIT 1;`],
+  ['Sin el pase de lista del día del examen no hay examen (P94)', { codigo: 'sin_pase_de_lista' }, '2026-10-17 20:00', `
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 4) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
+     SELECT i.id, '2026-10-17', 9, 'i' FROM apd.inscripcion i
+      WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
+        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 4 LIMIT 1;`],
+  ['El examen se presenta el último día del curso', { codigo: 'fecha_examen' }, '2026-10-17 20:00', `
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
+     SELECT i.id, '2026-10-16', 9, 'i' FROM apd.inscripcion i
+      WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
+        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 5 LIMIT 1;`],
   ['No se concluye un grupo con calificaciones pendientes', { codigo: 'faltan_calificaciones' }, '2026-10-17 20:00', `
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
      SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;

@@ -882,3 +882,30 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   grupo; la siguiente pasó completa. Las herramientas de prueba aceptan ya una ruta absoluta para las capturas.
 - Documento de fallas del estándar: los diecinueve hallazgos pasan a «Hallazgos resueltos» con su versión; versión del
   estándar que usa el proyecto: 1.4.1.
+
+## 2026-10-18 · Bloque 62 · Correcciones de la auditoría integral
+
+- **Alta 1:** todas las páginas con `noindex`; la franja de prueba dice «usa datos inventados, nunca los tuyos»; aviso
+  en «Crea tu cuenta» y en los documentos de la solicitud; lo guardado en el navegador se borra solo a los 7 días sin
+  usar la prueba (`APD_ARCHIVOS_PRUEBA.caduca`, antes de leer los datos).
+- **«Mis trámites»:** la fecha del curso sólo con el grupo confirmado (alta 2); en una cita nueva, «si ya pagaste, no
+  pagues otra vez» (alta 3); el cierre por dos inasistencias se lee del motivo que guarda la base y la prueba escribe
+  el mismo (alta 5); la pausa vencida se ve del lado de la persona y «Cargar el documento» ya no deja cargar (alta 6);
+  «Corrige y reenvía» dice que hay un plazo y que lo que corrige está arriba (alta 10); con grupo, «Qué sigue» dice que
+  lleve la identificación oficial, cuándo es el examen y la calificación mínima (alta 11); credencial en la oficina del
+  Vivero; los mismos rótulos de fechas que «Mis acreditaciones»; «Lugar del curso».
+- **P94:** la base exige que el examen sea el último día del curso (`fecha_examen`) y que exista el pase de lista de
+  ese día (`sin_pase_de_lista`); en la prueba, el pase de lista del examen cuenta como asistencia del último día.
+- **P14:** al activar una cuenta del registro anterior, el nombre completo se compara sin acentos y admite una letra
+  distinta; el error se marca junto al nombre. Falta un medio de contacto: P132.
+- **Decisiones del 18/10:** la situación del grado sólo con licenciatura (formulario, base y perfil); la renovación de
+  dictaminador ya no pide los años de experiencia; la primera renovación de quien viene de Kobo sin archivos pide todos
+  los documentos (página y base, `faltan_documentos_kobo`; los ficticios se regeneraron con esos documentos). El sexo ya
+  era dato interno: sólo se ve en la versión de prueba, con su nota.
+- **Textos:** «Las preguntas con * son obligatorias»; inicio «en PDF»; «Entrar» sin el pendiente P13, ya resuelto;
+  acuse de la cuenta sin «Entra con tu CURP»; monto de prueba con fecha día/mes/año; tres mensajes de la base al
+  personal en usted; sin primera persona del plural en dos textos.
+- Corregido en el camino: `APD.cargar` leía el módulo de la prueba antes de que se cargara y las cuentas nuevas
+  perdían la sesión (lo encontró `probar-sitio`).
+- Pruebas: `probar-sitio` 558 (con axe; 20 nuevas), `probar-examen` 63, `probar-volumen`, `probar-esquemas` (3 casos
+  nuevos) y `probar-base` 165 (3 nuevos), todas correctas.
