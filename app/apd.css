@@ -342,18 +342,16 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 .material-edicion-celda { display: block; color: var(--gris-cl); font-size: var(--t-sm); }
 .material-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); }
 
-/* Asistencia · propuesta A (decisión de Liber, 2026-10-18): la tira de puntos de los días y los dos botones del día.
-   La tira se lee también por su texto (solo-lector); el color no es lo único que distingue: faltó es un aro, hoy un aro
-   punteado, por venir un punto chico y el examen un aro dorado. */
+/* Asistencia · propuesta A (decisión de Liber, 2026-10-18): la tira de los días y los dos botones del día. ✓ verde
+   asistió, ✗ rojo faltó, aro punteado sin marcar, «?» sin capturar; la forma distingue además del color, y la tira se
+   lee también por su texto (solo-lector). */
 .asis-leyenda { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); margin-block: var(--e-2) var(--e-3); color: var(--gris); font-size: var(--t-sm); }
 .asis-leyenda > span { display: inline-flex; align-items: center; gap: var(--e-2); }
-.asis-punto { display: inline-block; flex: none; width: var(--e-3); height: var(--e-3); border-radius: 50%; box-sizing: border-box; }
-.asis-si { background: var(--ok); }
-.asis-no { background: var(--blanco); border: var(--b-2) solid var(--error); }
-.asis-hoy { border: var(--b-2) dashed var(--guinda); }
-.asis-sin { border: var(--b-2) dotted var(--pend); }
-.asis-futuro { width: var(--e-2); height: var(--e-2); margin-inline: var(--b-2); background: var(--borde); }
-.asis-examen { border: var(--b-2) solid var(--dorado); }
+.asis-marca { display: inline-flex; flex: none; align-items: center; justify-content: center; width: var(--e-4); height: var(--e-4); box-sizing: border-box; font-size: var(--t-base); font-weight: var(--peso-fuerte); line-height: 1; }
+.asis-si { color: var(--ok); }
+.asis-no { color: var(--error); }
+.asis-hoy { border: var(--b-2) dashed var(--guinda); border-radius: 50%; }
+.asis-sin { color: var(--pend); }
 .asis-quien { display: grid; gap: var(--e-1); min-width: 0; }
 .asis-quien p { margin: 0; }
 .asis-nombre { font-weight: var(--peso-semi); font-size: var(--t-md); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }

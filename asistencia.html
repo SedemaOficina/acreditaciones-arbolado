@@ -39,11 +39,10 @@
     <p class="bajada" data-bajada></p>
     <p class="ayuda" data-regla></p>
     <div class="asis-leyenda" aria-hidden="true">
-      <span><span class="asis-punto asis-si"></span>asistió</span>
-      <span><span class="asis-punto asis-no"></span>faltó</span>
-      <span><span class="asis-punto asis-hoy"></span>hoy</span>
-      <span><span class="asis-punto asis-futuro"></span>por venir</span>
-      <span><span class="asis-punto asis-examen"></span>examen</span>
+      <span><span class="asis-marca asis-si">✓</span>asistió</span>
+      <span><span class="asis-marca asis-no">✗</span>faltó</span>
+      <span><span class="asis-marca asis-hoy"></span>sin marcar</span>
+      <span><span class="asis-marca asis-sin">?</span>sin capturar</span>
     </div>
     <div data-avisos></div>
     <p class="ayuda ayuda-bloque" data-ultimo-dia hidden></p>
@@ -58,6 +57,7 @@
         <button type="button" class="btn btn-primario" data-guardar>Guardar la asistencia</button>
       </div>
     </div>
+    <p class="nota-prueba" data-recorrido hidden>Versión de prueba: recorrer el curso día por día, también los días que aún no llegan. <span data-recorrido-dias></span></p>
     <details class="asis-otro-dia" data-otro-dia>
       <summary>Corregir otro día</summary>
       <ul class="lista-simple" data-dias></ul>
