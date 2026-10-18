@@ -62,12 +62,15 @@
 
     /* Días: se capturan del primero al penúltimo, sólo los que ya ocurrieron. Sin ?dia, el de hoy */
     const diaDe = (n) => APD.sumaDias(g.fecha_inicio, n - 1);
+    // Versión de prueba (hay fecha simulada): se puede recorrer el curso completo, también los días que aún no llegan
+    // (pedido de Liber, 2026-10-18). En el SIA sólo se capturan los días ya ocurridos.
+    const prueba = Boolean(datos.fecha_corte);
     const capturables = [];
-    for (let n = 1; n < ultimoDia; n++) if (diaDe(n) <= hoy) capturables.push(n);
+    for (let n = 1; n < ultimoDia; n++) if (diaDe(n) <= hoy || prueba) capturables.push(n);
     const listo = (n) => personas.length && personas.every((f) => capturada(f.i.id, n) !== null);
     const deHoy = capturables.find((n) => diaDe(n) === hoy) || null;
     const pedidoDia = Number(params.get('dia'));
-    const pendiente = capturables.find((n) => !listo(n));
+    const pendiente = capturables.find((n) => diaDe(n) <= hoy && !listo(n));
     const dia = capturables.includes(pedidoDia) ? pedidoDia : deHoy || pendiente || capturables[capturables.length - 1] || null;
     const examenHoy = diaDe(ultimoDia) === hoy;
 
@@ -87,7 +90,7 @@
     }
 
     /* Corregir otro día: los días ya ocurridos, salvo el que está en pantalla */
-    const otros = capturables.filter((n) => n !== dia);
+    const otros = capturables.filter((n) => n !== dia && diaDe(n) <= hoy);
     $('[data-otro-dia]').hidden = !otros.length;
     $('[data-dias]').replaceChildren(...otros.map((n) => el('li', {}, [
       el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`, texto: `Día ${n} · ${diaSemana(diaDe(n))} ${corta(diaDe(n))}` }),
@@ -95,6 +98,19 @@
     ])));
     if (dia && dia !== deHoy && deHoy) {
       $('[data-dias]').prepend(el('li', {}, [el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}`, texto: `Volver al día de hoy (día ${deHoy})` })]));
+    }
+
+    /* Versión de prueba: recorrer todos los días del curso, el examen incluido */
+    if (prueba) {
+      const enlaces = [];
+      for (let n = 1; n <= ultimoDia; n++) {
+        const examen = n === ultimoDia;
+        const texto = `Día ${n} · ${corta(diaDe(n))}${examen ? ' · examen' : listo(n) ? ' · capturado' : ''}`;
+        const href = examen ? `aplicar.html?folio=${encodeURIComponent(g.folio)}` : `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`;
+        enlaces.push(n === dia ? el('strong', { 'aria-current': 'page', texto }) : el('a', { href, texto }));
+      }
+      $('[data-recorrido]').hidden = false;
+      $('[data-recorrido-dias]').replaceChildren(...enlaces.flatMap((e, i) => (i ? [document.createTextNode(' · '), e] : [e])));
     }
 
     /* Hecho: aviso tras guardar */
@@ -117,7 +133,8 @@
       return;
     }
     const corrige = dia !== deHoy;
-    $('[data-titulo-dia]').textContent = `${corrige ? 'Corregir el día' : 'Día'} ${dia} de ${ultimoDia} · ${diaSemana(diaDe(dia))} ${corta(diaDe(dia))}`;
+    const futuro = diaDe(dia) > hoy;
+    $('[data-titulo-dia]').textContent = `${corrige && !futuro ? 'Corregir el día' : 'Día'} ${dia} de ${ultimoDia} · ${diaSemana(diaDe(dia))} ${corta(diaDe(dia))}${futuro ? ' (simulado)' : ''}`;
     $('[data-guardar]').textContent = `Guardar la asistencia del día ${dia}`;
 
     /* Faltas de la persona con lo marcado ahora en pantalla */
@@ -127,21 +144,18 @@
       for (let n = 1; n < ultimoDia; n++) if (n === dia ? hoyMarca === 'no' : capturada(f.i.id, n) === false) faltas += 1;
       return faltas;
     };
+    // La tira llega hasta el día en pantalla (o hasta hoy, si se corrige uno anterior): sin días por venir ni examen
+    // (decisión de Liber, 2026-10-18). ✓ verde asistió, ✗ rojo faltó, aro punteado: el día en pantalla sin marcar,
+    // «?»: un día anterior sin capturar. Cada marca lleva su texto para el lector de pantalla.
+    const hasta = Math.min(ultimoDia - 1, Math.max(dia, capturables.filter((n) => diaDe(n) <= hoy).pop() || 0));
     function puntos(f, hoyMarca) {
       const lista = [];
       const texto = [];
-      for (let n = 1; n <= ultimoDia; n++) {
-        let clase;
-        let que;
-        if (n === ultimoDia && ultimoDia > 1) { clase = 'asis-examen'; que = 'examen'; }
-        else if (n === dia) { clase = hoyMarca === 'si' ? 'asis-si' : hoyMarca === 'no' ? 'asis-no' : 'asis-hoy'; que = hoyMarca === 'si' ? 'asistió' : hoyMarca === 'no' ? 'faltó' : 'sin marcar'; }
-        else if (diaDe(n) > hoy) { clase = 'asis-futuro'; que = 'por venir'; }
-        else {
-          const v = capturada(f.i.id, n);
-          clase = v === true ? 'asis-si' : v === false ? 'asis-no' : 'asis-sin';
-          que = v === true ? 'asistió' : v === false ? 'faltó' : 'sin capturar';
-        }
-        lista.push(el('span', { class: `asis-punto ${clase}`, title: `Día ${n}: ${que}` }));
+      for (let n = 1; n <= hasta; n++) {
+        const v = n === dia ? (hoyMarca === 'si' ? true : hoyMarca === 'no' ? false : null) : capturada(f.i.id, n);
+        const [clase, signo, que] = v === true ? ['asis-si', '✓', 'asistió'] : v === false ? ['asis-no', '✗', 'faltó']
+          : n === dia ? ['asis-hoy', '', 'sin marcar'] : ['asis-sin', '?', 'sin capturar'];
+        lista.push(el('span', { class: `asis-marca ${clase}`, title: `Día ${n}: ${que}`, texto: signo }));
         texto.push(`día ${n} ${que}`);
       }
       return [el('span', { class: 'asis-puntos', 'aria-hidden': 'true' }, lista), el('span', { class: 'solo-lector', texto: `${texto.join(', ')}.` })];

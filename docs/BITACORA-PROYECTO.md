@@ -1039,3 +1039,8 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   «cuota» en lugar de «pago de derechos»).
 - `herramientas/generar-pendientes.mjs` y la plantilla del tablero muestran la columna o el recuadro «Lineamientos».
 - Sin cambios en el sitio ni en la base: la versión de prueba sigue en 0.50.
+- Ajuste (Liber): la tira usa ✓ verde y ✗ rojo; se quitan los días por venir y el aro del examen (el punto gris
+  parecía otra cosa). En la versión de prueba vuelve el recorrido de todos los días: una franja «Versión de prueba:
+  recorrer el curso día por día» con los cinco días (los que aún no llegan se capturan como «simulado»; el del examen
+  abre «Aplicar el examen»). `probar-sitio` 604, `probar-volumen` y auditor de CSS, correctos.
+

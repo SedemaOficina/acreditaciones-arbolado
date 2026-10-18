@@ -1391,14 +1391,17 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + `asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`);
   await pg.waitForSelector('.asistencia-fila');
   // Propuesta A (2026-10-18): la lista del día de hoy; el último día (examen) no se ofrece para capturar
-  comprueba(/^Día 2 de 5/.test(await texto('[data-titulo-dia]')) && !/examen/i.test(await texto('[data-dias]')) && (await pg.$$('.asis-puntos .asis-examen')).length > 0,
+  comprueba(/^Día 2 de 5/.test(await texto('[data-titulo-dia]')) && !/examen/i.test(await texto('[data-dias]')) && (await pg.$$('.asis-puntos .asis-marca')).length > 0,
     t('la lista es la del día de hoy y el examen no se captura aquí (se registra al pasar lista)'));
+  // Versión de prueba: el recorrido de todos los días, con el examen que lleva a «Aplicar el examen»
+  comprueba(/aplicar\.html/.test(await pg.getAttribute('[data-recorrido-dias] a:last-child', 'href')) && (await pg.$$('[data-recorrido-dias] a, [data-recorrido-dias] strong')).length === 5,
+    t('la versión de prueba permite recorrer los cinco días del curso'));
   comprueba((await pg.$$('.asis-puntos')).length === (await pg.$$('.asistencia-fila')).length, t('cada persona muestra su tira de días'));
   await pg.click('[data-guardar]');
   comprueba(await pg.isVisible('[data-falta-marcar]'), t('no se guarda la asistencia con personas sin marcar'));
   await captura(pg, `asistencia-${sufijo}`);
   await pg.click('[data-todas]');
-  const falto = await pg.$('.asistencia-fila:has(.asis-puntos .asis-punto:first-child.asis-no)');
+  const falto = await pg.$('.asistencia-fila:has(.asis-puntos .asis-marca:first-child.asis-no)');
   if (falto) await (await falto.$('input[value="no"]')).check();
   await pg.click('[data-guardar]');
   await pg.waitForURL(/hecho=asistencia/);
