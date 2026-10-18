@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.45 | 18/10/26, 8:14 a.m. | Bloque 63: Mi perfil (sin expediente, sexo visible sin recuadro, adscripción en renglones), Mis trámites en tres bloques, «En espera de curso», UUID |
 | 0.44 | 18/10/26, 2:25 a.m. | Sitio con los datos ficticios regenerados (renovación de Kobo con todos sus documentos) |
 | 0.43 | 18/10/26, 2:20 a.m. | Bloque 62: correcciones de la auditoría integral (altas 1-7, 10, 11), P94 y P14 en base y pantallas, decisiones del 18/10, textos; P132 |
 | 0.42 | 18/10/26, 1:45 a.m. | Estándar 1.4.1: hallazgos resueltos, P126–P131 nuevos, decisiones y bitácora (bloque 61) |
