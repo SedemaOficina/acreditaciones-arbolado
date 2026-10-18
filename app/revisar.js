@@ -69,6 +69,10 @@
     const p = datos.solicitante.find((x) => x.id === s.solicitante_id);
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);
+    // Aceptados en una revisión anterior y sin cambios: no se vuelven a decidir, salvo que quien revisa los reabra
+    // (decisión 2026-10-18: en la 2.ª vuelta sólo se revisa lo que la persona corrigió)
+    const previos = new Set(docs.filter((d) => d.estado === 'aceptado').map((d) => d.requisito));
+    const reabiertos = new Set();
     const anteriores = datos.revision.filter((r) => r.solicitud_id === s.id).sort((a, b) => a.revisada_en.localeCompare(b.revisada_en));
     const corregidos = new Set(P.corregidos(datos, s).map((d) => d.requisito));
     const v = P.vuelta(datos, s);
@@ -198,8 +202,14 @@
         }
       }
       const cargados = docs.map((d) => d.requisito);
-      for (const k of $$('[data-doc]', form).map((a) => a.dataset.doc)) ponValor(`revisar_${k}`, !rechazo && cargados.includes(k) ? 'si' : 'no');
-      const decisiones = cargados.map((k) => elegido(`decision_${k}`));
+      const decide = (k) => !previos.has(k) || reabiertos.has(k);
+      for (const k of $$('[data-doc]', form).map((a) => a.dataset.doc)) {
+        const revisa = !rechazo && cargados.includes(k);
+        ponValor(`revisar_${k}`, revisa ? 'si' : 'no');
+        ponValor(`decidir_${k}`, revisa && decide(k) ? 'si' : 'no');
+      }
+      // Lo aceptado antes cuenta como aceptado
+      const decisiones = cargados.map((k) => (decide(k) ? elegido(`decision_${k}`) : 'aceptado'));
       const observados = decisiones.filter((x) => x === 'con_observacion').length;
       const hechos = decisiones.filter(Boolean).length;
       const perfilListo = perfil === 'por_clasificar' ? Boolean(elegido('clasificacion')) : perfil === 'no_cumple' ? Boolean(elegido('comprobante_confirma')) : true;
@@ -215,10 +225,14 @@
       }
       // Estado de cada documento, a la vista
       for (const art of $$('[data-doc]', form)) {
-        const dec = elegido(`decision_${art.dataset.doc}`);
+        const k = art.dataset.doc;
+        const antes = !decide(k);
+        $('[data-doc-previo]', art).hidden = !antes;
+        art.classList.toggle('doc-aceptado-antes', antes);
+        const dec = antes ? 'aceptado' : elegido(`decision_${k}`);
         // Etiqueta con icono de su familia: por revisar (le toca), aceptado (logro), con observación (atención)
         const tono = dec === 'aceptado' ? 'ok' : dec === 'con_observacion' ? 'pend' : 'marcha';
-        $('[data-doc-estado]', art).replaceWith(APD.estado(dec === 'aceptado' ? 'Aceptado' : dec === 'con_observacion' ? 'Con observación' : 'Por revisar', tono));
+        $('[data-doc-estado]', art).replaceWith(APD.estado(antes ? 'Aceptado antes' : dec === 'aceptado' ? 'Aceptado' : dec === 'con_observacion' ? 'Con observación' : 'Por revisar', tono));
         $('.doc-cabeza .estado', art).setAttribute('data-doc-estado', '');
       }
       $('[data-docs-rechazo]').hidden = !rechazo;
@@ -326,7 +340,8 @@
     // En computadora el visor abre de entrada el primer documento
     // (si hay que decidir el perfil, el comprobante de estudios, que es con lo que se decide)
     const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k]);
-    const primero = ['por_clasificar', 'no_cumple'].includes(perfil) && archivos.comprobante_estudios ? 'comprobante_estudios' : orden[0];
+    // (en la 2.ª vuelta, el primero por decidir: lo aceptado antes no se vuelve a revisar)
+    const primero = ['por_clasificar', 'no_cumple'].includes(perfil) && archivos.comprobante_estudios ? 'comprobante_estudios' : orden.find((k) => !previos.has(k)) || orden[0];
     if (primero && global_visor() && FormKit.visor.enComputadora()) ver(primero, null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
@@ -340,6 +355,15 @@
       const r = e.target;
       if (!e.isTrusted || !r.name || !r.name.startsWith('decision_') || r.value !== 'aceptado') return;
       avanza(r.name.replace('decision_', ''));
+    });
+    // Reabrir un documento aceptado antes: vuelve a pedir su decisión
+    form.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-reabrir]');
+      if (!b) return;
+      reabiertos.add(b.dataset.reabrir);
+      recalcula();
+      const primero = $(`input[name="decision_${b.dataset.reabrir}"]`, form);
+      if (primero) primero.focus();
     });
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-seguir]');
@@ -355,7 +379,7 @@
       avanza(k);
     });
     function avanza(actual) {
-      const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k] && document.getElementById(`revisar_${k}`).value === 'si');
+      const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k] && document.getElementById(`decidir_${k}`).value === 'si');
       const pendiente = (k) => !elegido(`decision_${k}`);
       const i = orden.indexOf(actual);
       const siguiente = orden.slice(i + 1).find(pendiente) || orden.slice(0, i).find(pendiente);
