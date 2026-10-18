@@ -137,6 +137,21 @@
     const nombre = nombreInstitucion(datos, p);
     return `${ADSCRIPCIONES[p.adscripcion]}: ${nombre}${/\.$/.test(nombre) ? '' : '.'}`;
   }
+  /* La adscripción como rótulo y valor, cada dato en su renglón (2026-10-18: el texto corrido «Tipo: nombre.» se leía
+     todo en negritas en un solo renglón). rotuloTipo: «Tipo» en «Mi perfil» y la solicitud; «Adscripción» en las
+     fichas del personal. */
+  const ROTULO_NOMBRE = { privada: 'Nombre o razón social', alcaldia: 'Alcaldía', dependencia_federal: 'Dependencia',
+    educativa: 'Institución', dependencia_cdmx: 'Dependencia' };
+  function adscripcionPares(datos, p, rotuloTipo = 'Tipo') {
+    if (!p || !p.adscripcion) return [];
+    if (p.adscripcion === 'independiente') return [[rotuloTipo, 'Independiente']];
+    const nombre = nombreInstitucion(datos, p).replace(/\.$/, '');
+    const pares = [[rotuloTipo, ADSCRIPCIONES[p.adscripcion]]];
+    const sedema = p.adscripcion === 'dependencia_cdmx' && nombre.match(/^SEDEMA · (.+)$/);
+    if (sedema) pares.push(['Dependencia', 'SEDEMA'], ['Dirección General', sedema[1]]);
+    else pares.push([ROTULO_NOMBRE[p.adscripcion] || 'Nombre', nombre]);
+    return pares;
+  }
   /* De las respuestas del formulario a {adscripcion, organizacion_id, organizacion_nombre}, como lo hará la API:
      por clave si es una opción del catálogo, por nombre si se escribió (si no existe, la API la agrega). */
   function adscripcionDe(datos, d) {
@@ -380,7 +395,7 @@
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
+    el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));

@@ -95,7 +95,7 @@
       ['Persona', APD.nombreCompleto(p)],
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre en su primer cotejo'],
-      ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
+      ...APD.adscripcionPares(datos, s, 'Adscripción'),
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : ''],
       // Se comprueba que siga vigente antes de decirlo (auditoría de tareas)
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fecha(podaVigente.vence_en)}` : ''],

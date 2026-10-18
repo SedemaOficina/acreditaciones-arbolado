@@ -28,9 +28,11 @@
   }
   /* La adscripción es de la persona («Mi perfil»); aquí sólo se muestra con cuál se enviará. */
   function pintaAdscripcion(datos, persona) {
-    const texto = APD.adscripcionTexto(datos, persona);
-    document.querySelector('[data-adscripcion-texto]').textContent = texto || 'sin indicar. Antes de enviar, indica en «Mi perfil» si trabajas para alguna empresa, institución o dependencia.';
-    document.querySelector('[data-adscripcion-info]').classList.toggle('aviso-advertencia', !texto);
+    // Rótulo y valor, cada dato en su renglón (2026-10-18)
+    const pares = APD.adscripcionPares(datos, persona);
+    document.querySelector('[data-adscripcion-texto]').replaceChildren(pares.length ? APD.datosLista(pares)
+      : el('p', { texto: 'Sin indicar. Antes de enviar, indica en «Mi perfil» si trabajas para alguna empresa, institución o dependencia.' }));
+    document.querySelector('[data-adscripcion-info]').classList.toggle('aviso-advertencia', !pares.length);
   }
 
   /* Nombres con que se guardan los archivos (decisión 2026-10-15, ajustada por Liber): el sistema renombra solo y no
