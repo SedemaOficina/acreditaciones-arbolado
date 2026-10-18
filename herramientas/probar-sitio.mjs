@@ -436,6 +436,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await entra(page, paraDictaminador.curp);
   await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
   await page.waitForFunction(() => document.getElementById('tramite').value === 'dictaminador_nueva');
+  // La barra de pasos 1-2-3 del estándar queda en un renglón (en 0.38 un estilo del proyecto con el mismo nombre la rompió)
+  comprueba(await page.evaluate(() => { const l = [...document.querySelectorAll('.pasos .pasos-item')]; return l.length === 3 && new Set(l.map((x) => Math.round(x.getBoundingClientRect().top))).size === 1; }),
+    t('solicitud: la barra de pasos 1-2-3 queda en un renglón'));
   await siguiente(page);
   comprueba(await page.isVisible('[data-campo="anios_experiencia"]'), t('dictaminador: sin perfil no avanza'));
   comprueba(!(await page.isVisible('[data-campo="carrera"]')), t('perfil: la carrera no se pregunta antes del nivel de estudios'));
@@ -871,14 +874,14 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector('[data-hecho]:not([hidden])');
   const exp = (await page.textContent('[data-hecho-datos]')).match(/EXP-\d{4}-\d{4}/);
   comprueba(Boolean(exp), t(`el cotejo terminado muestra el expediente${exp ? ' ' + exp[0] : ''}`));
-  const pasos = await page.$$eval('[data-hecho] ol.pasos > li', (l) => l.map((x) => x.textContent));
+  const pasos = await page.$$eval('[data-hecho] ol.sigue-pasos > li', (l) => l.map((x) => x.textContent));
   comprueba(pasos.length === 3 && /expediente físico/.test(pasos[0]) && /grupo/.test(pasos[1]) && /Qué sigue/.test(await page.textContent('[data-hecho]')),
     t('el cotejo terminado dice qué sigue en pasos numerados, no en un párrafo'));
   await page.goto(BASE + 'tramites.html');
   await page.waitForSelector('[data-solicitudes] .ficha');
   const lista = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
   comprueba(/En espera de grupo/.test(lista) && exp && lista.includes(exp[0]), t('la persona ve «En espera de grupo» y su número de expediente'));
-  comprueba(await page.locator('[data-solicitudes] .ficha', { hasText: folio }).locator('ol.pasos > li').count() === 3, t('«Mis trámites»: lo que sigue después del cotejo va en pasos numerados'));
+  comprueba(await page.locator('[data-solicitudes] .ficha', { hasText: folio }).locator('ol.sigue-pasos > li').count() === 3, t('«Mis trámites»: lo que sigue después del cotejo va en pasos numerados'));
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-foto-estado] .estado');
   comprueba(/confirmada/i.test(await page.textContent('[data-foto-estado]')), t('en «Mi perfil» su fotografía queda confirmada'));
