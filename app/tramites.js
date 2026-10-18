@@ -62,7 +62,10 @@
       pares.push(['Número de expediente', persona.numero_expediente]);
     }
 
-    // Con la cita, los datos para pagar: el comprobante se presenta en la cita y ahí se emite la factura
+    // Con la cita, los datos para pagar: el comprobante se presenta en la cita y ahí se emite la factura. En una cita
+    // nueva (no se presentó o no llevó el comprobante) la persona pudo haber pagado ya: los datos se repiten para quien
+    // no ha pagado, con la advertencia de no pagar dos veces (auditoría integral, alta 3)
+    const citaNueva = s.estado === 'validada_en_linea' && s.cita_motivo && s.cita_anterior;
     if (s.estado === 'validada_en_linea' && c) {
       // El monto que se le indicó al darle la cita; si entonces aún no había, el vigente de su curso
       const importe = s.pago_monto != null ? s.pago_monto : c.pago_monto;
@@ -70,7 +73,8 @@
       const instrucciones = (datos.parametro.find((x) => x.clave === 'pago_instrucciones') || {}).valor || '';
       extra.push(el('div', { class: 'aviso' }, [
         el('div', { class: 'aviso-texto aviso-pila' }, [
-          el('p', {}, [el('strong', { texto: 'Datos para tu pago' })]),
+          el('p', {}, [el('strong', { texto: citaNueva ? 'Datos para tu pago, si todavía no pagas' : 'Datos para tu pago' })]),
+          citaNueva ? el('p', { texto: 'Si ya pagaste, no pagues otra vez: lleva el comprobante de ese pago.' }) : null,
           APD.datosLista([
             ['Concepto', c.pago_concepto, 'texto oficial del concepto de pago.'],
             ['Monto', monto || 'Sin monto', 'lo fija la Gaceta Oficial.'],
@@ -78,7 +82,7 @@
           ]),
           s.pago_monto == null && c.pago_fundamento ? el('p', { class: 'texto-gris', texto: c.pago_fundamento }) : null,
           APD.limpia(instrucciones) ? el('p', { texto: APD.limpia(instrucciones) }) : el('p', { class: 'pendiente', texto: 'Pendiente: banco, cuenta y forma de pago.' }),
-          el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' }),
+          citaNueva ? null : el('p', { texto: 'Paga antes de tu cita y lleva el comprobante impreso. En la cita la Secretaría verifica tu pago y emite tu factura.' }),
           el('p', { texto: 'Lleva también tu identificación oficial: con ella se confirma que la fotografía de tu cuenta es tuya.' })
         ])
       ]));
@@ -88,22 +92,39 @@
     // Los días del curso son consecutivos, como los cuenta la base al capturar asistencia (fecha_inicio + día - 1).
     // Terminado el curso (aprobada, acreditada…), la sede y las fechas del curso ya no se muestran.
     const g = grupoDe(datos, s);
+    // La fecha sólo se da con el grupo confirmado: uno que regresó a «por confirmar» (una baja lo dejó bajo el mínimo)
+    // conserva su fecha como propuesta, pero ya no es segura (auditoría integral, alta 2)
     if (g && g.grupo && s.estado === 'inscrita') {
-      if (g.grupo.fecha_inicio) {
+      if (g.grupo.fecha_inicio && ['confirmado', 'en_curso'].includes(g.grupo.estado)) {
         const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
         // Hora de entrada del grupo (la misma todos los días); la de salida la define el área (P91)
-        pares.unshift(g.grupo.hora_entrada ? ['Preséntate el', `${fecha(g.grupo.fecha_inicio)}, a las ${APD.hhmm(g.grupo.hora_entrada)}`] : ['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Sede', ...sedeTexto(g.grupo.sede)]);
+        pares.unshift(g.grupo.hora_entrada ? ['Preséntate el', `${fecha(g.grupo.fecha_inicio)}, a las ${APD.hhmm(g.grupo.hora_entrada)}`] : ['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Lugar del curso', ...sedeTexto(g.grupo.sede)]);
         pares.push(['Grupo', g.grupo.folio]);
-        sigue = c ? `Tu curso dura ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; necesitas asistir al menos ${c.dias_minimos_asistencia} para presentar el examen.` : sigue;
+        // Lo que necesita para no perder el examen: asistencia, identificación, cuándo es y la calificación (alta 11)
+        if (c) {
+          const unDia = c.dias_duracion === 1;
+          sigue = { texto: `Tu curso dura ${c.dias_duracion} ${unDia ? 'día' : 'días'}.`, pasos: [
+            unDia ? 'Asiste al curso completo: sin esa asistencia no puedes presentar el examen.' : `Asiste al menos ${c.dias_minimos_asistencia} de los ${c.dias_duracion} días: con menos no puedes presentar el examen.`,
+            `${unDia ? 'Al terminar el curso' : 'El último día'} presentas el examen en computadora, en el salón de cómputo del PILARES Vivero Nezahualcóyotl.`,
+            'Lleva tu identificación oficial: sin ella no te dan tu código para el examen.',
+            `Para aprobar necesitas al menos ${Number(c.calificacion_minima).toFixed(1)}. Si apruebas, ese mismo día recoges tu credencial en la oficina del Vivero.`
+          ] };
+        }
       } else {
         pares.push(['Grupo', g.grupo.folio]);
-        sigue = 'Ya tienes grupo, pero todavía no está confirmado. La Secretaría te avisará la fecha y la sede cuando se confirme.';
+        sigue = g.grupo.fecha_inicio
+          ? 'Tu grupo todavía no está confirmado: la fecha que tenía puede cambiar. La Secretaría te avisará el primer día y la hora cuando se confirme.'
+          : 'Ya tienes grupo, pero todavía no está confirmado. La Secretaría te avisará la fecha y la sede cuando se confirme.';
       }
     }
 
     // Cita de cotejo en pausa (decisión 2026-10-17): un documento no coincidió y la persona puede cargar hoy el correcto
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r.nombre]));
-    if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
+    const vencida = APD.pausaVencida(datos, s);
+    if (vencida) {
+      // La pausa sólo dura el día de la cita: ya no se carga aquí (auditoría integral, alta 6)
+      sigue = { texto: `La pausa de tu cita del ${fecha(s.cotejo_pausa.cita_en || s.cita_en)} venció: sólo duraba ese día.`, pasos: ['La Secretaría regresa tu solicitud con observaciones.', 'Cuando la veas así, corrige el documento que no coincidió y reenvía tu solicitud.', 'Después de revisarla otra vez, recibes una cita nueva.'] };
+    } else if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
       const pausa = s.cotejo_pausa;
       const vigentes = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && pausa.docs.includes(d.requisito));
       const cargados = vigentes.filter((d) => d.cargado_real && d.cargado_real > pausa.real);
@@ -122,18 +143,20 @@
     // Lo que cambió va arriba de la ficha, antes de los datos (propuesta «Avisos y confirmaciones», 2026-10-17): cita
     // nueva por no presentarse o por no traer el comprobante de pago, observaciones del cotejo, grupo cancelado
     const cambio = [];
-    if (s.estado === 'validada_en_linea' && s.cita_motivo && s.cita_anterior) {
+    if (citaNueva) {
       // Sin pago, el aviso ya trae sus pasos; no se repiten abajo
       if (s.cita_motivo === 'sin_pago') sigue = '';
+      else sigue = { pasos: ['Imprime los mismos documentos que cargaste.', 'Si ya pagaste, lleva el comprobante de ese pago; si no, paga con los datos de abajo.', 'Acude a tu cita nueva con tus documentos y tu comprobante.'] };
       cambio.push(s.cita_motivo === 'sin_pago'
-        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', { texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}.`, pasos: ['Paga los derechos con los mismos datos: el monto es el mismo.', 'Imprime tu comprobante de pago.', 'Acude a tu cita nueva con el comprobante y tus documentos impresos.'] })
+        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', { texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}.`, pasos: ['Si ya pagaste, imprime el comprobante de ese pago: no pagues otra vez.', 'Si todavía no pagas, paga con los datos de abajo e imprime tu comprobante.', 'Acude a tu cita nueva con el comprobante y tus documentos impresos.'] })
         : APD.aviso('pend', `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.`));
     }
     const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
     if (s.estado === 'lista_para_curso' && ultimaIns && !ultimaIns.activa && /^Grupo cancelado/.test(ultimaIns.motivo_baja || '')) {
       cambio.push(APD.aviso('pend', 'Tu grupo se canceló', 'Sigues en espera de grupo con tu misma antigüedad. La Secretaría te asignará otro y te avisará las fechas.'));
     }
-    if (s.estado === 'concluida_sin_atender' && s.cierre_por === 'inasistencia') {
+    const porInasistencia = APD.cerradaPorInasistencia(s);
+    if (porInasistencia) {
       sigue = 'No te presentaste a tu cita de cotejo por segunda vez y tu solicitud se cerró. Puedes iniciar una solicitud nueva.';
     }
 
@@ -158,26 +181,31 @@
       const a = datos.acreditacion.find((x) => x.solicitud_id === s.id);
       if (a) {
         // Lo que importa de una acreditación emitida: su número y su vigencia; va primero
-        pares.unshift(['Número de acreditación', a.numero], ['Inicio de vigencia', fecha(a.emitida_en)], ['Fin de vigencia', fecha(a.vence_en)]);
-        if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
+        // Los mismos rótulos que en «Mis acreditaciones» (auditoría integral, textos: vocabulario)
+        pares.unshift(['Número de acreditación', a.numero], ['Emitida el', fecha(a.emitida_en)], ['Vence el', fecha(a.vence_en)]);
+        if (a.entregada_en) sigue = `Recogiste tu credencial el ${fecha(a.entregada_en)}.`;
         else {
           const entrega = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
-          sigue = { texto: `Tu acreditación está lista desde el ${fecha(a.emitida_en)}.`, pasos: ['Recógela en persona, con tu identificación oficial.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
-          pares.push(['Dónde recogerla', ...sedeTexto(lugar.nombre)]);
+          sigue = { texto: `Tu acreditación se emitió el ${fecha(a.emitida_en)}; tu credencial te espera.`, pasos: ['Recógela en persona, con tu identificación oficial.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
+          pares.push(['Dónde recogerla', ...sedeTexto(`Oficina del ${lugar.nombre}`)]); // decisión 2026-10-18
           extra.push(APD.limpia(entrega) ? el('p', { texto: APD.limpia(entrega) }) : el('p', { class: 'pendiente', texto: 'Pendiente: días y horario de entrega.' }));
         }
       }
     }
-    if (s.estado === 'aprobada') sigue = { texto: 'Aprobaste el examen.', pasos: ['Recoge tu credencial hoy mismo, en la sede, antes de irte.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
+    // La credencial se entrega en la oficina del Vivero, después del examen (decisión 2026-10-18); «hoy mismo» sólo el día
+    // del examen (auditoría integral, media)
+    const delDia = APD.diaDe(s.estado_desde) === APD.hoy(datos) || (s.estado_desde || '').slice(0, 10) === APD.hoy(datos);
+    if (s.estado === 'aprobada') sigue = { texto: 'Aprobaste el examen.', pasos: [delDia ? 'Recoge tu credencial hoy mismo, en la oficina del Vivero, antes de irte.' : 'Recoge tu credencial en la oficina del Vivero.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
-    const motivo = s.motivo_cierre ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
+    // Cerrada sin atender (por inasistencia o por plazo), el motivo de la base ya lo dice el texto de arriba
+    const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
       el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo' })]),
       el('p', { texto: APD.limpia(s.motivo_cierre) })])]) : null;
 
     const acciones = [];
-    if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
+    if (s.estado === 'validada_en_linea' && s.cotejo_pausa && !vencida) {
       const pausa = s.cotejo_pausa;
       const faltan = pausa.docs.filter((k) => !datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.requisito === k && d.cargado_real && d.cargado_real > pausa.real));
       if (faltan.length) acciones.push(el('a', { class: 'btn btn-primario', href: `corregir.html?folio=${encodeURIComponent(s.folio)}`, texto: faltan.length === 1 ? 'Cargar el documento' : 'Cargar los documentos' }));
@@ -188,9 +216,10 @@
     }
 
     // Etiqueta por familia, con icono; la cita nueva y el cierre por inasistencia dicen lo que pasó
-    const etiqueta = s.estado === 'validada_en_linea' && s.cotejo_pausa ? estado('Cita en pausa: carga el documento', 'pend')
-      : s.estado === 'validada_en_linea' && s.cita_motivo ? estado('Acude a tu cita nueva', 'pend', 'fecha')
-        : s.estado === 'concluida_sin_atender' && s.cierre_por === 'inasistencia' ? estado('Cerrada: no te presentaste', 'error')
+    const etiqueta = vencida ? estado('La pausa venció', 'marcha')
+      : s.estado === 'validada_en_linea' && s.cotejo_pausa ? estado('Cita en pausa: carga el documento', 'pend')
+      : s.estado === 'validada_en_linea' && s.cita_motivo ? estado('Acude a tu cita nueva', 'pend')
+        : porInasistencia ? estado('Cerrada: no te presentaste', 'error')
           : APD.estadoSolicitud(s);
     return el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [

@@ -2,7 +2,7 @@
    Sin folio, el grupo en curso del instructor (si tiene varios, los lista). Un botón por día del curso: los días que
    ya pasaron se capturan y se pueden corregir mientras el curso siga; los que no han ocurrido no se capturan (como la
    base, apd.asistencia_captura). El último día es el del examen: su asistencia se registra al pasar lista en el salón
-   de cómputo («Aplicar el examen»), no aquí, para no capturarla dos veces (P94, por decidir; opción recomendada).
+   de cómputo («Aplicar el examen»), no aquí, para no capturarla dos veces (P94, decisión 2026-10-18).
    Cada persona se marca «Asistió» o «Faltó»; no se guarda un día con alguien sin marcar. Con las faltas que lleva, la
    página avisa a quién ya no le alcanza para el examen (asistencia mínima del curso, R33 y R35).
    ACCESO SIMULADO: perfil ficticio «instructor» (P27). En la prueba se guarda en «apd.personal.grupos». */

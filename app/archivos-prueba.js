@@ -12,7 +12,7 @@
        («apd.personal.cotejos»): la persona ve el resultado.
    APD.cargar() los suma a los datos ficticios con mezcla(), así que todas las pantallas —«Mis trámites», «Mi
    perfil», la bandeja y la revisión del personal— ven lo mismo. Nada sale de la computadora; «Borrar lo guardado» y
-   «Empezar de cero» (menú de pruebas) lo quitan. Otro navegador u otro equipo no lo ven.
+   «Empezar de cero» (menú de pruebas) lo quitan, y se borra solo a los 7 días sin usar la prueba (caduca). Otro navegador u otro equipo no lo ven.
 
    En la etapa 3 este archivo se quita: todo lo guarda y lo entrega la API.
    ========================================================= */
@@ -114,6 +114,29 @@
     }
     return Promise.all([SOLS, DOCS, FOTOS, CUENTAS].map((a) => tx(a, 'readwrite', (s) => s.clear())));
   }
+  /* Caducidad (auditoría integral, alta 1): la dirección del sitio de prueba la comparten otros sitios, así que lo
+     guardado no se queda para siempre. Si pasan CADUCA_DIAS días sin usar la prueba en este navegador, se borra todo
+     lo suyo (también la sesión y los códigos de examen) antes de leer los datos. La cuenta es en días reales, no en la
+     fecha simulada. */
+  const ULTIMO_USO = 'apd.prueba.ultimo_uso';
+  const CADUCA_DIAS = 7;
+  let revisada = null;
+  function caduca() {
+    if (revisada) return revisada;
+    let antes = 0;
+    try { antes = Number(global.localStorage.getItem(ULTIMO_USO)) || 0; } catch (e) { /* sin almacenamiento */ }
+    const ahora = Date.now();
+    const vencida = antes > 0 && ahora - antes > CADUCA_DIAS * 864e5;
+    const borra = () => {
+      try { for (const k of Object.keys(global.localStorage)) if (k.startsWith('apd.')) global.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
+      return borraTodo();
+    };
+    revisada = (vencida ? borra() : Promise.resolve()).catch(() => undefined).then(() => {
+      try { global.localStorage.setItem(ULTIMO_USO, String(ahora)); } catch (e) { /* sin almacenamiento */ }
+      return vencida;
+    });
+    return revisada;
+  }
   function cuenta_() { return Promise.all([solicitudes(), fotos(), cuentas()]).then(([s, f, c]) => ({ envios: s.length, fotos: f, cuentas: c.length })); }
 
   /* ----- Mezcla: lo guardado en la prueba, encima de los datos ficticios (lo llama APD.cargar) ----- */
@@ -131,6 +154,7 @@
   /* Grupos y asistencia de la prueba (grupos.html, grupo.html, espera.html, asistencia.html): una lista de lo que pasó, en
      orden, en «apd.personal.grupos». Cada evento se aplica como lo dejaría la base (apd.grupo_cambio, apd.inscripcion_alta,
      apd.asistencia_captura): lo que la base rechazaría, aquí no cambia nada. */
+  const leeLista = () => { try { return JSON.parse(global.localStorage.getItem('apd.examen.lista') || '{}') || {}; } catch (e) { return {}; } };
   const leeGrupos = () => { try { const v = JSON.parse(global.localStorage.getItem('apd.personal.grupos') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
   function aplicaGrupos(d, eventos, alCorte) {
     const hoy = d.fecha_corte;
@@ -215,7 +239,7 @@
     }).then(({ listaCuentas, registros, revisiones, cotejos, docsDe }) => {
       const perfiles = leePerfiles();
       const eventosGrupo = leeGrupos();
-      if (!listaCuentas.length && !registros.length && !Object.keys(perfiles).length && !Object.keys(revisiones).length && !Object.keys(cotejos).length && !eventosGrupo.length) return datos;
+      if (!listaCuentas.length && !registros.length && !Object.keys(perfiles).length && !Object.keys(revisiones).length && !Object.keys(cotejos).length && !eventosGrupo.length && !Object.keys(leeLista()).length) return datos;
       const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice(),
         revision: datos.revision.slice(), fotografia: datos.fotografia.slice(), cita: (datos.cita || []).slice(),
         grupo: datos.grupo.slice(), inscripcion: datos.inscripcion.slice(), asistencia: datos.asistencia.slice() });
@@ -350,8 +374,9 @@
               abreCita(s.cita_en);
               break;
             case 'cerrar':
-              pon({ estado: 'concluida_sin_atender', estado_desde: en, inasistencias: (s.inasistencias || 0) + 1, cierre_por: 'inasistencia',
-                motivo_cierre: 'No se presentó a su cita de cotejo por segunda vez.' });
+              // El mismo motivo que escribe la base (03-apd-reglas.sql): «Mis trámites» lo distingue por él (alta 5)
+              pon({ estado: 'concluida_sin_atender', estado_desde: en, inasistencias: (s.inasistencias || 0) + 1,
+                motivo_cierre: `No se presentó a su cita de cotejo ${(s.inasistencias || 0) + 1} veces.` });
               break;
             case 'no_es_la_persona':
               // No se atiende la cita; se avisa a la Dirección y la cuenta queda bloqueada hasta aclararlo
@@ -365,6 +390,16 @@
       }
       // Grupos y asistencia, después: una solicitud llega a la espera de grupo con su cotejo terminado
       aplicaGrupos(d, eventosGrupo, alCorte);
+      // Pase de lista del examen (examen-servidor.js, «apd.examen.lista»): es la asistencia del último día del curso
+      // (P94, decisión 2026-10-18), como la registraría la API en apd.asistencia
+      for (const [insId, r] of Object.entries(leeLista())) {
+        const ins = d.inscripcion.find((i) => i.id === insId);
+        const g = ins && d.grupo.find((x) => x.id === ins.grupo_id);
+        const c = g && d.curso.find((x) => x.tipo_acreditacion === g.tipo_acreditacion && x.modalidad === g.modalidad);
+        if (!c) continue;
+        d.asistencia = d.asistencia.filter((a) => !(a.inscripcion_id === insId && a.dia === c.dias_duracion));
+        d.asistencia.push({ inscripcion_id: insId, dia: c.dias_duracion, asistio: Boolean(r.presente), capturada_por: r.por, capturada_en: r.en, de_prueba: true, pase_de_lista: true });
+      }
       return d;
     }).catch((e) => {
       // Si algo de lo guardado no se puede aplicar, se ven los ficticios solos; queda el aviso en la consola
@@ -374,6 +409,7 @@
   }
 
   global.APD_ARCHIVOS_PRUEBA = {
+    caduca, CADUCA_DIAS,
     guardaEnvio, guardaDocumento, solicitudes, documentos, guardaFoto, foto, fotos,
     guardaCuenta, cuentas, cuenta, contrasenaValida, guardaPerfil, borraTodo, guardado: cuenta_, mezcla
   };

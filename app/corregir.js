@@ -19,6 +19,10 @@
     if (!s || s.estado !== 'validada_en_linea' || !s.cotejo_pausa) {
       return falla(`Tu solicitud ${folio} no tiene una cita en pausa: no hay documentos por cargar aquí. Revisa «Mis trámites».`);
     }
+    // La pausa sólo dura el día de la cita (auditoría integral, alta 6): después ya no se carga aquí
+    if (APD.pausaVencida(datos, s)) {
+      return falla(`La pausa de tu cita del ${APD.fecha(s.cotejo_pausa.cita_en || s.cita_en)} venció: sólo duraba ese día. La Secretaría regresa tu solicitud con observaciones; cuando la veas así en «Mis trámites», corrige ahí el documento y reenvía tu solicitud.`);
+    }
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
     const pausa = s.cotejo_pausa;
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);
