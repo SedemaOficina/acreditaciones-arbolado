@@ -1407,6 +1407,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.waitForURL(/hecho=asistencia/);
   await pg.waitForSelector('.asistencia-fila');
   comprueba(/guardada/.test(await texto('[data-hecho]')), t('la asistencia del día se guarda'));
+  comprueba(/^Día 3 de 5/.test(await texto('[data-titulo-dia]')) && /Sigue el día 3/.test(await texto('[data-hecho]')), t('en la versión de prueba, guardar lleva al día siguiente del curso'));
   if (falto) comprueba(/Sin derecho a examen/.test(await texto('[data-personas]')), t('quien faltó dos días se marca sin derecho a examen'));
   await sinDesborde(pg, t('asistencia'));
   await captura(pg, `asistencia-guardada-${sufijo}`);

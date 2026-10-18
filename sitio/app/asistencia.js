@@ -115,11 +115,18 @@
 
     /* Hecho: aviso tras guardar */
     if (params.get('hecho') === 'asistencia' && dia) {
-      const n = Number(params.get('dia'));
+      // En la prueba, guardar lleva al día siguiente (?guardado = el día que se guardó); en el SIA se queda en el día
+      const n = Number(params.get('guardado') || params.get('dia'));
       const asistieron = personas.filter((f) => capturada(f.i.id, n) === true).length;
+      const sigue = n !== dia ? ` Sigue el día ${dia} (simulado).` : prueba && n === ultimoDia - 1 ? ' Lo que sigue es el examen, el último día.' : '';
       APD.pintaAviso($('[data-hecho]'), 'ok', `Asistencia del día ${n} guardada`,
-        `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.`, true);
+        `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.${sigue}`, true);
+      if (prueba && n === ultimoDia - 1) {
+        $('[data-hecho]').append(el('p', { class: 'nota-prueba' }, [document.createTextNode('Versión de prueba: '),
+          el('a', { href: `aplicar.html?folio=${encodeURIComponent(g.folio)}`, texto: `ir a «Aplicar el examen» (día ${ultimoDia})` })]));
+      }
       params.delete('hecho');
+      params.delete('guardado');
       history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
     }
 
@@ -191,8 +198,8 @@
         foto,
         el('div', { class: 'asis-quien' }, [
           el('p', { class: 'asis-nombre', texto: f.quien }),
-          el('p', { class: 'asis-historia', 'data-puntos': '' }),
-          el('p', { class: 'asis-riesgo', 'data-aviso': '' })
+          // La etiqueta de riesgo va en el mismo renglón que la tira, para no alargar la fila (pedido de Liber, 2026-10-18)
+          el('p', { class: 'asis-historia' }, [el('span', { class: 'asis-tira', 'data-puntos': '' }), el('span', { class: 'asis-riesgo', 'data-aviso': '' })])
         ]),
         el('fieldset', { class: 'asis-opciones' }, [
           el('legend', { class: 'solo-lector', texto: `¿${f.quien} asistió el día ${dia}?` }),
@@ -229,7 +236,10 @@
         return;
       }
       P.guardaGrupo({ tipo: 'asistencia', grupo_id: g.id, dia, lista, por: P.INSTRUCTORA.usuario }).then(() => {
-        location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${dia}&hecho=asistencia`;
+        // Versión de prueba: pasa al día siguiente del curso (el examen no se captura aquí). En el SIA se queda en el
+        // día: los días que no han pasado no se capturan (decisión de Liber, 2026-10-18)
+        const siguiente = prueba && dia + 1 < ultimoDia ? dia + 1 : dia;
+        location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${siguiente}&hecho=asistencia&guardado=${dia}`;
       }).catch(() => {
         APD.pintaAviso(aviso, 'error', 'No se pudo guardar la asistencia', 'Lo marcado sigue aquí; intente de nuevo.', true);
       });

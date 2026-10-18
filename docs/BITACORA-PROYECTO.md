@@ -1043,4 +1043,8 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   parecía otra cosa). En la versión de prueba vuelve el recorrido de todos los días: una franja «Versión de prueba:
   recorrer el curso día por día» con los cinco días (los que aún no llegan se capturan como «simulado»; el del examen
   abre «Aplicar el examen»). `probar-sitio` 604, `probar-volumen` y auditor de CSS, correctos.
+- Ajuste (Liber): en la versión de prueba, guardar la asistencia lleva al día siguiente del curso («Sigue el día 3
+  (simulado)»); al guardar el penúltimo día, el aviso ofrece ir a «Aplicar el examen». En el SIA, guardar se queda en
+  el día. La etiqueta de riesgo va en el renglón de la tira (no alarga la fila; en teléfono, si no cabe, baja completa
+  en un renglón) y la franja del recorrido de prueba ya no queda pegada a los botones. `probar-sitio` 606, correctas.
 
