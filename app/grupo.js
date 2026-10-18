@@ -144,7 +144,7 @@
     }
     let cancelar = null;
     if (antesDeIniciar) {
-      cancelar = el('button', { type: 'button', class: 'btn btn-secundario', texto: 'Cancelar el grupo' });
+      cancelar = el('button', { type: 'button', class: 'btn btn-peligro-contorno', texto: 'Cancelar el grupo' });
       cancelar.addEventListener('click', () => {
         $('[data-cancelar-titulo]').textContent = `¿Cancelar el grupo ${g.folio}?`;
         $('[data-cancelar-de]').replaceChildren(...[x.n ? `${x.n === 1 ? 'La persona regresa' : `Las ${x.n} personas regresan`} a la espera, con su antigüedad.` : 'El grupo no tiene personas.',

@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
 <link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
 <link rel="stylesheet" href="app/apd.css?v=0.41">
 <link rel="stylesheet" href="app/examen.css?v=0.41">
 </head>
@@ -67,11 +68,12 @@
   </section>
 
   <!-- Suspender: el motivo queda en la bitácora del examen -->
-  <dialog class="dialogo confirmacion" id="dlg-suspender" aria-labelledby="t-suspender">
+  <dialog class="dialogo dialogo-confirma" id="dlg-suspender" aria-labelledby="t-suspender">
     <form id="suspender" data-formkit="manual" action="#" method="post">
-      <div class="confirmacion-cabeza"><span class="desenlace-marca" data-tono="error"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg></span><h2 class="titulo-bloque dialogo-titulo" id="t-suspender" data-suspender-titulo>¿Suspender el examen?</h2></div>
-      <ul class="confirmacion-lista" data-suspender-de></ul>
-      <p class="confirmacion-irreversible"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>No se puede deshacer.</p>
+      <h2 class="titulo-bloque dialogo-titulo" id="t-suspender" data-suspender-titulo>¿Suspender el examen?</h2>
+      <p class="dialogo-consecuencias-titulo">Qué pasará:</p>
+      <ul class="dialogo-consecuencias" data-suspender-de></ul>
+      <p class="dialogo-irreversible"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>No se puede deshacer.</p>
       <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué se suspendió el examen (bitácora); la persona lo lee tal cual.">
         <label class="etiqueta" for="motivo">Motivo</label>
         <p class="ayuda" id="ay-motivo">Lo que vio, en una o dos frases. La persona lo lee en su pantalla. Ejemplo: Consultó su teléfono durante el examen.</p>
@@ -109,6 +111,7 @@
 <script src="formkit/js/formkit.core.js"></script>
 <script src="formkit/modulos/tabla/tabla.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
+<script src="formkit/modulos/estado/estado.js"></script>
 <!-- Versión de prueba: banco ficticio y servidor simulado en el navegador (en el SIA, la API del módulo). -->
 <script src="datos/examen-ficticio.js?v=0.41"></script>
 <script src="app/examen-servidor.js?v=0.41"></script>

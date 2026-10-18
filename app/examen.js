@@ -220,7 +220,7 @@
   $('[data-volver-preguntas]').addEventListener('click', () => pintaPregunta(actual));
   $('[data-enviar]').addEventListener('click', (e) => {
     const faltan = ex.preguntas.length - contestadas();
-    APD.confirma(e.currentTarget, {
+    FormKit.confirma(e.currentTarget, {
       titulo: '¿Enviar tus respuestas?',
       consecuencias: [faltan ? `Te ${faltan === 1 ? 'falta 1 pregunta' : `faltan ${faltan} preguntas`} sin contestar: ${faltan === 1 ? 'cuenta' : 'cuentan'} como incorrecta${faltan === 1 ? '' : 's'}.` : 'Contestaste todas las preguntas.',
         'Al enviar ves tu calificación.'],

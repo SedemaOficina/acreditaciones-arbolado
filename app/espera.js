@@ -203,7 +203,7 @@
           dialogo.showModal();
           return;
         }
-        APD.confirma(nuevo, { titulo: `¿Crear un grupo combinado con ${plural(eleg.length, 'persona', 'personas')}?`,
+        FormKit.confirma(nuevo, { titulo: `¿Crear un grupo combinado con ${plural(eleg.length, 'persona', 'personas')}?`,
           consecuencias: [`Es un grupo de ${nombre.toLowerCase()} que recibe personas de cualquier organización e independientes.`,
             `Se crea sin confirmar: se confirma cuando tenga al menos ${c.cupo_minimo} personas, con su fecha, hora de entrada e instructor.`],
           si: 'Sí, crear el grupo' })

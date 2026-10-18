@@ -53,7 +53,7 @@
       },
       alEnviar() {
         form.hidden = true;
-        APD.pintaDesenlace($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento', texto: '',
+        FormKit.resultado($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento',
           pasos: ['Imprime el documento que cargaste.', `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}.`, 'Ahí termina tu cotejo.'] });
       }
     });
