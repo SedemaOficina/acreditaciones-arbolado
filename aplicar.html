@@ -7,13 +7,13 @@
 <title>Aplicar el examen · Personal · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Códigos y avance del examen en línea de un grupo, para quien lo aplica en el salón de cómputo. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 <link rel="stylesheet" href="app/examen.css?v=0.52">
 </head>
@@ -65,7 +65,9 @@
 
   <section class="tarjeta" aria-labelledby="t-sin-grupo" data-sin-grupo hidden>
     <h2 class="titulo-paso" id="t-sin-grupo">Aplicar el examen</h2>
-    <p>No hay grupos en curso con examen. Cuando un grupo esté en su último día, aparecerá aquí.</p>
+    <p data-sin-grupo-texto>No hay grupos en curso con examen. Cuando un grupo esté en su último día, aparecerá aquí.</p>
+    <p data-mis-grupos-titulo hidden>Grupos en curso:</p>
+    <ul class="lista-simple" data-mis-grupos></ul>
   </section>
 
   <!-- Suspender: el motivo queda en la bitácora del examen -->
@@ -105,14 +107,14 @@
 <script src="app/personal.js?v=0.52"></script>
 <script src="app/codigo-examen.js?v=0.52"></script>
 <script src="app/config-examen.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <!-- Pantalla del personal: textos del estándar en usted (después de validaciones.config.js, antes del núcleo). -->
 <script src="app/mensajes-usted.js?v=0.52"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/tabla/tabla.js"></script>
-<script src="formkit/modulos/modal/modal.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/tabla/tabla.js?v=1.4.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
 <!-- Versión de prueba: banco ficticio y servidor simulado en el navegador (en el SIA, la API del módulo). -->
 <script src="datos/examen-ficticio.js?v=0.52"></script>
 <script src="app/examen-servidor.js?v=0.52"></script>

@@ -49,7 +49,20 @@
     caja.replaceChildren(...bloques);
   }
 
-  APD.cargar().then(pinta).catch(() => {
+  /* Con la sesión abierta (B12): en lugar de «Crea tu cuenta» y «Entra», «Mis trámites» */
+  function conSesion(datos) {
+    const p = APD.personaDeSesion(datos);
+    const cuenta = document.querySelector('.menu-inicio a[href="cuenta.html"]');
+    const entrar = document.querySelector('.menu-inicio a[href="entrar.html"]');
+    if (!p || !cuenta || !entrar) return;
+    cuenta.replaceWith(el('a', { class: 'menu-opcion', href: 'tramites.html' }, [
+      el('span', { class: 'menu-opcion-titulo', texto: 'Mis trámites' }),
+      el('span', { class: 'menu-opcion-texto', texto: `Entraste como ${APD.nombreCompleto(p)}. Consulta en qué va tu trámite o inicia uno.` })
+    ]));
+    entrar.remove();
+  }
+
+  APD.cargar().then((datos) => { conSesion(datos); pinta(datos); }).catch(() => {
     const caja = document.querySelector('[data-requisitos]');
     if (caja) caja.replaceChildren(el('p', { class: 'vacio', texto: 'No se pudieron cargar los requisitos. Intenta de nuevo más tarde.' }));
   });

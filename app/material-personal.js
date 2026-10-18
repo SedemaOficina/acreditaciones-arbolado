@@ -12,7 +12,7 @@
   const A = window.APD_ARCHIVOS_PRUEBA;
   const $ = (s, r) => (r || document).querySelector(s);
   const params = new URLSearchParams(location.search);
-  const PARA = { ambas: 'Las dos', poda: 'Poda y derribo', dictaminador: 'Dictaminador técnico' };
+  const PARA = { ambas: 'Ambas acreditaciones', poda: 'Poda y derribo', dictaminador: 'Dictaminador técnico' };
   const form = $('#form-material');
   const nuevaPestana = () => el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' });
 
@@ -93,7 +93,7 @@
         el('td', { texto: PARA[m.tipo_acreditacion || 'ambas'] }),
         el('td', {}, [
           el('a', { href: m.url, target: '_blank', rel: 'noopener' }, [document.createTextNode(`PDF · ${m.paginas} págs. · ${APD.tamano(m.tamano_bytes)}`), nuevaPestana()]),
-          el('span', { class: 'material-edicion-celda', texto: `Cargado el ${fecha(String(m.cargado_en).slice(0, 10))}` })
+          el('span', { class: 'material-edicion-celda', texto: `Cargado el ${fecha(m.cargado_en)}` })
         ]),
         el('td', {}, [m.publicado ? estado('Publicado', 'ok') : estado('Sin publicar', 'pend')]),
         el('td', {}, [el('div', { class: 'material-acciones' }, [
@@ -141,6 +141,7 @@
     $('[data-agregar]').addEventListener('click', (e) => abre('nuevo', null, e.currentTarget));
     $('[data-cancelar]').addEventListener('click', cierra);
     const vuelve = (que, clave) => { location.href = `material-personal.html?hecho=${que}&doc=${encodeURIComponent(clave)}`; };
+    // Un cambio lleva sólo lo que cambia: archivos-prueba.js lo combina con lo guardado del documento (C4)
     const guardaCambio = (m, cambios) => A.guardaMaterial(Object.assign({ id: m.id, actualizado_en: ahora(), actualizado_por: P.REVISORA.usuario }, cambios));
 
     $('[data-filas]').addEventListener('click', (e) => {

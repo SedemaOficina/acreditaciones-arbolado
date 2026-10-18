@@ -18,8 +18,8 @@
   const G = APD_EXAMEN_GRUPO;
   const $ = (s, c = document) => c.querySelector(s);
 
-  /* Perfil ficticio de quien aplica el examen (no es una persona real) */
-  const INSTRUCTOR = { usuario: 'instructor.ficticio', nombre: 'Laura Ejemplo Instructora', perfil: 'Instructor' };
+  /* Perfil ficticio de quien aplica el examen (no es una persona real): el mismo de «Asistencia» (app/personal.js) */
+  const INSTRUCTOR = APD_PERSONAL.INSTRUCTORA;
 
   /* Cabecera del perfil «instructor»: asistencia y examen (app/personal.js) */
   const pintaSesion = (contenedor) => APD_PERSONAL.pintaSesion(contenedor, 'aplicar', 'instructor');
@@ -30,13 +30,26 @@
 
   APD.cargar().then((datos) => {
     pintaSesion($('[data-sesion-personal]'));
-    /* El grupo: el del enlace o el que presenta examen hoy (último día de su curso); si no, el primero en curso
-       (auditoría de tareas, A2: antes abría siempre el primero, aunque su examen no fuera hoy) */
+    /* El grupo: el del enlace o, sin enlace, el que presenta examen hoy (último día de su curso); si no, el primero en
+       curso (auditoría de tareas, A2). Un enlace a un grupo que no está en curso o no existe no abre otro: se dice y se
+       ofrecen los grupos en curso, como en «Asistencia» (auditoría 2026-10-18, B4). */
     const enCurso = G.grupos(datos);
     const hoy = APD.hoy(datos);
     const pedido = new URLSearchParams(location.search).get('folio');
-    const g = enCurso.find((x) => x.folio === pedido) || enCurso.find((x) => G.fechaExamen(datos, x) === hoy) || enCurso[0];
-    if (!g) { $('[data-sin-grupo]').hidden = false; return; }
+    const g = pedido ? enCurso.find((x) => x.folio === pedido) : enCurso.find((x) => G.fechaExamen(datos, x) === hoy) || enCurso[0];
+    if (!g) {
+      $('[data-sin-grupo]').hidden = false;
+      if (pedido) {
+        const existe = datos.grupo.some((x) => x.folio === pedido);
+        $('[data-sin-grupo-texto]').textContent = existe
+          ? `El grupo ${pedido} no está en curso: el examen se aplica el último día de un curso en marcha.`
+          : `No hay un grupo con el folio ${pedido}.`;
+        $('[data-mis-grupos]').replaceChildren(...enCurso.map((x) => el('li', {}, [el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`,
+          texto: `${x.folio} · ${APD_PERSONAL.nombreCurso(x.tipo_acreditacion, x.modalidad)} · examen el ${APD.fecha(G.fechaExamen(datos, x))}` })])));
+        $('[data-mis-grupos-titulo]').hidden = !enCurso.length;
+      }
+      return;
+    }
     $('[data-con-grupo]').hidden = false;
     const prueba = Boolean(datos.fecha_corte);
     const avisosGrupo = [];
@@ -94,7 +107,7 @@
       // Se conserva el foco en el botón de la misma persona al volver a pintar
       const enfocado = document.activeElement && document.activeElement.closest('[data-tabla]') ? [document.activeElement.dataset.accion, document.activeElement.dataset.ins] : null;
 
-      const cuenta = { derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, suspendidas: 0 };
+      const cuenta = { registradas: 0, derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, suspendidas: 0 };
       $('[data-filas]').replaceChildren(...filas.map((f) => {
         const nombre = APD.nombreCompleto(f.persona);
         const r = vigente(f);
@@ -107,13 +120,19 @@
         let paseLista = el('td', { class: 'texto-gris', texto: '—' });
         let avance = el('td', { class: 'texto-gris', texto: '—' });
         const acciones = el('td', { class: 'examen-acciones-fila' });
-        if (!f.puede) {
+        if (f.examen && !r) {
+          // Ya tiene su calificación capturada: no se le pasa lista ni se le da código (C 2.5)
+          paseLista = el('td', {}, [estado(`${decimal(f.examen.calificacion)} · calificación registrada`, Number(f.examen.calificacion) >= Number(c.calificacion_minima) ? 'ok' : 'error')]);
+          cuenta.registradas += 1;
+          avance = el('td', { class: 'texto-gris', texto: 'Ya presentó el examen' });
+        } else if (!f.puede) {
           asistencia.append(el('span', { class: 'examen-nota' }, [estado('Sin derecho a examen', 'error')]), el('span', { class: 'examen-nota', texto: `Necesita ${f.minimo} de ${f.dias} días` }));
         } else if (!l) {
           cuenta.derecho += 1; cuenta.porLista += 1;
           paseLista = el('td', {}, [el('div', { class: 'examen-lista-botones' }, [
+            // Las dos respuestas del pase de lista con el mismo peso (auditoría 2026-10-18, D29)
             el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'data-accion': 'presente', 'data-ins': id, 'aria-label': `${nombre}: presente, generar su código`, texto: 'Presente' }),
-            el('button', { type: 'button', class: 'btn-enlace', 'data-accion': 'ausente', 'data-ins': id, 'aria-label': `${nombre}: no llegó`, texto: 'No llegó' })
+            el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'data-accion': 'ausente', 'data-ins': id, 'aria-label': `${nombre}: no llegó`, texto: 'No llegó' })
           ])]);
         } else if (!l.presente) {
           cuenta.derecho += 1; cuenta.ausentes += 1;
@@ -151,7 +170,7 @@
           }
         }
         // Sin acciones la celda queda vacía, como en las demás tablas; en teléfono no se muestra (auditoría 2026-10-17)
-        return el('tr', { 'data-ins': id, class: (r && ['terminado', 'suspendido'].includes(r.situacion)) || (l && !l.presente) || !f.puede ? 'fila-hecha' : null }, [
+        return el('tr', { 'data-ins': id, class: (r && ['terminado', 'suspendido'].includes(r.situacion)) || (l && !l.presente) || !f.puede || f.examen ? 'fila-hecha' : null }, [
           persona, asistencia, paseLista, avance, acciones
         ]);
       }));
@@ -164,6 +183,7 @@
       if (cuenta.terminaron) partes.push(`${cuenta.terminaron} ${cuenta.terminaron === 1 ? 'terminó' : 'terminaron'} (${cuenta.aprobadas} ${cuenta.aprobadas === 1 ? 'aprobada' : 'aprobadas'})`);
       if (cuenta.contestando) partes.push(`${cuenta.contestando} contestando`);
       if (cuenta.sinEmpezar) partes.push(`${cuenta.sinEmpezar} con código sin empezar`);
+      if (cuenta.registradas) partes.push(`${cuenta.registradas} con la calificación ya registrada`);
       if (cuenta.suspendidas) partes.push(`${cuenta.suspendidas} ${cuenta.suspendidas === 1 ? 'suspendida' : 'suspendidas'}`);
       $('[data-cuenta]').textContent = `${n} personas inscritas, ${cuenta.derecho} con derecho a examen${partes.length ? `: ${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : ''}.`;
       $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
@@ -247,7 +267,7 @@
     /* ----- Menú de pruebas: «En esta pantalla» (app/pruebas.js) ----- */
     window.APD_PRUEBAS_AQUI = () => [
       ['Pasar lista: todas presentes', async () => {
-        for (const f of filas.filter((x) => x.puede && !API.lista()[x.inscripcion.id])) await G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario);
+        for (const f of filas.filter((x) => x.puede && !x.examen && !API.lista()[x.inscripcion.id])) await G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario);
         pinta(true);
         return 'Lista pasada: todas presentes, con su código.';
       }],
@@ -261,6 +281,6 @@
     ];
   }).catch(() => {
     $('[data-sin-grupo]').hidden = false;
-    $('[data-sin-grupo] p').textContent = 'No se pudo cargar el grupo. Intente de nuevo más tarde.';
+    $('[data-sin-grupo-texto]').textContent = 'No se pudo cargar el grupo. Intente de nuevo más tarde.';
   });
 }());

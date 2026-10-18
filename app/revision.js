@@ -27,9 +27,9 @@
     bF.textContent = n ? `Filtrar (${n} ${n === 1 ? 'activo' : 'activos'})` : 'Filtrar';
   }
 
-  const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const norm = APD.normalizaBusqueda;
 
-  APD.cargar().then(P.datosConPrueba).then((datos) => {
+  APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'revision');
     $('[data-umbral-ambar]').textContent = P.UMBRAL.ambar;
     $('[data-umbral-rojo]').textContent = P.UMBRAL.rojo;
@@ -51,8 +51,8 @@
         el('td', {}, [el('span', { class: 'mono', texto: s.folio })]),
         el('td', { texto: APD.nombreCompleto(p) }),
         el('td', { texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${s.modalidad === 'renovacion' ? 'renovación' : 'nueva'}` }),
-        el('td', { texto: fecha(s.estado_desde) }),
-        el('td', {}, [estado(e.texto, e.tono || 'marcha', 'reloj')]),
+        el('td', { class: 'sin-corte', texto: fecha(s.estado_desde) }),
+        el('td', {}, [estado(e.texto, e.tono || 'marcha')]),
         el('td', { texto: v.texto }),
         el('td', {}, sen.length ? el('span', { class: 'senales' }, sen.map(([t, tono]) => (tono ? estado(t, tono) : el('span', { texto: t })))) : el('span', { class: 'texto-gris', texto: '—' })),
         el('td', {}, [enlace])
@@ -95,8 +95,8 @@
     form.addEventListener('change', filtra);
     filtra();
 
-    // Revisadas en la prueba: salen de la bandeja y siguen su camino; mientras no existan las pantallas que siguen
-    // (citas de cotejo, grupos…), aquí se listan con su resultado y su estado actual (decisión 2026-10-17)
+    // Revisadas en la prueba: salen de la bandeja y siguen su camino («Citas de cotejo», «Grupos»); aquí se listan con su
+    // resultado y su situación actual, para seguirlas en la prueba (decisión 2026-10-17)
     const hechas = Object.entries(revisadas).sort((a, b) => String(b[1].en).localeCompare(String(a[1].en)));
     if (hechas.length) {
       const porFolio = Object.fromEntries(datos.solicitud.map((s) => [s.folio, s]));

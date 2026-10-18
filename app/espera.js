@@ -10,7 +10,7 @@
   const { el, estado, fecha } = APD;
   const P = APD_PERSONAL;
   const $ = (s, r) => (r || document).querySelector(s);
-  const plural = (n, uno, varios) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
+  const plural = APD.plural;
   const params = new URLSearchParams(location.search);
 
   APD.cargar().then((datos) => {
@@ -75,7 +75,7 @@
         : !b.propia ? el('span', { class: 'texto-gris', texto: `${n === 1 ? 'Va' : 'Van'} a un grupo combinado` })
         : falta <= 0 ? estado('Alcanza para un grupo propio', 'ok')
           : el('span', { class: 'texto-gris', texto: `${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para un grupo propio de ${c.cupo_minimo}; o ${van} a un grupo combinado` });
-      const cabeza = el('tr', { class: 'fila-adscripcion', 'data-adscripcion': b.clave }, [
+      const cabeza = el('tr', { class: 'fila-adscripcion' }, [
         el('td', {}, [el('label', { class: 'elegir' }, [todas])]),
         el('th', { scope: 'rowgroup', colspan: String(columnas.length - 1), id: idT }, [
           el('span', { class: 'adscripcion-nombre', texto: b.nombre }),
@@ -87,11 +87,12 @@
         const quien = APD.nombreCompleto(x.p);
         const casilla = el('input', { class: 'casilla-input', type: 'checkbox', value: x.s.folio, 'aria-label': `Elegir a ${quien}` });
         const espera = `${x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`}${x.prioritaria ? ' · prioritaria' : ''}`;
-        const tr = el('tr', { 'data-folio': x.s.folio }, [
-          el('td', {}, [el('label', { class: 'elegir' }, [casilla])]),
+        const tr = el('tr', { class: 'fila-persona', 'data-folio': x.s.folio }, [
+          el('td', { class: 'celda-elegir' }, [el('label', { class: 'elegir' }, [casilla])]),
           el('td', { texto: quien }),
           el('td', {}, [el('span', { class: 'mono', texto: x.s.folio })]),
-          ...(renov ? [el('td', {}, [x.vence ? estado(`${fecha(x.vence)}${x.vencida ? ' · vencida' : ''}`, x.vencida ? 'error' : 'marcha', x.vencida ? undefined : 'fecha') : document.createTextNode('')])] : []),
+          // Vencida: pide atención (prioridad), no es un cierre (auditoría 2026-10-18, D6)
+          ...(renov ? [el('td', {}, [x.vence ? estado(`${fecha(x.vence)}${x.vencida ? ' · vencida' : ''}`, x.vencida ? 'pend' : 'marcha') : document.createTextNode('—')])] : []),
           el('td', {}, [estado(espera, x.prioritaria ? 'pend' : 'marcha')])
         ]);
         return { x, tr, casilla };
@@ -132,7 +133,8 @@
       const n = elegidas().length;
       // Cuántas caben, antes de intentar (auditoría de tareas, M4)
       const caben = destinos.length === 1 ? ` · caben ${destinos[0].lugar} en el grupo ${destinos[0].g.folio}` : ` · un grupo recibe hasta ${c.cupo_maximo}`;
-      aviso.textContent = n ? `${plural(n, 'persona elegida', 'personas elegidas')}${caben}.` : 'Ninguna persona elegida.';
+      // Sin nadie elegido, se dice qué hacer antes de presionar un botón (auditoría 2026-10-18, D16)
+      aviso.textContent = n ? `${plural(n, 'persona elegida', 'personas elegidas')}${caben}.` : 'Ninguna persona elegida: marque la casilla de cada persona que quiere agregar.';
       barra.textContent = n ? `${plural(n, 'elegida', 'elegidas')}` : 'Ninguna elegida';
       barraIr.hidden = !n;
       if (n) { error.hidden = true; for (const x of document.querySelectorAll('.falta-marcar')) x.classList.remove('falta-marcar'); }
@@ -160,8 +162,12 @@
     const irAlGrupo = (folio, hecho, n) => { location.href = `grupo.html?folio=${encodeURIComponent(folio)}&hecho=${hecho}&n=${n}`; };
 
     /* Agregar a un grupo que recibe personas */
-    const acciones = destinos.map((g) => {
-      const b = el('button', { type: 'button', class: 'btn btn-primario', texto: `Agregar al grupo ${g.g.folio} · ${deQuien(g)} · ${g.n} de ${g.g.cupo_maximo}` });
+    // Un solo botón primario (el primer grupo que recibe personas); texto corto, con el folio sin partir y, si hay varios
+    // grupos, de quién es cada uno (auditoría 2026-10-18, D16)
+    const acciones = destinos.map((g, i) => {
+      const b = el('button', { type: 'button', class: `btn ${i === 0 ? 'btn-primario' : 'btn-secundario'}`, 'aria-describedby': 'espera-elegidas' }, [el('span', {}, [
+        document.createTextNode('Agregar al grupo '), el('span', { class: 'sin-corte', texto: g.g.folio }),
+        document.createTextNode(` (${destinos.length > 1 ? `${deQuien(g)} · ` : ''}${g.n} de ${g.g.cupo_maximo})`)])]);
       b.addEventListener('click', () => {
         const eleg = elegidas();
         const mal = problema(eleg, g);
@@ -184,7 +190,7 @@
         folios: eleg.map((f) => f.x.s.folio), por: P.REVISORA.usuario }).then(() => irAlGrupo(folio, 'creado', eleg.length));
     }
     if (!pedido) {
-      const nuevo = el('button', { type: 'button', class: destinos.length ? 'btn btn-secundario' : 'btn btn-primario', texto: 'Crear un grupo con las elegidas' });
+      const nuevo = el('button', { type: 'button', class: destinos.length ? 'btn btn-secundario' : 'btn btn-primario', 'aria-describedby': 'espera-elegidas', texto: 'Crear un grupo con las elegidas' });
       nuevo.addEventListener('click', () => {
         const eleg = elegidas();
         const mal = problema(eleg, null);

@@ -8,7 +8,7 @@
   const { el, estado, fecha } = APD;
   const P = APD_PERSONAL;
   const $ = (s) => document.querySelector(s);
-  const plural = (n, uno, varios) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
+  const plural = APD.plural;
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'grupos');
@@ -30,7 +30,9 @@
       const nombre = P.nombreCurso(t, m);
       const avisos = [];
       if (prioritarias) avisos.push(el('p', {}, [estado(`${plural(prioritarias, 'espera', 'esperan')} ${APD.parametro(datos, 'dias_alerta_espera')} días o más`, 'pend')]));
-      if (vencidas) avisos.push(el('p', {}, [estado(`${plural(vencidas, 'persona', 'personas')} con la acreditación vencida: no ${vencidas === 1 ? 'puede' : 'pueden'} ejercerla mientras ${vencidas === 1 ? 'espera' : 'esperan'}`, 'error')]));
+      // Etiqueta corta y la explicación en su renglón (auditoría 2026-10-18, D15); pide atención, no es un cierre (D6)
+      if (vencidas) avisos.push(el('p', {}, [estado(plural(vencidas, 'vencida', 'vencidas'), 'pend')]),
+        el('p', { class: 'texto-gris', texto: `${vencidas === 1 ? 'Tiene' : 'Tienen'} la acreditación vencida: no ${vencidas === 1 ? 'puede' : 'pueden'} ejercerla mientras ${vencidas === 1 ? 'espera' : 'esperan'}.` }));
       const situacion = !lista.length ? 'Nadie en espera.'
         : falta <= 0 ? (() => {
           // Cuántos grupos nuevos alcanzan, no sólo «alcanza» (con 6 o con 100 se leía igual)
@@ -62,16 +64,17 @@
     /* Los grupos */
     $('[data-filas]').replaceChildren(...todos.map((x) => {
       const g = x.g;
-      const abrir = ['en_integracion', 'confirmado'].includes(g.estado) ? 'Abrir' : 'Ver';
+      // Un solo verbo para abrir la ficha, y «—» en las celdas sin dato del grupo cancelado (auditoría 2026-10-18, D24)
+      const cancelado = g.estado === 'cancelado';
       return el('tr', { 'data-grupo': g.folio, class: ['concluido', 'cancelado'].includes(g.estado) ? 'fila-hecha' : null }, [
         el('td', {}, [el('span', { class: 'mono', texto: g.folio })]),
         el('td', { texto: x.nombre }),
         el('td', { texto: x.integracion }),
-        el('td', { texto: g.estado === 'cancelado' ? '' : P.cupoTexto(x) }),
-        el('td', { texto: g.fecha_inicio ? fecha(g.fecha_inicio) : g.estado === 'cancelado' ? '' : 'Sin fecha' }),
-        el('td', { texto: g.instructor ? P.nombreInstructor(g.instructor) : g.estado === 'cancelado' ? '' : 'Sin asignar' }),
+        el('td', { texto: cancelado ? '—' : P.cupoTexto(x) }),
+        el('td', { class: 'sin-corte', texto: g.fecha_inicio ? fecha(g.fecha_inicio) : cancelado ? '—' : 'Sin fecha' }),
+        el('td', { texto: g.instructor ? P.nombreInstructor(g.instructor) : cancelado ? '—' : 'Sin asignar' }),
         el('td', {}, [estado(x.situacion.texto, x.situacion.tono)]),
-        el('td', {}, [el('a', { class: 'btn btn-secundario btn-chico', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `${abrir} el grupo ${g.folio}`, texto: abrir })])
+        el('td', {}, [el('a', { class: 'btn btn-secundario btn-chico', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Abrir el grupo ${g.folio}`, texto: 'Abrir' })])
       ]);
     }));
     // En teléfono cada celda muestra su encabezado: desde la 1.3.4 el módulo tabla se inicia solo (aun sin formulario) y

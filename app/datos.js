@@ -7,7 +7,8 @@
    La fotografía se cambia sólo mientras la Secretaría no la haya confirmado. En la versión de prueba se muestra la que
    se cargó al crear la cuenta o al cambiarla aquí (guardada sólo en este navegador, app/archivos-prueba.js); de las
    personas ficticias no hay imagen y se ven sus iniciales.
-   «?volver=solicitud.html» ofrece regresar a la solicitud después de guardar. */
+   «?volver=solicitud.html?folio=…» ofrece regresar a la misma solicitud, con su folio, y el enlace de arriba lo dice
+   («Volver a tu solicitud»; auditoría 2026-10-18, B6). */
 (function () {
   'use strict';
   const { el } = APD;
@@ -17,10 +18,17 @@
   const SECCIONES = ['foto', 'contacto', 'adscripcion'];
   const formDe = (k) => document.getElementById(`form-${k}`);
 
-  // Regreso: sólo a una pantalla de este sitio
-  const volver = new URLSearchParams(location.search).get('volver');
-  const volverA = /^[a-z]+\.html$/.test(volver || '') ? volver : '';
-  if (volverA) for (const a of $$('[data-volver]')) a.setAttribute('href', volverA);
+  // Regreso: sólo a una pantalla de este sitio, con su consulta; el rótulo dice a dónde lleva (B6)
+  const volverA = APD.destinoPropio(new URLSearchParams(location.search).get('volver'));
+  const aSolicitud = /^solicitud\.html/.test(volverA);
+  const textoVolver = aSolicitud ? 'Volver a tu solicitud' : volverA ? 'Volver' : '';
+  if (volverA) {
+    for (const a of $$('[data-volver]')) {
+      a.setAttribute('href', volverA);
+      const t = Array.from(a.childNodes).find((n) => n.nodeType === 3 && n.textContent.trim());
+      if (t) t.textContent = textoVolver;
+    }
+  }
 
   function nacimientoDe(curp) {
     const aa = Number(curp.slice(4, 6));
@@ -64,9 +72,11 @@
   function pintaFoto(datos, p) {
     const f = datos.fotografia.find((x) => x.solicitante_id === p.id && x.vigente);
     const confirmada = f && f.estado === 'confirmada' && !p.foto_nueva;
+    // El día en la hora de la Ciudad de México, no en UTC (auditoría 2026-10-18, C 5.2); por confirmar es «en marcha»:
+    // se confirma en la cita, no le toca hacer nada antes (D6)
     $('[data-foto-estado]').replaceChildren(confirmada
-      ? APD.estado(`Fotografía confirmada el ${APD.fecha(String(f.confirmada_en).slice(0, 10))}`, 'ok')
-      : APD.estado('Fotografía por confirmar en tu cita de cotejo', 'pend'));
+      ? APD.estado(`Fotografía confirmada el ${APD.fecha(f.confirmada_en)}`, 'ok')
+      : APD.estado('Fotografía por confirmar en tu cita de cotejo', 'marcha'));
     $('[data-foto-cambio]').hidden = Boolean(confirmada);
     const caja = $('[data-perfil-foto]');
     $('[data-perfil-iniciales]').textContent = `${(p.nombre || '').charAt(0)}${(p.primer_apellido || '').charAt(0)}`;
@@ -136,7 +146,7 @@
      2026-10-17; antes salía sin icono) */
   function guardado(k, [titulo, texto]) {
     const caja = $(`[data-guardado="${k}"]`);
-    const extra = volverA ? [el('p', {}, [el('a', { href: volverA, texto: volverA === 'solicitud.html' ? 'Volver a tu solicitud' : 'Volver' })])] : [];
+    const extra = volverA ? [el('p', {}, [el('a', { href: volverA, texto: textoVolver })])] : [];
     const a = APD.aviso('ok', titulo, texto, extra);
     caja.replaceChildren(...a.childNodes);
     caja.hidden = false;

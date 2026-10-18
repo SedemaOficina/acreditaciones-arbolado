@@ -7,15 +7,14 @@
 <title>Grupo · Personal · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Un grupo del curso de acreditación: personas, confirmación con fecha, hora e instructor, bajas y cancelación. Personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
-<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -61,8 +60,9 @@
     <!-- Concentrado de asistencia: sólo en curso o concluido (P.pintaConcentrado) -->
     <div data-concentrado-bloque hidden>
       <h3 class="titulo-bloque" id="t-concentrado">Asistencia por día</h3>
-      <p class="ayuda" data-concentrado-ayuda>Lo capturado por el instructor, por persona y por día. El día del examen muestra el pase de lista del salón de cómputo.</p>
+      <p class="ayuda">Lo capturado por el instructor, por persona y por día. El día del examen muestra el pase de lista del salón de cómputo.</p>
       <div class="tabla-marco" data-tabla data-clave="concentrado" data-concentrado>
+        <!-- .tabla-concentrado: en teléfono, una tarjeta corta por persona con sus ✓/✗ en un renglón (app/apd.css, D18) -->
         <table class="tabla tabla-bandeja tabla-concentrado">
           <caption class="solo-lector" data-conc-leyenda>Asistencia del grupo por persona y por día</caption>
           <thead><tr data-conc-encabezado></tr></thead>
@@ -81,11 +81,13 @@
     <p class="bajada">Al confirmar, cada persona ve en «Mis trámites» su grupo, las fechas del curso, la hora de entrada y dónde presentarse.</p>
     <div class="aviso aviso-advertencia" data-falta hidden><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg><p class="aviso-texto"></p></div>
     <form id="confirmar" data-formkit="manual" action="#" method="post">
-      <div class="campo" data-campo="fecha_inicio" data-formato="fecha" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
+      <!-- Fecha día/mes/año como en el resto del sitio (formato «fecha-dma» del estándar; auditoría 2026-10-18, D9). El
+           mínimo (7 días después de hoy) lo pone la página en data-min. -->
+      <div class="campo" data-campo="fecha_inicio" data-formato="fecha-dma" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
         <label class="etiqueta" for="fecha_inicio">Primer día del curso</label>
         <p class="ayuda" id="ay-fecha-inicio" data-ayuda-fecha>El curso empieza al menos 7 días después de confirmar el grupo.</p>
         <!-- autocomplete off: la fecha la elige quien arma el grupo. -->
-        <input class="control control-medio" id="fecha_inicio" name="fecha_inicio" type="date" autocomplete="off" aria-describedby="ay-fecha-inicio">
+        <input class="control control-corto" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-fecha-inicio">
       </div>
       <div class="campo" data-campo="hora_entrada" data-formato="hora" data-requerido data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
         <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
@@ -171,14 +173,14 @@
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.52"></script>
 <script src="app/personal.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <script src="app/mensajes-usted.js?v=0.52"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/tabla/tabla.js"></script>
-<script src="formkit/modulos/modal/modal.js"></script>
-<script src="formkit/modulos/fecha/fecha.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/tabla/tabla.js?v=1.4.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
+<script src="formkit/modulos/fecha/fecha.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
 <script src="app/grupo.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.52"></script>

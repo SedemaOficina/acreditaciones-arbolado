@@ -36,7 +36,15 @@
    página y en el servidor (app/perfil-academico.js). El catálogo de carreras llega cuando la página carga los datos
    (APD_SOLICITUD.usaCatalogo); antes, el mínimo es 0. */
 let catalogoCarreras = null;
-window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; } };
+/* Borrador en este dispositivo (auditoría 2026-10-18, B2; lo escribe y lo recupera app/solicitud.js): uno por persona y
+   por solicitud (la nueva o la del folio que se continúa). Con el prefijo «apd.», la caducidad de 7 días y «Empezar de
+   cero» lo borran como todo lo de la prueba. */
+const claveBorrador = (() => {
+  const sesion = typeof APD !== 'undefined' ? APD.leeSesion() : null;
+  const folio = new URLSearchParams(location.search).get('folio') || 'nueva';
+  return `apd.borrador.solicitud.${sesion && sesion.id ? sesion.id : 'sin-sesion'}.${folio}`;
+})();
+window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; }, borrador: { clave: claveBorrador, version: '1' } };
 window.FORMKIT_CONFIG = {
   archivos: { mb: 5, extensiones: ['pdf'], max: 1 },
   limitesSegun: { experiencia: (r) => APD_PERFIL_ACADEMICO.minimoExperiencia(catalogoCarreras, r) }
@@ -82,7 +90,12 @@ window.FORMKIT_OPCIONES = {
               organizacion_nombre: p.organizacion_nombre || '', numero_expediente: p.numero_expediente || null }
           };
           const guarda = global_archivos() ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).catch(() => {}) : Promise.resolve();
-          guarda.then(() => ok({ folio, fecha: ahora }));
+          guarda.then(() => {
+            // Enviada: el borrador de esta solicitud ya no sirve (sus archivos quedan en el almacén de la prueba hasta
+            // «Borrar lo guardado» o la caducidad)
+            try { localStorage.removeItem(claveBorrador); } catch (e) { /* sin almacenamiento */ }
+            ok({ folio, fecha: ahora });
+          });
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });

@@ -13,7 +13,7 @@
   form.addEventListener('submit', (e) => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
   FormKit.iniciar(form, {});
 
-  const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const norm = APD.normalizaBusqueda;
   const diaLargo = (dia) => {
     const t = new Date(`${dia}T12:00:00-06:00`).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' });
     return t.charAt(0).toUpperCase() + t.slice(1);
@@ -45,7 +45,7 @@
         el('td', { texto: APD.nombreCompleto(p) }),
         el('td', {}, [el('span', { class: 'mono', texto: s.folio })]),
         el('td', { texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${s.modalidad === 'renovacion' ? 'renovación' : 'nueva'}` }),
-        el('td', {}, [estado(texto, sit.tono, sit.icono)]),
+        el('td', {}, [estado(texto, sit.tono)]),
         el('td', {}, [accion])
       ]);
       return { tr, hora, c, dia: P.diaDe(c.en), texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' ')) };
@@ -74,6 +74,10 @@
     const botones = Array.from(document.querySelectorAll('[data-ir]'));
     function pinta() {
       const q = norm(document.getElementById('buscar').value);
+      // El día elegido queda en la dirección (?dia=): al volver del cotejo, con «Atrás» o al recargar, la agenda sigue en
+      // ese día (auditoría 2026-10-18, B8)
+      const url = new URL(location.href);
+      if (url.searchParams.get('dia') !== dia) { url.searchParams.set('dia', dia); history.replaceState(null, '', url); }
       let n = 0;
       let atendidas = 0;
       for (const f of filas) {

@@ -23,14 +23,21 @@
     if (APD.pausaVencida(datos, s)) {
       return falla(`La pausa de tu cita del ${APD.fecha(s.cotejo_pausa.cita_en || s.cita_en)} venció: sólo duraba ese día. La Secretaría regresa tu solicitud con observaciones; cuando la veas así en «Mis trámites», corrige ahí el documento y reenvía tu solicitud.`);
     }
-    const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r]));
     const pausa = s.cotejo_pausa;
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);
+    // Ya cargó lo que no coincidió (al volver a entrar después de cargarlo): no se vuelve a pedir
+    if (pausa.docs.length && pausa.docs.every((k) => docs.some((d) => d.requisito === k && APD.cargadoTras(d, pausa)))) {
+      $('[data-cargando]').hidden = true;
+      FormKit.resultado($('[data-hecho]'), { tono: 'ok', titulo: pausa.docs.length === 1 ? 'Ya cargaste el documento correcto' : 'Ya cargaste los documentos correctos',
+        pasos: ['Imprime lo que cargaste.', `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}.`, 'Ahí termina tu cotejo.'] });
+      return;
+    }
     $('[data-bajada]').textContent = `En tu cita del ${APD.fechaHora(s.cita_en)} ${pausa.docs.length === 1 ? 'un documento no coincidió' : 'algunos documentos no coincidieron'} con ${pausa.docs.length === 1 ? 'el' : 'los'} que cargaste. Cárgalo hoy y regresa con la persona que te atiende para terminar tu cotejo.`;
     for (const k of pausa.docs) {
       const d = docs.find((x) => x.requisito === k);
       const ayuda = $(`[data-diferencia="${k}"]`, form);
-      if (ayuda) ayuda.textContent = d && d.observacion ? `No coincidió: ${d.observacion}` : 'No coincidió con el que llevaste.';
+      // De tú y con minúscula después de los dos puntos (auditoría 2026-10-18, D11)
+      if (ayuda) ayuda.textContent = d && d.observacion ? APD.observacionDe('No coincidió', d.observacion) : 'No coincidió con el que llevaste.';
     }
     for (const input of form.querySelectorAll('input[data-auxiliar]')) {
       const k = input.name.replace(/^cargar_/, '');

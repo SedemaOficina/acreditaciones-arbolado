@@ -1,5 +1,5 @@
 /* =========================================================
-   apd.js · Lo común de las pantallas de la persona solicitante
+   apd.js · Lo común de todas las pantallas (persona solicitante y personal)
 
    Etapa 1 (cascarón): no hay servidor. Los datos vienen de
    datos/ficticios.json, que exporta la base de pruebas con las mismas
@@ -21,18 +21,21 @@
      ve el personal cuando el de la persona le habla a ella («Acude a tu cita»). */
   const ESTADOS = {
     borrador: { texto: 'Borrador', tono: 'pend', sigue: 'Termina de cargar tus documentos y envía tu solicitud.' },
-    enviada: { texto: 'En revisión documental', tono: 'marcha', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
+    // Qué sigue mientras se revisa (auditoría 2026-10-18, D12): la revisión, su resultado y dónde se ve; el plazo es P02
+    enviada: { texto: 'En revisión documental', tono: 'marcha', sigue: { texto: 'La Secretaría revisa que tus documentos estén completos y correctos.', pasos: ['La Secretaría revisa tus documentos.', 'Si algo falta, te indica qué corregir; si todo está completo, te asigna una cita de cotejo.', 'Lo ves aquí, en «Mis trámites».'] } },
     // Hay un plazo para corregir (P02: lo fija la Dirección); mientras no esté, se dice que existe (auditoría integral, alta 10)
     con_observaciones: { texto: 'Corrige y reenvía', personal: 'Con observaciones', tono: 'pend', sigue: { texto: 'Hay un plazo para corregir: si no reenvías tu solicitud a tiempo, se cierra.', pasos: ['Corrige lo que se indica arriba.', 'Vuelve a enviar tu solicitud.', 'La Secretaría la revisa otra vez.'] } },
     validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', sigue: { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', 'Acude a tu cita con tus documentos y tu comprobante.'] } },
     // La persona espera el curso; el personal arma grupos con esa lista (decisión 2026-10-18)
     lista_para_curso: { texto: 'En espera de curso', personal: 'En espera de grupo', tono: 'marcha', sigue: { texto: 'Tu cotejo terminó.', pasos: ['La Secretaría te asigna un grupo del curso.', 'Te avisa las fechas, la hora de entrada y la sede.', 'Asistes al curso y, el último día, presentas el examen.'] } },
-    inscrita: { texto: 'Con grupo asignado', tono: 'ok', sigue: 'Asiste a tu curso en las fechas indicadas.' },
+    // Con grupo el curso está en marcha (por empezar o en curso), no terminado (auditoría 2026-10-18, D6)
+    inscrita: { texto: 'Con grupo asignado', tono: 'marcha', sigue: 'Asiste a tu curso en las fechas indicadas.' },
     aprobada: { texto: 'Aprobada', tono: 'ok', sigue: 'La Secretaría emite tu acreditación.' },
     acreditada: { texto: 'Acreditación emitida', tono: 'ok', sigue: 'Recoge tu credencial en persona.' },
     no_acreditada: { texto: 'No acreditada', tono: 'error', sigue: 'No alcanzaste la calificación mínima. Puedes iniciar una solicitud nueva.' },
     sin_derecho_examen: { texto: 'Sin derecho a examen', tono: 'error', sigue: 'No alcanzaste la asistencia mínima. Puedes iniciar una solicitud nueva.' },
-    cancelada: { texto: 'Cancelada', tono: 'cerrado', sigue: '' },
+    // Como las demás cerradas, dice qué puede hacer (auditoría 2026-10-18, D14)
+    cancelada: { texto: 'Cancelada', tono: 'cerrado', sigue: 'Esta solicitud se canceló. Puedes iniciar una solicitud nueva.' },
     concluida_sin_atender: { texto: 'Cerrada: no se corrigió a tiempo', tono: 'error', sigue: 'Las observaciones no se atendieron a tiempo. Puedes iniciar una solicitud nueva.' },
     rechazada: { texto: 'Rechazada', tono: 'error', sigue: 'Tu perfil no cumple los requisitos de esta acreditación. Abajo está el motivo.' }
   };
@@ -44,8 +47,9 @@
   const VIGENCIA = {
     vigente: { texto: 'Vigente', tono: 'ok' },
     por_vencer: { texto: 'Vigente · por vencer', tono: 'pend' },
-    vencida_renovable: { texto: 'No vigente', tono: 'error' },
-    vencida_no_renovable: { texto: 'No vigente', tono: 'error' },
+    // Vencida pero renovable: te toca actuar (renovarla); vencida sin renovación: terminada (auditoría 2026-10-18, D6)
+    vencida_renovable: { texto: 'No vigente', tono: 'pend' },
+    vencida_no_renovable: { texto: 'No vigente', tono: 'cerrado' },
     no_emitida: { texto: 'Todavía no vigente', tono: 'marcha' }
   };
 
@@ -114,9 +118,6 @@
   function sumaDias(iso, dias) { const d = aFecha(iso); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); }
   function sumaMeses(iso, meses) { const d = aFecha(iso); d.setMonth(d.getMonth() + meses); return d.toISOString().slice(0, 10); }
 
-  /* Hoy, como fecha AAAA-MM-DD en la Ciudad de México. En la versión de prueba es la fecha simulada de los ficticios
-     (datos.fecha_corte, la de la franja amarilla), para que cada caso siga en su situación; con la API (etapa 3) no
-     hay fecha de corte y es el día real. */
   /* El día (AAAA-MM-DD, Ciudad de México) de una fecha y hora */
   const diaDe = (iso) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) : null);
   /* Una cita en pausa sólo dura su día: después ya no se retoma y la solicitud regresa con observaciones (P80) */
@@ -126,6 +127,9 @@
   /* Cerrada por no presentarse dos veces a la cita de cotejo: se distingue por el motivo que guarda la base
      («No se presentó a su cita de cotejo N veces.», 03-apd-reglas.sql), no por un dato propio de la prueba (alta 5) */
   const cerradaPorInasistencia = (s) => s && s.estado === 'concluida_sin_atender' && /^No se presentó a su cita de cotejo/.test(s.motivo_cierre || '');
+  /* Hoy, como fecha AAAA-MM-DD en la Ciudad de México. En la versión de prueba es la fecha simulada de los ficticios
+     (datos.fecha_corte, la de la franja amarilla), para que cada caso siga en su situación; con la API (etapa 3) no
+     hay fecha de corte y es el día real. */
   function hoy(datos) {
     if (datos && datos.fecha_corte) return datos.fecha_corte;
     return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
@@ -139,6 +143,24 @@
     if (n === 1) return 'Falta 1 día';
     if (n === 0) return 'Vence hoy';
     return n === -1 ? 'Venció hace 1 día' : `Venció hace ${(-n).toLocaleString('es-MX')} días`;
+  }
+  /* Las filas de vencimiento de una ficha, con el rótulo según el caso (auditoría 2026-10-18, D10: «Para vencer» con
+     «Venció hace 523 días» se leía al revés): vigente, «Vence el» y «Vence en»; vencida, «Venció el» y «Vencida hace». */
+  function vencimiento(datos, venceEn) {
+    const n = diasParaVencer(datos, venceEn);
+    const dias = (k) => (k === 1 ? '1 día' : `${k.toLocaleString('es-MX')} días`);
+    if (n > 0) return [['Vence el', fecha(venceEn)], ['Vence en', dias(n)]];
+    if (n === 0) return [['Vence el', `${fecha(venceEn)} (hoy)`]];
+    return [['Venció el', fecha(venceEn)], ['Vencida hace', dias(-n)]];
+  }
+  /* «1 grupo», «3 grupos» (auditoría 2026-10-18, A 6.5: estaba repetida en cuatro pantallas del personal) */
+  const plural = (n, uno, varios) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
+  /* Texto para buscar sin acentos ni mayúsculas (A 6.6: estaba repetida en la bandeja y en las citas) */
+  const normalizaBusqueda = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+  /* Hora de 24 horas (HH:MM) en la Ciudad de México */
+  function hora(iso) {
+    const d = aFecha(iso);
+    return d ? d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }) : '';
   }
 
   /* ----- Sesión simulada ----- */
@@ -166,12 +188,6 @@
     if (p.organizacion_nombre) return p.organizacion_nombre;
     const o = p.organizacion_id ? datos.organizacion.find((x) => x.id === p.organizacion_id) : null;
     return o ? o.nombre : '';
-  }
-  function adscripcionTexto(datos, p) {
-    if (!p || !p.adscripcion) return '';
-    if (p.adscripcion === 'independiente') return 'Independiente: no trabajas para ninguna empresa, institución o dependencia.';
-    const nombre = nombreInstitucion(datos, p);
-    return `${ADSCRIPCIONES[p.adscripcion]}: ${nombre}${/\.$/.test(nombre) ? '' : '.'}`;
   }
   /* La adscripción como rótulo y valor, cada dato en su renglón (2026-10-18: el texto corrido «Tipo: nombre.» se leía
      todo en negritas en un solo renglón). rotuloTipo: «Tipo» en «Mi perfil» y la solicitud; «Adscripción» en las
@@ -205,15 +221,33 @@
     else if (d.dependencia_cdmx && d.dependencia_cdmx !== 'otro') o = porClave(d.dependencia_cdmx);
     else nombre = d.dependencia_cdmx_otra;
     o = o || (nombre ? porNombre(nombre) : null);
-    return { adscripcion: d.tipo_adscripcion, organizacion_id: o ? o.id : null, organizacion_nombre: o ? o.nombre : String(nombre || '').trim() };
+    // Un nombre escrito que no está en el catálogo: la API agrega la organización (por nombre normalizado, sin duplicar) y
+    // la base exige su organizacion_id (solicitante_adscripcion_organizacion_ck). En la prueba se le da un id propio por
+    // nombre normalizado: dos personas de la misma empresa nueva quedan en la misma (auditoría 2026-10-18, C 3.5).
+    const escrito = String(nombre || '').trim();
+    const id = o ? o.id : escrito ? `prueba-org:${normaliza(escrito)}` : null;
+    return { adscripcion: d.tipo_adscripcion, organizacion_id: id, organizacion_nombre: o ? o.nombre : escrito };
   }
   /* Perfil del dictaminador: la regla está en app/perfil-academico.js (sin navegador), para que la use también el
      servidor. */
   const { normaliza, perfilAcademico, SUPERIORES } = global.APD_PERFIL_ACADEMICO;
   function requiereSesion(datos) {
     const p = personaDeSesion(datos);
-    if (!p) { global.location.replace(`entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop())}`); return null; }
+    // Con su consulta (?folio=, ?tipo=): quien llega de un enlace sin sesión vuelve a lo que pidió (auditoría 2026-10-18, B7)
+    if (!p) { global.location.replace(`entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop() + global.location.search)}`); return null; }
     return p;
+  }
+  /* A dónde regresar (?volver=): sólo a una pantalla de este sitio, con su consulta (?folio=, ?tipo=). Devuelve
+     «pagina.html?…» o '' (auditoría 2026-10-18, B6 y B7). */
+  function destinoPropio(volver) {
+    if (!volver) return '';
+    try {
+      const u = new URL(volver, global.location.href);
+      const pagina = u.pathname.split('/').pop();
+      const aqui = global.location.pathname.replace(/[^/]*$/, '');
+      if (u.origin !== global.location.origin || u.pathname !== aqui + pagina || !/^[a-z-]+\.html$/.test(pagina)) return '';
+      return pagina + u.search;
+    } catch (e) { return ''; }
   }
   function nombreCompleto(p) { return [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' '); }
   /* Nombre con que se guarda un archivo: el mismo cálculo que apd.nombre_de_archivo en la base (decisión
@@ -242,6 +276,28 @@
   function activa(solicitud) { return !FINALES.includes(solicitud.estado); }
   /* Las marcas internas de los catálogos y los motivos («[pendiente: …]») son para la Secretaría, no para la persona. */
   function limpia(texto) { return String(texto || '').replace(/\s*\[pendiente[^\]]*\][^.]*\.?/gi, '').trim(); }
+  /* Lo que escribió el personal en tercera persona («que cargó», «La persona desistió…»), como se le dice a la persona
+     solicitante, de tú (auditoría 2026-10-18, D11). Sólo cambia en pantalla las formas conocidas; el registro no cambia.
+     Pedido al personal (F3): que los motivos frecuentes ya se escriban de tú. */
+  const A_TI = [
+    ['La persona desistió', 'Desististe'], ['la persona desistió', 'desististe'],
+    ['No se presentó a su cita', 'No te presentaste a tu cita'], ['no se presentó a su cita', 'no te presentaste a tu cita'],
+    ['No presentó', 'No presentaste'], ['no presentó', 'no presentaste'],
+    ['que cargó', 'que cargaste'], ['que llevó', 'que llevaste'], ['que subió', 'que subiste'],
+    ['lo trae hoy mismo', 'lo traes hoy mismo'], ['la trae hoy mismo', 'la traes hoy mismo']
+  ].map(([de, a]) => [new RegExp(`(?<!\\p{L})${de}(?!\\p{L})`, 'gu'), a]);
+  function paraTi(texto) { return A_TI.reduce((t, [de, a]) => t.replace(de, a), limpia(texto)); }
+  /* «Documento: observación» sin repetir el documento y con minúscula después de los dos puntos (D11): «Constancia de
+     situación fiscal: La constancia de situación fiscal no está actualizada» → «Constancia de situación fiscal: no está
+     actualizada». Una sigla al inicio («CURP …») se respeta. */
+  function observacionDe(nombreDoc, texto) {
+    let t = paraTi(texto);
+    const n = normaliza(nombreDoc);
+    const sin = t.match(/^(?:el|la|los|las)\s+(.*)$/i);
+    if (sin && n && normaliza(sin[1]).startsWith(`${n} `)) t = sin[1].slice(nombreDoc.length).trim();
+    if (/^\p{Lu}\p{Ll}/u.test(t)) t = t.charAt(0).toLocaleLowerCase('es-MX') + t.slice(1);
+    return t ? `${nombreDoc}: ${t}` : nombreDoc;
+  }
 
   /* ----- Qué puede solicitar la persona hoy -----
      Mismo criterio que apd.comprobar_elegibilidad() en la base (03-apd-reglas.sql); la pantalla sólo
@@ -398,15 +454,6 @@
   /* Iconos del estándar en las pantallas sin formulario: el mismo sprite y la misma marca que usa el
      núcleo, de modo que nunca se inyecta dos veces. */
   function ponIconos() {
-    // Iconos propios que el estándar no trae: candado (cuenta bloqueada) y cierre (trámite cerrado)
-    if (!document.querySelector('[data-sprite-propio]')) {
-      const propio = document.createElement('div');
-      propio.setAttribute('data-sprite-propio', '');
-      propio.hidden = true;
-      propio.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg"><symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>'
-        + '<symbol id="i-fin" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol></svg>';
-      document.body.prepend(propio);
-    }
     if (!global.FORMKIT_ICONOS || document.querySelector('[data-sprite-iconos]')) return;
     const cont = document.createElement('div');
     cont.setAttribute('data-sprite-iconos', '');
@@ -451,10 +498,11 @@
 
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
-    cargar, cargadoTras, fecha, fechaHora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence,
-    leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
+    cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,
+    plural, normalizaBusqueda, paraTi, observacionDe,
+    leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, meta, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionPares, adscripcionDe,
+    el, meta, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano
   };
 }(window));

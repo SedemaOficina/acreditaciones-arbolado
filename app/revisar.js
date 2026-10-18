@@ -32,10 +32,6 @@
   const ESTATUS_LIC = { en_curso: 'en curso', trunco: 'trunca', concluido: 'concluida (pasante)', titulado: 'titulada' };
   // Concuerda con el grado: «licenciatura trunca», «maestría titulada», «doctorado titulado»
   const estatusDe = (nivel, estatus) => (['licenciatura', 'maestria'].includes(nivel) ? ESTATUS_LIC : ESTATUS)[estatus] || '';
-  const PERFILES = {
-    licenciatura_afin: 'licenciatura en carrera principal o afín', pasante: 'carta de pasante', tecnica: 'carrera técnica',
-    disciplina_afin: 'disciplina afín', por_clasificar: 'carrera por clasificar', no_cumple: 'no cumple el perfil'
-  };
   const RESULTADOS = {
     validada: { boton: 'Validar y asignar la cita', clase: 'btn-primario' },
     con_observaciones: { boton: 'Enviar observaciones a la persona', clase: 'btn-primario' },
@@ -47,15 +43,17 @@
     const c = document.getElementById(id);
     if (!c || c.value === valor) return;
     c.value = valor;
-    c.dispatchEvent(new Event('input', { bubbles: true }));
-    c.dispatchEvent(new Event('change', { bubbles: true }));
+    APD.avisa(c);
   }
+  // La fecha de la cita se escribe como día/mes/año (formato «fecha-dma» del estándar, auditoría 2026-10-18, D9); se
+  // guarda como AAAA-MM-DD
+  const isoDe = (dma) => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(dma)) || dma;
   const elegido = (nombre) => { const r = $(`input[name="${nombre}"]:checked`, form); return r ? r.value : ''; };
   function falla(texto) {
     $('[data-cargando]').textContent = texto;
   }
 
-  APD.cargar().then(P.datosConPrueba).then((datos) => {
+  APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'revision');
     const s = datos.solicitud.find((x) => x.folio === folio);
     if (!s) return falla('No se encontró esa solicitud. Vuelva a la bandeja y elíjala de nuevo.');
@@ -73,7 +71,12 @@
     // (decisión 2026-10-18: en la 2.ª vuelta sólo se revisa lo que la persona corrigió)
     const previos = new Set(docs.filter((d) => d.estado === 'aceptado').map((d) => d.requisito));
     const reabiertos = new Set();
-    const anteriores = datos.revision.filter((r) => r.solicitud_id === s.id).sort((a, b) => a.revisada_en.localeCompare(b.revisada_en));
+    // Vueltas anteriores: las revisiones (apd.revision) y los cotejos que regresaron con observaciones (apd.cita con
+    // resultado con_observaciones: un documento no coincidió), en orden (auditoría 2026-10-18, C 3.2)
+    const anteriores = datos.revision.filter((r) => r.solicitud_id === s.id)
+      .concat((datos.cita || []).filter((c) => c.solicitud_id === s.id && c.resultado === 'con_observaciones' && c.atendida_en)
+        .map((c) => ({ revisada_en: c.atendida_en, resultado: 'con_observaciones', en_cotejo: true, observacion_general: '' })))
+      .sort((a, b) => a.revisada_en.localeCompare(b.revisada_en));
     const corregidos = new Set(P.corregidos(datos, s).map((d) => d.requisito));
     const v = P.vuelta(datos, s);
     const dict = s.tipo_acreditacion === 'dictaminador';
@@ -95,7 +98,7 @@
     if (typeof APD_ARCHIVOS_PRUEBA !== 'undefined') APD_ARCHIVOS_PRUEBA.foto(p.curp).then((r) => {
       if (r && r.blob) foto.append(el('img', { class: 'perfil-imagen', src: URL.createObjectURL(r.blob), alt: `Fotografía de ${APD.nombreCompleto(p)}` }));
     });
-    $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', { class: 'datos-dos-columnas' }, [datosLista([
+    $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', {}, [datosLista([
       ['Persona', APD.nombreCompleto(p)],
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre en su primer cotejo'],
@@ -137,12 +140,12 @@
     ponValor('perfil_revision', perfil === 'por_clasificar' || perfil === 'no_cumple' ? perfil : dict ? 'cumple' : 'no_aplica');
     if (dict) {
       const declarado = [NIVELES[s.nivel_estudios], estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ');
-      $('[data-perfil-datos]').replaceChildren(el('div', { class: 'datos-dos-columnas' }, [datosLista([
+      $('[data-perfil-datos]').replaceChildren(datosLista([
         ['Último grado declarado', declarado],
         ['Carrera', s.carrera || s.carrera_tecnica || ''],
         ['Experiencia declarada', s.anios_experiencia != null ? `${Number(s.anios_experiencia)} años` : ''],
         ['Experiencia que se pide', `${Number(s.experiencia_minima)} años${perfil === 'por_clasificar' ? ', mientras la carrera no se clasifique' : ''}`]
-      ])]));
+      ]));
       const dd = $$('[data-perfil-datos] .datos-valor').pop();
       if (dd) dd.setAttribute('data-minimo', '');
       $('[data-carrera-nombre]').textContent = `«${s.carrera || ''}»`;
@@ -150,6 +153,7 @@
         ? `declaró una licenciatura ${ESTATUS_LIC[s.estatus_estudios].replace(' (pasante)', '')}, y el lineamiento pide al menos carta de pasante.`
         : `declaró ${(NIVELES[s.nivel_estudios] || '').toLowerCase()} como último grado, y el lineamiento pide al menos carrera técnica, carta de pasante o licenciatura.`;
       $('[data-perfil]').hidden = false;
+      $('[data-leyenda-docs]').hidden = true;
     }
 
     /* ----- Documentos ----- */
@@ -230,8 +234,9 @@
         $('[data-doc-previo]', art).hidden = !antes;
         art.classList.toggle('doc-aceptado-antes', antes);
         const dec = antes ? 'aceptado' : elegido(`decision_${k}`);
-        // Etiqueta con icono de su familia: por revisar (le toca), aceptado (logro), con observación (atención)
-        const tono = dec === 'aceptado' ? 'ok' : dec === 'con_observacion' ? 'pend' : 'marcha';
+        // Etiqueta con icono de su familia: por revisar y con observación (le toca actuar, auditoría 2026-10-18, D7),
+        // aceptado (logro)
+        const tono = dec === 'aceptado' ? 'ok' : 'pend';
         $('[data-doc-estado]', art).replaceWith(APD.estado(antes ? 'Aceptado antes' : dec === 'aceptado' ? 'Aceptado' : dec === 'con_observacion' ? 'Con observación' : 'Por revisar', tono));
         $('.doc-cabeza .estado', art).setAttribute('data-doc-estado', '');
       }
@@ -255,11 +260,24 @@
       boton.classList.toggle('btn-peligro-contorno', r.clase === 'btn-peligro-contorno');
     }
 
-    /* Ver documento: en el visor, con todas sus hojas; el documento que se ve queda señalado en la lista */
+    /* Ver documento: en el visor, con todas sus hojas; el documento que se ve queda señalado en la lista y su botón dice
+       «En el visor». En computadora, pedir otra vez el que ya está abierto lleva el foco a sus hojas: antes no pasaba
+       nada visible (auditoría 2026-10-18, B16). */
     function ver(k, boton) {
       if (!archivos[k] || !global_visor()) return;
-      for (const a of $$('[data-doc]', form)) a.toggleAttribute('data-viendo', a.dataset.doc === k);
+      const yaAbierto = boton && $(`[data-doc="${k}"]`, form).hasAttribute('data-viendo') && FormKit.visor.enComputadora() && $('[data-visor]').open;
+      for (const a of $$('[data-doc]', form)) {
+        const viendo = a.dataset.doc === k;
+        a.toggleAttribute('data-viendo', viendo);
+        const b = $('[data-ver]', a);
+        if (b) { b.toggleAttribute('aria-current', viendo); b.firstChild.textContent = viendo ? 'En el visor' : 'Ver documento'; }
+      }
       FormKit.visor.abre(archivos[k], boton);
+      if (yaAbierto) {
+        const hojas = $('[data-visor-hojas]');
+        hojas.scrollIntoView({ block: 'nearest' });
+        hojas.focus();
+      }
     }
     const global_visor = () => Boolean(window.FormKit && FormKit.visor);
     const global_matchMedia = (q) => window.matchMedia(q).matches;
@@ -274,7 +292,10 @@
     // La cita es en la sede única; se elige el día, desde el siguiente al de hoy (fecha simulada del corte)
     for (const n of $$('[data-sede]')) n.textContent = APD.sede(datos).nombre;
     const manana = APD.sumaDias(datos.fecha_corte, 1);
-    document.getElementById('cita_fecha').setAttribute('min', manana);
+    // Límite mínimo del formato «fecha-dma»: el estándar lo lee de data-min del campo (AAAA-MM-DD) y avisa con la fecha
+    // en día/mes/año
+    $('[data-campo="cita_fecha"]').dataset.min = manana;
+    $('[data-cita-desde]').textContent = fecha(manana);
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     form.hidden = false;
@@ -283,7 +304,7 @@
       enviar(payload, { signal }) {
         return new Promise((ok, mal) => {
           const t = setTimeout(() => {
-            const d = payload.datos;
+            const d = Object.assign({}, payload.datos, payload.datos.cita_fecha ? { cita_fecha: isoDe(payload.datos.cita_fecha) } : {});
             const resultado = document.getElementById('resultado').value;
             const textos = {
               validada: `Validada · cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
@@ -302,8 +323,11 @@
         // familia, «Quedó guardado a las HH:MM · quien», motivo citado y «Qué sigue»; debajo, el botón a la siguiente
         const observados = Object.keys(d).filter((k) => k.startsWith('decision_') && d[k] === 'con_observacion').length;
         const desenlace = {
+          // Con su «Qué sigue», como el de observaciones (auditoría 2026-10-18, D21)
           validada: { tono: 'ok', titulo: `Validada: cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
-            texto: `${nombre} ya ve en «Mis trámites» su cita de cotejo en el ${APD.sede(datos).nombre} y los datos para pagar.` },
+            texto: `${nombre} ya ve en «Mis trámites» su cita de cotejo en el ${APD.sede(datos).nombre} y los datos para pagar.`,
+            pasos: [`${nombre} paga los derechos e imprime su comprobante.`, `Acude a su cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora} con sus documentos y su comprobante.`,
+              'En la cita, el personal coteja sus documentos y su pago en «Citas de cotejo».'] },
           con_observaciones: { tono: 'atencion', titulo: `Con observaciones: ${observados === 1 ? '1 documento regresa' : `${observados} documentos regresan`} a la persona`,
             texto: `${nombre} ya ve en «Mis trámites» qué debe corregir.`,
             pasos: [`${nombre} corrige y reenvía su solicitud.`, 'La solicitud vuelve a «Solicitudes por revisar», marcada como reenviada.'] },
@@ -311,6 +335,10 @@
             texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` }
         }[resultado];
         form.hidden = true;
+        sinGuardar = false;
+        // La cabecera dice la situación nueva, no «En revisión documental» (auditoría 2026-10-18, D8)
+        const nueva = { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' }[resultado];
+        $('[data-estado]').replaceChildren(APD.estadoSolicitud({ estado: nueva }, true));
         // El visor se cierra (en computadora queda fijo y empujaba el resultado hasta abajo)
         const visor = $('[data-visor]');
         if (visor && visor.open) visor.close();
@@ -345,6 +373,14 @@
     if (primero && global_visor() && FormKit.visor.enComputadora()) ver(primero, null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
+
+    /* Recargar o salir a mitad de la revisión pierde lo decidido: el navegador lo advierte mientras haya algo sin registrar
+       (auditoría 2026-10-18, B9). Sólo cuenta lo que hace quien revisa, no lo que llena la página. */
+    let sinGuardar = false;
+    const marcaCambio = (e) => { if (e.isTrusted && !form.hidden) sinGuardar = true; };
+    form.addEventListener('input', marcaCambio);
+    form.addEventListener('change', marcaCambio);
+    window.addEventListener('beforeunload', (e) => { if (sinGuardar) { e.preventDefault(); e.returnValue = ''; } });
 
     /* Al aceptar un documento, se pasa al siguiente sin decidir (decisión 2026-10-16): en computadora el visor lo muestra
        y la lista lo trae a la vista; con todo decidido, se va al resultado. Sólo con una decisión de quien revisa (no con

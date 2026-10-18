@@ -4,6 +4,15 @@
 (function () {
   'use strict';
   const { el, estado, datosLista, fecha, fechaHora, sumaDias } = APD;
+  const ORDINAL = { 2: 'Segunda', 3: 'Tercera', 4: 'Cuarta', 5: 'Quinta' };
+  /* «a, b y c» */
+  const comoLista = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs[0] || '');
+  /* La acción que toca hacer con una acreditación: renovarla (auditoría 2026-10-18, D26: esa tarjeta va primero) */
+  const porRenovar = (datos, a, op) => {
+    const o = op[a.tipo_acreditacion];
+    const ultima = APD.acreditacionesDe(datos, { id: a.solicitante_id }).find((x) => x.tipo_acreditacion === a.tipo_acreditacion) === a;
+    return ultima && o.disponible && o.modalidad === 'renovacion';
+  };
 
   function fichaAcreditacion(datos, a, op) {
     const sit = APD.situacion(datos, a);
@@ -13,11 +22,11 @@
         el('h4', { class: 'ficha-titulo', texto: APD.TIPOS[a.tipo_acreditacion] }),
         estado(v.texto, v.tono)
       ]),
-      el('p', { class: 'ficha-folio', texto: a.numero }),
+      // El número con su rótulo, como en la tarjeta de la solicitud; el vencimiento con el rótulo según el caso (D10, D25)
       datosLista([
+        ['Número de acreditación', a.numero],
         ['Emitida el', fecha(a.emitida_en)],
-        ['Vence el', fecha(a.vence_en)],
-        ['Para vencer', APD.textoVence(APD.diasParaVencer(datos, a.vence_en))],
+        ...APD.vencimiento(datos, a.vence_en),
         ['Origen', a.origen === 'kobo' ? 'Registro anterior de la Secretaría' : '']
       ])
     ]);
@@ -30,7 +39,8 @@
         ? 'Ya puedes renovarla. Hazlo antes de que venza para no quedarte sin acreditación vigente.'
         : `Ya no está vigente: no puedes trabajar con ella. Puedes renovarla hasta el ${fecha(limite)}.` }));
       ficha.append(el('div', { class: 'ficha-acciones' }, [
-        el('a', { class: 'btn btn-secundario', href: `solicitud.html?tipo=${a.tipo_acreditacion}`, texto: 'Renovar' })
+        // Es la acción que toca: botón principal (D26)
+        el('a', { class: 'btn btn-primario', href: `solicitud.html?tipo=${a.tipo_acreditacion}`, texto: 'Renovar' })
       ]));
     } else if (sit === 'vencida_no_renovable') {
       ficha.append(el('p', { class: 'ficha-sigue', texto: 'Venció hace más de un año: para obtenerla de nuevo haces una solicitud nueva.' }));
@@ -59,7 +69,13 @@
     const lugar = APD.sede(datos);
     // Dónde: la sede única; mientras no se confirme la dirección, se marca en amarillo
     const sedeTexto = (nombre) => [lugar.direccion ? `${nombre}, ${lugar.direccion}` : nombre, lugar.direccion ? null : 'dirección y referencias para llegar.'];
-    if (s.estado === 'validada_en_linea' && s.cita_en) pares.push(['Cita de cotejo', fechaHora(s.cita_en)], ['Lugar de la cita', ...sedeTexto(lugar.nombre)]);
+    // La cita (fecha, hora y lugar) va al principio de la ficha, antes de los datos de pago (auditoría 2026-10-18, D4)
+    const cita = s.estado === 'validada_en_linea' && s.cita_en
+      ? el('div', { class: 'ficha-cita' }, [datosLista([['Cita de cotejo', fechaHora(s.cita_en)], ['Lugar de la cita', ...sedeTexto(lugar.nombre)]])]) : null;
+    const acudeEl = s.cita_en ? `el ${fecha(s.cita_en)} a las ${APD.hora(s.cita_en)}` : '';
+    if (s.estado === 'validada_en_linea' && s.cita_en && !s.cotejo_pausa) {
+      sigue = { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', `Acude a tu cita ${acudeEl} con tus documentos y tu comprobante.`] };
+    }
     // El expediente físico es de la persona y lo comparten todos sus trámites; se abre en el primer cotejo
     if (persona.numero_expediente && !['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'cancelada', 'concluida_sin_atender', 'rechazada'].includes(s.estado)) {
       pares.push(['Número de expediente', persona.numero_expediente]);
@@ -102,7 +118,19 @@
       if (g.grupo.fecha_inicio && ['confirmado', 'en_curso'].includes(g.grupo.estado)) {
         const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
         // Hora de entrada del grupo (la misma todos los días); la de salida la define el área (P91)
-        pares.unshift(g.grupo.hora_entrada ? ['Preséntate el', `${fecha(g.grupo.fecha_inicio)}, a las ${APD.hhmm(g.grupo.hora_entrada)}`] : ['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Lugar del curso', ...sedeTexto(g.grupo.sede)]);
+        const entrada = g.grupo.hora_entrada ? `, a las ${APD.hhmm(g.grupo.hora_entrada)}` : '';
+        const sinHora = g.grupo.hora_entrada ? null : 'hora de entrada.';
+        // Con el curso ya empezado no se dice «Preséntate el …» (día pasado): en qué día va y cuándo es el examen
+        // (auditoría 2026-10-18, D13). Los días son consecutivos, como los cuenta la base.
+        const hoy = APD.hoy(datos);
+        const dia = Math.round((new Date(`${hoy}T12:00:00-06:00`) - new Date(`${g.grupo.fecha_inicio}T12:00:00-06:00`)) / 86400000) + 1;
+        const empezo = dia >= 1;
+        const examen = ultimo ? `${fecha(ultimo)}, en el salón de cómputo del PILARES Vivero Nezahualcóyotl` : '';
+        pares.unshift(...(empezo
+          ? [['Tu curso empezó el', `${fecha(g.grupo.fecha_inicio)}${entrada}`, sinHora],
+            c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}`] : ['El curso termina el', ultimo && fecha(ultimo)]]
+          : [['Preséntate el', `${fecha(g.grupo.fecha_inicio)}${entrada}`, sinHora], ['El curso termina el', ultimo && fecha(ultimo)]]),
+        ['Examen', examen], ['Lugar del curso', ...sedeTexto(g.grupo.sede)]);
         pares.push(['Grupo', g.grupo.folio]);
         // Lo que necesita para no perder el examen: asistencia, identificación, cuándo es y la calificación (alta 11)
         if (c) {
@@ -148,7 +176,7 @@
         extra.push(el('div', { class: 'aviso aviso-advertencia' }, [
           el('div', { class: 'aviso-texto' }, [
             el('p', {}, [el('strong', { texto: 'Lo que no coincidió en tu cita:' })]),
-            el('ul', { class: 'lista-obs' }, vigentes.filter((d) => !cargados.includes(d)).map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion || 'no coincide con el que llevaste.'}` })))
+            el('ul', { class: 'lista-obs' }, vigentes.filter((d) => !cargados.includes(d)).map((d) => el('li', { texto: APD.observacionDe(req[d.requisito] || d.requisito, d.observacion || 'no coincide con el que llevaste.') })))
           ])
         ]));
       }
@@ -159,9 +187,9 @@
     if (citaNueva) {
       // Sin pago, el aviso ya trae sus pasos; no se repiten abajo
       if (s.cita_motivo === 'sin_pago') sigue = '';
-      else sigue = { pasos: ['Imprime los mismos documentos que cargaste.', 'Si ya pagaste, lleva el comprobante de ese pago; si no, paga con los datos de abajo.', 'Acude a tu cita nueva con tus documentos y tu comprobante.'] };
+      else sigue = { pasos: ['Imprime los mismos documentos que cargaste.', 'Si ya pagaste, lleva el comprobante de ese pago; si no, paga con los datos de abajo.', `Acude a tu cita nueva ${acudeEl} con tus documentos y tu comprobante.`] };
       cambio.push(s.cita_motivo === 'sin_pago'
-        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', { texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}.`, pasos: ['Si ya pagaste, imprime el comprobante de ese pago: no pagues otra vez.', 'Si todavía no pagas, paga con los datos de abajo e imprime tu comprobante.', 'Acude a tu cita nueva con el comprobante y tus documentos impresos.'] })
+        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', { texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}.`, pasos: ['Si ya pagaste, imprime el comprobante de ese pago: no pagues otra vez.', 'Si todavía no pagas, paga con los datos de abajo e imprime tu comprobante.', `Acude a tu cita nueva ${acudeEl} con el comprobante y tus documentos impresos.`] })
         : APD.aviso('pend', `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.`));
     }
     const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
@@ -175,11 +203,33 @@
 
     if (s.estado === 'con_observaciones') {
       const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && d.estado === 'con_observacion' && d.observacion);
-      const enCotejo = obs.some((d) => d.en_cotejo);
+      // Regresó desde el cotejo (C 3.2): la cita con resultado «con_observaciones», posterior a la última revisión, como
+      // lo deja la base (apd.cita); la marca en_cotejo del documento queda como respaldo de la prueba
+      const ultimaRev = datos.revision.filter((r) => r.solicitud_id === s.id).map((r) => r.revisada_en || '').sort().pop() || '';
+      const desdeCita = (datos.cita || []).some((c) => c.solicitud_id === s.id && c.resultado === 'con_observaciones'
+        && new Date(c.atendida_en || c.programada_en) > new Date(ultimaRev || 0));
+      const enCotejo = desdeCita || obs.some((d) => d.en_cotejo);
       if (obs.length) {
         cambio.push(APD.aviso('pend', enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste' : 'Lo que debes corregir', '',
-          [el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion}` })))]));
+          [el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: APD.observacionDe(req[d.requisito] || d.requisito, d.observacion) })))]));
       }
+      // El plazo con su fecha (auditoría 2026-10-18, D3). La regla del plazo todavía no está en la base (P02: propuesta de
+      // 20 días hábiles): se dice cuándo llegaron las observaciones y la fecha límite queda marcada por confirmar.
+      sigue = { texto: `Recibiste las observaciones el ${fecha(s.estado_desde)}. Hay un plazo para corregir: si no reenvías tu solicitud a tiempo, se cierra.`,
+        pasos: APD.ESTADOS.con_observaciones.sigue.pasos };
+      pares.unshift(['Corrige antes del', 'Fecha por definir', 'el plazo para atender observaciones (P02).']);
+    }
+    // En revisión (D12): qué sigue, el plazo pendiente y, si es otra vuelta, qué corrigió
+    if (s.estado === 'enviada') {
+      const vueltas = datos.revision.filter((r) => r.solicitud_id === s.id).length;
+      const corregidos = [...new Set(datos.documento.filter((d) => d.solicitud_id === s.id && !d.vigente && d.estado === 'con_observacion').map((d) => d.requisito))]
+        .filter((k) => datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.requisito === k))
+        .map((k) => (req[k] || k).toLocaleLowerCase('es-MX'));
+      if (vueltas) {
+        const n = vueltas + 1;
+        sigue = Object.assign({}, sigue, { texto: `${ORDINAL[n] || `${n}.ª`} revisión${corregidos.length ? `: corregiste ${comoLista(corregidos)}` : ''}. ${sigue.texto}` });
+      }
+      extra.push(el('p', { class: 'pendiente', texto: 'Pendiente (P02): plazo de la revisión.' }));
     }
 
     const ins = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
@@ -195,7 +245,8 @@
       if (a) {
         // Lo que importa de una acreditación emitida: su número y su vigencia; va primero
         // Los mismos rótulos que en «Mis acreditaciones» (auditoría integral, textos: vocabulario)
-        pares.unshift(['Número de acreditación', a.numero], ['Emitida el', fecha(a.emitida_en)], ['Vence el', fecha(a.vence_en)]);
+        // Emisión y vencimiento ya están en su tarjeta, en «Mis acreditaciones» (D25): aquí sólo el número que las liga
+        pares.unshift(['Número de acreditación', a.numero]);
         if (a.entregada_en) sigue = `Recogiste tu credencial el ${fecha(a.entregada_en)}.`;
         else {
           const entrega = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
@@ -214,8 +265,8 @@
     // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
     // Cerrada sin atender (por inasistencia o por plazo), el motivo de la base ya lo dice el texto de arriba
     const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
-      el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : 'Motivo' })]),
-      el('p', { texto: APD.limpia(s.motivo_cierre) })])]) : null;
+      el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : s.estado === 'cancelada' ? 'Motivo de la cancelación' : 'Motivo' })]),
+      el('p', { texto: APD.paraTi(s.motivo_cierre) })])]) : null;
 
     const acciones = [];
     if (s.estado === 'validada_en_linea' && s.cotejo_pausa && !vencida) {
@@ -230,7 +281,10 @@
 
     // Etiqueta por familia, con icono; la cita nueva y el cierre por inasistencia dicen lo que pasó
     const etiqueta = vencida ? estado('La pausa venció', 'marcha')
-      : s.estado === 'validada_en_linea' && s.cotejo_pausa ? estado('Cita en pausa: carga el documento', 'pend')
+      : s.estado === 'validada_en_linea' && s.cotejo_pausa
+        // Con lo que no coincidió ya cargado, la etiqueta no pide cargarlo otra vez
+        ? (s.cotejo_pausa.docs.every((k) => datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.requisito === k && APD.cargadoTras(d, s.cotejo_pausa)))
+          ? estado('Cita en pausa: documento cargado', 'marcha') : estado('Cita en pausa: carga el documento', 'pend'))
       : s.estado === 'validada_en_linea' && s.cita_motivo ? estado('Acude a tu cita nueva', 'pend')
         : porInasistencia ? estado('Cerrada: no te presentaste', 'error')
           : s.estado === 'inscrita' && g && g.grupo && g.grupo.estado === 'en_integracion' ? estado('Grupo por confirmar', 'marcha')
@@ -240,6 +294,7 @@
         el('h4', { class: 'ficha-titulo', texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}` }),
         etiqueta
       ]),
+      cita,
       ...cambio,
       sigue ? (typeof sigue === 'string' ? el('p', { class: 'ficha-sigue', texto: sigue }) : el('div', { class: 'ficha-sigue' }, APD.sigueEn(sigue))) : null,
       ...extra,
@@ -258,7 +313,7 @@
 
     const acs = APD.acreditacionesDe(datos, persona);
     document.querySelector('[data-acreditaciones]').replaceChildren(...(acs.length
-      ? acs.map((a) => fichaAcreditacion(datos, a, op))
+      ? acs.slice().sort((x, y) => Number(porRenovar(datos, y, op)) - Number(porRenovar(datos, x, op))).map((a) => fichaAcreditacion(datos, a, op))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes acreditaciones.' })]));
 
     // En curso: las que todavía avanzan, y la acreditada cuya credencial no se ha recogido (aún hay un paso).
@@ -268,14 +323,15 @@
       && !(s.estado === 'acreditada' && !((datos.acreditacion.find((a) => a.solicitud_id === s.id) || {}).entregada_en));
     const enCurso = sols.filter((s) => !terminada(s));
     const anteriores = sols.filter(terminada);
+    // Una sola acción principal: iniciar una solicitud nueva, si hay algo que se pueda pedir como nueva
+    const puedeNueva = ['poda', 'dictaminador'].some((t) => op[t].disponible && op[t].modalidad === 'nueva');
+    // Un solo texto para «sin solicitudes en curso», con la guía de cómo empezar si se puede (D14)
     document.querySelector('[data-solicitudes]').replaceChildren(...(enCurso.length
       ? enCurso.map((s) => fichaSolicitud(datos, s, persona))
-      : [el('p', { class: 'vacio', texto: sols.length ? 'No tienes solicitudes en curso.' : 'Todavía no tienes solicitudes.' })]));
+      : [el('p', { class: 'vacio', texto: `No tienes solicitudes en curso.${puedeNueva ? ' Para empezar, presiona «Iniciar una solicitud».' : ''}` })]));
     document.querySelector('[data-anteriores-seccion]').hidden = !anteriores.length;
     document.querySelector('[data-anteriores]').replaceChildren(...anteriores.map((s) => fichaSolicitud(datos, s, persona)));
 
-    // Una sola acción principal: iniciar una solicitud nueva, si hay algo que se pueda pedir como nueva
-    const puedeNueva = ['poda', 'dictaminador'].some((t) => op[t].disponible && op[t].modalidad === 'nueva');
     document.querySelector('[data-nueva]').hidden = !puedeNueva;
     document.querySelector('[data-cargando]').textContent = 'Aquí ves tus acreditaciones y en qué va cada solicitud.';
   }).catch(() => {

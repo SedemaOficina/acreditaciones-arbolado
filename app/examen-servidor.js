@@ -39,7 +39,10 @@
 (function (global) {
   'use strict';
   /* Un registro por código (apd.examen.c.<código>): así dos pantallas que escriben a la vez no se pisan los demás
-     códigos. La señal de pantalla abierta va aparte (apd.examen.latido.<código>), para no reescribir el examen. */
+     códigos. La señal de pantalla abierta va aparte (apd.examen.latido.<código>), para no reescribir el examen.
+     Son las mismas claves de APD_ARCHIVOS_PRUEBA.CLAVES (examen, latido, lista): ahí las lee la mezcla, que lleva la
+     calificación a apd.examen, y ahí las borra «Borrar lo guardado». Aquí se repiten porque el servidor simulado se
+     carga antes en examen.html. */
   const PREFIJO = 'apd.examen.c.';
   const LATIDO = 'apd.examen.latido.';
   const LISTA = 'apd.examen.lista';   // pase de lista del día del examen, por inscripción
@@ -331,13 +334,10 @@
         });
         return escribe(t);
       },
-      iniciar(codigo) { const t = lee(); const reg = t[codigo]; if (reg && !reg.iniciado_en) { reg.iniciado_en = ahora(); escribe(t); } },
-      cuantos() { return claves(PREFIJO).length; },
-      borra() { try { for (const k of claves(PREFIJO).concat(claves(LATIDO))) global.localStorage.removeItem(k); global.localStorage.removeItem(LISTA); } catch (e) { /* sin almacenamiento */ } }
+      iniciar(codigo) { const t = lee(); const reg = t[codigo]; if (reg && !reg.iniciado_en) { reg.iniciado_en = ahora(); escribe(t); } }
     }
   };
   API.PREFIJO = PREFIJO;
   API.LISTA = LISTA;
-  API.situacion = situacion;
   global.APD_EXAMEN_API = API;
 }(window));
