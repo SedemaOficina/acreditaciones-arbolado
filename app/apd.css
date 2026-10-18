@@ -441,3 +441,18 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 .asis-otro-dia { margin-block: var(--e-4) var(--e-2); }
 .asis-otro-dia > summary { cursor: pointer; color: var(--azul); text-decoration: underline; padding-block: var(--e-2); width: fit-content; }
 
+/* Campo de fecha con calendario (revisión, cotejo y grupo; Liber, 18/10/2026): el texto dd/mm/aaaa y, pegado a su
+   derecha, el botón que abre el calendario del navegador. El <input type="date"> queda invisible bajo el botón, para que
+   el calendario se abra ahí. */
+.control-con-calendario { position: relative; }
+.control-con-calendario > .control { min-width: 0; border-start-end-radius: 0; border-end-end-radius: 0; }
+.control-calendario {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  min-width: var(--objetivo-min); padding: 0 var(--e-3);
+  background: var(--fondo); color: var(--guinda);
+  border: var(--b-1) solid var(--borde); border-inline-start: 0;
+  border-radius: 0 var(--r-ctrl) var(--r-ctrl) 0; cursor: pointer;
+}
+.control-calendario:hover { background: var(--guinda-cl); border-color: var(--guinda); }
+.control-calendario-nativo { position: absolute; inset-inline-end: 0; inset-block-end: 0; width: var(--b-1); height: var(--b-1); padding: 0; border: 0; opacity: 0; pointer-events: none; }
+

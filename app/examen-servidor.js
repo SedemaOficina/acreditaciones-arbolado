@@ -12,9 +12,8 @@
        después de comprobar la identificación oficial. No se entra con la
        contraseña de la cuenta.
      · El orden de las preguntas y de sus opciones es distinto para cada
-       persona y no cambia si vuelve a entrar. Las preguntas de un caso
-       (enunciado y tablas compartidos) salen juntas y en orden, y las
-       opciones de orden fijo no se barajan.
+       persona y no cambia si vuelve a entrar. En la versión de prueba,
+       todas son de opción múltiple con cuatro opciones de texto.
      · Cada respuesta se guarda al elegirla. Quien cambia de computadora
        sigue con el mismo código, con sus respuestas y el tiempo que le queda.
      · El tiempo corre desde «Empezar». Al agotarse, el examen se envía con
@@ -59,7 +58,12 @@
     const antes = {};
     for (const k of claves(PREFIJO)) {
       const crudo = global.localStorage.getItem(k);
-      try { t[k.slice(PREFIJO.length)] = JSON.parse(crudo); antes[k.slice(PREFIJO.length)] = crudo; } catch (e) { /* registro dañado: se ignora */ }
+      try {
+        const reg = JSON.parse(crudo);
+        // Un examen generado con un banco ficticio anterior (preguntas que ya no existen) se ignora
+        if (!reg.preguntas.every((c) => reactivo(c))) continue;
+        t[k.slice(PREFIJO.length)] = reg; antes[k.slice(PREFIJO.length)] = crudo;
+      } catch (e) { /* registro dañado: se ignora */ }
     }
     Object.defineProperty(t, '_antes', { value: antes, enumerable: false });
     return t;
@@ -97,22 +101,10 @@
 
   const reactivo = (clave) => BANCO.reactivos.find((r) => r.clave === clave);
 
-  /* Elige las preguntas de un examen. Las de un mismo caso (enunciado y tablas compartidos) son una sola unidad:
-     salen juntas y en el orden del banco. Se barajan las unidades y se toman mientras quepan. */
-  function elige(cuantas, r) {
-    const unidades = [];
-    const deCaso = {};
-    for (const x of BANCO.reactivos) {
-      if (!x.caso) { unidades.push([x.clave]); continue; }
-      if (!deCaso[x.caso]) { deCaso[x.caso] = []; unidades.push(deCaso[x.caso]); }
-      deCaso[x.caso].push(x.clave);
-    }
-    const salida = [];
-    for (const u of revuelve(unidades, r)) if (salida.length + u.length <= cuantas) salida.push(...u);
-    return salida;
-  }
-  /* Opciones: al azar, salvo las de orden fijo (escalas de números, «ninguna de las anteriores») */
-  const ordenDe = (k, r) => (reactivo(k).orden === 'fijo' ? Object.keys(reactivo(k).opciones) : revuelve(Object.keys(reactivo(k).opciones), r));
+  /* Elige las preguntas de un examen: el banco barajado, hasta las que lleva el examen */
+  const elige = (cuantas, r) => revuelve(BANCO.reactivos.map((x) => x.clave), r).slice(0, cuantas);
+  /* Opciones: al azar */
+  const ordenDe = (k, r) => revuelve(Object.keys(reactivo(k).opciones), r);
   const limiteMs = (reg) => reg.minutos * 60000;
   function restanteMs(reg) {
     if (!reg.iniciado_en) return limiteMs(reg);
@@ -146,27 +138,14 @@
 
   /* Lo que ve la persona: sin la clave de respuestas */
   function vista(reg) {
-    const casos = {};
     const preguntas = reg.preguntas.map((k) => {
       const r = reactivo(k);
-      const p = {
-        clave: k, texto: r.texto,
-        opciones: reg.orden_opciones[k].map((letra) => {
-          const o = r.opciones[letra];
-          return typeof o === 'string' ? { valor: letra, texto: o } : { valor: letra, texto: o.texto, imagen: o.imagen };
-        })
-      };
-      if (r.caso) {
-        casos[r.caso] = BANCO.casos[r.caso];
-        const delCaso = reg.preguntas.filter((x) => reactivo(x).caso === r.caso);
-        Object.assign(p, { caso: r.caso, parte: delCaso.indexOf(k) + 1, de: delCaso.length });
-      }
-      return p;
+      return { clave: k, texto: r.texto, opciones: reg.orden_opciones[k].map((letra) => ({ valor: letra, texto: r.opciones[letra] })) };
     });
     const v = {
       codigo: reg.codigo, situacion: situacion(reg), persona: reg.persona, examen: reg.examen, grupo: reg.grupo,
       minutos: reg.minutos, minima: reg.minima, iniciado_en: reg.iniciado_en, restante_ms: restanteMs(reg),
-      respuestas: Object.assign({}, reg.respuestas), marcadas: reg.marcadas.slice(), preguntas, casos
+      respuestas: Object.assign({}, reg.respuestas), marcadas: reg.marcadas.slice(), preguntas
     };
     if (reg.terminado_en) Object.assign(v, { calificacion: reg.calificacion, aprobado: reg.aprobado, aciertos: reg.aciertos, total: reg.preguntas.length, motivo_fin: reg.motivo_fin, terminado_en: reg.terminado_en });
     if (reg.suspendido) v.suspendido = { motivo: reg.suspendido.motivo };

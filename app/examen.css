@@ -3,7 +3,7 @@
    pantalla de quien lo aplica (aplicar.html)
 
    Sólo lo que el Estándar de formularios del SIA no trae: barra de avance con
-   reloj, enunciado, opciones con imagen, mapa de preguntas, calificación,
+   reloj, enunciado, letra de cada opción, mapa de preguntas, calificación,
    avance por persona y papeletas para imprimir los códigos.
    Mismas reglas que apd.css: sólo tokens de formkit/css/tokens.css; un
    selector, una declaración; móvil primero (sólo min-width); sin !important.
@@ -23,18 +23,9 @@
 .examen-reloj-linea { font: var(--peso-medio) var(--t-base)/var(--interlineado-cuerpo) var(--fuente-cuerpo); margin-block: var(--e-3); }
 .examen-progreso { grid-column: 1 / -1; width: 100%; height: var(--e-2); accent-color: var(--azul); }
 
-.examen-caso { margin-block-end: var(--e-5); padding: var(--e-4); background: var(--fondo); border-inline-start: var(--b-3) solid var(--guinda); border-radius: var(--r-ctrl); }
-.examen-caso-titulo { margin: 0; font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
-.examen-caso-parte { margin-block: var(--e-1) var(--e-3); font-size: var(--t-sm); color: var(--gris); }
-.examen-caso-cuerpo { display: grid; gap: var(--e-3); line-height: var(--interlineado-cuerpo); }
-.examen-caso-cuerpo > p { margin: 0; }
-.examen-caso-cuerpo .tabla-marco { margin: 0; }
-
 .examen-pregunta { margin: 0; padding: 0; border: 0; }
 .examen-enunciado { margin-block-end: var(--e-5); padding: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); }
 .examen-letra { font-weight: var(--peso-fuerte); color: var(--guinda); }
-.examen-opcion-imagen { display: grid; gap: var(--e-2); }
-.examen-opcion-imagen img { display: block; max-width: 100%; height: auto; border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); }
 .examen-guardado { min-height: var(--e-6); margin-block: var(--e-3) 0; font-size: var(--t-sm); }
 .examen-marca { margin-block-start: var(--e-2); }
 
