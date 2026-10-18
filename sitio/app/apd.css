@@ -146,6 +146,8 @@
 .doc-titulo { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); }
 .doc-archivo { margin: 0; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; }
 .doc-corregido { display: inline-flex; margin-inline-start: var(--e-2); }
+/* Aceptado en una revisión anterior: se ve, sin pedir decisión (2026-10-18) */
+.doc-previo { margin: 0; font-size: var(--t-sm); color: var(--gris); max-width: var(--ancho-lectura); }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
 .acciones-izq { justify-content: flex-start; }
 

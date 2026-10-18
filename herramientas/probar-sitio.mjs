@@ -853,7 +853,12 @@ async function recorridoGuardado(navegador) {
   comprueba(/2\.ª \(reenviada\)/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t('la reenviada vuelve a la bandeja como 2.ª vuelta'));
   await page.goto(BASE + `revisar.html?folio=${folio}`);
   await page.waitForSelector('#formulario:not([hidden])');
-  for (const k of campos.map((c) => c.replace(/^doc_poda_nueva_/, ''))) await page.check(`input[name="decision_${k}"][value="aceptado"]`);
+  // 2.ª vuelta (decisión 2026-10-18): sólo se decide lo corregido; lo aceptado antes se ve, sin pedir decisión
+  comprueba(await page.isVisible(`input[name="decision_${primero}"]`) && resto.every(Boolean)
+    && (await Promise.all(resto.map((k) => page.isHidden(`input[name="decision_${k}"]`)))).every(Boolean)
+    && await page.locator('[data-doc-previo]:not([hidden])').count() === resto.length,
+    t('2.ª vuelta: sólo se decide el documento corregido; los aceptados antes no se vuelven a revisar'));
+  await page.check(`input[name="decision_${primero}"][value="aceptado"]`);
   const dia = await page.getAttribute('#cita_fecha', 'min');
   await page.fill('#cita_fecha', dia);
   await page.selectOption('#cita_hora', '12:30');
@@ -1187,6 +1192,9 @@ async function personal(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('#formulario:not([hidden])');
   comprueba(await page.isVisible('[data-anteriores]') && await page.locator('.doc-corregido').count() >= 1, t('la reenviada muestra la revisión anterior y lo corregido'));
   comprueba(!(await page.isVisible('[data-perfil]')), t('en poda no hay bloque de perfil'));
+  // La CURP se aceptó en la 1.ª vuelta: para observarla hay que reabrirla
+  comprueba(await page.isHidden('input[name="decision_curp"]') && /Aceptado antes/.test(await page.textContent('[data-doc="curp"] .estado')), t('la reenviada no vuelve a pedir la CURP aceptada antes'));
+  await page.click('[data-reabrir="curp"]');
   await page.check('input[name="decision_curp"][value="con_observacion"]');
   await page.click('[data-campo="observacion_curp"] [data-chip-fijo]');
   comprueba(/\.$/.test(await page.inputValue('#observacion_curp')), t('un motivo frecuente se agrega a la observación'));

@@ -159,6 +159,9 @@ const revisionDocs = enLinea.map((r) => {
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="${k}">Revisarlo de nuevo<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+            <div data-si="decidir_${k}=si">
             <fieldset class="grupo" data-campo="decision_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -175,10 +178,14 @@ const revisionDocs = enLinea.map((r) => {
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>`;
 });
-const auxiliares = enLinea.map((r) => `      <input type="hidden" id="revisar_${r.clave}" name="revisar_${r.clave}" value="no" data-campo="revisar_${r.clave}" data-auxiliar data-uso="Pedir la revisión de «${esc(r.nombre)}» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">`);
+const auxiliares = enLinea.flatMap((r) => [
+  `      <input type="hidden" id="revisar_${r.clave}" name="revisar_${r.clave}" value="no" data-campo="revisar_${r.clave}" data-auxiliar data-uso="Pedir la revisión de «${esc(r.nombre)}» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">`,
+  `      <input type="hidden" id="decidir_${r.clave}" name="decidir_${r.clave}" value="no" data-campo="decidir_${r.clave}" data-auxiliar data-uso="Pedir la decisión sobre «${esc(r.nombre)}» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">`
+]);
 {
   const r = join(sitio, 'revisar.html');
   let h = readFileSync(r, 'utf8');

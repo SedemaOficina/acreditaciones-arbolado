@@ -1,6 +1,6 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-18T07:04:16.700Z",
+  "generado": "2026-10-18T14:57:57.638Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
@@ -32,12 +32,32 @@
         "auxiliar": ""
       }
     },
+    "decidir_identificacion_oficial": {
+      "etiqueta": "decidir_identificacion_oficial",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Identificación oficial» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
     "revisar_curp": {
       "etiqueta": "revisar_curp",
       "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Clave Única de Registro de Población (CURP)» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "decidir_curp": {
+      "etiqueta": "decidir_curp",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Clave Única de Registro de Población (CURP)» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
       "atributos": {
         "auxiliar": ""
       }
@@ -52,12 +72,32 @@
         "auxiliar": ""
       }
     },
+    "decidir_comprobante_domicilio": {
+      "etiqueta": "decidir_comprobante_domicilio",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Comprobante de domicilio» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
     "revisar_constancia_situacion_fiscal": {
       "etiqueta": "revisar_constancia_situacion_fiscal",
       "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Constancia de situación fiscal» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "decidir_constancia_situacion_fiscal": {
+      "etiqueta": "decidir_constancia_situacion_fiscal",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Constancia de situación fiscal» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
       "atributos": {
         "auxiliar": ""
       }
@@ -72,6 +112,16 @@
         "auxiliar": ""
       }
     },
+    "decidir_comprobante_estudios": {
+      "etiqueta": "decidir_comprobante_estudios",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Comprobante de estudios» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
     "revisar_curriculum_vitae": {
       "etiqueta": "revisar_curriculum_vitae",
       "tipo": "auxiliar",
@@ -82,12 +132,32 @@
         "auxiliar": ""
       }
     },
+    "decidir_curriculum_vitae": {
+      "etiqueta": "decidir_curriculum_vitae",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Currículum vitae» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
     "revisar_comprobantes_experiencia": {
       "etiqueta": "revisar_comprobantes_experiencia",
       "tipo": "auxiliar",
       "requerido": false,
       "sensible": false,
       "uso": "Pedir la revisión de «Comprobantes de experiencia» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "decidir_comprobantes_experiencia": {
+      "etiqueta": "decidir_comprobantes_experiencia",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Pedir la decisión sobre «Comprobantes de experiencia» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.",
       "atributos": {
         "auxiliar": ""
       }
@@ -160,7 +230,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_identificacion_oficial",
+        "campo": "decidir_identificacion_oficial",
         "valores": [
           "si"
         ]
@@ -168,6 +238,12 @@
       "condiciones": [
         {
           "campo": "revisar_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_identificacion_oficial",
           "valores": [
             "si"
           ]
@@ -202,6 +278,12 @@
           ]
         },
         {
+          "campo": "decidir_identificacion_oficial",
+          "valores": [
+            "si"
+          ]
+        },
+        {
           "campo": "decision_identificacion_oficial",
           "valores": [
             "con_observacion"
@@ -222,7 +304,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_curp",
+        "campo": "decidir_curp",
         "valores": [
           "si"
         ]
@@ -230,6 +312,12 @@
       "condiciones": [
         {
           "campo": "revisar_curp",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_curp",
           "valores": [
             "si"
           ]
@@ -264,6 +352,12 @@
           ]
         },
         {
+          "campo": "decidir_curp",
+          "valores": [
+            "si"
+          ]
+        },
+        {
           "campo": "decision_curp",
           "valores": [
             "con_observacion"
@@ -284,7 +378,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_comprobante_domicilio",
+        "campo": "decidir_comprobante_domicilio",
         "valores": [
           "si"
         ]
@@ -292,6 +386,12 @@
       "condiciones": [
         {
           "campo": "revisar_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_comprobante_domicilio",
           "valores": [
             "si"
           ]
@@ -326,6 +426,12 @@
           ]
         },
         {
+          "campo": "decidir_comprobante_domicilio",
+          "valores": [
+            "si"
+          ]
+        },
+        {
           "campo": "decision_comprobante_domicilio",
           "valores": [
             "con_observacion"
@@ -346,7 +452,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_constancia_situacion_fiscal",
+        "campo": "decidir_constancia_situacion_fiscal",
         "valores": [
           "si"
         ]
@@ -354,6 +460,12 @@
       "condiciones": [
         {
           "campo": "revisar_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_constancia_situacion_fiscal",
           "valores": [
             "si"
           ]
@@ -388,6 +500,12 @@
           ]
         },
         {
+          "campo": "decidir_constancia_situacion_fiscal",
+          "valores": [
+            "si"
+          ]
+        },
+        {
           "campo": "decision_constancia_situacion_fiscal",
           "valores": [
             "con_observacion"
@@ -408,7 +526,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_comprobante_estudios",
+        "campo": "decidir_comprobante_estudios",
         "valores": [
           "si"
         ]
@@ -416,6 +534,12 @@
       "condiciones": [
         {
           "campo": "revisar_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_comprobante_estudios",
           "valores": [
             "si"
           ]
@@ -450,6 +574,12 @@
           ]
         },
         {
+          "campo": "decidir_comprobante_estudios",
+          "valores": [
+            "si"
+          ]
+        },
+        {
           "campo": "decision_comprobante_estudios",
           "valores": [
             "con_observacion"
@@ -470,7 +600,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_curriculum_vitae",
+        "campo": "decidir_curriculum_vitae",
         "valores": [
           "si"
         ]
@@ -478,6 +608,12 @@
       "condiciones": [
         {
           "campo": "revisar_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_curriculum_vitae",
           "valores": [
             "si"
           ]
@@ -512,6 +648,12 @@
           ]
         },
         {
+          "campo": "decidir_curriculum_vitae",
+          "valores": [
+            "si"
+          ]
+        },
+        {
           "campo": "decision_curriculum_vitae",
           "valores": [
             "con_observacion"
@@ -532,7 +674,7 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "revisar_comprobantes_experiencia",
+        "campo": "decidir_comprobantes_experiencia",
         "valores": [
           "si"
         ]
@@ -540,6 +682,12 @@
       "condiciones": [
         {
           "campo": "revisar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_comprobantes_experiencia",
           "valores": [
             "si"
           ]
@@ -569,6 +717,12 @@
       "condiciones": [
         {
           "campo": "revisar_comprobantes_experiencia",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "decidir_comprobantes_experiencia",
           "valores": [
             "si"
           ]

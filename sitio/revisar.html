@@ -62,12 +62,19 @@
     <input type="hidden" id="resultado" name="resultado" value="" data-campo="resultado" data-auxiliar data-uso="Mostrar los datos que pide el resultado (cita, mensaje o motivo); lo calculan la página y el servidor con las decisiones.">
     <!-- revision-auxiliares:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
       <input type="hidden" id="revisar_identificacion_oficial" name="revisar_identificacion_oficial" value="no" data-campo="revisar_identificacion_oficial" data-auxiliar data-uso="Pedir la revisión de «Identificación oficial» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_identificacion_oficial" name="decidir_identificacion_oficial" value="no" data-campo="decidir_identificacion_oficial" data-auxiliar data-uso="Pedir la decisión sobre «Identificación oficial» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
       <input type="hidden" id="revisar_curp" name="revisar_curp" value="no" data-campo="revisar_curp" data-auxiliar data-uso="Pedir la revisión de «Clave Única de Registro de Población (CURP)» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_curp" name="decidir_curp" value="no" data-campo="decidir_curp" data-auxiliar data-uso="Pedir la decisión sobre «Clave Única de Registro de Población (CURP)» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
       <input type="hidden" id="revisar_comprobante_domicilio" name="revisar_comprobante_domicilio" value="no" data-campo="revisar_comprobante_domicilio" data-auxiliar data-uso="Pedir la revisión de «Comprobante de domicilio» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_comprobante_domicilio" name="decidir_comprobante_domicilio" value="no" data-campo="decidir_comprobante_domicilio" data-auxiliar data-uso="Pedir la decisión sobre «Comprobante de domicilio» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
       <input type="hidden" id="revisar_constancia_situacion_fiscal" name="revisar_constancia_situacion_fiscal" value="no" data-campo="revisar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir la revisión de «Constancia de situación fiscal» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_constancia_situacion_fiscal" name="decidir_constancia_situacion_fiscal" value="no" data-campo="decidir_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir la decisión sobre «Constancia de situación fiscal» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
       <input type="hidden" id="revisar_comprobante_estudios" name="revisar_comprobante_estudios" value="no" data-campo="revisar_comprobante_estudios" data-auxiliar data-uso="Pedir la revisión de «Comprobante de estudios» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_comprobante_estudios" name="decidir_comprobante_estudios" value="no" data-campo="decidir_comprobante_estudios" data-auxiliar data-uso="Pedir la decisión sobre «Comprobante de estudios» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
       <input type="hidden" id="revisar_curriculum_vitae" name="revisar_curriculum_vitae" value="no" data-campo="revisar_curriculum_vitae" data-auxiliar data-uso="Pedir la revisión de «Currículum vitae» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_curriculum_vitae" name="decidir_curriculum_vitae" value="no" data-campo="decidir_curriculum_vitae" data-auxiliar data-uso="Pedir la decisión sobre «Currículum vitae» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
       <input type="hidden" id="revisar_comprobantes_experiencia" name="revisar_comprobantes_experiencia" value="no" data-campo="revisar_comprobantes_experiencia" data-auxiliar data-uso="Pedir la revisión de «Comprobantes de experiencia» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">
+      <input type="hidden" id="decidir_comprobantes_experiencia" name="decidir_comprobantes_experiencia" value="no" data-campo="decidir_comprobantes_experiencia" data-auxiliar data-uso="Pedir la decisión sobre «Comprobantes de experiencia» salvo que se haya aceptado en una revisión anterior y no haya cambiado (o que quien revisa lo reabra); lo calculan la página y el servidor.">
     <!-- revision-auxiliares:fin -->
 
     <!-- Perfil del dictaminador (decisiones 2026-10-15 y 2026-10-16) -->
@@ -118,6 +125,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver documento<span class="solo-lector">: Identificación oficial</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="identificacion_oficial">Revisarlo de nuevo<span class="solo-lector">: Identificación oficial</span></button></p>
+            <div data-si="decidir_identificacion_oficial=si">
             <fieldset class="grupo" data-campo="decision_identificacion_oficial" data-requerido data-uso="Registrar si «Identificación oficial» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -134,6 +144,7 @@
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="identificacion_oficial">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>
         <div data-si="revisar_curp=si">
@@ -144,6 +155,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver documento<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="curp">Revisarlo de nuevo<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
+            <div data-si="decidir_curp=si">
             <fieldset class="grupo" data-campo="decision_curp" data-requerido data-uso="Registrar si «Clave Única de Registro de Población (CURP)» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -160,6 +174,7 @@
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curp">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>
         <div data-si="revisar_comprobante_domicilio=si">
@@ -170,6 +185,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver documento<span class="solo-lector">: Comprobante de domicilio</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="comprobante_domicilio">Revisarlo de nuevo<span class="solo-lector">: Comprobante de domicilio</span></button></p>
+            <div data-si="decidir_comprobante_domicilio=si">
             <fieldset class="grupo" data-campo="decision_comprobante_domicilio" data-requerido data-uso="Registrar si «Comprobante de domicilio» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -186,6 +204,7 @@
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_domicilio">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>
         <div data-si="revisar_constancia_situacion_fiscal=si">
@@ -196,6 +215,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver documento<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="constancia_situacion_fiscal">Revisarlo de nuevo<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
+            <div data-si="decidir_constancia_situacion_fiscal=si">
             <fieldset class="grupo" data-campo="decision_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -212,6 +234,7 @@
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="constancia_situacion_fiscal">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>
         <div data-si="revisar_comprobante_estudios=si">
@@ -222,6 +245,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver documento<span class="solo-lector">: Comprobante de estudios</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="comprobante_estudios">Revisarlo de nuevo<span class="solo-lector">: Comprobante de estudios</span></button></p>
+            <div data-si="decidir_comprobante_estudios=si">
             <fieldset class="grupo" data-campo="decision_comprobante_estudios" data-requerido data-uso="Registrar si «Comprobante de estudios» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -238,6 +264,7 @@
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_estudios">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>
         <div data-si="revisar_curriculum_vitae=si">
@@ -248,6 +275,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver documento<span class="solo-lector">: Currículum vitae</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="curriculum_vitae">Revisarlo de nuevo<span class="solo-lector">: Currículum vitae</span></button></p>
+            <div data-si="decidir_curriculum_vitae=si">
             <fieldset class="grupo" data-campo="decision_curriculum_vitae" data-requerido data-uso="Registrar si «Currículum vitae» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -264,6 +294,7 @@
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curriculum_vitae">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            </div>
           </article>
         </div>
         <div data-si="revisar_comprobantes_experiencia=si">
@@ -274,6 +305,9 @@
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
             <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver documento<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
+            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="comprobantes_experiencia">Revisarlo de nuevo<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
+            <div data-si="decidir_comprobantes_experiencia=si">
             <fieldset class="grupo" data-campo="decision_comprobantes_experiencia" data-requerido data-uso="Registrar si «Comprobantes de experiencia» cumple el requisito (apd.documento.estado).">
               <legend class="etiqueta">¿El documento cumple?</legend>
               <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
@@ -289,6 +323,7 @@
               <textarea class="control" id="observacion_comprobantes_experiencia" name="observacion_comprobantes_experiencia" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
               <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobantes_experiencia">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            </div>
             </div>
           </article>
         </div>

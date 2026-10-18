@@ -83,8 +83,14 @@ function calcula(form, d, ctx) {
     const cargados = d._cargados || [];
     const rechazo = (perfil === 'por_clasificar' && d.clasificacion === 'no_afin') || (perfil === 'no_cumple' && d.comprobante_confirma === 'si');
     d.perfil_revision = perfil;
-    for (const k of REQUISITOS_EN_LINEA) d[`revisar_${k}`] = !rechazo && cargados.includes(k) ? 'si' : 'no';
-    const decisiones = cargados.map((k) => d[`decision_${k}`]);
+    // Aceptados en una revisión anterior (`_previos`): no se vuelven a decidir, salvo que llegue su decisión (reabierto)
+    const previos = d._previos || [];
+    const decide = (k) => !previos.includes(k) || d[`decision_${k}`] !== undefined;
+    for (const k of REQUISITOS_EN_LINEA) {
+      d[`revisar_${k}`] = !rechazo && cargados.includes(k) ? 'si' : 'no';
+      d[`decidir_${k}`] = !rechazo && cargados.includes(k) && decide(k) ? 'si' : 'no';
+    }
+    const decisiones = cargados.map((k) => (decide(k) ? d[`decision_${k}`] : 'aceptado'));
     const perfilListo = perfil === 'por_clasificar' ? Boolean(d.clasificacion) : perfil === 'no_cumple' ? Boolean(d.comprobante_confirma) : true;
     d.resultado = rechazo ? 'rechazada' : decisiones.includes('con_observacion') ? 'con_observaciones' : decisiones.every(Boolean) && perfilListo ? 'validada' : '';
   }
@@ -234,6 +240,9 @@ caso('Revisión: validar sin cita se rechaza', 'revisar', { _cargados: PODA, ...
 caso('Revisión: una hora que no existe se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '25:00' }, ['cita_hora']);
 caso('Revisión: una hora fuera de la lista de horarios se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '10:15' }, ['cita_hora']);
 caso('Revisión: un documento sin decidir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA.slice(1)) }, ['decision_identificacion_oficial']);
+// 2.ª vuelta (2026-10-18): lo aceptado antes no se vuelve a decidir; sólo lo corregido
+caso('Revisión, 2.ª vuelta: con lo corregido aceptado se valida sin volver a decidir lo aceptado antes', 'revisar', { _cargados: PODA, _previos: PODA.slice(1), ...acepta(PODA.slice(0, 1)), ...cita }, true);
+caso('Revisión, 2.ª vuelta: lo corregido sigue pidiendo su decisión', 'revisar', { _cargados: PODA, _previos: PODA.slice(1), ...cita }, [`decision_${PODA[0]}`]);
 caso('Revisión: observar un documento sin decir qué corregir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), decision_curp: 'con_observacion' }, ['observacion_curp']);
 caso('Revisión: con una observación no se pide la cita', 'revisar', { _cargados: PODA, ...acepta(PODA), decision_curp: 'con_observacion', observacion_curp: 'No se lee completo.' }, true);
 caso('Revisión: un documento que no está cargado no se revisa (renovación)', 'revisar', { _cargados: ['constancia_situacion_fiscal'], ...acepta(['constancia_situacion_fiscal']), ...cita }, true);

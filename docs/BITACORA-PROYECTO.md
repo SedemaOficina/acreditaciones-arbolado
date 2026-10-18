@@ -955,3 +955,11 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Cotejo: 7 respuestas no marcadas están en el texto de la norma; las preguntas 2, 10 y 21 no coinciden con la norma y
   la 32 no se pudo verificar; la Tabla 4 está en UCDMX, no en UMA (P84 y P105 al día).
 
+## 2026-10-18 · Bloque 65 · La 2.ª revisión sólo pide lo corregido
+
+- Liber: en una 2.ª revisión en la que sólo se pidió corregir un documento, no tiene sentido volver a revisar todos.
+  Ahora los documentos aceptados en una revisión anterior y sin cambios se ven con «Aceptado antes» y la nota «Se
+  aceptó en una revisión anterior y la persona no lo cambió», sin pedir decisión; cuentan como aceptados para validar.
+  Quien revisa puede reabrir cualquiera con «Revisarlo de nuevo». El visor abre el primero por decidir.
+- La regla del servidor es la misma (`decidir_<requisito>`, auxiliar nuevo): lo aceptado antes no se vuelve a decidir
+  salvo que llegue su decisión. Dos casos nuevos en `probar-esquemas`; `probar-sitio` 564 (con axe).
