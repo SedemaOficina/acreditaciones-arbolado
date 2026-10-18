@@ -905,7 +905,7 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - **Textos:** «Las preguntas con * son obligatorias»; inicio «en PDF»; «Entrar» sin el pendiente P13, ya resuelto;
   acuse de la cuenta sin «Entra con tu CURP»; monto de prueba con fecha día/mes/año; tres mensajes de la base al
   personal en usted; sin primera persona del plural en dos textos.
-- Corregido en el camino: `APD.cargar` leía el módulo de la prueba antes de que se cargara y las cuentas nuevas
+- Copia del sitio reconstruida con los datos ficticios nuevos (documentos de la renovación de Kobo, situación del grado). Corregido en el camino: `APD.cargar` leía el módulo de la prueba antes de que se cargara y las cuentas nuevas
   perdían la sesión (lo encontró `probar-sitio`).
 - Pruebas: `probar-sitio` 558 (con axe; 20 nuevas), `probar-examen` 63, `probar-volumen`, `probar-esquemas` (3 casos
   nuevos) y `probar-base` 165 (3 nuevos), todas correctas.
