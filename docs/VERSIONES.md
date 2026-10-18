@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.53 | 18/10/26, 2:43 p.m. | Bloque 72: auditoría completa (código, botones, datos, interfaz) y sus correcciones |
 | 0.52 | 18/10/26, 12:17 p.m. | Asistencia: en prueba, guardar pasa al día siguiente; etiqueta de riesgo en el renglón de la tira |
 | 0.51 | 18/10/26, 11:51 a.m. | Asistencia: ✓ y ✗ en la tira, sin días por venir; recorrido de prueba de todos los días |
 | 0.50 | 18/10/26, 11:36 a.m. | Bloque 69: asistencia como lista del día (propuesta A) y ficha compacta |
