@@ -378,9 +378,11 @@
                mínimo (mañana) lo pone la página en data-min. -->
           <div class="campo" data-campo="cita_fecha" data-formato="fecha-dma" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_fecha">Fecha de la cita nueva</label>
-            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, desde el <span data-cita-desde></span>; las diagonales se ponen solas.</p>
+            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, desde el <span data-cita-desde></span>; las diagonales se ponen solas. También puede elegirla en el calendario.</p>
             <!-- autocomplete off: la fecha la elige quien atiende. -->
-            <input class="control control-corto" id="cita_fecha" name="cita_fecha" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-cita_fecha">
+            <!-- Calendario (Liber, 18/10/2026): se escribe día/mes/año o se elige en el calendario del navegador, que llena
+                 el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
+            <div class="control-grupo control-corto control-con-calendario"><input class="control" id="cita_fecha" name="cita_fecha" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-cita_fecha"><button type="button" class="control-calendario" data-calendario="cita_fecha" aria-label="Elegir en el calendario: Fecha de la cita nueva"><svg class="icono" aria-hidden="true"><use href="#i-fecha"></use></svg></button><input class="control-calendario-nativo" type="date" tabindex="-1" aria-hidden="true"></div>
           </div>
           <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_hora">Hora</label>

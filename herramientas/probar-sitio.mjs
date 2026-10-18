@@ -982,7 +982,14 @@ async function recorridoGuardado(navegador) {
   await page.check(`input[name="decision_${primero}"][value="aceptado"]`);
   // Fecha día/mes/año (formato «fecha-dma», D9): el mínimo va en data-min del campo, como AAAA-MM-DD
   const dia = await page.getAttribute('[data-campo="cita_fecha"]', 'data-min');
-  await page.fill('#cita_fecha', dia.split('-').reverse().join('/'));
+  // Calendario (Liber, 18/10/2026): el botón abre el calendario del navegador con el mismo mínimo; lo elegido se escribe
+  // en dd/mm/aaaa. El calendario nativo no se puede pulsar en la prueba: se elige la fecha en su control.
+  await page.click('[data-calendario="cita_fecha"]');
+  const nat = page.locator('[data-campo="cita_fecha"] .control-calendario-nativo');
+  comprueba(await nat.getAttribute('min') === dia, t('el calendario de la cita toma el mismo mínimo que el campo'));
+  await page.keyboard.press('Escape');
+  await nat.evaluate((n, v) => { n.value = v; n.dispatchEvent(new Event('change', { bubbles: true })); }, dia);
+  comprueba(await page.inputValue('#cita_fecha') === dia.split('-').reverse().join('/'), t('la fecha elegida en el calendario queda en dd/mm/aaaa'));
   await page.selectOption('#cita_hora', '12:30');
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-hecho]:not([hidden])');

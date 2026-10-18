@@ -496,6 +496,38 @@
     return `${Math.max(1, Math.round(n / 1024))} KB`;
   }
 
+  /* ----- Calendario de los campos de fecha (Liber, 18/10/2026) -----
+     Las fechas que elige el personal (cita de cotejo, primer día del curso) se escriben día/mes/año con el formato
+     «fecha-dma» del estándar o se eligen en el calendario del navegador. El calendario es un <input type="date">
+     oculto junto al campo: toma el mínimo y el máximo del campo (data-min, data-max en AAAA-MM-DD) y, al elegir, escribe
+     la fecha en dd/mm/aaaa y avisa al estándar para que la valide. Así la fecha siempre se ve como día/mes/año, aunque
+     el navegador muestre su calendario en otro orden. La fecha de nacimiento no lo lleva. */
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-calendario]');
+    if (!b) return;
+    const txt = document.getElementById(b.dataset.calendario);
+    const nat = b.parentElement.querySelector('.control-calendario-nativo');
+    const campo = txt && txt.closest('[data-campo]');
+    if (!nat || !campo) return;
+    const V = window.FORMKIT_VALIDACIONES;
+    nat.min = campo.dataset.min || '';
+    nat.max = campo.dataset.max || '';
+    nat.value = (V && V.isoDeDma(txt.value)) || '';
+    try { nat.showPicker(); } catch (err) { nat.focus(); nat.click(); }
+  });
+  document.addEventListener('change', (e) => {
+    const nat = e.target;
+    if (!nat.matches || !nat.matches('.control-calendario-nativo') || !nat.value) return;
+    const b = nat.parentElement.querySelector('[data-calendario]');
+    const txt = b && document.getElementById(b.dataset.calendario);
+    const V = window.FORMKIT_VALIDACIONES;
+    if (!txt || !V) return;
+    txt.value = V.dmaDeIso(nat.value);
+    txt.dispatchEvent(new Event('input', { bubbles: true }));
+    txt.dispatchEvent(new Event('change', { bubbles: true }));
+    txt.focus();
+  });
+
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,

@@ -182,7 +182,7 @@
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
         const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fecha(minimo)}. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
-        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo ? `${base}: del ${fecha(iso())} al ${fecha(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}.`;
+        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo ? `${base}: del ${fecha(iso())} al ${fecha(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
       };
       fi.addEventListener('input', ayudaFecha);
       fi.addEventListener('change', ayudaFecha);

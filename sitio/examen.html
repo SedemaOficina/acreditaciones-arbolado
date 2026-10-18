@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.53">
@@ -77,7 +76,6 @@
     <h2 class="titulo-paso" id="t-instrucciones">Antes de empezar</h2>
     <ul class="examen-reglas">
       <li>Son <strong data-total></strong> preguntas. Cada una tiene una sola respuesta correcta.</li>
-      <li data-con-casos hidden>Algunas preguntas forman un caso: el caso y sus tablas aparecen arriba de cada una de sus preguntas, que van seguidas.</li>
       <li>Tienes <strong data-minutos></strong> minutos. El tiempo empieza a correr cuando presionas «Empezar el examen» y no se detiene.</li>
       <li>Cada respuesta se guarda en cuanto la eliges. Puedes cambiarla todas las veces que quieras hasta que envíes el examen.</li>
       <li>Si la computadora falla, levanta la mano: sigues en otra computadora con el mismo código, con tus respuestas y el tiempo que te quede.</li>
@@ -101,12 +99,6 @@
     <p class="examen-aviso-tiempo" role="status" data-aviso-tiempo></p>
 
     <div class="tarjeta" tabindex="-1" data-tarjeta-pregunta>
-      <!-- Caso: enunciado y tablas que comparten varias preguntas seguidas; se repite arriba de cada una. -->
-      <section class="examen-caso" aria-labelledby="t-caso" data-caso hidden>
-        <h2 class="examen-caso-titulo" id="t-caso" data-caso-titulo></h2>
-        <p class="examen-caso-parte" data-caso-parte></p>
-        <div class="examen-caso-cuerpo" data-caso-cuerpo></div>
-      </section>
       <fieldset class="grupo examen-pregunta">
         <legend class="examen-enunciado" id="t-pregunta" data-enunciado></legend>
         <div class="opciones-lista" data-opciones></div>

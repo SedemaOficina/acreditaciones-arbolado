@@ -118,9 +118,21 @@ async function enviar(ex) {
   await ex.click('[data-ir-vista="instrucciones"]');
   await ex.click('[data-empezar]');
   await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
-  // Poda y derribo: un solo examen (nueva y renovación) que se aplica completo, como el cuadernillo vigente
+  // Banco ficticio para probar la interfaz (decisión de Liber, 18/10/2026): 10 preguntas en los dos exámenes, 60 minutos
   const N = await ex.evaluate(() => APD_EXAMEN_BANCO.examenDe('poda').preguntas);
-  ok(N === await ex.evaluate(() => APD_EXAMEN_BANCO.reactivos.length), `poda: se aplican todas las preguntas del banco (${N})`);
+  const banco = await ex.evaluate(() => ({
+    reactivos: APD_EXAMEN_BANCO.reactivos.length,
+    dictaminador: APD_EXAMEN_BANCO.examenDe('dictaminador'),
+    poda: APD_EXAMEN_BANCO.examenDe('poda'),
+    claves: APD_EXAMEN_BANCO.reactivos.map((r) => r.clave).join(','),
+    opcionesDeTexto: APD_EXAMEN_BANCO.reactivos.every((r) => Object.keys(r.opciones).join('') === 'abcd' && Object.values(r.opciones).every((o) => typeof o === 'string')),
+    correctas: [...new Set(APD_EXAMEN_BANCO.reactivos.map((r) => r.correcta))].sort().join('')
+  }));
+  ok(banco.reactivos === 10 && banco.claves === 'F01,F02,F03,F04,F05,F06,F07,F08,F09,F10', `banco ficticio: 10 preguntas, F01 a F10 (${banco.claves})`);
+  ok(banco.opcionesDeTexto, 'banco ficticio: todas de opción múltiple con 4 opciones de texto (a–d)');
+  ok(banco.correctas === 'abcd', `banco ficticio: la correcta se reparte entre las cuatro letras (${banco.correctas})`);
+  ok(N === 10 && banco.poda.minutos === 60 && banco.dictaminador.preguntas === 10 && banco.dictaminador.minutos === 60,
+    `los dos exámenes: 10 preguntas y 60 minutos (${JSON.stringify(banco.poda)} · ${JSON.stringify(banco.dictaminador)})`);
   ok((await ex.textContent('[data-numero]')) === `Pregunta 1 de ${N}`, `pregunta 1 de ${N}`);
   await ex.locator('[data-opciones] input').first().check();
   await ex.waitForFunction(() => document.querySelector('[data-guardado]').textContent === 'Respuesta guardada.');
@@ -285,36 +297,35 @@ async function enviar(ex) {
   await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
   await sinDesborde(ex, 'examen teléfono · pregunta');
   await captura(ex, 'pregunta-telefono');
-  // La pregunta con imágenes
-  const conImagen = await ex.evaluate(() => {
-    const k = [...document.querySelectorAll('.examen-numero')].length;
-    return k;
-  });
   const total = await ex.evaluate(() => APD_EXAMEN_BANCO.examenDe('poda').preguntas);
-  ok(conImagen === total, `mapa con ${total} números`);
+  ok(await ex.locator('.examen-numero').count() === total, `mapa con ${total} números`);
+  ok((await ex.textContent('[data-vista="instrucciones"]')).includes(`Son ${total} preguntas`), `instrucciones: «Son ${total} preguntas»`);
+  // Cada pregunta: 4 opciones de texto con sus letras a) a d), sin imágenes; se recorren todas con «Siguiente»
+  let letrasBien = 0;
   for (let i = 0; i < total; i++) {
-    if (await ex.locator('.examen-opcion-imagen').count()) break;
-    await ex.click('[data-siguiente]');
+    const letras = (await ex.locator('[data-opciones] .examen-letra').allTextContents()).join('');
+    if (letras === 'a)b)c)d)' && await ex.locator('[data-opciones] img').count() === 0 && await ex.locator('[data-opciones] input[type="radio"]').count() === 4) letrasBien += 1;
+    if (i < total - 1) await ex.click('[data-siguiente]');
   }
-  if (await ex.locator('.examen-opcion-imagen').count()) { await sinDesborde(ex, 'examen teléfono · pregunta con imágenes'); await captura(ex, 'pregunta-imagenes-telefono'); }
-  // El caso: sus preguntas van seguidas, con el enunciado y la tabla arriba de cada una; la de orden fijo no se baraja
-  const delCaso = await ex.evaluate(() => {
-    const v = APD_EXAMEN_API.estado(sessionStorage.getItem('apd.examen.abierto'));
-    return v.preguntas.map((p, i) => (p.caso ? { i, parte: p.parte, de: p.de, opciones: p.opciones.map((o) => o.texto) } : null)).filter(Boolean);
+  ok(letrasBien === total, `las ${total} preguntas con 4 opciones de texto, letras a) a d) y sin imágenes (${letrasBien})`);
+  ok((await ex.textContent('[data-numero]')) === `Pregunta ${total} de ${total}` && (await ex.textContent('[data-siguiente]')) === 'Revisar y enviar', 'en la última pregunta, «Siguiente» dice «Revisar y enviar»');
+  await sinDesborde(ex, 'examen teléfono · última pregunta');
+  // Orden al azar por persona: las preguntas no salen en el orden del banco y alguna pregunta baraja sus opciones;
+  // con el mismo código, el orden no cambia
+  const orden = await ex.evaluate(() => {
+    const c = sessionStorage.getItem('apd.examen.abierto');
+    const v = APD_EXAMEN_API.estado(c);
+    const w = APD_EXAMEN_API.estado(c);
+    return {
+      preguntas: v.preguntas.map((p) => p.clave).join(','),
+      opciones: v.preguntas.filter((p) => p.opciones.map((o) => o.valor).join('') !== 'abcd').length,
+      igual: JSON.stringify(v.preguntas) === JSON.stringify(w.preguntas),
+      sinClave: v.preguntas.every((p) => !('correcta' in p) && p.opciones.every((o) => Object.keys(o).join() === 'valor,texto'))
+    };
   });
-  ok(delCaso.length === 3 && delCaso.every((p, k) => p.i === delCaso[0].i + k && p.parte === k + 1 && p.de === 3), `caso: sus 3 preguntas van seguidas y en orden (${JSON.stringify(delCaso.map((p) => p.i))})`);
-  ok(JSON.stringify(delCaso[1]?.opciones) === JSON.stringify(['8.0', '8.3', '8.4', '8.5', '9.0']), 'caso: las opciones de orden fijo no se barajan (y hay 5)');
-  await ex.click('.examen-mapa-titulo');
-  await ex.click(`.examen-numero[data-ir="${delCaso[0].i}"]`);
-  ok(await ex.isVisible('[data-caso]') && (await ex.textContent('[data-caso-parte]')) === 'Pregunta 1 de 3 de este caso', 'caso: el enunciado aparece arriba de la pregunta');
-  ok(await ex.locator('[data-caso] table td[data-etiqueta]').count() > 0, 'caso: la tabla es una tabla de datos con etiquetas para el teléfono');
-  await sinDesborde(ex, 'examen teléfono · caso');
-  await captura(ex, 'pregunta-caso-telefono');
-  await ex.click('[data-siguiente]');
-  await ex.click('[data-siguiente]');
-  ok((await ex.locator('[data-opciones] .examen-letra').allTextContents()).join('') === 'a)b)c)d)', 'caso: pregunta 3 de 3 con sus letras');
-  await ex.click('[data-siguiente]');
-  ok(await ex.isHidden('[data-caso]') || delCaso[2].i === total - 1, 'después del caso, la pregunta siguiente ya no lo muestra');
+  ok(orden.preguntas !== 'F01,F02,F03,F04,F05,F06,F07,F08,F09,F10' && orden.opciones > 0, `orden al azar de preguntas y opciones (${orden.preguntas}; ${orden.opciones} con opciones barajadas)`);
+  ok(orden.igual, 'el orden no cambia para el mismo código');
+  ok(orden.sinClave, 'la página recibe las preguntas sin la respuesta correcta (sólo valor y texto de cada opción)');
   await ex.click('.menu-pruebas-boton');
   await ex.click('.menu-pruebas >> text=Contestar todas bien');
   await ex.click('.menu-pruebas-cabeza .btn-enlace');
@@ -427,11 +438,6 @@ if (process.env.AXE) {
   await revisa('examen · entrar');
   await entraYEmpieza(p, cod);
   await revisa('examen · pregunta');
-  const iCaso = await p.evaluate(() => APD_EXAMEN_API.estado(sessionStorage.getItem('apd.examen.abierto')).preguntas.findIndex((q) => q.caso));
-  await p.click('.examen-mapa-titulo');
-  await p.click(`.examen-numero[data-ir="${iCaso}"]`);
-  await p.waitForSelector('[data-caso]:not([hidden])');
-  await revisa('examen · pregunta de un caso');
   await p.evaluate((x) => APD_EXAMEN_API.pruebas.contestar(x, 'azar'), cod);
   await p.reload();
   await p.waitForSelector('[data-vista="pregunta"]:not([hidden])');

@@ -85,9 +85,11 @@
            mínimo (7 días después de hoy) lo pone la página en data-min. -->
       <div class="campo" data-campo="fecha_inicio" data-formato="fecha-dma" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
         <label class="etiqueta" for="fecha_inicio">Primer día del curso</label>
-        <p class="ayuda" id="ay-fecha-inicio" data-ayuda-fecha>El curso empieza al menos 7 días después de confirmar el grupo.</p>
+        <p class="ayuda" id="ay-fecha-inicio" data-ayuda-fecha>El curso empieza al menos 7 días después de confirmar el grupo. Escríbalo como día/mes/año o elíjalo en el calendario.</p>
         <!-- autocomplete off: la fecha la elige quien arma el grupo. -->
-        <input class="control control-corto" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-fecha-inicio">
+        <!-- Calendario (Liber, 18/10/2026): se escribe día/mes/año o se elige en el calendario del navegador, que llena
+             el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
+        <div class="control-grupo control-corto control-con-calendario"><input class="control" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-fecha-inicio"><button type="button" class="control-calendario" data-calendario="fecha_inicio" aria-label="Elegir en el calendario: Primer día del curso"><svg class="icono" aria-hidden="true"><use href="#i-fecha"></use></svg></button><input class="control-calendario-nativo" type="date" tabindex="-1" aria-hidden="true"></div>
       </div>
       <div class="campo" data-campo="hora_entrada" data-formato="hora" data-requerido data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
         <label class="etiqueta" for="hora_entrada">Hora de entrada</label>

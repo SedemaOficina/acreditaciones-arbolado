@@ -36,7 +36,7 @@ principio.
 | `db/esquema.json` | **Fuente única del modelo de datos** |
 | `db/apd/` | Guiones de instalación del esquema `apd`, en orden; `instalar.sql` los corre en una transacción |
 | `datos/ficticios.json` | Expedientes ficticios exportados de la base, con sus mismas tablas (generado) |
-| `datos/examen-ficticio.js` | Banco ficticio del examen en línea (el real nunca entra al repositorio, P85) |
+| `datos/examen-ficticio.js` | Banco ficticio del examen en línea: 10 preguntas de opción múltiple sólo para probar la interfaz (el real nunca entra al repositorio, P85) |
 | `sitio/` | Versión de prueba de las pantallas de la persona solicitante y del personal (se publica tal cual en GitHub Pages) |
 | `sitio/formkit/` | Copia sin cambios del Estándar de formularios del SIA 1.4.1 (`SedemaOficina/estandares-sia`, carpeta `formularios/`; generada) |
 | `sitio/material/` | PDF del material de estudio (documentos públicos de la Secretaría) |
