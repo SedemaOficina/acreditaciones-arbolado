@@ -262,7 +262,8 @@
     const enlace = (href, clave, texto) => el('a', { class: 'btn-enlace', href, 'aria-current': actual === clave ? 'page' : null, texto });
     const enlaces = perfil === 'instructor'
       ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen')]
-      : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos')];
+      : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
+        enlace('material-personal.html', 'material', 'Material de estudio')];
     contenedor.replaceChildren(
       el('p', { class: 'sesion-nombre' }, [document.createTextNode(`${quien.nombre} `), APD.estado(`Perfil: ${quien.perfil.toLowerCase()}`)]),
       el('nav', { class: 'sesion-enlaces', 'aria-label': 'Secciones del personal' }, enlaces.concat([salir]))
