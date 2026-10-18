@@ -52,11 +52,12 @@
         muestraSolo(sec);
       }
 
-      /* Si el formulario ya define alEnviar, se respeta y se encadena. */
-      const alEnviarAnterior = opciones.alEnviar;
-      opciones.alEnviar = (r, f) => { if (alEnviarAnterior) alEnviarAnterior(r, f); pinta(r); };
-      const alFallarAnterior = opciones.alFallar;
-      opciones.alFallar = (e, f) => { if (alFallarAnterior) alFallarAnterior(e, f); if (e && e.limite && limite) muestraSolo(limite); };
+      /* Si la página define alEnviar o alFallar, se respeta y se encadena. Se
+         lee al enviar, no al iniciar: así vale también el que la página pase
+         después en otra llamada a FormKit.iniciar. */
+      const dePagina = (k) => (ctx.opcionesPagina || {})[k];
+      opciones.alEnviar = (r, f) => { const previo = dePagina('alEnviar'); if (previo) previo(r, f); pinta(r); };
+      opciones.alFallar = (e, f) => { const previo = dePagina('alFallar'); if (previo) previo(e, f); if (e && e.limite && limite) muestraSolo(limite); };
 
       /* «Volver» desde la pantalla de límite devuelve al formulario donde estaba. */
       if (limite) limite.addEventListener('click', (e) => { if (e.target.closest('[data-accion="reintentar"]')) muestraSolo(form); });

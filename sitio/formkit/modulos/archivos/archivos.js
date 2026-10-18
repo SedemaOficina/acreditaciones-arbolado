@@ -256,8 +256,12 @@
         if (cont && cont.hasAttribute('data-lleno') !== lleno) {
           const conFoco = cont.contains(document.activeElement) && document.activeElement.matches('.zona-carga,[data-camara]');
           cont.toggleAttribute('data-lleno', lleno);
+          /* Lo que se anuncia también se ve (FRM-40): la frase queda bajo la lista mientras siga lleno. */
+          let nota = $('.arch-lleno', el);
+          if (!nota && lleno) { nota = document.createElement('p'); nota.className = 'arch-lleno'; ul.after(nota); }
+          if (nota && !lleno) nota.hidden = true;
           if (lleno) {
-            anuncia(plantilla(c.max === 1 ? M.archLlenoUno : M.archLleno, { max: c.max }));
+            anuncia(plantilla(c.max === 1 ? M.archLlenoUno : M.archLleno, { max: c.max }), { visible: nota });
             if (conFoco) { const q = $$('.arch-quitar', ul).pop(); if (q) q.focus(); }
           }
         }

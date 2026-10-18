@@ -47,11 +47,13 @@
   /* Acercamientos: la hoja de estilos da el ancho de cada uno (data-zoom), sin estilos en línea. */
   const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
   const AJUSTAR = 2; /* 100 %: la hoja al ancho del visor */
-  /* La carpeta de pdf.js va junto al paquete: se deduce de dónde se cargó este
-     archivo (codigo/modulos/visor/visor.js o dist/formkit.js). */
+  /* pdf.js se busca en vendor/pdfjs-dist/, junto a la carpeta que contiene
+     modulos/: codigo/ en el estándar (formularios/vendor/) o la copia de un
+     proyecto (sitio/formkit/ → sitio/vendor/); con dist/formkit.js, junto a
+     dist/. Si está en otro lugar, FORMKIT_CONFIG.visor.pdfjs. */
   const src = document.currentScript && document.currentScript.src;
-  const raiz = src && src.match(/^(.*\/)(?:codigo\/modulos\/visor\/visor|dist\/formkit)\.js(?:\?.*)?$/);
-  const PDFJS_JUNTO = raiz ? `${raiz[1]}vendor/pdfjs-dist/` : '';
+  const raiz = src && src.match(/^(.*\/)(?:modulos\/visor\/visor|formkit)\.js(?:\?.*)?$/);
+  const PDFJS_JUNTO = raiz ? new URL('../vendor/pdfjs-dist/', raiz[1]).href : '';
 
   let listo = false;
   let pdfjs = null;
@@ -174,7 +176,12 @@
     }
     di(M.visorCargando);
     let m;
-    try { m = await carga(); } catch (e) { if (estado.url === url) enNavegador(url, titulo); return; }
+    try { m = await carga(); } catch (e) {
+      /* Para quien programa: dónde se buscó pdf.js y cómo indicar otra carpeta. */
+      console.warn(`FormKit: no se pudo cargar pdf.js desde ${base()}; indica su carpeta en FORMKIT_CONFIG.visor.pdfjs.`);
+      if (estado.url === url) enNavegador(url, titulo);
+      return;
+    }
     try {
       const doc = await m.getDocument({ url, standardFontDataUrl: new URL('standard_fonts/', base()).href, isEvalSupported: false }).promise;
       if (estado.url !== url) return;

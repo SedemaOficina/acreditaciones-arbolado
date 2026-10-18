@@ -132,7 +132,7 @@
         if (f !== form) return false;
         const i = pasos.findIndex((p) => fallos.some((x) => p.contains(envoltura(x.campo))));
         if (i < 0) return false;
-        conError.add(i); ir(i, { foco: false }); muestraResumen(pasos[i], fallos.filter((x) => pasos[i].contains(envoltura(x.campo)))); pintaBarra();
+        conError.add(i); ir(i, { foco: false }); muestraResumen(pasos[i], fallos.filter((x) => pasos[i].contains(envoltura(x.campo))), 'servidor'); pintaBarra();
         return true;
       };
       /* Enter en un campo intermedio avanza; sólo en el último paso envía. */

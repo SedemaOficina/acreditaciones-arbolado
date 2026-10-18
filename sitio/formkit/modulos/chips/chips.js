@@ -40,7 +40,9 @@
         const caja = document.createElement('div');
         caja.className = 'chips chips-fijos';
         caja.setAttribute('role', 'group');
-        caja.setAttribute('aria-label', plantilla(M.chipsFijos, { etiqueta: ctx.etiquetaDe(n).toLowerCase() }));
+        /* Nombre del grupo: data-chips-fijos-nombre (completo), o M.chipsFijos («Respuestas frecuentes para …»)
+           con data-chips-etiqueta (por ejemplo, el documento: «… para Identificación oficial») o la etiqueta del campo. */
+        caja.setAttribute('aria-label', campo.dataset.chipsFijosNombre || plantilla(M.chipsFijos, { etiqueta: campo.dataset.chipsEtiqueta || ctx.etiquetaDe(n).toLowerCase() }));
         for (const t of lista) {
           const b = document.createElement('button'); b.type = 'button'; b.className = 'chip chip-fijo'; b.dataset.chipFijo = t; b.textContent = t;
           caja.appendChild(b);
@@ -64,6 +66,22 @@
         });
         ctl.addEventListener('input', marca);
         marca();
+      }
+
+      /* Campos con la misma etiqueta (un «¿Qué debe corregir?» por documento):
+         el lector de pantalla oiría grupos con el mismo nombre. Se les agrega
+         el título de su sección o, si no hay, su número de orden. */
+      const grupos = $$('.chips-fijos', form);
+      const porNombre = new Map();
+      for (const g of grupos) porNombre.set(g.getAttribute('aria-label'), [...(porNombre.get(g.getAttribute('aria-label')) || []), g]);
+      for (const [nombre, iguales] of porNombre) {
+        if (iguales.length < 2) continue;
+        iguales.forEach((g, i) => {
+          const zona = g.closest('[data-campo]').parentElement.closest('article,section,fieldset,[data-paso],.tarjeta');
+          const titulo = zona && [...zona.querySelectorAll('h1,h2,h3,h4,h5,h6,legend')].find((h) => !h.closest('[data-campo]'));
+          const contexto = titulo ? titulo.textContent.replace(/\s+/g, ' ').trim() : plantilla(M.chipsFijosOrden, { n: i + 1, total: iguales.length });
+          g.setAttribute('aria-label', plantilla(M.chipsFijosContexto, { nombre, contexto }));
+        });
       }
 
       for (const campo of $$('[data-chips]', form)) {

@@ -97,7 +97,7 @@
             const v = document.createElement('li');
             v.className = 'combo-vacio';
             v.setAttribute('role', 'presentation');
-            v.textContent = libre && q ? 'No está en la lista: se guarda como lo escribiste.' : plantilla(M.comboNinguno, { texto: entrada.value });
+            v.textContent = libre && q ? M.comboLibre : plantilla(M.comboNinguno, { texto: entrada.value });
             lista.appendChild(v);
           }
           lista.hidden = false;
@@ -106,7 +106,10 @@
           anuncia(visibles.length === 0 ? plantilla(M.comboNinguno, { texto: entrada.value }) : visibles.length === 1 ? M.comboUno : plantilla(M.comboVarios, { n: visibles.length }));
         }
 
-        entrada.addEventListener('input', pinta);
+        /* Sólo cuando la persona escribe en el campo (P99): si la página lo llena
+           (al retomar un borrador), la lista no se abre ni anuncia ni tapa la
+           pregunta siguiente. */
+        entrada.addEventListener('input', () => { if (document.activeElement === entrada) pinta(); });
         /* Clic (no foco): al llegar desde el resumen de errores la lista no debe tapar el mensaje. */
         entrada.addEventListener('click', () => { if (lista.hidden) pinta(); });
         entrada.addEventListener('keydown', (e) => {

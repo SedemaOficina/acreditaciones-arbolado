@@ -1,5 +1,5 @@
 /* =========================================================
-   tokens.css · Estándar de formularios del SIA (SEDEMA) · v1.3.1
+   tokens.css · Estándar de formularios del SIA (SEDEMA) · v1.4.1
 
    El ÚNICO lugar donde viven color, tipografía, tamaño, radio, espaciado,
    capa, duración y punto de quiebre. Ninguna otra hoja del paquete escribe
@@ -130,6 +130,7 @@
   --alto-logo:48px;
   --marca-acuse:64px;
   --ancho-pagina:980px;
+  --ancho-contenido:calc(var(--ancho-pagina) - 2 * var(--e-pagina)); /* lo que queda dentro de .pagina: cabecera y pie se alinean con él */
   --ancho-lectura:70ch;
   --ancho-dialogo:560px;
   --ancho-acuse:460px;

@@ -1,0 +1,54 @@
+/* =========================================================
+   resultado.css · Módulo «resultado» · nivel RECOMENDADO
+   El desenlace de una decisión del personal. El tono (las cinco familias de
+   «estado») va en el filete de arriba y en la marca con su icono; el título
+   dice el resultado con palabras, así que nunca depende sólo del color. Lo
+   que sigue va en la secuencia del núcleo (.secuencia).
+   Depende de: nucleo.css. Bloques: componentes → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.resultado{
+  margin:var(--e-4) 0;
+  padding:var(--e-5) var(--e-pagina);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--linea);
+  border-top:var(--b-4) solid var(--gris);
+  border-radius:var(--r-caja);
+}
+.resultado-ok{border-top-color:var(--ok)}
+.resultado-atencion{border-top-color:var(--pend)}
+.resultado-proceso{border-top-color:var(--azul)}
+.resultado-rechazo{border-top-color:var(--error)}
+.resultado-cabeza{display:flex;align-items:center;gap:var(--e-3)}
+.resultado-marca{
+  display:flex;
+  flex:none;
+  align-items:center;
+  justify-content:center;
+  width:var(--e-9);
+  height:var(--e-9);
+  background:var(--gris);
+  border-radius:var(--r-pill);
+  color:var(--blanco);
+}
+.resultado-ok .resultado-marca{background:var(--ok)}
+.resultado-atencion .resultado-marca{background:var(--pend)}
+.resultado-proceso .resultado-marca{background:var(--azul)}
+.resultado-rechazo .resultado-marca{background:var(--error)}
+.resultado-titulo{margin:0;font-family:var(--fuente-titulo);font-size:var(--t-lg);font-weight:var(--peso-fuerte);color:var(--texto)}
+.resultado-meta{margin-top:var(--e-3);font-size:var(--t-sm);color:var(--gris)}
+.resultado-quien{font-weight:var(--peso-semi)}
+.resultado-texto{margin-top:var(--e-3);font-size:var(--t-md)}
+/* El motivo se cita tal como lo escribió quien decidió. */
+.resultado-motivo{margin:var(--e-4) 0 0;padding:var(--e-3) var(--e-4);background:var(--aviso-bg);border-left:var(--b-4) solid var(--borde);border-radius:0 var(--r-ctrl) var(--r-ctrl) 0}
+.resultado-motivo-rotulo{font-size:var(--t-xs);font-weight:var(--peso-fuerte);letter-spacing:var(--tracking-rotulo);text-transform:uppercase;color:var(--gris)}
+.resultado-pasos-titulo{margin-top:var(--e-5);font-family:var(--fuente-titulo);font-weight:var(--peso-fuerte)}
+.resultado-motivo-texto{margin:var(--e-1) 0 0;font-size:var(--t-md);white-space:pre-line;overflow-wrap:anywhere}
+
+/* @bloque adaptaciones */
+
+@media (min-width:560px){
+  .resultado{padding:var(--e-6)}
+}

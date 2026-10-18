@@ -23,9 +23,10 @@ const sitio = join(raiz, 'sitio');
 
 // 1 · Estándar: núcleo y sólo los módulos que usa el sitio, en su forma original
 // Desde la 1.2.0: visor de documentos (P67), chips fijos (P65) y fecha día/mes/año (módulo fecha, P70); desde la 1.1.0, el
-// distintivo de versión (version, P45)
+// distintivo de versión (version, P45); desde la 1.4.0, el resultado de una decisión (resultado, P113) y las etiquetas de
+// estado en cinco familias (estado, P118)
 const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla',
-  'visor', 'version', 'chips', 'fecha'];
+  'visor', 'version', 'chips', 'fecha', 'resultado', 'estado'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
 for (const d of ['css', 'js', 'fuentes', 'iconos', 'imagenes']) cpSync(join(estandar, 'codigo', d), join(destino, d), { recursive: true });
@@ -54,8 +55,7 @@ for (const p of paginas) {
 }
 
 // 2b · Visor de documentos (módulo «visor» del estándar, P67): pdf.js 4.10.38 del propio estándar (vendor/pdfjs-dist, sin
-// CDN), copiado junto al sitio. La ruta se declara en FORMKIT_CONFIG.visor.pdfjs (app/config-usted.js): el visor la deduce sólo
-// de codigo/modulos/visor/ o dist/, y aquí el módulo está en formkit/modulos/visor/ (P96).
+// CDN), copiado en sitio/vendor/pdfjs-dist/, junto a sitio/formkit/: desde la 1.3.2 el visor lo busca ahí solo (P96).
 const pdfjs = join(estandar, 'vendor/pdfjs-dist');
 if (!existsSync(pdfjs)) { console.error('Falta vendor/pdfjs-dist en el estándar'); process.exit(1); }
 rmSync(join(sitio, 'vendor'), { recursive: true, force: true });
