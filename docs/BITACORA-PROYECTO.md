@@ -963,3 +963,12 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   Quien revisa puede reabrir cualquiera con «Revisarlo de nuevo». El visor abre el primero por decidir.
 - La regla del servidor es la misma (`decidir_<requisito>`, auxiliar nuevo): lo aceptado antes no se vuelve a decidir
   salvo que llegue su decisión. Dos casos nuevos en `probar-esquemas`; `probar-sitio` 564 (con axe).
+
+## 2026-10-18 · Bloque 66 · Datos como ficha (opción B)
+
+- Liber: el rótulo y el dato seguían viéndose casi iguales. Se le mostraron tres opciones (página aparte, con la ficha
+  de una solicitud) y eligió la B: cada dato en su renglón con una línea fina entre renglones, el rótulo en una
+  columna, gris claro y sin negritas, y el dato en otra, en tinta y peso medio; en teléfono, el rótulo arriba del dato.
+  Se aplica en todas las pantallas que usan `APD.datosLista` («Mi perfil», «Mis trámites», revisión, cotejo, grupos,
+  datos de pago). Quedan fuera de este cambio los rótulos de los formularios, que son del estándar.
+- Pruebas: `probar-sitio` 564 (con axe), `probar-examen` 63, `probar-volumen` y auditor de CSS, correctos.

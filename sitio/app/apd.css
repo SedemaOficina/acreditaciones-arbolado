@@ -31,12 +31,16 @@
 .ficha-sigue { margin: 0; }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
 
-.datos { display: grid; gap: var(--e-4) var(--e-5); margin: 0; }
-.datos-par { display: grid; gap: var(--e-1); align-content: start; }
-/* El rótulo de un dato no se confunde con un texto de ayuda (2026-10-18): versalitas con aire, más chico y oscuro;
-   la ayuda queda en minúsculas, gris claro */
-.datos-etq { font-size: var(--t-xs); font-weight: var(--peso-semi); letter-spacing: var(--tracking-rotulo); text-transform: uppercase; color: var(--gris); }
-.datos-valor { margin: 0; font-weight: var(--peso-medio); line-height: var(--interlineado-compacto); }
+/* Datos como ficha (opción B, decisión de Liber 2026-10-18): cada dato en su renglón, con una línea fina entre
+   renglones; el rótulo en una columna (gris claro, sin negritas) y el dato en otra (tinta, peso medio). En teléfono, el
+   rótulo va arriba del dato. Así el rótulo no se confunde con el dato ni con un texto de ayuda. */
+.datos { display: grid; margin: 0; border-block-start: var(--b-1) solid var(--linea); }
+.datos-par { display: grid; gap: var(--e-1); padding-block: var(--e-3); border-block-end: var(--b-1) solid var(--linea); }
+.datos-etq { font-size: var(--t-md); font-weight: var(--peso-normal); color: var(--gris-cl); }
+.datos-valor { margin: 0; font-weight: var(--peso-medio); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
+@media (min-width: 560px) {
+  .datos-par { grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); gap: var(--e-1) var(--e-5); align-items: baseline; }
+}
 
 .lista-obs { list-style: disc; margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-1); }
 
@@ -87,7 +91,6 @@
 
 @media (min-width: 760px) {
   .menu-inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 
@@ -136,9 +139,6 @@
 .btn-chico { min-height: var(--objetivo-min); padding-block: var(--e-1); padding-inline: var(--e-3); font-size: var(--t-sm); }
 /* Revisión de una solicitud */
 .revision-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); margin-block-end: var(--e-4); }
-@media (min-width: 760px) {
-  .datos-dos-columnas .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 .plegable-titulo { display: flex; align-items: center; gap: var(--e-2); min-height: var(--objetivo-min); cursor: pointer; font-weight: var(--peso-medio); }
 .revision-anterior { padding-block: var(--e-3); border-block-start: var(--b-1) solid var(--linea); }
 .doc-revision { display: grid; gap: var(--e-2); padding-block: var(--e-4); border-block-start: var(--b-1) solid var(--linea); }
