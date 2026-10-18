@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-18T00:57:17.484Z",
+  "generado": "2026-10-18T14:03:03.380Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -112,9 +112,7 @@
       "sensible": true,
       "uso": "Derivado de la CURP; no se pide por separado.",
       "finalidad": "Estadística de la población acreditada por sexo.",
-      "atributos": {
-        "interno": "Lo calcula el sistema con la CURP (posición 11). Se guarda en la base: apd.solicitante.sexo."
-      },
+      "atributos": {},
       "autocomplete": "off"
     },
     "foto": {

@@ -909,3 +909,19 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   perdían la sesión (lo encontró `probar-sitio`).
 - Pruebas: `probar-sitio` 558 (con axe; 20 nuevas), `probar-examen` 63, `probar-volumen`, `probar-esquemas` (3 casos
   nuevos) y `probar-base` 165 (3 nuevos), todas correctas.
+
+## 2026-10-18 · Bloque 63 · «Mi perfil» y «Mis trámites» más claros
+
+- **«Mi perfil»:** sin el número de expediente (es de la carpeta física y ya se ve en «Mis trámites»); el sexo se ve
+  como un dato más, de sólo lectura, también en «Crea tu cuenta» (ya no en el recuadro amarillo de dato interno: así
+  lo pidió Liber); la adscripción con rótulo y valor, cada dato en su renglón («Tipo», «Nombre o razón social»,
+  «Alcaldía», «Dependencia», «Dirección General»), igual en la solicitud y en las fichas del personal; texto nuevo:
+  «Puedes cambiarla cuando quieras: tus siguientes solicitudes se envían con la nueva…».
+- **«Mis trámites»** en tres bloques: «Solicitudes en curso», «Mis acreditaciones» y «Solicitudes anteriores» (sólo si
+  hay). La etiqueta de la persona dice «En espera de curso»; el personal sigue viendo «En espera de grupo».
+- Un dictaminador por renovar con la poda vencida ya ve por qué no aparece «Renovar»: renovar primero la de poda.
+- **Cotejo:** la ayuda del folio fiscal dice que también se llama UUID (Identificador Universalmente Único).
+- Corregido en el camino: `.seccion` tapaba el atributo `hidden` (regla `.seccion[hidden]`).
+- `probar-sitio` deja en la consola el estado del diálogo si «Dar de baja» vuelve a fallar por tiempo (falló dos veces
+  en el día y no se ha podido reproducir).
+- Pruebas: `probar-sitio` 559 (con axe), `probar-examen`, `probar-volumen` y `probar-esquemas`, correctas.

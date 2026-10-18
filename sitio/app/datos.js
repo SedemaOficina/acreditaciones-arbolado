@@ -82,15 +82,17 @@
       caja.append(el('img', { class: 'perfil-imagen', src: urlFoto, alt: `Tu fotografía: ${APD.nombreCompleto(p)}` }));
     });
   }
+  const SEXO = { H: 'Hombre', M: 'Mujer', X: 'No binario' };
   function pinta(datos, p) {
     APD.pintaSesion($('[data-sesion]'), p);
     $('[data-perfil-nombre]').textContent = APD.nombreCompleto(p);
     const curp = p.curp || '';
     $('[data-identidad]').replaceChildren(APD.datosLista([
       ['CURP', curp],
-      ['Fecha de nacimiento', curp ? APD.fecha(nacimientoDe(curp)) : '']
-      // Sin el número de expediente (es de la carpeta física; se ve en «Mis trámites») ni el sexo, que es dato interno
-      // que la persona no ve, tampoco en la versión de prueba (decisiones 2026-10-18)
+      ['Fecha de nacimiento', curp ? APD.fecha(nacimientoDe(curp)) : ''],
+      // El sexo se ve como un dato más, tomado de la CURP (decisión 2026-10-18; ya no en el recuadro de dato interno).
+      // Sin el número de expediente: es de la carpeta física y se ve en «Mis trámites» (decisión 2026-10-18)
+      ['Sexo', SEXO[p.sexo || curp[10]] || '']
     ]));
     $('[data-vista="contacto"]').replaceChildren(APD.datosLista([
       ['Correo electrónico', p.correo || 'Sin registrar'],

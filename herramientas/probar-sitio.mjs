@@ -204,8 +204,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('cuenta: nombre, apellidos y CURP se escriben en mayúsculas al momento'));
   comprueba(await page.inputValue('#correo') === 'Nadia@Ejemplo.local', t('cuenta: el correo no se pasa a mayúsculas'));
   await page.fill('#curp', NUEVA.curp); await page.press('#curp', 'Tab');
-  // El sexo no se pregunta ni se muestra: la base lo toma de la CURP (decisión 2026-10-18)
-  comprueba(await page.locator('[data-campo="sexo"], #sexo').count() === 0, t('cuenta: el sexo no se pregunta ni se muestra (la base lo toma de la CURP)'));
+  // El sexo se toma de la CURP y se ve como un dato más, sin el recuadro de dato interno (decisión 2026-10-18)
+  comprueba(['Mujer', 'Hombre'].includes(await page.inputValue('#sexo')) && await page.isVisible('#sexo')
+    && await page.locator('[data-campo="sexo"] .nota-interna').count() === 0 && !(await page.$eval('[data-campo="sexo"]', (c) => c.hasAttribute('data-interno'))),
+    t(`cuenta: el sexo se toma de la CURP y se ve como dato normal, sin recuadro de dato interno (${await page.inputValue('#sexo')})`));
   // Adscripción: cada respuesta abre sólo su pregunta, y al cambiarla se oculta lo que dependía de ella
   comprueba(!(await page.isVisible('[data-campo="tipo_adscripcion"]')), t('adscripción: el tipo no se pregunta hasta responder «Sí»'));
   comprueba(/independiente/.test(await page.textContent('[data-campo="adscrito"]')), t('adscripción: «No, soy independiente» es una respuesta explícita'));
@@ -319,6 +321,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.click('[data-acuse] a[href="tramites.html"]');
   await page.waitForSelector('[data-solicitudes] .vacio');
   comprueba(await page.isVisible('[data-nueva] a'), t('cuenta nueva: «Iniciar una solicitud» disponible'));
+  comprueba(/Solicitudes en curso/.test(await page.textContent('#t-solicitudes')) && await page.isHidden('[data-anteriores-seccion]'),
+    t('mis trámites: «Solicitudes en curso»; «Solicitudes anteriores» no aparece si no hay'));
 
   // Persona nueva: sólo puede pedir poda nueva; dictaminador deshabilitado con su motivo
   await page.click('[data-nueva] a');
@@ -551,8 +555,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await entra(page, CON_ORG.curp);
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-identidad] .datos');
-  comprueba(/Mi perfil/.test(await page.textContent('h2')) && /CURP/.test(await page.textContent('[data-identidad]')) && !/Sexo/.test(await page.textContent('main')) && await page.$('#curp') === null,
-    t('mi perfil: muestra la CURP sin dejarla cambiar y no muestra el sexo (dato interno)'));
+  comprueba(/Mi perfil/.test(await page.textContent('h2')) && /CURP/.test(await page.textContent('[data-identidad]')) && /Sexo/.test(await page.textContent('[data-identidad] .datos')) && await page.locator('[data-identidad] [data-interno]').count() === 0 && await page.$('#curp') === null,
+    t('mi perfil: muestra CURP y sexo sin dejarlos cambiar, el sexo como dato normal'));
   comprueba(!/expediente/i.test(await page.textContent('[data-identidad]')), t('mi perfil: no muestra el número de expediente (decisión 2026-10-18)'));
   comprueba(await page.locator('form.perfil-form:not([hidden])').count() === 0 && /@/.test(await page.textContent('[data-vista="contacto"]'))
     && (await page.$$eval('[data-vista="adscripcion"] .datos-par', (l) => l.map((x) => x.querySelector('dt').textContent))).join('|') === 'Tipo|Nombre o razón social',
@@ -682,7 +686,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     const sol = datos.solicitud.find((x) => x.estado === estado && cond(x));
     return sol && datos.solicitante.find((p) => p.id === sol.solicitante_id && p.estado === 'activa');
   };
-  const fichaDe = (texto) => page.locator('[data-solicitudes] .ficha', { hasText: texto }).first();
+  const fichaDe = (texto) => page.locator('[data-solicitudes] .ficha, [data-anteriores] .ficha', { hasText: texto }).first();
   const emitida = personaCon('acreditada', (x) => datos.acreditacion.some((a) => a.solicitud_id === x.id));
   if (emitida) {
     await entra(page, emitida.curp);
@@ -912,7 +916,7 @@ async function recorridoGuardado(navegador) {
   await page.goto(BASE + 'tramites.html');
   await page.waitForSelector('[data-solicitudes] .ficha');
   const lista = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
-  comprueba(/En espera de grupo/.test(lista) && exp && lista.includes(exp[0]), t('la persona ve «En espera de grupo» y su número de expediente'));
+  comprueba(/En espera de curso/.test(lista) && exp && lista.includes(exp[0]), t('la persona ve «En espera de curso» y su número de expediente'));
   comprueba(await page.locator('[data-solicitudes] .ficha', { hasText: folio }).locator('ol.secuencia > li').count() === 3, t('«Mis trámites»: lo que sigue después del cotejo va en pasos numerados'));
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-foto-estado] .estado');
@@ -963,8 +967,10 @@ async function caminosCotejo(navegador) {
   await pg.click('dialog[open] .btn-peligro');
   await pg.waitForSelector('[data-hecho]:not([hidden])');
   await pg.goto(BASE + 'tramites.html');
-  await pg.waitForSelector('[data-solicitudes] .ficha');
-  comprueba(/Cerrada: no te presentaste/.test(await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).textContent()), t('a la segunda inasistencia la persona ve «Cerrada: no te presentaste»'));
+  await pg.waitForSelector('[data-anteriores] .ficha');
+  comprueba(/Cerrada: no te presentaste/.test(await pg.locator('[data-anteriores] .ficha', { hasText: s1.folio }).textContent())
+    && await pg.isVisible('#t-anteriores') && await pg.locator('[data-solicitudes] .ficha', { hasText: s1.folio }).count() === 0,
+    t('a la segunda inasistencia la persona ve «Cerrada: no te presentaste», en «Solicitudes anteriores»'));
   comprueba(errores.length === 0, t(`inasistencias sin errores${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 
@@ -1174,7 +1180,7 @@ async function personal(navegador, ancho, alto, sufijo) {
   // La persona ve el rechazo con su motivo
   const pR = datos.solicitante.find((x) => x.id === rechazada.solicitante_id);
   await entra(page, pR.curp);
-  const f = await page.locator('[data-solicitudes] .ficha', { hasText: 'Rechazada' }).textContent();
+  const f = await page.locator('[data-anteriores] .ficha', { hasText: 'Rechazada' }).textContent();
   comprueba(/Motivo del rechazo/.test(f) && /solicitud nueva/.test(f), t('«Mis trámites» muestra la solicitud rechazada con su motivo'));
 
   // Versión de prueba sin servidor: lo que la persona carga en este navegador se ve en la revisión (decisión 2026-10-16).

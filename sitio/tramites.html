@@ -37,15 +37,21 @@
     </div>
   </div>
 
-  <!-- Las solicitudes en curso van primero: es lo que cambia (propuesta «Avisos y confirmaciones», 2026-10-17) -->
+  <!-- Tres bloques (decisión 2026-10-18): lo que avanza, lo que ya tienes y lo que terminó. Las solicitudes en curso van
+       primero: es lo que cambia (propuesta «Avisos y confirmaciones», 2026-10-17). -->
   <section class="seccion" aria-labelledby="t-solicitudes">
-    <h3 class="titulo-bloque" id="t-solicitudes">Mis solicitudes</h3>
+    <h3 class="titulo-bloque" id="t-solicitudes">Solicitudes en curso</h3>
     <div class="seccion" data-solicitudes></div>
   </section>
 
   <section class="seccion" aria-labelledby="t-acreditaciones">
     <h3 class="titulo-bloque" id="t-acreditaciones">Mis acreditaciones</h3>
     <div class="seccion" data-acreditaciones></div>
+  </section>
+
+  <section class="seccion" aria-labelledby="t-anteriores" data-anteriores-seccion hidden>
+    <h3 class="titulo-bloque" id="t-anteriores">Solicitudes anteriores</h3>
+    <div class="seccion" data-anteriores></div>
   </section>
 </main>
 

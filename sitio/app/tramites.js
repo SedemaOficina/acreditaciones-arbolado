@@ -34,6 +34,9 @@
       ]));
     } else if (sit === 'vencida_no_renovable') {
       ficha.append(el('p', { class: 'ficha-sigue', texto: 'Venció hace más de un año: para obtenerla de nuevo haces una solicitud nueva.' }));
+    } else if (!o.disponible && a.tipo_acreditacion === 'dictaminador' && /poda y derribo/.test(o.motivo || '') && ['por_vencer', 'vencida_renovable'].includes(sit)) {
+      // Dictaminador por renovar con la poda vencida (R43 y R05): se dice por qué no aparece «Renovar» y qué hacer
+      ficha.append(el('p', { class: 'ficha-sigue', texto: 'Para renovarla necesitas tener vigente tu acreditación de poda y derribo: renueva primero la de poda.' }));
     } else if (!o.disponible && o.motivo && sit === 'vigente') {
       ficha.append(el('p', { class: 'ficha-sigue texto-gris', texto: o.motivo.replace(/^Tu acreditación \S+ vence el [^.]+\. /, '') }));
     }
@@ -247,10 +250,18 @@
       ? acs.map((a) => fichaAcreditacion(datos, a, op))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes acreditaciones.' })]));
 
+    // En curso: las que todavía avanzan, y la acreditada cuya credencial no se ha recogido (aún hay un paso).
+    // Anteriores: las terminadas (cerradas, rechazadas, no acreditadas o con la credencial ya entregada).
     const sols = APD.solicitudesDe(datos, persona);
-    document.querySelector('[data-solicitudes]').replaceChildren(...(sols.length
-      ? sols.map((s) => fichaSolicitud(datos, s, persona))
-      : [el('p', { class: 'vacio', texto: 'Todavía no tienes solicitudes.' })]));
+    const terminada = (s) => APD.FINALES.includes(s.estado)
+      && !(s.estado === 'acreditada' && !((datos.acreditacion.find((a) => a.solicitud_id === s.id) || {}).entregada_en));
+    const enCurso = sols.filter((s) => !terminada(s));
+    const anteriores = sols.filter(terminada);
+    document.querySelector('[data-solicitudes]').replaceChildren(...(enCurso.length
+      ? enCurso.map((s) => fichaSolicitud(datos, s, persona))
+      : [el('p', { class: 'vacio', texto: sols.length ? 'No tienes solicitudes en curso.' : 'Todavía no tienes solicitudes.' })]));
+    document.querySelector('[data-anteriores-seccion]').hidden = !anteriores.length;
+    document.querySelector('[data-anteriores]').replaceChildren(...anteriores.map((s) => fichaSolicitud(datos, s, persona)));
 
     // Una sola acción principal: iniciar una solicitud nueva, si hay algo que se pueda pedir como nueva
     const puedeNueva = ['poda', 'dictaminador'].some((t) => op[t].disponible && op[t].modalidad === 'nueva');
