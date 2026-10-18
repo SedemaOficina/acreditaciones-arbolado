@@ -25,7 +25,8 @@
     // Hay un plazo para corregir (P02: lo fija la Dirección); mientras no esté, se dice que existe (auditoría integral, alta 10)
     con_observaciones: { texto: 'Corrige y reenvía', personal: 'Con observaciones', tono: 'pend', sigue: { texto: 'Hay un plazo para corregir: si no reenvías tu solicitud a tiempo, se cierra.', pasos: ['Corrige lo que se indica arriba.', 'Vuelve a enviar tu solicitud.', 'La Secretaría la revisa otra vez.'] } },
     validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', sigue: { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', 'Acude a tu cita con tus documentos y tu comprobante.'] } },
-    lista_para_curso: { texto: 'En espera de grupo', tono: 'marcha', sigue: { texto: 'Tu cotejo terminó.', pasos: ['La Secretaría te asigna un grupo del curso.', 'Te avisa las fechas, la hora de entrada y la sede.', 'Asistes al curso y, el último día, presentas el examen.'] } },
+    // La persona espera el curso; el personal arma grupos con esa lista (decisión 2026-10-18)
+    lista_para_curso: { texto: 'En espera de curso', personal: 'En espera de grupo', tono: 'marcha', sigue: { texto: 'Tu cotejo terminó.', pasos: ['La Secretaría te asigna un grupo del curso.', 'Te avisa las fechas, la hora de entrada y la sede.', 'Asistes al curso y, el último día, presentas el examen.'] } },
     inscrita: { texto: 'Con grupo asignado', tono: 'ok', sigue: 'Asiste a tu curso en las fechas indicadas.' },
     aprobada: { texto: 'Aprobada', tono: 'ok', sigue: 'La Secretaría emite tu acreditación.' },
     acreditada: { texto: 'Acreditación emitida', tono: 'ok', sigue: 'Recoge tu credencial en persona.' },

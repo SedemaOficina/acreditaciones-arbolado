@@ -81,7 +81,7 @@
     <!-- Tres validaciones cruzadas del estándar: la fecha escrita como día/mes/año (curp-fecha-dma), el nombre y
          el primer apellido (curp-nombre) y el segundo apellido, o X si no tiene (curp-segundo-apellido). -->
     <div class="campo" data-campo="curp" data-formato="curp" data-requerido data-sensible
-         data-cruzada="curp-nombre curp-segundo-apellido curp-fecha-dma"
+         data-deriva="sexo=sexo" data-cruzada="curp-nombre curp-segundo-apellido curp-fecha-dma"
          data-cruzada-campos="curp=curp fecha=fecha_nacimiento nombre=nombre primer=primer_apellido segundo=segundo_apellido"
          data-finalidad="Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona." data-uso="Identificador único de la cuenta y llave del historial de acreditaciones.">
       <label class="etiqueta" for="curp">CURP</label>
@@ -91,8 +91,15 @@
     </div>
     </div>
 
-    <!-- Sexo (decisiones 2026-10-15 y 2026-10-18): no se pregunta ni se muestra; la base lo toma de la CURP
-         (posición 11, apd.solicitante.sexo). Es dato interno: la persona no lo ve en sus pantallas. -->
+    <!-- Sexo (decisiones 2026-10-15 y 2026-10-18): se toma de la CURP (posición 11), como pide el estándar; no se pregunta
+         aparte. La persona lo ve como un dato más, de sólo lectura (ya no en el recuadro amarillo de dato interno).
+         La base lo calcula igual (apd.solicitante.sexo). -->
+    <div class="campo" data-campo="sexo" data-sensible data-finalidad="Estadística de la población acreditada por sexo." data-uso="Derivado de la CURP; no se pide por separado.">
+      <label class="etiqueta" for="sexo">Sexo</label>
+      <p class="ayuda">Se toma de tu CURP.</p>
+      <!-- autocomplete off: es de sólo lectura y se llena desde la CURP. -->
+      <input class="control control-corto" id="sexo" name="sexo" type="text" readonly autocomplete="off">
+    </div>
 
     <!-- Fotografía de frente (decisión 2026-10-14): obligatoria. No es la de la credencial, que se toma al entregarla.
          Sólo imagen; en el teléfono, la cámara frontal (capture="user"). La ubicación de la foto no viaja (EXIF desactivado). -->
