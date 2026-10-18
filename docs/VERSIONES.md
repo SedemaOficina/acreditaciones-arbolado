@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.48 | 18/10/26, 10:29 a.m. | Bloque 67: renglones completos, chips sin partir y concentrado de asistencia |
 | 0.47 | 18/10/26, 9:11 a.m. | Bloque 66: datos como ficha (rótulo / dato, opción B) en toda la plataforma |
 | 0.46 | 18/10/26, 8:49 a.m. | Bloque 64: menú de pruebas en dos pasos con 38 casos, citas leídas de la base, rótulos distintos de las ayudas |
 | 0.45 | 18/10/26, 8:14 a.m. | Bloque 63: Mi perfil (sin expediente, sexo visible sin recuadro, adscripción en renglones), Mis trámites en tres bloques, «En espera de curso», UUID |
