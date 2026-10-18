@@ -7,16 +7,17 @@
 <title>Revisar una solicitud · Personal · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Revisión documental de una solicitud de acreditación, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
-<link rel="stylesheet" href="formkit/modulos/chips/chips.css">
-<link rel="stylesheet" href="formkit/modulos/visor/visor.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
-<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/chips/chips.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/visor/visor.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -52,10 +53,10 @@
   </details>
 
   <!-- La revisión: una sola acción principal, que cambia con lo revisado (validar, observar o rechazar).
-       Arranca a mano (data-formkit="manual") cuando la página ya calculó los campos auxiliares. -->
+       La página la inicia con FormKit.iniciar cuando ya calculó los campos auxiliares (data-formkit="manual" puede
+       quedarse: desde la 1.3.4 un formulario se inicia una sola vez, P111). -->
   <div class="visor-area">
   <form id="formulario" data-formkit="manual" action="#" method="post" hidden>
-    <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
 
     <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
     <input type="hidden" id="perfil_revision" name="perfil_revision" value="" data-campo="perfil_revision" data-auxiliar data-uso="Mostrar la pregunta de perfil que corresponde: carrera por clasificar o perfil que podría no cumplir; lo calculan la página y el servidor con apd.perfil_academico.">
@@ -80,6 +81,8 @@
     <!-- Perfil del dictaminador (decisiones 2026-10-15 y 2026-10-16) -->
     <section class="tarjeta" data-perfil hidden aria-labelledby="t-perfil">
       <h3 class="titulo-paso" id="t-perfil">Perfil del dictaminador</h3>
+      <!-- La nota va dentro de la primera tarjeta del formulario (auditoría 2026-10-18, D33) -->
+      <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <div data-perfil-datos></div>
       <div data-si="perfil_revision=por_clasificar">
         <div class="aviso aviso-advertencia">
@@ -114,6 +117,8 @@
 
     <section class="tarjeta" aria-labelledby="t-documentos">
       <h3 class="titulo-paso" id="t-documentos">Documentos</h3>
+      <!-- Si se ve el perfil del dictaminador, la nota va allá y ésta se oculta (app/revisar.js) -->
+      <p class="leyenda-oblig" data-leyenda-docs>Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <p class="ayuda ayuda-bloque" data-docs-ayuda>Abra cada documento y acéptelo, o escriba lo que debe corregir la persona.</p>
       <p class="aviso" data-docs-rechazo hidden>No hace falta revisar los documentos: la solicitud se rechaza por el perfil.</p>
       <!-- revision-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
@@ -121,10 +126,10 @@
           <article class="doc-revision" data-doc="identificacion_oficial" data-contexto="Identificación oficial">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Identificación oficial</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver documento<span class="solo-lector">: Identificación oficial</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="identificacion_oficial">Ver documento<span class="solo-lector">: Identificación oficial</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="identificacion_oficial">Revisarlo de nuevo<span class="solo-lector">: Identificación oficial</span></button></p>
             <div data-si="decidir_identificacion_oficial=si">
@@ -141,9 +146,10 @@
               <p class="ayuda" id="ay-observacion_identificacion_oficial">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_identificacion_oficial" name="observacion_identificacion_oficial" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="identificacion_oficial">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_identificacion_oficial=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="identificacion_oficial">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -151,10 +157,10 @@
           <article class="doc-revision" data-doc="curp" data-contexto="Clave Única de Registro de Población (CURP)">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Clave Única de Registro de Población (CURP)</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver documento<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="curp">Ver documento<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="curp">Revisarlo de nuevo<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
             <div data-si="decidir_curp=si">
@@ -171,9 +177,10 @@
               <p class="ayuda" id="ay-observacion_curp">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_curp" name="observacion_curp" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curp">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_curp=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curp">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -181,10 +188,10 @@
           <article class="doc-revision" data-doc="comprobante_domicilio" data-contexto="Comprobante de domicilio">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Comprobante de domicilio</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver documento<span class="solo-lector">: Comprobante de domicilio</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="comprobante_domicilio">Ver documento<span class="solo-lector">: Comprobante de domicilio</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="comprobante_domicilio">Revisarlo de nuevo<span class="solo-lector">: Comprobante de domicilio</span></button></p>
             <div data-si="decidir_comprobante_domicilio=si">
@@ -201,9 +208,10 @@
               <p class="ayuda" id="ay-observacion_comprobante_domicilio">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_comprobante_domicilio" name="observacion_comprobante_domicilio" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_domicilio">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_comprobante_domicilio=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_domicilio">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -211,10 +219,10 @@
           <article class="doc-revision" data-doc="constancia_situacion_fiscal" data-contexto="Constancia de situación fiscal">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Constancia de situación fiscal</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver documento<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="constancia_situacion_fiscal">Ver documento<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="constancia_situacion_fiscal">Revisarlo de nuevo<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
             <div data-si="decidir_constancia_situacion_fiscal=si">
@@ -231,9 +239,10 @@
               <p class="ayuda" id="ay-observacion_constancia_situacion_fiscal">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_constancia_situacion_fiscal" name="observacion_constancia_situacion_fiscal" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="constancia_situacion_fiscal">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_constancia_situacion_fiscal=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="constancia_situacion_fiscal">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -241,10 +250,10 @@
           <article class="doc-revision" data-doc="comprobante_estudios" data-contexto="Comprobante de estudios">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Comprobante de estudios</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver documento<span class="solo-lector">: Comprobante de estudios</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="comprobante_estudios">Ver documento<span class="solo-lector">: Comprobante de estudios</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="comprobante_estudios">Revisarlo de nuevo<span class="solo-lector">: Comprobante de estudios</span></button></p>
             <div data-si="decidir_comprobante_estudios=si">
@@ -261,9 +270,10 @@
               <p class="ayuda" id="ay-observacion_comprobante_estudios">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_comprobante_estudios" name="observacion_comprobante_estudios" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_estudios">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_comprobante_estudios=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_estudios">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -271,10 +281,10 @@
           <article class="doc-revision" data-doc="curriculum_vitae" data-contexto="Currículum vitae">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Currículum vitae</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver documento<span class="solo-lector">: Currículum vitae</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="curriculum_vitae">Ver documento<span class="solo-lector">: Currículum vitae</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="curriculum_vitae">Revisarlo de nuevo<span class="solo-lector">: Currículum vitae</span></button></p>
             <div data-si="decidir_curriculum_vitae=si">
@@ -291,9 +301,10 @@
               <p class="ayuda" id="ay-observacion_curriculum_vitae">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_curriculum_vitae" name="observacion_curriculum_vitae" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curriculum_vitae">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_curriculum_vitae=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curriculum_vitae">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -301,10 +312,10 @@
           <article class="doc-revision" data-doc="comprobantes_experiencia" data-contexto="Comprobantes de experiencia">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">Comprobantes de experiencia</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver documento<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="comprobantes_experiencia">Ver documento<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="comprobantes_experiencia">Revisarlo de nuevo<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
             <div data-si="decidir_comprobantes_experiencia=si">
@@ -321,9 +332,10 @@
               <p class="ayuda" id="ay-observacion_comprobantes_experiencia">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_comprobantes_experiencia" name="observacion_comprobantes_experiencia" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobantes_experiencia">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_comprobantes_experiencia=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobantes_experiencia">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -337,10 +349,13 @@
       <div data-si="resultado=validada">
         <p class="ayuda ayuda-bloque">Todo está en orden. Al validar, la persona recibe su cita de cotejo y los datos para pagar.</p>
         <div class="fila">
-          <div class="campo" data-campo="cita_fecha" data-formato="fecha" data-requerido data-uso="Fijar el día de la cita de cotejo (apd.solicitud.cita_en).">
+          <!-- Fecha día/mes/año como en el resto del sitio (formato «fecha-dma» del estándar, auditoría 2026-10-18, D9): el
+               calendario del navegador la mostraba como mm/dd/aaaa. El mínimo (mañana) lo pone la página en data-min. -->
+          <div class="campo" data-campo="cita_fecha" data-formato="fecha-dma" data-requerido data-uso="Fijar el día de la cita de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_fecha">Fecha de la cita</label>
+            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, desde el <span data-cita-desde></span>; las diagonales se ponen solas.</p>
             <!-- autocomplete off: la fecha la elige quien revisa; el navegador no tiene un valor que proponer. -->
-            <input class="control" id="cita_fecha" name="cita_fecha" type="date" autocomplete="off">
+            <input class="control control-corto" id="cita_fecha" name="cita_fecha" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-cita_fecha">
           </div>
           <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_hora">Hora</label>
@@ -364,7 +379,7 @@
           </div>
         </div>
         <!-- Cuántas citas hay ya ese día y a esa hora (auditoría de tareas, M5); el cupo por horario es P69 -->
-        <p class="ayuda carga-citas" data-carga-cita aria-live="polite" hidden></p>
+        <p class="ayuda" data-carga-cita aria-live="polite" hidden></p>
         <!-- Lugar fijo: todas las citas, cursos y entregas son en la sede única (decisión 2026-10-16); no se elige. -->
         <p class="ayuda">La cita es en el <strong data-sede></strong>, como todas las citas de cotejo, los cursos y las entregas.</p>
       </div>
@@ -446,15 +461,16 @@
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.52"></script>
 <script src="app/personal.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <script src="app/mensajes-usted.js?v=0.52"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/chips/chips.js"></script>
-<script src="formkit/modulos/visor/visor.js"></script>
-<script src="formkit/modulos/modal/modal.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
-<script src="formkit/modulos/resultado/resultado.js"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/chips/chips.js?v=1.4.1"></script>
+<script src="formkit/modulos/fecha/fecha.js?v=1.4.1"></script>
+<script src="formkit/modulos/visor/visor.js?v=1.4.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
+<script src="formkit/modulos/resultado/resultado.js?v=1.4.1"></script>
 <script src="app/revisar.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.52"></script>

@@ -422,15 +422,16 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.isHidden('[data-acuse]') && (await page.getAttribute('#nombre', 'aria-invalid')) === 'true', t('cuenta del padrón migrado: con dos letras distintas en el nombre no se activa y lo marca junto al nombre'));
   await page.fill('#nombre', cambia(renovable.nombre, 1));
   await page.click('[data-accion="enviar"]');
-  await page.waitForSelector('[data-acuse]:not([hidden])');
-  comprueba(true, t('cuenta del padrón migrado: con una letra distinta en el nombre sí se activa (P14)'));
+  // La espera es la prueba: si no llega, se anota la falla con su nombre en vez de detener el guion (A 7.4)
+  comprueba(await page.waitForSelector('[data-acuse]:not([hidden])').then(() => true, () => false), t('cuenta del padrón migrado: con una letra distinta en el nombre sí se activa (P14)'));
   comprueba(await page.isVisible('[data-cuenta-historial]'), t('cuenta del padrón migrado: avisa que encontró acreditaciones anteriores'));
   await page.click('[data-acuse] a[href="tramites.html"]');
   await page.waitForSelector('[data-acreditaciones] .ficha');
   await captura(page, `06-tramites-renovacion-${sufijo}`);
   await sinDesborde(page, t('mis trámites'));
-  comprueba(await page.locator('[data-acreditaciones] .ficha').evaluateAll((fs) => fs.every((f) => /Para vencer\s*(Faltan [\d,]+ días|Falta 1 día|Vence hoy|Venció hace [\d,]+ días?)/.test(f.textContent))),
-    t('mis trámites: cada acreditación dice cuántos días faltan para vencer (o hace cuántos venció)'));
+  // Rótulo según el caso (auditoría 2026-10-18, D10): «Vence en N días» o «Vencida hace N días», nunca «Para vencer: Venció…»
+  comprueba(await page.locator('[data-acreditaciones] .ficha').evaluateAll((fs) => fs.every((f) => /Vence en\s*[\d,]+ días?|Vence el\s*\d{2}\/\d{2}\/\d{4} \(hoy\)|Vencida hace\s*[\d,]+ días?/.test(f.textContent) && !/Para vencer/.test(f.textContent))),
+    t('mis trámites: cada acreditación dice cuántos días faltan para vencer (o hace cuántos venció), con el rótulo que corresponde'));
   comprueba(await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() >= 1, t('mis trámites: botón «Renovar» en la acreditación renovable'));
   await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).first().click();
   await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_renovacion');
@@ -508,7 +509,19 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.locator('[data-solicitudes] .aviso').count() > 0, t('mis trámites: observaciones visibles'));
   await page.click(`a[href="solicitud.html?folio=${conObs.folio}"]`);
   await page.waitForFunction(() => document.querySelector('input[name="tipo"]:checked'));
-  await siguiente(page);
+  // D2 (auditoría 2026-10-18): «Corregir y reenviar» abre en «Documentos», con lo observado primero y su observación junto
+  // al campo; lo aceptado, plegado y marcado como aceptado. D1: cada documento ya cargado muestra su archivo y «Ver».
+  comprueba(await page.waitForFunction(() => { const p = document.querySelector('section[data-paso]:not([hidden])'); return p && /Carga tus documentos/.test(p.textContent); }, null, { timeout: 3000 }).then(() => true, () => false),
+    t('corregir: «Corregir y reenviar» abre en el paso de documentos'));
+  const orden = await page.$$eval(`${pasoVisible} [data-campo^="doc_"]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => ({
+    observado: e.classList.contains('doc-observado'), junto: Boolean(e.querySelector('.doc-observacion')),
+    aceptado: e.classList.contains('doc-aceptado'), plegado: Boolean(e.querySelector('details.doc-reemplazo:not([open]) [data-archivos]')),
+    etiqueta: /Aceptado/.test((e.querySelector('.doc-aceptado-estado') || {}).textContent || ''), archivo: Boolean(e.querySelector('.arch-previo .arch-nombre, .doc-observacion a')),
+    ver: Boolean(e.querySelector('.arch-previo a[href], .doc-observacion a[href]')) })));
+  const nObs = orden.filter((x) => x.observado).length;
+  comprueba(nObs > 0 && orden.slice(0, nObs).every((x) => x.observado && x.junto) && orden.slice(nObs).every((x) => x.aceptado ? x.plegado && x.etiqueta : true),
+    t('corregir: lo observado va primero, con su observación junto al campo; lo aceptado, plegado y con la etiqueta «Aceptado»'));
+  comprueba(orden.every((x) => x.archivo && x.ver), t('corregir: cada documento ya cargado muestra su archivo y «Ver»'));
   comprueba(await page.isVisible('[data-observaciones]'), t('corregir: observaciones arriba de los documentos'));
   const obligatorios = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).length);
   const observados = datos.documento.filter((d) => d.solicitud_id === conObs.id && d.vigente && d.estado === 'con_observacion').length;
@@ -543,7 +556,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba((await page.getAttribute('[data-verificacion]', 'data-tono')) === 'ok', t(`verificar: ${vigente.numero} vigente`));
   // Días para vencer, contados desde hoy (en la prueba, la fecha simulada) (decisión 2026-10-17)
   const faltan = Math.round((new Date(`${vigente.vence_en}T12:00:00-06:00`) - new Date(`${datos.fecha_corte}T12:00:00-06:00`)) / 86400000);
-  const esperado = faltan > 1 ? `Faltan ${faltan.toLocaleString('es-MX')} días` : faltan === 1 ? 'Falta 1 día' : faltan === 0 ? 'Vence hoy' : `Venció hace ${-faltan}`;
+  const esperado = faltan > 1 ? `Vence en${faltan.toLocaleString('es-MX')} días` : faltan === 1 ? 'Vence en1 día' : faltan === 0 ? '(hoy)' : `Vencida hace${-faltan}`;
   comprueba((await page.textContent('[data-verificacion]')).includes(esperado), t(`verificar: dice cuánto falta para vencer (${esperado})`));
   await page.fill('#numero', noVigente.numero);
   await page.click('[data-accion="enviar"]');
@@ -676,9 +689,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.selectOption('#menu-pruebas-perfil', 'kobo');
   await page.selectOption('#menu-pruebas-persona', 'kobo-vigente');
   await page.click('dialog.menu-pruebas >> button:text-is("Entrar")');
-  await page.waitForURL(/cuenta\.html\?migrada=/);
-  await page.waitForFunction(() => document.getElementById('curp').value.length === 18);
-  comprueba(true, t('menú de pruebas: un caso del registro anterior abre «Crea tu cuenta» llenada con su CURP'));
+  comprueba(await page.waitForURL(/cuenta\.html\?migrada=/).then(() => page.waitForFunction(() => document.getElementById('curp').value.length === 18)).then(() => true, () => false),
+    t('menú de pruebas: un caso del registro anterior abre «Crea tu cuenta» llenada con su CURP'));
   // Crear cuenta: «Llenar con su CURP» crea la cuenta de alguien del registro anterior
   await page.goto(BASE + 'cuenta.html');
   await page.click('.menu-pruebas-boton');
@@ -711,8 +723,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   if (emitida) {
     await entra(page, emitida.curp);
     const f = await fichaDe('Acreditación emitida').textContent();
-    comprueba(/Emitida el/.test(f) && /Vence el/.test(f) && /Número de acreditación/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f),
-      t('mis solicitudes: la acreditación emitida muestra su folio y vigencia, sin los datos del curso'));
+    // Emisión y vencimiento van en su tarjeta de «Mis acreditaciones», con el mismo número rotulado (D25)
+    const a = (await page.locator('[data-acreditaciones] .ficha').allTextContents()).join(' ');
+    comprueba(/Número de acreditación/.test(f) && !/Emitida el|Vence el/.test(f) && !/Sede|Calificación|Asistencia|Duración/.test(f) && /Número de acreditación/.test(a) && /Emitida el/.test(a),
+      t('mis solicitudes: la acreditación emitida muestra su número, sin repetir la vigencia ni los datos del curso'));
     await page.click('[data-sesion] button');
   }
   const conGrupo = personaCon('inscrita', (x) => datos.inscripcion.some((i) => i.solicitud_id === x.id && i.activa && ['confirmado', 'en_curso'].includes(datos.grupo.find((g) => g.id === i.grupo_id).estado)));
@@ -720,8 +734,12 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     await entra(page, conGrupo.curp);
     const ficha = fichaDe('Con grupo asignado');
     const f = await ficha.textContent();
-    comprueba(/Preséntate el/.test(f) && /El curso termina el/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
-      t('mis solicitudes: con grupo, dice cuándo presentarse, cuándo termina el curso y dónde'));
+    // Si el curso ya empezó no dice «Preséntate el …» sino en qué día va (auditoría 2026-10-18, D13); siempre, la fecha del examen
+    const g = datos.grupo.find((x) => datos.inscripcion.some((i) => i.grupo_id === x.id && i.activa && datos.solicitud.some((s) => s.id === i.solicitud_id && s.solicitante_id === conGrupo.id)));
+    const empezo = g && g.fecha_inicio <= datos.fecha_corte;
+    comprueba((empezo ? /Tu curso empezó el/.test(f) && /Hoy es el día\s*\d+ de \d+/.test(f) && !/Preséntate el/.test(f) : /Preséntate el/.test(f) && /El curso termina el/.test(f))
+      && /Examen\s*\d{2}\/\d{2}\/\d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
+      t(`mis solicitudes: con grupo, dice ${empezo ? 'en qué día del curso va' : 'cuándo presentarse'}, la fecha del examen y dónde`));
     comprueba(/identificación oficial/.test(f) && /examen/.test(f) && /al menos \d\.\d/.test(f) && await ficha.locator('ol.secuencia > li').count() >= 4,
       t('mis solicitudes: con grupo, «Qué sigue» dice que lleve la identificación, cuándo es el examen y la calificación mínima'));
     comprueba(/a las \d{2}:\d{2}/.test(f) && await ficha.locator('.datos-por-confirmar', { hasText: 'hora de entrada' }).count() === 0, t('mis solicitudes: con grupo confirmado, dice la hora de entrada (apd.grupo.hora_entrada)'));
@@ -733,6 +751,12 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 4,
       t('mis solicitudes: concepto, monto y referencia del pago, y la dirección de la sede, se marcan en amarillo, por confirmar'));
     comprueba(/Lugar de la cita\s*Vivero Nezahualcóyotl/.test(await page.textContent('[data-solicitudes]')), t('mis solicitudes: la cita es en el Vivero Nezahualcóyotl'));
+    // D4 (auditoría 2026-10-18): fecha, hora y lugar al principio de la ficha, antes de los datos de pago; el paso con su fecha
+    const cita = await page.$eval('[data-solicitudes] .ficha', (fi) => {
+      const c = fi.querySelector('.ficha-cita'); const pago = Array.from(fi.querySelectorAll('.aviso')).find((x) => /Datos para tu pago/.test(x.textContent));
+      return { antes: Boolean(c && pago && (c.compareDocumentPosition(pago) & Node.DOCUMENT_POSITION_FOLLOWING)), paso: (fi.querySelector('ol.secuencia') || {}).textContent || '' };
+    });
+    comprueba(cita.antes && /Acude a tu cita el \d{2}\/\d{2}\/\d{4} a las \d{2}:\d{2}/.test(cita.paso), t('mis solicitudes: la cita va antes de los datos de pago y «Acude a tu cita» dice cuándo'));
     await page.click('[data-sesion] button');
   }
   comprueba(Boolean(emitida && conGrupo && conCita), t('mis solicitudes: hay ficticios para revisar las tres fichas'));
@@ -740,6 +764,103 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await contexto.close();
 
+}
+
+// ── Solicitud de la persona: regresos, borrador y documentos ya cargados (auditoría 2026-10-18: B2, B6, B7, B12, B13, D1) ──
+// Persona activa sin trámite en curso ni acreditaciones: puede iniciar una solicitud de poda nueva
+const libre = datos.solicitante.find((p) => p.estado === 'activa' && !datos.acreditacion.some((a) => a.solicitante_id === p.id)
+  && !datos.solicitud.some((s) => s.solicitante_id === p.id && !FINALES.includes(s.estado)));
+async function solicitudRegresos(navegador, ancho, alto, sufijo) {
+  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const page = await contexto.newPage();
+  const errores = [];
+  page.on('console', (m) => { if (m.type() === 'error') errores.push(`${page.url()} · ${m.text()}`); });
+  page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`));
+  const t = (m) => `[solicitud ${sufijo}] ${m}`;
+  const llega = (re) => page.waitForURL(re, { timeout: 5000 }).then(() => true, () => false);
+  const tituloPaso = () => page.$eval(`${pasoVisible} .titulo-paso`, (e) => e.textContent).catch(() => '');
+  const enPaso = (re) => page.waitForFunction((r) => { const p = document.querySelector('section[data-paso]:not([hidden]) .titulo-paso'); return p && new RegExp(r).test(p.textContent); }, re, { timeout: 4000 }).then(() => true, () => false);
+
+  // B7: un enlace con ?folio= sin sesión pasa por «Entrar» y regresa a la misma solicitud, con su folio
+  await page.goto(BASE + `solicitud.html?folio=${conObs.folio}`);
+  await page.waitForURL(/entrar\.html/);
+  comprueba(new URL(page.url()).searchParams.get('volver') === `solicitud.html?folio=${conObs.folio}`, t('B7: «Entrar» conserva la consulta de la pantalla pedida (?folio=)'));
+  await page.fill('#curp', persona(conObs.solicitante_id).curp);
+  await page.fill('#contrasena', CONTRASENA);
+  await page.click('[data-accion="enviar"]');
+  comprueba(await llega(new RegExp(`solicitud\\.html\\?folio=${conObs.folio}$`)) && await enPaso('Carga tus documentos'), t('B7: después de entrar llega a la corrección de su solicitud'));
+  // B6: «Mi perfil» regresa a la misma solicitud, con su folio, y el enlace dice a dónde lleva
+  const perfil = await page.getAttribute('[data-adscripcion-info] a[href^="datos.html"]', 'href');
+  await page.goto(BASE + perfil);
+  await page.waitForSelector('[data-identidad] .datos');
+  comprueba(/Volver a tu solicitud/.test(await page.textContent('[data-volver]')) && await page.getAttribute('[data-volver]', 'href') === `solicitud.html?folio=${conObs.folio}`,
+    t('B6: en «Mi perfil», el regreso dice «Volver a tu solicitud» y lleva a la misma solicitud, con su folio'));
+  await page.click('[data-volver]');
+  comprueba(await llega(new RegExp(`solicitud\\.html\\?folio=${conObs.folio}$`)) && await enPaso('Carga tus documentos') && await page.isHidden('[data-sin-opciones]'),
+    t('B6: de regreso, la solicitud sigue disponible donde iba'));
+  // D1: en la revisión, lo ya cargado se dice «Ya cargado», no «No indicado»
+  for (const n of await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo))) {
+    await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, PDF);
+    await page.waitForSelector(`[data-campo="${n}"] [data-archivos] .lista-arch li[data-estado="listo"]`);
+  }
+  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
+  await page.waitForSelector('section[data-revision]:not([hidden])');
+  const docsRev = await page.$eval('[data-revision-lista] [data-editar^="doc_"]', (b) => b.closest('.rev-bloque').textContent);
+  comprueba(!/No indicado/.test(docsRev) && /Ya cargado:/.test(docsRev), t('D1: en «Revisa antes de enviar», lo que ya estaba cargado dice «Ya cargado: …», no «No indicado»'));
+  await page.click('[data-sesion] button');
+
+  // B2: «Atrás» del navegador regresa al paso anterior; al recargar, la franja ofrece seguir con lo capturado y los documentos
+  await entra(page, libre.curp);
+  await page.goto(BASE + 'solicitud.html');
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_nueva');
+  comprueba(await page.isHidden('[data-franja-borrador]'), t('B2: sin nada capturado no hay borrador que ofrecer'));
+  await page.selectOption('#nivel_estudios', 'tecnica');
+  await page.fill('#carrera_tecnica', 'Técnico en jardinería');
+  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
+  const campos = await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo));
+  for (const n of campos.slice(0, 2)) {
+    await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, PDF);
+    await page.waitForSelector(`[data-campo="${n}"] .lista-arch li[data-estado="listo"]`);
+  }
+  await page.waitForTimeout(1000);
+  await page.goBack();
+  comprueba(await enPaso('Qué acreditación') && /solicitud\.html/.test(page.url()), t('B2: «Atrás» del navegador regresa al paso anterior, sin salir de la solicitud'));
+  await page.goForward();
+  comprueba(await enPaso('Carga tus documentos'), t('B2: «Adelante» vuelve al paso de documentos'));
+  await page.reload();
+  await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_nueva');
+  comprueba(await page.isVisible('[data-franja-borrador]'), t('B2: al recargar, la franja ofrece seguir donde iba'));
+  await page.click('[data-borrador="recuperar"]');
+  const recuperados = await page.waitForFunction(() => document.querySelectorAll('[data-archivos] .lista-arch li[data-estado="listo"]').length === 2, null, { timeout: 5000 }).then(() => true, () => false);
+  comprueba(recuperados && await enPaso('Carga tus documentos') && await page.inputValue('#carrera_tecnica') === 'Técnico en jardinería',
+    t('B2: «Seguir donde ibas» recupera el paso, lo escrito y los 2 documentos cargados'));
+  for (const n of campos.slice(2)) {
+    await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, PDF);
+    await page.waitForSelector(`[data-campo="${n}"] .lista-arch li[data-estado="listo"]`);
+  }
+  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
+  await page.waitForSelector('section[data-revision]:not([hidden])');
+  // B13: después de «Editar», «Continuar» regresa directo a la revisión
+  await page.click('[data-revision-lista] [data-editar="nivel_estudios"]');
+  const boton = await page.textContent(`${pasoVisible} [data-accion="siguiente"]`);
+  await page.click(`${pasoVisible} [data-accion="siguiente"]`);
+  comprueba(/Volver a la revisión/.test(boton) && await enPaso('Revisa antes de enviar'), t('B13: después de «Editar», «Volver a la revisión» regresa directo, sin recorrer los pasos'));
+  await marcaCasillas(page);
+  await page.click('[data-accion="enviar"]');
+  await page.waitForSelector('[data-acuse]:not([hidden])');
+  comprueba(await page.evaluate(() => !Object.keys(localStorage).some((k) => k.startsWith('apd.borrador.') && k.endsWith('.nueva'))), t('B2: al enviar, el borrador se borra'));
+  await page.goBack();
+  comprueba(await llega(/tramites\.html/), t('B2: «Atrás» desde el acuse lleva a «Mis trámites», no al formulario enviado'));
+
+  // B12: con la sesión abierta, el inicio y «Crea tu cuenta» llevan a «Mis trámites»
+  await page.goto(BASE + 'index.html');
+  comprueba(await page.waitForSelector('.menu-inicio a[href="tramites.html"]', { timeout: 3000 }).then(() => true, () => false) && await page.locator('.menu-inicio a[href="entrar.html"]').count() === 0,
+    t('B12: con sesión, el inicio ofrece «Mis trámites» en lugar de «Crea tu cuenta» y «Entra»'));
+  await page.goto(BASE + 'cuenta.html');
+  comprueba(await page.waitForSelector('[data-con-sesion]:not([hidden]) a[href="tramites.html"]', { timeout: 3000 }).then(() => true, () => false),
+    t('B12: con sesión, «Crea tu cuenta» dice con quién entraste y lleva a «Mis trámites»'));
+  comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await contexto.close();
 }
 
 // ── Etapa 2 · pantallas del personal: bandeja y revisión documental (decisiones 2026-10-16) ──
@@ -859,8 +980,9 @@ async function recorridoGuardado(navegador) {
     && await page.locator('[data-doc-previo]:not([hidden])').count() === resto.length,
     t('2.ª vuelta: sólo se decide el documento corregido; los aceptados antes no se vuelven a revisar'));
   await page.check(`input[name="decision_${primero}"][value="aceptado"]`);
-  const dia = await page.getAttribute('#cita_fecha', 'min');
-  await page.fill('#cita_fecha', dia);
+  // Fecha día/mes/año (formato «fecha-dma», D9): el mínimo va en data-min del campo, como AAAA-MM-DD
+  const dia = await page.getAttribute('[data-campo="cita_fecha"]', 'data-min');
+  await page.fill('#cita_fecha', dia.split('-').reverse().join('/'));
   await page.selectOption('#cita_hora', '12:30');
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-hecho]:not([hidden])');
@@ -967,7 +1089,8 @@ async function caminosCotejo(navegador) {
   };
   const abre = async (pg, folio) => { await pg.goto(BASE + `cotejo.html?folio=${folio}`); await pg.waitForSelector('#formulario:not([hidden])'); };
   const registra = async (pg) => { await pg.click('[data-accion="enviar"]'); await pg.waitForSelector('[data-hecho]:not([hidden])'); };
-  const manana = (() => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
+  // Día/mes/año: la fecha de la cita nueva usa el formato «fecha-dma» del estándar (D9)
+  const manana = (() => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10).split('-').reverse().join('/'); })();
 
   // No se presenta dos veces: cita nueva, y a la segunda la solicitud se cierra (con confirmación)
   let { c, pg, errores } = await nuevo(390);
@@ -1153,7 +1276,7 @@ async function personal(navegador, ancho, alto, sufijo) {
   }
   for (const d of datos.documento.filter((x) => x.solicitud_id === porClasificar.id && x.vigente)) await page.check(`input[name="decision_${d.requisito}"][value="aceptado"]`);
   comprueba(await page.textContent('[data-accion="enviar"]') === 'Validar y asignar la cita', t('con todo aceptado, la acción es validar'));
-  await page.fill('#cita_fecha', '2026-10-21'); await page.selectOption('#cita_hora', '10:00');
+  await page.fill('#cita_fecha', '21/10/2026'); await page.selectOption('#cita_hora', '10:00');
   await captura(page, `41-personal-validar-${sufijo}`);
   // Tras una captura de página completa, Chromium sin ventana desplaza la página al enfocar: se enfoca antes de pulsar
   await page.focus('[data-accion="enviar"]');
@@ -1272,7 +1395,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.waitForSelector('[data-filas] tr');
   comprueba((await pg.$$('.curso')).length === 4, t('la espera se muestra por cada uno de los cuatro cursos'));
   comprueba((await pg.$$('[data-filas] tr')).length === datos.grupo.length, t('la lista muestra todos los grupos'));
-  comprueba(/con la acreditación vencida/.test(await texto('[data-cursos]')), t('renovación: avisa de quien espera con la acreditación vencida'));
+  comprueba(/la acreditación vencida/.test(await texto('[data-cursos]')), t('renovación: avisa de quien espera con la acreditación vencida'));
   await sinDesborde(pg, t('grupos'));
   await captura(pg, `grupos-${sufijo}`);
 
@@ -1305,7 +1428,8 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(await pg.isVisible(`[data-filas] tr[data-folio="${primero}"]`), t('la persona elegida queda en el grupo'));
 
   // Confirmar: la fecha debe dar 7 días de anticipación
-  const fechaMas = (n) => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  // Día/mes/año: el primer día del curso usa el formato «fecha-dma» del estándar (D9)
+  const fechaMas = (n) => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10).split('-').reverse().join('/'); };
   await pg.fill('#fecha_inicio', fechaMas(3));
   await pg.selectOption('#hora_entrada', '09:00');
   await pg.selectOption('#instructor', 'instructor.ficticio');
@@ -1316,8 +1440,10 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(/anterior al \d{2}\/\d{2}\/\d{4}/.test(msjFecha) && !/\b(Escribe|Revisa|Elige)\b/.test(msjFecha), t(`el límite de la fecha se dice en día/mes/año y en usted («${msjFecha.trim()}»)`));
   await captura(pg, `grupos-confirmar-error-${sufijo}`);
   await pg.fill('#fecha_inicio', fechaMas(12));
+  // La espera empieza antes del clic: la página quita «hecho» de la dirección en cuanto carga y la espera llegaba tarde
+  const llega1 = pg.waitForURL(/hecho=confirmado/);
   await pg.click('#confirmar [data-accion="enviar"]');
-  await pg.waitForURL(/hecho=confirmado/);
+  await llega1;
   await pg.waitForSelector('[data-situacion] .estado');
   comprueba(/Confirmado/.test(await texto('[data-situacion]')) && /09:00/.test(await texto('[data-datos]')), t('el grupo queda confirmado con su hora de entrada'));
   await sinDesborde(pg, t('grupo confirmado'));
@@ -1341,8 +1467,10 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(await pg.isVisible('#dlg-baja[open]') && !/hecho=/.test(pg.url()), t('dar de baja sin motivo no se guarda'));
   await captura(pg, `grupos-baja-${sufijo}`);
   await pg.fill('#motivo-baja', 'Pidió cambiar de fecha por trabajo.');
+  // La espera empieza antes del clic: la página quita «hecho» de la dirección en cuanto carga y la espera llegaba tarde
+  const llega2 = pg.waitForURL(/hecho=baja_integracion/);
   await pg.click('#baja [data-accion="enviar"]');
-  await pg.waitForURL(/hecho=baja_integracion/).catch(async (e) => {
+  await llega2.catch(async (e) => {
     console.log('DIAG baja:', pg.url(), '|', await pg.evaluate(() => [document.querySelector('#dlg-baja')?.open, document.querySelector('#baja [data-estado-envio]')?.textContent, document.querySelector('#baja .resumen-errores')?.textContent, document.querySelector('#motivo-baja')?.value].join(' | ')));
     throw e;
   });
@@ -1367,8 +1495,10 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   for (const k of await pg.$$('.bloque-adscripcion tr[data-folio] input')) await k.check();
   await pg.click('[data-destinos] button:has-text("Crear un grupo")');
   await pg.waitForSelector('dialog[open]');
+  // La espera empieza antes del clic: la página quita «hecho» de la dirección en cuanto carga y la espera llegaba tarde
+  const llega3 = pg.waitForURL(/hecho=creado/);
   await pg.click('dialog[open] .btn-primario');
-  await pg.waitForURL(/hecho=creado/);
+  await llega3;
   await pg.waitForSelector('[data-filas] tr');
   comprueba((await pg.$$('[data-filas] tr')).length === enEspera, t('el grupo nuevo tiene a las personas elegidas'));
   await pg.click('[data-acciones] button:has-text("Cancelar el grupo")');
@@ -1377,8 +1507,10 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
     && (await pg.$$eval('#dlg-cancelar .dialogo-consecuencias li', (l) => l.length)) > 0, t('cancelar: el diálogo nombra el grupo, lista las consecuencias y no repite «Cancelar» en sus dos botones'));
   await captura(pg, `grupos-dialogo-cancelar-${sufijo}`);
   await pg.fill('#motivo-cancelar', 'No se reunió el cupo mínimo en el plazo previsto.');
+  // La espera empieza antes del clic: la página quita «hecho» de la dirección en cuanto carga y la espera llegaba tarde
+  const llega4 = pg.waitForURL(/hecho=cancelado/);
   await pg.click('#cancelar [data-accion="enviar"]');
-  await pg.waitForURL(/hecho=cancelado/).catch(async (e) => {
+  await llega4.catch(async (e) => {
     console.log('DIAG cancelar:', pg.url(), '|', await pg.evaluate(() => [document.querySelector('#dlg-cancelar')?.open, document.querySelector('#cancelar [data-estado-envio]')?.textContent, document.querySelector('#cancelar .resumen-errores')?.textContent, document.querySelector('#motivo-cancelar')?.value].join(' | ')));
     throw e;
   });
@@ -1388,27 +1520,41 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
 
   // Asistencia del instructor: no guarda con alguien sin marcar; guarda el día y avisa a quien ya no tiene derecho
   // Hay dos grupos en curso (el del caso «aprobó hoy» termina en la fecha de corte): se abre el que sigue en clases
-  await pg.goto(BASE + `asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`);
+  const grupoClases = datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13');
+  // El último día (examen) no se captura aquí: pedirlo con ?dia=5 no abre su lista (auditoría A 7.1: la comprobación
+  // anterior miraba «Corregir otro día», que nunca lo lista)
+  await pg.goto(BASE + `asistencia.html?folio=${grupoClases.folio}&dia=5`);
+  await pg.waitForSelector('.asistencia-fila');
+  const tituloDia5 = await texto('[data-titulo-dia]');
+  await pg.goto(BASE + `asistencia.html?folio=${grupoClases.folio}`);
   await pg.waitForSelector('.asistencia-fila');
   // Propuesta A (2026-10-18): la lista del día de hoy; el último día (examen) no se ofrece para capturar
-  comprueba(/^Día 2 de 5/.test(await texto('[data-titulo-dia]')) && !/examen/i.test(await texto('[data-dias]')) && (await pg.$$('.asis-puntos .asis-marca')).length > 0,
+  comprueba(/^Día 2 de 5/.test(await texto('[data-titulo-dia]')) && !/^Día 5\b/.test(tituloDia5) && (await pg.$$('[data-dias] a[href*="dia=5"]')).length === 0
+    && (await pg.$$('.asis-marcas .asis-marca')).length > 0,
     t('la lista es la del día de hoy y el examen no se captura aquí (se registra al pasar lista)'));
   // Versión de prueba: el recorrido de todos los días, con el examen que lleva a «Aplicar el examen»
   comprueba(/aplicar\.html/.test(await pg.getAttribute('[data-recorrido-dias] a:last-child', 'href')) && (await pg.$$('[data-recorrido-dias] a, [data-recorrido-dias] strong')).length === 5,
     t('la versión de prueba permite recorrer los cinco días del curso'));
-  comprueba((await pg.$$('.asis-puntos')).length === (await pg.$$('.asistencia-fila')).length, t('cada persona muestra su tira de días'));
+  comprueba((await pg.$$('.asis-marcas')).length === (await pg.$$('.asistencia-fila')).length, t('cada persona muestra su tira de días'));
   await pg.click('[data-guardar]');
   comprueba(await pg.isVisible('[data-falta-marcar]'), t('no se guarda la asistencia con personas sin marcar'));
   await captura(pg, `asistencia-${sufijo}`);
   await pg.click('[data-todas]');
-  const falto = await pg.$('.asistencia-fila:has(.asis-puntos .asis-marca:first-child.asis-no)');
+  // Con los datos: una persona que ya faltó el día 1; faltar hoy la deja sin derecho a examen (A 7.2: antes, si no había,
+  // la comprobación se saltaba en silencio)
+  const insClases = datos.inscripcion.filter((i) => i.grupo_id === grupoClases.id).map((i) => i.id);
+  const faltaDia1 = datos.asistencia.find((a) => insClases.includes(a.inscripcion_id) && a.dia === 1 && !a.asistio);
+  comprueba(Boolean(faltaDia1), t('los ficticios traen a alguien del grupo en curso que faltó el día 1'));
+  const falto = faltaDia1 ? await pg.$(`.asistencia-fila[data-ins="${faltaDia1.inscripcion_id}"]`) : null;
   if (falto) await (await falto.$('input[value="no"]')).check();
+  // La espera empieza antes del clic: la página quita «hecho» de la dirección en cuanto carga y la espera llegaba tarde
+  const llega5 = pg.waitForURL(/hecho=asistencia/);
   await pg.click('[data-guardar]');
-  await pg.waitForURL(/hecho=asistencia/);
+  await llega5;
   await pg.waitForSelector('.asistencia-fila');
   comprueba(/guardada/.test(await texto('[data-hecho]')), t('la asistencia del día se guarda'));
   comprueba(/^Día 3 de 5/.test(await texto('[data-titulo-dia]')) && /Sigue el día 3/.test(await texto('[data-hecho]')), t('en la versión de prueba, guardar lleva al día siguiente del curso'));
-  if (falto) comprueba(/Sin derecho a examen/.test(await texto('[data-personas]')), t('quien faltó dos días se marca sin derecho a examen'));
+  comprueba(Boolean(falto) && /Sin derecho a examen/.test(await texto(`.asistencia-fila[data-ins="${faltaDia1.inscripcion_id}"]`)), t('quien faltó dos días se marca sin derecho a examen'));
   await sinDesborde(pg, t('asistencia'));
   await captura(pg, `asistencia-guardada-${sufijo}`);
   // La ficha de un grupo concluido conserva la asistencia de conjunto
@@ -1472,6 +1618,38 @@ async function materialEstudio(navegador, ancho, alto, sufijo) {
   comprueba((await pg.$$('.material-doc')).length === publicos.length + 1, t('el documento agregado y publicado aparece en la página pública'));
   await pg.goto(BASE + 'material-personal.html');
   await pg.waitForSelector('[data-filas] tr');
+  // C4 (auditoría 2026-10-18): editar, ocultar y publicar el documento agregado combinan con lo guardado, no lo borran
+  const guia = () => pg.locator('[data-filas] tr', { hasText: 'Guía de prueba' });
+  await guia().locator('[data-accion-material="editar"]').click();
+  await pg.fill('#descripcion', 'Descripción editada en la prueba.');
+  await pg.click('[data-guardar]');
+  await pg.waitForURL(/hecho=editar/, { timeout: 15000 });
+  await pg.waitForSelector('[data-resultado]:not([hidden])');
+  await guia().locator('[data-accion-material="ocultar"]').click();
+  await pg.click('dialog [data-r="si"]');
+  await pg.waitForURL(/hecho=oculto/);
+  await pg.waitForSelector('[data-resultado]:not([hidden])');
+  const renglonGuia = (await guia().innerText()).replace(/\s+/g, ' ');
+  comprueba(/Guía de prueba/.test(renglonGuia) && /\d+ págs\./.test(renglonGuia) && !/undefined|Invalid/.test(renglonGuia) && /Sin publicar/.test(renglonGuia),
+    t(`C4: editar y ocultar el documento agregado conservan su archivo y sus datos, con su resultado (${renglonGuia.slice(0, 90)})`));
+  await guia().locator('[data-accion-material="publicar"]').click();
+  await pg.waitForURL(/hecho=publicado/);
+  await pg.waitForSelector('[data-resultado]:not([hidden])');
+  comprueba(/Publicado/.test(await guia().innerText()), t('C4: publicarlo de nuevo lo deja publicado'));
+  // Uno de los ficticios: la edición no se pierde al ocultarlo después
+  const ficticio = datos.material_estudio.find((m) => m.vigente && m.publicado && m.clave !== 'ley_ambiental');
+  await pg.click(`tr[data-clave-material="${ficticio.clave}"] [data-accion-material="editar"]`);
+  await pg.fill('#titulo', `${ficticio.titulo} (editado)`);
+  await pg.click('[data-guardar]');
+  await pg.waitForURL(/hecho=editar/, { timeout: 15000 });
+  await pg.click(`tr[data-clave-material="${ficticio.clave}"] [data-accion-material="ocultar"]`);
+  await pg.click('dialog [data-r="si"]');
+  await pg.waitForURL(/hecho=oculto/);
+  await pg.waitForSelector('[data-resultado]:not([hidden])');
+  comprueba((await pg.textContent(`tr[data-clave-material="${ficticio.clave}"]`)).includes('(editado)'), t('C4: editar y después ocultar un documento de los ficticios conserva la edición'));
+  await pg.click(`tr[data-clave-material="${ficticio.clave}"] [data-accion-material="publicar"]`);
+  await pg.waitForURL(/hecho=publicado/);
+  await pg.waitForSelector('[data-filas] tr');
   await pg.click('tr[data-clave-material="ley_ambiental"] [data-accion-material="ocultar"]');
   await pg.click('dialog [data-r="si"]');
   await pg.waitForURL(/hecho=oculto/);
@@ -1479,6 +1657,67 @@ async function materialEstudio(navegador, ancho, alto, sufijo) {
   await pg.waitForSelector('.material-doc');
   comprueba((await pg.$$('.material-doc')).length === publicos.length && !/Ley Ambiental/.test(await pg.textContent('[data-material]')),
     t('un documento oculto deja de verse en la página pública'));
+  comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+}
+
+/* Lo guardado en la versión de prueba llega a los datos como lo dejaría la base (auditoría 2026-10-18, C1, C2 y B5) */
+async function persistenciaPrueba(navegador) {
+  const t = (m) => `[persistencia] ${m}`;
+  const c = await navegador.newContext({ viewport: { width: 1280, height: 900 } });
+  const pg = await c.newPage();
+  const errores = [];
+  pg.on('pageerror', (e) => errores.push(e.message));
+  pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+  // C1: la corrección de una cita en pausa de una solicitud ficticia llega a la agenda del personal
+  const pausa = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sp = datos.solicitud.find((s) => s.id === pausa.solicitud_id);
+  await pg.goto(BASE + 'index.html');
+  await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sp.solicitante_id);
+  await pg.goto(BASE + `corregir.html?folio=${sp.folio}`);
+  await pg.waitForSelector('#formulario:not([hidden])');
+  for (const campo of await pg.$$('#formulario [data-campo^="doc_"]')) if (await campo.isVisible()) await (await campo.$('input[type="file"]')).setInputFiles(PDF);
+  await pg.click('#formulario [data-accion="enviar"]');
+  await pg.waitForSelector('[data-hecho]:not([hidden])');
+  await pg.goto(BASE + `citas.html?dia=${datos.fecha_corte}`);
+  await pg.waitForSelector('main tr');
+  const fila = await pg.locator('tr', { hasText: sp.folio }).first().innerText();
+  comprueba(/Documento cargado/.test(fila), t(`C1: la corrección de la cita en pausa de ${sp.folio} llega a la agenda («Documento cargado · retomar»)`));
+  // C2: dos reenvíos de una solicitud con observaciones conservan la revisión de en medio
+  const so = datos.solicitud.find((s) => s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda');
+  const revisionesAntes = datos.revision.filter((r) => r.solicitud_id === so.id).length;
+  const r2 = await pg.evaluate(async (F) => {
+    const espera = () => new Promise((r) => setTimeout(r, 30));
+    const blob = new Blob(['%PDF-1.4\n%%EOF\n'], { type: 'application/pdf' });
+    const envio = () => APD_ARCHIVOS_PRUEBA.guardaEnvio({ folio: F, existente: true, estado_desde: new Date().toISOString(), persona: {} },
+      [{ requisito: 'curp', blob, nombre: 'curp.pdf', tipo: 'application/pdf', size: 16 }]);
+    const observa = () => APD_PERSONAL.guardaRevision(F, { resultado: 'con_observaciones', datos: { decision_curp: 'con_observacion', observacion_curp: 'No se lee.' }, revisor: 'revision.prueba', en: new Date().toISOString() });
+    await envio(); await espera(); observa(); await espera(); await envio(); await espera(); observa(); await espera(); await envio();
+    const d = await APD.cargar();
+    const s = d.solicitud.find((x) => x.folio === F);
+    return { estado: s.estado, revisiones: d.revision.filter((x) => x.solicitud_id === s.id).length, cargas: d.documento.filter((x) => x.solicitud_id === s.id && x.requisito === 'curp').length };
+  }, so.folio);
+  comprueba(r2.estado === 'enviada' && r2.revisiones === revisionesAntes + 2 && r2.cargas >= 4,
+    t(`C2: con dos reenvíos se conservan las dos revisiones de la prueba y cada carga (${JSON.stringify(r2)})`));
+  // B5: un grupo confirmado en la prueba se inicia desde el menú de pruebas y ya admite asistencia
+  const gi = datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio);
+  await pg.goto(BASE + `grupo.html?folio=${gi.folio}`);
+  await pg.waitForSelector('[data-sesion-personal] a');
+  await pg.evaluate(async (folio) => {
+    const d = await APD.cargar();
+    const g = d.grupo.find((x) => x.folio === folio);
+    const n = d.inscripcion.filter((i) => i.grupo_id === g.id && i.activa).length;
+    const folios = APD_PERSONAL.enEspera(d, g.tipo_acreditacion, g.modalidad).slice(0, Math.max(0, g.cupo_minimo - n)).map((x) => x.s.folio);
+    if (folios.length) await APD_PERSONAL.guardaGrupo({ tipo: 'agregar', grupo_id: g.id, folios, por: 'revision.prueba' });
+    await new Promise((r) => setTimeout(r, 20));
+    await APD_PERSONAL.guardaGrupo({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: APD.sumaDias(d.fecha_corte, 8), hora_entrada: '09:00', instructor: 'instructor.ficticio', por: 'revision.prueba' });
+  }, gi.folio);
+  await pg.reload();
+  await pg.click('.menu-pruebas-boton');
+  await Promise.all([pg.waitForNavigation(), pg.click('dialog.menu-pruebas button:has-text("Iniciar el curso hoy")')]);
+  await pg.goto(BASE + `asistencia.html?folio=${gi.folio}`);
+  await pg.waitForLoadState('networkidle');
+  comprueba(await pg.isHidden('[data-sin-grupo]') && /Día 1 de/.test(await pg.textContent('main')), t(`B5: el grupo ${gi.folio} confirmado se inicia en la prueba y su asistencia se captura`));
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 }
@@ -1526,6 +1765,10 @@ try {
     await personal(navegador, 390, 844, 'telefono');
     await personal(navegador, 1440, 900, 'escritorio');
   }
+  if (!solo || solo === 'solicitud') {
+    await solicitudRegresos(navegador, 390, 844, 'telefono');
+    await solicitudRegresos(navegador, 1280, 900, 'escritorio');
+  }
   if (!solo || solo === 'guardado') {
     await recorridoGuardado(navegador);
     await caminosCotejo(navegador);
@@ -1538,6 +1781,7 @@ try {
     await materialEstudio(navegador, 390, 844, 'telefono');
     await materialEstudio(navegador, 1280, 900, 'escritorio');
   }
+  if (!solo || solo === 'persistencia') await persistenciaPrueba(navegador);
   if (!solo) await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);

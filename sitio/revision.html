@@ -7,12 +7,12 @@
 <title>Solicitudes por revisar · Personal · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Bandeja de revisión documental para el personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -71,8 +71,9 @@
       <p class="tabla-vacia" data-tabla-vacia hidden>Ninguna solicitud coincide con la búsqueda. Revise lo que escribió o quite algún filtro.</p>
     </div>
     <p class="ayuda">La espera se marca en ámbar desde <span data-umbral-ambar></span> días y en rojo desde <span data-umbral-rojo></span>. <span class="pendiente">Pendiente: plazos de la revisión documental que fije la Dirección (P02).</span></p>
-    <!-- Versión de prueba: lo revisado en este navegador, mientras no existan las pantallas que siguen (2026-10-17) -->
-    <div class="revisadas" data-revisadas hidden>
+    <!-- Versión de prueba: lo revisado en este navegador, con su situación actual, para seguirlo sin buscarlo en «Citas
+         de cotejo» o en «Grupos» (2026-10-17; las pruebas lo usan). Se quita al pasar al SIA, con el menú de pruebas. -->
+    <div data-revisadas hidden>
       <h3 class="titulo-bloque">Revisadas en esta prueba</h3>
       <p class="ayuda">Ya no están por revisar. Las validadas ya tienen su cita de cotejo; las que tienen observaciones regresan a la persona y vuelven aquí cuando las reenvía. <span class="pendiente">Pendiente: la pantalla de emisión y entrega de la credencial.</span></p>
       <ul class="lista-obs" data-revisadas-lista></ul>
@@ -90,11 +91,13 @@
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.52"></script>
 <script src="app/personal.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/tabla/tabla.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
+<!-- Textos del estándar en usted, como en las demás pantallas del personal (auditoría 2026-10-18, A 8.12) -->
+<script src="app/mensajes-usted.js?v=0.52"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/tabla/tabla.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
 <script src="app/revision.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.52"></script>

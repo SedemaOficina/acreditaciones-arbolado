@@ -1,6 +1,6 @@
 /* asistencia.js · «Asistencia» (instructor, etapa 2). ?folio=APD-G-… opcional; ?dia=N para corregir un día anterior.
    Propuesta A, elegida por Liber el 2026-10-18: una sola lista, la del día. Por persona: su fotografía, su nombre, una
-   tira de puntos con los días del curso (asistió, faltó, hoy, por venir, examen) y sus dos botones «Asistió» y «Faltó».
+   tira de marcas hasta el día en pantalla (asistió, faltó, sin marcar, sin capturar) y sus dos botones «Asistió» y «Faltó».
    La etiqueta sólo aparece cuando hay riesgo («Ya no puede faltar», «Sin derecho a examen»); abajo, una línea con lo
    marcado y «Guardar». Corregir otro día es la excepción: va en «Corregir otro día». La vista de todos los días está en la
    ficha del grupo (P.pintaConcentrado).
@@ -8,14 +8,15 @@
    pueden corregir mientras el curso siga; los que no han ocurrido no se capturan (como la base, apd.asistencia_captura).
    El último día es el del examen: su asistencia se registra al pasar lista en el salón de cómputo («Aplicar el examen»),
    no aquí (P94). No se guarda un día con alguien sin marcar. Asistencia mínima del curso: R33 y R35.
-   ACCESO SIMULADO: perfil ficticio «instructor» (P27). En la prueba se guarda en «apd.personal.grupos». */
+   ACCESO SIMULADO: perfil ficticio «instructor» (P27). En la prueba se guarda en «apd.personal.grupos»; un día que aún no
+   llega (sólo la prueba lo permite) va marcado «simulada», porque la base lo rechaza (dia_futuro; auditoría C 3.4). */
 (function () {
   'use strict';
   const { el, estado, fecha } = APD;
   const P = APD_PERSONAL;
   const G = window.APD_EXAMEN_GRUPO;
   const $ = (s, r) => (r || document).querySelector(s);
-  const plural = (n, uno, varios) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
+  const plural = APD.plural;
   const params = new URLSearchParams(location.search);
   const corta = (iso) => fecha(iso).slice(0, 5);
   const DIA_SEMANA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -155,24 +156,24 @@
     // (decisión de Liber, 2026-10-18). ✓ verde asistió, ✗ rojo faltó, aro punteado: el día en pantalla sin marcar,
     // «?»: un día anterior sin capturar. Cada marca lleva su texto para el lector de pantalla.
     const hasta = Math.min(ultimoDia - 1, Math.max(dia, capturables.filter((n) => diaDe(n) <= hoy).pop() || 0));
-    function puntos(f, hoyMarca) {
+    function marcas(f, hoyMarca) {
       const lista = [];
       const texto = [];
       for (let n = 1; n <= hasta; n++) {
         const v = n === dia ? (hoyMarca === 'si' ? true : hoyMarca === 'no' ? false : null) : capturada(f.i.id, n);
         const [clase, signo, que] = v === true ? ['asis-si', '✓', 'asistió'] : v === false ? ['asis-no', '✗', 'faltó']
           : n === dia ? ['asis-hoy', '', 'sin marcar'] : ['asis-sin', '?', 'sin capturar'];
-        lista.push(el('span', { class: `asis-marca ${clase}`, title: `Día ${n}: ${que}`, texto: signo }));
+        lista.push(el('span', { class: `asis-marca ${clase}`, 'aria-hidden': 'true', title: `Día ${n}: ${que}`, texto: signo }));
         texto.push(`día ${n} ${que}`);
       }
-      return [el('span', { class: 'asis-puntos', 'aria-hidden': 'true' }, lista), el('span', { class: 'solo-lector', texto: `${texto.join(', ')}.` })];
+      return [...lista, el('span', { class: 'solo-lector', texto: `${texto.join(', ')}.` })];
     }
     function pintaFila(fila, f) {
       // Se lee de la fila: al pintarla por primera vez todavía no está en la página
       const r = fila.querySelector('input:checked');
       const m = r ? r.value : '';
       const faltas = faltasDe(f, m);
-      fila.querySelector('[data-puntos]').replaceChildren(...puntos(f, m));
+      fila.querySelector('[data-marcas]').replaceChildren(...marcas(f, m));
       const riesgo = faltas > permitidas ? estado('Sin derecho a examen', 'error') : faltas === permitidas && faltas ? estado('Ya no puede faltar', 'pend') : null;
       fila.querySelector('[data-aviso]').replaceChildren(...(riesgo ? [riesgo] : []));
       pintaTotales();
@@ -199,7 +200,7 @@
         el('div', { class: 'asis-quien' }, [
           el('p', { class: 'asis-nombre', texto: f.quien }),
           // La etiqueta de riesgo va en el mismo renglón que la tira, para no alargar la fila (pedido de Liber, 2026-10-18)
-          el('p', { class: 'asis-historia' }, [el('span', { class: 'asis-tira', 'data-puntos': '' }), el('span', { class: 'asis-riesgo', 'data-aviso': '' })])
+          el('p', { class: 'asis-historia' }, [el('span', { class: 'asis-marcas', 'data-marcas': '' }), el('span', { class: 'asis-riesgo', 'data-aviso': '' })])
         ]),
         el('fieldset', { class: 'asis-opciones' }, [
           el('legend', { class: 'solo-lector', texto: `¿${f.quien} asistió el día ${dia}?` }),
@@ -207,13 +208,18 @@
         ])
       ]);
       pintaFila(fila, f);
-      // Lo que se marca cambia los puntos y la etiqueta al momento
-      fila.addEventListener('change', () => pintaFila(fila, f));
+      // Lo que se marca cambia la tira y la etiqueta al momento
+      fila.addEventListener('change', (e) => { pintaFila(fila, f); if (e.isTrusted) sinGuardar = true; });
       return fila;
     }));
     pintaTotales();
 
+    /* Recargar o salir con marcas sin guardar las pierde: el navegador lo advierte (auditoría 2026-10-18, B9) */
+    let sinGuardar = false;
+    window.addEventListener('beforeunload', (e) => { if (sinGuardar) { e.preventDefault(); e.returnValue = ''; } });
+
     $('[data-todas]').addEventListener('click', () => {
+      sinGuardar = true;
       for (const r of document.querySelectorAll('[data-personas] input[value="si"]')) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
       for (const f of document.querySelectorAll('.falta-marcar')) f.classList.remove('falta-marcar');
       // Lo que antes sólo oía el lector de pantalla también se ve (hallazgo P117)
@@ -235,7 +241,9 @@
           `Falta marcar a ${sinMarcar.length === 1 ? sinMarcar[0].quien : `${sinMarcar.length} personas, señaladas en rojo`}. Marque «Asistió» o «Faltó» a cada una.`, true);
         return;
       }
-      P.guardaGrupo({ tipo: 'asistencia', grupo_id: g.id, dia, lista, por: P.INSTRUCTORA.usuario }).then(() => {
+      // Un día que aún no llega sólo se captura en la prueba: va marcado «simulada» (C 3.4)
+      P.guardaGrupo(Object.assign({ tipo: 'asistencia', grupo_id: g.id, dia, lista, por: P.INSTRUCTORA.usuario }, futuro ? { simulada: true, fecha_dia: diaDe(dia) } : {})).then(() => {
+        sinGuardar = false;
         // Versión de prueba: pasa al día siguiente del curso (el examen no se captura aquí). En el SIA se queda en el
         // día: los días que no han pasado no se capturan (decisión de Liber, 2026-10-18)
         const siguiente = prueba && dia + 1 < ultimoDia ? dia + 1 : dia;

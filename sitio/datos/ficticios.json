@@ -19206,7 +19206,7 @@
  ],
  "material_estudio": [
   {
-   "id": "9e612b03-ab30-4475-ab89-9c773dc15afe",
+   "id": "41ef3556-bb4b-42a2-a453-7f3712a5fdfe",
    "clave": "norma_poda",
    "orden": 1,
    "temas": [
@@ -19265,7 +19265,7 @@
    ],
    "sha256": "0107f22ec42ed2b563a4db1a8283285624ef6d34ca671ac5cf5ed125afb40001",
    "titulo": "Norma Ambiental NADF-001-RNAT-2015",
-   "edicion": "Publicada en la Gaceta Oficial de la Ciudad de México el 1/04/2016",
+   "edicion": "Publicada en la Gaceta Oficial de la Ciudad de México el 01/04/2016",
    "paginas": 34,
    "vigente": true,
    "publicado": true,
@@ -19281,7 +19281,7 @@
    "tipo_acreditacion": null
   },
   {
-   "id": "de2c2bba-a29e-441a-bb6a-f0111678c8df",
+   "id": "86347305-5acc-43e4-a0d5-7d33c8c3374b",
    "clave": "manual_poda",
    "orden": 2,
    "temas": [
@@ -19340,7 +19340,7 @@
    "tipo_acreditacion": null
   },
   {
-   "id": "4959d237-3f99-42ad-b912-199f2a2cfdf3",
+   "id": "c53da12c-67e3-4bb6-bb35-58a7e763e246",
    "clave": "ley_ambiental",
    "orden": 3,
    "temas": [

@@ -9,7 +9,7 @@
 // sitio/vendor/pdfjs-dist/, sitio/app/version-visible.js, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
 // corregir.html, cuenta.html y datos.html.
 
-import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,11 +46,16 @@ mkdirSync(join(sitio, 'app'), { recursive: true });
 const plantillaVersion = join(raiz, 'herramientas/plantillas/version');
 cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-visible.js'));
 // La hoja del distintivo es el módulo «version» del estándar (formkit/modulos/version/version.css, mismas clases)
-// El ?v= de cada archivo propio sale de VERSION: se reescribe en todas las páginas
-const paginas = ['index.html', 'cuenta.html', 'entrar.html', 'tramites.html', 'solicitud.html', 'corregir.html', 'datos.html', 'verificar.html', 'revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'espera.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'examen.html'];
+// El ?v= de cada archivo propio sale de VERSION; el de los archivos del estándar (formkit/…), de la versión del estándar,
+// para que el navegador no use una copia vieja después de cambiar de estándar (auditoría 2026-10-18, A 8.14). Se
+// reescribe en TODAS las páginas de sitio/ (A 8.1: la lista escrita a mano había dejado fuera las de material).
+const versionEstandar = cambios ? cambios[1] : '0';
+const paginas = readdirSync(sitio).filter((f) => f.endsWith('.html'));
 for (const p of paginas) {
   const ruta = join(sitio, p);
-  const html = readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${version}`);
+  const html = readFileSync(ruta, 'utf8')
+    .replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${version}"`)
+    .replace(/((?:href|src)="formkit\/[^"?]+\.(?:css|js))(?:\?v=[0-9.]+)?"/g, `$1?v=${versionEstandar}"`);
   writeFileSync(ruta, html);
 }
 
@@ -155,10 +160,10 @@ const revisionDocs = enLinea.map((r) => {
           <article class="doc-revision" data-doc="${k}" data-contexto="${esc(r.nombre)}">
             <div class="doc-cabeza">
               <h4 class="doc-titulo">${esc(r.nombre)}</h4>
-              <span class="estado" data-doc-estado>Por revisar</span>
+              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
             <p class="doc-archivo" data-doc-archivo></p>
-            <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="${k}">Revisarlo de nuevo<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
             <div data-si="decidir_${k}=si">
@@ -175,9 +180,10 @@ const revisionDocs = enLinea.map((r) => {
               <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-              <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->
-              <p class="doc-seguir"><button type="button" class="btn btn-secundario btn-chico" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
+            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
+                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
+            <p class="doc-seguir" data-si="decision_${k}=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>`;
@@ -207,10 +213,10 @@ const cotejoDocs = enLinea.map((r) => {
         <article class="doc-revision" data-doc="${k}" data-contexto="${esc(r.nombre)}">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">${esc(r.nombre)}</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="${k}">Ver lo que cargó<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver lo que cargó<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
           <fieldset class="grupo" data-campo="coincide_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->

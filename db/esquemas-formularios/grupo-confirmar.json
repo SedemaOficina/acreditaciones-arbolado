@@ -1,15 +1,17 @@
 {
   "formulario": "grupo-confirmar.html",
-  "generado": "2026-10-17T23:11:51.809Z",
+  "generado": "2026-10-18T20:07:21.192Z",
   "campos": {
     "fecha_inicio": {
       "etiqueta": "Primer día del curso",
       "tipo": "texto",
       "requerido": true,
-      "formato": "fecha",
+      "formato": "fecha-dma",
       "sensible": false,
       "uso": "Fijar el primer día del curso (apd.grupo.fecha_inicio).",
-      "atributos": {},
+      "atributos": {
+        "maxlength": "10"
+      },
       "autocomplete": "off"
     },
     "hora_entrada": {

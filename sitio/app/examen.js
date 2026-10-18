@@ -244,15 +244,18 @@
     vista.dataset.tono = ex.aprobado ? 'ok' : 'error';
     $('[data-resultado-titulo]').replaceChildren(APD.icono(ex.aprobado ? 'palomita' : 'cerrar', 'icono examen-veredicto-icono'), document.createTextNode(ex.aprobado ? 'Aprobaste' : 'No aprobaste'));
     $('[data-veredicto]').textContent = `La calificación mínima es ${decimal(ex.minima)} · ${ex.aciertos} de ${ex.total} correctas`;
+    // Las respuestas correctas ya van en el veredicto (D27). La fecha del envío es la del examen, el último día del
+    // curso, con la hora real: en la versión de prueba, un examen presentado antes se fecha ese día, como lo registra
+    // la prueba en apd.examen (B14, D28)
+    const hora = new Date(ex.terminado_en).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
     $('[data-resultado-datos]').replaceChildren(datosLista([
       ['Nombre', ex.persona.nombre],
       ['Examen', nombreExamen()],
-      ['Respuestas correctas', `${ex.aciertos} de ${ex.total}`],
-      ['Enviado', APD.fechaHora(ex.terminado_en)]
+      ['Enviado', `${APD.fecha(ex.grupo.examen_en)}, ${hora}`]
     ]));
     $('[data-resultado-sigue]').replaceChildren(ex.aprobado
       ? APD.aviso('ok', 'Recoge hoy tu credencial', { texto: 'Se entrega hoy mismo, en la oficina del Vivero Nezahualcóyotl.', pasos: ['Avisa a quien aplica el examen que aprobaste.', 'Ve a la oficina del Vivero: ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] })
-      : APD.aviso('info', 'Tu calificación quedó registrada', 'No se puede cambiar. Para intentarlo de nuevo, inicia una solicitud nueva desde tu cuenta, con su pago de derechos.'));
+      : APD.aviso('info', 'Tu calificación quedó registrada', { texto: 'No se puede cambiar.', titulo: 'Para intentarlo de nuevo', pasos: ['Entra a tu cuenta e inicia una solicitud nueva.', 'Paga los derechos de la solicitud nueva.', 'Cuando la Secretaría te asigne un grupo, asiste al curso y presenta el examen.'] }));
     muestra('resultado');
   }
   function pintaSuspendido() {
@@ -344,7 +347,7 @@
         const g = G.grupos(datos)[0];
         if (!g) return 'No hay un grupo en curso en los datos ficticios.';
         const usados = new Set(API.delGrupo(g.id).filter((r) => r.situacion !== 'sin_empezar').map((r) => r.inscripcion_id));
-        const fila = G.personas(datos, g).find((f) => f.puede && !usados.has(f.inscripcion.id));
+        const fila = G.personas(datos, g).find((f) => f.puede && !f.examen && !usados.has(f.inscripcion.id));
         if (!fila) return 'Todas las personas con derecho a examen ya lo empezaron. Borra lo guardado para volver a probar.';
         const r = await G.pasarLista(datos, g, fila, true, 'menu.pruebas');
         const c = $('#codigo');

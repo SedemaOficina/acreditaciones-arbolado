@@ -1,14 +1,18 @@
 /* =========================================================
    examen-grupo.js · Quién presenta el examen de un grupo (etapa 2)
 
-   Lo usan la pantalla de quien aplica el examen (aplicar.html) y el menú de
-   pruebas de la pantalla del examen (examen.html). En la etapa 3 lo da la API
+   Lo usan la pantalla de quien aplica el examen (aplicar.js), la pantalla del
+   examen (examen.js: la fotografía y su menú de pruebas) y «Asistencia»
+   (asistencia.js: la fotografía). En la etapa 3 lo da la API
    del personal con las mismas reglas que la base:
      · el examen es el último día del curso (días consecutivos, decisión
        2026-10-15) y se presenta en el salón de cómputo del PILARES, dentro
        del Vivero Nezahualcóyotl (decisión 2026-10-17);
      · tiene derecho a examen quien alcanzó los días mínimos de asistencia
-       del curso (R33 y R35).
+       del curso (R33 y R35);
+     · quien ya tiene su calificación (capturada o del examen en línea) no
+       vuelve a presentarlo: no se le pasa lista ni se le da código (la base
+       lo rechaza: examen_pk y asistencia_cerrada; auditoría 2026-10-18, C 2.5).
 
    El día del examen el instructor pasa lista en el salón de cómputo: compara a
    cada persona con su fotografía y su identificación oficial y la marca
@@ -38,6 +42,7 @@
     const pers = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     return datos.inscripcion.filter((i) => i.grupo_id === g.id && i.activa).map((i) => {
       const s = sols[i.solicitud_id];
+      const examen = (datos.examen || []).find((x) => x.inscripcion_id === i.id) || null;
       const p = pers[s.solicitante_id];
       const capturada = Object.fromEntries(datos.asistencia.filter((a) => a.inscripcion_id === i.id).map((a) => [a.dia, a.asistio]));
       const faltoAntes = Object.values(capturada).includes(false);
@@ -49,7 +54,7 @@
         if (!(faltoAntes && dia === 3)) previos += 1; // prueba: otra falta simulada para ver el caso sin derecho
       }
       return { inscripcion: i, solicitud: s, persona: p, previos, anteriores, dias: c.dias_duracion, minimo: c.dias_minimos_asistencia,
-        puede: previos + 1 >= c.dias_minimos_asistencia, simulada };
+        puede: previos + 1 >= c.dias_minimos_asistencia, simulada, examen };
     }).sort((a, b) => APD.nombreCompleto(a.persona).localeCompare(APD.nombreCompleto(b.persona), 'es'));
   }
 
@@ -57,6 +62,7 @@
      vigente, lo devuelve. En la etapa 3 la API registra la asistencia en apd.asistencia y el código en una sola
      transacción. */
   function pasarLista(datos, g, fila, presente, por) {
+    if (fila.examen) return Promise.reject(new Error('Ya tiene su calificación: no presenta otro examen.'));
     return APD_EXAMEN_API.pasarLista(fila.inscripcion.id, presente, por).then(() => (presente ? generarPara(datos, g, fila, por) : null));
   }
 
@@ -91,5 +97,5 @@
     });
   }
 
-  global.APD_EXAMEN_GRUPO = { LUGAR, grupos, curso, fechaExamen, personas, pasarLista, generarPara, fotoDe };
+  global.APD_EXAMEN_GRUPO = { LUGAR, grupos, curso, fechaExamen, personas, pasarLista, fotoDe };
 }(window));

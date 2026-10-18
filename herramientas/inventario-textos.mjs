@@ -12,7 +12,9 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = process.argv[2] || 'http://localhost:8765/';
 const PAGINAS = [
   ['index.html', 'Inicio'], ['cuenta.html', 'Crea tu cuenta'], ['entrar.html', 'Entrar'], ['datos.html', 'Mi perfil'],
-  ['solicitud.html', 'Solicitud'], ['tramites.html', 'Mis trámites'], ['verificar.html', 'Verificar una acreditación']
+  ['solicitud.html', 'Solicitud'], ['tramites.html', 'Mis trámites'], ['verificar.html', 'Verificar una acreditación'],
+  // También las que se agregaron después de la lista (auditoría 2026-10-18, A 8.4)
+  ['corregir.html', 'Cargar el documento correcto'], ['material.html', 'Material de estudio']
 ];
 // Bloques que sólo aparecen en ciertos casos (atributo → condición en palabras)
 const OCULTOS = {
@@ -104,7 +106,7 @@ for (const [archivo, pantalla] of PAGINAS) {
         if (tipo !== 'Ayuda emergente (ícono ?)' && [...vistos].some((v) => v.contains(el) || (tipo === 'Texto' && el.contains(v)))) continue;
         let texto;
         if (tipo === 'Opción') {
-          const n = el.querySelector('.opcion-nombre, .opcion-titulo'); const d = el.querySelector('.opcion-desc');
+          const n = el.querySelector('.opcion-nombre'); const d = el.querySelector('.opcion-desc');
           texto = limpio(n ? n.textContent : el.textContent) + (d ? ` — ${limpio(d.textContent)}` : '');
         } else if (tipo === 'Pregunta') texto = propio(el).replace(/\s*\*$/, '');
         else if (tipo === 'Ayuda emergente (ícono ?)') texto = limpio(el.textContent);

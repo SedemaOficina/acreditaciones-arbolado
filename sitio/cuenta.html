@@ -7,18 +7,16 @@
 <title>Crear tu cuenta · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Crea tu cuenta para solicitar o renovar tu acreditación de arbolado urbano. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
-<link rel="stylesheet" href="formkit/modulos/acuse/acuse.css">
-<link rel="stylesheet" href="formkit/modulos/copiar/copiar.css">
-<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
-<link rel="stylesheet" href="formkit/modulos/combo/combo.css">
-<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/acuse/acuse.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/combo/combo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -35,11 +33,21 @@
 <main class="pagina" id="contenido">
   <p><a class="btn-atras" href="index.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Inicio</a></p>
 
+  <!-- Con la sesión abierta (auditoría 2026-10-18, B12; p. ej., al recargar el acuse): a «Mis trámites». Lo muestra
+       app/cuenta.js; el formulario sigue disponible para quien quiera salir y crear otra cuenta. -->
+  <div class="aviso aviso-ok" data-con-sesion hidden>
+    <svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg>
+    <div class="aviso-texto"><strong class="aviso-titulo">Ya entraste a tu cuenta</strong>
+      <p>Entraste como <span data-con-sesion-nombre></span>. Tu solicitud y su avance están en «Mis trámites».</p>
+      <div class="acciones acciones-izq"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
+      <p>¿Vas a crear la cuenta de otra persona? <button type="button" class="btn-enlace" data-salir-crear>Sal de esta cuenta</button> y llena el formulario.</p></div>
+  </div>
+
   <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
     <h2 class="titulo-paso">Crea tu cuenta</h2>
     <p class="bajada">Una cuenta por persona, ligada a tu CURP. Ten a la mano tu CURP y una fotografía de frente, o tómala con tu teléfono. Si ya tuviste una acreditación de la Secretaría, la verás en tu historial.</p>
     <!-- Sólo en la versión de prueba (auditoría integral, alta 1): lo cargado se queda en este navegador. -->
-    <div class="aviso aviso-advertencia" data-aviso-prueba>
+    <div class="aviso aviso-advertencia">
       <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
       <div class="aviso-texto"><strong class="aviso-titulo">Versión de prueba: usa datos inventados</strong>
         <p>No escribas tu CURP ni cargues tu fotografía real: el «Menú de pruebas» llena la cuenta con datos de ejemplo. Lo que cargues se guarda sólo en este navegador y se borra solo cuando pasan 7 días sin usar la prueba.</p></div>
@@ -98,7 +106,8 @@
       <label class="etiqueta" for="sexo">Sexo</label>
       <p class="ayuda">Se toma de tu CURP.</p>
       <!-- autocomplete off: es de sólo lectura y se llena desde la CURP. -->
-      <input class="control control-corto" id="sexo" name="sexo" type="text" readonly autocomplete="off">
+      <!-- Texto provisional mientras no hay CURP: el campo vacío parecía roto (auditoría 2026-10-18, D30). -->
+      <input class="control control-corto" id="sexo" name="sexo" type="text" readonly autocomplete="off" placeholder="Se llena con tu CURP">
     </div>
 
     <!-- Fotografía de frente (decisión 2026-10-14): obligatoria. No es la de la credencial, que se toma al entregarla.
@@ -106,7 +115,12 @@
     <div class="campo" data-campo="foto" data-requerido data-max="1" data-extensiones="jpg,jpeg,png" data-mb="5" data-sensible
          data-finalidad="Reconocer a la persona en la cita de cotejo y en el curso, y confirmar su identidad y su asistencia el día del examen." data-uso="Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.">
       <span class="etiqueta" id="et-foto">Fotografía de frente</span>
-      <p class="ayuda" id="ay-foto">De frente y con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Tiene que verse clara: el día del examen, quien lo aplica la usa para confirmar que eres tú y tomarte asistencia. También te reconocen con ella en la cita de cotejo y en el curso. La foto de tu credencial es otra: te la toman cuando la recoges.</p>
+      <!-- Ayuda en tres renglones cortos (auditoría 2026-10-18, D30: eran 5 renglones en escritorio y 7 en teléfono). -->
+      <div class="ayuda" id="ay-foto"><ul class="ayuda-lista">
+        <li>De frente, con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz.</li>
+        <li>Con ella te reconocen en la cita, en el curso y el día del examen.</li>
+        <li>No es la de tu credencial: esa te la toman cuando la recoges.</li>
+      </ul></div>
       <div data-archivos>
         <button type="button" class="zona-carga" aria-describedby="ay-foto">
           <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
@@ -292,13 +306,13 @@
            data-finalidad="Proteger el acceso a la cuenta." data-uso="Acceso a la cuenta; se guarda cifrada, nunca en claro.">
         <label class="etiqueta" for="contrasena">Contraseña</label>
         <p class="ayuda">Al menos 12 caracteres. Una frase que recuerdes es más segura que una palabra con símbolos.</p>
-        <!-- «Mostrar» / «Ocultar» lo pone el núcleo dentro del campo (estándar 1.2.1, P73). -->
+        <!-- «Mostrar» lo pone el núcleo dentro del campo y dice de cuál es: «Mostrar: Contraseña» (estándar 1.3.2, P98). -->
         <input class="control" id="contrasena" name="contrasena" type="password" minlength="12" autocomplete="new-password">
       </div>
       <div class="campo" data-campo="contrasena2" data-formato="contrasena" data-requerido data-sensible
            data-uso="Evitar errores de captura en la contraseña." data-cruzada="igual" data-cruzada-campos="original=contrasena confirmacion=contrasena2">
         <label class="etiqueta" for="contrasena2">Confirma tu contraseña</label>
-        <!-- «Mostrar» / «Ocultar» lo pone el núcleo dentro del campo (estándar 1.2.1, P73). -->
+        <!-- «Mostrar» lo pone el núcleo dentro del campo y dice de cuál es: «Mostrar: Contraseña» (estándar 1.3.2, P98). -->
         <input class="control" id="contrasena2" name="contrasena2" type="password" minlength="12" autocomplete="new-password">
       </div>
     </div>
@@ -357,18 +371,16 @@
 <script src="app/apd.js?v=0.52"></script>
 <script src="datos/catalogos.js?v=0.52"></script>
 <script src="app/config-cuenta.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/fecha/fecha.js"></script>
-<script src="formkit/modulos/identificadores/identificadores.js"></script>
-<script src="formkit/modulos/modal/modal.js"></script>
-<script src="formkit/modulos/copiar/copiar.js"></script>
-<script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="formkit/modulos/combo/combo.js"></script>
-<script src="formkit/modulos/otro/otro.js"></script>
-<script src="formkit/modulos/acuse/acuse.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/fecha/fecha.js?v=1.4.1"></script>
+<script src="formkit/modulos/identificadores/identificadores.js?v=1.4.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
+<script src="formkit/modulos/archivos/archivos.js?v=1.4.1"></script>
+<script src="formkit/modulos/combo/combo.js?v=1.4.1"></script>
+<script src="formkit/modulos/otro/otro.js?v=1.4.1"></script>
+<script src="formkit/modulos/acuse/acuse.js?v=1.4.1"></script>
 <script src="app/cuenta.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/archivos-prueba.js?v=0.52"></script>

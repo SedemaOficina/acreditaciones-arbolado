@@ -7,14 +7,14 @@
 <title>Mi perfil · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Consulta tu perfil y actualiza tu contacto, tu adscripción y tu fotografía. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
-<link rel="stylesheet" href="formkit/modulos/combo/combo.css">
-<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/combo/combo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -78,7 +78,9 @@
     <div class="perfil-seccion-cabeza">
       <h3 class="titulo-bloque" id="t-identidad">Datos de identidad</h3>
     </div>
-    <p class="ayuda">Van ligados a tu CURP. Si alguno está mal, pide a la Secretaría que lo corrija.</p>
+    <!-- Dónde se corrige (auditoría 2026-10-18, D22): en la cita de cotejo se revisa la identificación oficial. El teléfono y
+         el correo para aclaraciones están pendientes (P132): no se inventan. -->
+    <p class="ayuda">Van ligados a tu CURP. Si alguno está mal, dilo en tu cita de cotejo: ahí la Secretaría revisa tu identificación oficial y puede corregirlo. <span class="pendiente">Pendiente (P132): teléfono y correo para aclaraciones antes de la cita.</span></p>
     <div data-identidad></div>
   </section>
 
@@ -287,13 +289,13 @@
 <script src="app/apd.js?v=0.52"></script>
 <script src="datos/catalogos.js?v=0.52"></script>
 <script src="app/config-datos.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="formkit/modulos/combo/combo.js"></script>
-<script src="formkit/modulos/otro/otro.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/archivos/archivos.js?v=1.4.1"></script>
+<script src="formkit/modulos/combo/combo.js?v=1.4.1"></script>
+<script src="formkit/modulos/otro/otro.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
 <script src="app/datos.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/archivos-prueba.js?v=0.52"></script>

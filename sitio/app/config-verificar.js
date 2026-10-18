@@ -43,11 +43,11 @@ window.FORMKIT_OPCIONES = {
           ['Acreditación', f.tipo],
           ['Número de acreditación', f.numero],
           ['Emitida el', APD.fecha(f.emitida_en)],
-          ['Vence el', APD.fecha(f.vence_en)],
-          ['Para vencer', APD.textoVence(APD.diasParaVencer({ fecha_corte: r.hoy }, f.vence_en))]
+          // Rótulo según el caso: «Vence en» o «Vencida hace» (auditoría 2026-10-18, D10)
+          ...APD.vencimiento({ fecha_corte: r.hoy }, f.vence_en)
         ]),
         el('p', { class: 'texto-gris', texto: vigente
-          ? 'Puede trabajar en el arbolado urbano con esta acreditación hasta la fecha de vencimiento.'
+          ? 'Esta persona puede trabajar en el arbolado urbano con esta acreditación hasta la fecha de vencimiento.'
           : 'Con esta acreditación no se puede trabajar en el arbolado urbano.' })
       );
     }

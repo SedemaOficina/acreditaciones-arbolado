@@ -7,16 +7,17 @@
 <title>Atender una cita de cotejo · Personal · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Cotejo presencial de una solicitud de acreditación, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
-<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
-<link rel="stylesheet" href="formkit/modulos/visor/visor.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
-<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/visor/visor.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -57,11 +58,10 @@
   </section>
 
   <!-- El cotejo (decisiones 2026-10-17): llegada, identidad, documentos, pago y factura. Una sola acción principal,
-       cuyo texto cambia con el resultado. Arranca a mano (data-formkit="manual") cuando la página ya calculó los
-       campos auxiliares. -->
+       cuyo texto cambia con el resultado. La página lo inicia con FormKit.iniciar cuando ya calculó los campos
+       auxiliares (data-formkit="manual" puede quedarse: desde la 1.3.4 un formulario se inicia una sola vez, P111). -->
   <div class="visor-area">
   <form id="formulario" data-formkit="manual" action="#" method="post" hidden>
-    <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
 
     <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
     <input type="hidden" id="pedir_llegada" name="pedir_llegada" value="si" data-campo="pedir_llegada" data-auxiliar data-uso="Preguntar si la persona se presentó, salvo al retomar un cotejo en pausa (la persona ya está); lo calculan la página y el servidor con apd.cita.">
@@ -85,6 +85,9 @@
     <div data-si="pedir_llegada=si">
     <section class="tarjeta" aria-labelledby="t-llegada">
       <h3 class="titulo-paso" id="t-llegada">Llegada</h3>
+      <!-- La nota va dentro de la primera tarjeta del formulario (auditoría 2026-10-18, D33); al retomar una pausa, en la
+           de documentos (app/cotejo.js) -->
+      <p class="leyenda-oblig" data-leyenda-llegada>Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <fieldset class="grupo" data-campo="se_presento" data-requerido data-uso="Registrar si la persona se presentó a su cita (apd.cita.resultado).">
         <legend class="etiqueta">¿La persona se presentó a su cita?</legend>
         <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -127,6 +130,7 @@
     <div data-si="pedir_documentos=si">
     <section class="tarjeta" aria-labelledby="t-documentos">
       <h3 class="titulo-paso" id="t-documentos" data-docs-titulo>2. Cotejo de documentos</h3>
+      <p class="leyenda-oblig" data-leyenda-docs hidden>Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <p class="ayuda ayuda-bloque" data-docs-ayuda>Compare cada documento que trae la persona con el que cargó en línea. Si alguno no coincide, escriba qué no coincide: la persona lo leerá tal como lo escriba.</p>
       <p class="texto-gris" data-ya-coincidieron hidden></p>
       <!-- cotejo-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
@@ -134,10 +138,10 @@
         <article class="doc-revision" data-doc="identificacion_oficial" data-contexto="Identificación oficial">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Identificación oficial</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver lo que cargó<span class="solo-lector">: Identificación oficial</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="identificacion_oficial">Ver lo que cargó<span class="solo-lector">: Identificación oficial</span></button></p>
           <fieldset class="grupo" data-campo="coincide_identificacion_oficial" data-requerido data-uso="Registrar si «Identificación oficial» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -157,10 +161,10 @@
         <article class="doc-revision" data-doc="curp" data-contexto="Clave Única de Registro de Población (CURP)">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Clave Única de Registro de Población (CURP)</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver lo que cargó<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="curp">Ver lo que cargó<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
           <fieldset class="grupo" data-campo="coincide_curp" data-requerido data-uso="Registrar si «Clave Única de Registro de Población (CURP)» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -180,10 +184,10 @@
         <article class="doc-revision" data-doc="comprobante_domicilio" data-contexto="Comprobante de domicilio">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Comprobante de domicilio</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver lo que cargó<span class="solo-lector">: Comprobante de domicilio</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="comprobante_domicilio">Ver lo que cargó<span class="solo-lector">: Comprobante de domicilio</span></button></p>
           <fieldset class="grupo" data-campo="coincide_comprobante_domicilio" data-requerido data-uso="Registrar si «Comprobante de domicilio» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -203,10 +207,10 @@
         <article class="doc-revision" data-doc="constancia_situacion_fiscal" data-contexto="Constancia de situación fiscal">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Constancia de situación fiscal</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver lo que cargó<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="constancia_situacion_fiscal">Ver lo que cargó<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
           <fieldset class="grupo" data-campo="coincide_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -226,10 +230,10 @@
         <article class="doc-revision" data-doc="comprobante_estudios" data-contexto="Comprobante de estudios">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Comprobante de estudios</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver lo que cargó<span class="solo-lector">: Comprobante de estudios</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="comprobante_estudios">Ver lo que cargó<span class="solo-lector">: Comprobante de estudios</span></button></p>
           <fieldset class="grupo" data-campo="coincide_comprobante_estudios" data-requerido data-uso="Registrar si «Comprobante de estudios» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -249,10 +253,10 @@
         <article class="doc-revision" data-doc="curriculum_vitae" data-contexto="Currículum vitae">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Currículum vitae</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver lo que cargó<span class="solo-lector">: Currículum vitae</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="curriculum_vitae">Ver lo que cargó<span class="solo-lector">: Currículum vitae</span></button></p>
           <fieldset class="grupo" data-campo="coincide_curriculum_vitae" data-requerido data-uso="Registrar si «Currículum vitae» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -272,10 +276,10 @@
         <article class="doc-revision" data-doc="comprobantes_experiencia" data-contexto="Comprobantes de experiencia">
           <div class="doc-cabeza">
             <h4 class="doc-titulo">Comprobantes de experiencia</h4>
-            <span class="estado" data-doc-estado>Por cotejar</span>
+            <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
-          <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver lo que cargó<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
+          <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="comprobantes_experiencia">Ver lo que cargó<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
           <fieldset class="grupo" data-campo="coincide_comprobantes_experiencia" data-requerido data-uso="Registrar si «Comprobantes de experiencia» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
@@ -370,10 +374,13 @@
       <div data-si="resultado=no_se_presento|otra_cita">
         <p class="ayuda ayuda-bloque" data-cita-ayuda>Asígnele una cita nueva. Conserva el monto de pago que se le indicó.</p>
         <div class="fila">
-          <div class="campo" data-campo="cita_fecha" data-formato="fecha" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
+          <!-- Fecha día/mes/año como en el resto del sitio (formato «fecha-dma» del estándar, auditoría 2026-10-18, D9). El
+               mínimo (mañana) lo pone la página en data-min. -->
+          <div class="campo" data-campo="cita_fecha" data-formato="fecha-dma" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_fecha">Fecha de la cita nueva</label>
+            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, desde el <span data-cita-desde></span>; las diagonales se ponen solas.</p>
             <!-- autocomplete off: la fecha la elige quien atiende. -->
-            <input class="control" id="cita_fecha" name="cita_fecha" type="date" autocomplete="off">
+            <input class="control control-corto" id="cita_fecha" name="cita_fecha" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-cita_fecha">
           </div>
           <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_hora">Hora</label>
@@ -397,7 +404,7 @@
           </div>
         </div>
         <!-- Cuántas citas hay ya ese día y a esa hora (auditoría de tareas, M5); el cupo por horario es P69 -->
-        <p class="ayuda carga-citas" data-carga-cita aria-live="polite" hidden></p>
+        <p class="ayuda" data-carga-cita aria-live="polite" hidden></p>
       </div>
 
       <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
@@ -456,15 +463,16 @@
 <script src="app/archivos-prueba.js?v=0.52"></script>
 <script src="app/personal.js?v=0.52"></script>
 <script src="app/config-cotejo.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <script src="app/mensajes-usted.js?v=0.52"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/visor/visor.js"></script>
-<script src="formkit/modulos/archivos/archivos.js"></script>
-<script src="formkit/modulos/modal/modal.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
-<script src="formkit/modulos/resultado/resultado.js"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/visor/visor.js?v=1.4.1"></script>
+<script src="formkit/modulos/archivos/archivos.js?v=1.4.1"></script>
+<script src="formkit/modulos/fecha/fecha.js?v=1.4.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
+<script src="formkit/modulos/resultado/resultado.js?v=1.4.1"></script>
 <script src="app/cotejo.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.52"></script>

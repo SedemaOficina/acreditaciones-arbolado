@@ -1,7 +1,8 @@
 // NUEVA VERSIÓN DE PRUEBA (decisión 2026-10-15, Liber): cada publicación sube el número, 0.N → 0.N+1, para saber
 // en pantalla si se está viendo la última. Lo llama herramientas/publicar-sitio.sh antes de publicar:
 //   · VERSION (raíz) y sitio/VERSION: el número nuevo (lo pinta version-visible.js: «Versión de prueba 0.N»);
-//   · el ?v= de los archivos propios en cada página, para que el navegador no use una copia vieja;
+//   · el ?v= de los archivos propios en cada página (no el de formkit/, que lleva la versión del estándar), para que el
+//     navegador no use una copia vieja;
 //   · docs/VERSIONES.md: número, fecha y hora (Ciudad de México) y qué cambió (el último commit).
 // Al pasar al SIA la versión es 1 y deja de usarse este guion.
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
@@ -19,7 +20,8 @@ writeFileSync(join(raiz, 'VERSION'), nueva + '\n');
 writeFileSync(join(raiz, 'sitio/VERSION'), nueva + '\n');
 for (const p of readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html'))) {
   const ruta = join(raiz, 'sitio', p);
-  writeFileSync(ruta, readFileSync(ruta, 'utf8').replace(/\?v=[0-9.]+/g, `?v=${nueva}`));
+  // Sólo los archivos propios: los del estándar (formkit/…) llevan la versión del estándar (construir-sitio.mjs)
+  writeFileSync(ruta, readFileSync(ruta, 'utf8').replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${nueva}"`));
 }
 
 const cuando = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City', dateStyle: 'short', timeStyle: 'short' });

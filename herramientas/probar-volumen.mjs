@@ -1,5 +1,5 @@
 // Pruebas de las pantallas del personal con volumen real (auditoría de tareas, 2026-10-17).
-// Genera el escenario de docs/auditoria-tareas/escenario-volumen.mjs (65 por revisar, 40 citas en un día, 112 en espera,
+// Genera el escenario de herramientas/escenario-volumen.mjs (65 por revisar, 40 citas en un día, 112 en espera,
 // grupos de 25, un día sin capturar, citas atrasadas y una pausa vencida) y lo sirve en lugar de datos/ficticios.json.
 // Uso: node herramientas/probar-volumen.mjs [http://localhost:8765/]   (con el sitio servido)
 import { chromium } from 'playwright';
@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = (process.argv[2] || 'http://localhost:8765/').replace(/\/?$/, '/');
 const salida = join(mkdtempSync(join(tmpdir(), 'apd-volumen-')), 'volumen.json');
-execFileSync('node', [join(raiz, 'docs/auditoria-tareas/escenario-volumen.mjs'), join(raiz, 'sitio/datos/ficticios.json'), salida], { stdio: 'inherit' });
+execFileSync('node', [join(raiz, 'herramientas/escenario-volumen.mjs'), join(raiz, 'sitio/datos/ficticios.json'), salida], { stdio: 'inherit' });
 const cuerpo = readFileSync(salida);
 const d = JSON.parse(cuerpo);
 const hoy = d.fecha_corte;
@@ -109,7 +109,8 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   const manana = new Date(`${hoy}T12:00:00-06:00`); manana.setDate(manana.getDate() + 1);
   const dia = manana.toISOString().slice(0, 10);
   const nDia = d.cita.filter((c) => c.resultado === 'pendiente' && c.programada_en.startsWith(dia)).length;
-  await pg.evaluate((v) => { const f = document.getElementById('cita_fecha'); f.value = v; f.dispatchEvent(new Event('input', { bubbles: true })); }, dia);
+  // La fecha de la cita se escribe día/mes/año (formato «fecha-dma», auditoría 2026-10-18, D9)
+  await pg.evaluate((v) => { const f = document.getElementById('cita_fecha'); f.value = v; f.dispatchEvent(new Event('input', { bubbles: true })); }, dia.split('-').reverse().join('/'));
   // Los campos de la cita se muestran al validar; aquí se llenan directo para leer la carga
   await pg.evaluate(() => { const h = document.getElementById('cita_hora'); h.value = '09:00'; h.dispatchEvent(new Event('change', { bubbles: true })); });
   comprueba((await texto('[data-carga-cita]')).includes(`Ese día ya hay ${nDia} citas`), t(`revisar: al fijar la cita se ve que ese día ya hay ${nDia}`));

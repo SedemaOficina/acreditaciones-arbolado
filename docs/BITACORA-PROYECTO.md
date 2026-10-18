@@ -1051,3 +1051,16 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   el día. La etiqueta de riesgo va en el renglón de la tira (no alarga la fila; en teléfono, si no cabe, baja completa
   en un renglón) y la franja del recorrido de prueba ya no queda pegada a los botones. `probar-sitio` 606, correctas.
 
+## 2026-10-18 · Bloque 72 · Auditoría completa y correcciones (0.53)
+
+- Liber pidió una auditoría para dejar todo limpio. Cinco frentes revisados por separado y sin cambiar nada
+  (código, botones y pasos, datos, interfaz, documentos); después, tres equipos de corrección con archivos asignados
+  (datos y prueba; pantallas de la persona; pantallas del personal, herramientas y limpieza). Resumen, lo corregido y
+  lo que queda abierto: `docs/AUDITORIA-2026-10-18.md`. Los informes completos, en los documentos del proyecto.
+- Lo más importante: persistencia de la versión de prueba (pausa ficticia, revisiones en reenvíos, examen en línea,
+  material), borrador e historial en la solicitud, corrección que abre en lo observado, cita al principio de la ficha,
+  fechas dd/mm/aaaa del estándar, familias de estado, tablas que ya no parten palabras, código sin uso fuera,
+  capturas fuera del historial.
+- Pruebas: `probar-sitio` 658 (con axe), `probar-examen` 73, `probar-volumen`, `probar-esquemas` 118, `probar-base` y
+  `probar-reglas` 173, auditor de CSS, esquema y pendientes al día, `auditar-sitio` (56 pantallas, 153 botones).
+

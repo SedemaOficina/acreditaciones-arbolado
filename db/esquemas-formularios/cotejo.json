@@ -1,6 +1,6 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-18T07:04:16.759Z",
+  "generado": "2026-10-18T20:07:20.553Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
@@ -905,10 +905,12 @@
       "etiqueta": "Fecha de la cita nueva",
       "tipo": "texto",
       "requerido": true,
-      "formato": "fecha",
+      "formato": "fecha-dma",
       "sensible": false,
       "uso": "Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).",
-      "atributos": {},
+      "atributos": {
+        "maxlength": "10"
+      },
       "autocomplete": "off",
       "si": {
         "campo": "resultado",

@@ -10,8 +10,8 @@ nada**.
    contra lo que ve el personal en el momento de aplicarla (detalle: `docs/auditoria-tareas/reglas-vs-pantallas.md`).
 3. **Volúmenes reales.** Escenario de prueba con 65 solicitudes por revisar, 40 citas en un día (y 30 más en la semana),
    112 personas en espera (66 de poda nueva, en 13 adscripciones), un grupo de 25 en su último día y 8 grupos. Se sirve en
-   lugar de `datos/ficticios.json` sólo durante la prueba (`docs/auditoria-tareas/escenario-volumen.mjs` y
-   `capturas-volumen.mjs`); no cambia los datos ficticios del sitio.
+   lugar de `datos/ficticios.json` sólo durante la prueba (`herramientas/escenario-volumen.mjs` y
+   `herramientas/capturas-volumen.mjs`, antes en `docs/auditoria-tareas/`); no cambia los datos ficticios del sitio.
 
 Alto de las páginas en teléfono con ese volumen: bandeja de revisión 33 pantallas, «En espera» de poda nueva 20, citas
 16, grupo en curso 9, asistencia 8.

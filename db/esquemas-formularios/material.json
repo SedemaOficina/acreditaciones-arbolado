@@ -1,0 +1,215 @@
+{
+  "formulario": "material.html",
+  "generado": "2026-10-18T20:07:21.388Z",
+  "campos": {
+    "modo": {
+      "etiqueta": "modo",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Qué se hace: agregar un documento, editar sus datos o reemplazar su archivo; lo pone la página según el botón.",
+      "atributos": {
+        "auxiliar": ""
+      }
+    },
+    "titulo": {
+      "etiqueta": "Nombre del documento",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Nombre del documento como lo lee la persona (apd.material_estudio.titulo).",
+      "atributos": {
+        "minlength": "3",
+        "maxlength": "200"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo",
+          "editar"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo",
+            "editar"
+          ]
+        }
+      ]
+    },
+    "edicion": {
+      "etiqueta": "Edición o fecha de publicación",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Versión o fecha de publicación del documento (apd.material_estudio.edicion).",
+      "atributos": {
+        "minlength": "3",
+        "maxlength": "200"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo",
+          "editar"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo",
+            "editar"
+          ]
+        }
+      ]
+    },
+    "descripcion": {
+      "etiqueta": "Para qué sirve",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Para qué le sirve a quien estudia (apd.material_estudio.descripcion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo",
+          "editar"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo",
+            "editar"
+          ]
+        }
+      ]
+    },
+    "para": {
+      "etiqueta": "¿Para qué acreditación?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "A quién le sirve: las dos acreditaciones o una (apd.material_estudio.tipo_acreditacion; vacío = las dos).",
+      "atributos": {},
+      "opciones": [
+        "ambas",
+        "poda",
+        "dictaminador"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo",
+          "editar"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo",
+            "editar"
+          ]
+        }
+      ]
+    },
+    "temas": {
+      "etiqueta": "Qué estudiar (opcional)",
+      "tipo": "textarea",
+      "requerido": false,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Apartados que conviene estudiar, con su página del PDF (apd.material_estudio.temas).",
+      "atributos": {
+        "maxlength": "4000"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo",
+          "editar"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo",
+            "editar"
+          ]
+        }
+      ]
+    },
+    "archivo": {
+      "etiqueta": "Archivo",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": false,
+      "uso": "El PDF que se descarga en «Material de estudio» (apd.material_estudio, archivo en el almacén).",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf",
+        "mb": "30"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo",
+          "reemplazar"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo",
+            "reemplazar"
+          ]
+        }
+      ]
+    },
+    "publicar": {
+      "etiqueta": "Publicar al guardar",
+      "tipo": "casilla",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Si se ve en la página pública al guardarlo (apd.material_estudio.publicado).",
+      "atributos": {},
+      "autocomplete": "off",
+      "si": {
+        "campo": "modo",
+        "valores": [
+          "nuevo"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "modo",
+          "valores": [
+            "nuevo"
+          ]
+        }
+      ]
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

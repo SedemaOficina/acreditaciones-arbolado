@@ -658,7 +658,7 @@ const MATERIALES = [
     sha256: '0107f22ec42ed2b563a4db1a8283285624ef6d34ca671ac5cf5ed125afb40001',
     titulo: 'Norma Ambiental NADF-001-RNAT-2015',
     descripcion: 'Los requisitos y las especificaciones técnicas que se cumplen en cada poda, derribo, trasplante y restitución de árboles en la Ciudad de México.',
-    edicion: 'Publicada en la Gaceta Oficial de la Ciudad de México el 1/04/2016',
+    edicion: 'Publicada en la Gaceta Oficial de la Ciudad de México el 01/04/2016',
     temas: [
       { titulo: '4. Definiciones', pagina: 4 },
       { titulo: '5. Requisitos técnico-administrativos para la poda, derribo y trasplante', pagina: 7 },

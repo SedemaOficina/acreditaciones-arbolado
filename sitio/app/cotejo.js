@@ -42,9 +42,12 @@
     const c = document.getElementById(id);
     if (!c || c.value === valor) return;
     c.value = valor;
-    c.dispatchEvent(new Event('input', { bubbles: true }));
-    c.dispatchEvent(new Event('change', { bubbles: true }));
+    APD.avisa(c);
   }
+  // La fecha de la cita nueva se escribe como día/mes/año (formato «fecha-dma», auditoría 2026-10-18, D9); se guarda
+  // como AAAA-MM-DD
+  const isoDe = (dma) => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(dma)) || dma;
+  const hayVisor = () => Boolean(window.FormKit && FormKit.visor);
   const elegido = (nombre) => { const r = $(`input[name="${nombre}"]:checked`, form); return r ? r.value : ''; };
   const lista = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs[0] || '');
   const falla = (texto) => { $('[data-cargando]').textContent = texto; };
@@ -80,7 +83,9 @@
       `cita del ${fechaHora(s.cita_en)}`,
       `documentos validados en línea el ${fecha(s.estado_desde)}`
     ]));
-    $('[data-estado]').replaceChildren(retoma ? APD.estado('Cita en pausa', 'marcha') : APD.estado('Cita asignada', 'pend', 'fecha'));
+    $('[data-estado]').replaceChildren(retoma ? APD.estado('Cita en pausa', 'marcha') : APD.estado('Cita asignada', 'pend'));
+    // Volver a la agenda del día de la cita, no al de hoy (auditoría 2026-10-18, B8)
+    for (const a of $$('a[data-volver], [data-hecho-acciones] a[href="citas.html"]')) a.href = `citas.html?dia=${P.diaDe(s.cita_en)}`;
     const iniciales = `${(p.nombre || '').charAt(0)}${(p.primer_apellido || '').charAt(0)}`;
     const foto = el('div', { class: 'perfil-foto perfil-foto-chica' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: iniciales })]);
     $('[data-iniciales]').textContent = iniciales;
@@ -92,7 +97,7 @@
       grande.dataset.conImagen = 'si';
       grande.append(el('img', { class: 'perfil-imagen', src: url, alt: `Fotografía de la cuenta de ${nombre}` }));
     });
-    $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', { class: 'datos-dos-columnas' }, [datosLista([
+    $('[data-persona]').replaceChildren(el('div', { class: 'persona-con-foto' }, [foto, el('div', {}, [datosLista([
       ['Persona', nombre],
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre al terminar este cotejo (es su primer trámite)'],
@@ -139,7 +144,8 @@
         : { url: `datos/documentos/${k}.pdf`, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
       const pie = [el('span', { class: 'mono', texto: nombreArchivo }), document.createTextNode(` · lo cargó el ${fecha(d.cargado_en)}`)];
       if (retoma && nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Cargado de nuevo hoy', 'pend')]));
-      if (retoma && pausa.docs.includes(k) && !nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Todavía no carga el nuevo', 'error')]));
+      // Pide atención (puede cargarlo todavía hoy), no es un cierre (auditoría 2026-10-18, D6)
+      if (retoma && pausa.docs.includes(k) && !nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Todavía no carga el nuevo', 'pend')]));
       $('[data-doc-archivo]', art).replaceChildren(...pie);
     }
     if (retoma) {
@@ -190,19 +196,20 @@
       // Estado de cada documento, a la vista
       for (const art of $$('[data-doc]', form)) {
         const v = elegido(`coincide_${art.dataset.doc}`);
-        // Etiqueta con icono de su familia: por cotejar (en marcha), coincide (logro), no coincide (atención)
-        $('[data-doc-estado]', art).replaceWith(APD.estado(v === 'si' ? 'Coincide' : v === 'no' ? 'No coincide' : 'Por cotejar', v === 'si' ? 'ok' : v === 'no' ? 'pend' : 'marcha'));
+        // Etiqueta con icono de su familia: coincide (logro); por cotejar y no coincide (le toca actuar, D7)
+        $('[data-doc-estado]', art).replaceWith(APD.estado(v === 'si' ? 'Coincide' : v === 'no' ? 'No coincide' : 'Por cotejar', v === 'si' ? 'ok' : 'pend'));
         $('.doc-cabeza .estado', art).setAttribute('data-doc-estado', '');
       }
 
       // Lo que falta, y lo que pasará al registrar
       const faltan = [];
+      // «Falta indicar si…» (auditoría 2026-10-18, D32: «Falta: si la persona se presentó» era forzado)
       if (!presente) faltan.push('si la persona se presentó');
-      if (presente === 'si' && !ident) faltan.push('la identidad');
+      if (presente === 'si' && !ident) faltan.push('si es la misma persona de la fotografía');
       const sinCotejar = conDocs ? coinciden.filter((x) => !x).length : 0;
-      if (sinCotejar) faltan.push(`el cotejo de ${sinCotejar === 1 ? 'un documento' : `${sinCotejar} documentos`}`);
+      if (sinCotejar) faltan.push(sinCotejar === 1 ? 'si coincide un documento' : `si coinciden ${sinCotejar} documentos`);
       if (conDocs && noCoinciden && !elegido('hoy_documento')) faltan.push('si puede traer hoy el documento correcto');
-      if (conDocs && !noCoinciden && !elegido('pago')) faltan.push('el pago');
+      if (conDocs && !noCoinciden && !elegido('pago')) faltan.push('si presentó el comprobante de pago');
       const nuevo = p.numero_expediente ? `esta solicitud se agrega a su expediente físico ${expediente}` : `se abre el expediente físico ${expediente}`;
       const TEXTOS = {
         terminado: `Todo coincide y el pago está verificado. Al terminar, ${nuevo} y el siguiente paso es asignarle un grupo del curso.`,
@@ -214,7 +221,13 @@
         no_es_la_persona: 'No se atiende la cita. La cuenta queda bloqueada y se avisa a la Dirección para aclararlo.'
       };
       $('[data-resumen]').textContent = faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado)
-        ? `Falta: ${lista(faltan)}.` : TEXTOS[resultado] || '';
+        ? `Falta indicar ${lista(faltan)}.` : TEXTOS[resultado] || '';
+      // Sin nada que cotejar (no se presentó o no es la persona), el visor no sigue mostrando un documento (D32)
+      if ((presente === 'no' || ident === 'no_es') && hayVisor()) {
+        const visor = $('[data-visor]');
+        if (visor && visor.open) visor.close();
+        for (const a of $$('[data-doc]', form)) a.removeAttribute('data-viendo');
+      }
       $('[data-cita-ayuda]').textContent = resultado === 'otra_cita'
         ? 'Asígnele una cita nueva para que presente su comprobante. Conserva el monto que se le indicó.'
         : 'Asígnele una cita nueva, una sola vez. Conserva el monto que se le indicó.';
@@ -225,12 +238,23 @@
       boton.classList.toggle('btn-peligro-contorno', r.clase === 'btn-peligro-contorno');
     }
 
-    /* Ver documento: en el visor, con todas sus hojas; el que se ve queda señalado en la lista */
-    const hayVisor = () => Boolean(window.FormKit && FormKit.visor);
+    /* Ver documento: en el visor, con todas sus hojas; el que se ve queda señalado en la lista y su botón dice «En el
+       visor». En computadora, pedir otra vez el que ya está abierto lleva el foco a sus hojas (auditoría 2026-10-18, B16). */
     function ver(k, boton) {
       if (!archivos[k] || !hayVisor()) return;
-      for (const a of $$('[data-doc]', form)) a.toggleAttribute('data-viendo', a.dataset.doc === k);
+      const yaAbierto = boton && $(`[data-doc="${k}"]`, form).hasAttribute('data-viendo') && FormKit.visor.enComputadora() && $('[data-visor]').open;
+      for (const a of $$('[data-doc]', form)) {
+        const viendo = a.dataset.doc === k;
+        a.toggleAttribute('data-viendo', viendo);
+        const b = $('[data-ver]', a);
+        if (b) { b.toggleAttribute('aria-current', viendo); b.firstChild.textContent = viendo ? 'En el visor' : 'Ver lo que cargó'; }
+      }
       FormKit.visor.abre(archivos[k], boton);
+      if (yaAbierto) {
+        const hojas = $('[data-visor-hojas]');
+        hojas.scrollIntoView({ block: 'nearest' });
+        hojas.focus();
+      }
     }
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-ver]');
@@ -252,8 +276,14 @@
       FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
     });
 
-    // La cita nueva, desde el día siguiente al de hoy (fecha simulada del corte)
-    document.getElementById('cita_fecha').setAttribute('min', APD.sumaDias(datos.fecha_corte, 1));
+    // La cita nueva, desde el día siguiente al de hoy (fecha simulada del corte): el formato «fecha-dma» del estándar lee
+    // el mínimo de data-min del campo (AAAA-MM-DD) y lo dice en día/mes/año
+    const manana = APD.sumaDias(datos.fecha_corte, 1);
+    $('[data-campo="cita_fecha"]').dataset.min = manana;
+    $('[data-cita-desde]').textContent = fecha(manana);
+    // Retomar una pausa empieza en los documentos: la nota de obligatorias va en esa tarjeta (D33)
+    $('[data-leyenda-llegada]').hidden = retoma;
+    $('[data-leyenda-docs]').hidden = !retoma;
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     form.hidden = pausaVencida;
@@ -262,7 +292,7 @@
       enviar(payload, { signal }) {
         return new Promise((ok, mal) => {
           const t = setTimeout(() => {
-            const d = payload.datos;
+            const d = Object.assign({}, payload.datos, payload.datos.cita_fecha ? { cita_fecha: isoDe(payload.datos.cita_fecha) } : {});
             const resultado = document.getElementById('resultado').value;
             const en = new Date().toISOString();
             const archivo = (campo) => (payload.archivos || []).find((a) => a.campo === campo && a.blob);
@@ -304,6 +334,7 @@
         };
         const [tono, titulo, texto, pasos] = HECHO[resultado];
         form.hidden = true;
+        sinGuardar = false;
         // Lo de la cita que ya no es cierto se quita (el aviso de pausa no queda encima del resultado)
         $('[data-retoma]').hidden = true;
         $('[data-antecedente]').hidden = true;
@@ -342,6 +373,13 @@
     if (aCotejar[0] && hayVisor() && FormKit.visor.enComputadora()) ver(aCotejar.find((k) => archivos[k]), null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
+    /* Recargar o salir a mitad del cotejo pierde lo capturado: el navegador lo advierte mientras haya algo sin registrar
+       (auditoría 2026-10-18, B9). Sólo cuenta lo que hace quien atiende, no lo que llena la página. */
+    let sinGuardar = false;
+    const marcaCambio = (e) => { if (e.isTrusted && !form.hidden) sinGuardar = true; };
+    form.addEventListener('input', marcaCambio);
+    form.addEventListener('change', marcaCambio);
+    window.addEventListener('beforeunload', (e) => { if (sinGuardar) { e.preventDefault(); e.returnValue = ''; } });
     recalcula();
   }).catch(() => falla('No se pudo cargar la cita. Intente de nuevo más tarde.'));
 }());

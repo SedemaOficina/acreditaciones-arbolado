@@ -50,6 +50,9 @@ const ESTADOS = [
   ['grupo-integracion', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`, null],
   ['grupo-en-curso', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`, null],
   ['asistencia', 'asistencia.html', null],
+  // Material de estudio, público y del personal (auditoría 2026-10-18, A 8.4)
+  ['material', 'material.html', null],
+  ['material-personal', 'material-personal.html', null],
   enviadaDict && ['revisar-dictaminador', `revisar.html?folio=${enviadaDict.folio}`, null],
   enviadaPoda && ['revisar-poda', `revisar.html?folio=${enviadaPoda.folio}`, null],
   cita && ['cotejo', `cotejo.html?folio=${cita.folio}`, null],

@@ -4,14 +4,21 @@
        queda deshabilitada con su motivo. Si es nueva o renovación no se pregunta: se informa y se guarda en
        el campo auxiliar «tramite», del que dependen los documentos;
      · la acreditación que se renueva (sólo lectura);
-     · la adscripción con la que se enviará (es de la persona; se cambia en «Mi perfil»);
-     · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija, lo que hay que corregir arriba de los documentos, y los documentos ya aceptados dejan de
-       ser obligatorios;
+     · la adscripción con la que se enviará (es de la persona; se cambia en «Mi perfil», que regresa a esta misma
+       solicitud, con su folio: auditoría 2026-10-18, B6);
+     · al continuar un borrador o corregir observaciones (?folio=…): la acreditación fija y, en cada documento, el
+       archivo que ya está cargado, con su nombre y «Ver» (D1). Al corregir se abre en «Documentos», con el documento
+       observado primero y su observación junto al campo; lo ya aceptado se ve plegado, como aceptado (D2);
      · en la revisión, el nombre con que se guarda cada documento (TIPO DE DOCUMENTO_NOMBRE COMPLETO; lo pone la
-       base al cargarlos, apd.nombre_de_archivo) y, debajo, el archivo que subió;
+       base al cargarlos, apd.nombre_de_archivo) y, debajo, el archivo que subió; el que ya estaba cargado se dice
+       «Ya cargado», no «No indicado» (D1);
      · estudios (poda y dictaminador); en dictaminador, con nivel, carrera y situación, la experiencia que se le pide (APD.perfilAcademico,
        mismo cálculo que la base). Fija el mínimo del campo de experiencia y advierte si podría no cumplir el perfil
-       (se envía igual: lo revisa el personal).
+       (se envía igual: lo revisa el personal);
+     · el avance (auditoría 2026-10-18, B2): cada paso entra al historial del navegador («Atrás» regresa al paso
+       anterior) y lo capturado se guarda como borrador en este dispositivo, con los documentos (en la versión de prueba,
+       en el almacén de la prueba, app/archivos-prueba.js). Al volver, la franja del estándar ofrece seguir donde iba;
+     · después de «Editar» en la revisión, «Continuar» regresa directo a la revisión (B13).
    La base vuelve a comprobar todo al enviar. */
 (function () {
   'use strict';
@@ -19,6 +26,8 @@
   const form = document.getElementById('formulario');
   const radios = (nombre) => Array.from(form.querySelectorAll(`input[name="${nombre}"]`));
   const avisa = (control) => APD.avisa(control);
+  /* Lo que ya está cargado en la solicitud que se continúa, por campo (data-campo) */
+  const previos = new Map();
 
   /* Marca una opción y deshabilita las demás (no aplican al caso de la persona). */
   function fija(nombre, valor) {
@@ -33,26 +42,41 @@
     document.querySelector('[data-adscripcion-texto]').replaceChildren(pares.length ? APD.datosLista(pares)
       : el('p', { texto: 'Sin indicar. Antes de enviar, indica en «Mi perfil» si trabajas para alguna empresa, institución o dependencia.' }));
     document.querySelector('[data-adscripcion-info]').classList.toggle('aviso-advertencia', !pares.length);
+    // «Mi perfil» regresa a esta misma solicitud, con su folio o su tipo (B6)
+    for (const a of document.querySelectorAll('[data-adscripcion-info] a[href^="datos.html"]')) {
+      a.setAttribute('href', `datos.html?volver=${encodeURIComponent(`solicitud.html${location.search}`)}`);
+    }
   }
 
   /* Nombres con que se guardan los archivos (decisión 2026-10-15, ajustada por Liber): el sistema renombra solo y no
      se avisa al cargar; en su revisión, la persona ve el nombre nuevo de cada documento y, debajo, el archivo que subió
      (el personal sólo ve el nombre nuevo, 2026-10-17). El tipo
      de documento viene en data-nombre-archivo de cada campo (apd.requisito.nombre_archivo). */
-  const archivoDe = (campo) => { const a = campo && campo.querySelector('.arch:not([data-estado="error"]) .arch-nombre'); return a ? a.textContent : ''; };
+  const archivoDe = (campo) => { const a = campo && campo.querySelector('[data-archivos] .arch:not([data-estado="error"]) .arch-nombre'); return a ? a.textContent : ''; };
+  const nombreGuardado = (d, campo, persona) => d.nombre_archivo || APD.nombreDeArchivo(campo.dataset.nombreArchivo || d.requisito.toUpperCase(), persona, d.nombre_original);
   function revisionConNombres(persona) {
-    const nuevos = [];
+    const nombres = [];
     for (const b of form.querySelectorAll('[data-revision-lista] [data-editar^="doc_"]')) {
       const campo = form.querySelector(`[data-campo="${b.dataset.editar}"]`);
+      if (!campo || !campo.dataset.nombreArchivo) continue;
       const original = archivoDe(campo);
-      if (!campo || !campo.dataset.nombreArchivo || !original) continue;
-      const nuevo = APD.nombreDeArchivo(campo.dataset.nombreArchivo, persona, original);
-      nuevos.push(nuevo);
       const val = b.parentElement.firstElementChild;
-      val.replaceChildren(el('span', { class: 'rev-archivo-nuevo', texto: nuevo }), el('span', { class: 'rev-archivo-original', texto: `Archivo que subiste: ${original}` }));
+      const previo = previos.get(campo.dataset.campo);
+      if (original) {
+        const nuevo = APD.nombreDeArchivo(campo.dataset.nombreArchivo, persona, original);
+        nombres.push(nuevo);
+        val.replaceChildren(el('span', { class: 'rev-archivo-nuevo', texto: nuevo }), el('span', { class: 'rev-archivo-original', texto: `Archivo que subiste: ${original}` }));
+      } else if (previo && previo.estado !== 'con_observacion') {
+        // Lo que ya estaba cargado se envía con la solicitud: se dice así, no «No indicado» (D1)
+        const guardado = nombreGuardado(previo, campo, persona);
+        nombres.push(guardado);
+        val.replaceChildren(el('span', { class: 'rev-archivo-nuevo', texto: `Ya cargado: ${guardado}` }),
+          el('span', { class: 'rev-archivo-original', texto: previo.estado === 'aceptado' ? 'La Secretaría ya lo aceptó; no lo vuelves a cargar.' : 'Se envía el que ya cargaste.' }));
+      }
     }
-    const resumen = nuevos.length && form.querySelector('[data-revision-lista] [data-editar^="doc_"]').closest('.rev-bloque').querySelector('.rev-resumen');
-    if (resumen) resumen.textContent = nuevos.length === 1 ? nuevos[0] : `${nuevos.length} documentos`;
+    const primero = form.querySelector('[data-revision-lista] [data-editar^="doc_"]');
+    const resumen = nombres.length && primero && primero.closest('.rev-bloque').querySelector('.rev-resumen');
+    if (resumen) resumen.textContent = nombres.length === 1 ? nombres[0] : `${nombres.length} documentos`;
   }
 
   function ponValor(id, valor) {
@@ -71,12 +95,72 @@
   }
 
   /* Un documento que ya está cargado y no tiene observaciones no se vuelve a pedir. */
-  function yaNoObligatorio(campo, texto) {
+  function yaNoObligatorio(campo) {
     campo.removeAttribute('data-requerido');
     const etq = campo.querySelector('.etiqueta');
     if (etq) for (const x of etq.querySelectorAll('.marca-oblig, .solo-lector')) x.remove();
+  }
+
+  /* ----- El archivo que ya está cargado (D1), con la forma de la lista del módulo archivos ----- */
+  const urls = new Map();
+  function urlDe(d) {
+    if (!d.blob) return `datos/documentos/${d.requisito}.pdf`; // versión de prueba: el PDF ficticio del requisito
+    if (!urls.has(d)) urls.set(d, URL.createObjectURL(d.blob));
+    return urls.get(d);
+  }
+  function tarjetaArchivo(d, campo, persona) {
+    const nombre = nombreGuardado(d, campo, persona);
+    return el('ul', { class: 'lista-arch arch-previo' }, [el('li', { class: 'arch', 'data-estado': 'listo' }, [
+      APD.icono('adjunto', 'icono arch-icono'),
+      el('div', { class: 'arch-cuerpo' }, [
+        el('span', { class: 'arch-nombre', texto: nombre }),
+        el('span', { class: 'arch-estado', texto: [d.cargado_en ? `Cargado el ${APD.fecha(d.cargado_en)}` : '', d.tamano_bytes ? APD.tamano(d.tamano_bytes) : ''].filter(Boolean).join(' · ') })
+      ]),
+      el('a', { class: 'btn-enlace', href: urlDe(d), target: '_blank', rel: 'noopener' }, [
+        document.createTextNode('Ver'), el('span', { class: 'solo-lector', texto: ` ${nombre} (se abre en otra pestaña)` })])
+    ])]);
+  }
+  /* Cargado y sin revisar (borrador): se ve el archivo; elegir otro lo reemplaza */
+  function marcaCargado(campo, d, persona) {
+    yaNoObligatorio(campo);
+    const caja = el('div', { class: 'doc-previo-archivo' }, [el('p', { class: 'doc-previo-titulo', texto: 'Archivo que ya cargaste' }), tarjetaArchivo(d, campo, persona)]);
+    const zona = campo.querySelector('[data-archivos]');
+    zona.before(caja);
+    const texto = zona.querySelector('.zona-carga-texto');
+    if (texto) texto.textContent = 'Elegir otro archivo para reemplazarlo';
+    // Con un archivo nuevo, el anterior deja de verse aquí: el que se envía es el nuevo
+    new MutationObserver(() => { caja.hidden = Boolean(archivoDe(campo)); }).observe(zona.querySelector('.lista-arch'), { childList: true, subtree: true });
+  }
+  /* Aceptado: plegado, con su etiqueta; cambiarlo es posible, pero no compite con lo observado (D2) */
+  function marcaAceptado(campo, d, persona) {
+    yaNoObligatorio(campo);
+    campo.classList.add('doc-aceptado');
+    const etq = campo.querySelector('.etiqueta');
+    if (etq) etq.after(el('span', { class: 'doc-aceptado-estado' }, [APD.estado('Aceptado', 'ok')]));
+    const zona = campo.querySelector('[data-archivos]');
     const ayuda = campo.querySelector('.ayuda');
-    if (ayuda) ayuda.prepend(el('strong', { texto: `${texto} ` }));
+    const plegado = el('details', { class: 'doc-reemplazo' }, [el('summary', { class: 'doc-reemplazo-titulo', texto: 'Cambiar este archivo' })]);
+    zona.before(tarjetaArchivo(d, campo, persona), plegado);
+    plegado.append(...[ayuda, zona].filter(Boolean));
+    // Plegado de verdad: lo de dentro no ocupa lugar ni se recorre hasta abrir «Cambiar este archivo»
+    const sincroniza = () => { for (const x of [ayuda, zona]) if (x) x.hidden = !plegado.open; };
+    plegado.addEventListener('toggle', sincroniza);
+    sincroniza();
+  }
+  /* Con observación: primero, con lo que hay que corregir junto al campo y el archivo que se observó (D2) */
+  function marcaObservado(campo, d, persona) {
+    campo.classList.add('doc-observado');
+    const nombre = nombreGuardado(d, campo, persona);
+    const aviso = el('div', { class: 'aviso aviso-advertencia doc-observacion' }, [
+      APD.icono('alerta'),
+      el('div', { class: 'aviso-texto' }, [
+        el('strong', { class: 'aviso-titulo', texto: 'Corrige este documento' }),
+        el('p', { texto: APD.paraTi(d.observacion) || 'Tiene una observación de la Secretaría.' }),
+        el('p', { class: 'doc-observacion-archivo' }, [document.createTextNode('El que cargaste: '),
+          el('a', { href: urlDe(d), target: '_blank', rel: 'noopener' }, [document.createTextNode(nombre), el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])])
+      ])
+    ]);
+    (campo.querySelector('.ayuda') || campo.querySelector('.etiqueta')).after(aviso);
   }
 
   /* Primera renovación de quien viene del registro anterior (Kobo), que no guardó archivos (decisión 2026-10-18): los
@@ -118,35 +202,40 @@
     docsKobo(datos, tipo, modalidad, anterior);
   }
 
+  let alCambiarTipo = () => {};
   function nueva(datos, persona) {
     const op = APD.opciones(datos, persona, []);
     const disponibles = ['poda', 'dictaminador'].filter((t) => op[t].disponible);
-    if (!disponibles.length) return sinOpciones(['poda', 'dictaminador'].map((t) => `${APD.TIPOS[t]}: ${op[t].motivo}`));
+    if (!disponibles.length) { sinOpciones(['poda', 'dictaminador'].map((t) => `${APD.TIPOS[t]}: ${op[t].motivo}`)); return false; }
 
     // Sólo se deshabilita lo que de verdad no se puede pedir hoy, con su motivo
     for (const r of radios('tipo')) {
       if (op[r.value].disponible) continue;
       r.disabled = true;
+      r.checked = false;
       const desc = form.querySelector(`[data-desc-tipo="${r.value}"]`);
       if (desc) desc.textContent = op[r.value].motivo;
     }
-    const alCambiar = () => {
-      const r = radios('tipo').find((x) => x.checked);
+    alCambiarTipo = () => {
+      const r = radios('tipo').find((x) => x.checked && !x.disabled);
       if (!r) return ponTramite('', '', '', datos);
       ponTramite(r.value, op[r.value].modalidad, op[r.value].anterior, datos);
     };
-    for (const r of radios('tipo')) r.addEventListener('change', alCambiar);
+    for (const r of radios('tipo')) r.addEventListener('change', alCambiarTipo);
 
     const pedido = new URLSearchParams(location.search).get('tipo');
     const inicial = disponibles.includes(pedido) ? pedido : disponibles.length === 1 ? disponibles[0] : null;
     if (inicial) { const r = radios('tipo').find((x) => x.value === inicial); r.checked = true; avisa(r); }
-    alCambiar();
+    alCambiarTipo();
+    return true;
   }
 
+  /* Devuelve la solicitud que se continúa, o null si no se puede */
   function continua(datos, persona, folio) {
     const s = APD.solicitudesDe(datos, persona).find((x) => x.folio === folio);
     if (!s || !['borrador', 'con_observaciones'].includes(s.estado)) {
-      return sinOpciones([`No encontramos la solicitud ${folio} entre tus trámites, o ya no se puede modificar.`]);
+      sinOpciones([`No encontramos la solicitud ${folio} entre tus trámites, o ya no se puede modificar.`]);
+      return null;
     }
     document.querySelector('[data-bajada-tramite]').textContent = `Continúas la solicitud ${s.folio}. La acreditación ya no cambia.`;
     fija('tipo', s.tipo_acreditacion);
@@ -162,19 +251,33 @@
 
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r.nombre]));
-    const obs = docs.filter((d) => d.estado === 'con_observacion');
+    const observados = [];
     for (const d of docs) {
       const campo = form.querySelector(`[data-campo="doc_${s.tipo_acreditacion}_${s.modalidad}_${d.requisito}"]`);
-      if (!campo || d.estado === 'con_observacion') continue;
-      yaNoObligatorio(campo, d.estado === 'aceptado' ? 'Ya lo cargaste y fue aceptado; no tienes que volver a subirlo.' : 'Ya lo cargaste; súbelo de nuevo sólo si quieres reemplazarlo.');
+      if (!campo) continue;
+      previos.set(campo.dataset.campo, d);
+      if (d.estado === 'con_observacion') { marcaObservado(campo, d, persona); observados.push(campo); }
+      else if (d.estado === 'aceptado') marcaAceptado(campo, d, persona);
+      else marcaCargado(campo, d, persona);
     }
+    // Lo observado va primero en su paso, en el mismo orden entre sí (D2)
+    for (const campo of observados.slice().reverse()) campo.parentElement.prepend(campo);
+    const obs = docs.filter((d) => d.estado === 'con_observacion');
     if (obs.length) {
-      document.querySelector('[data-observaciones-lista]').replaceChildren(...obs.map((d) => el('li', { texto: `${req[d.requisito] || d.requisito}: ${d.observacion}` })));
+      document.querySelector('[data-observaciones-lista]').replaceChildren(...obs.map((d) => {
+        const campo = form.querySelector(`[data-campo="doc_${s.tipo_acreditacion}_${s.modalidad}_${d.requisito}"]`);
+        const etq = campo && campo.querySelector('.etiqueta');
+        const nombre = req[d.requisito] || d.requisito;
+        return el('li', {}, [etq && etq.id ? el('a', { href: `#${etq.id}`, texto: nombre }) : document.createTextNode(nombre)]);
+      }));
+      document.querySelector('[data-observaciones-nota]').textContent = obs.length === 1
+        ? 'Va primero, con lo que debes corregir junto al documento. Lo demás ya está aceptado.'
+        : 'Van primero, cada uno con lo que debes corregir. Lo demás ya está aceptado.';
       document.querySelector('[data-observaciones]').hidden = false;
-      // Desde el paso 1 se sabe qué hay que corregir y dónde (auditoría 2026-10-17)
       const bajada = document.querySelector('[data-bajada-tramite]');
       if (bajada) bajada.textContent = `Corriges la solicitud ${s.folio}: ${obs.length === 1 ? 'tienes 1 observación' : `tienes ${obs.length} observaciones`} en «Documentos» (paso 2). La acreditación ya no cambia.`;
     }
+    return s;
   }
 
   /* Experiencia mínima según el perfil: el mínimo lo calcula el núcleo con FORMKIT_CONFIG.limitesSegun.experiencia
@@ -203,6 +306,197 @@
     if (interno) interno.dataset.internoTexto = p ? `${p.perfil} (${TEXTO_PERFIL[p.perfil]}) · experiencia mínima: ${p.minimo ? `${p.minimo} años` : '—'}` : '';
   }
 
+  /* ----- Pasos en el historial del navegador (B2): «Atrás» regresa al paso anterior, no saca de la solicitud ----- */
+  let desdeHistorial = false;
+  function irSinHistorial(i) {
+    desdeHistorial = true;
+    try { FormKit.pasos.ir(i); } finally { desdeHistorial = false; }
+    history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+  }
+  function historial() {
+    history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+    form.addEventListener('formkit:paso', (e) => {
+      if (desdeHistorial || (history.state && history.state.apdPaso === e.detail.indice)) return;
+      history.pushState({ apdPaso: e.detail.indice }, '');
+    });
+    window.addEventListener('popstate', (e) => {
+      // Enviada (acuse a la vista): «Atrás» lleva a «Mis trámites», no a un formulario que ya no se puede enviar
+      if (form.hidden) { location.replace('tramites.html'); return; }
+      // Un salto dentro de la página («Ir al contenido», enlaces #…) también dispara popstate, sin paso: se ignora
+      if (!e.state || !Number.isInteger(e.state.apdPaso)) return;
+      irSinHistorial(e.state.apdPaso);
+    });
+  }
+
+  /* ----- «Editar» desde la revisión (B13): «Continuar» regresa a la revisión, sin recorrer los pasos ----- */
+  function editarDesdeRevision() {
+    let editando = false;
+    form.addEventListener('click', (e) => {
+      if (e.target.closest('[data-revision] [data-editar]')) { editando = true; return; }
+      const sigue = e.target.closest('[data-accion="siguiente"]');
+      if (!sigue || !editando) return;
+      // Se valida lo de en medio, como al avanzar con la barra: si algo falta, se queda en ese paso con su error
+      e.stopPropagation();
+      FormKit.pasos.ir(FormKit.pasos.total - 1);
+    }, true);
+    form.addEventListener('formkit:paso', (e) => {
+      const enRevision = e.detail.paso.hasAttribute('data-revision');
+      if (enRevision) editando = false;
+      for (const b of form.querySelectorAll('[data-paso]:not([data-revision]) [data-accion="siguiente"]')) {
+        if (!b.dataset.textoOriginal) b.dataset.textoOriginal = b.textContent;
+        b.textContent = editando && !enRevision ? 'Volver a la revisión' : b.dataset.textoOriginal;
+      }
+    });
+  }
+
+  /* ----- Borrador en este dispositivo (B2) -----
+     Los campos, el paso y los documentos. Se escribe sólo cuando la persona cambia algo (no cuando la página llena
+     los datos de la solicitud que continúa), por eso no usa el borrador automático del núcleo (data-borrador), que
+     también guardaba lo que pone la página; sí usa su restauración (ctx.restauraBorrador) y su franja
+     (data-franja-borrador). Los archivos van al almacén de la prueba con un folio propio del borrador
+     («borrador:<persona>:<folio>»): la mezcla de la prueba no lo aplica a ninguna solicitud, y «Borrar lo guardado»,
+     «Empezar de cero» y la caducidad de 7 días lo borran. Al enviar, el borrador se borra. */
+  function borrador(datos, persona, alRecuperar) {
+    const B = window.APD_SOLICITUD.borrador;
+    const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
+    const { ctx } = FormKit.iniciar(form);
+    const franja = document.querySelector('[data-franja-borrador]');
+    const indicador = document.querySelector('[data-guardado]');
+    const M = FormKit.config.mensajes;
+    const folioBorrador = `borrador:${persona.id}:${new URLSearchParams(location.search).get('folio') || 'nueva'}`;
+    const DECLARACIONES = ['protesta', 'aviso', 'humano']; // se vuelven a marcar cada vez
+    const enBorrador = {}; // campo → { clave, nombre, tipo, size, blob }
+    let tocado = false;
+    let sinGuardar = false; // un archivo que no se pudo guardar: se avisa antes de salir
+    let restaurando = false;
+    let temporizador = 0;
+
+    const lee = () => {
+      try {
+        const b = JSON.parse(localStorage.getItem(B.clave) || 'null');
+        if (!b || b.v !== B.version || Date.now() - b.t > FormKit.config.borrador.ttlDias * 864e5) return null;
+        return b;
+      } catch (e) { return null; }
+    };
+    function datosActuales() {
+      const d = {};
+      for (const n of ctx.nombres()) {
+        const e = ctx.envoltura(n);
+        const t = ctx.tipoDe(e);
+        if (DECLARACIONES.includes(n) || e.hasAttribute('data-sensible') || t === 'auxiliar' || (ctx.tipos.has(t) && !ctx.tipos.get(t).enBorrador)) continue;
+        d[n] = ctx.valorDe(n);
+      }
+      return d;
+    }
+    function escribe() {
+      clearTimeout(temporizador);
+      if (!tocado || form.hidden) return;
+      const extra = FormKit.ganchos.estadoBorrador ? FormKit.ganchos.estadoBorrador(form) : {};
+      const archivos = Object.fromEntries(Object.entries(enBorrador).map(([k, v]) => [k, { clave: v.clave, nombre: v.nombre, tipo: v.tipo }]));
+      try {
+        localStorage.setItem(B.clave, JSON.stringify(Object.assign({ v: B.version, t: Date.now(), datos: datosActuales(), archivos }, extra)));
+      } catch (e) { sinGuardar = true; return; }
+      if (indicador) {
+        indicador.textContent = M.borradorGuardado;
+        indicador.setAttribute('data-visible', '');
+        setTimeout(() => indicador.removeAttribute('data-visible'), FormKit.config.borrador.visibleMs);
+      }
+    }
+    const programa = () => { clearTimeout(temporizador); temporizador = setTimeout(escribe, FormKit.config.borrador.retardoMs); };
+    const cambio = (e) => { if (e.isTrusted && !restaurando) { tocado = true; programa(); } };
+    form.addEventListener('input', cambio);
+    form.addEventListener('change', cambio);
+    form.addEventListener('formkit:paso', () => { if (tocado) programa(); });
+    window.addEventListener('pagehide', () => { if (temporizador) escribe(); });
+    window.addEventListener('beforeunload', (e) => { if (sinGuardar && !form.hidden) { e.preventDefault(); e.returnValue = ''; } });
+
+    /* Archivos: al quedar listo uno nuevo se guarda; al quitarlo, sale del borrador */
+    const campos = Array.from(form.querySelectorAll('[data-campo]')).filter((c) => c.querySelector('[data-archivos]'));
+    function revisaArchivos() {
+      for (const campo of campos) {
+        const n = campo.dataset.campo;
+        const vivo = FormKit.archivos.de(campo).find((a) => a.estado !== 'error');
+        const antes = enBorrador[n];
+        // Quitado: sale del borrador (mientras se recupera, el archivo todavía se está procesando)
+        if (!vivo) { if (antes && !restaurando) { delete enBorrador[n]; tocado = true; programa(); } continue; }
+        const listo = vivo.estado === 'listo' && vivo.blob ? vivo : null;
+        if (!listo || (antes && antes.blob === listo.blob)) continue;
+        const en = new Date().toISOString();
+        const registro = { clave: `${folioBorrador}|${n}|${en}`, nombre: listo.nombre, tipo: listo.tipo, size: listo.size, blob: listo.blob };
+        enBorrador[n] = registro;
+        if (restaurando) continue;
+        tocado = true;
+        if (!P) { sinGuardar = true; continue; }
+        P.guardaDocumento(folioBorrador, n, { blob: listo.blob, nombre: listo.nombre, tipo: listo.tipo, size: listo.size }, { en })
+          .then(programa, () => { sinGuardar = true; });
+      }
+    }
+    for (const campo of campos) new MutationObserver(revisaArchivos).observe(campo.querySelector('.lista-arch'), { childList: true, subtree: true, attributes: true });
+
+    /* Los archivos del borrador, del almacén de la prueba (IndexedDB «apd-prueba», índice «folio»). Se leen aquí porque
+       app/archivos-prueba.js no exporta una lectura por folio (pedido a su dueño: exportarla y usarla aquí). */
+    function documentosDelBorrador() {
+      if (P && typeof P.documentos === 'function') return P.documentos(folioBorrador);
+      return new Promise((ok) => {
+        let r;
+        try { r = indexedDB.open('apd-prueba'); } catch (e) { ok([]); return; }
+        r.onerror = () => ok([]);
+        r.onsuccess = () => {
+          const db = r.result;
+          if (!db.objectStoreNames.contains('documentos')) { db.close(); ok([]); return; }
+          const q = db.transaction('documentos', 'readonly').objectStore('documentos').index('folio').getAll(folioBorrador);
+          q.onsuccess = () => { db.close(); ok(q.result || []); };
+          q.onerror = () => { db.close(); ok([]); };
+        };
+      });
+    }
+    function recupera(b) {
+      restaurando = true;
+      // El tipo restaurado vuelve a calcular el curso y sus documentos; uno que ya no se puede pedir no queda elegido
+      for (const r of radios('tipo')) if (r.disabled) r.checked = false;
+      const r = radios('tipo').find((x) => x.checked);
+      if (r) avisa(r);
+      const archivos = Object.entries(b.archivos || {});
+      const docs = archivos.length ? documentosDelBorrador() : Promise.resolve([]);
+      return docs.then((lista) => {
+        for (const [n, a] of archivos) {
+          const campo = form.querySelector(`[data-campo="${n}"]`);
+          const doc = (lista || []).find((x) => x.clave === a.clave);
+          if (!campo || !doc || !doc.blob || FormKit.archivos.de(campo).length) continue;
+          const f = new File([doc.blob], a.nombre, { type: a.tipo || doc.blob.type });
+          enBorrador[n] = { clave: a.clave, nombre: a.nombre, tipo: a.tipo, size: f.size, blob: f };
+          FormKit.archivos.agrega([f], campo);
+        }
+      }).catch(() => {}).then(() => new Promise((ok) => setTimeout(ok, 50))).then(() => {
+        restaurando = false;
+        tocado = true;
+        alRecuperar();
+        programa();
+      });
+    }
+
+    const previo = lee();
+    if (previo && franja) {
+      franja.hidden = false;
+      franja.addEventListener('click', (e) => {
+        const a = e.target.closest('[data-borrador]');
+        if (!a) return;
+        const confirma = franja.querySelector('[data-borrador-confirma]');
+        if (a.dataset.borrador === 'recuperar') {
+          ctx.restauraBorrador(previo);
+          franja.hidden = true;
+          recupera(previo).then(() => FormKit.anuncia('Recuperaste lo que habías capturado.', { visible: document.querySelector('[data-borrador-recuperado]') }));
+        } else if (a.dataset.borrador === 'descartar') { confirma.hidden = false; franja.querySelector('[data-borrador="descartar-si"]').focus(); }
+        else if (a.dataset.borrador === 'conservar') { confirma.hidden = true; franja.querySelector('[data-borrador="recuperar"]').focus(); }
+        else if (a.dataset.borrador === 'descartar-si') {
+          try { localStorage.removeItem(B.clave); } catch (err) { /* sin almacenamiento */ }
+          franja.hidden = true;
+          FormKit.anuncia('Se descartó el borrador.', { visible: document.querySelector('[data-borrador-recuperado]') });
+        }
+      });
+    }
+  }
+
   APD.cargar().then((datos) => {
     const persona = APD.requiereSesion(datos);
     if (!persona) return;
@@ -216,7 +510,24 @@
     form.addEventListener('formkit:paso', () => revisionConNombres(persona));
     pintaAdscripcion(datos, persona);
     const folio = new URLSearchParams(location.search).get('folio');
-    if (folio) continua(datos, persona, folio); else nueva(datos, persona);
+    const s = folio ? continua(datos, persona, folio) : null;
+    const hayFormulario = folio ? Boolean(s) : nueva(datos, persona);
     experiencia(datos);
-  }).catch(() => sinOpciones(['No se pudo cargar tu información. Intenta de nuevo más tarde.']));
+    if (!hayFormulario) return;
+    // Corregir y reenviar abre donde está lo que hay que corregir: el paso de documentos (D2)
+    if (s && s.estado === 'con_observaciones') irSinHistorial(1);
+    historial();
+    editarDesdeRevision();
+    borrador(datos, persona, () => {
+      alCambiarTipo();
+      experiencia(datos);
+      // Si lo recuperado deja a la persona en la revisión, se vuelve a pintar con lo de ahora
+      const actual = FormKit.pasos.elementos[FormKit.pasos.actual()];
+      if (actual && actual.hasAttribute('data-revision') && FormKit.revision) { FormKit.revision.pinta(); revisionConNombres(persona); }
+      history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+    });
+  }).catch((e) => {
+    if (window.console) console.error(e);
+    sinOpciones(['No se pudo cargar tu información. Intenta de nuevo más tarde.']);
+  });
 }());

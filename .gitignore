@@ -6,3 +6,6 @@ node_modules/
 _to_delete/
 # Capturas de la auditoría (se regeneran con npm run auditar; los hallazgos sí se guardan)
 verificacion/auditoria/capturas/
+# Capturas de las pruebas (probar-sitio, probar-examen): se regeneran en cada corrida y pesaban 16 MB por versión
+# (auditoría 2026-10-18, A 8.6). Quedan en el disco; no se versionan.
+verificacion/capturas/

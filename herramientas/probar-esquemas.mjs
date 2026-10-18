@@ -23,7 +23,7 @@ await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
 // Textos de usted de las pantallas del personal (desde la 1.3.2 todos viven en «mensajes», P95): el servidor los recibe
 // igual, con validaPayload(…, { mensajes })
 await import(pathToFileURL(join(raiz, 'sitio/app/mensajes-usted.js')).href);
-const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar']);
+const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar', 'material']);
 let ultimo = null;
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
 const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
@@ -55,7 +55,10 @@ for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.htm
 }
 // Un grupo (bloque 53): confirmar, dar de baja y cancelar están en la misma página; se toma cada formulario por su id. La
 // base revisa además cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
-for (const [archivo, id, nombre] of [['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar']]) {
+// Material de estudio del personal (auditoría 2026-10-18, A 8.7): un solo formulario para agregar, editar y reemplazar;
+// «modo» lo calcula la API por la ruta (alta o cambio), como aquí el caso con `_modo`.
+for (const [archivo, id, nombre] of [['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar'],
+  ['material-personal.html', 'form-material', 'material']]) {
   const m = readFileSync(join(raiz, 'sitio', archivo), 'utf8').match(new RegExp(`<form id="${id}"[\\s\\S]*?</form>`));
   const html = join(temporal, `${nombre}.html`);
   writeFileSync(html, `<!DOCTYPE html><html lang="es-MX"><body>${m[0]}</body></html>`);
@@ -117,6 +120,8 @@ function calcula(form, d, ctx) {
       : presente !== 'si' ? '' : ident === 'no_es' ? 'no_es_la_persona'
         : noCoinciden ? ({ si: 'pausa', no: 'con_observaciones' }[d.hoy_documento] || '') : ({ si: 'terminado', no: 'otra_cita' }[d.pago] || '');
   }
+  // Material de estudio: agregar (nuevo), editar sus datos o reemplazar su archivo; lo decide la ruta de la API (`_modo`)
+  if (form === 'material') d.modo = d._modo || 'nuevo';
   // Corrección del mismo día (persona): sólo los documentos que quedaron en pausa (`_pausa`)
   if (form === 'corregir') {
     const pausa = d._pausa || [];
@@ -234,9 +239,17 @@ caso('Mi perfil: una fotografía JPG se acepta', 'perfil-foto', {}, true, foto()
 const PODA = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
 const DICT = REQUISITOS_EN_LINEA;
 const acepta = (lista) => Object.fromEntries(lista.map((k) => [`decision_${k}`, 'aceptado']));
-const cita = { cita_fecha: '2026-10-21', cita_hora: '10:00' };
+// La fecha de la cita se escribe día/mes/año (formato «fecha-dma», auditoría 2026-10-18, D9)
+const cita = { cita_fecha: '21/10/2026', cita_hora: '10:00' };
 caso('Revisión: poda con todo aceptado y su cita se valida', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita }, true);
 caso('Revisión: validar sin cita se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA) }, ['cita_fecha', 'cita_hora']);
+caso('Revisión: una fecha de cita que no existe se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_fecha: '31/02/2026' }, ['cita_fecha']);
+{
+  const m = (ultimo.errores.find((e) => e.campo === 'cita_fecha') || {}).mensaje || '';
+  const ok = /día\/mes\/año/.test(m) && !/\bEscribe\b/.test(m);
+  console.log(`${ok ? 'BIEN' : 'MAL '}  Revisión: el servidor pide la fecha como día/mes/año y en usted${ok ? '' : ` → ${m}`}`);
+  if (!ok) fallas++;
+}
 caso('Revisión: una hora que no existe se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '25:00' }, ['cita_hora']);
 caso('Revisión: una hora fuera de la lista de horarios se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA), ...cita, cita_hora: '10:15' }, ['cita_hora']);
 caso('Revisión: un documento sin decidir se rechaza', 'revisar', { _cargados: PODA, ...acepta(PODA.slice(1)) }, ['decision_identificacion_oficial']);
@@ -299,14 +312,25 @@ caso('Examen: suspender con su motivo se acepta', 'examen-suspender', { motivo: 
 caso('Grupo: crear sin decir si es específico o combinado se rechaza', 'grupo-crear', {}, ['integracion']);
 caso('Grupo: crear un grupo combinado se acepta', 'grupo-crear', { integracion: 'combinado' }, true);
 caso('Grupo: otra integración se rechaza', 'grupo-crear', { integracion: 'mixto' }, ['integracion']);
-const confirma = { fecha_inicio: '2026-10-26', hora_entrada: '09:00', instructor: 'instructor.ficticio' };
+const confirma = { fecha_inicio: '26/10/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' };
 caso('Grupo: confirmar con primer día, hora e instructor se acepta', 'grupo-confirmar', confirma, true);
-caso('Grupo: confirmar sin hora de entrada ni instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '2026-10-26' }, ['hora_entrada', 'instructor']);
+caso('Grupo: confirmar sin hora de entrada ni instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '26/10/2026' }, ['hora_entrada', 'instructor']);
 caso('Grupo: una hora de entrada fuera de la lista se rechaza', 'grupo-confirmar', { ...confirma, hora_entrada: '09:15' }, ['hora_entrada']);
 caso('Grupo: dar de baja sin motivo se rechaza', 'grupo-baja', {}, ['motivo']);
 caso('Grupo: dar de baja con motivo se acepta', 'grupo-baja', { motivo: 'Pidió cambiar de fecha por trabajo.' }, true);
 caso('Grupo: cancelar sin motivo se rechaza', 'grupo-cancelar', {}, ['motivo']);
 caso('Grupo: cancelar con motivo se acepta', 'grupo-cancelar', { motivo: 'No se reunió el cupo mínimo en el plazo previsto.' }, true);
+
+// Material de estudio (personal): alta con su PDF, edición de datos sin archivo, reemplazo sólo con el archivo
+const material = { titulo: 'Manual técnico de poda', edicion: 'Primera edición, 2026', descripcion: 'La guía de la Secretaría sobre técnicas de poda.', para: 'ambas', publicar: 'si' };
+const pdfMaterial = [{ nombre: 'manual.pdf', size: 2000000, type: 'application/pdf', campo: 'archivo' }];
+caso('Material: agregar con sus datos y su PDF se acepta', 'material', { _modo: 'nuevo', ...material }, true, pdfMaterial);
+caso('Material: agregar sin archivo ni nombre se rechaza', 'material', { _modo: 'nuevo', ...material, titulo: '' }, ['titulo', 'archivo']);
+caso('Material: un archivo que no es PDF se rechaza', 'material', { _modo: 'nuevo', ...material }, ['archivo'], [{ nombre: 'manual.docx', size: 20000, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', campo: 'archivo' }]);
+caso('Material: «para» fuera de la lista se rechaza', 'material', { _modo: 'nuevo', ...material, para: 'todas' }, ['para'], pdfMaterial);
+caso('Material: editar los datos no pide el archivo', 'material', { _modo: 'editar', titulo: material.titulo, edicion: material.edicion, descripcion: material.descripcion, para: 'poda' }, true);
+caso('Material: reemplazar pide sólo el archivo', 'material', { _modo: 'reemplazar' }, ['archivo']);
+caso('Material: reemplazar con el PDF se acepta', 'material', { _modo: 'reemplazar' }, true, pdfMaterial);
 
 console.log(fallas ? `\n${fallas} caso(s) fallido(s).` : '\nTodos los casos correctos.');
 process.exit(fallas ? 1 : 0);

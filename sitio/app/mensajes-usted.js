@@ -2,7 +2,7 @@
    mensajes-usted.js · Textos del estándar en usted, para las pantallas del personal
 
    El Estándar de formularios del SIA habla de tú; las pantallas del personal (revisión documental, citas, cotejo,
-   grupos, asistencia y aplicar el examen) hablan de usted. Desde la 1.3.2 todos los textos que se ven —los generales,
+   grupos, asistencia, aplicar el examen y material de estudio) hablan de usted. Desde la 1.3.2 todos los textos que se ven —los generales,
    los de los formatos (fmt…), las cruzadas (cz…) y la longitud (minimoCaracteres, maximoCaracteres)— viven en
    «mensajes» (P95), y desde la 1.3.4 el formato «fecha» ya da su límite en día/mes/año (P112). Por eso aquí sólo hay
    textos: sustituye a app/config-usted.js, que además envolvía los formatos para cambiar su redacción.

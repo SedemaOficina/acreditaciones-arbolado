@@ -37,7 +37,8 @@
           const id = `doc-${m.clave}`;
           return el('article', { class: 'material-doc', 'aria-labelledby': id }, [
             el('h3', { class: 'material-titulo', id, texto: m.titulo }),
-            el('p', { class: 'material-edicion', texto: m.edicion }),
+            // Fechas dd/mm/aaaa con el cero (D23: el dato de los ficticios trae «1/04/2016»; queda pedido corregirlo en la base)
+            el('p', { class: 'material-edicion', texto: String(m.edicion || '').replace(/(^|[^\d/])(\d)\/(\d{2})\/(\d{4})/g, '$10$2/$3/$4') }),
             el('p', { texto: m.descripcion }),
             el('div', { class: 'material-archivo' }, [
               el('a', { class: 'btn btn-secundario', href: m.url, target: '_blank', rel: 'noopener' }, [

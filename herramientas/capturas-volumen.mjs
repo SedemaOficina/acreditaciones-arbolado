@@ -3,7 +3,8 @@ import { chromium } from 'playwright';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Uso: node docs/auditoria-tareas/capturas-volumen.mjs <carpeta con volumen.json> (con el sitio servido en el puerto 8765)
+// Uso: node herramientas/capturas-volumen.mjs <carpeta con volumen.json> (con el sitio servido en el puerto 8765)
+// volumen.json lo genera herramientas/escenario-volumen.mjs.
 const DIR = process.argv[2] || '.';
 const CAP = join(DIR, 'capturas');
 mkdirSync(CAP, { recursive: true });

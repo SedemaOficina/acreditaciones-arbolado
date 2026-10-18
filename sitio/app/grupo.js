@@ -13,9 +13,10 @@
   const { el, estado, fecha } = APD;
   const P = APD_PERSONAL;
   const $ = (s, r) => (r || document).querySelector(s);
-  const plural = (n, uno, varios) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
+  const plural = APD.plural;
   const params = new URLSearchParams(location.search);
-  const ESTADO_SOLICITUD = { inscrita: ['Inscrita', ''], aprobada: ['Aprobada', 'ok'], acreditada: ['Acreditada', 'ok'], no_acreditada: ['No acreditada', 'error'], sin_derecho_examen: ['Sin derecho a examen', 'error'] };
+  // «Inscrita»: el curso está en marcha, no terminado (auditoría 2026-10-18, D6)
+  const ESTADO_SOLICITUD = { inscrita: ['Inscrita', 'marcha'], aprobada: ['Aprobada', 'ok'], acreditada: ['Acreditada', 'ok'], no_acreditada: ['No acreditada', 'error'], sin_derecho_examen: ['Sin derecho a examen', 'error'] };
 
   /* Aviso de lo que se acaba de hacer (llega en la dirección desde la espera o tras guardar aquí) */
   function avisoHecho() {
@@ -171,14 +172,17 @@
       const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
       const minimo = APD.sumaDias(hoy, anticipacion);
       const fi = $('#fecha_inicio');
-      fi.setAttribute('min', minimo);
+      // Fecha día/mes/año (formato «fecha-dma», D9): el estándar lee el mínimo de data-min del campo (AAAA-MM-DD) y lo
+      // dice en día/mes/año; la página trabaja con AAAA-MM-DD
+      $('[data-campo="fecha_inicio"]').dataset.min = minimo;
+      const iso = () => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(fi.value)) || '';
       // La propuesta de un grupo que regresó a integración se ofrece de nuevo
-      if (g.fecha_inicio && g.fecha_inicio >= minimo) fi.value = g.fecha_inicio;
+      if (g.fecha_inicio && g.fecha_inicio >= minimo) fi.value = fecha(g.fecha_inicio);
       if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
         const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fecha(minimo)}. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
-        $('[data-ayuda-fecha]').textContent = fi.value && fi.value >= minimo ? `${base}: del ${fecha(fi.value)} al ${fecha(APD.sumaDias(fi.value, c.dias_duracion - 1))}.` : `${base}.`;
+        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo ? `${base}: del ${fecha(iso())} al ${fecha(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}.`;
       };
       fi.addEventListener('input', ayudaFecha);
       fi.addEventListener('change', ayudaFecha);
@@ -187,7 +191,7 @@
         document.createTextNode('; el examen, en el salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio.'));
       FormKit.iniciar(form, {
         enviar(payload) {
-          const d = payload.datos;
+          const d = Object.assign({}, payload.datos, { fecha_inicio: (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(payload.datos.fecha_inicio)) || payload.datos.fecha_inicio });
           if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fecha(minimo)}.` }] });
           return P.guardaGrupo({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: d.fecha_inicio, hora_entrada: d.hora_entrada, instructor: d.instructor, por: P.REVISORA.usuario });
         },

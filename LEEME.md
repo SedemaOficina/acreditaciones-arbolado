@@ -49,7 +49,7 @@ principio.
 | `docs/textos/` | Inventario de textos de las pantallas (`npm run textos`) |
 | `docs/AUDITORIA-*.md`, `docs/auditoria-integral/` y `docs/auditoria-tareas/` | Auditorías anteriores (registro) |
 | `maquetas/` | Maquetas aprobadas de cada pantalla (registro de diseño) |
-| `verificacion/capturas/` | Capturas de las pruebas del sitio en teléfono y escritorio |
+| `verificacion/capturas/` | Capturas de las pruebas del sitio en teléfono y escritorio (se regeneran en cada corrida; no se versionan, `.gitignore`) |
 | `verificacion/auditoria/` | Resultado de `herramientas/auditar-sitio.mjs`: recorre todas las pantallas en teléfono y escritorio (consola, enlaces, encimados, objetivos táctiles, botones sin efecto) |
 | `herramientas/` | Generador del esquema, generador de ficticios, construcción y pruebas del sitio, pruebas y exportación |
 

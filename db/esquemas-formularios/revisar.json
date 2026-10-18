@@ -1,6 +1,6 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-18T14:57:57.638Z",
+  "generado": "2026-10-18T20:07:20.477Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
@@ -739,10 +739,12 @@
       "etiqueta": "Fecha de la cita",
       "tipo": "texto",
       "requerido": true,
-      "formato": "fecha",
+      "formato": "fecha-dma",
       "sensible": false,
       "uso": "Fijar el día de la cita de cotejo (apd.solicitud.cita_en).",
-      "atributos": {},
+      "atributos": {
+        "maxlength": "10"
+      },
       "autocomplete": "off",
       "si": {
         "campo": "resultado",

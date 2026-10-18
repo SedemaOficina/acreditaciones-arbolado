@@ -7,12 +7,11 @@
 <title>Asistencia · Personal · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Asistencia por día de un grupo del curso de acreditación, para el instructor. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css">
-<link rel="stylesheet" href="formkit/css/base.css">
-<link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
-<link rel="stylesheet" href="formkit/modulos/version/version.css">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.52">
 </head>
 <body>
@@ -33,7 +32,7 @@
 
   <section class="tarjeta" aria-labelledby="t-asistencia" data-con-grupo hidden>
     <!-- Propuesta A (decisión de Liber, 2026-10-18): una sola lista, la del día; la historia de cada persona en una tira
-         de puntos y una etiqueta sólo cuando hay riesgo. Sin botones por día ni concentrado: corregir otro día es la
+         de marcas y una etiqueta sólo cuando hay riesgo. Sin botones por día ni concentrado: corregir otro día es la
          excepción y la vista de conjunto queda en la ficha del grupo. -->
     <h2 class="titulo-paso" id="t-asistencia" data-titulo-dia>Asistencia</h2>
     <p class="bajada" data-bajada></p>
@@ -47,7 +46,7 @@
     <div data-avisos></div>
     <p class="ayuda ayuda-bloque" data-ultimo-dia hidden></p>
 
-    <div class="asis-lista" data-personas aria-labelledby="t-asistencia"></div>
+    <div data-personas aria-labelledby="t-asistencia"></div>
     <div class="asis-pie" data-acciones>
       <p class="asis-totales" role="status" data-totales></p>
       <!-- Junto al botón: lo que no se pudo guardar o lo que se acaba de marcar (APD.pintaAviso) -->
@@ -60,7 +59,7 @@
     <p class="nota-prueba asis-recorrido" data-recorrido hidden>Versión de prueba: recorrer el curso día por día, también los días que aún no llegan. <span data-recorrido-dias></span></p>
     <details class="asis-otro-dia" data-otro-dia>
       <summary>Corregir otro día</summary>
-      <ul class="lista-simple" data-dias></ul>
+      <ul data-dias></ul>
     </details>
     <p class="ayuda">Queda registrado en el sistema quién capturó cada día y cuándo. Mientras el curso siga, la asistencia de un día ya guardado se puede corregir. La vista de todos los días está en la ficha del grupo.</p>
   </section>
@@ -68,7 +67,7 @@
   <section class="tarjeta" aria-labelledby="t-mis-grupos" data-sin-grupo hidden>
     <h2 class="titulo-paso" id="t-mis-grupos">Asistencia</h2>
     <p data-sin-grupo-texto>No tiene grupos en curso. Cuando empiece el curso de un grupo suyo, aparecerá aquí.</p>
-    <ul class="lista-simple" data-mis-grupos></ul>
+    <ul data-mis-grupos></ul>
   </section>
 </main>
 
@@ -82,11 +81,11 @@
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
 <script src="app/archivos-prueba.js?v=0.52"></script>
 <script src="app/personal.js?v=0.52"></script>
-<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <script src="app/mensajes-usted.js?v=0.52"></script>
-<script src="formkit/js/iconos.js"></script>
-<script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/js/iconos.js?v=1.4.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
 <script src="app/examen-grupo.js?v=0.52"></script>
 <script src="app/asistencia.js?v=0.52"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->

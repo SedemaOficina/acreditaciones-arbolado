@@ -338,6 +338,75 @@ async function enviar(ex) {
   await c.close();
 }
 
+// ── Lo que el examen deja en los datos y lo que la base no permitiría (auditoría 2026-10-18: C3, B3, C 2.5 y B4) ──
+{
+  const c = await contexto(1280);
+  const p = await c.newPage();
+  // C3 y B3: el examen en línea enviado llega a la solicitud (apd.examen, origen examen_web) y a «Mis trámites»
+  await p.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await p.waitForSelector('[data-filas] tr');
+  const cod = await generar(p, 0);
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+  await entraYEmpieza(ex, cod);
+  await ex.evaluate((x) => APD_EXAMEN_API.pruebas.contestar(x, 'bien'), cod);
+  await ex.reload();
+  await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+  await ex.click('.examen-mapa-titulo');
+  await ex.locator('.examen-numero').last().click();
+  await enviar(ex);
+  const enviado = (await ex.textContent('[data-resultado-datos]')).match(/Enviado\s*(\d{2}\/\d{2}\/\d{4})/);
+  const r = await ex.evaluate(async (codigo) => {
+    const reg = JSON.parse(localStorage.getItem(`apd.examen.c.${codigo}`));
+    const d = await APD.cargar();
+    const ins = d.inscripcion.find((i) => i.id === reg.inscripcion_id);
+    const s = d.solicitud.find((x) => x.id === ins.solicitud_id);
+    const e = d.examen.find((x) => x.inscripcion_id === ins.id);
+    return { estado: s.estado, examen: e, folio: s.folio, solicitante: s.solicitante_id, grupo: ins.grupo_id, examen_en: reg.grupo.examen_en };
+  }, cod);
+  ok(r.estado === 'aprobada', `C3: el examen aprobado deja la solicitud aprobada (está «${r.estado}»)`);
+  ok(r.examen && r.examen.origen === 'examen_web' && r.examen.calificacion === 10 && r.examen.presentado_en === r.examen_en,
+    `C3: la calificación queda en apd.examen, del examen en línea, el día del examen (${JSON.stringify(r.examen)})`);
+  ok(enviado && enviado[1] === r.examen_en.split('-').reverse().join('/'), `B14: «Enviado» lleva la fecha del examen, no la real (${enviado && enviado[1]})`);
+  // La persona lo ve en «Mis trámites»
+  await p.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), r.solicitante);
+  await p.goto(`${BASE}tramites.html`);
+  await p.waitForSelector('[data-solicitudes] .ficha');
+  ok(/Aprobada/.test(await p.textContent('[data-solicitudes]')), 'B3: «Mis trámites» dice que aprobó');
+  // Con examen ya no se da de baja (la base: baja_con_examen)
+  await p.goto(`${BASE}grupo.html?folio=APD-G-2026-003`);
+  await p.waitForSelector('[data-sesion-personal] a');
+  const baja = await p.evaluate(async ({ folio, grupo }) => {
+    await APD_PERSONAL.guardaGrupo({ tipo: 'baja', grupo_id: grupo, folio, motivo: 'Prueba de la auditoría', por: 'revision.prueba' });
+    const d = await APD.cargar();
+    const s = d.solicitud.find((x) => x.folio === folio);
+    return { estado: s.estado, activa: d.inscripcion.some((i) => i.solicitud_id === s.id && i.activa) };
+  }, { folio: r.folio, grupo: r.grupo });
+  ok(baja.estado === 'aprobada' && baja.activa, `C3: quien ya presentó examen no se da de baja (${JSON.stringify(baja)})`);
+  // C 2.5: quien ya tiene la calificación capturada no recibe código ni presenta otro examen
+  await p.goto(`${BASE}aplicar.html?folio=APD-G-2026-006`);
+  await p.waitForSelector('[data-filas] tr');
+  const conCalif = await p.evaluate(async () => {
+    const d = await APD.cargar();
+    const g = d.grupo.find((x) => x.folio === 'APD-G-2026-006');
+    const f = APD_EXAMEN_GRUPO.personas(d, g).find((x) => x.examen);
+    const rechaza = await APD_EXAMEN_GRUPO.pasarLista(d, g, f, true, 'instructor.ficticio').then(() => false, () => true);
+    return { ins: f.inscripcion.id, rechaza, codigos: APD_EXAMEN_API.delGrupo(g.id).filter((x) => x.inscripcion_id === f.inscripcion.id).length };
+  });
+  ok(conCalif.rechaza && conCalif.codigos === 0, 'C 2.5: a quien ya tiene calificación no se le pasa lista ni se le genera código');
+  ok(await p.locator(`tr[data-ins="${conCalif.ins}"] [data-accion]`).count() === 0 && /calificación registrada/.test(await p.textContent(`tr[data-ins="${conCalif.ins}"]`)),
+    'C 2.5: su fila dice que la calificación ya está registrada, sin «Presente» ni «No llegó»');
+  // B4: un grupo que no está en curso o no existe no abre otro: se dice y se ofrecen los grupos en curso
+  for (const [folio, texto] of [['APD-G-2026-001', 'no está en curso'], ['APD-G-2026-999', 'No hay un grupo']]) {
+    await p.goto(`${BASE}aplicar.html?folio=${folio}`);
+    await p.waitForSelector('[data-sin-grupo]:not([hidden])');
+    ok((await p.textContent('[data-sin-grupo]')).includes(texto) && await p.isHidden('[data-con-grupo]') && await p.locator('[data-mis-grupos] a').count() > 0,
+      `B4: aplicar.html?folio=${folio} avisa («${texto}») y ofrece los grupos en curso, sin abrir otro`);
+  }
+  ok(c.errores.length === 0, `datos del examen sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
+  await c.close();
+}
+
 // ── Accesibilidad con axe-core en cada pantalla del examen y en la de quien aplica ──
 if (process.env.AXE) {
   const axe = readFileSync(process.env.AXE, 'utf8');

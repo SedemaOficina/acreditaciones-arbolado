@@ -4,21 +4,27 @@
    A las personas del personal se les habla de usted (decisión 2026-10-16).
 
    ACCESO SIMULADO: en la versión de prueba no hay cuentas del personal. Las
-   pantallas entran con un perfil ficticio de «revisión y cotejo»: la misma
-   persona revisa en línea y atiende las citas de cotejo (decisión 2026-10-17,
-   P27). Los demás perfiles (instructor, emisión, consulta) se simulan cuando
-   existan sus pantallas. En la etapa 3 lo sustituye el acceso del SIA.
+   pantallas entran con un perfil ficticio: «revisión y cotejo» (la misma
+   persona revisa en línea, atiende las citas de cotejo, arma los grupos y sube
+   el material de estudio; decisión 2026-10-17, P27 y P92) o «instructor»
+   (asistencia y examen, INSTRUCTORA). Los perfiles de emisión y consulta se
+   simulan cuando existan sus pantallas. En la etapa 3 lo sustituye el acceso
+   del SIA.
 
    Las decisiones que se registran en una prueba sólo se recuerdan en este
-   navegador (localStorage): revisiones en «apd.personal.revisiones» y citas de
-   cotejo atendidas en «apd.personal.cotejos», una lista por folio, en orden.
+   navegador (localStorage, con las claves de APD_ARCHIVOS_PRUEBA.CLAVES):
+   revisiones («apd.personal.revisiones») y citas de cotejo atendidas
+   («apd.personal.cotejos»), una lista por folio, en orden; grupos y asistencia
+   («apd.personal.grupos», una lista de eventos); el pase de lista y los
+   exámenes los guarda el servidor simulado (app/examen-servidor.js).
    APD.cargar las aplica a los datos (app/archivos-prueba.js, mezcla).
    ========================================================= */
 (function (global) {
   'use strict';
-  const { el, estado } = APD;
-  const CLAVE = 'apd.personal.revisiones';
-  const COTEJOS = 'apd.personal.cotejos';
+  const { el } = APD;
+  const A = global.APD_ARCHIVOS_PRUEBA;
+  const CLAVE = A.CLAVES.revisiones;
+  const COTEJOS = A.CLAVES.cotejos;
 
   /* Perfil ficticio de quien revisa y coteja (no es una persona real) */
   const REVISORA = { usuario: 'revision.prueba', nombre: 'María Ejemplo Revisora', perfil: 'Revisión y cotejo' };
@@ -29,19 +35,16 @@
 
   /* Cada folio guarda su lista de revisiones (una solicitud puede revisarse varias veces: reenvíos, regreso del cotejo).
      Lo guardado antes de 0.27 era una sola revisión por folio: se lee como lista de una. */
-  const lee = (clave) => { try { return JSON.parse(global.localStorage.getItem(clave) || '{}'); } catch (e) { return {}; } };
-  const comoLista = (t) => Object.fromEntries(Object.entries(t).map(([f, v]) => [f, Array.isArray(v) ? v : [v]]));
-  function historial() { return comoLista(lee(CLAVE)); }
+  function historial() { return A.listaPorFolio(CLAVE); }
   /* La última revisión de cada folio */
   function revisiones() { return Object.fromEntries(Object.entries(historial()).map(([f, l]) => [f, l[l.length - 1]])); }
   function agrega(clave, folio, registro) {
-    const t = comoLista(lee(clave));
+    const t = A.listaPorFolio(clave);
     t[folio] = (t[folio] || []).concat([registro]);
     try { global.localStorage.setItem(clave, JSON.stringify(t)); return true; } catch (e) { return false; }
   }
   function guardaRevision(folio, registro) { return agrega(CLAVE, folio, registro); }
   /* Citas de cotejo atendidas en la prueba: { resultado, datos, en, cita_en, expediente, atendio } por folio */
-  function cotejos() { return comoLista(lee(COTEJOS)); }
   function guardaCotejo(folio, registro) { return agrega(COTEJOS, folio, registro); }
 
   /* Días naturales entre dos fechas ISO, en hora de la Ciudad de México */
@@ -71,7 +74,7 @@
   function senales(datos, s) {
     const lista = [];
     if (s.perfil_academico === 'por_clasificar') lista.push(['Carrera por clasificar', 'pend']);
-    if (s.perfil_academico === 'no_cumple') lista.push(['Podría no cumplir el perfil', 'error']);
+    if (s.perfil_academico === 'no_cumple') lista.push(['Podría no cumplir el perfil', 'pend']);
     const c = corregidos(datos, s).length;
     if (c) lista.push([c === 1 ? '1 documento corregido' : `${c} documentos corregidos`, '']);
     if (datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.blob)) lista.push(['Archivos cargados en este navegador', 'ok']);
@@ -88,14 +91,14 @@
     en_pausa: { texto: 'En pausa · esperando el documento', tono: 'marcha' },
     documento_nuevo: { texto: 'Documento cargado · retomar', tono: 'pend' },
     // Días anteriores que nadie registró (auditoría de tareas, A3 y M6)
-    sin_registrar: { texto: 'Sin registrar · el día ya pasó', tono: 'error', icono: 'alerta' },
+    sin_registrar: { texto: 'Sin registrar · el día ya pasó', tono: 'pend' },
     pausa_vencida: { texto: 'Pausa vencida · regresa con observaciones', tono: 'cerrado' },
     atendida: { texto: 'Atendida', tono: 'ok' },
-    no_se_presento: { texto: 'No se presentó · cita nueva', tono: 'pend', icono: 'fecha' },
+    no_se_presento: { texto: 'No se presentó · cita nueva', tono: 'pend' },
     cerrada: { texto: 'No se presentó · solicitud cerrada', tono: 'error' },
-    sin_pago: { texto: 'Sin pago · cita nueva', tono: 'pend', icono: 'fecha' },
+    sin_pago: { texto: 'Sin pago · cita nueva', tono: 'pend' },
     con_observaciones: { texto: 'Regresó con observaciones', tono: 'marcha' },
-    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error', icono: 'candado' }
+    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error' }
   };
   /* Documentos que la persona cargó después de que su cita quedó en pausa */
   function cargadosEnPausa(datos, s) {
@@ -136,8 +139,11 @@
     const f = document.getElementById('cita_fecha');
     const h = document.getElementById('cita_hora');
     const pinta = () => {
-      if (!f.value) { caja.hidden = true; return; }
-      const n = cargaCitas(datos, f.value, h.value);
+      // La fecha se escribe día/mes/año (campo «fecha-dma» del estándar, D9): se lleva a AAAA-MM-DD
+      const V = global.FORMKIT_VALIDACIONES;
+      const dia = (V && V.isoDeDma && V.isoDeDma(f.value)) || f.value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) { caja.hidden = true; return; }
+      const n = cargaCitas(datos, dia, h.value);
       caja.textContent = `Ese día ya hay ${n.dia === 1 ? '1 cita' : `${n.dia} citas`}${h.value ? `; ${n.hora} a las ${h.value}` : ''}.`;
       caja.hidden = false;
     };
@@ -147,7 +153,7 @@
     pinta();
   }
   /* Día de una cita (AAAA-MM-DD) y su hora (HH:MM), en hora de la Ciudad de México */
-  const diaDe = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const diaDe = APD.diaDe;
   const horaDe = (iso) => new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
   /* Número de expediente que se abriría hoy: consecutivo por año y sin huecos, como apd.asignar_expediente.
      Formato provisional EXP-AAAA-NNNN. */
@@ -169,7 +175,7 @@
      La espera de cada curso, los grupos y su situación. Quién arma los grupos está por decidir (P92): mientras, el mismo
      perfil «revisión y cotejo». Lo hecho en la prueba se guarda en «apd.personal.grupos» (una lista de eventos, en
      orden) y APD.cargar lo aplica como la base (app/archivos-prueba.js, aplicaGrupos). */
-  const GRUPOS = 'apd.personal.grupos';
+  const GRUPOS = A.CLAVES.grupos;
   /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27) */
   const INSTRUCTORES = [
     { usuario: 'instructor.ficticio', nombre: 'Laura Ejemplo Instructora' },
@@ -177,9 +183,8 @@
   ];
   const INSTRUCTORA = Object.assign({ perfil: 'Instructor' }, INSTRUCTORES[0]);
   const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
-  function eventosGrupos() { try { const v = JSON.parse(global.localStorage.getItem(GRUPOS) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
   function guardaGrupo(evento) {
-    const lista = eventosGrupos().concat([Object.assign({ en: new Date().toISOString() }, evento)]);
+    const lista = A.eventosGrupos().concat([Object.assign({ en: new Date().toISOString() }, evento)]);
     try { global.localStorage.setItem(GRUPOS, JSON.stringify(lista)); return Promise.resolve(true); } catch (e) { return Promise.reject(new Error('almacenamiento')); }
   }
 
@@ -234,7 +239,7 @@
     const recibe = (g.estado === 'en_integracion' || (g.estado === 'confirmado' && hoy < g.fecha_inicio)) && inscritas.length < g.cupo_maximo;
     const org = g.organizacion_id ? datos.organizacion.find((o) => o.id === g.organizacion_id) : null;
     return { g, c, inscritas, n: inscritas.length, ultimo, dia, situacion: { texto, tono: sit.tono }, recibe, lugar: g.cupo_maximo - inscritas.length,
-      integracion: g.integracion === 'especifico' ? `De una organización · ${org ? org.nombre : ''}` : 'Combinado',
+      integracion: g.integracion === 'especifico' ? `${INTEGRACION.especifico} · ${org ? org.nombre : ''}` : INTEGRACION.combinado,
       nombre: nombreCurso(g.tipo_acreditacion, g.modalidad) };
   }
   const ORDEN_GRUPO = { en_curso: 0, confirmado: 1, en_integracion: 2, concluido: 3, cancelado: 4 };
@@ -265,21 +270,19 @@
       : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
         enlace('material-personal.html', 'material', 'Material de estudio')];
     contenedor.replaceChildren(
-      el('p', { class: 'sesion-nombre' }, [document.createTextNode(`${quien.nombre} `), APD.estado(`Perfil: ${quien.perfil.toLowerCase()}`)]),
+      // El perfil no es un estado (auditoría 2026-10-18, B11 y D6): va como texto, no como etiqueta de estado
+      el('p', { class: 'sesion-nombre' }, [document.createTextNode(quien.nombre), el('span', { class: 'sesion-perfil', texto: `Perfil: ${quien.perfil.toLowerCase()}` })]),
       el('nav', { class: 'sesion-enlaces', 'aria-label': 'Secciones del personal' }, enlaces.concat([salir]))
     );
   }
 
-  /* Versión de prueba: los datos ficticios más lo que se envió en este navegador (app/archivos-prueba.js), con la misma
-     forma que la base. Una solicitud nueva entra como enviada, con su persona y sus documentos; un reenvío de una
-     solicitud ficticia la vuelve a poner en revisión con los documentos corregidos como carga vigente. */
   /* Concentrado de asistencia del grupo (pedido de Liber, 2026-10-18): una fila por persona y una columna por día, con
      los días asistidos y si conserva el derecho a examen. La captura sigue siendo por día («Asistencia»); esto es la
-     vista de conjunto, en «Asistencia» y en la ficha del grupo (en curso o concluido). El último día es el del examen:
+     vista de conjunto, en la ficha del grupo (en curso o concluido). El último día es el del examen:
      su asistencia es el pase de lista del salón de cómputo. Sólo cuenta como falta lo marcado «Faltó»; un día que ya
      pasó sin capturar se señala aparte («Sin capturar»), como en la captura.
      marco: el [data-tabla] con [data-conc-encabezado], [data-conc-filas] y [data-conc-leyenda].
-     VERSIÓN DE PRUEBA: el pase de lista se guarda en este navegador («apd.examen.lista»); en el SIA viene en apd.asistencia. */
+     El pase de lista ya viene en datos.asistencia (en la prueba lo aplica APD.cargar; en el SIA, apd.asistencia). */
   function pintaConcentrado(marco, datos, x) {
     const { g, c } = x;
     if (!marco || !c || !g.fecha_inicio) return;
@@ -287,13 +290,9 @@
     const ultimo = c.dias_duracion;
     const permitidas = c.dias_duracion - c.dias_minimos_asistencia;
     const fechaDia = (n) => APD.sumaDias(g.fecha_inicio, n - 1);
-    let lista = {};
-    try { lista = JSON.parse(global.localStorage.getItem('apd.examen.lista') || '{}'); } catch (e) { lista = {}; }
     const registro = (insId, n) => {
       const a = datos.asistencia.find((r) => r.inscripcion_id === insId && r.dia === n);
-      if (a) return a.asistio;
-      if (n === ultimo && lista[insId]) return lista[insId].presente;
-      return null;
+      return a ? a.asistio : null;
     };
     const $$ = (s) => marco.querySelector(s);
     const dias = Array.from({ length: ultimo }, (_, k) => k + 1);
@@ -331,9 +330,6 @@
     marco.dispatchEvent(new CustomEvent('formkit:tabla'));
   }
 
-  /* Lo registrado en este navegador durante la prueba ya viene en los datos (APD.cargar → APD_ARCHIVOS_PRUEBA.mezcla) */
-  function datosConPrueba(datos) { return Promise.resolve(datos); }
-
-  global.APD_PERSONAL = { datosConPrueba, porRevisar, REVISORA, INSTRUCTORES, INSTRUCTORA, nombreInstructor, eventosGrupos, guardaGrupo, CURSOS, claveCurso, deClave,
-    nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, cargaCitas, pintaCargaCitas, dias, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado };
+  global.APD_PERSONAL = { porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+    nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado };
 }(window));

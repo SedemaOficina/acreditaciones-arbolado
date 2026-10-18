@@ -52,9 +52,8 @@ window.FORMKIT_OPCIONES = {
     });
   },
   alEnviar() {
-    const volver = new URLSearchParams(location.search).get('volver');
-    // Sólo se vuelve a pantallas propias del sitio
-    location.href = /^[a-z]+\.html$/.test(volver || '') ? volver : 'tramites.html';
+    // Sólo se vuelve a pantallas propias del sitio, con su consulta (?folio=, ?tipo=: auditoría 2026-10-18, B7)
+    location.href = APD.destinoPropio(new URLSearchParams(location.search).get('volver')) || 'tramites.html';
   },
   alFallar(error, form) {
     // Con título: qué pasó y qué hacer (propuesta «Avisos y confirmaciones», 2026-10-17); la cuenta bloqueada ya no se ve

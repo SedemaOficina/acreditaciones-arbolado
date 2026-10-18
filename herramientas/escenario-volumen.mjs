@@ -1,11 +1,12 @@
-// Escenario de volumen real para la auditoría de tareas (no toca el repositorio).
+// Escenario de volumen real para la auditoría de tareas (no toca el repositorio). Lo usa herramientas/probar-volumen.mjs.
+// (Antes en docs/auditoria-tareas/; se pasó a herramientas/ el 2026-10-18, auditoría A 8.5.)
 // Toma sitio/datos/ficticios.json y le agrega, clonando registros existentes con datos ficticios:
 //  · 60 solicitudes en la bandeja de revisión (enviadas en las últimas 3 semanas, de los cuatro cursos)
 //  · 40 citas de cotejo el día de corte (09:00 a 14:00) y 30 más en los días siguientes
 //  · 100 personas en espera de grupo, repartidas en cuatro cursos y ~18 adscripciones (organizaciones grandes y cola larga)
 //  · 1 grupo de 25 personas en su último día (asistencia de los días 1 a 4 capturada, con faltas)
 //  · 3 grupos más en integración y confirmados
-// Uso: node volumen.mjs <ficticios.json> <salida.json>
+// Uso: node herramientas/escenario-volumen.mjs <ficticios.json> <salida.json>
 import { readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 
