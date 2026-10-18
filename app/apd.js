@@ -252,8 +252,8 @@
     const pasos = (o.pasos || []).filter(Boolean);
     return [
       o.texto ? el('p', { texto: o.texto }) : null,
-      pasos.length ? el('p', { class: 'pasos-titulo', texto: o.titulo || 'Qué sigue' }) : null,
-      pasos.length ? el('ol', { class: 'pasos' }, pasos.map((t) => el('li', { class: 'pasos-item', texto: t }))) : null
+      pasos.length ? el('p', { class: 'sigue-titulo', texto: o.titulo || 'Qué sigue' }) : null,
+      pasos.length ? el('ol', { class: 'sigue-pasos' }, pasos.map((t) => el('li', { class: 'sigue-paso', texto: t }))) : null
     ].filter(Boolean);
   }
   function aviso(tono, titulo, texto, extra) {

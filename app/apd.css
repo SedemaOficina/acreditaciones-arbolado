@@ -326,11 +326,11 @@ body > main { flex: 1 0 auto; width: 100%; }
 .resultado[data-tono="ok"] .resultado-situacion { color: var(--ok-txt); }
 .resultado[data-tono="error"] .resultado-situacion { color: var(--error-txt); }
 /* «Qué sigue» en pasos numerados (Liber, 2026-10-17; hallazgo P119): la misma forma que la secuencia del acuse, más
-   compacta, para desenlaces, avisos y la ficha de «Mis trámites» */
-.pasos-titulo { margin: var(--e-3) 0 var(--e-2); font-family: var(--fuente-titulo); font-weight: var(--peso-fuerte); color: var(--texto); }
-.pasos { margin: 0; padding: 0; list-style: none; counter-reset: paso; display: grid; gap: var(--e-3); }
-.pasos-item { position: relative; min-height: var(--e-6); padding-inline-start: var(--e-8); counter-increment: paso; color: var(--texto); }
-.pasos-item::before {
+   compacta (nombres propios: «.pasos» es del módulo de pasos del estándar y chocaba con la barra 1-2-3 de la solicitud), para desenlaces, avisos y la ficha de «Mis trámites» */
+.sigue-titulo { margin: var(--e-3) 0 var(--e-2); font-family: var(--fuente-titulo); font-weight: var(--peso-fuerte); color: var(--texto); }
+.sigue-pasos { margin: 0; padding: 0; list-style: none; counter-reset: paso; display: grid; gap: var(--e-3); }
+.sigue-paso { position: relative; min-height: var(--e-6); padding-inline-start: var(--e-8); counter-increment: paso; color: var(--texto); }
+.sigue-paso::before {
   content: counter(paso);
   position: absolute;
   inset-block-start: 0;
@@ -347,7 +347,7 @@ body > main { flex: 1 0 auto; width: 100%; }
   font-weight: var(--peso-fuerte);
   color: var(--guinda);
 }
-.pasos-item:not(:last-child)::after {
+.sigue-paso:not(:last-child)::after {
   content: '';
   position: absolute;
   inset-block: calc(var(--e-6) + var(--b-2)) calc(var(--e-3) * -1 + var(--b-2));
