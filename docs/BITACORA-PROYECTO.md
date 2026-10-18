@@ -925,3 +925,22 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - `probar-sitio` deja en la consola el estado del diálogo si «Dar de baja» vuelve a fallar por tiempo (falló dos veces
   en el día y no se ha podido reproducir).
 - Pruebas: `probar-sitio` 559 (con axe), `probar-examen`, `probar-volumen` y `probar-esquemas`, correctas.
+
+## 2026-10-18 · Bloque 64 · Menú de pruebas en dos pasos y casos para todo
+
+- **Menú de pruebas:** «¿Quién?» (persona nueva · podador · dictaminador · del registro anterior, sin cuenta · personal
+  de la Secretaría) y «¿En qué momento?», con los casos de ese perfil agrupados por etapa y lo que se puede probar. Un
+  caso del registro anterior abre «Crea tu cuenta» llenada con su CURP; uno del personal abre la pantalla de su papel
+  (revisión documental, citas de cotejo, grupos, instructor: asistencia y aplicar el examen).
+- **38 casos** (antes 20). Nuevos en los datos ficticios: cita nueva por no presentarse, cita nueva sin comprobante de
+  pago, cita en pausa hoy, pausa vencida, cerrada por dos inasistencias, grupo por confirmar con fecha propuesta,
+  aprobó el examen hoy (grupo de cinco que termina en la fecha de corte), por vencer sin trámite, dictaminador por
+  vencer con la poda vencida y una persona del registro anterior por renovar.
+- **Lo que guarda la base y leen las pantallas:** `APD.cargar` saca de las citas (`apd.cita`) la cita nueva y su
+  motivo, la pausa y las inasistencias (parte del contrato de la API de la alta 5).
+- «Mis trámites»: «Grupo por confirmar» como etiqueta; en una cita en pausa ya no se muestran los datos de pago.
+- **Rótulo contra ayuda (en toda la plataforma):** los rótulos de los datos van en versalitas, más chicos y oscuros; las
+  ayudas siguen en minúsculas, gris claro, bajo el título de su sección y separadas de los datos; más aire entre datos.
+- Pruebas: `probar-reglas` con referencias fijas (los casos nuevos movían «la primera cita» y «el grupo en
+  integración»); `probar-examen` abre el grupo de diez personas por su folio. `probar-sitio` 561 (con axe),
+  `probar-examen` 63, `probar-volumen`, `probar-esquemas`, `probar-base` 165, auditor de CSS: correctos.

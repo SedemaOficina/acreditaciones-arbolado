@@ -72,7 +72,8 @@ async function enviar(ex) {
 {
   const c = await contexto(1280);
   const ap = await c.newPage();
-  await ap.goto(`${BASE}aplicar.html`);
+  // El grupo en curso de diez personas: desde el 2026-10-18 hay otro en curso (el del caso «aprobó hoy»)
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
   await ap.waitForSelector('[data-filas] tr');
   const filas = await ap.locator('[data-filas] tr').count();
   ok(filas === 10, `aplicar: 10 personas inscritas (hay ${filas})`);
@@ -329,7 +330,7 @@ async function enviar(ex) {
   await sinDesborde(ex, 'examen teléfono · resultado');
   await captura(ex, 'resultado-telefono');
   const ap = await c.newPage();
-  await ap.goto(`${BASE}aplicar.html`);
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
   await ap.waitForSelector('.examen-codigo');
   await sinDesborde(ap, 'aplicar teléfono');
   await captura(ap, 'aplicar-telefono');
@@ -347,7 +348,7 @@ if (process.env.AXE) {
     const r = await p.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] })).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`));
     ok(r.length === 0, `axe ${que}:\n  ${r.join('\n  ')}`);
   };
-  await p.goto(`${BASE}aplicar.html`);
+  await p.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
   await p.waitForSelector('[data-filas] tr');
   await p.locator('[data-accion="presente"]').first().click();
   await p.waitForSelector('.examen-codigo');

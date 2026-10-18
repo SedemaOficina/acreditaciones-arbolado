@@ -1,9 +1,13 @@
 /* casos-prueba.js · Casos de prueba con nombre (sólo en la versión de prueba)
 
-   Una lista única de «para qué sirve entrar con esta persona», agrupada por etapa del trámite, que usa el menú
-   de pruebas en «Entrar como» y, en «Entrar», para llenar CURP y contraseña. Cada caso busca en los datos
-   ficticios la primera persona que lo cumple (sin repetir persona entre casos); si ninguna lo cumple, el caso no
-   se ofrece. Así la lista se mantiene sola cuando cambian los ficticios (herramientas/ficticios.mjs).
+   El menú de pruebas elige en dos pasos (decisión 2026-10-18): primero «¿Quién?» (persona nueva, podador,
+   dictaminador, del registro anterior o personal de la Secretaría) y después «¿En qué momento?», los casos de ese
+   perfil agrupados por etapa, cada uno con lo que se puede probar. Cada caso busca en los datos ficticios la primera
+   persona que lo cumple (sin repetir persona entre casos); si ninguna lo cumple, el caso no se ofrece. Así la lista se
+   mantiene sola cuando cambian los ficticios (herramientas/ficticios.mjs, que trae una persona para cada caso).
+
+   Tipos de caso: con persona (entra con su sesión a «Mis trámites»), «nueva» (crea una cuenta de prueba), del
+   registro anterior (abre «Crea tu cuenta» llenada con su CURP) y del personal (abre la pantalla de su papel).
 
    Se carga en el navegador y en Node (herramientas/probar-sitio.mjs comprueba que todos los casos encuentran
    persona). Se quita en la etapa 3 junto con el acceso simulado. */
@@ -11,70 +15,146 @@
   'use strict';
   const A = () => global.APD;
 
-  /* [clave, texto, qué se puede probar, condición(persona, solicitud más reciente, acreditaciones, datos)] */
-  const GRUPOS = [
-    ['Sin trámite', [
-      ['nueva', 'Persona nueva, sin trámites', 'Hacer una solicitud desde cero.', null],
-      ['no-renovable', 'Poda vencida hace más de un año', 'Ver que ya no se renueva: se tramita como solicitud nueva.',
-        (p, s, acs, d) => acs.some((a) => A().situacion(d, a) === 'vencida_no_renovable')]
-    ]],
-    ['Solicitud en curso', [
-      ['borrador', 'Borrador sin enviar', 'Retomar una solicitud guardada.', (p, s) => s && s.estado === 'borrador'],
-      ['enviada', 'Enviada, en revisión documental', 'Ver qué ve la persona mientras se revisa.',
-        (p, s, acs, d) => s && s.estado === 'enviada' && s.modalidad !== 'renovacion' && s.tipo_acreditacion === 'poda' && vueltas(d, s) === 0],
-      ['reenviada', 'Reenviada con correcciones (2.ª vuelta)', 'Ver la solicitud que vuelve a revisión con lo corregido.',
-        (p, s, acs, d) => s && s.estado === 'enviada' && vueltas(d, s) > 0],
-      ['obs-poda', 'Poda y derribo · con observaciones', 'Corregir los documentos con observaciones y reenviar.',
-        (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda'],
-      ['obs-dict', 'Dictaminador técnico · con observaciones', 'Corregir las observaciones de una solicitud de dictaminador.',
-        (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'dictaminador'],
-      ['perfil', 'Dictaminador que podría no cumplir el perfil, en revisión', 'Ver el aviso de perfil; en la revisión, decidir con el comprobante de estudios.',
-        (p, s) => s && s.estado === 'enviada' && s.perfil_academico === 'no_cumple'],
-      ['cita', 'Cita de cotejo asignada', 'Ver la fecha, la sede y los datos de pago.', (p, s) => s && s.estado === 'validada_en_linea'],
-      ['espera', 'Cotejo terminado, en espera de grupo', 'Ver qué sigue después del cotejo: que se le asigne un grupo del curso.',
-        (p, s) => s && s.estado === 'lista_para_curso' && s.modalidad !== 'renovacion'],
-      ['grupo', 'Con grupo asignado', 'Ver las fechas del curso y la asistencia.', (p, s) => s && s.estado === 'inscrita']
-    ]],
-    ['Renovación', [
-      ['renov-enviada', 'Renovación enviada, en revisión', 'Ver una renovación mientras se revisa.',
-        (p, s) => s && s.modalidad === 'renovacion' && s.estado === 'enviada'],
-      ['renov-espera', 'Renovación con cotejo terminado, en espera de grupo', 'Ver una renovación que ya pasó el cotejo.',
-        (p, s) => s && s.modalidad === 'renovacion' && s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda'],
-      ['dict-renov', 'Renovación de dictaminador', 'Ver la renovación de dictaminador con la poda vigente.',
-        (p, s) => s && s.modalidad === 'renovacion' && s.tipo_acreditacion === 'dictaminador']
-    ]],
-    ['Solicitud terminada', [
-      ['acreditada', 'Acreditación emitida', 'Ver cuándo y dónde recogerla.', (p, s) => s && s.estado === 'acreditada'],
-      ['no-acreditada', 'No acreditada (calificación menor a la mínima)', 'Ver el resultado del examen.', (p, s) => s && s.estado === 'no_acreditada'],
-      ['sin-examen', 'Sin derecho a examen (asistencia insuficiente)', 'Ver el resultado por asistencia.', (p, s) => s && s.estado === 'sin_derecho_examen'],
-      ['rechazada', 'Dictaminador rechazado por perfil', 'Leer el motivo del rechazo.', (p, s) => s && s.estado === 'rechazada'],
-      ['cancelada', 'Cancelada por la persona', 'Ver una solicitud cancelada.', (p, s) => s && s.estado === 'cancelada'],
-      ['sin-atender', 'Cerrada por no corregir las observaciones a tiempo', 'Ver la solicitud que se cerró porque venció el plazo para corregir.', (p, s) => s && s.estado === 'concluida_sin_atender']
-    ]]
-  ];
-  const PERSONAL = ['personal', 'Revisión documental — María Ejemplo Revisora', 'Revisar las solicitudes enviadas.'];
-
+  /* Ayudas para las condiciones: s = la solicitud más reciente; acs = sus acreditaciones */
+  const sit = (d, a) => (a ? A().situacion(d, a) : null);
+  const de = (acs, tipo) => acs.find((a) => a.tipo_acreditacion === tipo);
+  const activa = (d, p) => A().solicitudesDe(d, p).some((x) => !A().FINALES.includes(x.estado));
+  const grupoDe = (d, s) => {
+    const i = s && d.inscripcion.find((x) => x.solicitud_id === s.id && x.activa);
+    return i ? d.grupo.find((g) => g.id === i.grupo_id) : null;
+  };
+  const acredDe = (d, s) => (s ? d.acreditacion.find((a) => a.solicitud_id === s.id) : null);
   function vueltas(d, s) { return d.revision.filter((r) => r.solicitud_id === s.id).length; }
 
-  /* → [{ grupo, casos: [{ clave, texto, prueba, persona }] }]; «persona» falta en «nueva» y en el personal */
+  /* [perfil, nombre, [[etapa, [[clave, texto, qué se puede probar, condición(persona, solicitud, acreditaciones, datos)]]]]] */
+  const PERFILES = [
+    ['nueva', 'Persona nueva', [
+      ['Sin cuenta todavía', [
+        ['nueva', 'Persona nueva, sin trámites', 'Hacer una solicitud desde cero.', null]
+      ]]
+    ]],
+    ['poda', 'Podador (poda y derribo)', [
+      ['Solicitud en revisión', [
+        ['borrador', 'Borrador sin enviar', 'Retomar una solicitud guardada.', (p, s) => s && s.estado === 'borrador'],
+        ['enviada', 'Enviada, en revisión documental', 'Ver qué ve la persona mientras se revisa.',
+          (p, s, acs, d) => s && s.estado === 'enviada' && s.modalidad !== 'renovacion' && s.tipo_acreditacion === 'poda' && vueltas(d, s) === 0],
+        ['reenviada', 'Reenviada con correcciones (2.ª vuelta)', 'Ver la solicitud que vuelve a revisión con lo corregido.',
+          (p, s, acs, d) => s && s.estado === 'enviada' && vueltas(d, s) > 0],
+        ['obs-poda', 'Con observaciones', 'Corregir los documentos con observaciones y reenviar.',
+          (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda']
+      ]],
+      ['Cita de cotejo', [
+        ['cita', 'Cita de cotejo asignada', 'Ver la fecha, el lugar y los datos de pago.',
+          (p, s) => s && s.estado === 'validada_en_linea' && !s.cita_motivo && !s.cotejo_pausa],
+        ['cita-inasistencia', 'Cita nueva: no se presentó a la primera', 'Ver el aviso de la cita nueva y que no pague dos veces.',
+          (p, s) => s && s.estado === 'validada_en_linea' && s.cita_motivo === 'inasistencia'],
+        ['cita-sin-pago', 'Cita nueva: no llevó el comprobante de pago', 'Ver los pasos: si ya pagó, llevar ese comprobante.',
+          (p, s) => s && s.estado === 'validada_en_linea' && s.cita_motivo === 'sin_pago'],
+        ['cita-pausa', 'Cita en pausa hoy: un documento no coincidió', 'Cargar el documento correcto y ver la cita lista para retomar.',
+          (p, s, acs, d) => s && s.cotejo_pausa && !A().pausaVencida(d, s)],
+        ['pausa-vencida', 'La pausa venció (era de otro día)', 'Ver que ya no se puede cargar: la solicitud regresa con observaciones.',
+          (p, s, acs, d) => s && A().pausaVencida(d, s)]
+      ]],
+      ['Curso', [
+        ['espera', 'En espera de curso', 'Ver qué sigue después del cotejo: que se le asigne un grupo del curso.',
+          (p, s, acs, d) => s && s.estado === 'lista_para_curso' && s.modalidad !== 'renovacion' && !/^Grupo cancelado/.test((d.inscripcion.filter((i) => i.solicitud_id === s.id).pop() || {}).motivo_baja || '')],
+        ['grupo-cancelado', 'Su grupo se canceló: de vuelta en espera', 'Ver el aviso de grupo cancelado y que conserva su antigüedad.',
+          (p, s, acs, d) => s && s.estado === 'lista_para_curso' && /^Grupo cancelado/.test((d.inscripcion.filter((i) => i.solicitud_id === s.id).pop() || {}).motivo_baja || '')],
+        ['grupo-por-confirmar', 'Con grupo todavía por confirmar', 'Ver que la fecha propuesta no se da como segura.',
+          (p, s, acs, d) => s && s.estado === 'inscrita' && (grupoDe(d, s) || {}).estado === 'en_integracion'],
+        ['grupo', 'Con grupo confirmado', 'Ver las fechas del curso, qué llevar y la calificación mínima.',
+          (p, s, acs, d) => s && s.estado === 'inscrita' && ['confirmado', 'en_curso'].includes((grupoDe(d, s) || {}).estado)],
+        ['aprobada', 'Aprobó el examen hoy', 'Ver que recoge su credencial hoy, en la oficina del Vivero.', (p, s) => s && s.estado === 'aprobada']
+      ]],
+      ['Acreditación', [
+        ['por-recoger', 'Acreditación emitida, credencial por recoger', 'Ver cuándo y dónde recogerla.',
+          (p, s, acs, d) => s && s.estado === 'acreditada' && !(acredDe(d, s) || {}).entregada_en],
+        ['acreditada', 'Acreditación emitida y credencial entregada', 'Ver la acreditación vigente y la solicitud entre las anteriores.',
+          (p, s, acs, d) => s && s.estado === 'acreditada' && Boolean((acredDe(d, s) || {}).entregada_en) && !activa(d, p)],
+        ['por-vencer', 'Acreditación por vencer, sin trámite', 'Ver «Renovar» y cuántos días faltan.',
+          (p, s, acs, d) => sit(d, de(acs, 'poda')) === 'por_vencer' && !activa(d, p)],
+        ['renov-enviada', 'Renovación enviada, en revisión', 'Ver una renovación mientras se revisa.',
+          (p, s) => s && s.modalidad === 'renovacion' && s.tipo_acreditacion === 'poda' && s.estado === 'enviada'],
+        ['renov-espera', 'Renovación con cotejo terminado, en espera de curso', 'Ver una renovación que ya pasó el cotejo.',
+          (p, s) => s && s.modalidad === 'renovacion' && s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda'],
+        ['no-renovable', 'Vencida hace más de un año', 'Ver que ya no se renueva: se tramita como solicitud nueva.',
+          (p, s, acs, d) => acs.some((a) => sit(d, a) === 'vencida_no_renovable')]
+      ]],
+      ['Terminada sin acreditación', [
+        ['no-acreditada', 'No acreditada (calificación menor a la mínima)', 'Ver el resultado del examen.', (p, s) => s && s.estado === 'no_acreditada'],
+        ['sin-examen', 'Sin derecho a examen (asistencia insuficiente)', 'Ver el resultado por asistencia.', (p, s) => s && s.estado === 'sin_derecho_examen'],
+        ['dos-inasistencias', 'Cerrada: no se presentó dos veces a la cita', 'Ver el cierre por inasistencias y que puede iniciar otra.',
+          (p, s) => s && A().cerradaPorInasistencia(s)],
+        ['sin-atender', 'Cerrada por no corregir a tiempo', 'Ver la solicitud que se cerró porque venció el plazo para corregir.',
+          (p, s) => s && s.estado === 'concluida_sin_atender' && !A().cerradaPorInasistencia(s)],
+        ['cancelada', 'Cancelada por la persona', 'Ver una solicitud cancelada.', (p, s) => s && s.estado === 'cancelada']
+      ]]
+    ]],
+    ['dictaminador', 'Dictaminador técnico', [
+      ['Solicitud', [
+        ['obs-dict', 'Con observaciones', 'Corregir las observaciones de una solicitud de dictaminador.',
+          (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'dictaminador'],
+        ['perfil', 'Podría no cumplir el perfil, en revisión', 'Ver el aviso de perfil; en la revisión, decidir con el comprobante de estudios.',
+          (p, s) => s && s.estado === 'enviada' && s.perfil_academico === 'no_cumple'],
+        ['rechazada', 'Rechazado por perfil', 'Leer el motivo del rechazo.', (p, s) => s && s.estado === 'rechazada']
+      ]],
+      ['Vigencia y renovación', [
+        ['dict-renov', 'Renovación de dictaminador', 'Ver la renovación de dictaminador con la poda vigente (sin años de experiencia).',
+          (p, s) => s && s.modalidad === 'renovacion' && s.tipo_acreditacion === 'dictaminador'],
+        ['dict-poda-vencida', 'Dictaminador por vencer con la poda vencida', 'Ver por qué no aparece «Renovar»: primero se renueva la de poda (R43).',
+          (p, s, acs, d) => ['vigente', 'por_vencer'].includes(sit(d, de(acs, 'dictaminador'))) && ['vencida_renovable', 'vencida_no_renovable'].includes(sit(d, de(acs, 'poda'))) && !activa(d, p)]
+      ]]
+    ]],
+    ['kobo', 'Del registro anterior (Kobo), sin cuenta', [
+      ['Activar la cuenta', [
+        ['kobo-vigente', 'Con su poda vigente', 'Crear la cuenta con su CURP y ver sus acreditaciones anteriores.',
+          (p, s, acs, d) => p.estado === 'sin_activar' && sit(d, de(acs, 'poda')) === 'vigente' && !de(acs, 'dictaminador')],
+        ['kobo-renovar', 'Para renovar (primera renovación en el sistema)', 'Crear la cuenta y renovar: carga todos los documentos, como una nueva.',
+          (p, s, acs, d) => p.estado === 'sin_activar' && acs.some((a) => ['por_vencer', 'vencida_renovable'].includes(sit(d, a)))]
+      ]]
+    ]],
+    ['personal', 'Personal de la Secretaría', [
+      ['Su papel', [
+        ['personal', 'Revisión documental', 'Revisar las solicitudes enviadas: validar, observar o rechazar.', null, 'revision.html'],
+        ['personal-citas', 'Citas de cotejo', 'Atender las citas del día: cotejo, pago, factura, pausa.', null, 'citas.html'],
+        ['personal-grupos', 'Grupos del curso', 'Ver la espera de cada curso, formar grupos y confirmarlos.', null, 'grupos.html'],
+        ['personal-asistencia', 'Instructor: asistencia', 'Capturar la asistencia de cada día del curso.', null, 'asistencia.html'],
+        ['personal-examen', 'Instructor: aplicar el examen', 'Pasar lista el último día (cuenta como asistencia) y seguir el examen.', null, 'aplicar.html']
+      ]]
+    ]]
+  ];
+
+  /* → [{ perfil, perfilTexto, grupo, casos: [{ clave, texto, prueba, persona?, pantalla?, migrada? }] }] */
   function lista(datos) {
     const usadas = new Set();
     const activas = datos.solicitante.filter((x) => x.estado === 'activa');
-    const grupos = GRUPOS.map(([grupo, casos]) => ({ grupo, casos: casos.map(([clave, texto, prueba, cumple]) => {
-      if (!cumple) return { clave, texto, prueba };
-      const sirve = (x) => cumple(x, A().solicitudesDe(datos, x)[0], A().acreditacionesDe(datos, x), datos);
-      // De preferencia una persona que no se use en otro caso; si sólo hay una, se repite
-      const p = activas.find((x) => !usadas.has(x.id) && sirve(x)) || activas.find(sirve);
-      if (!p) return null;
-      usadas.add(p.id);
-      return { clave, texto, prueba, persona: p };
-    }).filter(Boolean) })).filter((g) => g.casos.length);
-    grupos.push({ grupo: 'Personal de la Secretaría', casos: [{ clave: PERSONAL[0], texto: PERSONAL[1], prueba: PERSONAL[2] }] });
+    const sinCuenta = datos.solicitante.filter((x) => x.estado === 'sin_activar');
+    const grupos = [];
+    for (const [perfil, perfilTexto, etapas] of PERFILES) {
+      for (const [grupo, casos] of etapas) {
+        const hallados = casos.map(([clave, texto, prueba, cumple, pantalla]) => {
+          if (!cumple) return { clave, texto, prueba, pantalla };
+          const sirve = (x) => cumple(x, A().solicitudesDe(datos, x)[0], A().acreditacionesDe(datos, x), datos);
+          const fuente = perfil === 'kobo' ? sinCuenta : activas;
+          // De preferencia una persona que no se use en otro caso; si sólo hay una, se repite
+          const p = fuente.find((x) => !usadas.has(x.id) && sirve(x)) || fuente.find(sirve);
+          if (!p) return null;
+          usadas.add(p.id);
+          return perfil === 'kobo' ? { clave, texto, prueba, persona: p, migrada: true } : { clave, texto, prueba, persona: p };
+        }).filter(Boolean);
+        if (hallados.length) grupos.push({ perfil, perfilTexto, grupo, casos: hallados });
+      }
+    }
     return grupos;
   }
-  /* Personas del registro anterior, todavía sin cuenta (p. ej., poda vigente sin trámite, o dictaminador con la poda
-     vencida): se prueban creando la cuenta con su CURP */
+  /* Personas del registro anterior, todavía sin cuenta: se prueban creando la cuenta con su CURP */
   function migradas(datos) { return datos.solicitante.filter((x) => x.estado === 'sin_activar'); }
+  const PERFIL_DE = Object.fromEntries(PERFILES.flatMap(([perfil, , etapas]) => etapas.flatMap(([, casos]) => casos.map(([k]) => [k, perfil]))));
 
-  global.APD_CASOS_PRUEBA = { lista, migradas, claves: () => GRUPOS.flatMap(([, c]) => c.map(([k]) => k)).concat(PERSONAL[0]) };
+  global.APD_CASOS_PRUEBA = {
+    lista, migradas,
+    perfiles: () => PERFILES.map(([clave, texto]) => ({ clave, texto })),
+    perfilDe: (clave) => PERFIL_DE[clave] || null,
+    claves: () => Object.keys(PERFIL_DE)
+  };
 }(typeof window !== 'undefined' ? window : globalThis));

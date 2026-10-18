@@ -69,7 +69,8 @@
     // nueva (no se presentó o no llevó el comprobante) la persona pudo haber pagado ya: los datos se repiten para quien
     // no ha pagado, con la advertencia de no pagar dos veces (auditoría integral, alta 3)
     const citaNueva = s.estado === 'validada_en_linea' && s.cita_motivo && s.cita_anterior;
-    if (s.estado === 'validada_en_linea' && c) {
+    // En una cita en pausa la persona ya está en su cita: los datos de pago ya no van
+    if (s.estado === 'validada_en_linea' && c && !s.cotejo_pausa) {
       // El monto que se le indicó al darle la cita; si entonces aún no había, el vigente de su curso
       const importe = s.pago_monto != null ? s.pago_monto : c.pago_monto;
       const monto = importe != null ? Number(importe).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
@@ -130,7 +131,7 @@
     } else if (s.estado === 'validada_en_linea' && s.cotejo_pausa) {
       const pausa = s.cotejo_pausa;
       const vigentes = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && pausa.docs.includes(d.requisito));
-      const cargados = vigentes.filter((d) => d.cargado_real && d.cargado_real > pausa.real);
+      const cargados = vigentes.filter((d) => APD.cargadoTras(d, pausa));
       sigue = cargados.length === pausa.docs.length
         ? { texto: 'Ya cargaste el documento correcto.', pasos: ['Imprímelo.', `Regresa con la persona que te atiende en el ${lugar.nombre}.`, 'Ahí termina tu cotejo.'] }
         : { texto: 'Tu cita de cotejo está en pausa: un documento no coincidió con el que cargaste.', pasos: ['Consigue hoy el documento correcto.', 'Cárgalo aquí, en «Mis trámites».', 'Regresa con la persona que te atiende, con el documento impreso.'] };
@@ -210,7 +211,7 @@
     const acciones = [];
     if (s.estado === 'validada_en_linea' && s.cotejo_pausa && !vencida) {
       const pausa = s.cotejo_pausa;
-      const faltan = pausa.docs.filter((k) => !datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.requisito === k && d.cargado_real && d.cargado_real > pausa.real));
+      const faltan = pausa.docs.filter((k) => !datos.documento.some((d) => d.solicitud_id === s.id && d.vigente && d.requisito === k && APD.cargadoTras(d, pausa)));
       if (faltan.length) acciones.push(el('a', { class: 'btn btn-primario', href: `corregir.html?folio=${encodeURIComponent(s.folio)}`, texto: faltan.length === 1 ? 'Cargar el documento' : 'Cargar los documentos' }));
     }
     if (['borrador', 'con_observaciones'].includes(s.estado)) {
@@ -223,6 +224,7 @@
       : s.estado === 'validada_en_linea' && s.cotejo_pausa ? estado('Cita en pausa: carga el documento', 'pend')
       : s.estado === 'validada_en_linea' && s.cita_motivo ? estado('Acude a tu cita nueva', 'pend')
         : porInasistencia ? estado('Cerrada: no te presentaste', 'error')
+          : s.estado === 'inscrita' && g && g.grupo && g.grupo.estado === 'en_integracion' ? estado('Grupo por confirmar', 'marcha')
           : APD.estadoSolicitud(s);
     return el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [

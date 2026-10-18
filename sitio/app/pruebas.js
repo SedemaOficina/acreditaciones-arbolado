@@ -252,11 +252,11 @@
     const sesion = APD.leeSesion();
     const enPersonal = DEL_PERSONAL.includes(pagina);
     const persona = sesion && sesion.id ? datos.solicitante.find((p) => p.id === sesion.id) : null;
-    const actual = enPersonal ? casos.find((c) => c.clave === 'personal')
-      : persona ? casos.find((c) => c.persona && c.persona.id === persona.id) : null;
+    const actual = enPersonal ? (casos.find((c) => c.pantalla === pagina) || casos.find((c) => c.clave === 'personal'))
+      : persona ? casos.find((c) => c.persona && !c.migrada && c.persona.id === persona.id) : null;
     const quien = ['aplicar.html', 'asistencia.html'].includes(pagina) ? `Laura Ejemplo Instructora · personal, instructor (${pagina === 'aplicar.html' ? 'aplica el examen' : 'captura la asistencia'})`
       : pagina === 'examen.html' ? 'persona en el salón de cómputo (entra con su código, sin cuenta)'
-      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, revisión documental`
+      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'espera.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : 'revisión documental'}`
       : persona ? `${APD.nombreCompleto(persona)} · persona solicitante${persona.de_prueba ? ' (cuenta creada en la prueba)' : ''}` : 'nadie (sin sesión)';
     const ahora = el('div', { class: 'menu-pruebas-ahora' }, [
       el('div', { class: 'menu-pruebas-fila' }, [
@@ -293,7 +293,7 @@
       }
     }
     if (form && pagina === 'entrar.html') {
-      const sel = selectCasos('menu-pruebas-llenar', grupos, (c) => c.persona, '');
+      const sel = selectCasos('menu-pruebas-llenar', grupos, (c) => c.persona && !c.migrada, '', true);
       aqui.push(el('div', { class: 'menu-pruebas-campo' }, [
         el('label', { class: 'etiqueta', for: 'menu-pruebas-llenar', texto: 'Llenar con un caso de prueba' }),
         el('div', { class: 'select' }, [sel])
@@ -315,12 +315,27 @@
       ].map(([t, m]) => el('li', {}, [el('a', { href: url(m), texto: t, 'aria-current': m === modo ? 'true' : null })]))));
     }
 
-    /* 3 · Entrar como */
-    const elegir = selectCasos('menu-pruebas-persona', grupos, () => true, actual ? actual.clave : '');
+    /* 3 · Entrar como, en dos pasos (decisión 2026-10-18): «¿Quién?» y después «¿En qué momento?», con los casos de ese
+       perfil agrupados por etapa */
+    const perfiles = APD_CASOS_PRUEBA.perfiles().filter((p) => grupos.some((g) => g.perfil === p.clave));
+    const perfilInicial = actual ? APD_CASOS_PRUEBA.perfilDe(actual.clave) : enPersonal ? 'personal' : perfiles[0].clave;
+    const quienSel = el('select', { class: 'control control-select', id: 'menu-pruebas-perfil' },
+      perfiles.map((p) => el('option', { value: p.clave, texto: p.texto, selected: p.clave === perfilInicial ? '' : null })));
+    const elegir = el('select', { class: 'control control-select', id: 'menu-pruebas-persona' });
     const queProbar = ayuda('');
     const describe = () => { const c = casos.find((x) => x.clave === elegir.value); queProbar.textContent = c ? `Qué puedes probar: ${c.prueba}` : ''; queProbar.hidden = !c; };
+    const pintaCasos = (elegido) => {
+      const delPerfil = grupos.filter((g) => g.perfil === quienSel.value);
+      const nuevo = selectCasos('menu-pruebas-persona', delPerfil, () => true, elegido);
+      // Un perfil con un solo caso lo deja elegido
+      const unico = delPerfil.flatMap((g) => g.casos);
+      elegir.replaceChildren(...nuevo.childNodes);
+      elegir.value = unico.some((c) => c.clave === elegido) ? elegido : unico.length === 1 ? unico[0].clave : '';
+      describe();
+    };
+    quienSel.addEventListener('change', () => pintaCasos(''));
     elegir.addEventListener('change', describe);
-    describe();
+    pintaCasos(actual ? actual.clave : '');
     queProbar.classList.add('menu-pruebas-caso');
 
     /* 5 · Ajustes de la prueba */
@@ -356,14 +371,20 @@
       aqui.length ? seccion('En esta pantalla', aqui) : null,
       seccion('Entrar como', [
         el('div', { class: 'menu-pruebas-campo' }, [
-          el('label', { class: 'etiqueta', for: 'menu-pruebas-persona', texto: 'Caso de prueba' }),
+          el('label', { class: 'etiqueta', for: 'menu-pruebas-perfil', texto: '¿Quién?' }),
+          el('div', { class: 'select' }, [quienSel])
+        ]),
+        el('div', { class: 'menu-pruebas-campo' }, [
+          el('label', { class: 'etiqueta', for: 'menu-pruebas-persona', texto: '¿En qué momento?' }),
           el('div', { class: 'select' }, [elegir])
         ]),
         queProbar,
         acciones(boton('Entrar', () => {
           const c = casos.find((x) => x.clave === elegir.value);
           if (!c) return di('Elige un caso.');
-          if (c.clave === 'personal') { location.href = 'revision.html'; return; }
+          if (c.pantalla) { location.href = c.pantalla; return; }
+          // Del registro anterior, sin cuenta: «Crea tu cuenta» llenada con su CURP
+          if (c.migrada) { APD.cierraSesion(); location.href = `cuenta.html?migrada=${encodeURIComponent(c.persona.id)}`; return; }
           if (c.clave !== 'nueva') { APD.guardaSesion({ id: c.persona.id }); location.href = 'tramites.html'; return; }
           // Persona nueva: se le crea una cuenta de prueba (con la contraseña común de prueba), guardada en este navegador
           const n = personaNueva();
@@ -396,12 +417,12 @@
   }
 
   /* Lista de casos agrupada (optgroup por etapa); «filtra» decide qué casos se ofrecen */
-  function selectCasos(id, grupos, filtra, elegido) {
+  function selectCasos(id, grupos, filtra, elegido, conPerfil) {
     const opciones = [el('option', { value: '', texto: 'Elige un caso' })];
     for (const g of grupos) {
       const casos = g.casos.filter(filtra);
       if (!casos.length) continue;
-      const og = el('optgroup', { label: g.grupo });
+      const og = el('optgroup', { label: conPerfil ? `${g.perfilTexto} · ${g.grupo}` : g.grupo });
       for (const c of casos) og.append(el('option', { value: c.clave, texto: c.persona ? `${c.texto} — ${APD.nombreCompleto(c.persona)}` : c.texto, selected: c.clave === elegido ? '' : null }));
       opciones.push(og);
     }
@@ -434,6 +455,10 @@
       if (!/^0\./.test(v.trim())) return;
       return APD.cargar().then((datos) => {
         const dialogo = panel(datos);
+        // Caso del registro anterior elegido en el menú: «Crea tu cuenta» llega llenada con su CURP
+        const migrada = new URLSearchParams(location.search).get('migrada');
+        const m = migrada && pagina === 'cuenta.html' && form ? APD_CASOS_PRUEBA.migradas(datos).find((x) => x.id === migrada) : null;
+        if (m) setTimeout(() => { const aviso = llenaMigrada(m); const e = dialogo.querySelector('.menu-pruebas-estado'); if (e) e.textContent = aviso; }, 300);
         const franja = document.querySelector('.entorno-pruebas');
         if (franja) franja.after(ubicacion(datos));
         const abre = el('button', { type: 'button', class: 'btn btn-secundario menu-pruebas-boton', 'aria-haspopup': 'dialog', texto: 'Menú de pruebas' });

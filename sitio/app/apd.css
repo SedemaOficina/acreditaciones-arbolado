@@ -31,10 +31,12 @@
 .ficha-sigue { margin: 0; }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
 
-.datos { display: grid; gap: var(--e-2) var(--e-5); margin: 0; }
+.datos { display: grid; gap: var(--e-4) var(--e-5); margin: 0; }
 .datos-par { display: grid; gap: var(--e-1); align-content: start; }
-.datos-etq { font-size: var(--t-sm); color: var(--gris-cl); }
-.datos-valor { margin: 0; font-weight: var(--peso-medio); }
+/* El rótulo de un dato no se confunde con un texto de ayuda (2026-10-18): versalitas con aire, más chico y oscuro;
+   la ayuda queda en minúsculas, gris claro */
+.datos-etq { font-size: var(--t-xs); font-weight: var(--peso-semi); letter-spacing: var(--tracking-rotulo); text-transform: uppercase; color: var(--gris); }
+.datos-valor { margin: 0; font-weight: var(--peso-medio); line-height: var(--interlineado-compacto); }
 
 .lista-obs { list-style: disc; margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-1); }
 
@@ -159,12 +161,14 @@
 .perfil-quien { display: grid; gap: var(--e-2); justify-items: center; }
 .perfil-quien p { margin: 0; }
 .perfil-nombre { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); overflow-wrap: anywhere; }
-.perfil-guardado { width: 100%; text-align: start; }
+.perfil-guardado { width: 100%; text-align: start; margin-block-start: var(--e-4); }
 .perfil-valor { margin: 0; font-weight: var(--peso-medio); }
 .perfil-form { width: 100%; text-align: start; }
 .perfil-seccion-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-block-end: var(--e-3); }
 .perfil-seccion-cabeza .titulo-bloque { margin-block: 0; }
 .perfil-seccion-cabeza .btn { width: auto; }
+/* La ayuda de una sección va bajo su título y separada de los datos (2026-10-18) */
+.perfil-seccion-cabeza + .ayuda { max-width: var(--ancho-lectura); margin-block-end: var(--e-4); }
 @media (min-width: 560px) {
   .perfil-cabeza { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: start; }
   .perfil-quien { justify-items: start; }

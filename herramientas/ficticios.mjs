@@ -555,6 +555,99 @@ const sDictRechazo = solicitud('dict-rechazado', dictRechazo, 'dictaminador', 'n
 enviar(sDictRechazo, '2026-10-02');
 rechazar(sDictRechazo, '2026-10-07', 'Tu comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.');
 
+// 8 · Casos para el menú de pruebas en dos pasos (2026-10-18): un caso por cada situación que la persona puede ver
+// Lo que pasó en la cita lo registra el personal (apd.cita_cambio); una cita nueva nace al cambiar cita_en
+function citaResultado(s, fecha, hora, resultado, observacion = '') {
+  en(fecha, hora);
+  como(COTEJO, 'personal');
+  emitir(`UPDATE apd.cita SET resultado = ${q(resultado)}, observacion = ${q(observacion)} WHERE solicitud_id = ${q(s.id)} AND resultado = 'pendiente'`);
+}
+function otraCita(s, fecha, cita, hora = '10:00') {
+  en(fecha, '11:30');
+  como(COTEJO, 'personal');
+  emitir(`UPDATE apd.solicitud SET cita_en = ${q(`${cita} ${hora}:00-06`)} WHERE id = ${q(s.id)}`);
+}
+function noCoincide(s, fecha, hora, requisito, texto) {
+  en(fecha, hora);
+  como(COTEJO, 'personal');
+  emitir(`UPDATE apd.documento SET estado = 'con_observacion', observacion = ${q(texto)}, revisado_por = ${q(COTEJO)} WHERE solicitud_id = ${q(s.id)} AND vigente AND requisito = ${q(requisito)}`);
+}
+function conCita(clave, alta_, cita) {
+  const p = persona(clave);
+  alta(p, alta_);
+  const s = solicitud(clave, p, 'poda', 'nueva', { fecha: alta_ });
+  enviar(s, alta_);
+  validar(s, sumaIso(alta_, 2), cita);
+  return s;
+}
+const sumaIso = (iso, n) => { const d = new Date(`${iso}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+
+// No se presentó: cita nueva
+const sNoVino = conCita('cita-inasistencia', '2026-10-01', '2026-10-08');
+citaResultado(sNoVino, '2026-10-08', '14:00', 'no_se_presento');
+otraCita(sNoVino, '2026-10-09', '2026-10-20');
+// Sin comprobante de pago: cita nueva con el mismo monto
+const sSinPago = conCita('cita-sin-pago', '2026-10-02', '2026-10-09');
+citaResultado(sSinPago, '2026-10-09', '10:40', 'sin_pago', 'No presentó el comprobante de pago.');
+otraCita(sSinPago, '2026-10-09', '2026-10-22');
+// Cita en pausa hoy: un documento no coincidió y la persona puede cargar el correcto
+const sPausa = conCita('cita-pausa', '2026-10-05', '2026-10-14');
+noCoincide(sPausa, '2026-10-14', '10:20', 'comprobante_domicilio', 'El impreso es de otro mes que el que cargó.');
+citaResultado(sPausa, '2026-10-14', '10:25', 'en_pausa', 'El comprobante de domicilio impreso no coincide; lo trae hoy mismo.');
+// Pausa de ayer que no se retomó: la pausa venció
+const sPausaVieja = conCita('pausa-vencida', '2026-10-05', '2026-10-13');
+noCoincide(sPausaVieja, '2026-10-13', '10:20', 'identificacion_oficial', 'La identificación impresa no es la misma que cargó.');
+citaResultado(sPausaVieja, '2026-10-13', '10:25', 'en_pausa', 'La identificación impresa no coincide; la trae hoy mismo.');
+// Dos inasistencias: la solicitud se cierra sola
+const sDosFaltas = conCita('dos-inasistencias', '2026-09-22', '2026-09-29');
+citaResultado(sDosFaltas, '2026-09-29', '14:00', 'no_se_presento');
+otraCita(sDosFaltas, '2026-09-30', '2026-10-06');
+citaResultado(sDosFaltas, '2026-10-06', '14:00', 'no_se_presento');
+
+// Grupo de nuevo por confirmar, con su fecha propuesta
+const porConfirmar = persona('grupo-por-confirmar');
+alta(porConfirmar, '2026-09-08');
+const sPorConfirmar = solicitud('grupo-por-confirmar', porConfirmar, 'poda', 'nueva', { fecha: '2026-09-08' });
+hastaLista(sPorConfirmar, { envio: '2026-09-08', validacion: '2026-09-10', cita: '2026-09-15' });
+const G5 = grupo('g5', 'poda', 'nueva', '2026-10-05');
+inscribir(G5, [sPorConfirmar], '2026-10-05');
+en('2026-10-06', '16:00');
+como(COTEJO, 'personal');
+emitir(`UPDATE apd.grupo SET instructor = ${q(INSTRUCTOR)}, fecha_inicio = '2026-10-26', hora_entrada = '09:00' WHERE id = ${q(G5.id)}`);
+
+// Aprobada hoy: grupo de cinco días que termina en la fecha de corte, con su examen
+const g6 = [];
+for (let i = 0; i < 5; i++) {
+  const p = persona('g6-' + i);
+  alta(p, '2026-09-01');
+  const s6 = solicitud('g6-' + i, p, 'poda', 'nueva', { fecha: '2026-09-01' });
+  hastaLista(s6, { envio: '2026-09-01', validacion: '2026-09-03', cita: '2026-09-09' });
+  g6.push(s6);
+}
+const G6 = grupo('g6', 'poda', 'nueva', '2026-09-25');
+inscribir(G6, g6, '2026-09-25');
+programar(G6, '2026-10-01', '2026-10-10');
+estadoGrupo(G6, '2026-10-10', 'en_curso');
+['2026-10-10', '2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14'].forEach((f, i) => asistencia(g6, i + 1, f));
+g6.forEach((s6, i) => examen(s6, '2026-10-14', i === 4 ? 6.5 : 8.5));
+
+// Podador con su acreditación por vencer y sin trámite: ve «Renovar»
+const porVencer = persona('por-vencer-libre');
+altaMigrada(porVencer);
+migrar(porVencer, 'poda', '2025-11-02');
+activar(porVencer, '2026-10-01');
+// Del registro anterior, sin cuenta y con la poda por vencer: activa su cuenta y hace su primera renovación con todos
+// los documentos (decisión 2026-10-18)
+const koboRenueva = persona('kobo-por-renovar');
+altaMigrada(koboRenueva);
+migrar(koboRenueva, 'poda', '2025-10-20');
+// Dictaminador vigente con la poda vencida (R43): no ve «Renovar» en la de dictaminador hasta renovar la de poda
+const dictPodaVencida = persona('dict-poda-vencida');
+altaMigrada(dictPodaVencida);
+migrar(dictPodaVencida, 'poda', '2025-09-01');
+migrar(dictPodaVencida, 'dictaminador', '2025-10-28');
+activar(dictPodaVencida, '2026-09-15');
+
 en(CORTE, '20:00');
 emitir(`SELECT set_config('apd.ahora_simulado', '', false)`);
 

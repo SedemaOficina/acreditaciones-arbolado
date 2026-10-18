@@ -24,7 +24,9 @@ const ACRED_POR_VENCER = `(SELECT id FROM apd.acreditacion WHERE numero = 'PD-20
 const ACRED_NO_RENOVABLE = `(SELECT id FROM apd.acreditacion WHERE numero = 'PD-2024-K105')`;
 const PERSONA_NO_RENOVABLE = `(SELECT solicitante_id FROM apd.acreditacion WHERE numero = 'PD-2024-K105')`;
 const DICT_SIN_PODA = `(SELECT id FROM apd.acreditacion WHERE numero = 'DT-2026-K107')`;
-const GRUPO_INTEGRACION = `(SELECT id FROM apd.grupo WHERE estado = 'en_integracion' LIMIT 1)`;
+// El grupo en integración de los ficticios originales, por su folio: fijo aunque el caso le cambie la fecha o el estado
+// (el de «grupo-por-confirmar» también está en integración, con fecha propuesta)
+const GRUPO_INTEGRACION = `(SELECT id FROM apd.grupo WHERE folio = 'APD-G-2026-004')`;
 const GRUPO_EN_CURSO = `(SELECT id FROM apd.grupo WHERE estado = 'en_curso' LIMIT 1)`;
 const BORRADOR = `(SELECT id FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1)`;
 const ENVIADA = `(SELECT id FROM apd.solicitud WHERE estado = 'enviada' ORDER BY folio LIMIT 1)`;
@@ -54,7 +56,9 @@ const FOTO = (persona, mime = 'image/jpeg') =>
   `INSERT INTO apd.fotografia (solicitante_id, archivo_clave, tipo_mime, tamano_bytes, sha256)
    VALUES (${persona}, 'prueba/' || gen_random_uuid(), '${mime}', 1000, repeat('c', 64));`;
 // Cita de cotejo: la primera solicitud validada (su cita es el 20/10/2026 a las 10:00)
-const CITA_SOL = `(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)`;
+// La solicitud con cita de los ficticios originales (enviada desde el 06/10); los casos del menú de pruebas, enviados
+// antes, ya traen otras citas. Fija: no depende de lo que el caso le haga a la cita.
+const CITA_SOL = `(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' AND enviada_en >= '2026-10-06' ORDER BY folio LIMIT 1)`;
 const NO_SE_PRESENTO = `UPDATE apd.cita SET resultado = 'no_se_presento' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`;
 // La CURP no coincide y la persona la trae ese día: se marca el documento y la cita queda en pausa
 const PAUSA_CURP = `
@@ -248,7 +252,7 @@ const casos = [
   // ── Citas de cotejo (decisiones 2026-10-17) ──
   ['Al validar, la base crea la cita pendiente en la fecha asignada', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT count(*) FROM apd.solicitud s WHERE s.estado = 'validada_en_linea'
-              AND NOT EXISTS (SELECT 1 FROM apd.cita c WHERE c.solicitud_id = s.id AND c.resultado = 'pendiente' AND c.programada_en = s.cita_en)) = 0; END $$;`],
+              AND NOT EXISTS (SELECT 1 FROM apd.cita c WHERE c.solicitud_id = s.id AND c.resultado IN ('pendiente', 'en_pausa') AND c.programada_en = s.cita_en)) = 0; END $$;`],
   ['Primera inasistencia: se le da una cita nueva', 'ok', null, `
      ${NO_SE_PRESENTO}
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = ${CITA_SOL};
@@ -301,7 +305,8 @@ const casos = [
      CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;
      ${PAUSA_CURP}
      SELECT set_config('apd.ahora_simulado', '2026-10-21 08:00:00-06', true);
-     DO $$ BEGIN ASSERT apd.cerrar_pausas_vencidas() = 1;
+     -- también cierra la pausa vencida de los casos de prueba («pausa-vencida»)
+     DO $$ BEGIN ASSERT apd.cerrar_pausas_vencidas() >= 1;
                   ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM s)) = 'con_observaciones'; END $$;`],
   ['Un documento que no coincide y no se trae hoy regresa con observaciones', 'ok', null, `
      CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;

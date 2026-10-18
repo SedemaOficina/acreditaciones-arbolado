@@ -53,7 +53,9 @@ const paraDictaminador = datos.solicitante.find((p) => {
   return p.estado === 'activa' && poda && datos.estado_acreditacion[poda.numero] === 'vigente' && !ultimaDe(p, 'dictaminador') && !tieneActiva(p, 'dictaminador');
 });
 const inscrita = datos.solicitud.find((s) => s.estado === 'inscrita');
-const conCita = datos.solicitud.find((s) => s.estado === 'validada_en_linea' && s.cita_en);
+// Una cita de cotejo sencilla: una sola cita, pendiente (los casos del menú traen citas nuevas y pausas)
+const citaSencilla = (s) => datos.cita.filter((c) => c.solicitud_id === s.id).length === 1 && datos.cita.some((c) => c.solicitud_id === s.id && c.resultado === 'pendiente');
+const conCita = datos.solicitud.find((s) => s.estado === 'validada_en_linea' && s.cita_en && citaSencilla(s));
 const vigente = datos.verificacion_publica.find((v) => v.situacion === 'Vigente');
 const noVigente = datos.verificacion_publica.find((v) => v.situacion !== 'Vigente');
 
@@ -612,8 +614,17 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('siempre a la vista: la pantalla, la fase del trámite y el enlace al mapa del trámite'));
   comprueba(await page.locator('dialog.menu-pruebas h3').allTextContents().then((l) => l.join('|')) === 'En esta pantalla|Entrar como|Ir a otra pantalla|Ajustes de la prueba',
     t('menú de pruebas: bloques en orden (en esta pantalla, entrar como, ir a otra pantalla, ajustes)'));
-  const opcionesCasos = await page.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean));
-  comprueba(APD_CASOS_PRUEBA.claves().every((k) => opcionesCasos.includes(k)), t(`menú de pruebas: los ${APD_CASOS_PRUEBA.claves().length} casos encuentran persona en los ficticios`));
+  // En dos pasos (decisión 2026-10-18): «¿Quién?» y luego «¿En qué momento?»; cada caso encuentra su persona
+  const perfilesMenu = await page.locator('#menu-pruebas-perfil option').evaluateAll((o) => o.map((x) => x.value));
+  const opcionesCasos = [];
+  for (const perfil of perfilesMenu) {
+    await page.selectOption('#menu-pruebas-perfil', perfil);
+    opcionesCasos.push(...await page.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean)));
+  }
+  const casosSinPersona = APD_CASOS_PRUEBA.claves().filter((k) => !opcionesCasos.includes(k));
+  comprueba(perfilesMenu.join('|') === 'nueva|poda|dictaminador|kobo|personal' && !casosSinPersona.length,
+    t(`menú de pruebas: cinco perfiles y los ${APD_CASOS_PRUEBA.claves().length} casos encuentran persona en los ficticios${casosSinPersona.length ? ` (faltan: ${casosSinPersona.join(', ')})` : ''}`));
+  await page.selectOption('#menu-pruebas-perfil', 'nueva');
   await page.selectOption('#menu-pruebas-persona', 'nueva');
   await page.click('dialog.menu-pruebas >> button:text-is("Entrar")');
   await page.waitForURL(/tramites\.html/);
@@ -648,6 +659,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(/Corrige y reenvía/.test(await page.textContent('[data-solicitudes]')), t('menú de pruebas: en «Entrar», un caso llena CURP y contraseña y entra'));
   // Personal: «Entrar como» lleva a la bandeja; ahí no hay «En esta pantalla» (los filtros no se llenan ni se envían)
   await page.click('.menu-pruebas-boton');
+  await page.selectOption('#menu-pruebas-perfil', 'personal');
   await page.selectOption('#menu-pruebas-persona', 'personal');
   await page.click('dialog.menu-pruebas >> button:text-is("Entrar")');
   await page.waitForURL(/revision\.html/);
@@ -659,6 +671,14 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForURL(/index\.html|\/$/);
   comprueba(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('apd.') && k !== 'apd.prueba.ultimo_uso').length === 0
     && APD_ARCHIVOS_PRUEBA.guardado().then((g) => !g.cuentas && !g.envios && !g.fotos)), t('menú de pruebas: «Empezar de cero» limpia la sesión y lo guardado'));
+  // Del registro anterior: el menú abre «Crea tu cuenta» llenada con su CURP
+  await page.click('.menu-pruebas-boton');
+  await page.selectOption('#menu-pruebas-perfil', 'kobo');
+  await page.selectOption('#menu-pruebas-persona', 'kobo-vigente');
+  await page.click('dialog.menu-pruebas >> button:text-is("Entrar")');
+  await page.waitForURL(/cuenta\.html\?migrada=/);
+  await page.waitForFunction(() => document.getElementById('curp').value.length === 18);
+  comprueba(true, t('menú de pruebas: un caso del registro anterior abre «Crea tu cuenta» llenada con su CURP'));
   // Crear cuenta: «Llenar con su CURP» crea la cuenta de alguien del registro anterior
   await page.goto(BASE + 'cuenta.html');
   await page.click('.menu-pruebas-boton');
@@ -707,7 +727,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     comprueba(/a las \d{2}:\d{2}/.test(f) && await ficha.locator('.datos-por-confirmar', { hasText: 'hora de entrada' }).count() === 0, t('mis solicitudes: con grupo confirmado, dice la hora de entrada (apd.grupo.hora_entrada)'));
     await page.click('[data-sesion] button');
   }
-  const conCita = personaCon('validada_en_linea');
+  const conCita = personaCon('validada_en_linea', citaSencilla);
   if (conCita) {
     await entra(page, conCita.curp);
     comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 4,
@@ -1350,13 +1370,17 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await captura(pg, `grupos-dialogo-cancelar-${sufijo}`);
   await pg.fill('#motivo-cancelar', 'No se reunió el cupo mínimo en el plazo previsto.');
   await pg.click('#cancelar [data-accion="enviar"]');
-  await pg.waitForURL(/hecho=cancelado/);
+  await pg.waitForURL(/hecho=cancelado/).catch(async (e) => {
+    console.log('DIAG cancelar:', pg.url(), '|', await pg.evaluate(() => [document.querySelector('#dlg-cancelar')?.open, document.querySelector('#cancelar [data-estado-envio]')?.textContent, document.querySelector('#cancelar .resumen-errores')?.textContent, document.querySelector('#motivo-cancelar')?.value].join(' | ')));
+    throw e;
+  });
   await pg.goto(BASE + 'espera.html?curso=poda-renovacion');
   await pg.waitForSelector('.bloque-adscripcion tr[data-folio]');
   comprueba((await pg.$$('.bloque-adscripcion tr[data-folio]')).length === enEspera, t('al cancelar, las personas regresan a la espera'));
 
   // Asistencia del instructor: no guarda con alguien sin marcar; guarda el día y avisa a quien ya no tiene derecho
-  await pg.goto(BASE + 'asistencia.html');
+  // Hay dos grupos en curso (el del caso «aprobó hoy» termina en la fecha de corte): se abre el que sigue en clases
+  await pg.goto(BASE + `asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`);
   await pg.waitForSelector('.asistencia-fila');
   comprueba(/examen/.test(await texto('[data-dias]')) && await pg.isDisabled('.dia-btn:last-child'), t('el último día no se captura aquí (se registra al pasar lista en el examen)'));
   await pg.click('[data-guardar]');
@@ -1386,7 +1410,7 @@ async function accesibilidad(navegador) {
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
     ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
     ['grupos.html'], ['espera.html?curso=poda-nueva'], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`],
-    ['asistencia.html'], ['asistencia.html', 'sin marcar'],
+    [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`], [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`, 'sin marcar'],
     ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
   for (const [url, estado] of pantallas) {
