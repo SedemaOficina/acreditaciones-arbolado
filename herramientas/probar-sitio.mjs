@@ -204,16 +204,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('cuenta: nombre, apellidos y CURP se escriben en mayúsculas al momento'));
   comprueba(await page.inputValue('#correo') === 'Nadia@Ejemplo.local', t('cuenta: el correo no se pasa a mayúsculas'));
   await page.fill('#curp', NUEVA.curp); await page.press('#curp', 'Tab');
-  comprueba(['Mujer', 'Hombre'].includes(await page.inputValue('#sexo')), t(`cuenta: el sexo se toma de la CURP (${await page.inputValue('#sexo')})`));
-  // Datos internos: en la versión de prueba se ven en amarillo con su nota; sin el modo de prueba, no se ven
-  comprueba(await page.isVisible('[data-campo="sexo"] .nota-interna'), t('datos internos: en la versión de prueba el sexo se ve con su nota'));
-  const ocultoEnProduccion = await page.evaluate(() => {
-    document.documentElement.classList.remove('modo-pruebas');
-    const r = getComputedStyle(document.querySelector('[data-campo="sexo"]')).display === 'none';
-    document.documentElement.classList.add('modo-pruebas');
-    return r;
-  });
-  comprueba(ocultoEnProduccion, t('datos internos: sin el modo de prueba (producción) el sexo no se muestra'));
+  // El sexo no se pregunta ni se muestra: la base lo toma de la CURP (decisión 2026-10-18)
+  comprueba(await page.locator('[data-campo="sexo"], #sexo').count() === 0, t('cuenta: el sexo no se pregunta ni se muestra (la base lo toma de la CURP)'));
   // Adscripción: cada respuesta abre sólo su pregunta, y al cambiarla se oculta lo que dependía de ella
   comprueba(!(await page.isVisible('[data-campo="tipo_adscripcion"]')), t('adscripción: el tipo no se pregunta hasta responder «Sí»'));
   comprueba(/independiente/.test(await page.textContent('[data-campo="adscrito"]')), t('adscripción: «No, soy independiente» es una respuesta explícita'));
@@ -400,7 +392,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.waitForSelector('.perfil-imagen');
   comprueba(await page.evaluate(() => { const i = document.querySelector('.perfil-imagen'); return i.complete && i.naturalWidth > 0; }),
     t('mi perfil: muestra la fotografía que cargó al crear la cuenta'));
-  comprueba((await page.textContent('[data-vista="adscripcion"]')).trim() === 'Eres independiente.', t('mi perfil: la adscripción independiente se dice directo, «Eres independiente.»'));
+  comprueba((await page.$$eval('[data-vista="adscripcion"] .datos-valor', (l) => l.map((x) => x.textContent))).join('|') === 'Independiente', t('mi perfil: la adscripción independiente se ve como «Tipo: Independiente», con rótulo y valor'));
   await page.click('[data-editar="foto"]');
   await page.setInputFiles('#form-foto [data-archivos] > input[type="file"]:not([data-entrada-camara])', FOTO);
   await page.waitForSelector('#form-foto .lista-arch li[data-estado="listo"]');
@@ -559,10 +551,11 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await entra(page, CON_ORG.curp);
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-identidad] .datos');
-  comprueba(/Mi perfil/.test(await page.textContent('h2')) && /Sexo/.test(await page.textContent('[data-identidad]')) && await page.$('#curp') === null,
-    t('mi perfil: muestra CURP y sexo sin dejarlos cambiar'));
+  comprueba(/Mi perfil/.test(await page.textContent('h2')) && /CURP/.test(await page.textContent('[data-identidad]')) && !/Sexo/.test(await page.textContent('main')) && await page.$('#curp') === null,
+    t('mi perfil: muestra la CURP sin dejarla cambiar y no muestra el sexo (dato interno)'));
+  comprueba(!/expediente/i.test(await page.textContent('[data-identidad]')), t('mi perfil: no muestra el número de expediente (decisión 2026-10-18)'));
   comprueba(await page.locator('form.perfil-form:not([hidden])').count() === 0 && /@/.test(await page.textContent('[data-vista="contacto"]'))
-    && /^Empresa, consultoría o particular: /.test(await page.textContent('[data-vista="adscripcion"]')),
+    && (await page.$$eval('[data-vista="adscripcion"] .datos-par', (l) => l.map((x) => x.querySelector('dt').textContent))).join('|') === 'Tipo|Nombre o razón social',
     t('mi perfil: se ve lo registrado, escrito, sin preguntas a la vista'));
   comprueba(/^[A-ZÁÉÍÓÚÑ]{2}$/.test((await page.textContent('[data-perfil-iniciales]')).trim()), t('mi perfil: sin imagen, la persona ficticia se ve con sus iniciales'));
   await page.click('[data-editar="contacto"]');
@@ -906,6 +899,7 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector('[data-campo="factura_pago"] .lista-arch li[data-estado="listo"]');
   await page.fill('#factura_rfc', 'XAXX010101000');
   await page.fill('#factura_razon_social', 'Rocío Guardado Ejemplo');
+  comprueba(/UUID/.test(await page.textContent('[data-campo="factura_folio_fiscal"] .ayuda')), t('cotejo: la ayuda del folio fiscal dice que también se llama UUID'));
   await page.fill('#factura_folio_fiscal', '6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f');
   comprueba((await page.textContent('[data-resumen]')).includes('EXP-'), t('el resultado anuncia el número de expediente que se abre'));
   await page.click('[data-accion="enviar"]');
@@ -1314,7 +1308,10 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await captura(pg, `grupos-baja-${sufijo}`);
   await pg.fill('#motivo-baja', 'Pidió cambiar de fecha por trabajo.');
   await pg.click('#baja [data-accion="enviar"]');
-  await pg.waitForURL(/hecho=baja_integracion/);
+  await pg.waitForURL(/hecho=baja_integracion/).catch(async (e) => {
+    console.log('DIAG baja:', pg.url(), '|', await pg.evaluate(() => [document.querySelector('#dlg-baja')?.open, document.querySelector('#baja [data-estado-envio]')?.textContent, document.querySelector('#baja .resumen-errores')?.textContent, document.querySelector('#motivo-baja')?.value].join(' | ')));
+    throw e;
+  });
   await pg.waitForSelector('[data-situacion] .estado');
   comprueba(/Por confirmar/.test(await texto('[data-situacion]')) && await pg.isVisible('[data-confirmar]'), t('la baja deja al grupo por debajo del mínimo: regresa a integración'));
   // Alta 2 de la auditoría integral: quien sigue en el grupo ya no ve la fecha como segura

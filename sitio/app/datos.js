@@ -14,7 +14,6 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const avisa = (c) => APD.avisa(c);
-  const SEXO = { H: 'Hombre', M: 'Mujer', X: 'No binario' };
   const SECCIONES = ['foto', 'contacto', 'adscripcion'];
   const formDe = (k) => document.getElementById(`form-${k}`);
 
@@ -89,18 +88,18 @@
     const curp = p.curp || '';
     $('[data-identidad]').replaceChildren(APD.datosLista([
       ['CURP', curp],
-      ['Fecha de nacimiento', curp ? APD.fecha(nacimientoDe(curp)) : ''],
-      ['Número de expediente', p.numero_expediente || 'Se asigna en tu primera cita de cotejo']
-    ]), // El sexo es dato interno (se toma de la CURP): la persona no lo ve; en la versión de prueba sale en amarillo
-    el('div', { 'data-interno': 'Lo calcula el sistema con la CURP (posición 11). Se guarda en la base: apd.solicitante.sexo.' },
-      [APD.datosLista([['Sexo', SEXO[p.sexo || curp[10]] || '']])]));
+      ['Fecha de nacimiento', curp ? APD.fecha(nacimientoDe(curp)) : '']
+      // Sin el número de expediente (es de la carpeta física; se ve en «Mis trámites») ni el sexo, que es dato interno
+      // que la persona no ve, tampoco en la versión de prueba (decisiones 2026-10-18)
+    ]));
     $('[data-vista="contacto"]').replaceChildren(APD.datosLista([
       ['Correo electrónico', p.correo || 'Sin registrar'],
       ['Teléfono', p.telefono || 'Sin registrar']
     ]));
-    // Directo y en un renglón: «Eres independiente.» o «Alcaldía: Tlalpan.» (decisión 2026-10-17)
-    $('[data-vista="adscripcion"]').replaceChildren(el('p', { class: 'perfil-valor',
-      texto: p.adscripcion === 'independiente' ? 'Eres independiente.' : (APD.adscripcionTexto(datos, p) || 'Sin indicar. Presiona «Editar» para decir si trabajas para alguien.') }));
+    // Rótulo y valor, como los demás datos de «Mi perfil» (2026-10-18)
+    const ads = APD.adscripcionPares(datos, p);
+    $('[data-vista="adscripcion"]').replaceChildren(ads.length ? APD.datosLista(ads)
+      : el('p', { class: 'perfil-valor', texto: 'Sin indicar. Presiona «Editar» para decir si trabajas para alguien.' }));
     pintaFoto(datos, p);
   }
 

@@ -95,7 +95,7 @@
       ['Persona', nombre],
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre al terminar este cotejo (es su primer trámite)'],
-      ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
+      ...APD.adscripcionPares(datos, s, 'Adscripción'),
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : '']
     ])])]));
     // Una pausa sólo dura el día de la cita: después la base la rechaza y la solicitud regresa con observaciones
