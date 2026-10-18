@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.42 | 18/10/26, 1:45 a.m. | Estándar 1.4.1: hallazgos resueltos, P126–P131 nuevos, decisiones y bitácora (bloque 61) |
 | 0.41 | 17/10/26, 11:40 p.m. | Bloque 60: auditoría integral (resumen e informes A–C), corrige «null» en las confirmaciones, P124 |
 | 0.40 | 17/10/26, 11:36 p.m. | Corrige la barra de pasos 1-2-3 de la solicitud: los «Qué sigue» usaban el nombre de estilo del módulo de pasos del estándar |
 | 0.39 | 17/10/26, 11:09 p.m. | Bloque 59: correcciones de la auditoría de tareas; prueba con volumen real; P122 y P123 |
