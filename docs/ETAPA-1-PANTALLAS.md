@@ -9,29 +9,32 @@ el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.j
 | Página | Forma | Qué hace | Módulos del estándar |
 |---|---|---|---|
 | `index.html` | Sin formulario | Qué es, cómo es el trámite, cuándo renovar, requisitos por curso (del catálogo de la base) | acordeon |
-| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento (escrita como día/mes/año, sin calendario: formato `fecha-dma` y módulo `fecha` del estándar, P70), CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), sexo (tomado de la CURP, sólo lectura), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, adscripción (fragmento compartido con «Mi perfil»), contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide, activa esa cuenta y avisa que hay historial | identificadores, archivos, opciones, otro, combo, fecha, modal, copiar, acuse |
+| `cuenta.html` | Una página | Crea la cuenta: nombre, primer apellido, segundo apellido (vacío si no hay; los tres y la CURP se escriben en mayúsculas al momento), fecha de nacimiento (escrita como día/mes/año, sin calendario: formato `fecha-dma` y módulo `fecha` del estándar, P70), CURP (comprobada contra nombre, apellidos y fecha, también al cambiar esos datos después), sexo (tomado de la CURP, sólo lectura), fotografía de frente obligatoria (JPG o PNG; en el teléfono, cámara frontal), correo (con confirmación), teléfono, adscripción (fragmento compartido con «Mi perfil»), contraseña (con confirmación), aviso, humano. Si la CURP es del registro de Kobo y el nombre coincide (sin acentos, admite una letra distinta; P14), activa esa cuenta y avisa que hay historial | identificadores, archivos, opciones, otro, combo, fecha, modal, copiar, acuse |
 | `entrar.html` | Una página | CURP y contraseña. El error nunca dice cuál de los dos falló. En la versión de prueba, una línea con la contraseña de las personas de ejemplo; escogerlas se hace desde el menú de pruebas | identificadores |
-| `tramites.html` | Sin formulario | Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado —«En revisión documental»…—, qué sigue, cita con datos de pago —concepto, monto y referencia en amarillo «por confirmar»— y aviso de llevar la identificación para confirmar la fotografía, folio de la solicitud, expediente de la persona, con grupo: preséntate el, el curso termina el, sede; observaciones; asistencia y calificación mientras es el resultado; acreditación emitida: folio, inicio y fin de vigencia; lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
+| `tramites.html` | Sin formulario | Tres bloques: «Solicitudes en curso» (incluye la acreditada con la credencial por recoger), «Mis acreditaciones» y «Solicitudes anteriores» (sólo si hay); en espera de curso o con grupo, enlace al material de estudio. Mis acreditaciones (vigencia en palabras, «Renovar» cuando aplica) y mis solicitudes (estado —«En revisión documental»…—, qué sigue, cita con datos de pago —concepto, monto y referencia en amarillo «por confirmar»— y aviso de llevar la identificación para confirmar la fotografía, folio de la solicitud, expediente de la persona, con grupo: preséntate el, el curso termina el, sede; observaciones; asistencia y calificación mientras es el resultado; acreditación emitida: folio, inicio y fin de vigencia; lista para recoger —con la foto de la credencial y el comprobante de recepción que se hacen ahí—, motivo de cierre) | — |
 | `solicitud.html` | Por pasos (3) | **Acreditación** (poda y derribo o dictaminador técnico; si es nueva o renovación se informa, no se pregunta; lo que no puede pedir, deshabilitado con su motivo), acreditación que se renueva (sólo lectura), la adscripción con que se enviará (se cambia en «Mi perfil»), estudios en los dos tipos (último nivel en lista desplegable → con licenciatura o posgrado, carrera con autocompletado y situación del grado); en dictaminador, además, experiencia, con el mínimo que pide su perfil y aviso si no cumple · **Documentos** (generados del catálogo; sólo PDF; la CURP con su enlace a gob.mx) · **Revisión** (cada documento con su nombre nuevo y, debajo, el archivo que subió), declaración bajo protesta de decir verdad, aviso, humano · acuse con folio | opciones, combo, pasos, archivos, revision, acuse, modal, copiar |
-| `datos.html` | «Mi perfil», por partes | Cabeza con fotografía (en la prueba, la cargada en ese navegador; si no, iniciales), nombre y estado de la fotografía, con «Cambiar fotografía» mientras no esté confirmada; datos de identidad de sólo lectura (CURP, fecha de nacimiento, expediente; el sexo sólo como dato interno); contacto y adscripción escritos, cada uno con «Editar» que abre su formulario (adscripción: el fragmento compartido con la cuenta). Una parte a la vez; «Cancelar» cierra sin guardar. `?volver=` ofrece regresar a la solicitud | opciones, otro, combo, archivos |
+| `datos.html` | «Mi perfil», por partes | Cabeza con fotografía (en la prueba, la cargada en ese navegador; si no, iniciales), nombre y estado de la fotografía, con «Cambiar fotografía» mientras no esté confirmada; datos de identidad de sólo lectura (CURP, fecha de nacimiento y sexo, tomado de la CURP); sin número de expediente (se ve en «Mis trámites»); los datos como ficha, rótulo y dato (opción B); contacto y adscripción escritos, cada uno con «Editar» que abre su formulario (adscripción: el fragmento compartido con la cuenta). Una parte a la vez; «Cancelar» cierra sin guardar. `?volver=` ofrece regresar a la solicitud | opciones, otro, combo, archivos |
 | `verificar.html` | Una página | Verificación pública por número de acreditación: nombre, tipo, fechas y «Vigente / No vigente» | identificadores |
+| `material.html` | Sin formulario | Material de estudio, sin cuenta: documentos publicados con su edición, abrir y descargar, «Qué estudiar» con enlace a la página del PDF; filtro poda / dictaminador (P136) | opciones |
 
 Textos de estado: una sola fuente en `sitio/app/apd.js` (`ESTADOS`, `VIGENCIA`). Ejemplo: `validada_en_linea`
-se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
+se lee «Acude a tu cita» (el personal ve «Cita asignada»); `lista_para_curso`, «En espera de curso» (el personal ve
+«En espera de grupo»).
 
 ### Menú de pruebas (sólo versión 0.N)
 
 `app/pruebas.js`, en todas las pantallas: botón fijo «Menú de pruebas» con cinco bloques, siempre en el mismo orden
-(maqueta aprobada el 2026-10-16, `maquetas/menu-pruebas/`):
+(maqueta aprobada el 2026-10-16, `maquetas/menu-pruebas/`; el tercero, en dos pasos desde el 2026-10-18):
 
 1. **Estás como**: quién eres (persona, persona nueva, personal o nadie), qué caso es y en qué pantalla estás; «Salir».
 2. **En esta pantalla**, sólo lo que aplica (si nada aplica, no aparece): llenar con datos ficticios (cuenta —con una
    fotografía ficticia dibujada en el navegador—, solicitud y verificar); crear la cuenta de alguien del registro
    anterior con su CURP (cuenta); llenar CURP y contraseña con un caso (entrar); ir al paso (solicitud); cómo responde el
    envío —normal, falla, límite, lento— (cuenta, mi perfil, entrar y solicitud).
-3. **Entrar como**: los casos de prueba con nombre de `app/casos-prueba.js`, agrupados por etapa (sin trámite, solicitud
-   en curso, renovación, solicitud terminada, personal), con una línea de qué se puede probar. Cada caso busca en los
-   ficticios la primera persona que lo cumple; la prueba del sitio comprueba que todos la encuentran.
+3. **¿Quién?** (persona nueva, podador, dictaminador, del registro anterior sin cuenta, personal de la Secretaría) y
+   **¿En qué momento?** (los casos de ese perfil por etapa, con una línea de qué se puede probar; hoy 39,
+   `app/casos-prueba.js`). Cada caso busca en los ficticios la primera persona que lo cumple; la prueba del sitio
+   comprueba que todos la encuentran.
 4. **Ir a otra pantalla**: agrupadas en público, persona solicitante y personal.
 5. **Ajustes de la prueba**: preguntas obligatorias (los formatos y las comprobaciones de la CURP siguen), lo guardado
    en este navegador (solicitudes enviadas con sus documentos y revisiones) con «Borrar lo guardado», y «Empezar de cero»
@@ -39,7 +42,7 @@ se lee «Cita asignada»; `lista_para_curso`, «En espera de grupo».
 
 En «Entrar» ya no hay caja de personas de ejemplo: sólo una línea con su contraseña.
 También pone la página en modo de prueba: los **datos internos** (`data-interno`: lo que calcula el sistema, se guarda
-en la base y la persona no ve, como el sexo tomado de la CURP o el curso que corresponde, `tramite`; lo que sólo usa
+en la base y la persona no ve, como el curso que corresponde, `tramite`; lo que sólo usa
 la página, los datos calculados `data-auxiliar`, no se muestra) se
 muestran en un recuadro amarillo con su nota y su valor; sin este archivo, en producción, quedan ocultos. No
 aparece si `VERSION` no es 0.N; al pasar al SIA se quita de las páginas con el acceso simulado.
@@ -56,7 +59,7 @@ Orden de carga en cada página (contrato del estándar):
 
 1. `formkit/css/tokens.css` → `base.css` → `nucleo.css` → CSS de los módulos usados → `formkit/modulos/version/version.css` → `app/apd.css`
 2. `app/perfil-academico.js` → `app/apd.js` → (`datos/catalogos.js`) → `app/config-<página>.js` → `formkit/js/validaciones.config.js` →
-   (`app/config-usted.js`, en las pantallas del personal) →
+   (`app/mensajes-usted.js`, en las pantallas del personal) →
    `formkit/js/iconos.js` → `formkit/js/formkit.core.js` → JS de los módulos → script propio de la página →
    `app/version-visible.js`
 
@@ -73,7 +76,7 @@ Orden de carga en cada página (contrato del estándar):
 | `datos/catalogos.js` | Las 16 alcaldías (generado del catálogo inicial de la base) |
 
 La configuración de las pantallas del personal y del examen (`config-cotejo.js`, `config-corregir.js`, `config-examen.js`
-y `config-usted.js`, que pone en usted los textos del estándar) se describe en el encabezado de cada archivo; ver
+y `mensajes-usted.js`, que pone en usted los textos del estándar) se describe en el encabezado de cada archivo; ver
 `docs/ETAPA-2-PANTALLAS.md`.
 
 Todas aceptan `?simular=error | limite | lento` para ver las pantallas de fallo. No hay mapa: el proyecto no
@@ -113,7 +116,7 @@ rechazan; resultados de la última corrida: bitácora, bloque 50 y siguientes). 
 ## 6. Hallazgos para el Estándar de formularios (no se corrigieron aquí)
 
 Todos los de esta tabla los resolvió el estándar entre la 1.1.0 y la 1.3.1. Desde el 2026-10-18 el sitio usa la 1.4.1 y ya
-no lleva estas soluciones provisionales (bitácora, bloque 50). La tabla queda como registro.
+no lleva estas soluciones provisionales (bitácora, bloques 50 y 61). La tabla queda como registro.
 
 | Módulo o herramienta | Hallazgo | Cómo se resolvió en el proyecto |
 |---|---|---|
@@ -173,4 +176,4 @@ Todo está numerado en `docs/PENDIENTES.md`.
 
 Acceso real y sesiones (etapa 3), recuperación de contraseña (por correo: P13 resuelto con P23), correo institucional
 (P23, condición de lanzamiento; pregunta 1 al SIA), aviso de privacidad (P31), dirección del Vivero Nezahualcóyotl
-(P68; sede única, P09 resuelto), titularidad al activar una cuenta del registro de Kobo (P14).
+(P68; sede única, P09 resuelto). P14 resuelto: CURP igual y nombre sin acentos, con una letra de tolerancia.

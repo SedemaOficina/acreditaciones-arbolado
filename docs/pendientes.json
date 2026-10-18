@@ -108,7 +108,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
       "titulo": "Entrega de credenciales el mismo día del examen: qué se necesita en el lugar",
-      "recomendacion": "Decisión de Liber (2026-10-17): quien aprueba recoge su credencial el mismo día del examen, porque la calificación sale al momento en la computadora. Falta confirmar: que la acreditación se pueda emitir y firmar ese mismo día; cámara e impresora de credenciales en el lugar del examen (PILARES Vivero Nezahualcóyotl); y qué pasa con quien no puede quedarse a recogerla (otro día en el Vivero). Si la credencial no puede imprimirse ese día, se imprime después y la persona la recoge en el Vivero; la foto de la credencial se toma el día del examen. Condiciona la pantalla de emisión y entrega.",
+      "recomendacion": "Decisión de Liber (2026-10-17): quien aprueba recoge su credencial el mismo día del examen, porque la calificación sale al momento en la computadora. Falta confirmar: que la acreditación se pueda emitir y firmar ese mismo día; cámara e impresora de credenciales en la oficina del Vivero Nezahualcóyotl, donde se entrega después del examen (decisión 2026-10-18); y qué pasa con quien no puede quedarse a recogerla (otro día en el Vivero). Si la credencial no puede imprimirse ese día, se imprime después y la persona la recoge en el Vivero; la foto de la credencial se toma el día del examen. Condiciona la pantalla de emisión y entrega.",
       "lineamientos": "Anteproyecto 0.4: Arts. 43 y 44. Valor propuesto."
     },
     {
@@ -181,15 +181,6 @@
       "recomendacion": "Una exportación en CSV o Excel con CURP, nombre, apellidos, tipo, número, fecha de emisión y de vencimiento. Con un archivo de muestra armo la carga y sus validaciones."
     },
     {
-      "id": "P21",
-      "grupo": "kobo",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-14",
-      "titulo": "Qué documentos carga en su primera renovación quien viene de Kobo sin archivos",
-      "recomendacion": "Los de una solicitud nueva sin la parte técnica: identificación, CURP, comprobante de domicilio (si se mantiene, P03) y constancia fiscal. En dictaminador, también estudios y currículum, porque el sistema no tiene nada de esa persona.",
-      "lineamientos": "Anteproyecto 0.4: Transitorio Tercero. Incorporado."
-    },
-    {
       "id": "P22",
       "grupo": "kobo",
       "bloquea": "etapa 2",
@@ -226,7 +217,7 @@
       "grupo": "sia",
       "bloquea": "etapa 3",
       "desde": "2026-10-14",
-      "titulo": "Límite de subida de la API (se necesitan al menos 5 MB por archivo)",
+      "titulo": "Límite de subida de la API (se necesitan 5 MB por documento de la persona y hasta 30 MB por PDF de material de estudio)",
       "recomendacion": "Misma reunión con el SIA. Si el límite es menor, bajar el tamaño máximo es un parámetro de la base.",
       "lineamientos": "Anteproyecto 0.4: Art. 22. Valor propuesto: 5 MB."
     },
@@ -525,7 +516,7 @@
       "bloquea": "no",
       "desde": "2026-10-17",
       "titulo": "Quitar el correo personal de Liber del historial del repositorio público",
-      "recomendacion": "Nueve cambios de la rama principal llevan como autor el correo personal de Liber (se guardaron desde el chat del examen). Quitarlo exige reescribir el historial ya publicado y volver a subir la rama encima de la existente; el sistema lo bloquea mientras Liber no lo autorice de forma expresa. Antes: respaldo completo del repositorio. Después: el chat del examen se vuelve a sincronizar; GitHub puede conservar un tiempo los cambios antiguos y quien ya descargó el repositorio conserva la copia vieja. Para que no vuelva a pasar: configurar en ese chat un correo sin datos personales para los cambios y activar en GitHub la opción de mantener privado el correo."
+      "recomendacion": "Diez cambios de la rama principal llevan como autor el correo personal de Liber (nueve también como quien hizo el commit; se guardaron desde el chat del examen). Quitarlo exige reescribir el historial ya publicado y volver a subir la rama encima de la existente; el sistema lo bloquea mientras Liber no lo autorice de forma expresa. Antes: respaldo completo del repositorio. Después: el chat del examen se vuelve a sincronizar; GitHub puede conservar un tiempo los cambios antiguos y quien ya descargó el repositorio conserva la copia vieja. Para que no vuelva a pasar: configurar en ese chat un correo sin datos personales para los cambios y activar en GitHub la opción de mantener privado el correo."
     },
     {
       "id": "P120",
@@ -649,7 +640,7 @@
       "bloquea": "no",
       "desde": "2026-10-18",
       "titulo": "Material de estudio: temario del examen por tema y quién mantiene el material",
-      "recomendacion": "Resuelto en la versión 0.49 (18/10/2026): Liber decidió el material (Norma Ambiental NADF-001-RNAT-2015, Manual técnico de poda 2023 y Ley Ambiental de la Ciudad de México, texto vigente al 23/07/2026), que se sube al sistema y no se enlaza; el examen es a libro cerrado. Ya existen la página pública «Material de estudio» y la pantalla del personal para subir, reemplazar, publicar u ocultar documentos y capturar sus apartados con página. Falta: (1) que la Secretaría confirme el temario del examen por tema y, con él, los apartados de cada documento (hoy son una propuesta tomada de sus índices) y que ninguna pregunta del banco quede fuera; (2) quién mantiene el material y el banco de práctica; (3) si se publica el manual en su versión original de 18 MB o en la copia optimizada de 12 MB que usa la prueba.",
+      "recomendacion": "Decidido en la versión 0.49 (18/10/2026): Liber decidió el material (Norma Ambiental NADF-001-RNAT-2015, Manual técnico de poda 2023 y Ley Ambiental de la Ciudad de México, texto vigente al 23/07/2026), que se sube al sistema y no se enlaza; el examen es a libro cerrado. Ya existen la página pública «Material de estudio» y la pantalla del personal para subir, reemplazar, publicar u ocultar documentos y capturar sus apartados con página. Queda abierto: (1) que la Secretaría confirme el temario del examen por tema y, con él, los apartados de cada documento (hoy son una propuesta tomada de sus índices) y que ninguna pregunta del banco quede fuera; (2) quién mantiene el material y el banco de práctica; (3) si se publica el manual en su versión original de 18 MB o en la copia optimizada de 12 MB que usa la prueba.",
       "lineamientos": "Anteproyecto 0.4: Anexo 4. Propuesta."
     },
     {
@@ -822,306 +813,367 @@
       "fecha": "2026-10-15"
     },
     {
+      "id": "P53",
       "titulo": "Lista de Direcciones Generales de la SEDEMA (P53)",
       "como": "Lista cerrada de seis Direcciones Generales; se quitó «Otra área de la Secretaría» por indicación de Liber",
       "fecha": "2026-10-15"
     },
     {
+      "id": "P54",
       "titulo": "Universidades e instituciones educativas en la adscripción (P54)",
       "como": "Tipo «Institución educativa» con la UNAM en la lista y «otra» con su nombre",
       "fecha": "2026-10-15"
     },
     {
+      "id": "P58",
       "titulo": "Nombres de los identificadores (P58)",
       "como": "«Folio de la solicitud», «Número de expediente» y «Número de acreditación» en todo el sistema",
       "fecha": "2026-10-15"
     },
     {
+      "id": "P59",
       "titulo": "Catálogo de carreras afines (P59)",
       "como": "No habrá catálogo de afines: campo abierto que valida el personal en la revisión documental; el catálogo crece con las carreras aceptadas de manera explícita",
       "fecha": "2026-10-15"
     },
     {
+      "id": "P60",
       "titulo": "Reglas del perfil de dictaminador (P60)",
       "como": "Confirmadas por Liber: licenciatura titulada; posgrado cuenta en su área; lo que no cumple se envía y lo decide el personal",
       "fecha": "2026-10-15"
     },
     {
+      "id": "P01",
       "titulo": "Experiencia mínima de pasantes (P01)",
       "como": "5 años, según el apartado académico que dio Liber",
       "fecha": "2026-10-16"
     },
     {
+      "id": "P05",
       "titulo": "Constancias de capacitación (P05)",
       "como": "ya no se piden por separado; van entre los comprobantes de experiencia",
       "fecha": "2026-10-16"
     },
     {
+      "id": "P62",
       "titulo": "Clasificar carreras en la revisión documental (P62)",
       "como": "en la revisión del dictaminador se clasifica la carrera (afín, disciplina afín o no afín); la base lo registra en la bitácora y recalcula las solicitudes abiertas",
       "fecha": "2026-10-16"
     },
     {
+      "id": "P09",
       "titulo": "Lugar de la cita y sede del curso (P09)",
       "como": "Sede única: la cita, el curso y la entrega son siempre en el Vivero Nezahualcóyotl; no hay catálogo de sedes",
       "fecha": "2026-10-16"
     },
     {
+      "id": "P37",
       "titulo": "combo no acepta el catálogo como {filas, fuente, corte} aunque su documentación lo dice (P37)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P38",
       "titulo": "esquema-desde-html.mjs sólo toma el data-si más cercano con condiciones anidadas (P38)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P39",
       "titulo": "archivos dice «Hasta 1 archivos» (P39)",
       "como": "Lo resolvió el estándar 1.1.0; se unió a P71.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P40",
       "titulo": "numero no valida un step menor que 1 (P40)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P41",
       "titulo": "No hay forma de marcar en un campo un error que devuelve el servidor (P41)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P42",
       "titulo": "No hay «mostrar contraseña» (P42)",
       "como": "Lo resolvió el estándar 1.1.0 y lo rehízo la 1.2.1 (P73); se unió a P73.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P43",
       "titulo": "No hay validación cruzada de CURP contra nombre y apellidos (P43)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P44",
       "titulo": "Una cruzada no se vuelve a comprobar si cambia el otro dato (P44)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P45",
       "titulo": "La plantilla de versión del SIA usa valores literales y no pasa el auditor de CSS (P45)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P46",
       "titulo": "validar.mjs exige en «datos» los campos de archivos que el navegador no manda ahí (P46)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P47",
       "titulo": "El núcleo pone aria-required en el botón de la zona de carga, que no lo admite (P47)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P52",
       "titulo": "Las condiciones no se encadenan entre campos hermanos en el navegador (el servidor sí) (P52)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P56",
       "titulo": "Las tarjetas de opción en rejilla confunden en preguntas de una sola respuesta, y la lista no tiene estado deshabilitado (P56)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P61",
       "titulo": "El mínimo de un número no puede depender de otra respuesta (P61)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P65",
       "titulo": "El módulo chips sólo sugiere del historial; no admite una lista fija de sugerencias (P65)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P66",
       "titulo": "Tabla: al filtrar se pierde el ritmo de las filas alternadas, y en teléfono la columna de acción muestra su rótulo oculto (P66)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P67",
       "titulo": "El estándar no tiene visor de documentos para revisar lo que se carga (P67)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P70",
       "titulo": "El formato «fecha» del estándar sólo acepta AAAA-MM-DD escrito, o el calendario del navegador (P70)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P71",
       "titulo": "Módulo «archivos»: «Elegir archivo» sigue a la vista con el máximo ya cargado, y dice «Hasta 1 archivos» (P71)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P72",
       "titulo": "Acuse y revisión: botones pegados o desalineados (P72)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P73",
       "titulo": "El estándar no trae botón para mostrar la contraseña (P73)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P81",
       "titulo": "esquema-desde-html sólo lee condiciones en div[data-si] (P81)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P82",
       "titulo": "No hay formato para el folio fiscal de una factura (CFDI) (P82)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P86",
       "titulo": "Actualizar el sitio al Estándar de formularios 1.1.0 (P86)",
       "como": "El sitio se actualizó al estándar 1.3.1 (bloque 50), que pinta los errores del servidor junto a su campo.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P87",
       "titulo": "El aviso de envío se oculta al recibir el foco otro elemento y el clic se pierde (P87)",
       "como": "Lo resolvió el Estándar de formularios del SIA (1.1.0 a 1.3.1); el sitio usa el estándar 1.3.1 y ya no lleva la solución provisional.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P78",
       "titulo": "Entrada al examen con código de un solo uso (P78)",
       "como": "Aprobado por Liber (bloque 49): quien aplica pasa lista con la fotografía y la identificación de cada persona; «Presente» genera su código de un solo uso; no se entra con la contraseña de la cuenta.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P13",
       "titulo": "Quién restablece las contraseñas de solicitantes y por qué medio (P13)",
       "como": "Con la decisión de lanzar sólo con servicio de correo (P23, 2026-10-17), la contraseña se restablece con un enlace de un solo uso enviado por correo (aviso C1); no hay contraseña temporal del personal.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P57",
       "titulo": "Hora de entrada al curso (P57)",
       "como": "Se unió a P91 (horario del curso), 2026-10-17.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P48",
       "titulo": "¿La credencial se imprime en el lugar de entrega? (P48)",
       "como": "Se unió a P10 (entrega el mismo día del examen), 2026-10-17. La foto de la credencial se toma el día del examen; en el cotejo no se toma ninguna.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P101",
       "titulo": "Visto bueno del funcionamiento del examen en línea (P101)",
       "como": "Aprobado por Liber (2026-10-17): una pregunta por pantalla con orden distinto por persona; el tiempo lo lleva el servidor y al agotarse se envía lo contestado; una pregunta sin contestar cuenta como incorrecta; quien aplica puede suspender con motivo; salir de la ventana no bloquea.",
       "fecha": "2026-10-17"
     },
     {
+      "id": "P14",
       "titulo": "Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? (P14)",
       "como": "Decidido por Liber (2026-10-18): la CURP debe coincidir con el registro y el nombre se compara sin acentos, admitiendo una letra distinta; la identidad se confirma en el cotejo. Falta aplicarlo en «Crea tu cuenta» y en la base.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P94",
       "titulo": "¿Dónde se registra la asistencia del último día del curso: en el aula o al pasar lista en el PILARES? (P94)",
       "como": "Decidido por Liber (2026-10-18): la asistencia del último día se registra al pasar lista en el examen; el instructor no la captura en el aula. Falta que el pase de lista la escriba (auditoría integral, hallazgo alto 4).",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P123",
       "titulo": "¿La cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud se vuelve a validar? (P123)",
       "como": "Decidido por Liber (2026-10-18): se cuentan todas las inasistencias de la solicitud; a la segunda se cierra, aunque se haya vuelto a validar. Así funcionan ya la base y la pantalla.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P90",
       "titulo": "Estándar: esquema-desde-html toma como parte del último campo un control que está fuera del formulario (P90)",
       "como": "Lo resolvió la versión 1.3.3 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P95",
       "titulo": "Estándar: Los mensajes de los formatos y el de «al menos N caracteres» no están en «mensajes»: un sistema que habla de usted no puede cambiarlos sólo con la configuración (P95)",
       "como": "Lo resolvió la versión 1.3.2 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional. Se quitó app/config-usted.js; los textos de usted están en app/mensajes-usted.js y van al servidor con validaPayload.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P96",
       "titulo": "Estándar: El visor busca pdf.js sólo junto a codigo/ o dist/; con los módulos copiados en otra carpeta hay que declararlo (P96)",
       "como": "Lo resolvió la versión 1.3.2 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P97",
       "titulo": "Estándar: Los grupos de respuestas frecuentes (data-chips-fijos) toman su nombre de la etiqueta: si varios campos tienen la misma, todos se llaman igual (P97)",
       "como": "Lo resolvió la versión 1.3.2 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P98",
       "titulo": "Estándar: Los botones «Mostrar» de la contraseña y de su confirmación tienen el mismo nombre accesible (P98)",
       "como": "Lo resolvió la versión 1.3.2 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P99",
       "titulo": "Estándar: El combo abre su lista con cualquier «input», también cuando la página llena el campo sin que la persona esté en él (P99)",
       "como": "Lo resolvió la versión 1.3.3 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P102",
       "titulo": "Estándar: El encabezado y el pie no se alinean con el contenido de la página (P102)",
       "como": "Lo resolvió la versión 1.3.3 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P103",
       "titulo": "Estándar: Tabla: la última celda no lleva línea inferior también en computadora (P103)",
       "como": "Lo resolvió la versión 1.3.3 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P104",
       "titulo": "Estándar: Tabla en teléfono: el valor baja de renglón según su largo y las tarjetas se ven disparejas (P104)",
       "como": "Lo resolvió la versión 1.3.3 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P110",
       "titulo": "Estándar: el módulo «tabla» sólo se inicia si la página tiene un formulario (P110)",
       "como": "Lo resolvió la versión 1.3.4 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P111",
       "titulo": "Estándar: un formulario con data-formkit que la página inicia a mano después de cargar sus datos queda iniciado dos veces (P111)",
       "como": "Lo resolvió la versión 1.3.4 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional. Se dejó data-formkit=\"manual\", que ya no hace falta.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P112",
       "titulo": "Estándar: el formato «fecha» da su límite en AAAA-MM-DD («no puede ser anterior al 2026-10-21») (P112)",
       "como": "Lo resolvió la versión 1.3.4 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P113",
       "titulo": "Estándar: no hay pieza para el desenlace de una acción del personal y FormKit.confirma no distingue gravedad (P113)",
       "como": "Lo resolvió la versión 1.4.0 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P114",
       "titulo": "Estándar: el botón de peligro (.btn-peligro) sólo tiene contorno y pesa menos que el botón primario de al lado (P114)",
       "como": "Lo resolvió la versión 1.4.0 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P115",
       "titulo": "Estándar: el aviso (.aviso) no tiene título y su icono es opcional (P115)",
       "como": "Lo resolvió la versión 1.4.0 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional. Los avisos con pasos o enlaces siguen armándose en el proyecto, porque FormKit.aviso sólo recibe texto (P131).",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P116",
       "titulo": "Estándar: el resumen de errores habla de «campos», repite etiquetas sin contexto y usa el mismo título para un rechazo del servidor (P116)",
       "como": "Lo resolvió la versión 1.4.0 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P117",
       "titulo": "Estándar: FormKit.anuncia permite mensajes que sólo oye el lector de pantalla (P117)",
       "como": "Lo resolvió la versión 1.4.0 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P118",
       "titulo": "Estándar: no hay módulo de etiquetas de estado (P118)",
       "como": "Lo resolvió la versión 1.4.1 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
     },
     {
+      "id": "P119",
       "titulo": "Estándar: la secuencia numerada de «qué sigue» sólo existe dentro del acuse (P119)",
       "como": "Lo resolvió la versión 1.4.1 del Estándar de formularios; el proyecto usa la 1.4.1 desde el 2026-10-18 y quitó su solución provisional.",
       "fecha": "2026-10-18"
@@ -1132,9 +1184,17 @@
       "fecha": "2026-10-18"
     },
     {
+      "id": "P133",
       "titulo": "¿Se puede dictaminar con la acreditación de poda vencida? (P133)",
       "como": "Decidido por Liber (2026-10-18): la acreditación de dictaminador técnico conserva su vigencia aunque venza la de poda y derribo, y la persona debe renovar la de poda; para renovar la de dictaminador necesita la de poda vigente. Es lo que ya hace la base (R43). Queda en el art. 11 del anteproyecto de lineamientos.",
       "fecha": "2026-10-18"
+    },
+    {
+      "id": "P21",
+      "titulo": "Qué documentos carga en su primera renovación quien viene de Kobo sin archivos (P21)",
+      "como": "Todos los de una solicitud nueva (decisión de Liber, 2026-10-18), porque la Secretaría no tiene copia; la base lo exige con faltan_documentos_kobo.",
+      "fecha": "2026-10-18",
+      "lineamientos": "Anteproyecto 0.4: Transitorio Tercero. Incorporado."
     }
   ]
 }

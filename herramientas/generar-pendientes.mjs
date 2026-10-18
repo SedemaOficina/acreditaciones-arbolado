@@ -18,13 +18,25 @@ const ids = datos.pendientes.map((p) => p.id);
 if (new Set(ids).size !== ids.length) throw new Error('Hay números de pendiente repetidos');
 const grupos = new Set(datos.grupos.map((g) => g.id));
 for (const p of datos.pendientes) if (!grupos.has(p.grupo)) throw new Error(`${p.id}: grupo desconocido ${p.grupo}`);
+// Resueltos: el que lleva «(Pnn)» en el título tiene ese mismo número en «id»; ningún número se repite ni sigue abierto
+const resueltos = new Set();
+for (const r of datos.resueltos) {
+  const m = r.titulo.match(/\((P\d+)\)/);
+  if (m && r.id !== m[1]) throw new Error(`Resuelto «${r.titulo}»: falta "id": "${m[1]}" o no coincide (${r.id})`);
+  if (r.id === undefined) continue;
+  if (!/^P\d+$/.test(r.id)) throw new Error(`Resuelto «${r.titulo}»: id inválido ${r.id}`);
+  if (resueltos.has(r.id)) throw new Error(`${r.id} está dos veces entre los resueltos`);
+  if (ids.includes(r.id)) throw new Error(`${r.id} está a la vez entre los pendientes y los resueltos`);
+  resueltos.add(r.id);
+}
 
 let md = `# Pendientes
 
 Generado por \`herramientas/generar-pendientes.mjs\` desde \`docs/pendientes.json\` (la fuente: se edita ahí). El
 mismo contenido está en el tablero «Pendientes del sistema», donde se marca cada uno y se responde. Cada
 pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resueltos» y la decisión se anota en
-\`docs/DECISIONES.md\`. La columna **Lineamientos** dice qué artículo del anteproyecto de lineamientos toca el pendiente
+\`docs/DECISIONES.md\`. P106 a P108 no existen: se renumeraron como P110 a P112 (17/10/2026).
+La columna **Lineamientos** dice qué artículo del anteproyecto de lineamientos toca el pendiente
 (el texto vive fuera de este repositorio público; ver «Lineamientos» en \`docs/DECISIONES.md\`).
 
 Actualizado: ${fecha(datos.actualizado)}. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del

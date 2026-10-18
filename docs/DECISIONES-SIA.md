@@ -10,14 +10,14 @@ respuesta con su fecha y quién la tomó; lo que falta, marcado como pendiente.
 | 3 | ¿Quién entra? | **Solicitantes:** siempre con cuenta propia en el esquema `apd`, creada por ellos mismos; identificador único: CURP. **Personal de la Secretaría** (revisión y cotejo, instructores, emisión, consulta, administración): cuentas del esquema `acceso` del SIA. **Público:** verificación de acreditaciones sin cuenta. Restablecimiento de contraseñas de solicitantes: por correo, con un enlace de un solo uso (P23; el sistema no se lanza sin correo, decisión 2026-10-17) | 2026-10-14 · Liber Saltijeral |
 | 4 | Capas | Ninguna. No se captura domicilio ni ubicación. El comprobante de domicilio se carga sólo como documento mientras la norma lo exija; no se pedirá al emitir los lineamientos (P03, corrección 13). No se cruza con `territorio` | 2026-10-14 · Liber Saltijeral |
 | 5 | Datos personales | **Pendiente.** Se recaban identificación oficial, CURP, comprobante de domicilio, constancia de situación fiscal, estudios declarados, comprobantes de estudios y experiencia, currículum, adscripción, dos fotografías (la de la cuenta y la de la credencial, P50) y la factura del pago que emite la Secretaría. Aviso de privacidad o constancia de la Unidad de Transparencia antes del primer dato real | 2026-10-14 · Liber Saltijeral |
-| 6 | Archivos | Sí. Documentos sólo en PDF y fotografías en JPG o PNG, hasta 5 MB cada uno: de 8 a 12 por solicitud nueva y de 2 a 4 por renovación. Con 1,000 solicitudes al año: **de 10 a 20 GB al año** fuera de lo publicado (tope teórico, si todo llegara al máximo: 60 GB) | 2026-10-14 · Liber Saltijeral |
+| 6 | Archivos | Sí. Documentos sólo en PDF y fotografías en JPG o PNG, hasta 5 MB cada uno: de 8 a 12 por solicitud nueva y de 2 a 4 por renovación; y el material de estudio, que sube el personal: 3 PDF, hoy unos 13.5 MB, hasta 30 MB cada uno. Con 1,000 solicitudes al año: **de 10 a 20 GB al año** fuera de lo publicado (tope teórico, si todo llegara al máximo: 60 GB) | 2026-10-14 · Liber Saltijeral |
 | 7 | Volumen | 1,000 solicitudes al año. Documentos de uno en uno, organizados por solicitud. La migración del registro de Kobo, por tandas | 2026-10-14 · Liber Saltijeral |
 | 8 | ¿Se usa sin señal? | No: siempre con conexión | 2026-10-14 · Liber Saltijeral |
 | 9 | Repositorio | `SedemaOficina/acreditaciones-arbolado`, público, sólo con datos ficticios, sin direcciones ni credenciales. La versión de prueba de la parte visible se publica con GitHub Pages | 2026-10-14 · Liber Saltijeral |
 
 ## Versión
 
-Versión actual: la del archivo `VERSION` (0.33 al 17/10/2026; historial en `docs/VERSIONES.md`) — de prueba hasta
+Versión actual: la del archivo `VERSION` (historial en `docs/VERSIONES.md`) — de prueba hasta
 que el SIA lo instale; la primera instalación es `1`. Visible siempre en la interfaz (`docs/GUIA-PROYECTOS-SIA.md`, sección 8).
 
 ## Preguntas abiertas para el SIA
@@ -27,7 +27,8 @@ que el SIA lo instale; la primera instalación es `1`. Visible siempre en la int
    ni recuperación de contraseña, ni avisos de observaciones, cita, grupo o vencimiento (`docs/AVISOS-POR-CORREO.md`).
 2. ¿Están libres las siglas `apd` para el esquema, la cuenta y la ruta?
 3. ¿Dónde se publica la aplicación, y su API va bajo `/api/apd` o bajo la ruta de la aplicación?
-4. ¿Cuál es el límite de subida para la API? (El proyecto necesita al menos 5 MB por archivo.)
+4. ¿Cuál es el límite de subida para la API? (El proyecto necesita 5 MB por documento de la persona y hasta 30 MB por PDF
+   de material de estudio, que sube el personal.)
 5. Cuentas del personal: ¿se dan de alta como recurso `apd` en `acceso`, con cinco perfiles (revisión y cotejo,
    instructor, emisión, consulta y administración: parámetros, montos, cupos, desbloqueos y correcciones con motivo)?
    Las cuentas de solicitantes van en esquema propio (P27).

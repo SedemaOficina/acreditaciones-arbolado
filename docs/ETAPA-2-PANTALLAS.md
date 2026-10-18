@@ -11,20 +11,21 @@ sólo se cuida que funcionen. La asistencia y el examen se cuidan en los dos tam
 | Pantalla | Archivo | Qué hace |
 |---|---|---|
 | Solicitudes por revisar | `sitio/revision.html` · `app/revision.js` | Bandeja de las solicitudes enviadas, de la que más espera a la más reciente. Búsqueda por nombre, CURP, folio de la solicitud o número de expediente; filtros por acreditación, nueva o renovación y vuelta de revisión (plegados en teléfono bajo «Filtrar»). Señala carrera por clasificar, perfil que podría no cumplir y documentos corregidos |
-| Revisar una solicitud | `sitio/revisar.html?folio=…` · `app/revisar.js` | Datos de la persona y de la solicitud, revisiones anteriores, perfil del dictaminador, documentos (aceptar u observar, con motivos frecuentes) y resultado: validar con cita, enviar observaciones o rechazar (con confirmación) |
+| Revisar una solicitud | `sitio/revisar.html?folio=…` · `app/revisar.js` | Datos de la persona y de la solicitud, revisiones anteriores, perfil del dictaminador, documentos (aceptar u observar, con motivos frecuentes) y resultado: validar con cita, enviar observaciones o rechazar (con confirmación). En una 2.ª revisión, lo aceptado antes y sin cambios se ve como «Aceptado antes» y cuenta como aceptado; se puede reabrir |
 | Citas de cotejo | `sitio/citas.html` · `app/citas.js` | Agenda del día por hora (sede única), con la situación de cada cita: por atender, en pausa, documento cargado (retomar), atendida con su expediente, no se presentó, sin pago, regresó con observaciones, no era la persona. Día anterior y siguiente con citas; la búsqueda (nombre, CURP, folio o expediente) busca en todos los días |
 | Atender una cita de cotejo | `sitio/cotejo.html?folio=…` · `app/cotejo.js` | Llegada; identidad (es la persona de la fotografía o no); cotejo de cada documento contra lo que cargó (visor); pago; factura. Resultado: terminar (abre el expediente), pausa, regresar con observaciones, otra cita (sin pago o primera inasistencia), cerrar (segunda inasistencia) o no atender (no es la persona). Retomar una pausa coteja sólo lo que no coincidió |
 | Cargar el documento correcto (persona) | `sitio/corregir.html?folio=…` · `app/corregir.js` | Con la cita en pausa, la persona carga ese mismo día el documento que no coincidió; se pide sólo ése |
 | Grupos | `sitio/grupos.html` · `app/grupos.js` | La espera de cada uno de los cuatro cursos (cuántas personas, cuántas esperan 31 días o más, renovaciones con la acreditación vencida, si alcanza para un grupo y el grupo que se está armando) y los grupos, de los que están en curso a los cerrados, con integración, cupo, inicio, instructor y situación |
 | En espera de un curso | `sitio/espera.html?curso=…` · `app/espera.js` | Personas en espera de un curso, de la que más espera a la más reciente (en renovación, por la fecha en que vence su acreditación). Se eligen y se agregan a un grupo que recibe personas, o se crea un grupo nuevo con ellas: específico (si todas son de la misma organización) o combinado |
 | Un grupo | `sitio/grupo.html?folio=…` · `app/grupo.js` | Situación, cupo y personas. En integración: agregar de la espera, dar de baja (con motivo), confirmar con primer día (7 días de anticipación), hora de entrada (lista cerrada de 24 horas) e instructor, o cancelar (con motivo). Confirmado: agregar hasta el día anterior al inicio y dar de baja; si queda por debajo del mínimo regresa a integración con su fecha. En curso: asistencia y examen |
-| Asistencia (instructor) | `sitio/asistencia.html` · `app/asistencia.js` | Perfil simulado «instructor». Un botón por día: se capturan los días que ya pasaron, del primero al penúltimo, y se corrigen mientras el curso siga; «Asistió» o «Faltó» a cada persona, con su fotografía; no se guarda con alguien sin marcar. Avisa a quién ya no puede faltar y a quién ya no le alcanza para el examen. El último día se registra al pasar lista en el examen (P94) |
+| Asistencia (instructor) | `sitio/asistencia.html` · `app/asistencia.js` | Perfil simulado «instructor». Una sola lista, la del día: por persona, fotografía, nombre, tira de días ya ocurridos (✓ asistió, ✗ faltó), «Asistió» / «Faltó» y etiqueta sólo con riesgo («Ya no puede faltar», «Sin derecho a examen»); no se guarda con alguien sin marcar. «Corregir otro día» abre los anteriores. La vista de todos los días está en la ficha del grupo. En la versión de prueba se recorre el curso completo (días «simulado») y guardar pasa al día siguiente. El último día se registra al pasar lista en el examen (P94) |
 | Aplicar el examen | `sitio/aplicar.html` · `app/aplicar.js` | Quien aplica el examen (perfil simulado «instructor»): grupo en curso con fecha (último día) y lugar (salón de cómputo del PILARES), personas con su asistencia y derecho a examen, pase de lista con la fotografía de cada persona («Presente» genera su código; «No llegó»; «Llegó: marcar presente»), avance al momento (sin empezar, contestando con cuántas lleva y el tiempo, calificación al enviar, suspendido, veces que salió de la ventana), reponer un código, suspender con motivo e imprimir papeletas con los códigos |
 | Examen en línea (persona) | `sitio/examen.html` · `app/examen.js` | En las computadoras del salón, sin cuenta: entrar con el código → ¿eres tú? → instrucciones → una pregunta por pantalla (reloj, avance, mapa de preguntas, marcar para revisar) → revisar y enviar → calificación y qué sigue. Una recarga o el cambio de computadora vuelven al examen con lo contestado. Las preguntas de un caso (enunciado y tablas compartidos, como los ejercicios de valoración del examen de poda) salen juntas y en orden, con el caso arriba de cada una |
 | Lo común del examen | `app/examen-servidor.js` · `app/examen-grupo.js` · `app/codigo-examen.js` · `datos/examen-ficticio.js` | Servidor simulado del examen (códigos, orden por persona, respuestas, tiempo, calificación, suspensión, reposición), quién presenta el examen de un grupo, formato propio del código y banco ficticio (24 preguntas sobre el propio trámite; el real nunca entra al repositorio, P85) |
+| Material de estudio (personal) | `sitio/material-personal.html` · `app/material-personal.js` | Agregar un PDF (hasta 30 MB), editar datos y apartados, reemplazar el archivo (no borra el anterior), publicar u ocultar (ocultar pide confirmación) |
 | Lo común | `app/personal.js` | Perfil ficticio «revisión y cotejo», cabecera del personal, espera y vuelta de cada solicitud, citas de cotejo y su situación, siguiente expediente, decisiones de la prueba en el navegador |
 
-En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva a la bandeja; también está en «Ir a otra pantalla».
+En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la pantalla de cada papel; también está en «Ir a otra pantalla».
 
 ## 2. Reglas de la revisión
 
@@ -53,8 +54,7 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 
 ## 2b. Reglas del examen en línea (prototipo, bloque 46)
 
-- Pase de lista en el salón de cómputo: fotografía de cada persona, «Presente» (genera su código; hoy el prototipo
-  también registra la asistencia del último día, por confirmar: P94) o «No llegó» (si llega después, se marca presente). Sin derecho a examen: no se le pasa lista.
+- Pase de lista en el salón de cómputo: fotografía de cada persona, «Presente» (genera su código y registra la asistencia del último día, P94) o «No llegó» (si llega después, se marca presente). Sin derecho a examen: no se le pasa lista.
 - La persona entra sólo con su código de un solo uso (P78, aprobado por Liber en el bloque 49), no con su cuenta; «¿Eres tú?» muestra su nombre y su
   fotografía. Un código perdido se repone; el anterior deja de servir y el examen sigue igual. Un código se abre en una
   sola computadora a la vez; el intento en otra se le cuenta a quien aplica.
@@ -81,8 +81,8 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
   confirmado por debajo del mínimo, regresa a integración y conserva su fecha, hora e instructor como propuesta (propuesta
   de Claude, bloque 53; la base lo hace sola).
 - Asistencia: la captura el instructor, día por día, sólo de los días que ya ocurrieron; se corrige mientras el curso
-  siga y no haya examen. El último día se registra al pasar lista en el salón de cómputo, no en el aula (P94, por
-  decidir; opción recomendada), para no capturarlo dos veces.
+  siga y no haya examen. El último día se registra al pasar lista en el salón de cómputo, no en el aula (P94, decidido el
+  2026-10-18), para no capturarlo dos veces.
 - «En espera» va agrupada por adscripción (decisión 2026-10-17): un bloque por organización, alcaldía o dependencia, y
   otro de independientes, con cuántas son, si alcanzan para un grupo propio (sólo una organización registrada) y una
   casilla para elegirlas a todas. Los días de espera nunca salen negativos.
@@ -94,20 +94,22 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 - La base lo vuelve a aplicar: `apd.grupo_cambio`, `apd.inscripcion_alta`, `apd.inscripcion_cambio`, `apd.asistencia_captura`.
   En la prueba, lo hecho se guarda en el navegador («apd.personal.grupos») y `app/archivos-prueba.js` lo aplica como la base.
 
-## 2d. Avisos y confirmaciones (decisión del 2026-10-17, versión 0.37)
+## 2d. Avisos y confirmaciones (decisión del 2026-10-17, versión 0.37; con el estándar 1.4.1 desde el 2026-10-18)
 
-- Desenlace de cada acción del personal (`APD.pintaDesenlace`): revisión (validada, con observaciones, rechazada por
-  perfil), cotejo (terminado, en pausa, con observaciones, otra cita, no se presentó, cerrado, no es la persona) y
-  corrección. Lleva tono, icono, título con el resultado, hora y quién, motivo citado y, en la revisión, «Revisar la
-  siguiente» con la que sigue en la bandeja.
-- Confirmación (`APD.confirma`) en rechazar por perfil, cerrar la solicitud, no es la persona, dar de baja, cancelar un
-  grupo, crear un grupo combinado, reponer un código, suspender y enviar el examen.
-- Avisos con título (`APD.aviso`, `APD.pintaAviso`) en grupos, asistencia, espera, aplicar el examen, datos, verificar,
-  entrar y «Mis trámites»; el error de una acción sin elegir o sin marcar se ve junto a los botones y señala en rojo las
-  filas que faltan.
-- Etiquetas por familia (`APD.estado`, `APD.estadoSolicitud`, `APD.nombrePersonal`) en todas las bandejas y fichas.
+- Desenlace de cada acción del personal con el módulo `resultado` del estándar (`FormKit.resultado`: tono, título, hora,
+  quién, motivo y pasos; P113): revisión (validada, con observaciones, rechazada por perfil), cotejo (terminado, en
+  pausa, con observaciones, otra cita, no se presentó, cerrado, no es la persona), corrección y material de estudio. En
+  la revisión, «Revisar la siguiente» con la que sigue en la bandeja.
+- Confirmación con `FormKit.confirma` (consecuencias, irreversible, `si`; P113-P114) en rechazar por perfil, cerrar la
+  solicitud, no es la persona, crear un grupo combinado, reponer un código, enviar el examen y ocultar un documento del
+  material de estudio. Dar de baja, cancelar un grupo y suspender un examen usan su propio diálogo, porque piden motivo.
+- Avisos con `FormKit.aviso`; los que llevan pasos o enlaces, con `APD.aviso` / `APD.pintaAviso` (P131), en grupos,
+  asistencia, espera, aplicar el examen, datos, verificar, entrar y «Mis trámites»; el error de una acción sin elegir o
+  sin marcar se ve junto a los botones y señala en rojo las filas que faltan.
+- Etiquetas con `APD.estado`, que delega en `FormKit.estado` (P118), y `APD.estadoSolicitud` y `APD.nombrePersonal`, en
+  todas las bandejas y fichas.
 - Examen: «Aprobaste» / «No aprobaste» con icono, calificación y mínimo; el aviso del último minuto se ve junto al reloj.
-- «Qué sigue» en pasos numerados (`APD.sigueEn`, `ol.pasos`) cuando son dos o más acciones en orden: cotejo terminado, en
+- «Qué sigue» en `ol.secuencia` (`APD.sigueEn`, P119) cuando son dos o más acciones en orden: cotejo terminado, en
   pausa y con observaciones; revisión con observaciones; corregir; grupo creado y grupo que dejó de estar confirmado;
   examen aprobado; y en «Mis trámites», cita asignada, cita sin pago, cita en pausa, espera de grupo, aprobada y
   acreditación lista.
@@ -115,7 +117,7 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 ## 2 bis. Visor de documentos
 
 El módulo `visor` del estándar (desde la 1.2.0, P67; antes `app/visor.js`, del que salió) muestra todas las hojas del PDF
-con pdf.js 4.10.38 del propio estándar (copiado en `vendor/pdfjs-dist/`, sin CDN; ruta en `FORMKIT_CONFIG.visor.pdfjs`): contador de hoja,
+con pdf.js 4.10.38 del propio estándar (copiado en `vendor/pdfjs-dist/`, sin CDN; el visor lo encuentra solo junto a `formkit/` desde la 1.3.2, P96): contador de hoja,
 acercar y alejar, ajustar al ancho, girar y abrir en otra pestaña. En computadora (≥1024 px) queda fijo a la derecha y
 abre de entrada el primer documento (el comprobante de estudios si hay que decidir el perfil); en pantalla chica se abre a
 pantalla completa. Al aceptar un documento, el visor y la lista pasan al siguiente sin decidir; con todo decidido, la
@@ -130,13 +132,13 @@ de la persona y el visor el archivo real. Se quita en la etapa 3 junto con el ac
 
 La revisión es un formulario del estándar que arranca a mano (`data-formkit="manual"`) cuando la página ya calculó sus
 datos calculados (`<input type="hidden" data-auxiliar>` del estándar 1.1.0): `perfil_revision`, `revisar_<requisito>`
-(documento cargado y sin rechazo por perfil) y `resultado`; el servidor los calcula con `validaPayload(…, { auxiliares })`.
+(documento cargado y sin rechazo por perfil), `decidir_<requisito>` (se pide su decisión salvo que se haya aceptado antes y no haya cambiado) y `resultado`; el servidor los calcula con `validaPayload(…, { auxiliares })`.
 Los motivos frecuentes de cada observación son `data-chips-fijos` (módulo `chips`, P65). Los textos del estándar se
 ven en usted (`app/mensajes-usted.js`, todos en `mensajes` desde la 1.3.2). Los siete bloques de documentos se
 generan del catálogo de requisitos en `herramientas/construir-sitio.mjs` (marcadores `revision-documentos` y
 `revision-auxiliares`). Módulos del estándar: `opciones`, `modal` (`FormKit.confirma` para rechazar), `chips`, `visor` y `tabla`
 (bandeja). El esquema del servidor es `db/esquemas-formularios/revisar.json`; `herramientas/probar-esquemas.mjs` lo
-prueba con el cálculo de los auxiliares que hará la API (14 casos).
+prueba con el cálculo de los auxiliares que hará la API (17 casos).
 
 El cotejo sigue el mismo patrón: auxiliares `pedir_llegada`, `pedir_identidad`, `pedir_documentos`, `cotejar_<requisito>`,
 `pedir_hoy`, `pedir_pago`, `pedir_factura` y `resultado`; bloques generados entre los marcadores `cotejo-documentos` y
@@ -158,6 +160,6 @@ acciones sobre listas, no formularios de datos: la base las revisa (`apd.inscrip
 - Siguiente pantalla: emisión y entrega el mismo día (P10). Grupos: cambiar el instructor de un grupo confirmado o en
   curso (la base ya lo permite), quién arma los grupos (P92) y horarios (P91). Examen: tablas en la base y API (etapa 3), banco real (P74), regla con la práctica (P83), redondeo (P88) y tiempo adicional (P89).
 - Cotejo: aviso a la Dirección y desbloqueo (P79); tarea nocturna de pausas vencidas (P80); días, horario y cupo de citas (P69).
-- Hallazgos del estándar abiertos: P90 (esquema con controles fuera del formulario), P95 (mensajes de formatos fuera de
-  «mensajes»), P96 (ruta de pdf.js), P97 (nombre del grupo de chips), P98 (dos «Mostrar» con el mismo nombre) y P99 (el
-  combo abre su lista cuando la página llena el campo).
+- Hallazgos del estándar abiertos: P126 (etiqueta de estado sin corte), P127 (EXIF), P128 (hora en 12 horas), P129 (Ñ
+  del RFC), P130 (peso del logotipo), P131 (`FormKit.aviso` sólo texto), P134 (bajada a 70 caracteres) y P135 (chips
+  partidos).

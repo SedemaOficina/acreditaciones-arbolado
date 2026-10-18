@@ -40,10 +40,10 @@ Prioridad:
 
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
-| G1 | Grupo asignado | Se envía al confirmar el grupo, al menos 7 días antes del curso, o al agregar a la persona a un grupo ya confirmado: fechas del curso, hora de entrada, sede y asistencia mínima | Indispensable |
+| G1 | Grupo asignado | Se envía al confirmar el grupo, al menos 7 días antes del curso, o al agregar a la persona a un grupo ya confirmado: fechas del curso, hora de entrada, sede y asistencia mínima, y enlace al material de estudio | Indispensable |
 | G2 | Cambio o cancelación del grupo, o baja | Qué cambió y qué sigue: vuelve a esperar grupo y conserva su lugar por antigüedad | Indispensable |
 | G3 | Un día antes del curso | Recordatorio | Recomendable |
-| G4 | Resultado del examen | Si aprobó, si no alcanzó la calificación mínima o si no tuvo derecho a examen por faltas, con su calificación y asistencia; si aprobó, que recoge su credencial ese mismo día | Recomendable (se le dice el mismo día en la sede) |
+| G4 | Resultado del examen | Si aprobó, si no alcanzó la calificación mínima o si no tuvo derecho a examen por faltas, con su calificación y asistencia; si aprobó, que recoge su credencial ese mismo día en la oficina del Vivero Nezahualcóyotl | Recomendable (se le dice el mismo día en la sede) |
 
 ## 5. Acreditación y vigencia
 

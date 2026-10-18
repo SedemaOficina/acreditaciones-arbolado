@@ -945,7 +945,7 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   integración»); `probar-examen` abre el grupo de diez personas por su folio. `probar-sitio` 561 (con axe),
   `probar-examen` 63, `probar-volumen`, `probar-esquemas`, `probar-base` 165, auditor de CSS: correctos.
 
-## 2026-10-18 · Bloque 55 · Cuadernillo de poda corregido y cotejado con la norma
+## 2026-10-18 · Bloque 64 bis · Cuadernillo de poda corregido y cotejado con la norma
 
 - Liber: basta con fijar en el ejercicio el valor de la unidad (no se actualiza cada año) y las cuestiones de formato las
   corrige la Oficina, sin esperar al área técnica. Envió la NADF-001-RNAT-2015 y el Manual Técnico de Poda (2023).
@@ -1030,7 +1030,7 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 
 ## 2026-10-18 · Bloque 70 · Cruce con el anteproyecto de lineamientos
 
-- Liber pidió trabajar los lineamientos que ordena la Ley Ambiental (art. 111 y Octavo Transitorio). Se redactó el anteproyecto (versión de trabajo 0.4) en otro chat del Proyecto; por ser este repositorio público,
+- Liber pidió trabajar los lineamientos que ordena la Ley Ambiental (art. 111, párrafo segundo: los del dictaminador técnico y los de la supervisión y ejecución de los trabajos; el Octavo Transitorio fija el plazo de los del dictaminador; la NADF-001-RNAT-2015, 5.1, prevé los lineamientos de las acreditaciones correspondientes). Se redactó el anteproyecto (versión de trabajo 0.4) en otro chat del Proyecto; por ser este repositorio público,
   el texto queda fuera y aquí sólo va el cruce (`docs/DECISIONES.md`, «Lineamientos»).
 - `docs/pendientes.json`: campo `lineamientos` (qué artículo del anteproyecto toca cada pendiente) en 44 pendientes;
   recomendaciones actualizadas en P02, P03, P04, P11, P16, P19, P49, P100, P120 y P121; P133 resuelto; nuevos P137 a
@@ -1039,6 +1039,9 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   «cuota» en lugar de «pago de derechos»).
 - `herramientas/generar-pendientes.mjs` y la plantilla del tablero muestran la columna o el recuadro «Lineamientos».
 - Sin cambios en el sitio ni en la base: la versión de prueba sigue en 0.50.
+
+## 2026-10-18 · Bloque 71 · Asistencia: ✓/✗ y recorrido de prueba (0.51 y 0.52)
+
 - Ajuste (Liber): la tira usa ✓ verde y ✗ rojo; se quitan los días por venir y el aro del examen (el punto gris
   parecía otra cosa). En la versión de prueba vuelve el recorrido de todos los días: una franja «Versión de prueba:
   recorrer el curso día por día» con los cinco días (los que aún no llegan se capturan como «simulado»; el del examen

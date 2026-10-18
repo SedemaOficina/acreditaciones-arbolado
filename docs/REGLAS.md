@@ -116,6 +116,11 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
   origen `cotejo`, sin pantalla que lo use). No se modifica ni se borra: la nueva sustituye a la anterior. Tiene que
   verse clara: el día del examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia
   (decisión 2026-10-17).
+- **Material de estudio** (`apd.material_estudio`, decisión 2026-10-18): lo carga y lo cambia sólo el personal
+  (`carga_de_personal`); sólo PDF, hasta 30 MB (parámetro `tamano_maximo_material_bytes`); una carga vigente por documento
+  (`material_estudio_vigente_uk`); el archivo cargado no se modifica (`documento_inmutable`); reemplazar no borra el
+  archivo anterior y conserva si estaba publicado; el público lo ve en `apd.material_publico` (sólo lo publicado y
+  vigente).
 - **Nada se borra** salvo sesiones vencidas y requisitos de un curso. Un documento nuevo sustituye al
   anterior sin borrarlo.
 - **La hora** sale de `apd.ahora()`. Sólo en una base de pruebas se puede simular; en producción, simularla
@@ -126,7 +131,7 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
 ## Cómo se prueba
 
 `herramientas/probar-base.sh` instala todo en una base desechable, carga los expedientes ficticios como la
-cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 165 casos con fechas
+cuenta del servicio (pasando por cada regla) y corre `herramientas/probar-reglas.mjs`: 173 casos con fechas
 movidas, cupos, permisos y bitácora (resultados de la última corrida: `docs/BITACORA-PROYECTO.md`).
 
 Las pantallas se prueban aparte (`herramientas/probar-sitio.mjs`, `herramientas/probar-esquemas.mjs` y
