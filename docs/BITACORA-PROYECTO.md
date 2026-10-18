@@ -810,4 +810,8 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   negativos, pasos del cotejo terminado y de «Mis trámites»); `probar-examen.mjs` 63 de 63; esquemas sin errores; auditor
   de CSS sin hallazgos; `auditar-campos` 171 campos en 18 archivos; `npm run auditar` sólo los dos encimados conocidos.
 - Hallazgo nuevo para el estándar: P119 (la secuencia numerada de «qué sigue» sólo existe dentro del acuse).
+- Recomendaciones de mejora: Liber pidió registrar dos como pendientes: P120 (suspensión y revocación de una
+  acreditación, para la Dirección con la Dirección Jurídica) y P121 (avisos de renovación por correo a los 90 y 30 días
+  y el día que vence; el de 90 días choca con la ventana de renovación de 30 días y queda como preaviso sin enlace
+  mientras Liber decide). Los avisos A0 y A3 bis se agregaron como propuesta a `docs/AVISOS-POR-CORREO.md`.
 

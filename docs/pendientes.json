@@ -663,6 +663,22 @@
       "desde": "2026-10-17",
       "titulo": "Hallazgo del estándar: la secuencia numerada de «qué sigue» sólo existe dentro del acuse",
       "recomendacion": "El módulo acuse trae .secuencia para «qué sigue», pero centrada, con su ancho y su filete, y sólo se carga con el acuse. Un desenlace del personal, un aviso o la ficha de un trámite que dicen qué sigue en varias acciones terminaban encadenándolas en un párrafo («Abra el expediente… El siguiente paso es… La persona ve…»). Solución provisional: APD.sigueEn (texto, pasos) con ol.pasos en apd.css, la misma forma más compacta, en desenlaces, avisos y «Mis trámites». Propuesta para el estándar: sacar la secuencia a una pieza del núcleo («pasos») que use cualquier aviso, resultado o tarjeta, y la regla de redacción: dos o más acciones en orden van en pasos numerados; el texto dice el hecho y los pasos, quién hace qué."
+    },
+    {
+      "id": "P120",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Suspensión y revocación de una acreditación: hoy no existen",
+      "recomendacion": "Recomendación aprobada por Liber para registrar (2026-10-17). Hoy una acreditación sólo vence: si la persona hace una poda indebida, «Verificar» la sigue mostrando vigente y la acreditación pierde fuerza como instrumento de control. Que la Dirección, con la Dirección Jurídica, defina: (1) causales de suspensión (temporal) y de revocación (definitiva); (2) quién inicia el procedimiento y con qué pruebas; (3) garantía de audiencia: plazo para que la persona responda y presente pruebas; (4) quién resuelve y cómo se notifica; (5) efectos: duración de la suspensión, si quien fue revocado puede volver a solicitar y cuándo; (6) fundamento [Art. __, fracc. __], sin inventar números. Lo que haría el sistema: estados «suspendida» y «revocada» de la acreditación con motivo, fundamento, fechas de inicio, audiencia y resolución, y registro en la bitácora; «Verificar» los muestra como no vigentes («Suspendida hasta el …» / «Revocada»); la persona lo ve en «Mis trámites» y por correo; no se renueva una acreditación suspendida o revocada. Conviene resolverlo antes de publicar un padrón o de que las alcaldías consulten la vigencia."
+    },
+    {
+      "id": "P121",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Avisos de renovación por correo: 90 días antes, 30 días antes y el día que vence",
+      "recomendacion": "Recomendación aprobada por Liber para registrar (2026-10-17). Choca con una decisión registrada: la renovación sólo se puede iniciar desde 30 días antes del vencimiento (DECISIONES, 2026-10-14), así que un aviso a los 90 días no puede llevar el enlace para iniciarla. Opción recomendada: conservar la ventana de 30 días y que el aviso de los 90 días sea un preaviso para preparar documentos (constancia de situación fiscal actualizada y, si cambiaron, los demás), sin enlace para iniciar; a los 30 días (aviso A2, ya previsto), con el enlace para iniciar la renovación; el día que vence, que ya no puede ejercerla y que puede renovar hasta un año después, con el enlace. Alternativa: abrir la ventana de renovación a 90 días antes. Liber decide. Se agregan como A0 y A3 bis en docs/AVISOS-POR-CORREO.md; dependen del correo del SIA (P23) y de una tarea diaria que los envíe."
     }
   ],
   "resueltos": [

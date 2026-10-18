@@ -50,8 +50,10 @@ Prioridad:
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
 | A1 | Acreditación entregada | Número, vigencia y enlace a la verificación pública | Recomendable |
-| A2 | Por vencer: al abrir la renovación (30 días antes) | Que ya puede renovar y cómo | Indispensable |
+| A0 | Preaviso: 90 días antes del vencimiento | Que su acreditación vence el …; qué documentos preparar. Sin enlace para iniciar: la renovación abre 30 días antes (P121, por decidir) | Recomendable (propuesta) |
+| A2 | Por vencer: al abrir la renovación (30 días antes) | Que ya puede renovar y cómo, con el enlace para iniciar la renovación | Indispensable |
 | A3 | Por vencer: una semana antes | Recordatorio | Recomendable |
+| A3 bis | El día que vence | Que desde hoy no puede ejercerla y que puede renovar hasta un año después, con el enlace para iniciar la renovación (P121) | Recomendable (propuesta) |
 | A4 | Vencida, todavía renovable | Que puede renovar hasta un año después del vencimiento | Recomendable |
 | A5 | Un mes antes de que termine el año para renovar | Que después tendrá que tramitar una nueva | Recomendable |
 
