@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grupo · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Un grupo del curso de acreditación: personas, confirmación con fecha, hora e instructor, bajas y cancelación. Personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="app/apd.css?v=0.39">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+  <p><a class="btn-atras" href="grupos.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Grupos</a></p>
+  <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
+  <div data-hecho hidden></div>
+
+  <section class="tarjeta" aria-labelledby="t-grupo">
+    <div class="grupo-cabeza">
+      <div>
+        <h2 class="titulo-paso" id="t-grupo">Grupo</h2>
+        <p class="bajada" data-bajada>Cargando el grupo…</p>
+      </div>
+      <span data-situacion></span>
+    </div>
+    <div class="cupo" data-cupo hidden>
+      <p data-cupo-texto></p>
+      <div class="cupo-barra" aria-hidden="true"><span class="cupo-lleno" data-cupo-lleno></span></div>
+    </div>
+    <div data-datos></div>
+
+    <h3 class="titulo-bloque" id="t-personas">Personas del grupo</h3>
+    <div class="tabla-marco" data-tabla data-clave="persona">
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector" data-leyenda>Personas inscritas en el grupo</caption>
+        <thead><tr data-encabezado></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+      <p class="tabla-vacia" data-tabla-vacia hidden>El grupo no tiene personas.</p>
+    </div>
+    <p class="ayuda" data-baja-ayuda hidden>Dar de baja pide el motivo; la persona regresa a la espera con su antigüedad. Si un grupo confirmado queda por debajo del mínimo, deja de estar confirmado y conserva su fecha como propuesta.</p>
+    <div class="acciones-grupo" data-acciones></div>
+  </section>
+
+  <!-- Confirmar: sólo con el mínimo de personas; la base exige 7 días de anticipación, fecha, hora e instructor -->
+  <section class="tarjeta" aria-labelledby="t-confirmar" data-confirmar hidden>
+    <h2 class="titulo-paso" id="t-confirmar">Para confirmar el grupo</h2>
+    <p class="bajada">Al confirmar, cada persona ve en «Mis trámites» su grupo, las fechas del curso, la hora de entrada y dónde presentarse.</p>
+    <div class="aviso aviso-advertencia" data-falta hidden><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg><p class="aviso-texto"></p></div>
+    <form id="confirmar" data-formkit="manual" action="#" method="post">
+      <div class="campo" data-campo="fecha_inicio" data-formato="fecha" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
+        <label class="etiqueta" for="fecha_inicio">Primer día del curso</label>
+        <p class="ayuda" id="ay-fecha-inicio" data-ayuda-fecha>El curso empieza al menos 7 días después de confirmar el grupo.</p>
+        <!-- autocomplete off: la fecha la elige quien arma el grupo. -->
+        <input class="control control-medio" id="fecha_inicio" name="fecha_inicio" type="date" autocomplete="off" aria-describedby="ay-fecha-inicio">
+      </div>
+      <div class="campo" data-campo="hora_entrada" data-formato="hora" data-requerido data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
+        <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
+        <p class="ayuda" id="ay-hora-entrada">De 24 horas, la misma todos los días. <span class="pendiente">Horarios de prueba: los define el área, con la hora de salida (P91).</span></p>
+        <!-- Lista cerrada de 24 horas, como la hora de la cita (Liber, 2026-10-17). autocomplete off: la elige quien arma el grupo. -->
+        <div class="select control-corto"><select class="control control-select" id="hora_entrada" name="hora_entrada" autocomplete="off" aria-describedby="ay-hora-entrada">
+            <option value="">Elija</option>
+            <option value="07:00">07:00</option>
+            <option value="07:30">07:30</option>
+            <option value="08:00">08:00</option>
+            <option value="08:30">08:30</option>
+            <option value="09:00">09:00</option>
+            <option value="09:30">09:30</option>
+            <option value="10:00">10:00</option>
+        </select></div>
+      </div>
+      <div class="campo" data-campo="instructor" data-requerido data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
+        <label class="etiqueta" for="instructor">Instructor</label>
+        <p class="ayuda" id="ay-instructor">Puede cambiar durante el curso; cada día queda quién capturó la asistencia.</p>
+        <!-- Versión de prueba: instructores ficticios. En la etapa 3 la API da las cuentas con perfil «instructor» (P27).
+             autocomplete off: lo elige quien arma el grupo. -->
+        <div class="select control-medio"><select class="control control-select" id="instructor" name="instructor" autocomplete="off" aria-describedby="ay-instructor">
+            <option value="">Elija</option>
+            <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
+            <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
+        </select></div>
+      </div>
+      <p class="texto-gris" data-lugar></p>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Confirmar el grupo</button>
+      </div>
+    </form>
+  </section>
+
+  <dialog class="dialogo confirmacion" id="dlg-baja" aria-labelledby="t-baja">
+    <form id="baja" data-formkit="manual" action="#" method="post">
+      <div class="confirmacion-cabeza"><span class="desenlace-marca" data-tono="error"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg></span><h2 class="titulo-bloque dialogo-titulo" id="t-baja" data-baja-titulo>¿Dar de baja del grupo?</h2></div>
+      <ul class="confirmacion-lista" data-baja-de></ul>
+      <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué la persona sale del grupo (apd.inscripcion.motivo_baja).">
+        <label class="etiqueta" for="motivo-baja">Motivo</label>
+        <p class="ayuda" id="ay-motivo-baja">Por qué sale del grupo, en una frase. Queda registrado en el sistema. Ejemplo: Pidió cambiar de fecha por trabajo.</p>
+        <!-- autocomplete off: lo escribe el personal; no hay nada que proponer. -->
+        <textarea class="control" id="motivo-baja" name="motivo" rows="3" maxlength="300" autocomplete="off" aria-describedby="ay-motivo-baja"></textarea>
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones dialogo-acciones">
+        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Volver sin cambios</button>
+        <button type="submit" class="btn btn-peligro" data-accion="enviar">Sí, dar de baja</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="dialogo confirmacion" id="dlg-cancelar" aria-labelledby="t-cancelar">
+    <form id="cancelar" data-formkit="manual" action="#" method="post">
+      <div class="confirmacion-cabeza"><span class="desenlace-marca" data-tono="error"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg></span><h2 class="titulo-bloque dialogo-titulo" id="t-cancelar" data-cancelar-titulo>¿Cancelar el grupo?</h2></div>
+      <ul class="confirmacion-lista" data-cancelar-de></ul>
+      <p class="confirmacion-irreversible"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>No se puede deshacer.</p>
+      <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué se cancela el grupo (apd.grupo.motivo_cancelacion).">
+        <label class="etiqueta" for="motivo-cancelar">Motivo</label>
+        <p class="ayuda" id="ay-motivo-cancelar">Por qué se cancela, en una frase. Queda registrado en el sistema. Ejemplo: No se reunió el cupo mínimo en el plazo previsto.</p>
+        <!-- autocomplete off: lo escribe el personal; no hay nada que proponer. -->
+        <textarea class="control" id="motivo-cancelar" name="motivo" rows="3" maxlength="300" autocomplete="off" aria-describedby="ay-motivo-cancelar"></textarea>
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones dialogo-acciones">
+        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Volver sin cambios</button>
+        <button type="submit" class="btn btn-peligro" data-accion="enviar">Sí, cancelar el grupo</button>
+      </div>
+    </form>
+  </dialog>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.39"></script>
+<script src="app/apd.js?v=0.39"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.39"></script>
+<script src="app/personal.js?v=0.39"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="app/config-usted.js?v=0.39"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/tabla/tabla.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<script src="formkit/modulos/fecha/fecha.js"></script>
+<script src="app/grupo.js?v=0.39"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.39"></script>
+<script src="app/pruebas.js?v=0.39"></script>
+<script src="app/version-visible.js?v=0.39"></script>
+</body>
+</html>

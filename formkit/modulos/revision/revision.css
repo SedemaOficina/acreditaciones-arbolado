@@ -1,0 +1,54 @@
+/* =========================================================
+   revision.css · Módulo «revision» · nivel RECOMENDADO
+   Un bloque plegable por paso; cada dato con «Editar». En teléfono la
+   etiqueta y el valor se apilan; desde tableta van en dos columnas.
+   Depende de: nucleo.css. Bloques: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.rev-bloque{margin-bottom:var(--e-3);background:var(--blanco);border:var(--b-1) solid var(--linea);border-radius:var(--r-ctrl)}
+.rev-titulo{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:var(--e-2) var(--e-3);
+  min-height:var(--objetivo-min);
+  padding:var(--e-3) var(--e-4);
+  list-style:none;
+  cursor:pointer;
+}
+.rev-titulo::-webkit-details-marker{display:none}
+.rev-rotulo{font-size:var(--t-xs);font-weight:var(--peso-semi);letter-spacing:var(--tracking-rotulo);text-transform:uppercase;color:var(--gris)}
+.rev-resumen{flex:1 1 100%;font-size:var(--t-md);overflow-wrap:anywhere}
+.rev-flecha{margin-left:auto;color:var(--gris);transition:transform var(--dur-rapida)}
+.rev-datos{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:var(--b-1);
+  margin:0 var(--e-4) var(--e-4);
+  overflow:hidden;
+  background:var(--linea);
+  border:var(--b-1) solid var(--linea);
+  border-radius:var(--r-ctrl);
+  font-size:var(--t-md);
+}
+.rev-dato-etq{padding:var(--e-2) var(--e-3) 0;background:var(--blanco);font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--gris)}
+.rev-dato-valor{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e-2);padding:0 var(--e-3) var(--e-2);background:var(--blanco);white-space:pre-wrap;word-break:break-word}
+/* Con un valor largo, el valor se parte en renglones y «Editar» se queda a su lado, arriba. */
+.rev-dato-valor > span{flex:1 1 auto;min-width:0}
+.rev-dato-valor > .btn-enlace{flex:none}
+
+/* @bloque estados */
+
+.rev-bloque[open] .rev-titulo{border-bottom:var(--b-1) solid var(--linea);margin-bottom:var(--e-3)}
+.rev-bloque[open] .rev-flecha{transform:rotate(180deg)}
+
+/* @bloque adaptaciones */
+
+@media (min-width:760px){
+  .rev-resumen{flex:1 1 auto}
+  .rev-datos{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+  .rev-dato-etq{padding:var(--e-3);background:var(--fondo)}
+  .rev-dato-valor{padding:var(--e-3)}
+}

@@ -1,0 +1,112 @@
+/* =========================================================
+   opciones.css · Módulo «opciones» · nivel BASE
+
+   Opción única (radio), opción múltiple (casilla), tarjetas seleccionables
+   con descripción y la variante corta Sí/No. Son controles NATIVOS vestidos
+   (decisión C3): el input real cubre toda la tarjeta, de modo que teclado
+   (flechas), lector de pantalla y dedo usan el control del navegador.
+   Lo elegido se marca con fondo azul tenue, sombra interior y palomita:
+   nunca sólo con color, y sin que el control cambie de tamaño.
+
+   Depende de: nucleo.css. JS: ninguno (el núcleo valida).
+   Bloques: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.grupo{margin-bottom:var(--e-5)}
+/* Tarjetas en rejilla: en teléfono una columna; desde tableta, las que quepan. */
+.opciones{display:grid;grid-template-columns:1fr;gap:var(--e-3)}
+/* Dos o tres opciones cortas (sí / no): en fila. Con ratón miden --alto-opcion;
+   con el dedo suben a --alto-control: la regla mide el puntero, no el ancho. */
+.opciones-cortas{display:flex;flex-wrap:wrap;gap:var(--e-3)}
+.opcion{
+  position:relative;
+  display:block;
+  min-height:var(--objetivo-min);
+  padding:var(--e-4);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-caja);
+  cursor:pointer;
+  transition:border-color var(--dur-rapida),background var(--dur-rapida),box-shadow var(--dur-rapida);
+}
+.opcion-corta{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:1 1 var(--ancho-boton-min);
+  min-height:var(--alto-opcion);
+  padding:var(--e-2) var(--e-5);
+  border-radius:var(--r-ctrl);
+  text-align:center;
+}
+/* El input nativo cubre la tarjeta: invisible pero operable y anunciado. */
+.opcion-input{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  margin:0;
+  opacity:0;
+  cursor:pointer;
+}
+.opcion-nombre{display:flex;align-items:center;gap:var(--e-2);font-family:var(--fuente-titulo);font-weight:var(--peso-semi);line-height:var(--interlineado-compacto);color:var(--azul)}
+.opcion-desc{display:block;margin-top:var(--e-1);font-size:var(--t-sm);line-height:var(--interlineado-compacto);color:var(--gris)}
+/* La palomita de lo elegido: siempre presente en el HTML, visible sólo al marcar. */
+.opcion-marca{display:none;width:var(--icono-sm);height:var(--icono-sm)}
+/* En la variante corta el nombre va en gris: lo tocable se pinta de azul al elegirlo. */
+.opcion-corta .opcion-nombre{color:var(--gris)}
+
+/* Lista vertical de opciones con el control visible (radio o casilla a la
+   izquierda): para listas largas donde la tarjeta sería excesiva. */
+.opciones-lista{display:flex;flex-direction:column;gap:var(--e-2)}
+.opcion-fila{
+  display:flex;
+  align-items:flex-start;
+  gap:var(--e-3);
+  min-height:var(--objetivo-min);
+  padding:var(--e-3);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-ctrl);
+  cursor:pointer;
+}
+.opcion-fila-input{flex:none;width:var(--tam-casilla);height:var(--tam-casilla);margin:var(--e-1) 0 0;accent-color:var(--azul)}
+
+/* @bloque estados */
+
+.opcion:hover{background:var(--azul-cl);border-color:var(--azul)}
+/* Elegida: sombra interior en lugar de borde grueso (el tamaño no cambia). */
+.opcion:has(.opcion-input:checked){background:var(--azul-cl);border-color:var(--azul);box-shadow:inset 0 0 0 var(--b-1) var(--azul)}
+.opcion:has(.opcion-input:checked) .opcion-marca{display:inline-block}
+.opcion-corta:has(.opcion-input:checked) .opcion-nombre{color:var(--azul)}
+.opcion:has(.opcion-input:focus-visible){outline:var(--foco-ancho) solid var(--foco);outline-offset:var(--foco-sep)}
+.opcion:has(.opcion-input:disabled){opacity:var(--op-inactivo);cursor:not-allowed}
+.opcion-fila:hover{border-color:var(--azul)}
+.opcion-fila:has(.opcion-fila-input:disabled){opacity:var(--op-inactivo);cursor:not-allowed}
+.opcion-fila:has(.opcion-fila-input:checked){background:var(--azul-cl);border-color:var(--azul);box-shadow:inset 0 0 0 var(--b-1) var(--azul)}
+.opcion-fila:has(.opcion-fila-input:focus-visible){outline:var(--foco-ancho) solid var(--foco);outline-offset:var(--foco-sep)}
+/* Error del grupo: borde rojo en cada opción, además del mensaje. */
+.grupo:has([aria-invalid="true"]) .opcion{border-color:var(--error)}
+.grupo:has([aria-invalid="true"]) .opcion-fila{border-color:var(--error)}
+
+/* @bloque adaptaciones */
+
+@media (min-width:760px){
+  .opciones{grid-template-columns:repeat(auto-fill,minmax(var(--ancho-tarjeta-min),1fr))}
+  .opcion-corta{flex:0 1 auto;min-width:var(--ancho-boton-min)}
+  /* Lista en línea: dos o tres opciones cortas sin descripción (Sí/No), una
+     columna por opción con el mismo hueco que las filas de campos. En
+     teléfono sigue una por renglón. */
+  .opciones-en-linea{display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:var(--e-4)}
+}
+
+@media (pointer: coarse){
+  .opcion-corta{min-height:var(--alto-control)}
+}
+
+@media (forced-colors: active){
+  .opcion:has(.opcion-input:checked){outline:var(--b-3) solid Highlight}
+  .opcion-fila:has(.opcion-fila-input:checked){outline:var(--b-3) solid Highlight}
+}

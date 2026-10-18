@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atender una cita de cotejo · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Cotejo presencial de una solicitud de acreditación, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="formkit/modulos/visor/visor.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="app/apd.css?v=0.39">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+  <p><a class="btn-atras" href="citas.html" data-volver><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Citas de cotejo</a></p>
+  <p class="bajada" data-cargando>Cargando la cita…</p>
+
+  <!-- La cita: la solicitud y la persona. Lo pinta app/cotejo.js. -->
+  <section class="tarjeta" data-cabeza hidden aria-labelledby="t-cita">
+    <div class="revision-cabeza">
+      <div>
+        <h2 class="titulo-paso" id="t-cita" data-titulo></h2>
+        <p class="bajada" data-bajada></p>
+      </div>
+      <span data-estado></span>
+    </div>
+    <!-- Lo que cambia esta cita va antes de la ficha, a la vista sin desplazar (propuesta «Avisos y confirmaciones») -->
+    <div class="aviso aviso-advertencia" data-retoma hidden>
+      <svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg>
+      <div class="aviso-texto" data-retoma-texto></div>
+    </div>
+    <div class="aviso aviso-advertencia" data-antecedente hidden>
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+      <div class="aviso-texto" data-antecedente-texto></div>
+    </div>
+    <div data-persona></div>
+  </section>
+
+  <!-- El cotejo (decisiones 2026-10-17): llegada, identidad, documentos, pago y factura. Una sola acción principal,
+       cuyo texto cambia con el resultado. Arranca a mano (data-formkit="manual") cuando la página ya calculó los
+       campos auxiliares. -->
+  <div class="visor-area">
+  <form id="formulario" data-formkit="manual" action="#" method="post" hidden>
+    <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+    <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
+    <input type="hidden" id="pedir_llegada" name="pedir_llegada" value="si" data-campo="pedir_llegada" data-auxiliar data-uso="Preguntar si la persona se presentó, salvo al retomar un cotejo en pausa (la persona ya está); lo calculan la página y el servidor con apd.cita.">
+    <input type="hidden" id="pedir_identidad" name="pedir_identidad" value="no" data-campo="pedir_identidad" data-auxiliar data-uso="Preguntar por la identidad si la persona se presentó y no es un cotejo retomado (la identidad ya se comprobó); lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_documentos" name="pedir_documentos" value="no" data-campo="pedir_documentos" data-auxiliar data-uso="Cotejar documentos si la persona se presentó y es quien dice ser; lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_hoy" name="pedir_hoy" value="no" data-campo="pedir_hoy" data-auxiliar data-uso="Preguntar si la persona puede traer hoy el documento correcto cuando alguno no coincide; lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_pago" name="pedir_pago" value="no" data-campo="pedir_pago" data-auxiliar data-uso="Preguntar por el comprobante de pago cuando ningún documento dejó de coincidir; lo calculan la página y el servidor.">
+    <input type="hidden" id="pedir_factura" name="pedir_factura" value="no" data-campo="pedir_factura" data-auxiliar data-uso="Pedir la factura y sus datos cuando el pago está verificado; lo calculan la página y el servidor.">
+    <input type="hidden" id="resultado" name="resultado" value="" data-campo="resultado" data-auxiliar data-uso="Mostrar lo que pide el resultado (cita nueva, nota para la Dirección…); lo calculan la página y el servidor con las respuestas y las inasistencias de apd.cita.">
+    <!-- cotejo-auxiliares:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+    <input type="hidden" id="cotejar_identificacion_oficial" name="cotejar_identificacion_oficial" value="no" data-campo="cotejar_identificacion_oficial" data-auxiliar data-uso="Pedir el cotejo de «Identificación oficial» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_curp" name="cotejar_curp" value="no" data-campo="cotejar_curp" data-auxiliar data-uso="Pedir el cotejo de «Clave Única de Registro de Población (CURP)» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_comprobante_domicilio" name="cotejar_comprobante_domicilio" value="no" data-campo="cotejar_comprobante_domicilio" data-auxiliar data-uso="Pedir el cotejo de «Comprobante de domicilio» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_constancia_situacion_fiscal" name="cotejar_constancia_situacion_fiscal" value="no" data-campo="cotejar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir el cotejo de «Constancia de situación fiscal» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_comprobante_estudios" name="cotejar_comprobante_estudios" value="no" data-campo="cotejar_comprobante_estudios" data-auxiliar data-uso="Pedir el cotejo de «Comprobante de estudios» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_curriculum_vitae" name="cotejar_curriculum_vitae" value="no" data-campo="cotejar_curriculum_vitae" data-auxiliar data-uso="Pedir el cotejo de «Currículum vitae» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <input type="hidden" id="cotejar_comprobantes_experiencia" name="cotejar_comprobantes_experiencia" value="no" data-campo="cotejar_comprobantes_experiencia" data-auxiliar data-uso="Pedir el cotejo de «Comprobantes de experiencia» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">
+    <!-- cotejo-auxiliares:fin -->
+
+    <!-- 0 · Llegada -->
+    <div data-si="pedir_llegada=si">
+    <section class="tarjeta" aria-labelledby="t-llegada">
+      <h3 class="titulo-paso" id="t-llegada">Llegada</h3>
+      <fieldset class="grupo" data-campo="se_presento" data-requerido data-uso="Registrar si la persona se presentó a su cita (apd.cita.resultado).">
+        <legend class="etiqueta">¿La persona se presentó a su cita?</legend>
+        <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="se_presento" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, está aquí</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="se_presento" autocomplete="off" value="no"><span><span class="opcion-nombre">No se presentó</span></span></label>
+        </div>
+      </fieldset>
+    </section>
+    </div>
+
+    <!-- 1 · Identidad y fotografía -->
+    <div data-si="pedir_identidad=si">
+    <section class="tarjeta" aria-labelledby="t-identidad">
+      <h3 class="titulo-paso" id="t-identidad">1. Identidad y fotografía</h3>
+      <p class="ayuda ayuda-bloque">Compare a la persona con su identificación oficial y con la fotografía de su cuenta. Esa fotografía sólo sirve para reconocerla en el cotejo, el curso y el examen; la de su credencial se toma al entregársela.</p>
+      <div class="cotejo-identidad">
+        <div class="perfil-foto perfil-foto-grande" data-foto-grande><span class="perfil-iniciales" aria-hidden="true" data-iniciales></span></div>
+        <fieldset class="grupo" data-campo="identidad" data-requerido data-uso="Confirmar que la fotografía es de quien se presentó o detener la cita (apd.fotografia.estado y apd.cita.resultado).">
+          <legend class="etiqueta">¿Es la misma persona de la fotografía y de la identificación?</legend>
+          <!-- autocomplete off: decisión de quien atiende. En la cita no se toma otra fotografía (decisión 2026-10-17, Liber). -->
+          <div class="opciones-lista">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="identidad" autocomplete="off" value="misma"><span><span class="opcion-nombre">Sí, es la misma persona</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="identidad" autocomplete="off" value="no_es"><span><span class="opcion-nombre">No es la persona de la fotografía ni de la identificación</span><span class="opcion-desc">No se atiende la cita. Se avisa a la Dirección y la cuenta queda bloqueada hasta aclararlo.</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+      <div data-si="identidad=no_es">
+        <div class="campo" data-campo="nota_identidad" data-requerido data-uso="Explicar a la Dirección por qué no se atendió la cita; no se muestra a la persona (bitácora de apd.cita).">
+          <label class="etiqueta" for="nota_identidad">¿Qué observó?</label>
+          <p class="ayuda">Lo lee la Dirección para aclarar el caso; la persona no lo ve.</p>
+          <!-- autocomplete off: texto de quien atiende. -->
+          <textarea class="control" id="nota_identidad" name="nota_identidad" rows="3" minlength="20" maxlength="600" autocomplete="off"></textarea>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <!-- 2 · Cotejo de documentos -->
+    <div data-si="pedir_documentos=si">
+    <section class="tarjeta" aria-labelledby="t-documentos">
+      <h3 class="titulo-paso" id="t-documentos" data-docs-titulo>2. Cotejo de documentos</h3>
+      <p class="ayuda ayuda-bloque" data-docs-ayuda>Compare cada documento que trae la persona con el que cargó en línea. Si alguno no coincide, escriba qué no coincide: la persona lo leerá tal como lo escriba.</p>
+      <p class="texto-gris" data-ya-coincidieron hidden></p>
+      <!-- cotejo-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+      <div data-si="cotejar_identificacion_oficial=si">
+        <article class="doc-revision" data-doc="identificacion_oficial">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Identificación oficial</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="identificacion_oficial">Ver lo que cargó<span class="solo-lector">: Identificación oficial</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_identificacion_oficial" data-requerido data-uso="Registrar si «Identificación oficial» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Identificación oficial</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_identificacion_oficial" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_identificacion_oficial" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_identificacion_oficial" data-requerido data-si="coincide_identificacion_oficial=no" data-uso="Decirle a la persona qué no coincidió de «Identificación oficial»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_identificacion_oficial">¿Qué no coincide?<span class="contexto-resumen"> · Identificación oficial</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_identificacion_oficial" name="diferencia_identificacion_oficial" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <div data-si="cotejar_curp=si">
+        <article class="doc-revision" data-doc="curp">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Clave Única de Registro de Población (CURP)</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="curp">Ver lo que cargó<span class="solo-lector">: Clave Única de Registro de Población (CURP)</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_curp" data-requerido data-uso="Registrar si «Clave Única de Registro de Población (CURP)» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Clave Única de Registro de Población (CURP)</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_curp" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_curp" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_curp" data-requerido data-si="coincide_curp=no" data-uso="Decirle a la persona qué no coincidió de «Clave Única de Registro de Población (CURP)»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_curp">¿Qué no coincide?<span class="contexto-resumen"> · Clave Única de Registro de Población (CURP)</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_curp" name="diferencia_curp" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <div data-si="cotejar_comprobante_domicilio=si">
+        <article class="doc-revision" data-doc="comprobante_domicilio">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Comprobante de domicilio</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_domicilio">Ver lo que cargó<span class="solo-lector">: Comprobante de domicilio</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_comprobante_domicilio" data-requerido data-uso="Registrar si «Comprobante de domicilio» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Comprobante de domicilio</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobante_domicilio" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobante_domicilio" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_comprobante_domicilio" data-requerido data-si="coincide_comprobante_domicilio=no" data-uso="Decirle a la persona qué no coincidió de «Comprobante de domicilio»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_comprobante_domicilio">¿Qué no coincide?<span class="contexto-resumen"> · Comprobante de domicilio</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_comprobante_domicilio" name="diferencia_comprobante_domicilio" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <div data-si="cotejar_constancia_situacion_fiscal=si">
+        <article class="doc-revision" data-doc="constancia_situacion_fiscal">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Constancia de situación fiscal</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="constancia_situacion_fiscal">Ver lo que cargó<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Constancia de situación fiscal</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_constancia_situacion_fiscal" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_constancia_situacion_fiscal" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_constancia_situacion_fiscal" data-requerido data-si="coincide_constancia_situacion_fiscal=no" data-uso="Decirle a la persona qué no coincidió de «Constancia de situación fiscal»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_constancia_situacion_fiscal">¿Qué no coincide?<span class="contexto-resumen"> · Constancia de situación fiscal</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_constancia_situacion_fiscal" name="diferencia_constancia_situacion_fiscal" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <div data-si="cotejar_comprobante_estudios=si">
+        <article class="doc-revision" data-doc="comprobante_estudios">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Comprobante de estudios</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobante_estudios">Ver lo que cargó<span class="solo-lector">: Comprobante de estudios</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_comprobante_estudios" data-requerido data-uso="Registrar si «Comprobante de estudios» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Comprobante de estudios</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobante_estudios" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobante_estudios" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_comprobante_estudios" data-requerido data-si="coincide_comprobante_estudios=no" data-uso="Decirle a la persona qué no coincidió de «Comprobante de estudios»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_comprobante_estudios">¿Qué no coincide?<span class="contexto-resumen"> · Comprobante de estudios</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_comprobante_estudios" name="diferencia_comprobante_estudios" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <div data-si="cotejar_curriculum_vitae=si">
+        <article class="doc-revision" data-doc="curriculum_vitae">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Currículum vitae</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="curriculum_vitae">Ver lo que cargó<span class="solo-lector">: Currículum vitae</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_curriculum_vitae" data-requerido data-uso="Registrar si «Currículum vitae» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Currículum vitae</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_curriculum_vitae" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_curriculum_vitae" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_curriculum_vitae" data-requerido data-si="coincide_curriculum_vitae=no" data-uso="Decirle a la persona qué no coincidió de «Currículum vitae»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_curriculum_vitae">¿Qué no coincide?<span class="contexto-resumen"> · Currículum vitae</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_curriculum_vitae" name="diferencia_curriculum_vitae" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <div data-si="cotejar_comprobantes_experiencia=si">
+        <article class="doc-revision" data-doc="comprobantes_experiencia">
+          <div class="doc-cabeza">
+            <h4 class="doc-titulo">Comprobantes de experiencia</h4>
+            <span class="estado" data-doc-estado>Por cotejar</span>
+          </div>
+          <p class="doc-archivo" data-doc-archivo></p>
+          <p><button type="button" class="btn-enlace doc-ver" data-ver="comprobantes_experiencia">Ver lo que cargó<span class="solo-lector">: Comprobantes de experiencia</span></button></p>
+          <fieldset class="grupo" data-campo="coincide_comprobantes_experiencia" data-requerido data-uso="Registrar si «Comprobantes de experiencia» que trae la persona coincide con el que cargó en línea.">
+            <legend class="etiqueta">¿Coincide con el que trae la persona?<span class="contexto-resumen"> · Comprobantes de experiencia</span></legend>
+            <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista opciones-en-linea">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobantes_experiencia" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_comprobantes_experiencia" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+            </div>
+          </fieldset>
+          <div class="campo" data-campo="diferencia_comprobantes_experiencia" data-requerido data-si="coincide_comprobantes_experiencia=no" data-uso="Decirle a la persona qué no coincidió de «Comprobantes de experiencia»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="diferencia_comprobantes_experiencia">¿Qué no coincide?<span class="contexto-resumen"> · Comprobantes de experiencia</span></label>
+            <!-- autocomplete off: texto de quien atiende. -->
+            <textarea class="control" id="diferencia_comprobantes_experiencia" name="diferencia_comprobantes_experiencia" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+        </article>
+      </div>
+      <!-- cotejo-documentos:fin -->
+      <div data-si="pedir_hoy=si">
+        <fieldset class="grupo" data-campo="hoy_documento" data-requerido data-uso="Decidir si la cita queda en pausa para que la persona cargue hoy el documento correcto o si la solicitud regresa con observaciones (apd.cita.resultado).">
+          <legend class="etiqueta">¿La persona puede conseguir hoy el documento correcto y cargarlo en línea?</legend>
+          <!-- autocomplete off: decisión de quien atiende. -->
+          <div class="opciones-lista">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="hoy_documento" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí: la cita queda en pausa</span><span class="opcion-desc">Lo consigue hoy (en un café internet o en su teléfono) y lo carga en «Mis trámites». Usted retoma el cotejo de ese documento cuando regrese.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="hoy_documento" autocomplete="off" value="no"><span><span class="opcion-nombre">No: regresa con observaciones</span><span class="opcion-desc">La persona lo corrige en línea; después de una nueva revisión recibe otra cita.</span></span></label>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+    </div>
+
+    <!-- 3 · Pago -->
+    <div data-si="pedir_pago=si">
+    <section class="tarjeta" aria-labelledby="t-pago">
+      <h3 class="titulo-paso" id="t-pago">3. Pago</h3>
+      <div class="pago-datos" data-pago-datos></div>
+      <fieldset class="grupo" data-campo="pago" data-requerido data-uso="Registrar si la persona presentó el comprobante del pago de derechos por el monto y con la referencia que se le indicaron.">
+        <legend class="etiqueta">¿Presentó el comprobante de pago por ese monto y con esa referencia?</legend>
+        <!-- autocomplete off: decisión de quien atiende. -->
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="pago" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="pago" autocomplete="off" value="no"><span><span class="opcion-nombre">No</span></span></label>
+        </div>
+      </fieldset>
+    </section>
+    </div>
+
+    <!-- 4 · Factura -->
+    <div data-si="pedir_factura=si">
+    <section class="tarjeta" aria-labelledby="t-factura">
+      <h3 class="titulo-paso" id="t-factura">4. Factura</h3>
+      <p class="ayuda ayuda-bloque">La Secretaría emite la factura del pago; cárguela aquí y capture sus datos como aparecen en ella.</p>
+      <div class="campo" data-campo="factura_pago" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="FACTURA DEL PAGO"
+           data-sensible data-finalidad="Comprobar el pago de derechos del trámite." data-uso="Guardar la factura del pago en el expediente (apd.documento, requisito factura_pago).">
+        <span class="etiqueta" id="et-factura_pago">Factura</span>
+        <p class="ayuda" id="ay-factura_pago">En PDF.</p>
+        <div data-archivos>
+          <button type="button" class="zona-carga" aria-describedby="ay-factura_pago">
+            <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+            <span class="zona-carga-texto">Elegir archivo</span>
+            <span class="zona-carga-limite" data-limite-texto></span>
+          </button>
+          <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+          <input type="file" hidden autocomplete="off">
+          <div data-rechazos></div>
+          <ul class="lista-arch"></ul>
+        </div>
+      </div>
+      <div class="campo" data-campo="factura_rfc" data-formato="rfc" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura del pago." data-uso="RFC de la factura (apd.solicitud.factura_rfc).">
+        <label class="etiqueta" for="factura_rfc">RFC a cuyo favor se emitió</label>
+        <p class="ayuda">12 caracteres si es empresa; 13 si es persona.</p>
+        <!-- autocomplete off: es el dato de la factura que tiene a la vista, no de quien llena. -->
+        <input class="control control-corto" id="factura_rfc" name="factura_rfc" type="text" maxlength="13" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="campo" data-campo="factura_razon_social" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura del pago." data-uso="Nombre o razón social de la factura (apd.solicitud.factura_razon_social).">
+        <label class="etiqueta" for="factura_razon_social">Nombre o razón social</label>
+        <!-- autocomplete off: es el dato de la factura, no de quien llena. -->
+        <input class="control" id="factura_razon_social" name="factura_razon_social" type="text" maxlength="200" autocomplete="off">
+      </div>
+      <div class="campo" data-campo="factura_folio_fiscal" data-formato="folio-fiscal" data-requerido data-uso="Folio fiscal de la factura, para su seguimiento; no se repite (apd.solicitud.factura_folio_fiscal).">
+        <label class="etiqueta" for="factura_folio_fiscal">Folio fiscal</label>
+        <p class="ayuda">Los 36 caracteres del folio de la factura, con sus guiones.</p>
+        <!-- autocomplete off: es el dato de la factura. -->
+        <input class="control" id="factura_folio_fiscal" name="factura_folio_fiscal" type="text" maxlength="36" autocomplete="off" spellcheck="false">
+      </div>
+    </section>
+    </div>
+
+    <!-- Resultado -->
+    <section class="tarjeta" aria-labelledby="t-resultado">
+      <h3 class="titulo-paso" id="t-resultado">Resultado de la cita</h3>
+      <p class="resumen-revision" data-resumen role="status"></p>
+
+      <div data-si="resultado=no_se_presento|otra_cita">
+        <p class="ayuda ayuda-bloque" data-cita-ayuda>Asígnele una cita nueva. Conserva el monto de pago que se le indicó.</p>
+        <div class="fila">
+          <div class="campo" data-campo="cita_fecha" data-formato="fecha" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
+            <label class="etiqueta" for="cita_fecha">Fecha de la cita nueva</label>
+            <!-- autocomplete off: la fecha la elige quien atiende. -->
+            <input class="control" id="cita_fecha" name="cita_fecha" type="date" autocomplete="off">
+          </div>
+          <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).">
+            <label class="etiqueta" for="cita_hora">Hora</label>
+            <p class="ayuda" id="ay-cita-hora">De 24 horas. <span class="pendiente">Horarios de prueba: los define el área (P69).</span></p>
+            <!-- Lista cerrada de horarios (Liber, 2026-10-17): sin texto libre. Se sustituye por los horarios de citas que
+                 defina el área (P69). autocomplete off: la hora la elige quien atiende. -->
+            <div class="select control-corto"><select class="control control-select" id="cita_hora" name="cita_hora" autocomplete="off" aria-describedby="ay-cita-hora">
+              <option value="">Elija</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00">14:00</option>
+            </select></div>
+          </div>
+        </div>
+        <!-- Cuántas citas hay ya ese día y a esa hora (auditoría de tareas, M5); el cupo por horario es P69 -->
+        <p class="ayuda carga-citas" data-carga-cita aria-live="polite" hidden></p>
+      </div>
+
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Registrar la cita</button>
+      </div>
+      <p class="ayuda">El sistema guarda quién atendió la cita, cuándo y qué se registró.</p>
+    </section>
+  </form>
+
+  <!-- Visor del documento que cargó la persona: todas las hojas. En computadora queda fijo a la derecha; en pantalla
+       chica se abre a pantalla completa (módulo visor del estándar). -->
+  <dialog class="visor" data-visor aria-labelledby="visor-titulo">
+    <div class="visor-cabeza">
+      <div class="visor-nombre">
+        <h3 class="visor-titulo" id="visor-titulo" data-visor-titulo>Documento</h3>
+        <p class="visor-archivo mono" data-visor-archivo></p>
+      </div>
+      <button type="button" class="btn-enlace visor-cerrar" data-visor-accion="cerrar">Cerrar</button>
+    </div>
+    <div class="visor-barra" role="toolbar" aria-label="Herramientas del visor">
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="alejar" aria-label="Alejar"><span class="visor-paso" aria-hidden="true">−</span></button>
+      <output class="visor-zoom" data-visor-zoom aria-live="polite">100 %</output>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="acercar" aria-label="Acercar"><span class="visor-paso" aria-hidden="true">+</span></button>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="ajustar">Ajustar al ancho</button>
+      <button type="button" class="btn btn-secundario btn-chico" data-visor-accion="girar">Girar</button>
+      <a class="btn-enlace visor-abrir" data-visor-abrir href="#" target="_blank" rel="noopener">Abrir en otra pestaña<svg class="icono icono-sm" aria-hidden="true"><use href="#i-externo"></use></svg><span class="solo-lector"> (se abre en otra pestaña)</span></a>
+    </div>
+    <p class="visor-pagina" data-visor-pagina aria-live="polite"></p>
+    <p class="aviso visor-aviso" data-visor-aviso hidden></p>
+    <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
+    <p class="visor-nota pendiente" data-visor-nota hidden></p>
+  </dialog>
+  </div>
+
+  <!-- Después de registrar: lo que pasó y qué sigue -->
+  <section class="tarjeta" data-hecho hidden tabindex="-1" aria-labelledby="t-hecho">
+    <h2 class="titulo-paso" id="t-hecho" data-hecho-titulo></h2>
+    <div data-hecho-datos></div>
+    <p data-hecho-texto></p>
+    <p class="texto-gris">Versión de prueba: lo registrado se guarda sólo en este navegador; la persona lo ve en «Mis trámites» si entra en este mismo navegador.</p>
+    <div class="acciones acciones-izq" data-hecho-acciones>
+      <a class="btn-atras" href="citas.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Citas de cotejo</a>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.39"></script>
+<script src="app/apd.js?v=0.39"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.39"></script>
+<script src="app/personal.js?v=0.39"></script>
+<script src="app/config-cotejo.js?v=0.39"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="app/config-usted.js?v=0.39"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/visor/visor.js"></script>
+<script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<script src="app/cotejo.js?v=0.39"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.39"></script>
+<script src="app/pruebas.js?v=0.39"></script>
+<script src="app/version-visible.js?v=0.39"></script>
+</body>
+</html>

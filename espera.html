@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Espera de grupo · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Personas en espera de grupo de un curso, para armar un grupo o completarlo. Personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="app/apd.css?v=0.39">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+  <p><a class="btn-atras" href="grupos.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Grupos</a></p>
+
+  <section class="tarjeta" aria-labelledby="t-espera">
+    <h2 class="titulo-paso" id="t-espera">En espera</h2>
+    <p class="bajada" data-orden>De la que más espera a la más reciente; desde los 31 días se marca como prioritaria.</p>
+    <p class="resumen-filtro" role="status" data-cuenta>Cargando la espera…</p>
+
+    <!-- Cuenta de elegidas siempre a la vista, con un enlace a los botones del final (auditoría de tareas, M4) -->
+    <div class="barra-seleccion" data-barra hidden>
+      <span data-barra-cuenta>Ninguna elegida</span>
+      <a class="btn-enlace" href="#acciones-espera" data-barra-ir hidden>Agregar o crear el grupo</a>
+    </div>
+    <div class="tabla-marco" data-tabla data-clave="persona">
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector" data-leyenda>Personas en espera de grupo</caption>
+        <thead><tr data-encabezado></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+    </div>
+
+    <div class="seleccion" id="acciones-espera" data-seleccion hidden>
+      <p role="status" data-elegidas>Ninguna persona elegida.</p>
+      <!-- Lo que impidió agregar o crear, junto a los botones (APD.pintaAviso) -->
+      <div data-error-eleccion hidden></div>
+      <div class="seleccion-acciones" data-destinos></div>
+      <p class="ayuda" data-destino-ayuda>Un grupo combinado recibe cualquier mezcla de organizaciones e independientes. Si una organización no llega al mínimo, sus personas van a un grupo combinado.</p>
+    </div>
+  </section>
+
+  <!-- Crear un grupo con personas de una sola organización: específico o combinado -->
+  <dialog class="dialogo" id="dlg-crear" aria-labelledby="t-crear">
+    <form id="crear" data-formkit="manual" action="#" method="post">
+      <h2 class="titulo-bloque dialogo-titulo" id="t-crear">Crear un grupo</h2>
+      <p data-crear-de></p>
+      <fieldset class="grupo" data-campo="integracion" data-requerido data-uso="Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).">
+        <legend class="etiqueta">¿De quiénes es el grupo?</legend>
+        <!-- autocomplete off: decisión de quien arma el grupo. -->
+        <div class="opciones-lista">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de esa organización</span><span class="opcion-desc">Recibe únicamente personas de esa organización.</span><span class="opcion-desc opcion-desc-aviso" data-especifico-aviso hidden></span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="combinado"><span><span class="opcion-nombre">Combinado</span><span class="opcion-desc">Recibe personas de cualquier organización e independientes.</span></span></label>
+        </div>
+      </fieldset>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones dialogo-acciones">
+        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Volver sin cambios</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Crear el grupo</button>
+      </div>
+    </form>
+  </dialog>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.39"></script>
+<script src="app/apd.js?v=0.39"></script>
+<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.39"></script>
+<script src="app/personal.js?v=0.39"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="app/config-usted.js?v=0.39"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/tabla/tabla.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<script src="app/espera.js?v=0.39"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.39"></script>
+<script src="app/pruebas.js?v=0.39"></script>
+<script src="app/version-visible.js?v=0.39"></script>
+</body>
+</html>

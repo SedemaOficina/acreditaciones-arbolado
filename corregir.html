@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cargar el documento correcto · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Carga el mismo día el documento que no coincidió en tu cita de cotejo. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="app/apd.css?v=0.39">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · nada de lo que captures se envía · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
+  </div>
+</header>
+
+<main class="pagina" id="contenido">
+  <div class="sesion" data-sesion></div>
+  <p><a class="btn-atras" href="tramites.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Mis trámites</a></p>
+  <p class="bajada" data-cargando>Cargando tu cita…</p>
+
+  <!-- Corrección del mismo día (decisión 2026-10-17): en el cotejo un documento no coincidió con el que cargó la
+       persona, y la cita quedó en pausa. Aquí carga el correcto; el personal retoma el cotejo de ese documento. -->
+  <form id="formulario" class="tarjeta" data-formkit="manual" action="#" method="post" aria-labelledby="t-corregir" hidden>
+    <h2 class="titulo-paso" id="t-corregir">Carga el documento correcto</h2>
+    <p class="bajada" data-bajada></p>
+    <p class="leyenda-oblig">Los campos con <span aria-hidden="true">*</span> son obligatorios.</p>
+
+    <!-- Campos auxiliares: los calcula la página y el servidor los vuelve a calcular; no viajan. -->
+    <!-- corregir-auxiliares:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+      <input type="hidden" id="cargar_identificacion_oficial" name="cargar_identificacion_oficial" value="no" data-campo="cargar_identificacion_oficial" data-auxiliar data-uso="Pedir «Identificación oficial» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_curp" name="cargar_curp" value="no" data-campo="cargar_curp" data-auxiliar data-uso="Pedir «Clave Única de Registro de Población (CURP)» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_comprobante_domicilio" name="cargar_comprobante_domicilio" value="no" data-campo="cargar_comprobante_domicilio" data-auxiliar data-uso="Pedir «Comprobante de domicilio» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_constancia_situacion_fiscal" name="cargar_constancia_situacion_fiscal" value="no" data-campo="cargar_constancia_situacion_fiscal" data-auxiliar data-uso="Pedir «Constancia de situación fiscal» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_comprobante_estudios" name="cargar_comprobante_estudios" value="no" data-campo="cargar_comprobante_estudios" data-auxiliar data-uso="Pedir «Comprobante de estudios» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_curriculum_vitae" name="cargar_curriculum_vitae" value="no" data-campo="cargar_curriculum_vitae" data-auxiliar data-uso="Pedir «Currículum vitae» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+      <input type="hidden" id="cargar_comprobantes_experiencia" name="cargar_comprobantes_experiencia" value="no" data-campo="cargar_comprobantes_experiencia" data-auxiliar data-uso="Pedir «Comprobantes de experiencia» sólo si no coincidió en la cita en pausa; lo calculan la página y el servidor.">
+    <!-- corregir-auxiliares:fin -->
+
+    <p class="ayuda ayuda-bloque">Sólo PDF. Debe ser el mismo documento que llevas a tu cita.</p>
+    <!-- corregir-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
+        <div data-si="cargar_identificacion_oficial=si">
+          <div class="campo" data-campo="doc_identificacion_oficial" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="IDENTIFICACION OFICIAL"
+               data-uso="Sustituir «Identificación oficial» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_identificacion_oficial">Identificación oficial</span>
+            <p class="ayuda" id="ay-doc_identificacion_oficial" data-diferencia="identificacion_oficial"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_identificacion_oficial">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="cargar_curp=si">
+          <div class="campo" data-campo="doc_curp" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURP"
+               data-uso="Sustituir «Clave Única de Registro de Población (CURP)» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_curp">Clave Única de Registro de Población (CURP)</span>
+            <p class="ayuda" id="ay-doc_curp" data-diferencia="curp"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_curp">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="cargar_comprobante_domicilio=si">
+          <div class="campo" data-campo="doc_comprobante_domicilio" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE DOMICILIO"
+               data-uso="Sustituir «Comprobante de domicilio» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_comprobante_domicilio">Comprobante de domicilio</span>
+            <p class="ayuda" id="ay-doc_comprobante_domicilio" data-diferencia="comprobante_domicilio"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_comprobante_domicilio">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="cargar_constancia_situacion_fiscal=si">
+          <div class="campo" data-campo="doc_constancia_situacion_fiscal" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CONSTANCIA DE SITUACION FISCAL"
+               data-uso="Sustituir «Constancia de situación fiscal» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_constancia_situacion_fiscal">Constancia de situación fiscal</span>
+            <p class="ayuda" id="ay-doc_constancia_situacion_fiscal" data-diferencia="constancia_situacion_fiscal"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_constancia_situacion_fiscal">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="cargar_comprobante_estudios=si">
+          <div class="campo" data-campo="doc_comprobante_estudios" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTE DE ESTUDIOS"
+               data-uso="Sustituir «Comprobante de estudios» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_comprobante_estudios">Comprobante de estudios</span>
+            <p class="ayuda" id="ay-doc_comprobante_estudios" data-diferencia="comprobante_estudios"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_comprobante_estudios">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="cargar_curriculum_vitae=si">
+          <div class="campo" data-campo="doc_curriculum_vitae" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="CURRICULUM VITAE"
+               data-uso="Sustituir «Currículum vitae» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_curriculum_vitae">Currículum vitae</span>
+            <p class="ayuda" id="ay-doc_curriculum_vitae" data-diferencia="curriculum_vitae"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_curriculum_vitae">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+        <div data-si="cargar_comprobantes_experiencia=si">
+          <div class="campo" data-campo="doc_comprobantes_experiencia" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="COMPROBANTES DE EXPERIENCIA"
+               data-uso="Sustituir «Comprobantes de experiencia» por el que coincide con el que llevó a su cita." data-finalidad="Revisar que la persona cumple los requisitos de la acreditación." data-sensible>
+            <span class="etiqueta" id="et-doc_comprobantes_experiencia">Comprobantes de experiencia</span>
+            <p class="ayuda" id="ay-doc_comprobantes_experiencia" data-diferencia="comprobantes_experiencia"></p>
+            <div data-archivos>
+              <button type="button" class="zona-carga" aria-describedby="ay-doc_comprobantes_experiencia">
+                <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+                <span class="zona-carga-texto">Elegir archivo</span>
+                <span class="zona-carga-limite" data-limite-texto></span>
+              </button>
+              <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+              <input type="file" hidden autocomplete="off">
+              <div data-rechazos></div>
+              <ul class="lista-arch"></ul>
+            </div>
+          </div>
+        </div>
+    <!-- corregir-documentos:fin -->
+
+    <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+    <div class="acciones">
+      <button type="submit" class="btn btn-primario" data-accion="enviar">Cargar el documento</button>
+    </div>
+  </form>
+
+  <section class="tarjeta" data-hecho hidden tabindex="-1" aria-labelledby="t-hecho">
+    <h2 class="titulo-paso" id="t-hecho" data-hecho-titulo>Listo: ya cargaste el documento</h2>
+    <p data-hecho-texto></p>
+    <p class="texto-gris">Versión de prueba: el archivo se guarda sólo en este navegador.</p>
+    <div class="acciones acciones-izq">
+      <a class="btn btn-secundario" href="tramites.html">Ir a Mis trámites</a>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.39"></script>
+<script src="app/apd.js?v=0.39"></script>
+<!-- Versión de prueba: lo cargado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.39"></script>
+<script src="app/config-corregir.js?v=0.39"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="app/corregir.js?v=0.39"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.39"></script>
+<script src="app/pruebas.js?v=0.39"></script>
+<script src="app/version-visible.js?v=0.39"></script>
+</body>
+</html>

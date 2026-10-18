@@ -1,0 +1,44 @@
+/* =========================================================
+   combo.css · Módulo «combo» · nivel RECOMENDADO
+   Lista desplegable con búsqueda. Depende de: nucleo.css (.control).
+   Bloques: componentes → estados.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.combo{position:relative}
+.combo-lista{
+  position:absolute;
+  top:calc(100% + var(--e-1));
+  left:0;
+  right:0;
+  z-index:var(--z-lista);
+  max-height:var(--alto-lista-max);
+  padding:var(--e-1) 0;
+  overflow-y:auto;
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-ctrl);
+  box-shadow:var(--sombra-lista);
+  scrollbar-width:thin;
+  scrollbar-color:var(--borde) transparent;
+}
+.combo-opcion{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:var(--e-3);
+  min-height:var(--objetivo-min);
+  padding:var(--e-3);
+  line-height:var(--interlineado-compacto);
+  cursor:pointer;
+}
+.combo-nombre{overflow-wrap:anywhere}
+.combo-detalle{flex-shrink:0;font-size:var(--t-sm);color:var(--gris-cl)}
+.combo-vacio{padding:var(--e-3);font-size:var(--t-sm);font-style:italic;color:var(--gris-cl)}
+
+/* @bloque estados */
+
+/* La opción activa se marca con aria-selected, el mismo atributo que anuncia el lector. */
+.combo-opcion:hover,.combo-opcion[aria-selected="true"]{background:var(--azul-cl)}
+.combo-opcion[aria-selected="true"] .combo-nombre{color:var(--azul);font-weight:var(--peso-semi)}

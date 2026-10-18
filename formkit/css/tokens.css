@@ -1,0 +1,175 @@
+/* =========================================================
+   tokens.css · Estándar de formularios del SIA (SEDEMA) · v1.3.1
+
+   El ÚNICO lugar donde viven color, tipografía, tamaño, radio, espaciado,
+   capa, duración y punto de quiebre. Ninguna otra hoja del paquete escribe
+   un valor literal de esos conceptos: si hace falta uno que no existe, se
+   declara aquí con su función (FRM-67). El auditor lo comprueba.
+
+   Orden del archivo: tipografías autoalojadas → variables en :root.
+   Las adaptaciones por puntero y por ancho viven en cada hoja, no aquí.
+
+   PUNTOS DE QUIEBRE. CSS no admite variables dentro de @media, así que los
+   tokens --bp-* son la referencia documentada y el auditor rechaza cualquier
+   @media que no use exactamente esos valores. El diseño parte del móvil:
+   toda adaptación se escribe con (min-width: …).
+       --bp-sm 560px  teléfono grande / apaisado
+       --bp-md 760px  tableta y escritorio angosto
+       --bp-lg 1024px escritorio
+   ========================================================= */
+
+/* @bloque variables */
+
+/* ---------- Tipografías autoalojadas ----------
+   Subconjunto latino (cubre á é í ó ú ñ ü ¿ ¡) y sólo los pesos que el
+   estándar usa: Cabin 600 y 700 para títulos; Roboto 400, 500 y 700 para el
+   cuerpo (decisión C12). Sin CDN: el formulario abre sin señal y no le dice
+   a un tercero quién lo abrió (FRM-77). font-display:swap evita texto
+   invisible mientras carga. */
+@font-face{font-family:'Cabin';font-style:normal;font-weight:600;font-display:swap;src:url('../fuentes/cabin-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Cabin';font-style:normal;font-weight:700;font-display:swap;src:url('../fuentes/cabin-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-display:swap;src:url('../fuentes/roboto-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-display:swap;src:url('../fuentes/roboto-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-display:swap;src:url('../fuentes/roboto-latin-700-normal.woff2') format('woff2')}
+
+:root{
+  /* La página se declara clara: así el navegador no pinta en negro los
+     controles del sistema (lista nativa, selector de fecha). */
+  color-scheme:light;
+
+  /* ---------- Color: un color, un trabajo ----------
+     Seis familias y ninguna suelta. Los contrastes de cada par están medidos
+     sobre cada fondo real en herramientas/pares-contraste.json.
+       guinda → identidad, títulos y la ÚNICA acción principal por pantalla
+       dorado → filetes; como texto sólo en su variante oscura
+       azul   → lo que se toca y lo que quedó elegido
+       rojo   → error: lo que impide continuar; acción destructiva
+       ámbar  → atención sin bloqueo: advertencia a la persona y pendiente del proyecto
+       verde  → el sistema confirma que recibió o guardó
+       neutro → aviso: lo que hay que leer sin alarmarse */
+
+  /* Identidad */
+  --guinda:#9D2148;
+  --guinda-osc:#7A1A38;      /* acción principal al pasar el cursor o pulsar */
+  --guinda-cl:#F7F1F3;       /* fondo tenue de identidad y fila alterna de tabla */
+  --dorado:#B28E5C;          /* SÓLO filetes y rellenos decorativos (3.04:1) */
+  --dorado-txt:#8C6C3E;      /* el dorado cuando debe leerse (4.85:1 sobre blanco) */
+
+  /* Neutros */
+  --texto:#2B2D2E;           /* cuerpo y respuesta de la persona */
+  --gris:#55585A;            /* texto secundario, marca de obligatorio */
+  --gris-cl:#6B6E70;         /* ayudas, contadores, marcadores de campo */
+  --linea:#DCDEE0;           /* separa; NUNCA delimita un control (1.35:1) */
+  --borde:#878B8E;           /* delimita un control: 3:1 o más sobre blanco y página */
+  --fondo:#F4F5F6;           /* fondo de página */
+  --blanco:#FFFFFF;
+  --beige:#FFFEF8;           /* encabezado y pie institucionales */
+  --aviso-bg:#F7F8F9;        /* fondo del aviso neutro y de lo deshabilitado */
+
+  /* Interacción */
+  --azul:#1A56A8;            /* lo tocable y lo elegido */
+  --azul-cl:#EEF3FA;         /* fondo de lo elegido o señalado */
+  --foco:#1A73C7;            /* anillo de foco: no se usa para nada más */
+
+  /* Función */
+  --error:#B3261E;  --error-bg:#FDF3F2;  --error-txt:#8C1D18;
+  --pend:#8A5200;   --pend-bg:#FFF3CD;   --pend-txt:#6B4A00;
+  --ok:#1B6B43;     --ok-bg:#F1F8F4;     --ok-txt:#145032;
+
+  /* Superficies auxiliares */
+  --mapa-bg:#E8EAEC;
+  --carga-bg:#FCFCFD;
+  --solo-lectura-bg:#F9FAFB; /* campo de solo lectura: se distingue del deshabilitado por el borde, no sólo por el fondo */
+
+  /* Transparencias derivadas (sólo aquí, nunca sueltas) */
+  --velo:rgba(0,0,0,.55);
+  --sombra-color:rgba(0,0,0,.12);
+  --halo-foco:rgba(26,115,199,.18);
+
+  /* ---------- Tipografía ----------
+     Los tamaños grandes son fluidos: crecen con el ancho de pantalla entre
+     un mínimo legible en teléfono y un máximo en escritorio. El cuerpo nunca
+     baja de 16 px: en iOS un campo con letra menor hace zoom al enfocarse. */
+  --fuente-titulo:'Cabin','Roboto',Arial,sans-serif;
+  --fuente-cuerpo:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  --fuente-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --t-xs:12px; --t-sm:13px; --t-md:14px; --t-base:16px;
+  --t-lg:clamp(18px, 1.5vw + 12px, 20px);
+  --t-xl:clamp(21px, 2vw + 12px, 24px);
+  --t-2xl:clamp(24px, 3vw + 12px, 30px);
+
+  --peso-normal:400; --peso-medio:500; --peso-semi:600; --peso-fuerte:700;
+  --interlineado-cuerpo:1.55;
+  --interlineado-compacto:1.35;
+  --interlineado-titulo:1.2;
+  --tracking-rotulo:.06em;
+
+  /* ---------- Espaciado: múltiplos de 4; el de sección es fluido ---------- */
+  --e-1:4px;  --e-2:8px;  --e-3:12px; --e-4:16px; --e-5:20px;
+  --e-6:24px; --e-7:32px; --e-8:40px; --e-9:48px; --e-11:96px;
+  --e-seccion:clamp(16px, 2vw + 8px, 32px);   /* relleno de tarjeta y separación entre bloques */
+  --e-pagina:clamp(16px, 3vw, 40px);          /* margen lateral de la página: 16 px mínimo en móvil */
+
+  /* ---------- Radios ---------- */
+  --r-ctrl:6px; --r-caja:10px; --r-pill:999px;
+
+  /* ---------- Trazos ---------- */
+  --b-1:1px; --b-2:2px; --b-3:3px; --b-4:4px;
+  --foco-ancho:3px;
+  --foco-sep:2px;
+
+  /* ---------- Tamaños ---------- */
+  --objetivo-min:44px;       /* mínimo de cualquier control que se toca (decisión del estándar; AA exige 24) */
+  --alto-control:48px;       /* campos y botones */
+  --alto-opcion:40px;        /* opción corta con ratón; con el dedo sube a --alto-control */
+  --tam-casilla:20px;
+  --icono:20px;              /* icono junto a texto */
+  --icono-sm:16px;           /* icono dentro de un mensaje de error o ayuda */
+  --bolita:28px;             /* círculo de la barra de pasos */
+  --alto-logo:48px;
+  --marca-acuse:64px;
+  --ancho-pagina:980px;
+  --ancho-lectura:70ch;
+  --ancho-dialogo:560px;
+  --ancho-acuse:460px;
+  --ancho-tarjeta-min:230px;
+  --ancho-boton-min:96px;
+  --ancho-chip-max:240px;
+  --alto-mapa:clamp(260px, 45vh, 420px);
+  --alto-lista-max:320px;
+  --alto-texto-min:130px;
+  --alto-barra-fija:150px;
+  --alto-barra-fija-movil:112px;
+  --alto-tooltip-max:200px;
+  --ancho-tooltip-max:280px;
+  --ancho-progreso-min:120px;
+  --ancho-tabla-min:560px;   /* por debajo, la tabla pasa a tarjetas apiladas */
+  --vista-previa:96px;       /* miniatura de imagen en la lista de archivos */
+
+  /* ---------- Puntos de quiebre (referencia; ver nota de cabecera) ---------- */
+  --bp-sm:560px; --bp-md:760px; --bp-lg:1024px;
+
+  /* ---------- Área segura (teléfonos con muesca) ---------- */
+  --safe-inf:env(safe-area-inset-bottom, 0px);
+  --safe-izq:env(safe-area-inset-left, 0px);
+  --safe-der:env(safe-area-inset-right, 0px);
+
+  /* ---------- Capas de apilamiento ---------- */
+  --z-base:0;
+  --z-lista:30;      /* listas desplegables y tooltips */
+  --z-barra:40;      /* barra de pasos fija y barra de acciones fija */
+  --z-dialogo:50;    /* hoja inferior y diálogo con polyfill */
+
+  /* ---------- Movimiento ---------- */
+  --dur-rapida:.15s;
+  --dur-media:.3s;
+  --dur-nula:.01ms;
+
+  /* ---------- Opacidad ---------- */
+  --op-inactivo:.45;
+
+  /* ---------- Sombras ---------- */
+  --sombra-lista:0 6px 18px var(--sombra-color);
+  --sombra-hoja:0 -6px 24px var(--sombra-color);
+}

@@ -1,0 +1,50 @@
+/* =========================================================
+   tabla.css · Módulo «tabla» · nivel OPCIONAL
+
+   Tabla de consulta: encabezado guinda, filas alternas, caption como
+   título. En teléfono (por debajo de --bp-md) cada fila es una tarjeta y
+   cada celda muestra su encabezado desde data-etiqueta; desde tableta es
+   tabla de verdad con desplazamiento horizontal controlado si no cabe.
+   Depende de: nucleo.css. Bloques: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.tabla-marco{margin:var(--e-4) 0;overflow-x:auto}
+.tabla{width:100%;border-collapse:collapse;font-size:var(--t-md)}
+.tabla-titulo{padding:var(--e-2) 0 var(--e-3);font-family:var(--fuente-titulo);font-size:var(--t-lg);font-weight:var(--peso-semi);text-align:left;color:var(--guinda)}
+/* Teléfono: el encabezado se oculta visualmente (sigue para el lector) y las celdas se apilan. */
+.tabla thead{position:absolute;width:var(--b-1);height:var(--b-1);overflow:hidden;clip:rect(0,0,0,0)}
+.tabla tr{display:block;margin-bottom:var(--e-3);padding:var(--e-2) var(--e-3);background:var(--blanco);border:var(--b-1) solid var(--linea);border-radius:var(--r-ctrl)}
+.tabla td{display:flex;flex-wrap:wrap;gap:var(--e-1) var(--e-3);padding:var(--e-2) 0;border-bottom:var(--b-1) solid var(--linea);vertical-align:top}
+.tabla td:last-child{border-bottom:0}
+.tabla td::before{content:attr(data-etiqueta);flex:0 0 40%;font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--gris)}
+/* Columna cuyo encabezado es sólo para el lector de pantalla (acciones): en teléfono tampoco se ve su rótulo. */
+.tabla td[data-etiqueta-oculta]::before{display:none}
+.tabla th{padding:var(--e-2) var(--e-3);background:var(--guinda);font-family:var(--fuente-titulo);font-size:var(--t-md);font-weight:var(--peso-fuerte);text-align:left;color:var(--blanco)}
+.tabla-orden{display:inline-flex;align-items:center;gap:var(--e-1);min-height:var(--objetivo-min);padding:0;background:none;border:0;font:inherit;color:inherit}
+.tabla-orden-icono{opacity:var(--op-inactivo);transition:transform var(--dur-rapida)}
+.tabla-acciones{display:flex;gap:var(--e-1)}
+.tabla-vacia{padding:var(--e-5);text-align:center;color:var(--gris)}
+/* Tabla de captura: filas repetibles con el mismo marco. */
+.tabla-captura .repetible-fila{padding:var(--e-3)}
+
+/* @bloque estados */
+
+[aria-sort="ascending"] .tabla-orden-icono{opacity:1;transform:rotate(180deg)}
+[aria-sort="descending"] .tabla-orden-icono{opacity:1}
+.tabla[aria-busy="true"]{opacity:var(--op-inactivo)}
+/* Fila filtrada con [hidden]: «.tabla tr» declara display y le ganaría al atributo (FRM-69). */
+.tabla tr[hidden]{display:none}
+
+/* @bloque adaptaciones */
+
+@media (min-width:760px){
+  .tabla{min-width:var(--ancho-tabla-min)}
+  .tabla thead{position:static;width:auto;height:auto;overflow:visible;clip:auto}
+  .tabla tr{display:table-row;margin:0;padding:0;background:none;border:0;border-radius:0}
+  .tabla td{display:table-cell;padding:var(--e-2) var(--e-3)}
+  .tabla td::before{display:none}
+  /* Filas alternas contadas sólo entre las visibles: al filtrar con [hidden], el rayado no pierde el ritmo. */
+  .tabla tr:nth-child(even of :not([hidden])){background:var(--guinda-cl)}
+}
