@@ -93,3 +93,18 @@ prueba con lada 55, contraseñas de prueba sin sal.
 5. Si la renovación de dictaminador vuelve a pedir los años de experiencia, y qué documentos pide a quien viene del
    registro anterior sin archivos.
 6. Mover la guía del SIA a un repositorio privado.
+
+### Respuestas de Liber (2026-10-18)
+
+1. P94: el último día se registra al pasar lista en el examen. P123: se cuentan todas las inasistencias; a la segunda
+   se cierra.
+2. P14: CURP que coincida y nombre sin acentos, admitiendo una letra distinta; identidad en el cotejo.
+3. El grupo que vuelve a integración y los 7 días: queda pendiente (P125).
+4. El sexo es dato interno; la situación del grado sólo con licenciatura (con posgrado se asume titulada); la entrega,
+   en la oficina del Vivero.
+5. La renovación de dictaminador no vuelve a pedir experiencia; quien viene del registro anterior sin archivos carga
+   todos los documentos, como solicitud nueva.
+6. La guía del SIA se queda como está.
+
+Orden: primero el estándar de formularios 1.4.1, después estas correcciones.
+

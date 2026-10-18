@@ -854,4 +854,7 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Aviso a Liber: borrar en sus navegadores lo que cargó con datos reales en la prueba (el sitio comparte dirección con
   los demás sitios de SedemaOficina en GitHub Pages).
 - Pendiente nuevo: P124 (quién pasa un grupo a «en curso» y a «concluido»). El resto espera la aprobación de Liber.
+- 2026-10-18 · Respuestas de Liber a las preguntas de la auditoría integral (DECISIONES, «Decisiones del 2026-10-18»):
+  P94, P123 y P14 resueltos; P125 nuevo (grupo que vuelve a integración y los 7 días). Sigue la actualización al
+  estándar de formularios 1.4.1 y después las correcciones de la auditoría.
 

@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-17",
+  "actualizado": "2026-10-18",
   "grupos": [
     {
       "id": "direccion",
@@ -119,14 +119,6 @@
       "desde": "2026-10-14",
       "titulo": "Formato del número de expediente (hoy provisional EXP-AAAA-NNNN)",
       "recomendacion": "Conservarlo, con el año en que se abrió el expediente. Como es uno por persona, el número no cambia aunque haga trámites en otros años."
-    },
-    {
-      "id": "P14",
-      "grupo": "liber",
-      "bloquea": "etapa 3",
-      "desde": "2026-10-14",
-      "titulo": "Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro?",
-      "recomendacion": "Sí basta para abrir la cuenta, porque nadie llega a un curso sin presentar su identificación oficial en el cotejo."
     },
     {
       "id": "P15",
@@ -497,14 +489,6 @@
       "recomendacion": "Qué es: entre el día en que el personal confirma un grupo y el primer día de su curso deben pasar al menos 7 días. Por ejemplo, un grupo confirmado el lunes 19 de octubre puede empezar el lunes 26 o después, pero no el viernes 23; si se intenta, la base lo rechaza con el mensaje «El curso debe empezar al menos 7 días después de confirmar el grupo». Para qué: que la persona se entere (por «Mis trámites» y, con el servicio de correo, por correo, P23), pida permiso en su trabajo y se organice. Cómo se cambia: el 7 es el parámetro dias_anticipacion_grupo de la base; la administración puede cambiarlo sin programar y el cambio queda en la bitácora. Sólo se revisa al confirmar: no afecta a los grupos ya confirmados. Falta: que el área confirme si 7 días es el número correcto."
     },
     {
-      "id": "P94",
-      "grupo": "liber",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-17",
-      "titulo": "¿Dónde se registra la asistencia del último día del curso: en el aula o al pasar lista en el PILARES?",
-      "recomendacion": "Hoy el prototipo del examen la registra al pasar lista en el salón de cómputo del PILARES (cada persona marcada «Presente» cuenta como asistida ese día y recibe su código); la pantalla de grupos y asistencia la captura día por día en el aula. Hay que escoger una para que no se capture dos veces ni haya dos datos distintos. Opciones: (a) el último día se captura sólo al pasar lista en el PILARES (recomendada: es una sola captura y coincide con quien de verdad presentó el examen); (b) se captura en el aula como los demás días y en el PILARES sólo se comprueba la identidad y se genera el código; (c) las dos, y quien falta a una de ellas no tiene derecho a examen. Coordinar la decisión con la pantalla de grupos y asistencia. Liber lo dejó pendiente (2026-10-17): mientras se decide, la pantalla de asistencia captura del día 1 al penúltimo y el último día se toma del pase de lista del examen (opción a), sin capturarlo dos veces."
-    },
-    {
       "id": "P95",
       "grupo": "estandar",
       "bloquea": "no",
@@ -689,20 +673,20 @@
       "recomendacion": "Hallazgo de la auditoría de tareas (M11). Con varias personas en revisión, nada impide que dos abran la misma solicitud de la bandeja. En la etapa 3, con la API: marcar en la bandeja «La está revisando …» mientras alguien la tiene abierta y, al registrar, avisar si otra persona ya la decidió (la base rechaza el segundo cambio de estado). En la versión de prueba no aplica: todo ocurre en un solo navegador."
     },
     {
-      "id": "P123",
-      "grupo": "direccion",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "¿La cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud se vuelve a validar?",
-      "recomendacion": "Hallazgo de la auditoría de tareas (A4); Liber lo deja pendiente porque no tiene la respuesta. Ejemplo: la persona falta a su primera cita (1 inasistencia) y recibe cita nueva; a ésa llega, pero un documento no coincide y la solicitud regresa con observaciones; corrige, se valida otra vez y recibe otra cita; falta. Opción A (así funciona hoy, recomendada): sigue acumulando; es su segunda inasistencia en la misma solicitud y la solicitud se cierra. Es la lectura literal de la decisión del 2026-10-14 y evita acumular faltas sin límite. Opción B: se reinicia al validar de nuevo y recibe otra cita. Mientras se decide, la base y la pantalla cuentan todas las inasistencias de la solicitud (parámetro inasistencias_cotejo_maximas = 2)."
-    },
-    {
       "id": "P124",
       "grupo": "direccion",
       "bloquea": "etapa 2",
       "desde": "2026-10-17",
       "titulo": "Quién y cuándo pasa un grupo a «en curso» y a «concluido»",
       "recomendacion": "Hallazgo de la auditoría integral (coherencia). Ninguna pantalla ni la simulación cambian un grupo confirmado a «en curso» el primer día, ni a «concluido» después del examen; sin eso no hay captura de asistencia, examen, «sin derecho a examen» ni cierre del grupo. Opción recomendada: que la base lo haga sola con la fecha (una tarea diaria: al llegar el primer día pasa a en curso; terminado el último día y registradas las calificaciones, a concluido), y que el instructor vea el cambio. Definir qué pasa si el grupo no se presenta o se suspende."
+    },
+    {
+      "id": "P125",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Grupo que vuelve a «por confirmar»: ¿conserva su fecha aunque falten menos de 7 días?",
+      "recomendacion": "Dos decisiones chocan (auditoría integral): la del 2026-10-17 dice que el grupo que vuelve a integración conserva su fecha, hora e instructor como propuesta, y la de 7 días de anticipación impide volver a confirmarlo con esa fecha si faltan menos de 7 días. Opciones: conservarla sólo si aún faltan 7 días (si no, se elige otra al confirmar); permitir reconfirmar con la misma fecha porque las personas ya estaban avisadas; o perder la fecha siempre. Liber lo deja pendiente (2026-10-18)."
     }
   ],
   "resueltos": [
@@ -995,6 +979,21 @@
       "titulo": "Visto bueno del funcionamiento del examen en línea (P101)",
       "como": "Aprobado por Liber (2026-10-17): una pregunta por pantalla con orden distinto por persona; el tiempo lo lleva el servidor y al agotarse se envía lo contestado; una pregunta sin contestar cuenta como incorrecta; quien aplica puede suspender con motivo; salir de la ventana no bloquea.",
       "fecha": "2026-10-17"
+    },
+    {
+      "titulo": "Titularidad al activar una cuenta del registro de Kobo: ¿basta CURP coherente con nombre y fecha, más el nombre del registro? (P14)",
+      "como": "Decidido por Liber (2026-10-18): la CURP debe coincidir con el registro y el nombre se compara sin acentos, admitiendo una letra distinta; la identidad se confirma en el cotejo. Falta aplicarlo en «Crea tu cuenta» y en la base.",
+      "fecha": "2026-10-18"
+    },
+    {
+      "titulo": "¿Dónde se registra la asistencia del último día del curso: en el aula o al pasar lista en el PILARES? (P94)",
+      "como": "Decidido por Liber (2026-10-18): la asistencia del último día se registra al pasar lista en el examen; el instructor no la captura en el aula. Falta que el pase de lista la escriba (auditoría integral, hallazgo alto 4).",
+      "fecha": "2026-10-18"
+    },
+    {
+      "titulo": "¿La cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud se vuelve a validar? (P123)",
+      "como": "Decidido por Liber (2026-10-18): se cuentan todas las inasistencias de la solicitud; a la segunda se cierra, aunque se haya vuelto a validar. Así funcionan ya la base y la pantalla.",
+      "fecha": "2026-10-18"
     }
   ]
 }

@@ -57,7 +57,7 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 
 ## Grupos
 
-Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `sede` (Vivero Nezahualcóyotl) si no se indica otra; la cita de cotejo también es ahí; el examen y la entrega del mismo día, en el PILARES Vivero Nezahualcóyotl, dentro del mismo predio.
+Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `sede` (Vivero Nezahualcóyotl) si no se indica otra; la cita de cotejo también es ahí; el examen, en el salón de cómputo del PILARES Vivero Nezahualcóyotl, dentro del mismo predio; la entrega de la credencial, en la oficina del Vivero (decisión 2026-10-18).
 
 | Paso | La base exige |
 |---|---|
