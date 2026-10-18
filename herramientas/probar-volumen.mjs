@@ -29,7 +29,11 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   pg.on('pageerror', (e) => errores.push(String(e)));
   pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
   const t = (x) => `[${tam}] ${x}`;
-  const ir = async (url, sel) => { await pg.goto(BASE + url); await pg.waitForSelector(sel, { state: 'attached' }); await pg.waitForTimeout(300); };
+  const ir = async (url, sel) => {
+    await pg.goto(BASE + url); await pg.waitForSelector(sel, { state: 'attached' }); await pg.waitForTimeout(300);
+    const malo = (await pg.evaluate(() => document.body.innerText)).match(/\b(null|undefined|NaN)\b/);
+    if (malo) comprueba(false, t(`${url}: se ve «${malo[1]}»`));
+  };
   const texto = (sel) => pg.textContent(sel);
   const sinDesborde = async (donde) => comprueba(await pg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), t(`${donde}: sin desborde horizontal`));
 
@@ -80,6 +84,13 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   await pg.check('.bloque-adscripcion tr[data-folio] input');
   comprueba(/1 elegida/.test(await texto('[data-barra-cuenta]')) && /un grupo recibe hasta 25/.test(await texto('[data-elegidas]')), t('espera: la barra lleva la cuenta y se dice cuántas caben'));
   await sinDesborde('espera');
+  // Las confirmaciones no escriben «null» (auditoría integral: un hueco en la lista se veía como texto)
+  const indep = pg.locator('.bloque-adscripcion', { hasText: 'Independiente' }).locator('tr[data-folio] input');
+  await indep.nth(0).check(); await indep.nth(1).check();
+  await pg.click('[data-destinos] button:has-text("Crear un grupo")');
+  await pg.waitForSelector('dialog[open]');
+  comprueba(!/\bnull\b|\bundefined\b/.test(await pg.textContent('dialog[open]')), t('confirmación de crear un grupo: sin «null» ni «undefined»'));
+  await pg.click('dialog[open] [data-r="no"]');
   comprueba(await pg.evaluate(() => { const m = document.querySelector('[data-tabla]'); return m.scrollWidth <= m.clientWidth + 1; }), t('espera: la tabla no se ensancha (no hay que desplazarla de lado)'));
 
   // M7: «Grupos» lista todos los grupos que reciben

@@ -695,6 +695,14 @@
       "desde": "2026-10-17",
       "titulo": "¿La cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud se vuelve a validar?",
       "recomendacion": "Hallazgo de la auditoría de tareas (A4); Liber lo deja pendiente porque no tiene la respuesta. Ejemplo: la persona falta a su primera cita (1 inasistencia) y recibe cita nueva; a ésa llega, pero un documento no coincide y la solicitud regresa con observaciones; corrige, se valida otra vez y recibe otra cita; falta. Opción A (así funciona hoy, recomendada): sigue acumulando; es su segunda inasistencia en la misma solicitud y la solicitud se cierra. Es la lectura literal de la decisión del 2026-10-14 y evita acumular faltas sin límite. Opción B: se reinicia al validar de nuevo y recibe otra cita. Mientras se decide, la base y la pantalla cuentan todas las inasistencias de la solicitud (parámetro inasistencias_cotejo_maximas = 2)."
+    },
+    {
+      "id": "P124",
+      "grupo": "direccion",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-17",
+      "titulo": "Quién y cuándo pasa un grupo a «en curso» y a «concluido»",
+      "recomendacion": "Hallazgo de la auditoría integral (coherencia). Ninguna pantalla ni la simulación cambian un grupo confirmado a «en curso» el primer día, ni a «concluido» después del examen; sin eso no hay captura de asistencia, examen, «sin derecho a examen» ni cierre del grupo. Opción recomendada: que la base lo haga sola con la fecha (una tarea diaria: al llegar el primer día pasa a en curso; terminado el último día y registradas las calificaciones, a concluido), y que el instructor vea el cambio. Definir qué pasa si el grupo no se presenta o se suspende."
     }
   ],
   "resueltos": [

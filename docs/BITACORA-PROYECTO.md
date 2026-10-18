@@ -841,3 +841,17 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Liber aceptó declarar las pantallas del personal «para computadora»: primero escritorio; en teléfono sólo que funcionen
   (DECISIONES, Alcance). No se bloquea el teléfono. Asistencia, examen y todas las pantallas de la persona se cuidan en ambos.
 
+## 2026-10-17 · Bloque 60 · Auditoría integral
+
+- Liber: «realiza auditoría de todo». Cinco frentes: pantallas de la persona, coherencia entre documentos, código y base,
+  textos, seguridad y datos personales, y pruebas y peso. Resumen priorizado en `docs/AUDITORIA-INTEGRAL-2026-10-17.md`
+  (11 hallazgos altos); detalle en `docs/auditoria-integral/`. El informe de seguridad describe puntos débiles de la
+  base y no va en este repositorio público: está en los documentos del proyecto.
+- Errores míos que la auditoría encontró y se corrigieron de inmediato: la barra de pasos 1-2-3 de la solicitud
+  (0.40; los «Qué sigue» de 0.38 usaban el nombre de estilo del módulo de pasos del estándar) y la palabra «null» en las
+  ventanas de confirmación (0.41; desde 0.37). Pruebas nuevas para los dos; `probar-volumen` revisa además que ninguna
+  pantalla muestre «null», «undefined» o «NaN».
+- Aviso a Liber: borrar en sus navegadores lo que cargó con datos reales en la prueba (el sitio comparte dirección con
+  los demás sitios de SedemaOficina en GitHub Pages).
+- Pendiente nuevo: P124 (quién pasa un grupo a «en curso» y a «concluido»). El resto espera la aprobación de Liber.
+

@@ -308,13 +308,14 @@
       const no = el('button', { type: 'button', class: 'btn btn-secundario', 'data-r': 'no', texto: cfg.no || 'Volver sin cambios' });
       const si = el('button', { type: 'button', class: `btn ${cfg.peligro ? 'btn-peligro' : 'btn-primario'}`, 'data-r': 'si', texto: cfg.si });
       const lista = (cfg.consecuencias || []).filter(Boolean);
-      d.append(
+      // Sin nulos: append(null) escribe «null» en la ventana (auditoría integral, 2026-10-17)
+      d.append(...[
         el('div', { class: 'confirmacion-cabeza' }, [el('span', { class: 'desenlace-marca', 'data-tono': cfg.peligro ? 'error' : 'info' }, [icono(cfg.peligro ? 'alerta' : 'info')]),
           el('h2', { class: 'titulo-bloque dialogo-titulo', id: idT, texto: cfg.titulo })]),
         lista.length ? el('ul', { class: 'confirmacion-lista' }, lista.map((c) => el('li', { texto: c }))) : null,
         cfg.irreversible ? el('p', { class: 'confirmacion-irreversible' }, [icono('alerta'), document.createTextNode('No se puede deshacer.')]) : null,
         el('div', { class: 'acciones dialogo-acciones' }, [no, si])
-      );
+      ].filter(Boolean));
       document.body.appendChild(d);
       const termina = (ok) => { if (d.open) d.close(); d.remove(); if (ancla && ancla.focus) ancla.focus(); resolve(ok); };
       no.addEventListener('click', () => termina(false));
