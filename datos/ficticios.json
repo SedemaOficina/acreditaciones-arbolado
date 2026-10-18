@@ -4646,6 +4646,36 @@
    "usuario_tipo": "solicitante"
   },
   {
+   "fecha": "2026-10-01T09:30:00-06:00",
+   "accion": "material_agregado",
+   "detalle": "Ley Ambiental de la Ciudad de México",
+   "entidad": "material_estudio",
+   "usuario": "cursos.ficticio",
+   "entidad_id": "ley_ambiental",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-01T09:30:00-06:00",
+   "accion": "material_agregado",
+   "detalle": "Manual técnico de poda",
+   "entidad": "material_estudio",
+   "usuario": "cursos.ficticio",
+   "entidad_id": "manual_poda",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-01T09:30:00-06:00",
+   "accion": "material_agregado",
+   "detalle": "Norma Ambiental NADF-001-RNAT-2015",
+   "entidad": "material_estudio",
+   "usuario": "cursos.ficticio",
+   "entidad_id": "norma_poda",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
    "fecha": "2026-10-01T11:00:00-06:00",
    "accion": "estado",
    "detalle": "borrador → enviada",
@@ -12770,6 +12800,11 @@
    "clave": "tamano_maximo_archivo_bytes",
    "valor": "5242880",
    "descripcion": "Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14)."
+  },
+  {
+   "clave": "tamano_maximo_material_bytes",
+   "valor": "31457280",
+   "descripcion": "Tamaño máximo de cada PDF de material de estudio: 30 MB (el manual de poda pesa unos 18 MB; decisión 2026-10-18)."
   }
  ],
  "requisito": [
@@ -19167,6 +19202,189 @@
    "requisito": "acuse_entrega",
    "obligatorio": true,
    "tipo_acreditacion": "poda"
+  }
+ ],
+ "material_estudio": [
+  {
+   "id": "9e612b03-ab30-4475-ab89-9c773dc15afe",
+   "clave": "norma_poda",
+   "orden": 1,
+   "temas": [
+    {
+     "pagina": 4,
+     "titulo": "4. Definiciones"
+    },
+    {
+     "pagina": 7,
+     "titulo": "5. Requisitos técnico-administrativos para la poda, derribo y trasplante"
+    },
+    {
+     "pagina": 9,
+     "titulo": "6. Poda de árboles: causas, tipos y métodos de poda, poda de raíces"
+    },
+    {
+     "pagina": 16,
+     "titulo": "7. Derribo de árboles: alternativas, causas, tipos de derribo, troceo y destoconado"
+    },
+    {
+     "pagina": 19,
+     "titulo": "8. Trasplante de árboles"
+    },
+    {
+     "pagina": 22,
+     "titulo": "9. Restitución de árboles"
+    },
+    {
+     "pagina": 24,
+     "titulo": "10. Equipo, herramienta y maquinaria"
+    },
+    {
+     "pagina": 25,
+     "titulo": "10.4 Equipo, herramienta e instrumentos para la dictaminación",
+     "tipo_acreditacion": "dictaminador"
+    },
+    {
+     "pagina": 25,
+     "titulo": "11. Manejo del material obtenido de la poda y el derribo"
+    },
+    {
+     "pagina": 28,
+     "titulo": "Anexo 1. Dictamen técnico y lineamientos para el llenado (formato 1)",
+     "tipo_acreditacion": "dictaminador"
+    },
+    {
+     "pagina": 32,
+     "titulo": "Anexo 2. Dictamen técnico grupal del arbolado (formato 2)",
+     "tipo_acreditacion": "dictaminador"
+    },
+    {
+     "pagina": 34,
+     "titulo": "Anexo 3. Valoración para la restitución de árboles urbanos",
+     "tipo_acreditacion": "dictaminador"
+    }
+   ],
+   "sha256": "0107f22ec42ed2b563a4db1a8283285624ef6d34ca671ac5cf5ed125afb40001",
+   "titulo": "Norma Ambiental NADF-001-RNAT-2015",
+   "edicion": "Publicada en la Gaceta Oficial de la Ciudad de México el 1/04/2016",
+   "paginas": 34,
+   "vigente": true,
+   "publicado": true,
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-10-01T09:30:00-06:00",
+   "cargado_por": "cursos.ficticio",
+   "descripcion": "Los requisitos y las especificaciones técnicas que se cumplen en cada poda, derribo, trasplante y restitución de árboles en la Ciudad de México.",
+   "tamano_bytes": 384471,
+   "archivo_clave": "material/NADF-001-RNAT-2015.pdf",
+   "actualizado_en": null,
+   "nombre_archivo": "NADF-001-RNAT-2015.pdf",
+   "actualizado_por": null,
+   "tipo_acreditacion": null
+  },
+  {
+   "id": "de2c2bba-a29e-441a-bb6a-f0111678c8df",
+   "clave": "manual_poda",
+   "orden": 2,
+   "temas": [
+    {
+     "pagina": 12,
+     "titulo": "Capítulo 1. Biología del árbol"
+    },
+    {
+     "pagina": 24,
+     "titulo": "Capítulo 2. Plantación de árboles"
+    },
+    {
+     "pagina": 34,
+     "titulo": "Capítulo 3. Poda de árboles: desmoche, métodos de poda, tipos y técnicas de corte, compartimentación"
+    },
+    {
+     "pagina": 64,
+     "titulo": "Capítulo 4. Derribo de árboles"
+    },
+    {
+     "pagina": 76,
+     "titulo": "Capítulo 5. Equipo para poda y derribo: protección, ascenso y descenso, métodos de trepa"
+    },
+    {
+     "pagina": 96,
+     "titulo": "Capítulo 6. Trasplante de árboles"
+    },
+    {
+     "pagina": 108,
+     "titulo": "Capítulo 7. Plagas y enfermedades"
+    },
+    {
+     "pagina": 128,
+     "titulo": "Capítulo 8. Diagnóstico en especies arbóreas"
+    },
+    {
+     "pagina": 154,
+     "titulo": "Definiciones"
+    }
+   ],
+   "sha256": "7d3f222790f6a9e55c0e286970805fb5c1652a5a682159fec96a3a8999094560",
+   "titulo": "Manual técnico de poda",
+   "edicion": "Edición 2023",
+   "paginas": 160,
+   "vigente": true,
+   "publicado": true,
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-10-01T09:30:00-06:00",
+   "cargado_por": "cursos.ficticio",
+   "descripcion": "La guía ilustrada de la Secretaría: biología del árbol, técnicas de poda y de corte, derribo, equipo, trasplante, plagas y diagnóstico.",
+   "tamano_bytes": 12296235,
+   "archivo_clave": "material/Manual-tecnico-de-poda-2023.pdf",
+   "actualizado_en": null,
+   "nombre_archivo": "Manual-tecnico-de-poda-2023.pdf",
+   "actualizado_por": null,
+   "tipo_acreditacion": null
+  },
+  {
+   "id": "4959d237-3f99-42ad-b912-199f2a2cfdf3",
+   "clave": "ley_ambiental",
+   "orden": 3,
+   "temas": [
+    {
+     "pagina": 12,
+     "titulo": "Artículo 7º, fracción VIII: la Secretaría resuelve las acciones de plantación, poda y trasplante"
+    },
+    {
+     "pagina": 51,
+     "titulo": "Título Segundo, Capítulo III «De las áreas verdes» (artículos 104 a 115)"
+    },
+    {
+     "pagina": 53,
+     "titulo": "Artículo 109: restitución por derribo"
+    },
+    {
+     "pagina": 54,
+     "titulo": "Artículo 111: requisitos técnico-administrativos y acreditación del dictaminador técnico"
+    },
+    {
+     "pagina": 54,
+     "titulo": "Artículo 112: poda, derribo o trasplante en contravención de la ley"
+    },
+    {
+     "pagina": 102,
+     "titulo": "Título Sexto, Capítulo III «De las sanciones administrativas» (desde el artículo 300)"
+    }
+   ],
+   "sha256": "903ddf9fef233c680e03bcdf4e8a6ebd91bb1ebe40a0f864880571e3c07d9c4a",
+   "titulo": "Ley Ambiental de la Ciudad de México",
+   "edicion": "Texto vigente; última reforma publicada en la Gaceta Oficial el 23/07/2026",
+   "paginas": 117,
+   "vigente": true,
+   "publicado": true,
+   "tipo_mime": "application/pdf",
+   "cargado_en": "2026-10-01T09:30:00-06:00",
+   "cargado_por": "cursos.ficticio",
+   "descripcion": "Lo que la ley dispone sobre áreas verdes y arbolado: quién autoriza, la restitución, la acreditación del dictaminador y las sanciones.",
+   "tamano_bytes": 857028,
+   "archivo_clave": "material/Ley-Ambiental-CDMX-2026-07-23.pdf",
+   "actualizado_en": null,
+   "nombre_archivo": "Ley-Ambiental-CDMX-2026-07-23.pdf",
+   "actualizado_por": null,
+   "tipo_acreditacion": null
   }
  ],
  "estado_acreditacion": {

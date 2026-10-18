@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Material de estudio · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Los documentos para preparar el examen: subirlos, reemplazar su archivo, editar sus datos y publicarlos. Personal de la Secretaría. Versión de prueba.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css">
+<link rel="stylesheet" href="formkit/css/base.css">
+<link rel="stylesheet" href="formkit/css/nucleo.css">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css">
+<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css">
+<link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="app/apd.css?v=0.48">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+  <!-- Lo que se acaba de hacer (módulo resultado del estándar) -->
+  <section class="resultado" data-resultado hidden>
+    <div class="acciones" data-resultado-acciones><a class="btn btn-secundario" href="material.html" target="_blank" rel="noopener">Ver la página pública<span class="solo-lector"> (se abre en otra pestaña)</span></a></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-material">
+    <div class="grupo-cabeza">
+      <div>
+        <h2 class="titulo-paso" id="t-material">Material de estudio</h2>
+        <p class="bajada">Los documentos que cualquiera ve en la página pública «Material de estudio», sin cuenta, para preparar el examen. Sólo en PDF, hasta <span data-maximo>30 MB</span>.</p>
+      </div>
+      <a class="btn-enlace" href="material.html" target="_blank" rel="noopener">Ver la página pública<span class="solo-lector"> (se abre en otra pestaña)</span></a>
+    </div>
+
+    <p class="resumen-filtro" role="status" data-cuenta>Cargando el material…</p>
+    <div class="tabla-marco" data-tabla data-clave="material">
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector">Documentos del material de estudio</caption>
+        <thead><tr><th scope="col">Documento</th><th scope="col">Para</th><th scope="col">Archivo</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+      <p class="tabla-vacia" data-tabla-vacia hidden>Todavía no hay documentos. Agregue el primero.</p>
+    </div>
+    <div class="acciones-grupo">
+      <button type="button" class="btn btn-secundario" data-agregar>Agregar un documento</button>
+    </div>
+    <p class="ayuda">Reemplazar el archivo no borra el anterior: queda registrado en el sistema con quién lo cargó y cuándo, y el documento conserva si estaba publicado. <span class="pendiente">Pendiente (P136): quién mantiene el material y el temario del examen por tema.</span></p>
+  </section>
+
+  <!-- Agregar, editar o reemplazar: un solo formulario; «modo» decide qué se pide -->
+  <section class="tarjeta" aria-labelledby="t-form" data-editor hidden>
+    <h2 class="titulo-paso" id="t-form" data-form-titulo>Agregar un documento</h2>
+    <p class="bajada" data-form-bajada>Se publica en cuanto lo guarde, salvo que desmarque «Publicar».</p>
+    <form id="form-material" data-formkit="manual" action="#" method="post">
+      <input type="hidden" id="modo" name="modo" value="nuevo" data-campo="modo" data-auxiliar data-uso="Qué se hace: agregar un documento, editar sus datos o reemplazar su archivo; lo pone la página según el botón.">
+
+      <div data-si="modo=nuevo|editar">
+        <div class="campo" data-campo="titulo" data-requerido data-formato="texto" data-uso="Nombre del documento como lo lee la persona (apd.material_estudio.titulo).">
+          <label class="etiqueta" for="titulo">Nombre del documento</label>
+          <p class="ayuda" id="ay-titulo">Como aparece en su portada. Ejemplo: Manual técnico de poda.</p>
+          <!-- autocomplete off: lo escribe el personal; no es un dato suyo. -->
+          <input class="control" id="titulo" name="titulo" type="text" minlength="3" maxlength="200" autocomplete="off" aria-describedby="ay-titulo">
+        </div>
+        <div class="campo" data-campo="edicion" data-requerido data-formato="texto" data-uso="Versión o fecha de publicación del documento (apd.material_estudio.edicion).">
+          <label class="etiqueta" for="edicion">Edición o fecha de publicación</label>
+          <p class="ayuda" id="ay-edicion">Como la dice el documento, para que nadie estudie una versión anterior. Ejemplo: Texto vigente; última reforma publicada en la Gaceta Oficial el 23/07/2026.</p>
+          <!-- autocomplete off: lo escribe el personal. -->
+          <input class="control" id="edicion" name="edicion" type="text" minlength="3" maxlength="200" autocomplete="off" aria-describedby="ay-edicion">
+        </div>
+        <div class="campo" data-campo="descripcion" data-requerido data-formato="texto" data-uso="Para qué le sirve a quien estudia (apd.material_estudio.descripcion).">
+          <label class="etiqueta" for="descripcion">Para qué sirve</label>
+          <p class="ayuda" id="ay-descripcion">Una o dos frases para la persona que estudia. Ejemplo: La guía ilustrada de la Secretaría: técnicas de poda y de corte, derribo, equipo y diagnóstico.</p>
+          <!-- autocomplete off: lo escribe el personal. -->
+          <textarea class="control" id="descripcion" name="descripcion" rows="3" minlength="10" maxlength="400" autocomplete="off" aria-describedby="ay-descripcion"></textarea>
+        </div>
+        <fieldset class="grupo" data-campo="para" data-requerido data-uso="A quién le sirve: las dos acreditaciones o una (apd.material_estudio.tipo_acreditacion; vacío = las dos).">
+          <legend class="etiqueta">¿Para qué acreditación?</legend>
+          <!-- autocomplete off: decisión del personal. -->
+          <div class="opciones-lista opciones-en-linea">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="para" value="ambas" autocomplete="off"><span><span class="opcion-nombre">Las dos</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="para" value="poda" autocomplete="off"><span><span class="opcion-nombre">Poda y derribo</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="para" value="dictaminador" autocomplete="off"><span><span class="opcion-nombre">Dictaminador técnico</span></span></label>
+          </div>
+        </fieldset>
+        <div class="campo" data-campo="temas" data-formato="texto" data-uso="Apartados que conviene estudiar, con su página del PDF (apd.material_estudio.temas).">
+          <label class="etiqueta" for="temas">Qué estudiar (opcional)</label>
+          <p class="ayuda" id="ay-temas">Un apartado por renglón: la página del PDF, un guion y el apartado. Si sólo es para dictaminador, termine el renglón con «(sólo dictaminador)». Ejemplo: 34 - Capítulo 3. Poda de árboles</p>
+          <!-- autocomplete off: lo escribe el personal. -->
+          <textarea class="control" id="temas" name="temas" rows="6" maxlength="4000" autocomplete="off" spellcheck="false" aria-describedby="ay-temas"></textarea>
+        </div>
+      </div>
+
+      <div data-si="modo=nuevo|reemplazar">
+        <div class="campo" data-campo="archivo" data-requerido data-max="1" data-extensiones="pdf" data-mb="30" data-uso="El PDF que se descarga en «Material de estudio» (apd.material_estudio, archivo en el almacén).">
+          <span class="etiqueta" id="et-archivo" data-archivo-etiqueta>Archivo</span>
+          <p class="ayuda" id="ay-archivo" data-archivo-ayuda>En PDF. Se descarga tal como lo suba.</p>
+          <div data-archivos>
+            <button type="button" class="zona-carga" aria-describedby="ay-archivo">
+              <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
+              <span class="zona-carga-texto">Elegir archivo</span>
+              <span class="zona-carga-limite" data-limite-texto></span>
+            </button>
+            <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
+            <input type="file" hidden autocomplete="off">
+            <div data-rechazos></div>
+            <ul class="lista-arch"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div data-si="modo=nuevo">
+        <div class="campo" data-campo="publicar" data-uso="Si se ve en la página pública al guardarlo (apd.material_estudio.publicado).">
+          <!-- autocomplete off: decisión del personal. -->
+          <label class="casilla"><input class="casilla-input" type="checkbox" id="publicar" name="publicar" value="si" autocomplete="off" checked><span class="casilla-texto"><span class="etiqueta">Publicar al guardar</span></span></label>
+        </div>
+      </div>
+
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" data-cancelar>Cancelar</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar" data-guardar>Guardar</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.48"></script>
+<script src="app/apd.js?v=0.48"></script>
+<!-- Versión de prueba: lo que suba el personal se guarda en este navegador. -->
+<script src="app/archivos-prueba.js?v=0.48"></script>
+<script src="app/personal.js?v=0.48"></script>
+<script src="formkit/js/validaciones.config.js"></script>
+<script src="app/mensajes-usted.js?v=0.48"></script>
+<script src="formkit/js/iconos.js"></script>
+<script src="formkit/js/formkit.core.js"></script>
+<script src="formkit/modulos/tabla/tabla.js"></script>
+<script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="formkit/modulos/modal/modal.js"></script>
+<script src="formkit/modulos/resultado/resultado.js"></script>
+<script src="formkit/modulos/estado/estado.js"></script>
+<script src="app/material-personal.js?v=0.48"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.48"></script>
+<script src="app/pruebas.js?v=0.48"></script>
+<script src="app/version-visible.js?v=0.48"></script>
+</body>
+</html>

@@ -23,6 +23,7 @@
   const SOLS = 'solicitudes';
   const FOTOS = 'fotos';
   const CUENTAS = 'cuentas';
+  const MATERIAL = 'material';
   const PERFILES = 'apd.perfiles';
   let abierta = null;
 
@@ -30,13 +31,14 @@
     if (abierta) return abierta;
     abierta = new Promise((ok, mal) => {
       let r;
-      try { r = global.indexedDB.open(BASE, 3); } catch (e) { mal(e); return; }
+      try { r = global.indexedDB.open(BASE, 4); } catch (e) { mal(e); return; }
       r.onupgradeneeded = () => {
         const db = r.result;
         if (!db.objectStoreNames.contains(DOCS)) db.createObjectStore(DOCS, { keyPath: 'clave' }).createIndex('folio', 'folio');
         if (!db.objectStoreNames.contains(SOLS)) db.createObjectStore(SOLS, { keyPath: 'folio' });
         if (!db.objectStoreNames.contains(FOTOS)) db.createObjectStore(FOTOS, { keyPath: 'curp' });
         if (!db.objectStoreNames.contains(CUENTAS)) db.createObjectStore(CUENTAS, { keyPath: 'curp' });
+        if (!db.objectStoreNames.contains(MATERIAL)) db.createObjectStore(MATERIAL, { keyPath: 'id' });
       };
       r.onsuccess = () => ok(r.result);
       r.onerror = () => mal(r.error);
@@ -83,6 +85,36 @@
   function foto(curp) { return curp ? tx(FOTOS, 'readonly', (s) => s.get(curp)).catch(() => null) : Promise.resolve(null); }
   function fotos() { return tx(FOTOS, 'readonly', (s) => s.count()).catch(() => 0); }
 
+  /* ----- Material de estudio que sube el personal (decisión 2026-10-18) -----
+     Cada registro tiene la forma de apd.material_estudio. Una carga nueva lleva su archivo (blob); un cambio de datos o
+     de publicación de un documento que ya existe sólo lleva los campos que cambian. Como la base (apd.material_alta):
+     la carga nueva de un documento deja la anterior como no vigente y conserva si estaba publicado. */
+  function guardaMaterial(registro) {
+    return tx(MATERIAL, 'readwrite', (s) => s.put(Object.assign({ guardado_en: new Date().toISOString() }, registro)));
+  }
+  function materiales() { return tx(MATERIAL, 'readonly', (s) => s.getAll()).catch(() => []); }
+  const urls = {};
+  function mezclaMaterial(datos) {
+    return materiales().then((registros) => {
+      // El archivo de un documento de la base está en el sitio, en la ruta de su clave en el almacén
+      let filas = (datos.material_estudio || []).map((m) => Object.assign({}, m, { url: m.archivo_clave }));
+      if (!registros.length) return Object.assign({}, datos, { material_estudio: filas });
+      registros.sort((a, b) => String(a.guardado_en).localeCompare(String(b.guardado_en)));
+      for (const r of registros) {
+        const { blob, guardado_en, ...campos } = r;
+        const i = filas.findIndex((m) => m.id === r.id);
+        if (i >= 0) { filas[i] = Object.assign({}, filas[i], campos); continue; }
+        // Carga nueva: sustituye a la vigente del mismo documento y hereda si estaba publicada
+        const previa = filas.find((m) => m.clave === r.clave && m.vigente);
+        if (previa) { previa.vigente = false; campos.publicado = previa.publicado; }
+        if (blob && !urls[r.id]) { try { urls[r.id] = global.URL.createObjectURL(blob); } catch (e) { urls[r.id] = ''; } }
+        filas.push(Object.assign({ temas: [], orden: (previa && previa.orden) || 99 }, campos, { vigente: true, url: urls[r.id] || '' }));
+      }
+      filas = filas.map((m) => Object.assign({}, m));
+      return Object.assign({}, datos, { material_estudio: filas });
+    });
+  }
+
   /* ----- Cuentas creadas en la prueba ----- */
   /* La contraseña nunca se guarda: sólo su resumen SHA-256, para poder entrar otra vez con ella en este navegador. */
   function resumen(texto) {
@@ -112,7 +144,7 @@
     for (const k of [PERFILES, 'apd.personal.revisiones', 'apd.personal.cotejos', 'apd.personal.grupos']) {
       try { global.localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
     }
-    return Promise.all([SOLS, DOCS, FOTOS, CUENTAS].map((a) => tx(a, 'readwrite', (s) => s.clear())));
+    return Promise.all([SOLS, DOCS, FOTOS, CUENTAS, MATERIAL].map((a) => tx(a, 'readwrite', (s) => s.clear())));
   }
   /* Caducidad (auditoría integral, alta 1): la dirección del sitio de prueba la comparten otros sitios, así que lo
      guardado no se queda para siempre. Si pasan CADUCA_DIAS días sin usar la prueba en este navegador, se borra todo
@@ -411,6 +443,7 @@
   global.APD_ARCHIVOS_PRUEBA = {
     caduca, CADUCA_DIAS,
     guardaEnvio, guardaDocumento, solicitudes, documentos, guardaFoto, foto, fotos,
-    guardaCuenta, cuentas, cuenta, contrasenaValida, guardaPerfil, borraTodo, guardado: cuenta_, mezcla
+    guardaCuenta, cuentas, cuenta, contrasenaValida, guardaPerfil, borraTodo, guardado: cuenta_, mezcla,
+    guardaMaterial, materiales, mezclaMaterial
   };
 }(window));

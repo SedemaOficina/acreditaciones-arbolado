@@ -77,6 +77,11 @@ const SIN_FOTO = `
        FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
       WHERE rc.tipo_acreditacion = 'poda' AND rc.modalidad = 'nueva' AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'en_linea';`;
 
+const MATERIAL_NUEVO = (clave, mime = 'application/pdf', tam = 1000) =>
+  `INSERT INTO apd.material_estudio (clave, titulo, descripcion, edicion, archivo_clave, nombre_archivo, tipo_mime, tamano_bytes, sha256, paginas)
+   VALUES ('${clave}', 'Documento de prueba', 'Para probar las reglas del material de estudio.', 'Edición de prueba',
+           'prueba/' || gen_random_uuid(), 'prueba.pdf', '${mime}', ${tam}, repeat('d', 64), 3);`;
+
 const casos = [
   // ── Vigencia con fechas movidas (PD-2025-K101 se emitió el 25/10/2025 y vence el 24/10/2026) ──
   ['Vigente el día anterior a la ventana', 'ok', null, `DO $$ BEGIN
@@ -757,6 +762,33 @@ const casos = [
   ['La cuenta no anota migraciones', { sqlstate: '42501' }, null, `INSERT INTO apd.migraciones VALUES (2, 'x');`],
   ['La cuenta no cambia qué base es (no puede simular la fecha en producción)', { sqlstate: '42501' }, null, `
      CREATE OR REPLACE FUNCTION apd.entorno() RETURNS text LANGUAGE sql STABLE AS $$ SELECT 'pruebas'::text $$;`],
+  // ── Material de estudio (decisión 2026-10-18) ──
+  ['El material de estudio publicado se ve sin cuenta: tres documentos vigentes', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT count(*) FROM apd.material_publico) = 3; END $$;`],
+  ['Una persona solicitante no sube material de estudio', { codigo: 'carga_de_personal' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${MATERIAL_NUEVO('prueba_material')}`],
+  ['El material de estudio sólo se carga en PDF', { codigo: 'formato_no_admitido' }, null, MATERIAL_NUEVO('prueba_material', 'image/jpeg')],
+  ['El material de estudio no pasa del máximo de 30 MB', { codigo: 'archivo_grande' }, null, MATERIAL_NUEVO('prueba_material', 'application/pdf', 40000000)],
+  ['Reemplazar el archivo deja la carga anterior sin borrar y conserva la publicación', 'ok', null, `
+     ${MATERIAL_NUEVO('norma_poda')}
+     DO $$ BEGIN
+       ASSERT (SELECT count(*) FROM apd.material_estudio WHERE clave = 'norma_poda') = 2;
+       ASSERT (SELECT count(*) FROM apd.material_estudio WHERE clave = 'norma_poda' AND vigente) = 1;
+       ASSERT (SELECT publicado FROM apd.material_estudio WHERE clave = 'norma_poda' AND vigente);
+       ASSERT (SELECT nombre_archivo FROM apd.material_publico WHERE clave = 'norma_poda') = 'prueba.pdf';
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'material_reemplazado' AND entidad_id = 'norma_poda'); END $$;`],
+  ['La cuenta no cambia el archivo de un material cargado (no tiene permiso sobre esas columnas)', { sqlstate: '42501' }, null, `
+     UPDATE apd.material_estudio SET sha256 = repeat('e', 64) WHERE clave = 'manual_poda' AND vigente;`],
+  ['Ni la administración cambia el archivo de un material cargado', { codigo: 'documento_inmutable' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'personal', true);
+     UPDATE apd.material_estudio SET sha256 = repeat('e', 64) WHERE clave = 'manual_poda' AND vigente;`, 'admin'],
+  ['Ocultar un documento lo quita de la página pública y deja constancia', 'ok', null, `
+     UPDATE apd.material_estudio SET publicado = false WHERE clave = 'ley_ambiental' AND vigente;
+     DO $$ BEGIN
+       ASSERT NOT EXISTS (SELECT 1 FROM apd.material_publico WHERE clave = 'ley_ambiental');
+       ASSERT (SELECT actualizado_por FROM apd.material_estudio WHERE clave = 'ley_ambiental' AND vigente) = 'prueba.automatica';
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'material_oculto' AND entidad_id = 'ley_ambiental'); END $$;`],
   ['Ningún permiso directo fuera de su esquema', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT count(*) FROM information_schema.role_table_grants WHERE grantee = 'apd_api' AND table_schema <> 'apd') = 0; END $$;`],
   ['Cada cambio de estado deja constancia en la bitácora', 'ok', null, `DO $$ BEGIN

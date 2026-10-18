@@ -63,6 +63,9 @@ GRANT SELECT, INSERT ON apd.cita TO apd_api;
 GRANT UPDATE (resultado, observacion) ON apd.cita TO apd_api;
 GRANT SELECT, INSERT ON apd.documento TO apd_api;
 GRANT UPDATE (estado, observacion, revisado_por, vigente) ON apd.documento TO apd_api;
+-- Material de estudio: el archivo no se modifica (se carga uno nuevo); el personal cambia sus datos y su publicación
+GRANT SELECT, INSERT ON apd.material_estudio TO apd_api;
+GRANT UPDATE (titulo, descripcion, edicion, tipo_acreditacion, temas, orden, publicado, vigente) ON apd.material_estudio TO apd_api;
 
 -- Cursos
 GRANT SELECT, INSERT ON apd.grupo TO apd_api;
@@ -78,7 +81,7 @@ GRANT SELECT, INSERT ON apd.acreditacion TO apd_api;
 GRANT UPDATE (entregada_en) ON apd.acreditacion TO apd_api;
 
 -- Consultas
-GRANT SELECT ON apd.verificacion_publica, apd.bandeja_demanda, apd.vencidas_en_espera TO apd_api;
+GRANT SELECT ON apd.verificacion_publica, apd.bandeja_demanda, apd.vencidas_en_espera, apd.material_publico TO apd_api;
 
 -- La bitácora: sólo leerla y agregarle renglones
 GRANT SELECT, INSERT ON apd.bitacora TO apd_api;

@@ -1418,6 +1418,68 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
 }
 const APDfecha = (iso) => iso.split('-').reverse().join('/');
 
+// Material de estudio (decisión 2026-10-18): la página pública sin cuenta y la del personal (agregar, ocultar)
+async function materialEstudio(navegador, ancho, alto, sufijo) {
+  const t = (m) => `[material ${sufijo}] ${m}`;
+  const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const pg = await c.newPage();
+  const errores = [];
+  pg.on('pageerror', (e) => errores.push(e.message));
+  pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+  const publicos = datos.material_estudio.filter((m) => m.vigente && m.publicado);
+  await pg.goto(BASE + 'material.html');
+  await pg.waitForSelector('.material-doc');
+  comprueba((await pg.$$('.material-doc')).length === publicos.length && /libro cerrado/.test(await pg.textContent('main')),
+    t(`la página pública muestra los ${publicos.length} documentos publicados y avisa que el examen es a libro cerrado`));
+  const enlaces = await pg.$$eval('.material-archivo a[download]', (as) => as.map((a) => a.getAttribute('href')));
+  let descargan = 0;
+  for (const h of enlaces) if ((await pg.request.get(BASE + h)).status() === 200) descargan += 1;
+  comprueba(enlaces.length === publicos.length && descargan === enlaces.length, t('cada documento se descarga'));
+  const resumen = async () => Number(((await pg.textContent('[data-resumen]')) || '').match(/(\d+) apartados/)[1]);
+  const poda = await resumen();
+  await pg.check('input[name="curso"][value="dictaminador"]');
+  comprueba(await resumen() > poda, t('quien prepara dictaminador ve además los apartados de dictaminación'));
+  await pg.click('.material-temas summary');
+  comprueba(/#page=\d+$/.test(await pg.getAttribute('.material-temas-lista a', 'href')), t('cada apartado abre el PDF en su página'));
+  await sinDesborde(pg, t('página pública'));
+  await captura(pg, `material-${sufijo}`);
+
+  await pg.goto(BASE + 'material-personal.html');
+  await pg.waitForSelector('[data-filas] tr');
+  comprueba((await pg.$$('[data-filas] tr')).length === publicos.length, t('el personal ve los documentos con su situación'));
+  await pg.click('[data-agregar]');
+  await pg.fill('#titulo', 'Guía de prueba');
+  await pg.fill('#edicion', 'Edición de prueba');
+  await pg.fill('#descripcion', 'Un documento para probar la carga del material.');
+  await pg.check('input[name="para"][value="ambas"]');
+  await pg.fill('#temas', '2 - Introducción\n90 - Fuera del documento');
+  await pg.setInputFiles('[data-campo="archivo"] input[type="file"]', join(raiz, 'sitio/material/NADF-001-RNAT-2015.pdf'));
+  await pg.click('[data-guardar]');
+  await pg.waitForFunction(() => /página 90/.test(document.querySelector('[data-campo="temas"]').textContent), null, { timeout: 15000 }).catch(() => {});
+  const errTemas = (await pg.textContent('[data-campo="temas"]')) || '';
+  comprueba(/página 90/.test(errTemas), t('un apartado con una página que no existe en el PDF no se guarda'));
+  await pg.fill('#temas', '2 - Introducción\n7 - Requisitos (sólo dictaminador)');
+  await pg.click('[data-guardar]');
+  await pg.waitForURL(/hecho=nuevo/, { timeout: 20000 });
+  await pg.waitForSelector('[data-resultado]:not([hidden])');
+  comprueba(/agregado/.test(await pg.textContent('[data-resultado]')), t('agregar un documento muestra el resultado'));
+  await captura(pg, `material-personal-${sufijo}`);
+  await pg.goto(BASE + 'material.html');
+  await pg.waitForSelector('.material-doc');
+  comprueba((await pg.$$('.material-doc')).length === publicos.length + 1, t('el documento agregado y publicado aparece en la página pública'));
+  await pg.goto(BASE + 'material-personal.html');
+  await pg.waitForSelector('[data-filas] tr');
+  await pg.click('tr[data-clave-material="ley_ambiental"] [data-accion-material="ocultar"]');
+  await pg.click('dialog [data-r="si"]');
+  await pg.waitForURL(/hecho=oculto/);
+  await pg.goto(BASE + 'material.html');
+  await pg.waitForSelector('.material-doc');
+  comprueba((await pg.$$('.material-doc')).length === publicos.length && !/Ley Ambiental/.test(await pg.textContent('[data-material]')),
+    t('un documento oculto deja de verse en la página pública'));
+  comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+}
+
 async function accesibilidad(navegador) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
@@ -1428,7 +1490,7 @@ async function accesibilidad(navegador) {
     ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
     ['grupos.html'], ['espera.html?curso=poda-nueva'], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`],
     [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`], [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`, 'sin marcar'],
-    ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
+    ['material.html'], ['material-personal.html'], ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
   for (const [url, estado] of pantallas) {
     await page.goto(BASE + url);
@@ -1468,6 +1530,10 @@ try {
   if (!solo || solo === 'grupos') {
     await caminosGrupos(navegador, 390, 844, 'telefono');
     await caminosGrupos(navegador, 1280, 900, 'escritorio');
+  }
+  if (!solo || solo === 'material') {
+    await materialEstudio(navegador, 390, 844, 'telefono');
+    await materialEstudio(navegador, 1280, 900, 'escritorio');
   }
   if (!solo) await accesibilidad(navegador);
 } catch (e) {

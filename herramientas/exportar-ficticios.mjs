@@ -40,6 +40,7 @@ const TABLAS = {
   inscripcion: 'grupo_id, solicitud_id, inscrita_en',
   asistencia: 'inscripcion_id, dia',
   examen: 'inscripcion_id',
+  material_estudio: 'orden, clave, cargado_en',
   bitacora: 'fecha, accion, entidad_id'
 };
 // Se omiten la contraseña (nunca sale) y las fechas de instalación de los catálogos (cambian en cada carga)

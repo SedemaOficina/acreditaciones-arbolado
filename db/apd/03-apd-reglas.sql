@@ -1562,6 +1562,86 @@ CREATE TRIGGER examen_aplicar AFTER INSERT ON apd.examen
 -- bandeja ordena por vencimiento de la acreditación anterior. El orden lo da la consulta del backend
 -- (ORDER BY prioridad DESC, orden_sugerido); aquí van los datos para ordenar y filtrar.
 
+-- ───────────────────────────── Material de estudio ─────────────────────────────
+-- Decisión 2026-10-18 (Liber): los documentos para preparar el examen (la norma ambiental, la Ley Ambiental y el
+-- manual de poda) los sube el personal; publicados, los ve cualquiera, sin cuenta. Sólo PDF. Una carga nueva del
+-- mismo documento sustituye a la anterior sin borrarla y conserva si estaba publicado.
+
+CREATE FUNCTION apd.material_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  anterior apd.material_estudio;
+BEGIN
+  IF apd.contexto('usuario_tipo') <> 'personal' THEN
+    PERFORM apd.error('carga_de_personal', 'El material de estudio lo carga el personal de la Secretaría');
+  END IF;
+  IF NEW.tipo_mime <> 'application/pdf' THEN
+    PERFORM apd.error('formato_no_admitido', 'El material de estudio se carga en PDF');
+  END IF;
+  IF NEW.tamano_bytes > apd.parametro_texto('tamano_maximo_material_bytes')::integer THEN
+    PERFORM apd.error('archivo_grande', format('El archivo pasa del máximo de %s MB',
+      round(apd.parametro_texto('tamano_maximo_material_bytes')::numeric / 1048576, 1)));
+  END IF;
+  SELECT * INTO anterior FROM apd.material_estudio WHERE clave = NEW.clave AND vigente;
+  IF FOUND THEN
+    UPDATE apd.material_estudio SET vigente = false WHERE id = anterior.id;
+    NEW.publicado := anterior.publicado;
+    PERFORM apd.registrar('material_reemplazado', 'material_estudio', NEW.clave, format('%s → %s', anterior.nombre_archivo, NEW.nombre_archivo));
+  ELSE
+    PERFORM apd.registrar('material_agregado', 'material_estudio', NEW.clave, NEW.titulo);
+  END IF;
+  NEW.vigente := true;
+  NEW.cargado_en := apd.ahora();
+  NEW.cargado_por := apd.contexto('usuario');
+  NEW.actualizado_en := NULL;
+  NEW.actualizado_por := NULL;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER material_alta BEFORE INSERT ON apd.material_estudio
+  FOR EACH ROW EXECUTE FUNCTION apd.material_alta();
+
+CREATE FUNCTION apd.material_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF (NEW.id, NEW.clave, NEW.archivo_clave, NEW.nombre_archivo, NEW.tipo_mime, NEW.tamano_bytes, NEW.sha256, NEW.paginas,
+      NEW.cargado_en, NEW.cargado_por)
+     IS DISTINCT FROM
+     (OLD.id, OLD.clave, OLD.archivo_clave, OLD.nombre_archivo, OLD.tipo_mime, OLD.tamano_bytes, OLD.sha256, OLD.paginas,
+      OLD.cargado_en, OLD.cargado_por) THEN
+    PERFORM apd.error('documento_inmutable', 'Un archivo cargado no se modifica: se carga uno nuevo');
+  END IF;
+  IF NEW.vigente AND NOT OLD.vigente THEN
+    PERFORM apd.error('documento_inmutable', 'Una carga sustituida no vuelve a ser la vigente');
+  END IF;
+  -- La sustitución (vigente → false) la hace la carga nueva; lo demás lo cambia el personal
+  IF (NEW.titulo, NEW.descripcion, NEW.edicion, NEW.tipo_acreditacion, NEW.temas, NEW.orden, NEW.publicado)
+     IS DISTINCT FROM
+     (OLD.titulo, OLD.descripcion, OLD.edicion, OLD.tipo_acreditacion, OLD.temas, OLD.orden, OLD.publicado) THEN
+    IF NOT OLD.vigente THEN
+      PERFORM apd.error('documento_sustituido', 'Sólo se cambia la carga vigente');
+    END IF;
+    IF apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('carga_de_personal', 'El material de estudio lo cambia el personal de la Secretaría');
+    END IF;
+    NEW.actualizado_en := apd.ahora();
+    NEW.actualizado_por := apd.contexto('usuario');
+    IF NEW.publicado IS DISTINCT FROM OLD.publicado THEN
+      PERFORM apd.registrar(CASE WHEN NEW.publicado THEN 'material_publicado' ELSE 'material_oculto' END, 'material_estudio', NEW.clave, NEW.titulo);
+    ELSE
+      PERFORM apd.registrar('material_editado', 'material_estudio', NEW.clave, NEW.titulo);
+    END IF;
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER material_cambio BEFORE UPDATE ON apd.material_estudio
+  FOR EACH ROW EXECUTE FUNCTION apd.material_cambio();
+
+-- Lo que ve cualquiera en «Material de estudio»: sólo lo publicado y vigente
+CREATE VIEW apd.material_publico AS
+  SELECT m.id, m.clave, m.titulo, m.descripcion, m.edicion, m.tipo_acreditacion, m.temas, m.orden,
+         m.nombre_archivo, m.archivo_clave, m.tamano_bytes, m.paginas, m.cargado_en
+    FROM apd.material_estudio m
+   WHERE m.vigente AND m.publicado;
+COMMENT ON VIEW apd.material_publico IS 'Material de estudio publicado y vigente, para la página pública (sin cuenta).';
+
 CREATE VIEW apd.bandeja_demanda AS
   SELECT s.id AS solicitud_id,
          s.folio,

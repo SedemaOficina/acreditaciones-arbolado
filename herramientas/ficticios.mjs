@@ -648,6 +648,70 @@ migrar(dictPodaVencida, 'poda', '2025-09-01');
 migrar(dictPodaVencida, 'dictaminador', '2025-10-28');
 activar(dictPodaVencida, '2026-09-15');
 
+// ── Material de estudio (decisión 2026-10-18, Liber) ──────────────────────────────────
+// No es ficticio: son los documentos de la Secretaría que subió Liber. En la versión de prueba el archivo está en
+// sitio/material/ y su clave en el almacén es esa misma ruta. Las páginas de los temas son las del PDF; el temario
+// del examen por tema lo confirma la Secretaría (P136).
+const MATERIAL = 'cursos.ficticio';
+const MATERIALES = [
+  { clave: 'norma_poda', orden: 1, archivo: 'NADF-001-RNAT-2015.pdf', paginas: 34, bytes: 384471,
+    sha256: '0107f22ec42ed2b563a4db1a8283285624ef6d34ca671ac5cf5ed125afb40001',
+    titulo: 'Norma Ambiental NADF-001-RNAT-2015',
+    descripcion: 'Los requisitos y las especificaciones técnicas que se cumplen en cada poda, derribo, trasplante y restitución de árboles en la Ciudad de México.',
+    edicion: 'Publicada en la Gaceta Oficial de la Ciudad de México el 1/04/2016',
+    temas: [
+      { titulo: '4. Definiciones', pagina: 4 },
+      { titulo: '5. Requisitos técnico-administrativos para la poda, derribo y trasplante', pagina: 7 },
+      { titulo: '6. Poda de árboles: causas, tipos y métodos de poda, poda de raíces', pagina: 9 },
+      { titulo: '7. Derribo de árboles: alternativas, causas, tipos de derribo, troceo y destoconado', pagina: 16 },
+      { titulo: '8. Trasplante de árboles', pagina: 19 },
+      { titulo: '9. Restitución de árboles', pagina: 22 },
+      { titulo: '10. Equipo, herramienta y maquinaria', pagina: 24 },
+      { titulo: '10.4 Equipo, herramienta e instrumentos para la dictaminación', pagina: 25, tipo_acreditacion: 'dictaminador' },
+      { titulo: '11. Manejo del material obtenido de la poda y el derribo', pagina: 25 },
+      { titulo: 'Anexo 1. Dictamen técnico y lineamientos para el llenado (formato 1)', pagina: 28, tipo_acreditacion: 'dictaminador' },
+      { titulo: 'Anexo 2. Dictamen técnico grupal del arbolado (formato 2)', pagina: 32, tipo_acreditacion: 'dictaminador' },
+      { titulo: 'Anexo 3. Valoración para la restitución de árboles urbanos', pagina: 34, tipo_acreditacion: 'dictaminador' }
+    ] },
+  { clave: 'manual_poda', orden: 2, archivo: 'Manual-tecnico-de-poda-2023.pdf', paginas: 160, bytes: 12296235,
+    sha256: '7d3f222790f6a9e55c0e286970805fb5c1652a5a682159fec96a3a8999094560',
+    titulo: 'Manual técnico de poda',
+    descripcion: 'La guía ilustrada de la Secretaría: biología del árbol, técnicas de poda y de corte, derribo, equipo, trasplante, plagas y diagnóstico.',
+    edicion: 'Edición 2023',
+    temas: [
+      { titulo: 'Capítulo 1. Biología del árbol', pagina: 12 },
+      { titulo: 'Capítulo 2. Plantación de árboles', pagina: 24 },
+      { titulo: 'Capítulo 3. Poda de árboles: desmoche, métodos de poda, tipos y técnicas de corte, compartimentación', pagina: 34 },
+      { titulo: 'Capítulo 4. Derribo de árboles', pagina: 64 },
+      { titulo: 'Capítulo 5. Equipo para poda y derribo: protección, ascenso y descenso, métodos de trepa', pagina: 76 },
+      { titulo: 'Capítulo 6. Trasplante de árboles', pagina: 96 },
+      { titulo: 'Capítulo 7. Plagas y enfermedades', pagina: 108 },
+      { titulo: 'Capítulo 8. Diagnóstico en especies arbóreas', pagina: 128 },
+      { titulo: 'Definiciones', pagina: 154 }
+    ] },
+  { clave: 'ley_ambiental', orden: 3, archivo: 'Ley-Ambiental-CDMX-2026-07-23.pdf', paginas: 117, bytes: 857028,
+    sha256: '903ddf9fef233c680e03bcdf4e8a6ebd91bb1ebe40a0f864880571e3c07d9c4a',
+    titulo: 'Ley Ambiental de la Ciudad de México',
+    descripcion: 'Lo que la ley dispone sobre áreas verdes y arbolado: quién autoriza, la restitución, la acreditación del dictaminador y las sanciones.',
+    edicion: 'Texto vigente; última reforma publicada en la Gaceta Oficial el 23/07/2026',
+    temas: [
+      { titulo: 'Artículo 7º, fracción VIII: la Secretaría resuelve las acciones de plantación, poda y trasplante', pagina: 12 },
+      { titulo: 'Título Segundo, Capítulo III «De las áreas verdes» (artículos 104 a 115)', pagina: 51 },
+      { titulo: 'Artículo 109: restitución por derribo', pagina: 53 },
+      { titulo: 'Artículo 111: requisitos técnico-administrativos y acreditación del dictaminador técnico', pagina: 54 },
+      { titulo: 'Artículo 112: poda, derribo o trasplante en contravención de la ley', pagina: 54 },
+      { titulo: 'Título Sexto, Capítulo III «De las sanciones administrativas» (desde el artículo 300)', pagina: 102 }
+    ] }
+];
+en('2026-10-01', '09:30');
+como(MATERIAL, 'personal');
+for (const m of MATERIALES) {
+  emitir(`INSERT INTO apd.material_estudio (clave, titulo, descripcion, edicion, tipo_acreditacion, temas, orden, publicado,
+    archivo_clave, nombre_archivo, tipo_mime, tamano_bytes, sha256, paginas)
+    VALUES (${q(m.clave)}, ${q(m.titulo)}, ${q(m.descripcion)}, ${q(m.edicion)}, NULL, ${q(JSON.stringify(m.temas))}::jsonb, ${m.orden}, true,
+    ${q('material/' + m.archivo)}, ${q(m.archivo)}, 'application/pdf', ${m.bytes}, ${q(m.sha256)}, ${m.paginas})`);
+}
+
 en(CORTE, '20:00');
 emitir(`SELECT set_config('apd.ahora_simulado', '', false)`);
 

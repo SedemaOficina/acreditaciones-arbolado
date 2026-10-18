@@ -495,6 +495,46 @@
       ]
     },
     {
+      "nombre": "material_estudio",
+      "descripcion": "Documentos de la Secretaría para preparar el examen (decisión 2026-10-18, Liber): los sube el personal y, publicados, los ve cualquiera en «Material de estudio», sin cuenta. El examen es a libro cerrado: se estudian antes. El archivo vive en el almacén; aquí sólo su clave. Una carga nueva del mismo documento no borra la anterior: la marca como no vigente.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "clave", "tipo": "text", "nulo": false, "descripcion": "Documento al que pertenece la carga; se conserva al reemplazar el archivo (por ejemplo norma_poda)" },
+        { "nombre": "titulo", "tipo": "text", "nulo": false, "descripcion": "Nombre del documento como lo lee la persona" },
+        { "nombre": "descripcion", "tipo": "text", "nulo": false, "descripcion": "Para qué le sirve a quien estudia" },
+        { "nombre": "edicion", "tipo": "text", "nulo": false, "descripcion": "Versión o fecha de publicación, como la dice el documento (por ejemplo: texto vigente, última reforma publicada el 23/07/2026)" },
+        { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": true, "descripcion": "poda o dictaminador; vacío: sirve para las dos acreditaciones" },
+        { "nombre": "temas", "tipo": "jsonb", "nulo": false, "defecto": "'[]'::jsonb", "descripcion": "Apartados que conviene estudiar: [{titulo, pagina, tipo_acreditacion?}]; la página es la del archivo PDF" },
+        { "nombre": "orden", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Orden en la lista" },
+        { "nombre": "publicado", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Se ve en «Material de estudio»" },
+        { "nombre": "archivo_clave", "tipo": "text", "nulo": false, "descripcion": "Clave exacta en el almacén, con sello propio" },
+        { "nombre": "nombre_archivo", "tipo": "text", "nulo": false, "descripcion": "Nombre con que se descarga" },
+        { "nombre": "tipo_mime", "tipo": "text", "nulo": false, "descripcion": "application/pdf" },
+        { "nombre": "tamano_bytes", "tipo": "integer", "nulo": false, "descripcion": "Tamaño; el máximo lo fija el parámetro tamano_maximo_material_bytes" },
+        { "nombre": "sha256", "tipo": "text", "nulo": false, "descripcion": "Suma del archivo, para comprobar el almacén" },
+        { "nombre": "paginas", "tipo": "integer", "nulo": false, "descripcion": "Número de páginas del PDF" },
+        { "nombre": "vigente", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Es la última carga de ese documento" },
+        { "nombre": "cargado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Carga" },
+        { "nombre": "cargado_por", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Cuenta del personal que lo cargó; lo pone la base" },
+        { "nombre": "actualizado_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Último cambio de sus datos o de su publicación; lo pone la base" },
+        { "nombre": "actualizado_por", "tipo": "text", "nulo": true, "descripcion": "Cuenta del personal del último cambio; lo pone la base" }
+      ],
+      "restricciones": [
+        "CONSTRAINT material_estudio_pk PRIMARY KEY (id)",
+        "CONSTRAINT material_estudio_archivo_uk UNIQUE (archivo_clave)",
+        "CONSTRAINT material_estudio_clave_ck CHECK (clave ~ '^[a-z0-9_]{3,40}$')",
+        "CONSTRAINT material_estudio_titulo_ck CHECK (length(trim(titulo)) BETWEEN 3 AND 200)",
+        "CONSTRAINT material_estudio_descripcion_ck CHECK (length(trim(descripcion)) BETWEEN 10 AND 400)",
+        "CONSTRAINT material_estudio_edicion_ck CHECK (length(trim(edicion)) BETWEEN 3 AND 200)",
+        "CONSTRAINT material_estudio_tipo_ck CHECK (tipo_acreditacion IS NULL OR tipo_acreditacion IN ('poda', 'dictaminador'))",
+        "CONSTRAINT material_estudio_temas_ck CHECK (jsonb_typeof(temas) = 'array')",
+        "CONSTRAINT material_estudio_mime_ck CHECK (tipo_mime = 'application/pdf')",
+        "CONSTRAINT material_estudio_tamano_ck CHECK (tamano_bytes > 0)",
+        "CONSTRAINT material_estudio_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')",
+        "CONSTRAINT material_estudio_paginas_ck CHECK (paginas > 0)"
+      ]
+    },
+    {
       "nombre": "folio_contador",
       "descripcion": "Último número asignado por serie y año. Lo usa sólo la base al asignar folios.",
       "columnas": [
@@ -515,6 +555,10 @@
     {
       "porque": "Una solicitud origina a lo más una acreditación.",
       "sql": "CREATE UNIQUE INDEX acreditacion_solicitud_uk ON apd.acreditacion (solicitud_id) WHERE solicitud_id IS NOT NULL"
+    },
+    {
+      "porque": "Cada documento de estudio tiene a lo más una carga vigente.",
+      "sql": "CREATE UNIQUE INDEX material_estudio_vigente_uk ON apd.material_estudio (clave) WHERE vigente"
     }
   ]
 }

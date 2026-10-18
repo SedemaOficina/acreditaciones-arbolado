@@ -989,3 +989,26 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   curso o concluido (el registro queda después del curso).
 - Pruebas: `probar-sitio` 572 (con axe; nuevas: concentrado tras guardar y en un grupo concluido), `probar-examen` 57,
   `probar-volumen` y auditor de CSS, correctos.
+
+## 2026-10-18 · Bloque 68 · Material de estudio
+
+- Liber: antes del examen debe haber material para estudiar. Recomendación dada (guía por temas, regla de alcance,
+  práctica, resultado por tema); Liber decidió el material: la norma ambiental, el manual de poda y la Ley Ambiental,
+  documentos de la Secretaría que se suben al sistema, no enlaces; el examen es a libro cerrado.
+- Base: tabla `apd.material_estudio` (clave del documento, datos, apartados en `temas` con su página del PDF,
+  publicado, archivo en el almacén; una carga vigente por documento), reglas `material_alta` y `material_cambio`
+  (sólo personal, sólo PDF, máximo por parámetro `tamano_maximo_material_bytes` = 30 MB, el archivo no se modifica,
+  reemplazar conserva la publicación, todo a la bitácora) y vista pública `apd.material_publico`. Siete casos nuevos
+  en `probar-reglas`.
+- Sitio: `material.html` (pública, tú): los documentos publicados con su edición, abrir y descargar, y «Qué estudiar»
+  con enlace a la página del PDF; filtro poda / dictaminador (el dictaminador ve además los formatos de dictamen).
+  Enlaces desde el inicio y desde «Mis trámites». `material-personal.html` (usted): agregar, editar datos y
+  apartados, reemplazar archivo, publicar y ocultar (con confirmación); las páginas se cuentan con pdf.js y un
+  apartado que cita una página inexistente no se guarda.
+- Archivos en `sitio/material/`. El manual se publica en una copia optimizada (12 MB en lugar de 18 MB: imágenes
+  recomprimidas, mismo texto y páginas) para teléfono y para el artefacto; queda en P136 si se usa el original.
+- Apartados por documento: propuesta tomada de los índices (páginas del PDF verificadas); el temario del examen lo
+  confirma la Secretaría (P136).
+- Pruebas: `probar-base` y `probar-reglas` 173, `probar-sitio` 602 (con axe; 13 nuevas de material), `probar-examen`
+  57, `probar-esquemas`, `probar-volumen` y auditor de CSS, correctos.
+

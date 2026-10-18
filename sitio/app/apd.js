@@ -62,7 +62,13 @@
     // cada vez, para que todas las pantallas vean lo último (app/archivos-prueba.js)
     // Antes, lo guardado hace más de 7 días sin uso se borra (alta 1 de la auditoría integral)
     // (se lee al resolver: archivos-prueba.js se carga después de la página que llama)
-    return promesa.then((d) => { const P = global.APD_ARCHIVOS_PRUEBA; const b = desdeCitas(d); return P ? P.caduca().then(() => P.mezcla(b)) : b; });
+    // El material de estudio que subió el personal en este navegador, también (con la URL de cada archivo)
+    return promesa.then((d) => {
+      const P = global.APD_ARCHIVOS_PRUEBA;
+      const b = desdeCitas(d);
+      if (!P) return Object.assign({}, b, { material_estudio: (b.material_estudio || []).map((m) => Object.assign({}, m, { url: m.archivo_clave })) });
+      return P.caduca().then(() => P.mezcla(b)).then((x) => P.mezclaMaterial(x));
+    });
   }
 
   /* Lo que las pantallas leen de la solicitud y la base guarda en sus citas (apd.cita): la cita nueva y su motivo (no se
@@ -431,12 +437,24 @@
     c.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
+  /* Material de estudio (decisión 2026-10-18): lo publicado y vigente, en su orden (como la vista apd.material_publico);
+     y el tamaño de un archivo como lo lee una persona («12.3 MB», «376 KB»). */
+  function materialPublico(datos) {
+    return (datos.material_estudio || []).filter((m) => m.vigente && m.publicado)
+      .sort((a, b) => (a.orden - b.orden) || String(a.titulo).localeCompare(String(b.titulo), 'es'));
+  }
+  function tamano(bytes) {
+    const n = Number(bytes) || 0;
+    if (n >= 1048576) return `${(n / 1048576).toLocaleString('es-MX', { maximumFractionDigits: 1 })} MB`;
+    return `${Math.max(1, Math.round(n / 1024))} KB`;
+  }
+
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cargar, cargadoTras, fecha, fechaHora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, meta, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionPares, adscripcionDe,
-    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
+    perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano
   };
 }(window));

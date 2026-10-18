@@ -25,6 +25,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`inscripcion`](#inscripcion) — Una solicitud en un grupo. No se borra: una baja o una cancelación la deja inactiva y la solicitud regresa a la bandeja con su antigüedad.
 - [`asistencia`](#asistencia) — Asistencia por día de curso, capturada por el instructor; la del último día se registra al pasar lista en el examen (P94).
 - [`examen`](#examen) — Calificación del examen final: la captura el instructor o llega del sistema de examen en línea. Sólo se admite con la asistencia mínima, y una vez registrada no se modifica (el resultado es inapelable).
+- [`material_estudio`](#material_estudio) — Documentos de la Secretaría para preparar el examen (decisión 2026-10-18, Liber): los sube el personal y, publicados, los ve cualquiera en «Material de estudio», sin cuenta. El examen es a libro cerrado: se estudian antes. El archivo vive en el almacén; aquí sólo su clave. Una carga nueva del mismo documento no borra la anterior: la marca como no vigente.
 - [`folio_contador`](#folio_contador) — Último número asignado por serie y año. Lo usa sólo la base al asignar folios.
 
 ## parametro
@@ -534,6 +535,48 @@ Restricciones e índices:
 - `CONSTRAINT examen_inscripcion_fk FOREIGN KEY (inscripcion_id) REFERENCES apd.inscripcion (id)`
 - `CONSTRAINT examen_calificacion_ck CHECK (calificacion BETWEEN 0 AND 10)`
 
+## material_estudio
+
+Documentos de la Secretaría para preparar el examen (decisión 2026-10-18, Liber): los sube el personal y, publicados, los ve cualquiera en «Material de estudio», sin cuenta. El examen es a libro cerrado: se estudian antes. El archivo vive en el almacén; aquí sólo su clave. Una carga nueva del mismo documento no borra la anterior: la marca como no vigente.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
+| `clave` | `text` | Sí | Documento al que pertenece la carga; se conserva al reemplazar el archivo (por ejemplo norma_poda) |
+| `titulo` | `text` | Sí | Nombre del documento como lo lee la persona |
+| `descripcion` | `text` | Sí | Para qué le sirve a quien estudia |
+| `edicion` | `text` | Sí | Versión o fecha de publicación, como la dice el documento (por ejemplo: texto vigente, última reforma publicada el 23/07/2026) |
+| `tipo_acreditacion` | `text` | No | poda o dictaminador; vacío: sirve para las dos acreditaciones |
+| `temas` | `jsonb` | Sí | Apartados que conviene estudiar: [{titulo, pagina, tipo_acreditacion?}]; la página es la del archivo PDF (por omisión: `'[]'::jsonb`) |
+| `orden` | `smallint` | Sí | Orden en la lista (por omisión: `0`) |
+| `publicado` | `boolean` | Sí | Se ve en «Material de estudio» (por omisión: `false`) |
+| `archivo_clave` | `text` | Sí | Clave exacta en el almacén, con sello propio |
+| `nombre_archivo` | `text` | Sí | Nombre con que se descarga |
+| `tipo_mime` | `text` | Sí | application/pdf |
+| `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_material_bytes |
+| `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
+| `paginas` | `integer` | Sí | Número de páginas del PDF |
+| `vigente` | `boolean` | Sí | Es la última carga de ese documento (por omisión: `true`) |
+| `cargado_en` | `timestamptz` | Sí | Carga (por omisión: `now()`) |
+| `cargado_por` | `text` | Sí | Cuenta del personal que lo cargó; lo pone la base (por omisión: `''`) |
+| `actualizado_en` | `timestamptz` | No | Último cambio de sus datos o de su publicación; lo pone la base |
+| `actualizado_por` | `text` | No | Cuenta del personal del último cambio; lo pone la base |
+
+Restricciones e índices:
+
+- `CONSTRAINT material_estudio_pk PRIMARY KEY (id)`
+- `CONSTRAINT material_estudio_archivo_uk UNIQUE (archivo_clave)`
+- `CONSTRAINT material_estudio_clave_ck CHECK (clave ~ '^[a-z0-9_]{3,40}$')`
+- `CONSTRAINT material_estudio_titulo_ck CHECK (length(trim(titulo)) BETWEEN 3 AND 200)`
+- `CONSTRAINT material_estudio_descripcion_ck CHECK (length(trim(descripcion)) BETWEEN 10 AND 400)`
+- `CONSTRAINT material_estudio_edicion_ck CHECK (length(trim(edicion)) BETWEEN 3 AND 200)`
+- `CONSTRAINT material_estudio_tipo_ck CHECK (tipo_acreditacion IS NULL OR tipo_acreditacion IN ('poda', 'dictaminador'))`
+- `CONSTRAINT material_estudio_temas_ck CHECK (jsonb_typeof(temas) = 'array')`
+- `CONSTRAINT material_estudio_mime_ck CHECK (tipo_mime = 'application/pdf')`
+- `CONSTRAINT material_estudio_tamano_ck CHECK (tamano_bytes > 0)`
+- `CONSTRAINT material_estudio_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')`
+- `CONSTRAINT material_estudio_paginas_ck CHECK (paginas > 0)`
+
 ## folio_contador
 
 Último número asignado por serie y año. Lo usa sólo la base al asignar folios.
@@ -554,3 +597,5 @@ Restricciones e índices:
   `ALTER TABLE apd.acreditacion ADD CONSTRAINT acreditacion_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
 - Una solicitud origina a lo más una acreditación.
   `CREATE UNIQUE INDEX acreditacion_solicitud_uk ON apd.acreditacion (solicitud_id) WHERE solicitud_id IS NOT NULL`
+- Cada documento de estudio tiene a lo más una carga vigente.
+  `CREATE UNIQUE INDEX material_estudio_vigente_uk ON apd.material_estudio (clave) WHERE vigente`

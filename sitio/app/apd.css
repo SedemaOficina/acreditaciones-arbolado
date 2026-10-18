@@ -29,6 +29,7 @@
 .ficha-titulo { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
 .ficha-folio { font-family: var(--fuente-mono); font-size: var(--t-sm); color: var(--gris); }
 .ficha-sigue { margin: 0; }
+.ficha-material { margin: 0; }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
 
 /* Datos como ficha (opción B, decisión de Liber 2026-10-18): cada dato en su renglón, con una línea fina entre
@@ -89,8 +90,8 @@
 
 /* ---------- Adaptaciones ---------- */
 
-@media (min-width: 760px) {
-  .menu-inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (min-width: 560px) {
+  .menu-inicio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 
@@ -328,3 +329,23 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 /* Una etiqueta larga se parte en líneas: el módulo «estado» la deja en un renglón (white-space: nowrap) y en teléfono
    ensanchaba su tarjeta o su tabla (hallazgo nuevo para el estándar). En las bandejas sigue en un renglón. */
 .estado, .fila-adscripcion .estado { white-space: normal; }
+
+/* Material de estudio (decisión 2026-10-18): un documento por bloque, con su archivo y los apartados que conviene
+   estudiar; cada apartado abre el PDF en su página. Sin tarjetas dentro de la tarjeta: una línea fina los separa. */
+.material-curso { margin-block: var(--e-5) var(--e-2); }
+.material-lista { display: grid; }
+.material-doc { display: grid; gap: var(--e-2); padding-block: var(--e-5); border-block-start: var(--b-1) solid var(--linea); }
+.material-doc > p { margin: 0; }
+.material-titulo { margin: 0; font: var(--peso-fuerte) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.material-edicion { color: var(--gris-cl); font-size: var(--t-md); }
+.material-archivo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-4); margin-block-start: var(--e-1); }
+.material-peso { color: var(--gris-cl); font-size: var(--t-sm); }
+.material-temas { margin-block-start: var(--e-1); }
+.material-temas > summary { cursor: pointer; font-weight: var(--peso-semi); color: var(--guinda); padding-block: var(--e-2); }
+.material-temas-lista { margin: var(--e-2) 0 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-2); }
+.material-temas-lista a { display: inline; }
+.material-pagina { margin-inline-start: var(--e-2); color: var(--gris-cl); font-size: var(--t-sm); white-space: nowrap; }
+.material-solo { margin-inline-start: var(--e-2); padding: 0 var(--e-2); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); color: var(--gris); font-size: var(--t-xs); white-space: nowrap; }
+/* Material de estudio · personal: la edición y la fecha de carga bajo el dato; las acciones del renglón */
+.material-edicion-celda { display: block; color: var(--gris-cl); font-size: var(--t-sm); }
+.material-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); }

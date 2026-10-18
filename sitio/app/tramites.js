@@ -122,6 +122,15 @@
       }
     }
 
+    // En espera de curso o con grupo: el material para preparar el examen, a libro cerrado (decisión 2026-10-18)
+    if (['lista_para_curso', 'inscrita'].includes(s.estado)) {
+      extra.push(el('p', { class: 'ficha-material' }, [
+        document.createTextNode('El examen es a libro cerrado. Prepáralo con el '),
+        el('a', { href: `material.html?curso=${encodeURIComponent(s.tipo_acreditacion)}&desde=tramites`, texto: 'material de estudio' }),
+        document.createTextNode(' de la Secretaría.')
+      ]));
+    }
+
     // Cita de cotejo en pausa (decisión 2026-10-17): un documento no coincidió y la persona puede cargar hoy el correcto
     const req = Object.fromEntries(datos.requisito.map((r) => [r.clave, r.nombre]));
     const vencida = APD.pausaVencida(datos, s);

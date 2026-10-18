@@ -594,6 +594,62 @@ COMMENT ON COLUMN apd.examen.capturado_por IS 'Cuenta del instructor (acceso) o 
 COMMENT ON COLUMN apd.examen.origen IS 'captura: la registra el instructor; examen_web: la registra el examen en línea del salón de cómputo del PILARES (R36; prototipo en la versión de prueba)';
 COMMENT ON COLUMN apd.examen.capturado_en IS 'Captura';
 
+CREATE TABLE apd.material_estudio (
+  id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
+  clave                      text          NOT NULL,
+  titulo                     text          NOT NULL,
+  descripcion                text          NOT NULL,
+  edicion                    text          NOT NULL,
+  tipo_acreditacion          text          NULL,
+  temas                      jsonb         NOT NULL DEFAULT '[]'::jsonb,
+  orden                      smallint      NOT NULL DEFAULT 0,
+  publicado                  boolean       NOT NULL DEFAULT false,
+  archivo_clave              text          NOT NULL,
+  nombre_archivo             text          NOT NULL,
+  tipo_mime                  text          NOT NULL,
+  tamano_bytes               integer       NOT NULL,
+  sha256                     text          NOT NULL,
+  paginas                    integer       NOT NULL,
+  vigente                    boolean       NOT NULL DEFAULT true,
+  cargado_en                 timestamptz   NOT NULL DEFAULT now(),
+  cargado_por                text          NOT NULL DEFAULT '',
+  actualizado_en             timestamptz   NULL,
+  actualizado_por            text          NULL,
+  CONSTRAINT material_estudio_pk PRIMARY KEY (id),
+  CONSTRAINT material_estudio_archivo_uk UNIQUE (archivo_clave),
+  CONSTRAINT material_estudio_clave_ck CHECK (clave ~ '^[a-z0-9_]{3,40}$'),
+  CONSTRAINT material_estudio_titulo_ck CHECK (length(trim(titulo)) BETWEEN 3 AND 200),
+  CONSTRAINT material_estudio_descripcion_ck CHECK (length(trim(descripcion)) BETWEEN 10 AND 400),
+  CONSTRAINT material_estudio_edicion_ck CHECK (length(trim(edicion)) BETWEEN 3 AND 200),
+  CONSTRAINT material_estudio_tipo_ck CHECK (tipo_acreditacion IS NULL OR tipo_acreditacion IN ('poda', 'dictaminador')),
+  CONSTRAINT material_estudio_temas_ck CHECK (jsonb_typeof(temas) = 'array'),
+  CONSTRAINT material_estudio_mime_ck CHECK (tipo_mime = 'application/pdf'),
+  CONSTRAINT material_estudio_tamano_ck CHECK (tamano_bytes > 0),
+  CONSTRAINT material_estudio_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$'),
+  CONSTRAINT material_estudio_paginas_ck CHECK (paginas > 0)
+);
+COMMENT ON TABLE apd.material_estudio IS 'Documentos de la Secretaría para preparar el examen (decisión 2026-10-18, Liber): los sube el personal y, publicados, los ve cualquiera en «Material de estudio», sin cuenta. El examen es a libro cerrado: se estudian antes. El archivo vive en el almacén; aquí sólo su clave. Una carga nueva del mismo documento no borra la anterior: la marca como no vigente.';
+COMMENT ON COLUMN apd.material_estudio.id IS 'Identificador interno';
+COMMENT ON COLUMN apd.material_estudio.clave IS 'Documento al que pertenece la carga; se conserva al reemplazar el archivo (por ejemplo norma_poda)';
+COMMENT ON COLUMN apd.material_estudio.titulo IS 'Nombre del documento como lo lee la persona';
+COMMENT ON COLUMN apd.material_estudio.descripcion IS 'Para qué le sirve a quien estudia';
+COMMENT ON COLUMN apd.material_estudio.edicion IS 'Versión o fecha de publicación, como la dice el documento (por ejemplo: texto vigente, última reforma publicada el 23/07/2026)';
+COMMENT ON COLUMN apd.material_estudio.tipo_acreditacion IS 'poda o dictaminador; vacío: sirve para las dos acreditaciones';
+COMMENT ON COLUMN apd.material_estudio.temas IS 'Apartados que conviene estudiar: [{titulo, pagina, tipo_acreditacion?}]; la página es la del archivo PDF';
+COMMENT ON COLUMN apd.material_estudio.orden IS 'Orden en la lista';
+COMMENT ON COLUMN apd.material_estudio.publicado IS 'Se ve en «Material de estudio»';
+COMMENT ON COLUMN apd.material_estudio.archivo_clave IS 'Clave exacta en el almacén, con sello propio';
+COMMENT ON COLUMN apd.material_estudio.nombre_archivo IS 'Nombre con que se descarga';
+COMMENT ON COLUMN apd.material_estudio.tipo_mime IS 'application/pdf';
+COMMENT ON COLUMN apd.material_estudio.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_material_bytes';
+COMMENT ON COLUMN apd.material_estudio.sha256 IS 'Suma del archivo, para comprobar el almacén';
+COMMENT ON COLUMN apd.material_estudio.paginas IS 'Número de páginas del PDF';
+COMMENT ON COLUMN apd.material_estudio.vigente IS 'Es la última carga de ese documento';
+COMMENT ON COLUMN apd.material_estudio.cargado_en IS 'Carga';
+COMMENT ON COLUMN apd.material_estudio.cargado_por IS 'Cuenta del personal que lo cargó; lo pone la base';
+COMMENT ON COLUMN apd.material_estudio.actualizado_en IS 'Último cambio de sus datos o de su publicación; lo pone la base';
+COMMENT ON COLUMN apd.material_estudio.actualizado_por IS 'Cuenta del personal del último cambio; lo pone la base';
+
 CREATE TABLE apd.folio_contador (
   serie                      text          NOT NULL,
   anio                       smallint      NOT NULL,
@@ -610,3 +666,6 @@ ALTER TABLE apd.acreditacion ADD CONSTRAINT acreditacion_solicitud_fk FOREIGN KE
 
 -- Una solicitud origina a lo más una acreditación.
 CREATE UNIQUE INDEX acreditacion_solicitud_uk ON apd.acreditacion (solicitud_id) WHERE solicitud_id IS NOT NULL;
+
+-- Cada documento de estudio tiene a lo más una carga vigente.
+CREATE UNIQUE INDEX material_estudio_vigente_uk ON apd.material_estudio (clave) WHERE vigente;
