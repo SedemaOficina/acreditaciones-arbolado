@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.39 | 17/10/26, 11:09 p.m. | Bloque 59: correcciones de la auditoría de tareas; prueba con volumen real; P122 y P123 |
 | 0.38 | 17/10/26, 7:56 p.m. | Bloque 57: «Qué sigue» en pasos numerados; espera agrupada por adscripción; P119 |
 | 0.37 | 17/10/26, 7:18 p.m. | Bloque 56: decisiones, bitácora y hallazgos P113 a P118 del estándar |
 | 0.36 | 17/10/26, 5:36 p.m. | Capturas de verificación del bloque 55 |
