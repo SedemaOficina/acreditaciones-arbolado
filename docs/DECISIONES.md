@@ -196,6 +196,21 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-14 | Avisos: la persona ve en «Mis trámites» su resultado (aprobada o no, con asistencia y calificación) y, ya emitida, que su acreditación está lista para recoger, con lugar y horario. El aviso por correo depende del servicio del SIA. ~~Lugar y horario de entrega: **pendientes**~~ Sustituida: la entrega es el mismo día del examen (2026-10-17, ver Cuentas); quien no pueda quedarse: P10 | Liber Saltijeral |
 | 2026-10-14 | La acreditación se emite con la fecha del día de emisión, no del curso ni del examen. Liber definirá el formato del folio; el actual (PD-AAAA-NNNN, DT-AAAA-NNNN) es provisional (mapa, R38) | Liber Saltijeral |
 
+## Avisos y confirmaciones
+
+Propuesta «Avisos y confirmaciones del trámite» (revisión de 131 momentos de las pantallas), aprobada por Liber el
+2026-10-17 y aplicada en la versión de prueba 0.37. Donde el estándar de formularios se queda corto, el proyecto lo
+resuelve en `app/apd.js` y `app/apd.css` y lo anota como hallazgo (P113 a P118).
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-17 | Cada mensaje responde dos preguntas: **qué pasó** (en el título, con el resultado: «Validada», «Rechazada por perfil», «Cotejo terminado») y **qué sigue** (en el texto, con quién actúa y cuándo). Ningún mensaje usa el nombre interno de un estado | Liber Saltijeral |
+| 2026-10-17 | Cinco tipos de mensaje, cada uno con su forma: desenlace de una acción (recuadro con tono, título, «Quedó guardado a las HH:MM · quien» y el motivo citado), confirmación antes de actuar, error junto al campo, aviso de la pantalla (con título) y anuncio para lector de pantalla, que **también se ve** | Liber Saltijeral |
+| 2026-10-17 | Confirmación antes de actuar sólo cuando la acción tiene consecuencias para otra persona o no se deshace: título en pregunta, lista de lo que pasará, «No se puede deshacer» cuando aplica, «Volver sin cambios» con el foco y un botón que repite el verbo («Sí, dar de baja», «Sí, cancelar el grupo»), rojo relleno si es de peligro | Liber Saltijeral |
+| 2026-10-17 | Etiquetas de estado en cinco familias, siempre con icono además del color: hecho (palomita), te toca actuar (alerta), en marcha (reloj), cerrado sin éxito (equis) y terminado (fin). Para la persona, la etiqueta dice qué hacer («Corrige y reenvía», «Acude a tu cita»); para el personal, la situación («Con observaciones», «Cita asignada») | Liber Saltijeral |
+| 2026-10-17 | «Mis trámites» muestra primero las solicitudes en curso y, arriba de su ficha, lo que cambió (cita nueva, grupo cancelado, observaciones) | Liber Saltijeral |
+| 2026-10-17 | El resumen de errores habla de respuestas y nombra el documento al que pertenece cada una («Para continuar, faltan 3 respuestas»), no de «campos» | Liber Saltijeral |
+
 ## Lo que hay que corregir en los lineamientos
 
 | # | En el borrador | Corrección |

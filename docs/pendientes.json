@@ -607,6 +607,54 @@
       "desde": "2026-10-17",
       "titulo": "Hallazgo del estándar: el formato «fecha» da su límite en AAAA-MM-DD («no puede ser anterior al 2026-10-21»)",
       "recomendacion": "El formato fecha-dma ya lo convierte a día/mes/año (dmaDeIso); el formato fecha no. Solución provisional: app/config-usted.js lo convierte al pasar el mensaje a usted. Propuesta para el estándar: usar dmaDeIso también en el formato fecha."
+    },
+    {
+      "id": "P113",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: no hay pieza para el desenlace de una acción del personal y FormKit.confirma no distingue gravedad",
+      "recomendacion": "El estándar sólo trae el acuse (para quien envía una solicitud); cuando el personal valida, rechaza o cierra algo, la pantalla no muestra con claridad qué pasó, a qué hora ni quién lo hizo. Y FormKit.confirma pregunta igual para guardar una nota que para cerrar un trámite: no lista consecuencias, no dice si se puede deshacer y el foco cae en el botón que actúa. Solución provisional: APD.pintaDesenlace (tono, título que nombra el resultado, «Quedó guardado a las HH:MM · quien», cita del motivo, foco) y APD.confirma (título en pregunta, lista de consecuencias, «No se puede deshacer», «Volver sin cambios» con el foco, botón que repite el verbo: «Sí, dar de baja»). Propuesta para el estándar: módulo «resultado» y FormKit.confirma con { consecuencias, irreversible, peligro }."
+    },
+    {
+      "id": "P114",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: el botón de peligro (.btn-peligro) sólo tiene contorno y pesa menos que el botón primario de al lado",
+      "recomendacion": "En una confirmación de cancelar o rechazar, el botón que hace el daño se ve más débil que «Volver». Solución provisional: apd.css lo pinta rojo relleno con texto blanco y su estado al pasar el cursor. Propuesta para el estándar: .btn-peligro relleno, y contorno sólo para una variante secundaria."
+    },
+    {
+      "id": "P115",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: el aviso (.aviso) no tiene título y su icono es opcional",
+      "recomendacion": "Un aviso de una sola frase larga no deja ver de un vistazo si algo salió bien, quedó pendiente o se rechazó. Solución provisional: APD.aviso(tono, título, texto) con p.aviso-titulo en negritas, icono siempre según el tono y foco cuando el aviso responde a una acción. Propuesta para el estándar: .aviso-titulo y el icono obligatorio por tono (ok, advertencia, bloqueo, información)."
+    },
+    {
+      "id": "P116",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: el resumen de errores habla de «campos», repite etiquetas sin contexto y usa el mismo título para un rechazo del servidor",
+      "recomendacion": "En la revisión de documentos el resumen decía «Revisa 4 campos» y listaba «Decisión», «Decisión», «Decisión»: no se sabía de qué documento. Solución provisional: un span .contexto-resumen dentro de la etiqueta (oculto a la vista, leído por el resumen) con el nombre del documento, y resumenUno/resumenVarios en config-usted («Para continuar, faltan N respuestas»). Propuesta para el estándar: un atributo data-contexto que el resumen anteponga, textos sin la palabra «campo» y un título distinto cuando rechaza el servidor."
+    },
+    {
+      "id": "P117",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: FormKit.anuncia permite mensajes que sólo oye el lector de pantalla",
+      "recomendacion": "Varias pantallas avisaban un cambio sólo por la región viva: el código repuesto, el minuto restante del examen, «Marcar a todas», la revisión terminada. Quien ve la pantalla no se enteraba. Solución provisional: cada anuncio tiene su texto visible (aviso, etiqueta «Código nuevo», aviso de tiempo junto al reloj). Propuesta para el estándar: regla «todo anuncio también se ve» y que anuncia reciba el elemento visible que lo acompaña."
+    },
+    {
+      "id": "P118",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: no hay módulo de etiquetas de estado",
+      "recomendacion": "Cada sistema inventa sus colores de estado; en éste había 9 tonos sin regla y algunas etiquetas sin icono, que dependían sólo del color. Solución provisional: APD.estado(texto, tono, icono) con cinco familias, siempre con icono: hecho (ok, palomita), te toca actuar (pend, alerta), en marcha (marcha, reloj), cerrado sin éxito (error, cerrar) y terminado (cerrado, fin). Propuesta para el estándar: módulo «estado» con esas familias y el icono obligatorio."
     }
   ],
   "resueltos": [

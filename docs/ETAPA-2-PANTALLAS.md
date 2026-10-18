@@ -84,6 +84,20 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 - La base lo vuelve a aplicar: `apd.grupo_cambio`, `apd.inscripcion_alta`, `apd.inscripcion_cambio`, `apd.asistencia_captura`.
   En la prueba, lo hecho se guarda en el navegador («apd.personal.grupos») y `app/archivos-prueba.js` lo aplica como la base.
 
+## 2d. Avisos y confirmaciones (decisión del 2026-10-17, versión 0.37)
+
+- Desenlace de cada acción del personal (`APD.pintaDesenlace`): revisión (validada, con observaciones, rechazada por
+  perfil), cotejo (terminado, en pausa, con observaciones, otra cita, no se presentó, cerrado, no es la persona) y
+  corrección. Lleva tono, icono, título con el resultado, hora y quién, motivo citado y, en la revisión, «Revisar la
+  siguiente» con la que sigue en la bandeja.
+- Confirmación (`APD.confirma`) en rechazar por perfil, cerrar la solicitud, no es la persona, dar de baja, cancelar un
+  grupo, crear un grupo combinado, reponer un código, suspender y enviar el examen.
+- Avisos con título (`APD.aviso`, `APD.pintaAviso`) en grupos, asistencia, espera, aplicar el examen, datos, verificar,
+  entrar y «Mis trámites»; el error de una acción sin elegir o sin marcar se ve junto a los botones y señala en rojo las
+  filas que faltan.
+- Etiquetas por familia (`APD.estado`, `APD.estadoSolicitud`, `APD.nombrePersonal`) en todas las bandejas y fichas.
+- Examen: «Aprobaste» / «No aprobaste» con icono, calificación y mínimo; el aviso del último minuto se ve junto al reloj.
+
 ## 2 bis. Visor de documentos
 
 El módulo `visor` del estándar (desde la 1.2.0, P67; antes `app/visor.js`, del que salió) muestra todas las hojas del PDF

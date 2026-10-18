@@ -773,3 +773,23 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   iniciado dos veces) y P112 (el límite de una fecha en AAAA-MM-DD).
 - Pendientes: P109 (quitar el correo personal de Liber del historial, espera su autorización); P94 y P100 siguen para
   decisión de Liber.
+
+## 2026-10-17 · Bloque 56 · Avisos y confirmaciones
+
+- Liber: las confirmaciones, ventanas, letreros y etiquetas no dejaban claro si algo se aceptó, se rechazó o salió bien,
+  en parte porque el estándar no distingue esos casos. Revisión de 131 momentos de todas las pantallas y propuesta
+  «Avisos y confirmaciones del trámite»; Liber la aprobó completa («aplica todo») y pidió llevar al estándar lo que sirva.
+- `app/apd.js`: `pintaDesenlace`, `confirma`, `aviso`, `pintaAviso`, `estado` con familias e icono, `estadoSolicitud`,
+  `nombrePersonal`; la hora se escribe en 24 horas («a.m..» ya no sale). `app/apd.css`: desenlace, confirmación,
+  `.btn-peligro` relleno, filas que faltan por marcar, etiqueta «Código nuevo».
+- Pantallas: revisar, cotejo, corregir, grupos, espera, grupo, asistencia, aplicar, examen, «Mis trámites», datos,
+  verificar y entrar (detalle en `docs/ETAPA-2-PANTALLAS.md`, §2d). La cruzada de la CURP en «Crear cuenta» se ordena
+  nombre → segundo apellido → fecha, para que una CURP con otra fecha no dé el mensaje del segundo apellido.
+- Pruebas: `probar-sitio.mjs` 526 de 526 con axe; `probar-examen.mjs` 63 de 63 con axe; `probar-esquemas.mjs` sin
+  errores; auditor de CSS sin hallazgos; `auditar-campos` 166 campos; `npm run auditar` sólo los dos encimados conocidos
+  del menú de pruebas. 234 capturas antes y después revisadas a ojo.
+- Hallazgos nuevos para el estándar (también en el documento de fallas del estándar): P113 (no hay pieza de desenlace y
+  `FormKit.confirma` no distingue gravedad), P114 (`.btn-peligro` sólo de contorno), P115 (el aviso no tiene título),
+  P116 (el resumen de errores habla de «campos» y repite etiquetas sin contexto), P117 (`FormKit.anuncia` permite
+  mensajes que no se ven) y P118 (no hay módulo de etiquetas de estado).
+
