@@ -357,6 +357,17 @@
       ])));
   }
 
+  /* Línea de datos de una cabecera («Folio … · enviada el … · 2.ª revisión»): cada parte se queda entera en su renglón;
+     si no cabe, pasa completa al siguiente (2026-10-18). Una parte es texto o una lista de nodos. */
+  function meta(partes) {
+    const out = [];
+    partes.filter(Boolean).forEach((p, i) => {
+      if (i) out.push(document.createTextNode(' · '));
+      out.push(el('span', { class: 'sin-corte' }, typeof p === 'string' ? [document.createTextNode(p)] : p));
+    });
+    return out;
+  }
+
   /* Cabecera de sesión en las pantallas con cuenta */
   function pintaSesion(contenedor, persona) {
     if (!contenedor) return;
@@ -425,7 +436,7 @@
     cargar, cargadoTras, fecha, fechaHora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionPares, adscripcionDe,
+    el, meta, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));

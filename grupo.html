@@ -58,6 +58,19 @@
       </table>
       <p class="tabla-vacia" data-tabla-vacia hidden>El grupo no tiene personas.</p>
     </div>
+    <!-- Concentrado de asistencia: sólo en curso o concluido (P.pintaConcentrado) -->
+    <div data-concentrado-bloque hidden>
+      <h3 class="titulo-bloque" id="t-concentrado">Asistencia por día</h3>
+      <p class="ayuda" data-concentrado-ayuda>Lo capturado por el instructor, por persona y por día. El día del examen muestra el pase de lista del salón de cómputo.</p>
+      <div class="tabla-marco" data-tabla data-clave="concentrado" data-concentrado>
+        <table class="tabla tabla-bandeja tabla-concentrado">
+          <caption class="solo-lector" data-conc-leyenda>Asistencia del grupo por persona y por día</caption>
+          <thead><tr data-conc-encabezado></tr></thead>
+          <tbody data-conc-filas></tbody>
+        </table>
+        <p class="tabla-vacia" data-conc-vacia hidden>El grupo no tiene personas.</p>
+      </div>
+    </div>
     <p class="ayuda" data-baja-ayuda hidden>Dar de baja pide el motivo; la persona regresa a la espera con su antigüedad. Si un grupo confirmado queda por debajo del mínimo, deja de estar confirmado y conserva su fecha como propuesta.</p>
     <div class="acciones-grupo" data-acciones></div>
   </section>

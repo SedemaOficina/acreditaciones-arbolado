@@ -147,7 +147,7 @@
 .doc-archivo { margin: 0; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; }
 .doc-corregido { display: inline-flex; margin-inline-start: var(--e-2); }
 /* Aceptado en una revisión anterior: se ve, sin pedir decisión (2026-10-18) */
-.doc-previo { margin: 0; font-size: var(--t-sm); color: var(--gris); max-width: var(--ancho-lectura); }
+.doc-previo { margin: 0; font-size: var(--t-sm); color: var(--gris); }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
 .acciones-izq { justify-content: flex-start; }
 
@@ -170,7 +170,15 @@
 .perfil-seccion-cabeza .titulo-bloque { margin-block: 0; }
 .perfil-seccion-cabeza .btn { width: auto; }
 /* La ayuda de una sección va bajo su título y separada de los datos (2026-10-18) */
-.perfil-seccion-cabeza + .ayuda { max-width: var(--ancho-lectura); margin-block-end: var(--e-4); }
+.perfil-seccion-cabeza + .ayuda { margin-block-end: var(--e-4); }
+/* Bajadas y ayudas de bloque a todo el ancho de su contenedor (decisión de Liber 2026-10-18, hallazgo P134): con el
+   ancho de lectura del estándar (70ch) una línea corta pasaba al renglón de abajo dejando medio espacio vacío */
+.bajada, .ayuda-bloque { max-width: none; }
+/* Respuestas frecuentes (chips fijos, hallazgo P135): el estándar las limita a 240 px y una frase larga se partía en
+   dos renglones dentro de la píldora; aquí no se encogen: si no caben, pasan completas al renglón siguiente (sólo una más ancha que la fila se parte), y el paso del cursor sólo
+   marca el borde, para que no parezca elegida */
+.chip-fijo { max-width: 100%; flex-shrink: 0; }
+.chip-fijo:hover { color: var(--texto); background: var(--blanco); }
 @media (min-width: 560px) {
   .perfil-cabeza { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: start; }
   .perfil-quien { justify-items: start; }
@@ -308,6 +316,9 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 }
 /* Día del curso que ya pasó sin capturar (auditoría de tareas, A1) */
 .dia-btn-falta { border-color: var(--error); border-style: dashed; color: var(--error-txt); background: var(--error-bg); }
+/* Concentrado de asistencia (P.pintaConcentrado): la falta y el día sin capturar se leen por el texto y, además, por su color */
+.conc-no { color: var(--error-txt); }
+.conc-hueco { color: var(--pend-txt); font-style: italic; }
 /* «En espera»: la cuenta de elegidas acompaña el desplazamiento (auditoría de tareas, M4) */
 .barra-seleccion { position: sticky; top: env(safe-area-inset-top); z-index: var(--z-lista); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-4); margin-block-start: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); font-weight: var(--peso-semi); }
 .opcion-desc-aviso { color: var(--pend-txt); font-weight: var(--peso-medio); }

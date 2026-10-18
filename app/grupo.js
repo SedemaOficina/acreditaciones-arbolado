@@ -53,7 +53,7 @@
     const antesDeIniciar = g.estado === 'en_integracion' || (g.estado === 'confirmado' && hoy < g.fecha_inicio);
     document.title = `Grupo ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
     $('#t-grupo').replaceChildren(document.createTextNode('Grupo '), el('span', { class: 'mono', texto: g.folio }));
-    $('[data-bajada]').textContent = `${x.nombre} · ${g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado'} · creado el ${fecha(g.creado_en)}`;
+    $('[data-bajada]').replaceChildren(...APD.meta([x.nombre, g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado', `creado el ${fecha(g.creado_en)}`]));
     $('[data-situacion]').replaceChildren(estado(x.situacion.texto, x.situacion.tono));
 
     /* Cupo */
@@ -121,6 +121,9 @@
     $('[data-tabla-vacia]').hidden = filas.length > 0;
     $('[data-leyenda]').textContent = g.estado === 'cancelado' ? `Personas que estaban en el grupo ${g.folio} al cancelarse` : `Personas inscritas en el grupo ${g.folio}`;
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
+    // Asistencia de conjunto: una columna por día, en curso o concluido (pedido de Liber 2026-10-18)
+    $('[data-concentrado-bloque]').hidden = !conSituacion;
+    if (conSituacion) P.pintaConcentrado($('[data-concentrado]'), datos, x);
     $('[data-baja-ayuda]').hidden = !puedeBaja;
 
     /* Acciones del grupo */

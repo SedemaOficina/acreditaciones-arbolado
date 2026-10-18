@@ -16,7 +16,7 @@
    ========================================================= */
 (function (global) {
   'use strict';
-  const { el } = APD;
+  const { el, estado } = APD;
   const CLAVE = 'apd.personal.revisiones';
   const COTEJOS = 'apd.personal.cotejos';
 
@@ -272,9 +272,64 @@
   /* Versión de prueba: los datos ficticios más lo que se envió en este navegador (app/archivos-prueba.js), con la misma
      forma que la base. Una solicitud nueva entra como enviada, con su persona y sus documentos; un reenvío de una
      solicitud ficticia la vuelve a poner en revisión con los documentos corregidos como carga vigente. */
+  /* Concentrado de asistencia del grupo (pedido de Liber, 2026-10-18): una fila por persona y una columna por día, con
+     los días asistidos y si conserva el derecho a examen. La captura sigue siendo por día («Asistencia»); esto es la
+     vista de conjunto, en «Asistencia» y en la ficha del grupo (en curso o concluido). El último día es el del examen:
+     su asistencia es el pase de lista del salón de cómputo. Sólo cuenta como falta lo marcado «Faltó»; un día que ya
+     pasó sin capturar se señala aparte («Sin capturar»), como en la captura.
+     marco: el [data-tabla] con [data-conc-encabezado], [data-conc-filas] y [data-conc-leyenda].
+     VERSIÓN DE PRUEBA: el pase de lista se guarda en este navegador («apd.examen.lista»); en el SIA viene en apd.asistencia. */
+  function pintaConcentrado(marco, datos, x) {
+    const { g, c } = x;
+    if (!marco || !c || !g.fecha_inicio) return;
+    const hoy = APD.hoy(datos);
+    const ultimo = c.dias_duracion;
+    const permitidas = c.dias_duracion - c.dias_minimos_asistencia;
+    const fechaDia = (n) => APD.sumaDias(g.fecha_inicio, n - 1);
+    let lista = {};
+    try { lista = JSON.parse(global.localStorage.getItem('apd.examen.lista') || '{}'); } catch (e) { lista = {}; }
+    const registro = (insId, n) => {
+      const a = datos.asistencia.find((r) => r.inscripcion_id === insId && r.dia === n);
+      if (a) return a.asistio;
+      if (n === ultimo && lista[insId]) return lista[insId].presente;
+      return null;
+    };
+    const $$ = (s) => marco.querySelector(s);
+    const dias = Array.from({ length: ultimo }, (_, k) => k + 1);
+    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `Día ${n} · ${APD.fecha(fechaDia(n)).slice(0, 5)}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días asistidos', 'Examen']
+      .map((t) => el('th', { scope: 'col', texto: t })));
+    const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
+    const sols = Object.fromEntries(datos.solicitud.map((s) => [s.id, s]));
+    const inscritas = g.estado === 'cancelado' ? [] : x.inscritas;
+    const filas = inscritas.map((i) => {
+      const s = sols[i.solicitud_id] || {};
+      const quien = APD.nombreCompleto(persona[s.solicitante_id] || {});
+      let asistidos = 0;
+      let faltas = 0;
+      const celdas = dias.map((n) => {
+        const r = registro(i.id, n);
+        if (r === true) { asistidos += 1; return el('td', { class: 'conc-si', texto: n === ultimo && ultimo > 1 ? 'Presente' : 'Asistió' }); }
+        if (r === false) { faltas += 1; return el('td', {}, [el('strong', { class: 'conc-no', texto: n === ultimo && ultimo > 1 ? 'No llegó' : 'Faltó' })]); }
+        const f = fechaDia(n);
+        if (f < hoy) return el('td', {}, [el('span', { class: 'conc-hueco', texto: 'Sin capturar' })]);
+        return el('td', { class: 'texto-gris', texto: f === hoy ? 'Hoy' : 'Por venir' });
+      });
+      const derecho = faltas > permitidas ? estado('Sin derecho', 'error')
+        : registro(i.id, ultimo) === true ? estado('Lo presentó', 'cerrado')
+          : faltas === permitidas && faltas ? estado('Ya no puede faltar', 'pend') : estado('Con derecho', 'ok');
+      return el('tr', {}, [el('td', { texto: quien }), ...celdas, el('td', { class: 'sin-corte', texto: `${asistidos} de ${ultimo}` }), el('td', {}, [derecho])]);
+    });
+    $$('[data-conc-filas]').replaceChildren(...filas);
+    const leyenda = $$('[data-conc-leyenda]');
+    if (leyenda) leyenda.textContent = `Asistencia del grupo ${g.folio} por persona y por día`;
+    const vacia = marco.querySelector('[data-conc-vacia]');
+    if (vacia) vacia.hidden = filas.length > 0;
+    marco.dispatchEvent(new CustomEvent('formkit:tabla'));
+  }
+
   /* Lo registrado en este navegador durante la prueba ya viene en los datos (APD.cargar → APD_ARCHIVOS_PRUEBA.mezcla) */
   function datosConPrueba(datos) { return Promise.resolve(datos); }
 
   global.APD_PERSONAL = { datosConPrueba, porRevisar, REVISORA, INSTRUCTORES, INSTRUCTORA, nombreInstructor, eventosGrupos, guardaGrupo, CURSOS, claveCurso, deClave,
-    nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, cargaCitas, pintaCargaCitas, dias, espera, vuelta, corregidos, senales, pintaSesion };
+    nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, cargaCitas, pintaCargaCitas, dias, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado };
 }(window));

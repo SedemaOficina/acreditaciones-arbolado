@@ -54,6 +54,18 @@
       <button type="button" class="btn btn-primario" data-guardar>Guardar la asistencia</button>
     </div>
     <p class="ayuda">Queda registrado en el sistema quién capturó cada día y cuándo. Mientras el curso siga, la asistencia de un día ya guardado se puede corregir.</p>
+
+    <!-- Concentrado: todos los días del curso a la vista (P.pintaConcentrado); se actualiza al guardar cada día -->
+    <h3 class="titulo-bloque" id="t-concentrado">Concentrado del curso</h3>
+    <p class="ayuda">Lo guardado hasta hoy, por persona y por día. El día del examen muestra el pase de lista del salón de cómputo.</p>
+    <div class="tabla-marco" data-tabla data-clave="concentrado" data-concentrado>
+      <table class="tabla tabla-bandeja tabla-concentrado">
+        <caption class="solo-lector" data-conc-leyenda>Asistencia del grupo por persona y por día</caption>
+        <thead><tr data-conc-encabezado></tr></thead>
+        <tbody data-conc-filas></tbody>
+      </table>
+      <p class="tabla-vacia" data-conc-vacia hidden>El grupo no tiene personas.</p>
+    </div>
   </section>
 
   <section class="tarjeta" aria-labelledby="t-mis-grupos" data-sin-grupo hidden>

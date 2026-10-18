@@ -38,7 +38,8 @@
     $('[data-con-grupo]').hidden = false;
     document.title = `Asistencia · grupo ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
     $('#t-asistencia').replaceChildren(document.createTextNode('Asistencia · grupo '), el('span', { class: 'mono', texto: g.folio }));
-    $('[data-bajada]').textContent = `${x.nombre} · del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)} · ${plural(x.n, 'persona', 'personas')} · para el examen se necesitan ${c.dias_minimos_asistencia} de ${c.dias_duracion} días`;
+    $('[data-bajada]').replaceChildren(...APD.meta([x.nombre, `del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)}`, plural(x.n, 'persona', 'personas'),
+      `para el examen se necesitan ${c.dias_minimos_asistencia} de ${c.dias_duracion} días`]));
     $('[data-situacion]').replaceChildren(estado(x.situacion.texto, x.situacion.tono));
     const permitidas = c.dias_duracion - c.dias_minimos_asistencia;
     const ultimoDia = c.dias_duracion;
@@ -200,6 +201,8 @@
       });
     });
     pinta();
+    // Vista de conjunto de lo guardado: todos los días por persona (pedido de Liber 2026-10-18)
+    P.pintaConcentrado($('[data-concentrado]'), datos, x);
   }).catch(() => {
     $('[data-sin-grupo]').hidden = false;
     $('[data-sin-grupo-texto]').textContent = 'No se pudo cargar la asistencia. Intente de nuevo más tarde.';
