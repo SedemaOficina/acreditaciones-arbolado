@@ -60,7 +60,9 @@
     if (g.estado !== 'cancelado') {
       const falta = g.cupo_minimo - x.n;
       $('[data-cupo]').hidden = false;
-      $('[data-cupo-texto]').textContent = `${x.n} de ${g.cupo_maximo} personas.${falta > 0 && abierto ? ` ${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.` : ''}`;
+      // Hasta cuándo recibe y cuántos lugares quedan (auditoría de tareas, M10)
+      const hasta = x.recibe && g.estado === 'confirmado' ? ` Recibe personas hasta el ${fecha(APD.sumaDias(g.fecha_inicio, -1))}; ${x.lugar === 1 ? 'queda 1 lugar' : `quedan ${x.lugar} lugares`}.` : '';
+      $('[data-cupo-texto]').textContent = `${x.n} de ${g.cupo_maximo} personas.${falta > 0 && abierto ? ` ${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.` : ''}${hasta}`;
       $('[data-cupo-lleno]').style.width = `${Math.min(100, Math.round((x.n / g.cupo_maximo) * 100))}%`;
     }
 
@@ -69,7 +71,7 @@
     const pares = [];
     if (g.fecha_inicio) {
       pares.push(['Primer día', fecha(g.fecha_inicio)], ['Último día (examen)', fecha(x.ultimo)],
-        ['Hora de entrada', g.hora_entrada || ''], ['Hora de salida', 'Por definir', 'el área la define (P91)'],
+        ['Hora de entrada', APD.hhmm(g.hora_entrada)], ['Hora de salida', 'Por definir', 'el área la define (P91)'],
         ['Instructor', P.nombreInstructor(g.instructor)],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);
       if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha, hora e instructor que tenía el grupo cuando dejó de estar confirmado; se confirman de nuevo abajo']);
@@ -124,9 +126,13 @@
     /* Acciones del grupo */
     const acciones = [];
     if (x.recibe) {
-      const espera = P.enEspera(datos, g.tipo_acreditacion, g.modalidad).length;
-      if (espera) acciones.push(el('a', { class: 'btn btn-secundario', href: `espera.html?curso=${P.claveCurso(g.tipo_acreditacion, g.modalidad)}&grupo=${encodeURIComponent(g.folio)}`, texto: `Agregar personas de la espera (${espera} en espera)` }));
-      else acciones.push(el('p', { class: 'texto-gris', texto: 'Nadie espera grupo en este curso por ahora.' }));
+      // Un grupo de una organización sólo recibe a su gente: se cuenta sólo a ella (auditoría de tareas, M1)
+      const propia = g.integracion === 'especifico';
+      const org = propia ? x.integracion.replace('De una organización · ', '') : '';
+      const espera = P.enEspera(datos, g.tipo_acreditacion, g.modalidad).filter((y) => !propia || y.s.organizacion_id === g.organizacion_id).length;
+      if (espera) acciones.push(el('a', { class: 'btn btn-secundario', href: `espera.html?curso=${P.claveCurso(g.tipo_acreditacion, g.modalidad)}&grupo=${encodeURIComponent(g.folio)}`,
+        texto: propia ? `Agregar personas de ${org} (${espera} en espera)` : `Agregar personas de la espera (${espera} en espera)` }));
+      else acciones.push(el('p', { class: 'texto-gris', texto: propia ? `Nadie de ${org} espera grupo en este curso por ahora.` : 'Nadie espera grupo en este curso por ahora.' }));
     } else if (abierto && x.n >= g.cupo_maximo) {
       acciones.push(el('p', { class: 'texto-gris', texto: `El grupo está lleno: ${g.cupo_maximo} personas.` }));
     } else if (g.estado === 'confirmado') {
@@ -134,7 +140,7 @@
     }
     if (g.estado === 'en_curso') {
       acciones.push(el('a', { class: 'btn btn-secundario', href: `asistencia.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Ver la asistencia' }));
-      if (hoy === x.ultimo) acciones.push(el('a', { class: 'btn btn-secundario', href: 'aplicar.html', texto: 'Aplicar el examen' }));
+      if (hoy === x.ultimo) acciones.push(el('a', { class: 'btn btn-secundario', href: `aplicar.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Aplicar el examen' }));
     }
     let cancelar = null;
     if (antesDeIniciar) {
@@ -165,7 +171,7 @@
       fi.setAttribute('min', minimo);
       // La propuesta de un grupo que regresó a integración se ofrece de nuevo
       if (g.fecha_inicio && g.fecha_inicio >= minimo) fi.value = g.fecha_inicio;
-      if (g.hora_entrada) $('#hora_entrada').value = g.hora_entrada;
+      if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
         const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fecha(minimo)}. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;

@@ -30,9 +30,38 @@
 
   APD.cargar().then((datos) => {
     pintaSesion($('[data-sesion-personal]'));
-    const g = G.grupos(datos)[0];
+    /* El grupo: el del enlace o el que presenta examen hoy (último día de su curso); si no, el primero en curso
+       (auditoría de tareas, A2: antes abría siempre el primero, aunque su examen no fuera hoy) */
+    const enCurso = G.grupos(datos);
+    const hoy = APD.hoy(datos);
+    const pedido = new URLSearchParams(location.search).get('folio');
+    const g = enCurso.find((x) => x.folio === pedido) || enCurso.find((x) => G.fechaExamen(datos, x) === hoy) || enCurso[0];
     if (!g) { $('[data-sin-grupo]').hidden = false; return; }
     $('[data-con-grupo]').hidden = false;
+    const prueba = Boolean(datos.fecha_corte);
+    const avisosGrupo = [];
+    // Otros grupos en curso, con la fecha de su examen, para cambiar de grupo
+    const otros = enCurso.filter((x) => x.id !== g.id);
+    if (otros.length) {
+      avisosGrupo.push(el('p', { class: 'otros-grupos' }, [document.createTextNode('Otros grupos en curso: ')].concat(otros.flatMap((x, i) => [
+        i ? document.createTextNode(' · ') : null,
+        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${x.folio} (examen el ${APD.fecha(G.fechaExamen(datos, x))})` })
+      ]).filter(Boolean))));
+    }
+    // El examen es el último día del curso: otro día no se generan códigos (en la prueba se permite, para probar)
+    const fueraDeDia = G.fechaExamen(datos, g) !== hoy;
+    if (fueraDeDia) {
+      avisosGrupo.push(APD.aviso('pend', `El examen de este grupo es el ${APD.fecha(G.fechaExamen(datos, g))}, no hoy`,
+        prueba ? 'Versión de prueba: se puede pasar lista para probar. En el sistema, los códigos sólo se generan el día del examen.'
+          : 'Los códigos se generan el día del examen. Si hoy presenta otro grupo, elíjalo arriba.'));
+    }
+    // Días del curso sin capturar: la base los cuenta como falta (auditoría de tareas, A1)
+    const conHuecos = G.personas(datos, g).filter((f) => f.simulada).length;
+    if (conHuecos) {
+      avisosGrupo.push(APD.aviso('error', 'Faltan días del curso por capturar en «Asistencia»',
+        prueba ? 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Versión de prueba: aquí se cuentan como asistidos para poder probar el examen.'
+          : 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Captúrelos antes de pasar lista.'));
+    }
     const c = G.curso(datos, g);
     const ex = APD_EXAMEN_BANCO.examenDe(g.tipo_acreditacion, g.modalidad);
     $('[data-grupo]').replaceChildren(datosLista([
@@ -41,7 +70,9 @@
       ['Fecha del examen', `${APD.fecha(G.fechaExamen(datos, g))} · último día del curso (inició el ${APD.fecha(g.fecha_inicio)})`],
       ['Lugar', G.LUGAR],
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
-    ]));
+    ]), ...avisosGrupo);
+    // Fuera del sistema de prueba no se pasa lista otro día ni con días sin capturar
+    if (!prueba && (fueraDeDia || conHuecos)) { $('[data-tabla]').hidden = true; $('[data-imprimir]').hidden = true; }
     const filas = G.personas(datos, g);
     // Códigos repuestos hace poco (inscripción → hora), para señalarlos en su fila
     const recientes = {};

@@ -679,6 +679,22 @@
       "desde": "2026-10-17",
       "titulo": "Avisos de renovación por correo: 90 días antes, 30 días antes y el día que vence",
       "recomendacion": "Recomendación aprobada por Liber para registrar (2026-10-17). Choca con una decisión registrada: la renovación sólo se puede iniciar desde 30 días antes del vencimiento (DECISIONES, 2026-10-14), así que un aviso a los 90 días no puede llevar el enlace para iniciarla. Opción recomendada: conservar la ventana de 30 días y que el aviso de los 90 días sea un preaviso para preparar documentos (constancia de situación fiscal actualizada y, si cambiaron, los demás), sin enlace para iniciar; a los 30 días (aviso A2, ya previsto), con el enlace para iniciar la renovación; el día que vence, que ya no puede ejercerla y que puede renovar hasta un año después, con el enlace. Alternativa: abrir la ventana de renovación a 90 días antes. Liber decide. Se agregan como A0 y A3 bis en docs/AVISOS-POR-CORREO.md; dependen del correo del SIA (P23) y de una tarea diaria que los envíe."
+    },
+    {
+      "id": "P122",
+      "grupo": "sia",
+      "bloquea": "etapa 3",
+      "desde": "2026-10-17",
+      "titulo": "Dos revisoras pueden abrir y decidir la misma solicitud al mismo tiempo",
+      "recomendacion": "Hallazgo de la auditoría de tareas (M11). Con varias personas en revisión, nada impide que dos abran la misma solicitud de la bandeja. En la etapa 3, con la API: marcar en la bandeja «La está revisando …» mientras alguien la tiene abierta y, al registrar, avisar si otra persona ya la decidió (la base rechaza el segundo cambio de estado). En la versión de prueba no aplica: todo ocurre en un solo navegador."
+    },
+    {
+      "id": "P123",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "¿La cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud se vuelve a validar?",
+      "recomendacion": "Hallazgo de la auditoría de tareas (A4); Liber lo deja pendiente porque no tiene la respuesta. Ejemplo: la persona falta a su primera cita (1 inasistencia) y recibe cita nueva; a ésa llega, pero un documento no coincide y la solicitud regresa con observaciones; corrige, se valida otra vez y recibe otra cita; falta. Opción A (así funciona hoy, recomendada): sigue acumulando; es su segunda inasistencia en la misma solicitud y la solicitud se cierra. Es la lectura literal de la decisión del 2026-10-14 y evita acumular faltas sin límite. Opción B: se reinicia al validar de nuevo y recibe otra cita. Mientras se decide, la base y la pantalla cuentan todas las inasistencias de la solicitud (parámetro inasistencias_cotejo_maximas = 2)."
     }
   ],
   "resueltos": [

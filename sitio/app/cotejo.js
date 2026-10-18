@@ -65,7 +65,10 @@
     const nuevos = new Set(P.cargadosEnPausa(datos, s).map((d) => d.requisito));
     // En el orden de la pantalla (el del catálogo de requisitos)
     const aCotejar = $$('[data-doc]', form).map((a) => a.dataset.doc).filter((k) => docs.some((d) => d.requisito === k) && (!retoma || pausa.docs.includes(k)));
-    const inasistencias = s.inasistencias || 0;
+    // Inasistencias de esta solicitud, como las cuenta la base: todas sus citas en que no se presentó, aunque la
+    // solicitud se haya vuelto a validar (auditoría de tareas, A4; decisión 2026-10-14 «a la segunda se cierra»)
+    const inasistencias = Math.max(s.inasistencias || 0, (datos.cita || []).filter((c) => c.solicitud_id === s.id && c.resultado === 'no_se_presento').length);
+    const maxInasistencias = Number(APD.parametro(datos, 'inasistencias_cotejo_maximas')) || 2;
     const expediente = p.numero_expediente || P.siguienteExpediente(datos);
     const anterior = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
     const nombre = APD.nombreCompleto(p);
@@ -95,11 +98,19 @@
       ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : '']
     ])])]));
-    if (retoma) {
+    // Una pausa sólo dura el día de la cita: después la base la rechaza y la solicitud regresa con observaciones
+    // (auditoría de tareas, M6; P80)
+    const diaPausa = retoma ? P.diaDe(pausa.cita_en || s.cita_en) : null;
+    const pausaVencida = retoma && diaPausa < APD.hoy(datos);
+    if (pausaVencida) {
+      $('[data-retoma]').replaceWith(APD.aviso('error', `La pausa venció el ${fecha(diaPausa)}`,
+        `Una cita en pausa sólo se retoma el mismo día. La solicitud regresa con observaciones para que ${nombre} cargue el documento correcto; no se retoma aquí.`));
+      $('[data-estado]').replaceChildren(APD.estado('Pausa vencida', 'cerrado'));
+    } else if (retoma) {
       const nombres = pausa.docs.map((k) => (req[k] ? req[k].nombre : k));
       const faltan = pausa.docs.filter((k) => !nuevos.has(k)).map((k) => (req[k] ? req[k].nombre : k));
       $('[data-retoma-texto]').replaceChildren(
-        el('p', { class: 'aviso-titulo', texto: `Cotejo en pausa desde las ${P.horaDe(pausa.real)}` }),
+        el('p', { class: 'aviso-titulo', texto: `Cotejo en pausa desde el ${fecha(diaPausa)} a las ${P.horaDe(pausa.real)}` }),
         el('p', { texto: `No coincidió: ${lista(nombres)}. La identidad y los demás documentos ya se cotejaron.` }),
         el('p', { texto: faltan.length
           ? `La persona todavía no carga: ${lista(faltan)}. Si no lo carga hoy, marque «No coincide» y «No: regresa con observaciones».`
@@ -169,7 +180,7 @@
       ponValor('pedir_factura', conDocs && !noCoinciden && elegido('pago') === 'si' ? 'si' : 'no');
 
       let resultado = '';
-      if (presente === 'no') resultado = inasistencias >= 1 ? 'cerrar' : 'no_se_presento';
+      if (presente === 'no') resultado = inasistencias + 1 >= maxInasistencias ? 'cerrar' : 'no_se_presento';
       else if (presente === 'si' && ident === 'no_es') resultado = 'no_es_la_persona';
       else if (presente === 'si' && noCoinciden) resultado = { si: 'pausa', no: 'con_observaciones' }[elegido('hoy_documento')] || '';
       else if (presente === 'si') resultado = { si: 'terminado', no: 'otra_cita' }[elegido('pago')] || '';
@@ -242,8 +253,9 @@
 
     // La cita nueva, desde el día siguiente al de hoy (fecha simulada del corte)
     document.getElementById('cita_fecha').setAttribute('min', APD.sumaDias(datos.fecha_corte, 1));
+    P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
-    form.hidden = false;
+    form.hidden = pausaVencida;
     $('[data-cargando]').hidden = true;
     const instancia = FormKit.iniciar(form, {
       enviar(payload, { signal }) {

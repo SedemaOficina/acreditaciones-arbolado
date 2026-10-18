@@ -824,3 +824,18 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   Escenario de volumen y guion de capturas en `docs/auditoria-tareas/`. No se cambió código del sitio.
 - Decisión que queda para Liber (A4): si la cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud
   se vuelve a validar.
+
+## 2026-10-17 · Bloque 59 · Correcciones de la auditoría de tareas
+
+- Liber: «adelante corrige». Corregidos los hallazgos A1, A2, A3, A5 y M1 a M10, y los bajos que no dependían de nada
+  (detalle y estado de cada uno en `docs/AUDITORIA-TAREAS-2026-10-17.md`).
+- A4: Liber lo deja pendiente (P123). Mientras, la pantalla del cotejo cuenta las inasistencias como la base (todas las de
+  la solicitud, con el parámetro `inasistencias_cotejo_maximas`) y la prueba ya no las reinicia al validar de nuevo.
+- M11 (dos revisoras con la misma solicitud) queda para la etapa 3 (P122).
+- Base: un folio fiscal repetido da `folio_fiscal_repetido` con su mensaje (antes, sólo la restricción única); 162 casos.
+- Nueva prueba `herramientas/probar-volumen.mjs` (`npm run volumen`): genera el escenario de volumen (ahora también con un
+  grupo con un día sin capturar, tres citas atrasadas y una pausa vencida) y comprueba cada corrección en teléfono y
+  escritorio, sin errores ni tablas ensanchadas.
+- Pruebas: `probar-sitio.mjs` 534 de 534 con axe; `probar-examen.mjs` 63 de 63; `probar-volumen.mjs` 50 de 50;
+  esquemas sin errores; `probar-base` 162; auditor de CSS sin hallazgos; `auditar-campos` 171 campos.
+

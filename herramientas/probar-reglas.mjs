@@ -136,7 +136,7 @@ const casos = [
   ['La persona solicitante no captura los datos de la factura', { codigo: 'factura_fuera_de_turno' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitud SET factura_rfc = 'XAXX010101000' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
-  ['Un folio fiscal no se repite en dos solicitudes', { sqlstate: '23505' }, null, `
+  ['Un folio fiscal no se repite en dos solicitudes', { codigo: 'folio_fiscal_repetido' }, null, `
      UPDATE apd.solicitud SET factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL LIMIT 1)
       WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1);`],
   ['Nombre y apellidos se guardan en mayúsculas, con acentos y Ñ', 'ok', null, `

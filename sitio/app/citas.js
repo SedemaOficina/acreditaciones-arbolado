@@ -34,9 +34,10 @@
       const p = c.p || {};
       const sit = P.SITUACION[c.situacion] || { texto: c.situacion, tono: '' };
       const texto = c.situacion === 'atendida' && p.numero_expediente ? `${sit.texto} · ${p.numero_expediente}` : sit.texto;
+      const verbo = ['pendiente', 'sin_registrar'].includes(c.situacion) ? 'Atender' : 'Retomar';
       const accion = c.pendiente
         ? el('a', { class: 'btn btn-secundario btn-chico', href: `cotejo.html?folio=${encodeURIComponent(s.folio)}`,
-          'aria-label': `${c.situacion === 'pendiente' ? 'Atender' : 'Retomar'} la cita de ${APD.nombreCompleto(p)}`, texto: c.situacion === 'pendiente' ? 'Atender' : 'Retomar' })
+          'aria-label': `${verbo} la cita de ${APD.nombreCompleto(p)}`, texto: verbo })
         : el('span', { class: 'texto-gris', texto: '—' });
       const hora = el('td', { texto: P.horaDe(c.en) });
       const tr = el('tr', { 'data-folio': s.folio, class: c.pendiente ? null : 'fila-hecha' }, [
@@ -50,6 +51,23 @@
       return { tr, hora, c, dia: P.diaDe(c.en), texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' ')) };
     });
     $('[data-filas]').replaceChildren(...filas.map((f) => f.tr));
+
+    /* Citas de días anteriores sin registrar (auditoría de tareas, A3): arriba, con un botón por día. Sin registrar si
+       la persona se presentó, no recibe cita nueva ni cuenta su inasistencia. */
+    const sinRegistrar = citas.filter((c) => c.situacion === 'sin_registrar');
+    const porDia = [...new Set(sinRegistrar.map((c) => P.diaDe(c.en)))].sort();
+    if (sinRegistrar.length) {
+      const caja = el('div', { 'data-atrasadas': '' });
+      $('[data-cuenta]').before(caja);
+      const ir = porDia.map((d) => {
+        const n = sinRegistrar.filter((c) => P.diaDe(c.en) === d).length;
+        const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fecha(d)} (${n})` });
+        b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta(); $('[data-dia]').scrollIntoView({ block: 'start' }); });
+        return b;
+      });
+      caja.append(APD.aviso('error', `${sinRegistrar.length === 1 ? '1 cita de un día anterior está' : `${sinRegistrar.length} citas de días anteriores están`} sin registrar`,
+        'Registre si cada persona se presentó: sin eso no recibe cita nueva y su inasistencia no cuenta.', [el('div', { class: 'acciones-grupo' }, ir)]));
+    }
     // El módulo tabla copia el encabezado a cada celda para leerla como ficha en teléfono
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
 

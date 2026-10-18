@@ -87,6 +87,9 @@
     pendiente: { texto: 'Por atender', tono: 'pend' },
     en_pausa: { texto: 'En pausa · esperando el documento', tono: 'marcha' },
     documento_nuevo: { texto: 'Documento cargado · retomar', tono: 'pend' },
+    // Días anteriores que nadie registró (auditoría de tareas, A3 y M6)
+    sin_registrar: { texto: 'Sin registrar · el día ya pasó', tono: 'error', icono: 'alerta' },
+    pausa_vencida: { texto: 'Pausa vencida · regresa con observaciones', tono: 'cerrado' },
     atendida: { texto: 'Atendida', tono: 'ok' },
     no_se_presento: { texto: 'No se presentó · cita nueva', tono: 'pend', icono: 'fecha' },
     cerrada: { texto: 'No se presentó · solicitud cerrada', tono: 'error' },
@@ -112,12 +115,36 @@
       const abierta = ['pendiente', 'en_pausa'].includes(c.resultado);
       // Una cita abierta sólo se atiende con la solicitud validada y la cuenta activa
       if (abierta && (s.estado !== 'validada_en_linea' || !p || p.estado === 'bloqueada')) continue;
-      const situacion = c.resultado === 'en_pausa' ? (cargadosEnPausa(datos, s).length ? 'documento_nuevo' : 'en_pausa')
-        : c.resultado === 'no_se_presento' && (c.cierra || (s.estado === 'concluida_sin_atender' && s.estado_desde <= (c.atendida_en || ''))) ? 'cerrada'
-          : c.resultado;
-      lista.push({ s, p, en: c.programada_en, situacion, cita: c, pendiente: abierta });
+      // Una cita abierta de un día que ya pasó: si nadie registró nada, queda «sin registrar» (sin eso la persona no
+      // recibe cita nueva ni cuenta su inasistencia); una pausa sólo dura el día de la cita (la base la rechaza después)
+      const atrasada = abierta && diaDe(c.programada_en) < APD.hoy(datos);
+      const situacion = atrasada ? (c.resultado === 'en_pausa' ? 'pausa_vencida' : 'sin_registrar')
+        : c.resultado === 'en_pausa' ? (cargadosEnPausa(datos, s).length ? 'documento_nuevo' : 'en_pausa')
+          : c.resultado === 'no_se_presento' && (c.cierra || (s.estado === 'concluida_sin_atender' && s.estado_desde <= (c.atendida_en || ''))) ? 'cerrada'
+            : c.resultado;
+      lista.push({ s, p, en: c.programada_en, situacion, cita: c, pendiente: abierta && situacion !== 'pausa_vencida', atrasada });
     }
     return lista.sort((a, b) => String(a.en).localeCompare(String(b.en)) || Number(b.pendiente) - Number(a.pendiente));
+  }
+  /* Citas por atender ese día y a esa hora: se muestran al fijar una cita (auditoría de tareas, M5). El cupo por
+     horario lo define el área (P69); mientras, se dice cuántas hay. */
+  function cargaCitas(datos, dia, hora) {
+    const abiertas = citas(datos).filter((c) => c.pendiente && diaDe(c.en) === dia);
+    return { dia: abiertas.length, hora: hora ? abiertas.filter((c) => horaDe(c.en) === hora).length : null };
+  }
+  function pintaCargaCitas(datos, caja) {
+    const f = document.getElementById('cita_fecha');
+    const h = document.getElementById('cita_hora');
+    const pinta = () => {
+      if (!f.value) { caja.hidden = true; return; }
+      const n = cargaCitas(datos, f.value, h.value);
+      caja.textContent = `Ese día ya hay ${n.dia === 1 ? '1 cita' : `${n.dia} citas`}${h.value ? `; ${n.hora} a las ${h.value}` : ''}.`;
+      caja.hidden = false;
+    };
+    f.addEventListener('input', pinta);
+    f.addEventListener('change', pinta);
+    h.addEventListener('change', pinta);
+    pinta();
   }
   /* Día de una cita (AAAA-MM-DD) y su hora (HH:MM), en hora de la Ciudad de México */
   const diaDe = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
@@ -249,5 +276,5 @@
   function datosConPrueba(datos) { return Promise.resolve(datos); }
 
   global.APD_PERSONAL = { datosConPrueba, porRevisar, REVISORA, INSTRUCTORES, INSTRUCTORA, nombreInstructor, eventosGrupos, guardaGrupo, CURSOS, claveCurso, deClave,
-    nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, dias, espera, vuelta, corregidos, senales, pintaSesion };
+    nombreCurso, INTEGRACION, organizacionDe, enEspera, SITUACION_GRUPO, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, historial, revisiones, guardaRevision, cotejos, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, cargaCitas, pintaCargaCitas, dias, espera, vuelta, corregidos, senales, pintaSesion };
 }(window));

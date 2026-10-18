@@ -136,6 +136,30 @@ grupoCon('APD-G-2026-021', 'en_integracion', 'especifico', org('Jardines Ejemplo
 grupoCon('APD-G-2026-022', 'en_integracion', 'combinado', null, 12, null);
 grupoCon('APD-G-2026-023', 'confirmado', 'especifico', org('Iztapalapa'), 18, soloDia(12));
 
+// 6) Casos de la auditoría de tareas: un grupo en su día 3 con el día 2 sin capturar (A1), tres citas de hace dos días
+//    sin registrar (A3) y una cita en pausa de ayer (M6)
+const g2 = { id: randomUUID(), sede: 'Vivero Nezahualcóyotl', folio: 'APD-G-2026-024', estado: 'en_curso', creado_en: dia(-15), modalidad: 'nueva', instructor: 'instructor.ficticio',
+  cupo_maximo: 25, cupo_minimo: 5, es_ficticio: true, integracion: 'combinado', estado_desde: dia(-2, '08:30'), fecha_inicio: soloDia(-2), hora_entrada: '09:00:00', organizacion_id: null,
+  tipo_acreditacion: 'poda', motivo_cancelacion: null };
+d.grupo.push(g2);
+for (let i = 0; i < 8; i++) {
+  const s = clona(base('inscrita', 'poda', 'nueva'), { estado: 'inscrita', tipo: 'poda', modalidad: 'nueva', o: bolsa[Math.floor(azar() * bolsa.length)], enviada: dia(-30), desde: dia(-6) });
+  const ins = { id: randomUUID(), activa: true, baja_en: null, grupo_id: g2.id, inscrita_en: dia(-6), motivo_baja: null, solicitud_id: s.id };
+  d.inscripcion.push(ins);
+  d.asistencia.push({ dia: 1, asistio: true, capturada_en: dia(-2, '18:30'), capturada_por: 'instructor.ficticio', inscripcion_id: ins.id });
+}
+for (let i = 0; i < 4; i++) {
+  const en = dia(-2, HORAS[i]);
+  const s = clona(base('validada_en_linea', 'poda', 'nueva'), { estado: 'validada_en_linea', tipo: 'poda', modalidad: 'nueva', o: null, enviada: dia(-15), desde: dia(-8), extra: { cita_en: en } });
+  if (i === 3) {
+    s.cita_en = dia(-1, '10:00');
+    s.cotejo_pausa = { desde: dia(-1, '10:20'), real: dia(-1, '10:20'), cita_en: s.cita_en, docs: ['curp'] };
+    d.cita.push({ creada_en: dia(-8), resultado: 'en_pausa', pausada_en: dia(-1, '10:20'), atendida_en: null, observacion: '', atendida_por: null, solicitud_id: s.id, programada_en: s.cita_en });
+  } else {
+    d.cita.push({ creada_en: dia(-8), resultado: 'pendiente', pausada_en: null, atendida_en: null, observacion: '', atendida_por: null, solicitud_id: s.id, programada_en: en });
+  }
+}
+
 writeFileSync(salida, JSON.stringify(d));
 const cuenta = (e) => d.solicitud.filter((s) => s.estado === e).length;
 console.log(`enviada ${cuenta('enviada')} · validada ${cuenta('validada_en_linea')} · espera ${cuenta('lista_para_curso')} · inscrita ${cuenta('inscrita')} · grupos ${d.grupo.length} · citas hoy ${d.cita.filter((c) => c.programada_en.startsWith(corte) && c.resultado === 'pendiente').length}`);

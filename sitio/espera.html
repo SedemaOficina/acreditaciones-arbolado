@@ -35,6 +35,11 @@
     <p class="bajada" data-orden>De la que más espera a la más reciente; desde los 31 días se marca como prioritaria.</p>
     <p class="resumen-filtro" role="status" data-cuenta>Cargando la espera…</p>
 
+    <!-- Cuenta de elegidas siempre a la vista, con un enlace a los botones del final (auditoría de tareas, M4) -->
+    <div class="barra-seleccion" data-barra hidden>
+      <span data-barra-cuenta>Ninguna elegida</span>
+      <a class="btn-enlace" href="#acciones-espera" data-barra-ir hidden>Agregar o crear el grupo</a>
+    </div>
     <div class="tabla-marco" data-tabla data-clave="persona">
       <table class="tabla tabla-bandeja">
         <caption class="solo-lector" data-leyenda>Personas en espera de grupo</caption>
@@ -43,7 +48,7 @@
       </table>
     </div>
 
-    <div class="seleccion" data-seleccion hidden>
+    <div class="seleccion" id="acciones-espera" data-seleccion hidden>
       <p role="status" data-elegidas>Ninguna persona elegida.</p>
       <!-- Lo que impidió agregar o crear, junto a los botones (APD.pintaAviso) -->
       <div data-error-eleccion hidden></div>
@@ -61,7 +66,7 @@
         <legend class="etiqueta">¿De quiénes es el grupo?</legend>
         <!-- autocomplete off: decisión de quien arma el grupo. -->
         <div class="opciones-lista">
-          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de esa organización</span><span class="opcion-desc">Recibe únicamente personas de esa organización.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de esa organización</span><span class="opcion-desc">Recibe únicamente personas de esa organización.</span><span class="opcion-desc opcion-desc-aviso" data-especifico-aviso hidden></span></span></label>
           <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="combinado"><span><span class="opcion-nombre">Combinado</span><span class="opcion-desc">Recibe personas de cualquier organización e independientes.</span></span></label>
         </div>
       </fieldset>

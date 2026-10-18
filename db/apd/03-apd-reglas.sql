@@ -779,6 +779,11 @@ BEGIN
     END IF;
     NEW.factura_rfc := upper(trim(NEW.factura_rfc));
     NEW.factura_folio_fiscal := upper(trim(NEW.factura_folio_fiscal));
+    -- Un folio fiscal no se repite: con su mensaje, no sólo la restricción única (auditoría de tareas 2026-10-17)
+    IF NEW.factura_folio_fiscal IS NOT NULL AND EXISTS (
+         SELECT 1 FROM apd.solicitud WHERE factura_folio_fiscal = NEW.factura_folio_fiscal AND id <> NEW.id) THEN
+      PERFORM apd.error('folio_fiscal_repetido', 'Ese folio fiscal ya está registrado en otra solicitud: revise la factura');
+    END IF;
   END IF;
   NEW.enviada_en := OLD.enviada_en;
   NEW.lista_para_curso_en := OLD.lista_para_curso_en;

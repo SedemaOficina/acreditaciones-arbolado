@@ -60,3 +60,31 @@ Cada hallazgo se comprobó leyendo el código; los que dependen de la base, cont
 
 P02 (plazos), P69 (horarios de cita), P91 (horario del curso), P92 (quién arma los grupos) y P94 (asistencia del último
 día). Para P69 se recomienda mostrar ya cuántas citas hay por hora (M5).
+
+## Estado (versión de prueba 0.39, bloque 59)
+
+Liber aprobó corregir («adelante corrige»). Prueba nueva con el escenario de volumen: `npm run volumen`
+(`herramientas/probar-volumen.mjs`, 50 comprobaciones, 25 en teléfono y 25 en escritorio).
+
+| # | Estado |
+|---|---|
+| A1 | Corregido: el día pasado sin capturar sale «sin capturar» en rojo y con aviso arriba; «Aplicar el examen» avisa que faltan días (en la prueba se siguen contando como asistidos, con el aviso; en el sistema no deja pasar lista) |
+| A2 | Corregido: abre el grupo del enlace o el que presenta hoy; lista los otros grupos en curso con la fecha de su examen; si no es el día, lo dice (en el sistema no genera códigos) |
+| A3 | Corregido: aviso «N citas de días anteriores están sin registrar» con un botón por día; la cita sale «Sin registrar · el día ya pasó» |
+| A4 | Pendiente de decisión (P123). Mientras, la pantalla cuenta como la base: todas las inasistencias de la solicitud, con el parámetro y sin reiniciar al validar de nuevo |
+| A5 | Corregido: hora de entrada HH:MM en el grupo y en «Mis trámites», y preseleccionada al volver a confirmar |
+| M1 | Corregido: el grupo de una organización cuenta sólo a su gente y la espera que abre muestra sólo su bloque |
+| M2 | Corregido: cada botón dice de quién es el grupo («sólo Iztapalapa», «combinado») |
+| M3 | Corregido: el bloque de una organización con grupo propio dice «Su grupo …: 3 de 25, le faltan 2»; el diálogo avisa si son menos del mínimo o si ya tiene su grupo |
+| M4 | Corregido: barra fija con la cuenta de elegidas y un enlace a los botones; la cuenta dice cuántas caben |
+| M5 | Corregido: al fijar la cita (revisión y cotejo) se ve cuántas hay ese día y a esa hora |
+| M6 | Corregido: la pausa vencida sale «Pausa vencida», sin «Retomar»; el cotejo no la retoma y dice la fecha |
+| M7 | Corregido: la tarjeta lista todos los grupos que reciben personas y cuántos grupos nuevos alcanzan |
+| M8 | Corregido: «65 solicitudes por revisar: 38 con 10 días o más y 12 de 3 a 9 días» |
+| M9 | Corregido: resumen arriba de la asistencia, con lo marcado al momento |
+| M10 | Corregido: «Recibe personas hasta el …; quedan N lugares» |
+| M11 | Pendiente para la etapa 3 (P122) |
+| Bajos | Corregidos: «31 días o más»; «vencida el …» en la revisión de un dictaminador; mínimo de 10 caracteres dicho en la ayuda; folio fiscal repetido con su mensaje (`folio_fiscal_repetido`, caso en `probar-reglas`). Sin cambio: el encabezado de «Grupos» con el cupo del primer curso (hoy son iguales), los años de experiencia junto a sus comprobantes (ya están en el perfil de la revisión), la columna «Vence» en grupos de renovación y la marca de prioritaria (es la regla de 31 días) |
+
+Además: en teléfono, la situación de un bloque de «En espera» ensanchaba la tabla; ya se parte en líneas (comprobado).
+

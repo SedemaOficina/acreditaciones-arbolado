@@ -169,7 +169,7 @@ const revisionDocs = enLinea.map((r) => {
             </fieldset>
             <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-chips-fijos="${MOTIVOS.map(esc).join('|')}" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
               <label class="etiqueta" for="observacion_${k}">¿Qué debe corregir la persona?<span class="contexto-resumen"> · ${esc(r.nombre)}</span></label>
-              <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo. La persona lo leerá tal como lo escriba.</p>
+              <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo leerá tal como lo escriba.</p>
               <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
               <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
               <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17). -->

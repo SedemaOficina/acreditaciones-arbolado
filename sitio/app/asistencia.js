@@ -68,12 +68,21 @@
     for (let n = 1; n <= ultimoDia; n++) {
       const listo = personas.length && personas.every((f) => capturada(f.i.id, n) !== null);
       const futuro = diaDe(n) > hoy;
-      const texto = `Día ${n} · ${corta(diaDe(n))}${n === ultimoDia ? ' · examen' : listo ? ' · capturado' : ''}`;
-      const b = el('button', { type: 'button', class: 'dia-btn', 'aria-pressed': 'false', texto, disabled: n === ultimoDia || futuro });
+      // Un día que ya pasó sin capturar (o a medias) se señala: la base lo cuenta como falta (auditoría de tareas, A1)
+      const falta = n !== ultimoDia && !listo && diaDe(n) < hoy;
+      const texto = `Día ${n} · ${corta(diaDe(n))}${n === ultimoDia ? ' · examen' : listo ? ' · capturado' : falta ? ' · sin capturar' : ''}`;
+      const b = el('button', { type: 'button', class: falta ? 'dia-btn dia-btn-falta' : 'dia-btn', 'aria-pressed': 'false', texto, disabled: n === ultimoDia || futuro });
       b.addEventListener('click', () => { dia = n; pinta(); b.focus(); });
       botones.push(b);
     }
     $('[data-dias]').replaceChildren(...botones);
+    const sinCapturar = capturables.filter((n) => diaDe(n) < hoy && !personas.every((f) => capturada(f.i.id, n) !== null));
+    if (sinCapturar.length) {
+      const dias = sinCapturar.map((n) => `${n} (${corta(diaDe(n))})`);
+      const lista = dias.length > 1 ? `los días ${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}` : `el día ${dias[0]}`;
+      $('[data-dias]').before(APD.aviso('error', `Falta capturar ${lista}`,
+        'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Elíjalo abajo y guárdelo.'));
+    }
 
     /* Hecho: aviso tras guardar */
     if (params.get('hecho') === 'asistencia' && dia) {
@@ -100,6 +109,23 @@
       const [texto, aviso] = resumen(f, marcado ? marcado.value === 'no' : false);
       fila.querySelector('[data-resumen]').textContent = texto;
       fila.querySelector('[data-aviso]').replaceChildren(...(aviso ? [aviso] : []));
+      pintaTotales();
+    }
+    /* Resumen del grupo arriba, con lo marcado ahora (auditoría de tareas, M9): antes había que recorrer cada fila */
+    function pintaTotales() {
+      let sin = 0;
+      let alLimite = 0;
+      for (const f of personas) {
+        const marcado = document.querySelector(`[data-personas] input[name="a-${CSS.escape(f.i.id)}"]:checked`);
+        const faltoHoy = marcado ? marcado.value === 'no' : false;
+        let faltas = 0;
+        for (let n = 1; n < ultimoDia; n++) if ((n === dia ? faltoHoy : capturada(f.i.id, n) === false)) faltas += 1;
+        if (faltas > permitidas) sin += 1; else if (faltas === permitidas && faltas) alLimite += 1;
+      }
+      const partes = [`${personas.length - sin} con derecho a examen`];
+      if (sin) partes.push(`${sin} ya sin derecho`);
+      if (alLimite) partes.push(`${alLimite} ${alLimite === 1 ? 'ya no puede' : 'ya no pueden'} faltar otro día`);
+      $('[data-totales]').textContent = `${plural(personas.length, 'persona', 'personas')}: ${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}.`;
     }
 
     function pinta() {
@@ -110,6 +136,7 @@
         $('[data-ayuda-dia]').textContent = `El curso empieza el ${fecha(g.fecha_inicio)}.`;
         $('[data-personas]').replaceChildren();
         $('[data-acciones]').hidden = true;
+        pintaTotales();
         return;
       }
       $('[data-acciones]').hidden = false;
@@ -141,6 +168,7 @@
         fila.addEventListener('change', () => pintaResumen(fila, f));
         return fila;
       }));
+      pintaTotales();
     }
 
     $('[data-todas]').addEventListener('click', () => {

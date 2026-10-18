@@ -369,3 +369,13 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
   .fila-adscripcion th { display: table-cell; padding: var(--e-4) var(--e-3) var(--e-2); border-top: var(--b-2) solid var(--guinda); }
   .adscripcion-cuenta, .adscripcion-nombre { margin-inline-end: var(--e-3); }
 }
+/* Día del curso que ya pasó sin capturar (auditoría de tareas, A1) */
+.dia-btn-falta { border-color: var(--error); border-style: dashed; color: var(--error-txt); background: var(--error-bg); }
+/* «En espera»: la cuenta de elegidas acompaña el desplazamiento (auditoría de tareas, M4) */
+.barra-seleccion { position: sticky; top: env(safe-area-inset-top); z-index: var(--z-lista); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-4); margin-block-start: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); font-weight: var(--peso-semi); }
+.opcion-desc-aviso { color: var(--pend-txt); font-weight: var(--peso-medio); }
+/* «Grupos»: todos los grupos de cada curso que reciben personas (auditoría de tareas, M7) */
+.curso-receptores-titulo { margin: 0; font-size: var(--t-sm); font-weight: var(--peso-semi); }
+.curso-receptores { margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-1); font-size: var(--t-sm); color: var(--gris); }
+/* En teléfono la situación del bloque se parte en líneas (si no, ensanchaba la tabla) */
+.fila-adscripcion .estado { white-space: normal; }

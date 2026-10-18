@@ -92,7 +92,7 @@
       if (g.grupo.fecha_inicio) {
         const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
         // Hora de entrada del grupo (la misma todos los días); la de salida la define el área (P91)
-        pares.unshift(g.grupo.hora_entrada ? ['Preséntate el', `${fecha(g.grupo.fecha_inicio)}, a las ${g.grupo.hora_entrada}`] : ['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Sede', ...sedeTexto(g.grupo.sede)]);
+        pares.unshift(g.grupo.hora_entrada ? ['Preséntate el', `${fecha(g.grupo.fecha_inicio)}, a las ${APD.hhmm(g.grupo.hora_entrada)}`] : ['Preséntate el', fecha(g.grupo.fecha_inicio), 'hora de entrada.'], ['El curso termina el', ultimo && fecha(ultimo)], ['Sede', ...sedeTexto(g.grupo.sede)]);
         pares.push(['Grupo', g.grupo.folio]);
         sigue = c ? `Tu curso dura ${c.dias_duracion} ${c.dias_duracion === 1 ? 'día' : 'días'}; necesitas asistir al menos ${c.dias_minimos_asistencia} para presentar el examen.` : sigue;
       } else {

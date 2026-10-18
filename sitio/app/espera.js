@@ -45,8 +45,16 @@
        cada bloque dice cuántas son y si alcanzan para un grupo propio, y permite elegirlas a todas. Los bloques van en
        el orden de quien más espera en cada uno (la lista ya viene así); dentro, el mismo orden. Independientes y
        adscripciones sin organización registrada sólo pueden ir a un grupo combinado. */
+    /* Grupos de este curso que reciben personas; si se llegó desde un grupo, sólo ése */
+    const pedido = params.get('grupo');
+    const receptores = P.grupos(datos).filter((g) => g.g.tipo_acreditacion === tipo && g.g.modalidad === modalidad && g.recibe);
+    let destinos = pedido ? receptores.filter((g) => g.g.folio === pedido) : receptores;
+    // Desde un grupo de una organización sólo se ve a su gente (auditoría de tareas, M1)
+    const soloOrg = destinos.length === 1 && pedido && destinos[0].g.integracion === 'especifico' ? destinos[0].g.organizacion_id : null;
+    const deQuien = (g) => (g.g.integracion === 'especifico' ? `sólo ${g.integracion.replace('De una organización · ', '')}` : 'combinado');
     const bloques = [];
     for (const x of lista) {
+      if (soloOrg && x.s.organizacion_id !== soloOrg) continue;
       const clave = x.s.organizacion_id || `sin:${x.organizacion}`;
       let b = bloques.find((y) => y.clave === clave);
       if (!b) { b = { clave, nombre: x.organizacion, propia: Boolean(x.s.organizacion_id), xs: [] }; bloques.push(b); }
@@ -59,7 +67,12 @@
       const todas = el('input', { class: 'casilla-input', type: 'checkbox', 'aria-label': n === 1 ? `Elegir a la persona de ${b.nombre}` : `Elegir a las ${n} personas de ${b.nombre}` });
       const falta = c.cupo_minimo - n;
       const van = n === 1 ? 'va' : 'van';
-      const situacion = !b.propia ? el('span', { class: 'texto-gris', texto: `${n === 1 ? 'Va' : 'Van'} a un grupo combinado` })
+      // Si la organización ya tiene un grupo que recibe personas, se dice ése y no «alcanza para un grupo propio»
+      // (auditoría de tareas, M3: invitaba a crear un segundo grupo)
+      const suyo = b.propia ? receptores.find((g) => g.g.integracion === 'especifico' && g.g.organizacion_id === b.clave) : null;
+      const faltaSuyo = suyo ? suyo.g.cupo_minimo - suyo.n : 0;
+      const situacion = suyo ? estado(`Su grupo ${suyo.g.folio}: ${suyo.n} de ${suyo.g.cupo_maximo}${faltaSuyo > 0 ? `, le ${faltaSuyo === 1 ? 'falta 1' : `faltan ${faltaSuyo}`} para el mínimo` : `, caben ${suyo.lugar}`}`, faltaSuyo > 0 ? 'pend' : 'ok')
+        : !b.propia ? el('span', { class: 'texto-gris', texto: `${n === 1 ? 'Va' : 'Van'} a un grupo combinado` })
         : falta <= 0 ? estado('Alcanza para un grupo propio', 'ok')
           : el('span', { class: 'texto-gris', texto: `${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para un grupo propio de ${c.cupo_minimo}; o ${van} a un grupo combinado` });
       const cabeza = el('tr', { class: 'fila-adscripcion', 'data-adscripcion': b.clave }, [
@@ -100,19 +113,28 @@
     $('[data-filas]').replaceWith(...(cuerpos.length ? cuerpos : [el('tbody', { 'data-filas': '' })]));
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
 
-    /* Grupos de este curso que reciben personas; si se llegó desde un grupo, sólo ése */
-    const pedido = params.get('grupo');
-    let destinos = P.grupos(datos).filter((g) => g.g.tipo_acreditacion === tipo && g.g.modalidad === modalidad && g.recibe);
-    if (pedido) destinos = destinos.filter((g) => g.g.folio === pedido);
-    if (!lista.length) return;
+    if (soloOrg) {
+      const nota = el('p', { class: 'texto-gris', texto: `Sólo se muestran las personas de ${deQuien(destinos[0]).replace('sólo ', '')}: el grupo ${pedido} es de esa organización.` });
+      $('[data-cuenta]').after(nota);
+      $('[data-cuenta]').textContent = filas.length ? `${plural(filas.length, 'persona', 'personas')} de esa organización en espera.` : 'Nadie de esa organización espera grupo en este curso.';
+    }
+    if (!filas.length) return;
     $('[data-seleccion]').hidden = false;
     const elegidas = () => filas.filter((f) => f.casilla.checked);
     const aviso = $('[data-elegidas]');
+    // Barra fija arriba con la cuenta y un enlace a los botones (en teléfono están al final de la lista; auditoría, M4)
+    const barra = $('[data-barra-cuenta]');
+    const barraIr = $('[data-barra-ir]');
+    $('[data-barra]').hidden = false;
 
     const error = $('[data-error-eleccion]');
     function pintaEleccion() {
       const n = elegidas().length;
-      aviso.textContent = n ? `${plural(n, 'persona elegida', 'personas elegidas')}.` : 'Ninguna persona elegida.';
+      // Cuántas caben, antes de intentar (auditoría de tareas, M4)
+      const caben = destinos.length === 1 ? ` · caben ${destinos[0].lugar} en el grupo ${destinos[0].g.folio}` : ` · un grupo recibe hasta ${c.cupo_maximo}`;
+      aviso.textContent = n ? `${plural(n, 'persona elegida', 'personas elegidas')}${caben}.` : 'Ninguna persona elegida.';
+      barra.textContent = n ? `${plural(n, 'elegida', 'elegidas')}` : 'Ninguna elegida';
+      barraIr.hidden = !n;
       if (n) { error.hidden = true; for (const x of document.querySelectorAll('.falta-marcar')) x.classList.remove('falta-marcar'); }
     }
     for (const f of filas) f.casilla.addEventListener('change', pintaEleccion);
@@ -139,7 +161,7 @@
 
     /* Agregar a un grupo que recibe personas */
     const acciones = destinos.map((g) => {
-      const b = el('button', { type: 'button', class: 'btn btn-primario', texto: `Agregar al grupo ${g.g.folio} (${g.n} de ${g.g.cupo_maximo})` });
+      const b = el('button', { type: 'button', class: 'btn btn-primario', texto: `Agregar al grupo ${g.g.folio} · ${deQuien(g)} · ${g.n} de ${g.g.cupo_maximo}` });
       b.addEventListener('click', () => {
         const eleg = elegidas();
         const mal = problema(eleg, g);
@@ -172,6 +194,12 @@
           crearCon = { eleg, boton: nuevo };
           $('[data-crear-de]').textContent = `${plural(eleg.length, 'persona elegida', 'personas elegidas')}, todas de ${eleg[0].x.organizacion}. ${nombre}.`;
           $('[data-especifico-de]').textContent = `Sólo de ${eleg[0].x.organizacion}`;
+          // Lo que la regla dice antes de elegir (auditoría de tareas, M3): el mínimo y si ya tiene su grupo
+          const suyo = receptores.find((g) => g.g.integracion === 'especifico' && g.g.organizacion_id === orgs[0]);
+          const avisoEsp = $('[data-especifico-aviso]');
+          avisoEsp.textContent = suyo ? `Ya tiene el grupo ${suyo.g.folio} (${suyo.n} de ${suyo.g.cupo_maximo}), que recibe personas: conviene agregarlas ahí.`
+            : eleg.length < c.cupo_minimo ? `Son ${eleg.length}: se necesitan ${c.cupo_minimo} de esa organización para confirmarlo. Si no llegan, conviene un grupo combinado.` : '';
+          avisoEsp.hidden = !avisoEsp.textContent;
           dialogo.showModal();
           return;
         }

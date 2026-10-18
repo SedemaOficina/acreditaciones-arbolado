@@ -291,7 +291,8 @@
             }
             pon({ estado: RESULTADO[rev.resultado], estado_desde: alCorte(rev.en),
               cita_en: rev.resultado === 'validada' && rd.cita_fecha ? citaEn(rd.cita_fecha, rd.cita_hora) : s.cita_en,
-              inasistencias: rev.resultado === 'validada' ? 0 : s.inasistencias,
+              // La cuenta de inasistencias no se reinicia al volver a validar: la base cuenta todas (auditoría, A4)
+              inasistencias: s.inasistencias,
               motivo_cierre: rev.resultado === 'rechazada' ? rd.motivo_rechazo || null : s.motivo_cierre });
             // Al validar, la base crea la cita pendiente (apd.solicitud_cita)
             if (rev.resultado === 'validada' && s.cita_en) abreCita(s.cita_en);

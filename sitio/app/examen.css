@@ -117,3 +117,6 @@
 /* Aviso de minutos restantes: se ve junto al reloj, no sólo lo oye el lector de pantalla (hallazgo P117) */
 .examen-aviso-tiempo { margin: 0; font-weight: var(--peso-semi); color: var(--pend-txt); }
 .examen-aviso-tiempo:empty { display: none; }
+/* Datos del grupo con sus avisos: otros grupos en curso, examen que no es hoy, días sin capturar (auditoría, A1 y A2) */
+.grupo-examen { display: grid; gap: var(--e-3); }
+.otros-grupos { margin: 0; font-size: var(--t-sm); color: var(--gris); }

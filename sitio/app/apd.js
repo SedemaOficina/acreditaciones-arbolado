@@ -274,6 +274,8 @@
   }
   /* Resultado de una decisión: «Quedó guardado» (lo hizo el sistema) y, en el título, el desenlace del trámite con su
      color e icono. seccion: la tarjeta [data-hecho] con [data-hecho-titulo] y [data-hecho-texto]. */
+  /* Hora de la base (time: «09:00:00») como se escribe y se elige: «09:00» (auditoría de tareas, A5) */
+  const hhmm = (t) => (t ? String(t).slice(0, 5) : '');
   const horaCorta = (d) => d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
   function pintaDesenlace(seccion, { tono, titulo, texto, pasos, cita, quien, icono: nombreIcono }) {
     seccion.classList.add('desenlace');
@@ -405,7 +407,7 @@
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, estado, estadoSolicitud, nombrePersonal, sigueEn, icono, aviso, pintaAviso, pintaDesenlace, confirma, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
+    el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, aviso, pintaAviso, pintaDesenlace, confirma, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));

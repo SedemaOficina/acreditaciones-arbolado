@@ -62,6 +62,7 @@
         tipo: s.tipo_acreditacion,
         modalidad: s.modalidad,
         vuelta: v.n > 1 ? 'reenviada' : 'primera',
+        tono: e.tono,
         // Se busca por nombre, CURP, folio de la solicitud y número de expediente (si ya lo tiene)
         texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' '))
       };
@@ -74,15 +75,20 @@
       const q = norm(document.getElementById('buscar').value);
       const [tipo, mod, vta] = SELECTS.map((id) => document.getElementById(id).value);
       let n = 0;
+      let rojas = 0;
+      let ambar = 0;
       for (const f of filas) {
         const ve = (!q || f.texto.includes(q)) && (!tipo || f.tipo === tipo) && (!mod || f.modalidad === mod) && (!vta || f.vuelta === vta);
         f.tr.hidden = !ve;
-        if (ve) n += 1;
+        if (ve) { n += 1; if (f.tono === 'error') rojas += 1; else if (f.tono === 'pend') ambar += 1; }
       }
+      // Cuántas llevan más tiempo, sin recorrer la lista (auditoría de tareas, M8)
+      const espera = [rojas ? `${rojas} con ${P.UMBRAL.rojo} días o más` : '', ambar ? `${ambar} de ${P.UMBRAL.ambar} a ${P.UMBRAL.rojo - 1} días` : ''].filter(Boolean);
+      const detalle = espera.length ? `: ${espera.join(' y ')}` : '';
       $('[data-tabla-vacia]').hidden = n > 0 || !filas.length;
       $('[data-cuenta]').textContent = !filas.length ? 'No hay solicitudes por revisar.'
-        : n === filas.length ? `Se muestran ${n === 1 ? 'la única solicitud' : `las ${n} solicitudes`}.`
-        : `Se muestran ${n} de ${filas.length} solicitudes.`;
+        : n === filas.length ? `${n === 1 ? '1 solicitud por revisar' : `${n} solicitudes por revisar`}${detalle}.`
+        : `Se muestran ${n} de ${filas.length} solicitudes${detalle}.`;
       rotulaFiltrar();
     }
     form.addEventListener('input', filtra);

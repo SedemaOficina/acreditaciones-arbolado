@@ -97,7 +97,8 @@
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre en su primer cotejo'],
       ['Adscripción', APD.adscripcionTexto(datos, s).replace(/^Independiente: .*/, 'Independiente')],
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : ''],
-      ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, vigente hasta el ${fecha(podaVigente.vence_en)}` : ''],
+      // Se comprueba que siga vigente antes de decirlo (auditoría de tareas)
+      ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fecha(podaVigente.vence_en)}` : ''],
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
       ['Contacto', `${p.correo} · ${p.telefono}`]
     ])])]));
@@ -260,6 +261,7 @@
     for (const n of $$('[data-sede]')) n.textContent = APD.sede(datos).nombre;
     const manana = APD.sumaDias(datos.fecha_corte, 1);
     document.getElementById('cita_fecha').setAttribute('min', manana);
+    P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     form.hidden = false;
     $('[data-cargando]').hidden = true;

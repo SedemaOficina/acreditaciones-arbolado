@@ -24,23 +24,35 @@
       const prioritarias = lista.filter((x) => x.prioritaria).length;
       const vencidas = lista.filter((x) => x.vencida).length;
       const falta = c.cupo_minimo - lista.length;
-      const abierto = todos.find((x) => x.g.tipo_acreditacion === t && x.g.modalidad === m && x.g.estado === 'en_integracion');
+      // Todos los grupos del curso que reciben personas, no sólo el primero que se arma (auditoría de tareas, M7)
+      const receptores = todos.filter((x) => x.g.tipo_acreditacion === t && x.g.modalidad === m && x.recibe);
+      const abierto = receptores.length > 0;
       const nombre = P.nombreCurso(t, m);
       const avisos = [];
-      if (prioritarias) avisos.push(el('p', {}, [estado(`${plural(prioritarias, 'espera', 'esperan')} más de ${APD.parametro(datos, 'dias_alerta_espera')} días`, 'pend')]));
+      if (prioritarias) avisos.push(el('p', {}, [estado(`${plural(prioritarias, 'espera', 'esperan')} ${APD.parametro(datos, 'dias_alerta_espera')} días o más`, 'pend')]));
       if (vencidas) avisos.push(el('p', {}, [estado(`${plural(vencidas, 'persona', 'personas')} con la acreditación vencida: no ${vencidas === 1 ? 'puede' : 'pueden'} ejercerla mientras ${vencidas === 1 ? 'espera' : 'esperan'}`, 'error')]));
       const situacion = !lista.length ? 'Nadie en espera.'
-        : falta <= 0 ? 'Alcanza para un grupo nuevo.'
+        : falta <= 0 ? (() => {
+          // Cuántos grupos nuevos alcanzan, no sólo «alcanza» (con 6 o con 100 se leía igual)
+          const nuevos = Math.floor(lista.length / c.cupo_maximo) + (lista.length % c.cupo_maximo >= c.cupo_minimo ? 1 : 0);
+          return `Alcanza para ${nuevos === 1 ? 'un grupo nuevo' : `${nuevos} grupos nuevos`} de hasta ${c.cupo_maximo}.`;
+        })()
           : `${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para el mínimo de ${c.cupo_minimo}.`;
-      // El grupo que se está armando en este curso, si lo hay: con la espera se puede completar
-      const faltaAbierto = abierto ? abierto.g.cupo_minimo - abierto.n : 0;
-      const enArmado = abierto ? `El grupo ${abierto.g.folio} se está armando: ${abierto.n} de ${abierto.g.cupo_maximo}${faltaAbierto > 0 ? `, ${faltaAbierto === 1 ? 'le falta 1' : `le faltan ${faltaAbierto}`} para el mínimo` : ''}.` : '';
+      // Los grupos que reciben personas, con de quién son y cuánto les falta: con la espera se completan
+      const enArmado = receptores.length ? el('ul', { class: 'curso-receptores' }, receptores.map((x) => {
+        const falta = x.g.cupo_minimo - x.n;
+        const quien = x.g.integracion === 'especifico' ? `sólo ${x.integracion.replace('De una organización · ', '')}` : 'combinado';
+        const como = x.g.estado === 'confirmado' ? `confirmado, caben ${x.lugar} hasta el ${APD.fecha(APD.sumaDias(x.g.fecha_inicio, -1))}`
+          : falta > 0 ? `por confirmar, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : 'por confirmar';
+        return el('li', { texto: `${x.g.folio} · ${quien} · ${x.n} de ${x.g.cupo_maximo} · ${como}` });
+      })) : null;
       return el('li', { class: 'curso' }, [
         el('h4', { class: 'curso-nombre', texto: nombre }),
         el('p', { class: 'curso-cifra' }, [document.createTextNode(String(lista.length)), el('span', { texto: ' en espera' })]),
         ...avisos,
         el('p', { class: 'texto-gris', texto: situacion }),
-        enArmado ? el('p', { class: 'texto-gris', texto: enArmado }) : null,
+        enArmado ? el('p', { class: 'curso-receptores-titulo', texto: receptores.length === 1 ? 'Grupo que recibe personas:' : 'Grupos que reciben personas:' }) : null,
+        enArmado,
         lista.length || abierto
           ? el('a', { class: 'btn btn-secundario btn-chico', href: `espera.html?curso=${P.claveCurso(t, m)}`, 'aria-label': `Ver la espera de ${nombre}`, texto: 'Ver la espera' })
           : null
