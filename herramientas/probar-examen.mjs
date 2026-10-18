@@ -10,12 +10,12 @@
 
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = (process.argv[2] || 'http://localhost:8765/').replace(/\/?$/, '/');
-const CAPTURAS = process.argv[3] ? join(raiz, process.argv[3]) : null;
+const CAPTURAS = process.argv[3] ? resolve(raiz, process.argv[3]) : null;
 if (CAPTURAS) mkdirSync(CAPTURAS, { recursive: true });
 
 let fallas = 0;

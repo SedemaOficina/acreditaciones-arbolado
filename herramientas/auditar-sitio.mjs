@@ -12,12 +12,12 @@
 //   CHROMIUM=<ruta> para usar un Chromium instalado; SIN_CLICS=1 omite la prueba de botones.
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = (process.argv[2] || 'http://localhost:8765/').replace(/\/?$/, '/');
-const SALIDA = join(raiz, process.argv[3] || 'verificacion/auditoria');
+const SALIDA = resolve(raiz, process.argv[3] || 'verificacion/auditoria');
 mkdirSync(join(SALIDA, 'capturas'), { recursive: true });
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 

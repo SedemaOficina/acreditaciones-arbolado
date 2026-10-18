@@ -178,7 +178,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | El banco real de reactivos, con su clave, nunca entra al repositorio público: el prototipo usa preguntas ficticias sobre el propio trámite y la página nunca recibe la respuesta correcta (P85) | Liber Saltijeral / Propuesta |
 | 2026-10-17 | La fotografía de la cuenta tiene que verse clara: el día del examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia. Así lo dice la ayuda en «Crea tu cuenta» y al cambiarla en «Mi perfil» | Liber Saltijeral |
 | 2026-10-17 | El sitio usa el Estándar de formularios del SIA 1.3.1 (`SedemaOficina/estandares-sia`, carpeta `formularios/`) y quita las soluciones provisionales que el estándar ya resolvió (P37–P47, P52, P56, P61, P65–P67, P70–P73, P81, P82, P86, P87) | Instrucción del proyecto |
-| 2026-10-17 | En las pantallas del personal los textos del estándar se ven en usted (`app/config-usted.js`, sin editar `formkit/`); en las de la persona solicitante, en tú, como el estándar | Instrucción del proyecto |
+| 2026-10-17 | En las pantallas del personal los textos del estándar se ven en usted (~~`app/config-usted.js`~~ `app/mensajes-usted.js` desde el 2026-10-18, sin editar `formkit/`); en las de la persona solicitante, en tú, como el estándar | Instrucción del proyecto |
 | 2026-10-17 | La espera de un curso se muestra **agrupada por adscripción**: cada bloque dice cuántas personas son, si alcanzan para un grupo propio y permite elegirlas a todas. Los bloques van en el orden de quien más espera en cada uno; dentro, el mismo orden de antigüedad | Liber Saltijeral |
 
 ## Vigencia y renovación
@@ -228,6 +228,9 @@ resuelve en `app/apd.js` y `app/apd.css` y lo anota como hallazgo (P113 a P118).
 | 2026-10-18 | La credencial se entrega **en la oficina del Vivero Nezahualcóyotl**, después del examen (no en el salón de cómputo del PILARES) | Liber Saltijeral |
 | 2026-10-18 | La guía del SIA (`docs/GUIA-PROYECTOS-SIA.md`) se queda en este repositorio como está | Liber Saltijeral |
 | 2026-10-18 | Orden de trabajo: primero la actualización al Estándar de formularios 1.4.1 y después las correcciones de la auditoría integral | Liber Saltijeral |
+| 2026-10-18 | El sitio usa el Estándar de formularios del SIA **1.4.1** y quita las soluciones provisionales que el estándar ya resolvió (P90, P95–P99, P102–P104, P110–P119). Las desviaciones que quedan son hallazgos nuevos: P126–P131 | Instrucción del proyecto |
+| 2026-10-18 | Los textos del estándar en usted para el personal van en `app/mensajes-usted.js` (`FORMKIT_CONFIG.mensajes`, y al servidor con `validaPayload(…, { mensajes })`); se quitó `app/config-usted.js` | Instrucción del proyecto |
+| 2026-10-18 | Etiquetas de estado en las cinco familias del estándar: hecho (verde), te toca actuar (ámbar, también un borrador sin enviar), en marcha (azul), cerrado sin éxito (rojo) y terminado (gris). Los desenlaces del personal usan el módulo «resultado» y las confirmaciones, `FormKit.confirma` con sus consecuencias | Instrucción del proyecto |
 
 ## Lo que hay que corregir en los lineamientos
 

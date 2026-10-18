@@ -858,3 +858,27 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   P94, P123 y P14 resueltos; P125 nuevo (grupo que vuelve a integración y los 7 días). Sigue la actualización al
   estándar de formularios 1.4.1 y después las correcciones de la auditoría.
 
+
+## 2026-10-18 · Bloque 61 · Estándar de formularios 1.4.1
+
+- Instrucción del proyecto: pasar del estándar 1.3.1 al 1.4.1 y resolver P90, P95–P99, P102–P104 y P110–P119.
+  Copia regenerada con los módulos nuevos `resultado` y `estado`.
+- Parte A (hasta la 1.3.4): `probar-esquemas` ya no extrae el `<form>` (P90); los textos de usted pasan a
+  `app/mensajes-usted.js` y al servidor con `validaPayload(…, { mensajes })`, y se quitó `app/config-usted.js` (P95,
+  P112); sin `visor.pdfjs` (P96); `data-chips-etiqueta` con el nombre de cada documento (P97); sin el cierre de la lista
+  en `APD.avisa` (P99); sin las reglas propias de cabecera, pie y tabla (P102–P104); «Grupos» sin `data-etiqueta` a
+  mano y con `formkit:tabla` al repintar (P110).
+- Parte B (1.4.0 y 1.4.1): `FormKit.confirma` con consecuencias en lugar de `APD.confirma`, y el módulo `resultado` en
+  lugar de `APD.pintaDesenlace` en la revisión documental, el cotejo y la corrección (P113); `.btn-peligro-contorno` en
+  los botones que abren una confirmación (P114); avisos con título (P115); `data-contexto` en cada documento para el
+  resumen de errores (P116); etiquetas de estado en las cinco familias del estándar (P118) y «qué sigue» en
+  `ol.secuencia` (P119). Cada anuncio ya tenía su texto a la vista (P117).
+- Hallazgos nuevos para el estándar: P126 (la etiqueta de estado no se corta y ensancha su tarjeta en teléfono; se
+  corrige en `apd.css`) y P131 (`FormKit.aviso` sólo recibe texto: los avisos con pasos o enlaces se siguen armando en
+  el proyecto). De la auditoría integral: P127 (EXIF de la fotografía), P128 (hora del acuse en 12 horas), P129 (la Ñ
+  del RFC) y P130 (peso del logotipo).
+- Pruebas: `probar-sitio` 538 (con axe), `probar-examen` 63, `probar-volumen`, `probar-esquemas` y `probar-base`
+  correctas; auditor de CSS sin hallazgos. Una corrida de `probar-sitio` se detuvo por tiempo al dar de baja en un
+  grupo; la siguiente pasó completa. Las herramientas de prueba aceptan ya una ruta absoluta para las capturas.
+- Documento de fallas del estándar: los diecinueve hallazgos pasan a «Hallazgos resueltos» con su versión; versión del
+  estándar que usa el proyecto: 1.4.1.

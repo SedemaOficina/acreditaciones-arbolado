@@ -1,7 +1,7 @@
 # Etapa 1 · Pantallas de la persona solicitante
 
-Versión de prueba 0.N (sube con cada publicación; ver `docs/VERSIONES.md`), con datos ficticios. Construida con el **Estándar de formularios del SIA 1.3.1**
-(`SedemaOficina/estandares-sia`, carpeta `formularios/`; desde el 2026-10-17, antes 1.0.0), sin modificarlo. Ninguna pantalla guarda nada fuera de la pestaña:
+Versión de prueba 0.N (sube con cada publicación; ver `docs/VERSIONES.md`), con datos ficticios. Construida con el **Estándar de formularios del SIA 1.4.1**
+(`SedemaOficina/estandares-sia`, carpeta `formularios/`; desde el 2026-10-18, antes 1.3.1 y 1.0.0), sin modificarlo. Ninguna pantalla guarda nada fuera de la pestaña:
 el envío, el acceso y la consulta están **simulados** sobre `datos/ficticios.json` hasta la etapa 3.
 
 ## 1. Pantallas
@@ -112,7 +112,7 @@ rechazan; resultados de la última corrida: bitácora, bloque 50 y siguientes). 
 
 ## 6. Hallazgos para el Estándar de formularios (no se corrigieron aquí)
 
-Todos los de esta tabla los resolvió el estándar entre la 1.1.0 y la 1.3.1. Desde el 2026-10-17 el sitio usa la 1.3.1 y ya
+Todos los de esta tabla los resolvió el estándar entre la 1.1.0 y la 1.3.1. Desde el 2026-10-18 el sitio usa la 1.4.1 y ya
 no lleva estas soluciones provisionales (bitácora, bloque 50). La tabla queda como registro.
 
 | Módulo o herramienta | Hallazgo | Cómo se resolvió en el proyecto |
