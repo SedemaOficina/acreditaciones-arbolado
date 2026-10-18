@@ -944,3 +944,14 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-reglas` con referencias fijas (los casos nuevos movían «la primera cita» y «el grupo en
   integración»); `probar-examen` abre el grupo de diez personas por su folio. `probar-sitio` 561 (con axe),
   `probar-examen` 63, `probar-volumen`, `probar-esquemas`, `probar-base` 165, auditor de CSS: correctos.
+
+## 2026-10-18 · Bloque 55 · Cuadernillo de poda corregido y cotejado con la norma
+
+- Liber: basta con fijar en el ejercicio el valor de la unidad (no se actualiza cada año) y las cuestiones de formato las
+  corrige la Oficina, sin esperar al área técnica. Envió la NADF-001-RNAT-2015 y el Manual Técnico de Poda (2023).
+- Versión corregida del cuadernillo (fuera del repositorio, P85): preguntas en negritas y respuesta en rojo, numeración
+  1 a 52, opciones a) a d), tablas del Anexo 3 como texto, ilustración de los tres cortes en cuatro imágenes, preguntas
+  directas y ortografía; cada cambio, como comentario donde se hizo y en un registro de cambios; hoja de claves.
+- Cotejo: 7 respuestas no marcadas están en el texto de la norma; las preguntas 2, 10 y 21 no coinciden con la norma y
+  la 32 no se pudo verificar; la Tabla 4 está en UCDMX, no en UMA (P84 y P105 al día).
+

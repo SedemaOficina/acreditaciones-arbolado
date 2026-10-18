@@ -422,15 +422,15 @@
       "bloquea": "datos reales",
       "desde": "2026-10-17",
       "titulo": "Clave de todas las preguntas del examen vigente de poda",
-      "recomendacion": "El cuadernillo vigente de poda marca 33 respuestas (con el estilo de párrafo «Título 1», que no se ve al imprimir). Confirmar las que no trae marcadas y propuso la revisión: 18, 22, 23, 24, 25, 26 y 28, y las de los ejercicios 1 y 3 (41, 42, 44, 49, 50 y 52). La ilustración de los tres cortes (18) tiene rótulos en inglés y parece de fuente externa: hace falta una propia o con licencia, en cuatro imágenes. Antes de imprimirlo otra vez: la pregunta sin número después de la 17, la 40 que no existe y las letras de la 23 y la 24."
+      "recomendacion": "Cuadernillo vigente de poda cotejado con la NADF-001-RNAT-2015 y el Manual Técnico de Poda (2023): de las 19 respuestas que no venían marcadas, 7 están en el texto de la norma (19, 23 a 27 y 29) y 6 de los ejercicios se calcularon con el Anexo 3 (41, 42, 44, 49, 50 y 52); falta que el área técnica confirme estas últimas. Las preguntas 2 (poda de palmeras), 10 (tipos de poda) y 21 (compartimentación) no coinciden con la norma y la 32 no se pudo verificar con el manual. Se envió al área técnica una versión corregida en formato (preguntas en negritas, respuesta en rojo, numeración 1 a 52, tablas como texto) con comentarios. Falta la ilustración de los tres cortes propia o con permiso de uso."
     },
     {
       "id": "P105",
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-17",
-      "titulo": "Ejercicios de valoración del examen de poda: seis reactivos no se pueden calificar",
-      "recomendacion": "Reactivos 43, 45, 46, 47, 48 y 51 del cuadernillo vigente. (1) Restitución económica: cada letra trae una cifra en UMA y otra en pesos que no se corresponden (559 UMA = $63,245.26, pero esa cantidad está junto a 230 UMA), y hay filas repetidas; además usa la UMA de 2025 ($113.14) y desde febrero de 2026 vale $117.31. Recomendación: preguntar sólo en UMA, una cifra por opción. (2) Ejercicio 2: decir cómo se mide el DAP de un ejemplar con varios tallos (tallo por tallo da 18 puntos; sumados, 20) y si un ejemplar en fase arbustiva se valora. (3) En los ejercicios 1 y 3 la pregunta de manejo se responde con el enunciado («se requiere derribar»): cambiarla. Mientras no se corrijan, esos reactivos no se aplican en línea."
+      "titulo": "Ejercicios de valoración del examen de poda: criterio del ejercicio 2",
+      "recomendacion": "Decisión de Liber (2026-10-18): la restitución económica se calcula con un valor fijo por unidad dado en el enunciado ($113.14), sin actualizarlo cada año, porque el ejercicio evalúa el cálculo. La Tabla 4 de la norma está en UCDMX, no en UMA: la versión corregida usa UCDMX y empareja cada cifra con su equivalente en pesos (reactivos 43, 47 y 51). Pendiente del área técnica: el criterio del ejercicio 2 (cómo medir el DAP de un ejemplar con varios tallos y si se valora uno en fase arbustiva; ni la norma ni el manual lo dicen) y las preguntas de manejo 44 y 52, que el enunciado responde."
     },
     {
       "id": "P85",
