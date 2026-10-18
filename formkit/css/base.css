@@ -125,7 +125,7 @@ a{color:var(--azul)}
   flex-direction:column;
   align-items:flex-start;
   gap:var(--e-3);
-  max-width:var(--ancho-pagina);
+  max-width:var(--ancho-contenido);
   margin-inline:auto;
 }
 .cabecera-logo{display:block;width:auto;height:auto;max-width:100%;max-height:var(--alto-logo)}
@@ -138,7 +138,10 @@ a{color:var(--azul)}
   font-size:var(--t-sm);
   color:var(--gris);
 }
-.pie-int{max-width:var(--ancho-pagina);margin-inline:auto}
+/* Cabecera y pie ponen su margen lateral por fuera y .pagina por dentro: los
+   tres miden lo mismo por dentro (--ancho-contenido), así logotipo, título,
+   contenido y pie empiezan en la misma línea (P102). */
+.pie-int{max-width:var(--ancho-contenido);margin-inline:auto}
 
 /* Enlace de salto al contenido: primer elemento enfocable de la página. */
 .salto{

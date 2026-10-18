@@ -27,6 +27,11 @@
 .dialogo::backdrop{background:var(--velo)}
 .dialogo-titulo{margin-top:0;padding-top:0;border-top:0}
 .dialogo-acciones{margin-top:var(--e-5)}
+/* Confirmación: qué pasará, en lista, y si no se puede deshacer, con icono y palabras. */
+.dialogo-consecuencias-titulo{margin-top:var(--e-4);font-weight:var(--peso-semi)}
+.dialogo-consecuencias{margin:var(--e-2) 0 0 var(--e-5);font-size:var(--t-md);list-style:disc}
+.dialogo-consecuencias li{padding:var(--e-1) 0}
+.dialogo-irreversible{display:flex;align-items:center;gap:var(--e-2);margin-top:var(--e-4);font-weight:var(--peso-semi);color:var(--error-txt)}
 .dialogo-cierre{display:flex;justify-content:flex-end;margin-top:var(--e-5)}
 
 /* Aviso en línea antes del diálogo de privacidad. */

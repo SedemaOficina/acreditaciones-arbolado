@@ -55,6 +55,8 @@
   font-size:var(--t-md);
   color:var(--error-txt);
 }
+/* «Ya adjuntaste el archivo…»: lo que se anuncia al llenarse también se lee en pantalla. */
+.arch-lleno{margin-top:var(--e-2);font-size:var(--t-sm);color:var(--gris)}
 
 /* @bloque estados */
 

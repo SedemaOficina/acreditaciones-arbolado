@@ -1,0 +1,29 @@
+/* =========================================================
+   estado.css · Módulo «estado» · nivel OPCIONAL
+   Etiquetas de estado: cinco familias (hecho, te toca actuar, en marcha,
+   cerrado sin éxito y terminado), cada una con icono y palabra. Texto de
+   4.5:1 o más sobre su fondo en las cinco.
+   Depende de: nucleo.css. Bloques: componentes.
+   ========================================================= */
+
+/* @bloque componentes */
+
+/* La base es la de «terminado»: gris, sin juicio. */
+.estado{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--e-1);
+  padding:var(--e-1) var(--e-2);
+  background:var(--aviso-bg);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-pill);
+  font-size:var(--t-sm);
+  font-weight:var(--peso-semi);
+  line-height:var(--interlineado-compacto);
+  white-space:nowrap;
+  color:var(--texto);
+}
+.estado-ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok-txt)}
+.estado-atencion{background:var(--pend-bg);border-color:var(--pend);color:var(--pend-txt)}
+.estado-proceso{background:var(--azul-cl);border-color:var(--azul);color:var(--azul)}
+.estado-rechazo{background:var(--error-bg);border-color:var(--error);color:var(--error-txt)}

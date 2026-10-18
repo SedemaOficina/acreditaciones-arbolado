@@ -1,7 +1,8 @@
 /* =========================================================
    acuse.css · Módulo «acuse» · nivel RECOMENDADO
    El único lugar donde el verde aparece como marca: el sistema confirma que
-   recibió. El folio va en una tarjeta con su dato, no en un botón.
+   recibió. El folio va en una tarjeta con su dato, no en un botón. La
+   secuencia «qué sigue» viene del núcleo (nucleo.css).
    Depende de: nucleo.css. Bloques: componentes → adaptaciones.
    ========================================================= */
 
@@ -36,37 +37,8 @@
 .acuse-valor{font-family:var(--fuente-mono);font-size:var(--t-lg);font-weight:var(--peso-fuerte);letter-spacing:var(--tracking-rotulo);overflow-wrap:anywhere;color:var(--guinda)}
 .acuse-acciones{display:flex;flex-direction:column;gap:var(--e-3);max-width:var(--ancho-acuse);margin:var(--e-5) auto 0}
 
-/* «Qué sigue»: secuencia numerada por CSS (el orden de la lista es el de los números). */
-.secuencia{max-width:var(--ancho-acuse);margin:var(--e-5) auto 0;padding-top:var(--e-5);text-align:left;border-top:var(--b-1) solid var(--linea);counter-reset:sec}
-.secuencia-item{position:relative;min-height:var(--e-7);padding:var(--e-1) 0 var(--e-6) var(--e-9);counter-increment:sec;font-size:var(--t-md)}
-.secuencia-item::before{
-  content:counter(sec);
-  position:absolute;
-  top:0;
-  left:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:var(--e-7);
-  height:var(--e-7);
-  background:var(--guinda-cl);
-  border:var(--b-2) solid var(--guinda);
-  border-radius:var(--r-pill);
-  font-family:var(--fuente-titulo);
-  font-size:var(--t-sm);
-  font-weight:var(--peso-fuerte);
-  color:var(--guinda);
-}
-.secuencia-item::after{
-  content:'';
-  position:absolute;
-  top:calc(var(--e-7) + var(--b-2));
-  bottom:var(--b-2);
-  left:calc(var(--e-4) - var(--b-1));
-  width:var(--b-2);
-  background:var(--dorado);
-}
-.secuencia-item:last-child::after{display:none}
+/* La secuencia «qué sigue» es del núcleo; en el acuse va centrada a su ancho, con su filete arriba. */
+.acuse .secuencia{max-width:var(--ancho-acuse);margin:var(--e-5) auto 0;padding-top:var(--e-5);text-align:left;border-top:var(--b-1) solid var(--linea)}
 
 /* @bloque adaptaciones */
 

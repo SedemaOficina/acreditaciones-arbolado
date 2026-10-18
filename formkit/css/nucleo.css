@@ -181,7 +181,11 @@
 }
 .btn-primario{background:var(--guinda);color:var(--blanco)}
 .btn-secundario{background:var(--blanco);border-color:var(--borde);color:var(--gris)}
-.btn-peligro{background:var(--blanco);border-color:var(--error);color:var(--error-txt)}
+/* Peligro: relleno rojo, para el botón que hace el daño dentro de su confirmación
+   («Rechazar solicitud»), que así pesa más que «Volver sin cambios». Fuera de la
+   confirmación, el botón que la abre va con contorno (.btn-peligro-contorno). */
+.btn-peligro{background:var(--error);border-color:var(--error);color:var(--blanco)}
+.btn-peligro-contorno{background:var(--blanco);border-color:var(--error);color:var(--error-txt)}
 /* «Atrás» y los enlaces-botón no tienen caja: se leen como texto que se toca. */
 .btn-atras{
   display:inline-flex;
@@ -227,7 +231,9 @@
 /* ---------- Avisos ----------
    Un aviso es algo que hay que leer, no una alarma: neutro con filete. El
    rojo es sólo para lo que impide continuar; el verde, para que el sistema
-   confirme; el ámbar, para atención sin bloqueo. Lleva icono y palabra. */
+   confirme; el ámbar, para atención sin bloqueo. Lleva siempre el icono de
+   su tono y palabras; el que pasa de una frase lleva título (.aviso-titulo),
+   que dice de un vistazo si algo salió bien, quedó pendiente o se rechazó. */
 .aviso{
   display:flex;
   gap:var(--e-3);
@@ -243,6 +249,7 @@
 .aviso-bloqueo{background:var(--error-bg);border-left-color:var(--error);color:var(--error-txt)}
 .aviso-ok{background:var(--ok-bg);border-left-color:var(--ok);color:var(--ok-txt)}
 .aviso-texto{flex:1;min-width:0}
+.aviso-titulo{display:block;margin-bottom:var(--e-1);font-family:var(--fuente-titulo);font-size:var(--t-base);font-weight:var(--peso-fuerte)}
 
 /* Marcador de pendiente visible: lo que el proyecto aún no resuelve se dice
    con este rótulo, nunca se oculta ni se inventa (FRM-75). El texto va en el
@@ -292,6 +299,42 @@
 /* Anuncio de estado de envío (error de red, plazo vencido): recibe el foco. */
 .estado-envio{margin-top:var(--e-4)}
 
+/* Secuencia «qué sigue»: varias acciones en orden, numeradas por CSS (el orden
+   de la lista es el de los números), nunca encadenadas en un párrafo. Sirve en
+   el acuse, en el resultado de una decisión, en un aviso o en la ficha de un
+   trámite (FRM-84). */
+.secuencia{margin-top:var(--e-4);counter-reset:sec}
+.secuencia-item{position:relative;min-height:var(--e-7);padding:var(--e-1) 0 var(--e-6) var(--e-9);counter-increment:sec;font-size:var(--t-md)}
+.secuencia-item::before{
+  content:counter(sec);
+  position:absolute;
+  top:0;
+  left:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:var(--e-7);
+  height:var(--e-7);
+  background:var(--guinda-cl);
+  border:var(--b-2) solid var(--guinda);
+  border-radius:var(--r-pill);
+  font-family:var(--fuente-titulo);
+  font-size:var(--t-sm);
+  font-weight:var(--peso-fuerte);
+  color:var(--guinda);
+}
+.secuencia-item::after{
+  content:'';
+  position:absolute;
+  top:calc(var(--e-7) + var(--b-2));
+  bottom:var(--b-2);
+  left:calc(var(--e-4) - var(--b-1));
+  width:var(--b-2);
+  background:var(--dorado);
+}
+.secuencia-item:last-child{padding-bottom:var(--e-1)}
+.secuencia-item:last-child::after{display:none}
+
 /* «Mostrar» / «Ocultar»: dentro del campo, a la derecha; aria-pressed dice si se ve lo escrito. */
 .contrasena-caja{position:relative}
 .contrasena-caja > .control{padding-right:var(--e-11)}
@@ -335,7 +378,8 @@
 
 .btn-primario:hover{background:var(--guinda-osc)}
 .btn-secundario:hover{border-color:var(--gris);color:var(--texto)}
-.btn-peligro:hover{background:var(--error-bg)}
+.btn-peligro:hover{background:var(--error-txt);border-color:var(--error-txt)}
+.btn-peligro-contorno:hover{background:var(--error-bg)}
 .btn-atras:hover{text-decoration:underline}
 .btn-icono:hover{background:var(--azul-cl);color:var(--azul)}
 .redes-enlace:hover{background:var(--azul-cl);border-color:var(--azul);color:var(--azul)}

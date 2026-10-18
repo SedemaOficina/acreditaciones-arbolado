@@ -192,14 +192,20 @@
   }
 
   /* ---------- Formatos por tipo de dato ---------- */
+  /* Cada formato y cada cruzada reciben la configuración del formulario
+     (cfg: la base fusionada con FORMKIT_CONFIG en el navegador; la del
+     servidor en validar.mjs). Sus textos viven en cfg.mensajes, así que un
+     formulario los cambia sin tocar este archivo (por ejemplo, a «usted»), y
+     sus límites (ámbito, CURP) se leen de cfg, no de la base. */
   const FORMATOS = {
     nombre: {
       descripcion: 'Nombre o apellido de persona',
       inputmode: 'text', autocomplete: 'given-name',
       normaliza: (v) => recorta(v),
-      valida: (v, a = {}) => {
-        if (!/^[\p{L}\p{M}' .\-]+$/u.test(v)) return 'Escribe sólo letras, espacios, apóstrofe, guion o punto. Ejemplo: María José';
-        if (v.length > (a.maxlength || 80)) return `El nombre es demasiado largo: usa hasta ${a.maxlength || 80} caracteres.`;
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes;
+        if (!/^[\p{L}\p{M}' .\-]+$/u.test(v)) return M.fmtNombre;
+        if (v.length > (a.maxlength || 80)) return plantilla(M.fmtNombreLargo, { max: a.maxlength || 80 });
         return '';
       }
     },
@@ -208,19 +214,20 @@
       inputmode: 'email', autocomplete: 'email',
       dominiosFrecuentes: ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'live.com.mx', 'hotmail.es'],
       normaliza: (v) => recorta(v).toLowerCase().replace(/\s/g, ''),
-      valida: (v, a = {}) => {
-        if (v.length > (a.maxlength || 120)) return `El correo es demasiado largo: usa hasta ${a.maxlength || 120} caracteres.`;
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes;
+        if (v.length > (a.maxlength || 120)) return plantilla(M.fmtCorreoLargo, { max: a.maxlength || 120 });
         const partes = v.split('@');
-        if (partes.length !== 2 || !partes[0] || !partes[1]) return 'El correo necesita una sola arroba, con texto antes y después. Ejemplo: nombre@dominio.mx';
-        if (!/^[^\s@]+\.[^\s@.]{2,}$/.test(partes[1])) return 'Revisa el dominio después de la arroba: debe llevar un punto. Ejemplo: nombre@dominio.mx';
+        if (partes.length !== 2 || !partes[0] || !partes[1]) return M.fmtCorreoArroba;
+        if (!/^[^\s@]+\.[^\s@.]{2,}$/.test(partes[1])) return M.fmtCorreoDominio;
         return '';
       },
       /* Sugerencia sin bloqueo para errores de dedo frecuentes («gmial.com»). */
-      sugiere: (v) => {
+      sugiere: (v, cfg = CONFIG) => {
         const dom = (v.split('@')[1] || '').toLowerCase();
         if (!dom || FORMATOS.correo.dominiosFrecuentes.includes(dom)) return '';
         const cerca = FORMATOS.correo.dominiosFrecuentes.find((d) => distancia(d, dom) === 1);
-        return cerca ? `¿Quisiste escribir ${v.split('@')[0]}@${cerca}?` : '';
+        return cerca ? plantilla(cfg.mensajes.fmtCorreoSugerencia, { correo: `${v.split('@')[0]}@${cerca}` }) : '';
       }
     },
     telefono: {
@@ -230,7 +237,7 @@
          +52 o 52 se retira. La regla de diez dígitos es la de México y debe
          confirmarse con el plan de numeración vigente [Fuente: __]. */
       normaliza: (v) => { let d = soloDigitos(String(v).replace(/^\s*\+?52\s*/, '')); if (d.length === 12 && d.startsWith('52')) d = d.slice(2); return d; },
-      valida: (v) => (/^\d{10}$/.test(v) ? '' : 'Escribe 10 dígitos, sin lada internacional. Ejemplo: 5512345678')
+      valida: (v, a = {}, cfg = CONFIG) => (/^\d{10}$/.test(v) ? '' : cfg.mensajes.fmtTelefono)
     },
     cp: {
       descripcion: 'Código postal: cinco dígitos, se conserva como texto',
@@ -238,9 +245,9 @@
       normaliza: (v) => soloDigitos(v),
       /* Con data-ambito="nacional" en el campo se acepta cualquier código del
          país (domicilio fuera de la Ciudad); si no, sólo los del ámbito. */
-      valida: (v, a = {}) => {
-        if (!/^\d{5}$/.test(v)) return 'El código postal lleva 5 dígitos. Ejemplo: 01000';
-        const am = a.ambito === 'nacional' ? null : CONFIG.ambito.cp;
+      valida: (v, a = {}, cfg = CONFIG) => {
+        if (!/^\d{5}$/.test(v)) return cfg.mensajes.fmtCp;
+        const am = a.ambito === 'nacional' ? null : cfg.ambito && cfg.ambito.cp;
         if (am && (v < am.min || v > am.max)) return am.mensaje;
         return '';
       }
@@ -249,13 +256,14 @@
       descripcion: 'CURP: 18 caracteres',
       inputmode: 'text', autocomplete: 'off',
       normaliza: (v) => sinAcentos(recorta(v)).toUpperCase().replace(/\s/g, ''),
-      valida: (v) => {
-        if (v.length !== CURP.largo) return `La CURP tiene ${CURP.largo} caracteres; escribiste ${v.length}.`;
-        if (!CURP.re.test(v)) return 'La CURP no tiene la estructura esperada. Revísala tal como aparece en tu documento.';
-        if (!fechaDeCurp(v)) return 'La fecha dentro de la CURP (posiciones 5 a 10) no es una fecha real. Revísala.';
-        if (fechaDeCurp(v) > hoyISO()) return 'La fecha de nacimiento dentro de la CURP está en el futuro. Revísala.';
-        if (!CURP.entidades.includes(v.slice(11, 13))) return 'La entidad de nacimiento dentro de la CURP (posiciones 12 y 13) no corresponde a ninguna clave. Revísala.';
-        if (CURP.verificarDigito && digitoCurp(v) !== v[17]) return 'El último carácter de la CURP no coincide con el resto. Revisa que la hayas copiado completa y sin cambiar letras por números.';
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes, C = cfg.curp || CURP;
+        if (v.length !== C.largo) return plantilla(M.fmtCurpLargo, { largo: C.largo, n: v.length });
+        if (!C.re.test(v)) return M.fmtCurpEstructura;
+        if (!fechaDeCurp(v)) return M.fmtCurpFecha;
+        if (fechaDeCurp(v) > hoyISO()) return M.fmtCurpFutura;
+        if (!C.entidades.includes(v.slice(11, 13))) return M.fmtCurpEntidad;
+        if (C.verificarDigito && digitoCurp(v) !== v[17]) return M.fmtCurpDigito;
         return '';
       },
       /* Datos derivables para mostrarlos en solo lectura (minimización). */
@@ -265,10 +273,10 @@
       descripcion: 'RFC: 12 caracteres (persona moral) o 13 (persona física). Estructura a confirmar con el emisor [Fuente: __]',
       inputmode: 'text', autocomplete: 'off',
       normaliza: (v) => sinAcentos(recorta(v)).toUpperCase().replace(/[\s-]/g, ''),
-      valida: (v) => {
-        if (!/^([A-ZÑ&]{3,4})(\d{6})([A-Z0-9]{3})$/.test(v)) return 'El RFC lleva 3 o 4 letras, 6 dígitos de fecha y 3 caracteres finales. Ejemplo: XAXX010101000';
+      valida: (v, a = {}, cfg = CONFIG) => {
+        if (!/^([A-ZÑ&]{3,4})(\d{6})([A-Z0-9]{3})$/.test(v)) return cfg.mensajes.fmtRfc;
         const aa = Number(v.slice(-9, -7)), mm = Number(v.slice(-7, -5)), dd = Number(v.slice(-5, -3));
-        if (!esFechaReal(2000 + aa, mm, dd) && !esFechaReal(1900 + aa, mm, dd)) return 'La fecha dentro del RFC no es una fecha real. Revísala.';
+        if (!esFechaReal(2000 + aa, mm, dd) && !esFechaReal(1900 + aa, mm, dd)) return cfg.mensajes.fmtRfcFecha;
         return '';
       }
     },
@@ -276,17 +284,18 @@
       descripcion: 'Número entero o decimal con mínimo, máximo y paso configurables en el campo',
       inputmode: 'decimal', autocomplete: 'off',
       normaliza: (v) => recorta(v).replace(/\s/g, '').replace(',', '.'),
-      valida: (v, a = {}) => {
-        if (!/^-?\d+(\.\d+)?$/.test(v)) return 'Escribe sólo números; para decimales usa punto. Ejemplo: 12.5';
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes;
+        if (!/^-?\d+(\.\d+)?$/.test(v)) return M.fmtNumero;
         const n = Number(v);
         /* El paso cuenta desde el mínimo, como en HTML; con tolerancia de redondeo para pasos decimales. */
         const paso = a.step && a.step !== 'any' ? Number(a.step) : 0;
         if (paso > 0) {
           const k = (n - (a.min !== undefined && a.min !== '' ? Number(a.min) : 0)) / paso;
-          if (Math.abs(k - Math.round(k)) > 1e-9) return paso === 1 ? 'Escribe un número entero, sin decimales.' : `Usa múltiplos de ${a.step}.`;
+          if (Math.abs(k - Math.round(k)) > 1e-9) return paso === 1 ? M.fmtNumeroEntero : plantilla(M.fmtNumeroPaso, { paso: a.step });
         }
-        if (a.min !== undefined && a.min !== '' && n < Number(a.min)) return `El valor mínimo es ${a.min}.`;
-        if (a.max !== undefined && a.max !== '' && n > Number(a.max)) return `El valor máximo es ${a.max}.`;
+        if (a.min !== undefined && a.min !== '' && n < Number(a.min)) return plantilla(M.fmtNumeroMin, { min: a.min });
+        if (a.max !== undefined && a.max !== '' && n > Number(a.max)) return plantilla(M.fmtNumeroMax, { max: a.max });
         return '';
       }
     },
@@ -294,11 +303,12 @@
       descripcion: 'Fecha real en formato AAAA-MM-DD con límites configurables',
       inputmode: 'numeric', autocomplete: 'off',
       normaliza: (v) => recorta(v),
-      valida: (v, a = {}) => {
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes;
         const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        if (!m || !esFechaReal(Number(m[1]), Number(m[2]), Number(m[3]))) return 'Escribe una fecha real con el formato AAAA-MM-DD. Ejemplo: 2026-03-15';
-        if (a.max && v > a.max) return a.max === hoyISO() ? 'La fecha no puede ser posterior a hoy.' : `La fecha no puede ser posterior al ${a.max}.`;
-        if (a.min && v < a.min) return `La fecha no puede ser anterior al ${a.min}.`;
+        if (!m || !esFechaReal(Number(m[1]), Number(m[2]), Number(m[3]))) return M.fmtFecha;
+        if (a.max && v > a.max) return a.max === hoyISO() ? M.fmtFechaFutura : plantilla(M.fmtFechaMax, { fecha: dmaDeIso(a.max) || a.max });
+        if (a.min && v < a.min) return plantilla(M.fmtFechaMin, { fecha: dmaDeIso(a.min) || a.min });
         return '';
       }
     },
@@ -306,14 +316,15 @@
       descripcion: 'Fecha real escrita como día/mes/año (DD/MM/AAAA), sin calendario; para la fecha de nacimiento',
       inputmode: 'numeric', autocomplete: 'off',
       normaliza: (v) => { const iso = isoDeDma(v); return iso ? dmaDeIso(iso) : recorta(v); },
-      valida: (v, a = {}) => {
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes;
         const iso = isoDeDma(v);
-        if (!iso) return 'Escribe una fecha real como día/mes/año. Ejemplo: 23/07/1985';
-        if (Number(iso.slice(0, 4)) < 1900) return 'Revisa el año: escribe los cuatro dígitos, de 1900 en adelante. Ejemplo: 1985';
+        if (!iso) return M.fmtFechaDma;
+        if (Number(iso.slice(0, 4)) < 1900) return M.fmtFechaDmaAnio;
         /* En el navegador llega data-no-futura; en el servidor, max ya resuelto a hoy. */
         const max = a.max || (a.noFutura !== undefined ? hoyISO() : '');
-        if (max && iso > max) return max === hoyISO() ? 'La fecha no puede ser posterior a hoy.' : `La fecha no puede ser posterior al ${dmaDeIso(max)}.`;
-        if (a.min && iso < a.min) return `La fecha no puede ser anterior al ${dmaDeIso(a.min)}.`;
+        if (max && iso > max) return max === hoyISO() ? M.fmtFechaFutura : plantilla(M.fmtFechaMax, { fecha: dmaDeIso(max) });
+        if (a.min && iso < a.min) return plantilla(M.fmtFechaMin, { fecha: dmaDeIso(a.min) });
         return '';
       }
     },
@@ -321,16 +332,17 @@
       descripcion: 'Hora en formato de 24 horas',
       inputmode: 'numeric', autocomplete: 'off',
       normaliza: (v) => recorta(v),
-      valida: (v) => (/^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? '' : 'Escribe la hora en formato de 24 horas, HH:MM. Ejemplo: 14:30')
+      valida: (v, a = {}, cfg = CONFIG) => (/^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? '' : cfg.mensajes.fmtHora)
     },
     texto: {
       descripcion: 'Texto libre con longitud mínima y máxima; neutraliza marcado y caracteres de control',
       inputmode: 'text', autocomplete: 'off',
       normaliza: (v) => String(v ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim(),
-      valida: (v, a = {}) => {
-        if (a.minlength && v.length < Number(a.minlength)) return `Escribe al menos ${a.minlength} caracteres; van ${v.length}.`;
-        if (a.maxlength && v.length > Number(a.maxlength)) return `Usa hasta ${a.maxlength} caracteres; van ${v.length}.`;
-        if (a.legible !== undefined && !pareceTexto(v)) return 'Descríbelo con tus palabras, en una o dos frases completas.';
+      valida: (v, a = {}, cfg = CONFIG) => {
+        const M = cfg.mensajes;
+        if (a.minlength && v.length < Number(a.minlength)) return plantilla(M.fmtTextoMin, { min: a.minlength, n: v.length });
+        if (a.maxlength && v.length > Number(a.maxlength)) return plantilla(M.fmtTextoMax, { max: a.maxlength, n: v.length });
+        if (a.legible !== undefined && !pareceTexto(v)) return M.fmtTextoLegible;
         return '';
       }
     },
@@ -338,12 +350,12 @@
       descripcion: 'Latitud y longitud dentro del rectángulo envolvente configurado',
       inputmode: 'decimal', autocomplete: 'off',
       normaliza: (v) => recorta(v).replace(/\s/g, ''),
-      valida: (v) => {
+      valida: (v, a = {}, cfg = CONFIG) => {
         const m = v.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/);
-        if (!m) return 'Escribe latitud y longitud separadas por coma. Ejemplo: 19.4326,-99.1332';
+        if (!m) return cfg.mensajes.fmtCoordenadas;
         const lat = Number(m[1]), lon = Number(m[2]);
-        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return 'Las coordenadas están fuera de rango: la latitud va de -90 a 90 y la longitud de -180 a 180.';
-        const b = CONFIG.ambito.coordenadas;
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return cfg.mensajes.fmtCoordenadasRango;
+        const b = cfg.ambito && cfg.ambito.coordenadas;
         if (b && (lat < b.latMin || lat > b.latMax || lon < b.lonMin || lon > b.lonMax)) return b.mensaje;
         return '';
       }
@@ -352,7 +364,7 @@
       descripcion: 'Folio o clave alfanumérica con guiones',
       inputmode: 'text', autocomplete: 'off',
       normaliza: (v) => recorta(v).toUpperCase().replace(/\s/g, ''),
-      valida: (v, a = {}) => (/^[A-Z0-9][A-Z0-9-]{2,}$/.test(v) && v.length <= (a.maxlength || 40) ? '' : 'Escribe el folio tal como aparece en tu acuse, con letras, números y guiones.')
+      valida: (v, a = {}, cfg = CONFIG) => (/^[A-Z0-9][A-Z0-9-]{2,}$/.test(v) && v.length <= (a.maxlength || 40) ? '' : cfg.mensajes.fmtFolio)
     },
     /* Folio fiscal (UUID) de una factura: 32 dígitos hexadecimales en grupos
        8-4-4-4-12, 36 caracteres. Se acepta en minúsculas y sin guiones, y se
@@ -365,17 +377,16 @@
         const solo = t.replace(/-/g, '');
         return /^[0-9A-F]{32}$/.test(solo) ? `${solo.slice(0, 8)}-${solo.slice(8, 12)}-${solo.slice(12, 16)}-${solo.slice(16, 20)}-${solo.slice(20)}` : t;
       },
-      valida: (v) => (/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/.test(v) ? ''
-        : 'El folio fiscal tiene 36 caracteres: números y letras de la A a la F, en grupos de 8, 4, 4, 4 y 12 separados por guiones. Cópialo como aparece en la factura.')
+      valida: (v, a = {}, cfg = CONFIG) => (/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/.test(v) ? '' : cfg.mensajes.fmtFolioFiscal)
     },
     contrasena: {
       descripcion: 'Contraseña: sin límite máximo restrictivo ni bloqueo del pegado',
       inputmode: 'text', autocomplete: 'new-password',
       normaliza: (v) => String(v ?? ''),
-      valida: (v, a = {}) => {
+      valida: (v, a = {}, cfg = CONFIG) => {
         const min = Number(a.minlength || 12);
-        if (v.length < min) return `La contraseña necesita al menos ${min} caracteres. Una frase larga es más segura que una palabra con símbolos.`;
-        if (a.maxlength && v.length > Number(a.maxlength)) return `La contraseña admite hasta ${a.maxlength} caracteres.`;
+        if (v.length < min) return plantilla(cfg.mensajes.fmtContrasenaMin, { min });
+        if (a.maxlength && v.length > Number(a.maxlength)) return plantilla(cfg.mensajes.fmtContrasenaMax, { max: a.maxlength });
         return '';
       }
     }
@@ -404,73 +415,73 @@
       descripcion: 'La fecha de nacimiento coincide con la contenida en la CURP',
       campos: ['curp', 'fecha'], bloquea: true,
       /* La fecha puede venir como AAAA-MM-DD (formato «fecha») o DD/MM/AAAA («fecha-dma»). */
-      valida: ({ curp, fecha }) => (fechaDeCurp(curp) === (isoDeDma(fecha) || fecha) ? '' : 'La fecha de nacimiento no coincide con la CURP. Revisa que ambos datos estén correctos.')
+      valida: ({ curp, fecha }, a = {}, cfg = CONFIG) => (fechaDeCurp(curp) === (isoDeDma(fecha) || fecha) ? '' : cfg.mensajes.czCurpFecha)
     },
     'curp-sexo': {
       descripcion: 'El sexo declarado coincide con la posición 11 de la CURP',
       campos: ['curp', 'sexo'], bloquea: false,
-      valida: ({ curp, sexo }) => (!sexo || curp[10] === String(sexo).toUpperCase()[0] ? '' : 'El sexo indicado no coincide con el de la CURP. Revisa ambos datos.')
+      valida: ({ curp, sexo }, a = {}, cfg = CONFIG) => (!sexo || curp[10] === String(sexo).toUpperCase()[0] ? '' : cfg.mensajes.czCurpSexo)
     },
     'curp-entidad': {
       descripcion: 'La entidad de nacimiento coincide con las posiciones 12 y 13 de la CURP',
       campos: ['curp', 'entidad'], bloquea: false,
-      valida: ({ curp, entidad }) => (!entidad || curp.slice(11, 13) === String(entidad).toUpperCase() ? '' : 'La entidad de nacimiento no coincide con la de la CURP. Revisa ambos datos.')
+      valida: ({ curp, entidad }, a = {}, cfg = CONFIG) => (!entidad || curp.slice(11, 13) === String(entidad).toUpperCase() ? '' : cfg.mensajes.czCurpEntidad)
     },
     /* La CURP y el nombre son coherentes (no prueba que la CURP exista). */
     'curp-nombre': {
       descripcion: 'Las letras de la CURP corresponden al nombre y al primer apellido (posiciones 1, 2, 4, 14 y 16)',
       campos: ['curp', 'nombre', 'primer'], bloquea: true,
-      valida: ({ curp, nombre, primer }) => {
+      valida: ({ curp, nombre, primer }, a = {}, cfg = CONFIG) => {
         const e = letrasDeCurp({ nombre, primer, segundo: '' });
         if (!e) return '';
         /* La posición 3 viene de la propia CURP: así se reconoce la palabra altisonante sin pedir el segundo apellido. */
         const p2 = CURP_NOMBRE.altisonantes.includes(e.p1 + e.p2 + curp[2] + e.p4) ? 'X' : e.p2;
-        return curp[0] === e.p1 && curp[1] === p2 && curp[3] === e.p4 && curp[13] === e.p14 && curp[15] === e.p16 ? '' : CONFIG.mensajes.curpNombre;
+        return curp[0] === e.p1 && curp[1] === p2 && curp[3] === e.p4 && curp[13] === e.p14 && curp[15] === e.p16 ? '' : cfg.mensajes.curpNombre;
       }
     },
     /* El segundo apellido es opcional: sin él, la CURP lleva X en las posiciones 3 y 15. */
     'curp-segundo-apellido': {
       descripcion: 'Las letras de la CURP corresponden al segundo apellido (posiciones 3 y 15); sin segundo apellido, la CURP lleva X en las dos',
       campos: ['curp', 'segundo'], opcionales: ['segundo'], bloquea: true,
-      valida: ({ curp, segundo }) => {
+      valida: ({ curp, segundo }, a = {}, cfg = CONFIG) => {
         const a2 = palabraDeCurp(segundo);
-        if (!a2) return curp[2] === 'X' && curp[14] === 'X' ? '' : CONFIG.mensajes.curpSinSegundo;
-        return curp[2] === letraDeCurp(a2[0]) && curp[14] === consonanteInterna(a2) ? '' : CONFIG.mensajes.curpNombre;
+        if (!a2) return curp[2] === 'X' && curp[14] === 'X' ? '' : cfg.mensajes.curpSinSegundo;
+        return curp[2] === letraDeCurp(a2[0]) && curp[14] === consonanteInterna(a2) ? '' : cfg.mensajes.curpNombre;
       }
     },
     'rango-fechas': {
       descripcion: 'La fecha final no es anterior a la inicial',
       campos: ['inicio', 'fin'], bloquea: true,
-      valida: ({ inicio, fin }) => (fin >= inicio ? '' : 'La fecha final no puede ser anterior a la fecha inicial.')
+      valida: ({ inicio, fin }, a = {}, cfg = CONFIG) => (fin >= inicio ? '' : cfg.mensajes.czRangoFechas)
     },
     'rango-horas': {
       descripcion: 'La hora final es posterior a la inicial cuando es el mismo día',
       campos: ['inicio', 'fin'], bloquea: true,
-      valida: ({ inicio, fin }) => (fin > inicio ? '' : 'La hora final debe ser posterior a la hora inicial.')
+      valida: ({ inicio, fin }, a = {}, cfg = CONFIG) => (fin > inicio ? '' : cfg.mensajes.czRangoHoras)
     },
     'igual': {
       descripcion: 'Confirmación idéntica al original (correo, contraseña)',
       campos: ['original', 'confirmacion'], bloquea: true,
-      valida: ({ original, confirmacion }) => (original === confirmacion ? '' : 'Los dos valores no coinciden. Escríbelos igual en ambos campos.')
+      valida: ({ original, confirmacion }, a = {}, cfg = CONFIG) => (original === confirmacion ? '' : cfg.mensajes.czIgual)
     },
     'edad': {
       descripcion: 'Edad calculada dentro de la mínima y máxima que exige el formulario',
       campos: ['fecha'], bloquea: true,
-      valida: ({ fecha }, a = {}) => {
+      valida: ({ fecha }, a = {}, cfg = CONFIG) => {
         const e = edadEn(fecha, hoyISO());
-        if (a.edadMin !== undefined && e < Number(a.edadMin)) return plantilla(CONFIG.mensajes.edadMinima, { edad: a.edadMin });
-        if (a.edadMax !== undefined && e > Number(a.edadMax)) return plantilla(CONFIG.mensajes.edadMaxima, { edad: a.edadMax });
+        if (a.edadMin !== undefined && e < Number(a.edadMin)) return plantilla(cfg.mensajes.edadMinima, { edad: a.edadMin });
+        if (a.edadMax !== undefined && e > Number(a.edadMax)) return plantilla(cfg.mensajes.edadMaxima, { edad: a.edadMax });
         return '';
       }
     },
     'cp-colonia': {
       descripcion: 'El código postal pertenece a la alcaldía y colonia elegidas (advertencia, no bloqueo)',
       campos: ['cp', 'colonia'], bloquea: false,
-      valida: ({ cp, colonia }, a = {}) => {
+      valida: ({ cp, colonia }, a = {}, cfg = CONFIG) => {
         const cat = a.catalogo || [];
         if (!cat.length) return '';
         const ok = cat.some((fila) => fila.cp === cp && fila.colonia === colonia);
-        return ok ? '' : 'El código postal no corresponde a la colonia elegida según el catálogo. Revisa ambos datos; puedes continuar si estás seguro.';
+        return ok ? '' : cfg.mensajes.czCpColonia;
       }
     }
   };
@@ -503,7 +514,7 @@
 
   /* ---------- Configuración ---------- */
   const CONFIG = {
-    version: '1.3.1',
+    version: '1.4.1',
     idioma: 'es-MX',
     fechas: { zonaHoraria: 'America/Mexico_City' },
     /* Ámbito territorial. `cp` restringe el rango; `coordenadas` el
@@ -541,9 +552,71 @@
       edadMaxima: 'La edad máxima es de {edad} años.',
       curpNombre: 'La CURP no corresponde con el nombre y los apellidos que escribiste. Escríbelos tal como aparecen en tu CURP.',
       curpSinSegundo: 'Tu CURP indica que tienes segundo apellido. Escríbelo tal como aparece en tu CURP.',
+      /* Formatos (fmt…) y cruzadas (cz…): un formulario que habla de usted los cambia aquí. */
+      fmtNombre: 'Escribe sólo letras, espacios, apóstrofe, guion o punto. Ejemplo: María José',
+      fmtNombreLargo: 'El nombre es demasiado largo: usa hasta {max} caracteres.',
+      fmtCorreoLargo: 'El correo es demasiado largo: usa hasta {max} caracteres.',
+      fmtCorreoArroba: 'El correo necesita una sola arroba, con texto antes y después. Ejemplo: nombre@dominio.mx',
+      fmtCorreoDominio: 'Revisa el dominio después de la arroba: debe llevar un punto. Ejemplo: nombre@dominio.mx',
+      fmtCorreoSugerencia: '¿Quisiste escribir {correo}?',
+      fmtTelefono: 'Escribe 10 dígitos, sin lada internacional. Ejemplo: 5512345678',
+      fmtCp: 'El código postal lleva 5 dígitos. Ejemplo: 01000',
+      fmtCurpLargo: 'La CURP tiene {largo} caracteres; escribiste {n}.',
+      fmtCurpEstructura: 'La CURP no tiene la estructura esperada. Revísala tal como aparece en tu documento.',
+      fmtCurpFecha: 'La fecha dentro de la CURP (posiciones 5 a 10) no es una fecha real. Revísala.',
+      fmtCurpFutura: 'La fecha de nacimiento dentro de la CURP está en el futuro. Revísala.',
+      fmtCurpEntidad: 'La entidad de nacimiento dentro de la CURP (posiciones 12 y 13) no corresponde a ninguna clave. Revísala.',
+      fmtCurpDigito: 'El último carácter de la CURP no coincide con el resto. Revisa que la hayas copiado completa y sin cambiar letras por números.',
+      fmtRfc: 'El RFC lleva 3 o 4 letras, 6 dígitos de fecha y 3 caracteres finales. Ejemplo: XAXX010101000',
+      fmtRfcFecha: 'La fecha dentro del RFC no es una fecha real. Revísala.',
+      fmtNumero: 'Escribe sólo números; para decimales usa punto. Ejemplo: 12.5',
+      fmtNumeroEntero: 'Escribe un número entero, sin decimales.',
+      fmtNumeroPaso: 'Usa múltiplos de {paso}.',
+      fmtNumeroMin: 'El valor mínimo es {min}.',
+      fmtNumeroMax: 'El valor máximo es {max}.',
+      fmtFecha: 'Escribe una fecha real con el formato AAAA-MM-DD. Ejemplo: 2026-03-15',
+      fmtFechaDma: 'Escribe una fecha real como día/mes/año. Ejemplo: 23/07/1985',
+      fmtFechaDmaAnio: 'Revisa el año: escribe los cuatro dígitos, de 1900 en adelante. Ejemplo: 1985',
+      fmtFechaFutura: 'La fecha no puede ser posterior a hoy.',
+      fmtFechaMax: 'La fecha no puede ser posterior al {fecha}.',
+      fmtFechaMin: 'La fecha no puede ser anterior al {fecha}.',
+      fmtHora: 'Escribe la hora en formato de 24 horas, HH:MM. Ejemplo: 14:30',
+      fmtTextoMin: 'Escribe al menos {min} caracteres; van {n}.',
+      fmtTextoMax: 'Usa hasta {max} caracteres; van {n}.',
+      fmtTextoLegible: 'Descríbelo con tus palabras, en una o dos frases completas.',
+      fmtCoordenadas: 'Escribe latitud y longitud separadas por coma. Ejemplo: 19.4326,-99.1332',
+      fmtCoordenadasRango: 'Las coordenadas están fuera de rango: la latitud va de -90 a 90 y la longitud de -180 a 180.',
+      fmtFolio: 'Escribe el folio tal como aparece en tu acuse, con letras, números y guiones.',
+      fmtFolioFiscal: 'El folio fiscal tiene 36 caracteres: números y letras de la A a la F, en grupos de 8, 4, 4, 4 y 12 separados por guiones. Cópialo como aparece en la factura.',
+      fmtContrasenaMin: 'La contraseña necesita al menos {min} caracteres. Una frase larga es más segura que una palabra con símbolos.',
+      fmtContrasenaMax: 'La contraseña admite hasta {max} caracteres.',
+      czCurpFecha: 'La fecha de nacimiento no coincide con la CURP. Revisa que ambos datos estén correctos.',
+      czCurpSexo: 'El sexo indicado no coincide con el de la CURP. Revisa ambos datos.',
+      czCurpEntidad: 'La entidad de nacimiento no coincide con la de la CURP. Revisa ambos datos.',
+      czRangoFechas: 'La fecha final no puede ser anterior a la fecha inicial.',
+      czRangoHoras: 'La hora final debe ser posterior a la hora inicial.',
+      czIgual: 'Los dos valores no coinciden. Escríbelos igual en ambos campos.',
+      czCpColonia: 'El código postal no corresponde a la colonia elegida según el catálogo. Revisa ambos datos; puedes continuar si estás seguro.',
+      minimoCaracteres: 'Escribe al menos {min} caracteres en «{etiqueta}»; van {n}.',
+      maximoCaracteres: 'Usa hasta {max} caracteres en «{etiqueta}».',
       advertencia: 'Advertencia:',
-      resumenUno: 'Falta revisar 1 campo para continuar.',
-      resumenVarios: 'Faltan por revisar {n} campos para continuar.',
+      resumenUno: 'Para continuar, revisa 1 respuesta.',
+      resumenVarios: 'Para continuar, revisa {n} respuestas.',
+      resumenServidorUno: 'No se pudo enviar: revisa 1 respuesta.',
+      resumenServidorVarios: 'No se pudo enviar: revisa {n} respuestas.',
+      resumenContexto: '{contexto}: {mensaje}',
+      confirmaTitulo: '¿Confirmas?',
+      confirmaSi: 'Confirmar',
+      confirmaNo: 'Volver sin cambios',
+      confirmaConsecuencias: 'Qué pasará:',
+      confirmaIrreversible: 'No se puede deshacer.',
+      resultadoHora: 'Quedó guardado a las {hora}',
+      resultadoFechaHora: 'Quedó guardado el {fecha} a las {hora}',
+      resultadoMotivo: 'Motivo',
+      resultadoQueSigue: 'Qué sigue',
+      descargaPreparando: 'Preparando el archivo…',
+      descargaLista: 'Descarga iniciada.',
+      descargaError: 'No se pudo preparar el archivo. Intenta de nuevo.',
       pasoAnuncio: 'Paso {n} de {total}: {titulo}.',
       pasoTexto: 'Paso {n} de {total}',
       pasoHecho: 'completado',
@@ -551,7 +624,7 @@
       palabraObligatorio: 'obligatorio',
       contrasenaMostrar: 'Mostrar',
       contrasenaOcultar: 'Ocultar',
-      contrasenaLector: ' la contraseña',
+      contrasenaLector: ': {etiqueta}',
       palabraSi: 'Sí',
       palabraNo: 'No',
       sinValor: 'No indicado',
@@ -593,6 +666,10 @@
       comboUno: 'Un resultado disponible.',
       comboVarios: '{n} resultados disponibles.',
       comboNinguno: 'Sin resultados para «{texto}».',
+      comboLibre: 'No está en la lista: se guarda como lo escribiste.',
+      tablaOrdenada: 'Ordenado por {columna}, {sentido}.',
+      tablaAscendente: 'ascendente',
+      tablaDescendente: 'descendente',
       cascadaEspera: 'Primero elige {padre}.',
       cascadaReiniciada: 'Se reinició «{etiqueta}» porque cambió «{padre}».',
       cascadaSinCatalogo: 'No se pudo cargar la lista; escribe el dato a mano.',
@@ -610,6 +687,8 @@
       chipsBorrar: 'Borrar historial',
       chipsQuitar: 'Quitar {texto} de las sugerencias',
       chipsFijos: 'Respuestas frecuentes para {etiqueta}',
+      chipsFijosContexto: '{nombre}, {contexto}',
+      chipsFijosOrden: '{n} de {total}',
       chipsAgregado: 'Agregado: {texto}',
       visorCargando: 'Cargando el documento…',
       visorError: 'No se pudo mostrar el documento aquí. Ábrelo en otra pestaña con el enlace de arriba.',
