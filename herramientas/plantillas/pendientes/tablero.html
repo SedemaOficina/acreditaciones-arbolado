@@ -81,6 +81,7 @@ p { margin: 0; }
 .chip.datos { background: var(--guinda-suave); color: var(--guinda); border-color: color-mix(in srgb, var(--guinda) 30%, transparent); }
 .reco { display: grid; gap: 2px; padding: 10px 12px; background: var(--dorado-suave); border-radius: var(--r); max-width: 78ch; }
 .reco .etiqueta { color: color-mix(in srgb, var(--dorado) 70%, var(--tinta)); }
+.reco.lin { background: transparent; border: 1px solid var(--dorado-suave); }
 .marcas { display: flex; flex-wrap: wrap; gap: 6px; }
 .marca { font: 500 0.8rem/1 var(--f-cuerpo); padding: 8px 12px; min-height: 36px; border-radius: var(--r); border: 1px solid var(--linea-fuerte); background: var(--superficie); color: var(--tinta); cursor: pointer; }
 .marca[data-v="acepto"][aria-pressed="true"] { background: var(--ok-suave); border-color: var(--ok); color: var(--ok); }
@@ -248,6 +249,7 @@ tbody tr:last-child td { border-bottom: 0; }
         el('span', { text: 'Desde ' + fecha(p.desde) })
       ]),
       el('div', { class: 'reco' }, [el('span', { class: 'etiqueta', text: 'Recomendación' }), el('p', { text: p.recomendacion })]),
+      p.lineamientos ? el('div', { class: 'reco lin' }, [el('span', { class: 'etiqueta', text: 'Lineamientos' }), el('p', { text: p.lineamientos })]) : null,
       marcas,
       el('label', { class: 'nota-lbl', for: idNota, text: 'Tu respuesta' }),
       nota

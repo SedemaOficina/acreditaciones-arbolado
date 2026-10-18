@@ -24,7 +24,8 @@ let md = `# Pendientes
 Generado por \`herramientas/generar-pendientes.mjs\` desde \`docs/pendientes.json\` (la fuente: se edita ahí). El
 mismo contenido está en el tablero «Pendientes del sistema», donde se marca cada uno y se responde. Cada
 pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resueltos» y la decisión se anota en
-\`docs/DECISIONES.md\`.
+\`docs/DECISIONES.md\`. La columna **Lineamientos** dice qué artículo del anteproyecto de lineamientos toca el pendiente
+(el texto vive fuera de este repositorio público; ver «Lineamientos» en \`docs/DECISIONES.md\`).
 
 Actualizado: ${fecha(datos.actualizado)}. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
 primer dato real; *lanzamiento* = antes de abrir el sistema al público; *SIA* = antes de pasar al SIA; *etapa N* =
@@ -33,8 +34,8 @@ antes de cerrar esa etapa; *no* = se puede avanzar.
 for (const g of datos.grupos) {
   const lista = datos.pendientes.filter((p) => p.grupo === g.id);
   if (!lista.length) continue;
-  md += `\n## ${g.nombre} (${g.nota})\n\n| # | Pendiente | Recomendación | Bloquea |\n|---|---|---|---|\n`;
-  for (const p of lista) md += `| ${p.id} | ${celda(p.titulo)} | ${celda(p.recomendacion)} | ${p.bloquea} |\n`;
+  md += `\n## ${g.nombre} (${g.nota})\n\n| # | Pendiente | Recomendación | Lineamientos | Bloquea |\n|---|---|---|---|---|\n`;
+  for (const p of lista) md += `| ${p.id} | ${celda(p.titulo)} | ${celda(p.recomendacion)} | ${celda(p.lineamientos || '—')} | ${p.bloquea} |\n`;
 }
 md += `\n## Resueltos\n\n| Tema | Cómo quedó | Fecha |\n|---|---|---|\n`;
 for (const r of datos.resueltos) md += `| ${celda(r.titulo)} | ${celda(r.como)} | ${fecha(r.fecha)} |\n`;

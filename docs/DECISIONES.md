@@ -251,7 +251,29 @@ resuelve en `app/apd.js` y `app/apd.css` y lo anota como hallazgo (P113 a P118).
 | 2026-10-18 | Los textos del estándar en usted para el personal van en `app/mensajes-usted.js` (`FORMKIT_CONFIG.mensajes`, y al servidor con `validaPayload(…, { mensajes })`); se quitó `app/config-usted.js` | Instrucción del proyecto |
 | 2026-10-18 | Etiquetas de estado en las cinco familias del estándar: hecho (verde), te toca actuar (ámbar, también un borrador sin enviar), en marcha (azul), cerrado sin éxito (rojo) y terminado (gris). Los desenlaces del personal usan el módulo «resultado» y las confirmaciones, `FormKit.confirma` con sus consecuencias | Instrucción del proyecto |
 
-## Lo que hay que corregir en los lineamientos
+## Lineamientos
+
+La Ley Ambiental de la Ciudad de México (art. 111, párrafo segundo, y Octavo Transitorio) ordena a la Secretaría
+emitir los lineamientos de la acreditación. El
+anteproyecto («Lineamientos para tramitar y obtener las acreditaciones de poda y derribo y de dictaminador técnico de
+arbolado en la Ciudad de México», versión de trabajo 0.4, 72 artículos, 11 capítulos, 8 transitorios y 4 anexos) **no
+se guarda en este repositorio porque es público**: vive en el Proyecto de Claude del sistema, en
+`claude/LINEAMIENTOS-acreditaciones.md` (cruce y regla) y `claude/lineamientos/` (fuente para regenerar el Word).
+
+**Regla de mantenimiento.** Toda decisión o pendiente que toque el trámite (requisitos, plazos, perfiles, curso,
+evaluación, vigencia, renovación, pago, credencial, padrón, sanciones, notificaciones o datos personales) actualiza en
+el mismo bloque el artículo del anteproyecto, su versión de trabajo y el campo `lineamientos` del pendiente en
+`docs/pendientes.json`. Lo que decidan los lineamientos y cambie el sistema se registra como pendiente nuevo.
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-18 | Alcance: los lineamientos regulan sólo poda y derribo y dictaminador técnico; el supervisor (NADF, 5.9) queda fuera por ahora, porque ni la Ley ni la norma lo desarrollan | Liber Saltijeral |
+| 2026-10-18 | Dictaminar con la de poda vencida (P133): la de dictaminador conserva su vigencia y la persona debe renovar la de poda; para renovar la de dictaminador necesita la de poda vigente | Liber Saltijeral |
+| 2026-10-18 | El anteproyecto incluye un capítulo completo de suspensión y revocación (P120), con valores propuestos para revisión jurídica | Liber Saltijeral |
+| 2026-10-18 | El anteproyecto se trabaja en Word con la identidad de la Secretaría; en el repositorio sólo van el cruce (campo `lineamientos`) y los pendientes que abre (P137 a P144) | Liber Saltijeral |
+| 2026-10-18 | El documento previo del equipo (fundamentos, obligaciones, prohibiciones, causas de suspensión y cancelación) se incorporó al anteproyecto; no se tomaron el comprobante de domicilio, el escrito libre, los 15 días, el 80 % ni el 9.0 | Liber Saltijeral |
+
+### Lo que hay que corregir en el borrador del área (ya aplicado en el anteproyecto)
 
 | # | En el borrador | Corrección |
 |---|---|---|

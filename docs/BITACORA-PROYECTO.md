@@ -1027,3 +1027,15 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-sitio` 602 (con axe; las de asistencia, actualizadas a la lista del día), `probar-examen` 57,
   `probar-volumen` y auditor de CSS, correctos.
 
+
+## 2026-10-18 · Bloque 70 · Cruce con el anteproyecto de lineamientos
+
+- Liber pidió trabajar los lineamientos que ordena la Ley Ambiental (art. 111 y Octavo Transitorio). Se redactó el anteproyecto (versión de trabajo 0.4) en otro chat del Proyecto; por ser este repositorio público,
+  el texto queda fuera y aquí sólo va el cruce (`docs/DECISIONES.md`, «Lineamientos»).
+- `docs/pendientes.json`: campo `lineamientos` (qué artículo del anteproyecto toca cada pendiente) en 44 pendientes;
+  recomendaciones actualizadas en P02, P03, P04, P11, P16, P19, P49, P100, P120 y P121; P133 resuelto; nuevos P137 a
+  P144 (firma, huella y antigüedad en la credencial; mayoría de edad; aceptación de notificaciones electrónicas;
+  reposición de la credencial; catálogo público de carreras; baja voluntaria de un grupo; espera máxima de grupo;
+  «cuota» en lugar de «pago de derechos»).
+- `herramientas/generar-pendientes.mjs` y la plantilla del tablero muestran la columna o el recuadro «Lineamientos».
+- Sin cambios en el sitio ni en la base: la versión de prueba sigue en 0.50.

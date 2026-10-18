@@ -27,7 +27,7 @@ principio.
 |---|---|
 | `docs/pendientes.json` | **Fuente de los pendientes** (número fijo, responsable, recomendación). `npm run pendientes` genera `docs/PENDIENTES.md` y la página del tablero `docs/tablero-pendientes.html` |
 | `docs/PENDIENTES.md` | Todo lo que falta decidir o hacer (generado) |
-| `docs/DECISIONES.md` | Todas las reglas decididas, con fecha, y lo que hay que corregir en los lineamientos |
+| `docs/DECISIONES.md` | Todas las reglas decididas, con fecha; en «Lineamientos», dónde vive el anteproyecto (fuera de este repositorio público) y la regla para mantenerlo al día |
 | `docs/DECISIONES-SIA.md` | Las nueve decisiones del SIA y las preguntas abiertas al SIA |
 | `docs/REGLAS.md` | Qué impone la base: estados, vigencia, grupos, folios, bitácora |
 | `docs/MODELO-DE-DATOS.md` | Tablas y campos (generado) |
