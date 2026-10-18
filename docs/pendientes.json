@@ -615,6 +615,14 @@
       "desde": "2026-10-18",
       "titulo": "Hallazgo del estándar: chips de motivos frecuentes partidos y con «hover» igual a elegido",
       "recomendacion": "Los chips fijos (motivos frecuentes) tienen --ancho-chip-max: 240px y se encogen dentro de la fila: un motivo largo («No coincide con el nombre de la cuenta») se parte en dos renglones dentro de la píldora. Además, al pasar el cursor el chip toma el mismo fondo que cuando está elegido (aria-pressed) y parece seleccionado. Solución provisional: .chip-fijo { max-width: 100%; flex-shrink: 0 } (si no cabe, pasa completo al renglón siguiente) y el paso del cursor sólo marca el borde. Propuesta: adoptar ambas en el módulo de chips."
+    },
+    {
+      "id": "P136",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Material de estudio para el examen: qué documentos, en qué versión y si el examen es a libro cerrado",
+      "recomendacion": "Propuesta de Liber: que la persona tenga material de consulta antes del examen. Recomendación: una sola página pública «Material de estudio» (sin cuenta, enlazada desde la página de inicio), con cada documento por curso (poda y derribo, dictaminador), su versión o fecha de publicación y su enlace oficial; y el enlace en «Mis trámites» en los momentos en que sirve (en espera de curso, inscrita a un grupo, curso en marcha), en el aviso de grupo confirmado y en las instrucciones antes de empezar el examen. Durante el examen no se muestra. La Dirección debe decir: qué documentos (norma ambiental aplicable, manual o guía técnica, presentación del curso, guía de estudio), de quién es cada uno y si se puede publicar, quién lo actualiza, y si el examen es a libro cerrado. Mientras no lo diga, la página no se construye con documentos inventados."
     }
   ],
   "resueltos": [
