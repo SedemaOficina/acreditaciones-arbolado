@@ -22,11 +22,11 @@ window.FORMKIT_OPCIONES = {
   },
   alEnviar(r) {
     const { el } = APD;
-    const caja = document.querySelector('[data-resultado]');
+    const caja = document.querySelector('[data-verificacion]');
     const f = r.fila;
     // El desenlace con su color e icono (propuesta «Avisos y confirmaciones», 2026-10-17): para quien verifica, una
     // acreditación que no existe es una alerta, como una que ya no está vigente
-    const situacion = (texto, icono) => el('p', { class: 'resultado-situacion' }, [APD.icono(icono, 'icono resultado-icono'), document.createTextNode(texto)]);
+    const situacion = (texto, icono) => el('p', { class: 'verificacion-situacion' }, [APD.icono(icono, 'icono verificacion-icono'), document.createTextNode(texto)]);
     if (!f) {
       caja.setAttribute('data-tono', 'error');
       caja.replaceChildren(

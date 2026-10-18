@@ -39,7 +39,7 @@
   const RESULTADOS = {
     validada: { boton: 'Validar y asignar la cita', clase: 'btn-primario' },
     con_observaciones: { boton: 'Enviar observaciones a la persona', clase: 'btn-primario' },
-    rechazada: { boton: 'Rechazar la solicitud', clase: 'btn-peligro' },
+    rechazada: { boton: 'Rechazar la solicitud', clase: 'btn-peligro-contorno' },
     '': { boton: 'Registrar la revisión', clase: 'btn-primario' }
   };
 
@@ -238,7 +238,7 @@
       const boton = $('[data-accion="enviar"]', form);
       if (boton.getAttribute('aria-busy') !== 'true') boton.textContent = r.boton;
       boton.classList.toggle('btn-primario', r.clase === 'btn-primario');
-      boton.classList.toggle('btn-peligro', r.clase === 'btn-peligro');
+      boton.classList.toggle('btn-peligro-contorno', r.clase === 'btn-peligro-contorno');
     }
 
     /* Ver documento: en el visor, con todas sus hojas; el documento que se ve queda señalado en la lista */
@@ -284,16 +284,16 @@
       },
       alEnviar({ resultado, d }) {
         const nombre = APD.nombreCompleto(p);
-        // Resultado de la decisión (propuesta «Avisos y confirmaciones», 2026-10-17): «Quedó guardado» y, en el título,
-        // el desenlace con su color e icono; debajo, lo que ve la persona y el botón a la siguiente solicitud
+        // Resultado de la decisión con el módulo «resultado» del estándar (1.4.0, P113): título con el desenlace en su
+        // familia, «Quedó guardado a las HH:MM · quien», motivo citado y «Qué sigue»; debajo, el botón a la siguiente
         const observados = Object.keys(d).filter((k) => k.startsWith('decision_') && d[k] === 'con_observacion').length;
         const desenlace = {
           validada: { tono: 'ok', titulo: `Validada: cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
             texto: `${nombre} ya ve en «Mis trámites» su cita de cotejo en el ${APD.sede(datos).nombre} y los datos para pagar.` },
-          con_observaciones: { tono: 'pend', titulo: `Con observaciones: ${observados === 1 ? '1 documento regresa' : `${observados} documentos regresan`} a la persona`,
+          con_observaciones: { tono: 'atencion', titulo: `Con observaciones: ${observados === 1 ? '1 documento regresa' : `${observados} documentos regresan`} a la persona`,
             texto: `${nombre} ya ve en «Mis trámites» qué debe corregir.`,
             pasos: [`${nombre} corrige y reenvía su solicitud.`, 'La solicitud vuelve a «Solicitudes por revisar», marcada como reenviada.'] },
-          rechazada: { tono: 'error', titulo: 'Rechazada por perfil', cita: d.motivo_rechazo || '',
+          rechazada: { tono: 'rechazo', titulo: 'Rechazada por perfil', motivo: d.motivo_rechazo || '',
             texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` }
         }[resultado];
         form.hidden = true;
@@ -306,7 +306,7 @@
           acciones.prepend(el('a', { class: 'btn btn-primario', 'data-siguiente': '', href: `revisar.html?folio=${encodeURIComponent(siguiente.folio)}`, texto: 'Revisar la siguiente' }));
           acciones.before(el('p', { class: 'texto-gris', texto: `Siguiente en la bandeja: ${siguiente.folio}, en espera desde el ${fecha(siguiente.estado_desde)}.` }));
         }
-        APD.pintaDesenlace($('[data-hecho]'), Object.assign({ quien: P.REVISORA.nombre }, desenlace));
+        FormKit.resultado($('[data-hecho]'), Object.assign({ quien: P.REVISORA.nombre }, desenlace));
       }
     });
 
@@ -315,7 +315,7 @@
       if (f !== form || document.getElementById('resultado').value !== 'rechazada') return false;
       if (instancia.valida().length) return false; // con errores, el núcleo muestra el resumen
       const boton = $('[data-accion="enviar"]', form);
-      APD.confirma(boton, {
+      FormKit.confirma(boton, {
         titulo: `¿Rechazar la solicitud ${s.folio}?`,
         consecuencias: [`${APD.nombreCompleto(p)} verá el motivo en «Mis trámites».`, 'La solicitud se cierra sin acreditación; la persona puede iniciar una nueva.'],
         irreversible: true, si: 'Sí, rechazar la solicitud', peligro: true

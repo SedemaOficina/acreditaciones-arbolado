@@ -23,7 +23,7 @@
     borrador: { texto: 'Borrador', tono: 'pend', sigue: 'Termina de cargar tus documentos y envía tu solicitud.' },
     enviada: { texto: 'En revisión documental', tono: 'marcha', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
     con_observaciones: { texto: 'Corrige y reenvía', personal: 'Con observaciones', tono: 'pend', sigue: 'Corrige lo que se indica abajo y vuelve a enviar tu solicitud.' },
-    validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', icono: 'fecha', sigue: { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', 'Acude a tu cita con tus documentos y tu comprobante.'] } },
+    validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', sigue: { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', 'Acude a tu cita con tus documentos y tu comprobante.'] } },
     lista_para_curso: { texto: 'En espera de grupo', tono: 'marcha', sigue: { texto: 'Tu cotejo terminó.', pasos: ['La Secretaría te asigna un grupo del curso.', 'Te avisa las fechas, la hora de entrada y la sede.', 'Asistes al curso y, el último día, presentas el examen.'] } },
     inscrita: { texto: 'Con grupo asignado', tono: 'ok', sigue: 'Asiste a tu curso en las fechas indicadas.' },
     aprobada: { texto: 'Aprobada', tono: 'ok', sigue: 'La Secretaría emite tu acreditación.' },
@@ -215,10 +215,14 @@
     for (const h of [].concat(hijos || [])) if (h) e.append(h);
     return e;
   }
-  /* ----- Mensajes de resultado (propuesta «Avisos y confirmaciones», aprobada por Liber el 2026-10-17) -----
-     Un icono por familia, para que el color nunca sea la única señal. Los iconos son los del estándar (sprite del
-     núcleo) más dos propios (candado y cierre), que se agregan aquí. */
-  const ICONO_TONO = { ok: 'palomita', pend: 'alerta', error: 'cerrar', marcha: 'reloj', cerrado: 'fin', info: 'info' };
+  /* ----- Avisos, etiquetas de estado y «qué sigue»: del estándar desde la 1.4.0 y la 1.4.1 (P115, P118, P119) -----
+     El proyecto sólo traduce sus tonos a las familias del estándar y arma el marcado del contrato cuando la página no
+     carga el núcleo («Mis trámites», el inicio) o cuando un aviso lleva pasos. La confirmación es FormKit.confirma
+     (módulo modal, P113) y el desenlace de una decisión, FormKit.resultado (módulo resultado, P113). */
+  // Tono del proyecto → familia del estándar: hecho, te toca actuar, en marcha, cerrado sin éxito, terminado
+  const FAMILIA = { ok: 'ok', pend: 'atencion', marcha: 'proceso', error: 'rechazo', cerrado: 'terminado' };
+  const ICONO_FAMILIA = { ok: 'ok', atencion: 'alerta', proceso: 'reloj', rechazo: 'error', terminado: 'archivo' };
+  const familia = (tono) => FAMILIA[tono] || (ICONO_FAMILIA[tono] ? tono : 'terminado');
   function icono(nombre, clase) {
     const ns = 'http://www.w3.org/2000/svg';
     const s = document.createElementNS(ns, 'svg');
@@ -229,22 +233,21 @@
     s.appendChild(u);
     return s;
   }
-  /* Etiqueta de estado: texto + icono de su familia (o el que se indique) */
-  function estado(texto, tono, nombreIcono) {
-    const n = nombreIcono || ICONO_TONO[tono];
-    return el('span', { class: 'estado', 'data-tono': tono || null }, [n ? icono(n, 'icono icono-estado') : null, document.createTextNode(texto)]);
+  /* Etiqueta de estado del módulo «estado»: <span class="estado estado-proceso">; el icono lo pone el módulo */
+  function estado(texto, tono) {
+    const f = familia(tono);
+    const s = el('span', { class: `estado estado-${f}` }, [document.createTextNode(texto)]);
+    if (global.FormKit && global.FormKit.estado) return global.FormKit.estado(s, { tono: f });
+    s.prepend(icono(ICONO_FAMILIA[f], 'icono icono-sm'));
+    return s;
   }
   /* Etiqueta del estado de una solicitud; para el personal, con su nombre de personal */
   function estadoSolicitud(s, paraPersonal) {
     const e = ESTADOS[s.estado] || { texto: s.estado, tono: '' };
-    return estado(paraPersonal ? e.personal || e.texto : e.texto, e.tono, e.icono);
+    return estado(paraPersonal ? e.personal || e.texto : e.texto, e.tono);
   }
-  /* Aviso con título: tono ok (hecho), error (no se pudo), pend (atención), info. Devuelve el elemento. */
-  const CLASE_AVISO = { ok: 'aviso-ok', error: 'aviso-bloqueo', pend: 'aviso-advertencia', info: '' };
-  const ICONO_AVISO = { ok: 'ok', error: 'error', pend: 'alerta', info: 'info' };
-  /* «Qué sigue» en pasos numerados (Liber, 2026-10-17): cuando lo que sigue son varias acciones en orden, van en una
-     lista numerada, no encadenadas en un párrafo. Recibe un texto, una lista de pasos o { texto, pasos, titulo };
-     el texto dice el hecho y los pasos, en orden, quién hace qué. Hallazgo P119. */
+  /* «Qué sigue» (P119): cuando lo que sigue son varias acciones en orden, van en la secuencia del núcleo
+     (<ol class="secuencia">), no encadenadas en un párrafo. Recibe un texto, una lista de pasos o { texto, pasos }. */
   function sigueEn(x) {
     if (!x) return [];
     if (typeof x === 'string') return [el('p', { texto: x })];
@@ -252,80 +255,39 @@
     const pasos = (o.pasos || []).filter(Boolean);
     return [
       o.texto ? el('p', { texto: o.texto }) : null,
-      pasos.length ? el('p', { class: 'sigue-titulo', texto: o.titulo || 'Qué sigue' }) : null,
-      pasos.length ? el('ol', { class: 'sigue-pasos' }, pasos.map((t) => el('li', { class: 'sigue-paso', texto: t }))) : null
+      pasos.length ? el('p', { class: 'secuencia-titulo', texto: o.titulo || 'Qué sigue' }) : null,
+      pasos.length ? el('ol', { class: 'secuencia' }, pasos.map((t) => el('li', { class: 'secuencia-item', texto: t }))) : null
     ].filter(Boolean);
   }
+  /* Aviso del núcleo (P115): tono del proyecto → tono del estándar, título en <strong class="aviso-titulo">, icono del
+     tono. Devuelve el elemento, con el marcado del contrato, para las páginas sin núcleo y los avisos con pasos. */
+  const TONO_AVISO = { ok: 'ok', error: 'bloqueo', pend: 'advertencia', info: 'neutro', marcha: 'neutro' };
+  const CLASE_AVISO = { ok: 'aviso-ok', bloqueo: 'aviso-bloqueo', advertencia: 'aviso-advertencia', neutro: '' };
+  const ICONO_AVISO = { ok: 'ok', bloqueo: 'error', advertencia: 'alerta', neutro: 'info' };
   function aviso(tono, titulo, texto, extra) {
-    return el('div', { class: `aviso ${CLASE_AVISO[tono] || ''}`.trim(), 'data-aviso': tono }, [
-      icono(ICONO_AVISO[tono] || 'info'),
-      el('div', { class: 'aviso-texto' }, [titulo ? el('p', { class: 'aviso-titulo', texto: titulo }) : null].concat(sigueEn(texto), extra || []))
+    const t = TONO_AVISO[tono] || tono;
+    return el('div', { class: `aviso ${CLASE_AVISO[t] || ''}`.trim() }, [
+      icono(ICONO_AVISO[t] || 'info'),
+      el('div', { class: 'aviso-texto' }, [titulo ? el('strong', { class: 'aviso-titulo', texto: titulo }) : null].concat(sigueEn(texto), extra || []))
     ]);
   }
-  /* Pinta un aviso en un contenedor existente (lo crea dentro si hace falta), lo muestra y, si se pide, le da el foco */
+  /* Pinta un aviso en un contenedor: FormKit.aviso cuando es sólo texto; con pasos, el marcado del contrato */
   function pintaAviso(contenedor, tono, titulo, texto, enfoca) {
+    const t = TONO_AVISO[tono] || tono;
+    contenedor.hidden = false;
+    if (global.FormKit && global.FormKit.aviso && (typeof texto === 'string' || !texto)) {
+      contenedor.replaceChildren();
+      return global.FormKit.aviso(contenedor, { tono: t, titulo, texto: texto || '', foco: Boolean(enfoca) });
+    }
     const a = aviso(tono, titulo, texto);
-    a.setAttribute('role', tono === 'error' ? 'alert' : 'status');
+    if (t === 'bloqueo') a.setAttribute('role', 'alert'); else if (t === 'ok') a.setAttribute('role', 'status');
     a.tabIndex = -1;
     contenedor.replaceChildren(a);
-    contenedor.hidden = false;
-    if (enfoca) { a.focus({ preventScroll: true }); a.scrollIntoView({ block: 'nearest' }); }
+    if (enfoca) a.focus();
     return a;
   }
-  /* Resultado de una decisión: «Quedó guardado» (lo hizo el sistema) y, en el título, el desenlace del trámite con su
-     color e icono. seccion: la tarjeta [data-hecho] con [data-hecho-titulo] y [data-hecho-texto]. */
   /* Hora de la base (time: «09:00:00») como se escribe y se elige: «09:00» (auditoría de tareas, A5) */
   const hhmm = (t) => (t ? String(t).slice(0, 5) : '');
-  const horaCorta = (d) => d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
-  function pintaDesenlace(seccion, { tono, titulo, texto, pasos, cita, quien, icono: nombreIcono }) {
-    seccion.classList.add('desenlace');
-    seccion.dataset.tono = tono;
-    let guardado = seccion.querySelector('[data-desenlace-guardado]');
-    if (!guardado) { guardado = el('p', { class: 'desenlace-guardado', 'data-desenlace-guardado': '' }); seccion.prepend(guardado); }
-    guardado.replaceChildren(icono('ok'), document.createTextNode(`Quedó guardado a las ${horaCorta(new Date())}${quien ? ` · ${quien}` : ''}`));
-    const t = seccion.querySelector('[data-hecho-titulo]');
-    if (t) t.replaceChildren(el('span', { class: 'desenlace-marca' }, [icono(nombreIcono || ICONO_TONO[tono] || 'info')]), document.createTextNode(titulo));
-    const p = seccion.querySelector('[data-hecho-texto]');
-    if (p && texto !== undefined) { p.textContent = texto; p.hidden = !texto; }
-    const pasosPrevios = seccion.querySelector('[data-desenlace-pasos]');
-    if (pasosPrevios) pasosPrevios.remove();
-    if (pasos && pasos.length && p) p.after(el('div', { class: 'desenlace-pasos', 'data-desenlace-pasos': '' }, sigueEn({ pasos })));
-    const previa = seccion.querySelector('[data-desenlace-cita]');
-    if (previa) previa.remove();
-    if (cita && t) t.after(el('blockquote', { class: 'desenlace-cita', 'data-desenlace-cita': '', texto: cita }));
-    seccion.hidden = false;
-    seccion.focus();
-    seccion.scrollIntoView({ block: 'start' });
-  }
-  /* Confirmar antes de actuar (sustituye a FormKit.confirma mientras el estándar no lo trae, hallazgo P113): pregunta
-     con lo que se afecta, consecuencias en lista y en texto normal, «No se puede deshacer» con icono, botón con el
-     verbo exacto (rojo relleno si es de peligro) y «Volver sin cambios», que recibe el foco. */
-  function confirma(ancla, cfg) {
-    return new Promise((resolve) => {
-      const d = el('dialog', { class: 'dialogo dialogo-confirma confirmacion', role: 'alertdialog' });
-      const idT = `conf-t-${Date.now()}`;
-      d.setAttribute('aria-labelledby', idT);
-      const no = el('button', { type: 'button', class: 'btn btn-secundario', 'data-r': 'no', texto: cfg.no || 'Volver sin cambios' });
-      const si = el('button', { type: 'button', class: `btn ${cfg.peligro ? 'btn-peligro' : 'btn-primario'}`, 'data-r': 'si', texto: cfg.si });
-      const lista = (cfg.consecuencias || []).filter(Boolean);
-      // Sin nulos: append(null) escribe «null» en la ventana (auditoría integral, 2026-10-17)
-      d.append(...[
-        el('div', { class: 'confirmacion-cabeza' }, [el('span', { class: 'desenlace-marca', 'data-tono': cfg.peligro ? 'error' : 'info' }, [icono(cfg.peligro ? 'alerta' : 'info')]),
-          el('h2', { class: 'titulo-bloque dialogo-titulo', id: idT, texto: cfg.titulo })]),
-        lista.length ? el('ul', { class: 'confirmacion-lista' }, lista.map((c) => el('li', { texto: c }))) : null,
-        cfg.irreversible ? el('p', { class: 'confirmacion-irreversible' }, [icono('alerta'), document.createTextNode('No se puede deshacer.')]) : null,
-        el('div', { class: 'acciones dialogo-acciones' }, [no, si])
-      ].filter(Boolean));
-      document.body.appendChild(d);
-      const termina = (ok) => { if (d.open) d.close(); d.remove(); if (ancla && ancla.focus) ancla.focus(); resolve(ok); };
-      no.addEventListener('click', () => termina(false));
-      si.addEventListener('click', () => termina(true));
-      d.addEventListener('cancel', (e) => { e.preventDefault(); termina(false); });
-      d.showModal();
-      no.focus();
-      if (global.FormKit) global.FormKit.anuncia(`${cfg.titulo} ${lista.join(' ')}${cfg.irreversible ? ' No se puede deshacer.' : ''}`, true);
-    });
-  }
   /* Pares [etiqueta, valor, porConfirmar]: con el tercero, el valor se marca en amarillo (.pendiente del estándar)
      con lo que falta confirmar; así se ve en cualquier versión hasta que la Secretaría lo confirme. */
   function datosLista(pares) {
@@ -406,7 +368,7 @@
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, aviso, pintaAviso, pintaDesenlace, confirma, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
+    el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));

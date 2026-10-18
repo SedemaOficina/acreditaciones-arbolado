@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="formkit/modulos/fecha/fecha.css">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css">
 <link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
 <link rel="stylesheet" href="app/apd.css?v=0.41">
 </head>
 <body>
@@ -106,10 +107,11 @@
     </form>
   </section>
 
-  <dialog class="dialogo confirmacion" id="dlg-baja" aria-labelledby="t-baja">
+  <dialog class="dialogo dialogo-confirma" id="dlg-baja" aria-labelledby="t-baja">
     <form id="baja" data-formkit="manual" action="#" method="post">
-      <div class="confirmacion-cabeza"><span class="desenlace-marca" data-tono="error"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg></span><h2 class="titulo-bloque dialogo-titulo" id="t-baja" data-baja-titulo>¿Dar de baja del grupo?</h2></div>
-      <ul class="confirmacion-lista" data-baja-de></ul>
+      <h2 class="titulo-bloque dialogo-titulo" id="t-baja" data-baja-titulo>¿Dar de baja del grupo?</h2>
+      <p class="dialogo-consecuencias-titulo">Qué pasará:</p>
+      <ul class="dialogo-consecuencias" data-baja-de></ul>
       <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué la persona sale del grupo (apd.inscripcion.motivo_baja).">
         <label class="etiqueta" for="motivo-baja">Motivo</label>
         <p class="ayuda" id="ay-motivo-baja">Por qué sale del grupo, en una frase. Queda registrado en el sistema. Ejemplo: Pidió cambiar de fecha por trabajo.</p>
@@ -124,11 +126,12 @@
     </form>
   </dialog>
 
-  <dialog class="dialogo confirmacion" id="dlg-cancelar" aria-labelledby="t-cancelar">
+  <dialog class="dialogo dialogo-confirma" id="dlg-cancelar" aria-labelledby="t-cancelar">
     <form id="cancelar" data-formkit="manual" action="#" method="post">
-      <div class="confirmacion-cabeza"><span class="desenlace-marca" data-tono="error"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg></span><h2 class="titulo-bloque dialogo-titulo" id="t-cancelar" data-cancelar-titulo>¿Cancelar el grupo?</h2></div>
-      <ul class="confirmacion-lista" data-cancelar-de></ul>
-      <p class="confirmacion-irreversible"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>No se puede deshacer.</p>
+      <h2 class="titulo-bloque dialogo-titulo" id="t-cancelar" data-cancelar-titulo>¿Cancelar el grupo?</h2>
+      <p class="dialogo-consecuencias-titulo">Qué pasará:</p>
+      <ul class="dialogo-consecuencias" data-cancelar-de></ul>
+      <p class="dialogo-irreversible"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>No se puede deshacer.</p>
       <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué se cancela el grupo (apd.grupo.motivo_cancelacion).">
         <label class="etiqueta" for="motivo-cancelar">Motivo</label>
         <p class="ayuda" id="ay-motivo-cancelar">Por qué se cancela, en una frase. Queda registrado en el sistema. Ejemplo: No se reunió el cupo mínimo en el plazo previsto.</p>
@@ -161,6 +164,7 @@
 <script src="formkit/modulos/tabla/tabla.js"></script>
 <script src="formkit/modulos/modal/modal.js"></script>
 <script src="formkit/modulos/fecha/fecha.js"></script>
+<script src="formkit/modulos/estado/estado.js"></script>
 <script src="app/grupo.js?v=0.41"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.41"></script>

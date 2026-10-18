@@ -33,8 +33,8 @@
     con_observaciones: { boton: 'Regresar con observaciones', clase: 'btn-primario' },
     otra_cita: { boton: 'Darle otra cita', clase: 'btn-primario' },
     no_se_presento: { boton: 'Registrar la inasistencia y la cita nueva', clase: 'btn-primario' },
-    cerrar: { boton: 'Cerrar la solicitud', clase: 'btn-peligro' },
-    no_es_la_persona: { boton: 'No atender y avisar a la Dirección', clase: 'btn-peligro' },
+    cerrar: { boton: 'Cerrar la solicitud', clase: 'btn-peligro-contorno' },
+    no_es_la_persona: { boton: 'No atender y avisar a la Dirección', clase: 'btn-peligro-contorno' },
     '': { boton: 'Registrar la cita', clase: 'btn-primario' }
   };
 
@@ -221,7 +221,7 @@
       const boton = $('[data-accion="enviar"]', form);
       if (boton.getAttribute('aria-busy') !== 'true') boton.textContent = r.boton;
       boton.classList.toggle('btn-primario', r.clase === 'btn-primario');
-      boton.classList.toggle('btn-peligro', r.clase === 'btn-peligro');
+      boton.classList.toggle('btn-peligro-contorno', r.clase === 'btn-peligro-contorno');
     }
 
     /* Ver documento: en el visor, con todas sus hojas; el que se ve queda señalado en la lista */
@@ -281,34 +281,31 @@
       },
       alEnviar({ resultado, d }) {
         const cita = d.cita_fecha ? `${fecha(d.cita_fecha)} a las ${d.cita_hora}` : '';
-        // Resultado de la cita (propuesta «Avisos y confirmaciones», 2026-10-17): el desenlace en el título, con su color
-        // [tono, título, texto, pasos]: lo que sigue en varias acciones va en pasos numerados (Liber, 2026-10-17)
+        // Resultado de la cita con el módulo «resultado» del estándar (1.4.0, P113): [familia, título, texto, pasos]; lo
+        // que sigue en varias acciones va en la secuencia «Qué sigue» (P119)
         const curso = `${APD.TIPOS[s.tipo_acreditacion].toLowerCase()} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
         const HECHO = {
-          terminado: ['ok', `Cotejo terminado: expediente físico ${expediente}`, `${nombre} ya ve su número de expediente en «Mis trámites».`, [
+          terminado: ['ok', `Cotejo terminado: expediente físico ${expediente}`, `Número de expediente: ${expediente}. ${nombre} ya lo ve en «Mis trámites».`, [
             `${p.numero_expediente ? 'Agregue esta solicitud al expediente físico' : 'Abra el expediente físico'} de ${nombre} con el número ${expediente}.`,
             `Asígnele un grupo del curso de ${curso}: ya aparece en «Grupos», entre las personas en espera.`,
             'Al confirmar el grupo, la persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.']],
-          pausa: ['marcha', 'En pausa: espera el documento correcto', `${nombre} ya ve en «Mis trámites» qué no coincidió.`, [
+          pausa: ['proceso', 'En pausa: espera el documento correcto', `${nombre} ya ve en «Mis trámites» qué no coincidió.`, [
             `${nombre} carga el documento correcto desde «Mis trámites».`,
             'Cuando regrese, búsquela en las citas del día.',
             'Retome el cotejo: sólo se coteja el documento que no coincidió.']],
-          con_observaciones: ['pend', 'Regresa con observaciones', `${nombre} ya ve en «Mis trámites» qué no coincidió.`, [
+          con_observaciones: ['atencion', 'Regresa con observaciones', `${nombre} ya ve en «Mis trámites» qué no coincidió.`, [
             `${nombre} corrige y reenvía su solicitud.`,
             'La solicitud aparece de nuevo en «Revisión documental», marcada como reenviada.']],
-          otra_cita: ['pend', `Sin pago: cita nueva el ${cita}`, `${nombre} la ve en «Mis trámites», con los mismos datos para pagar.`],
-          no_se_presento: ['pend', `No se presentó: cita nueva el ${cita}`, `${nombre} la ve en «Mis trámites». Si tampoco se presenta, la solicitud se cierra.`],
-          cerrar: ['error', 'Solicitud cerrada: no se presentó por segunda vez', `${nombre} ve en «Mis trámites» que su solicitud se cerró. Puede iniciar una solicitud nueva.`],
-          no_es_la_persona: ['error', 'No se atendió: la cuenta quedó bloqueada', `${nombre} no puede entrar a su cuenta hasta que se aclare su identidad. Se avisa a la Dirección.`]
+          otra_cita: ['atencion', `Sin pago: cita nueva el ${cita}`, `${nombre} la ve en «Mis trámites», con los mismos datos para pagar.`],
+          no_se_presento: ['atencion', `No se presentó: cita nueva el ${cita}`, `${nombre} la ve en «Mis trámites». Si tampoco se presenta, la solicitud se cierra.`],
+          cerrar: ['rechazo', 'Solicitud cerrada: no se presentó por segunda vez', `${nombre} ve en «Mis trámites» que su solicitud se cerró. Puede iniciar una solicitud nueva.`],
+          no_es_la_persona: ['rechazo', 'No se atendió: la cuenta quedó bloqueada', `${nombre} no puede entrar a su cuenta hasta que se aclare su identidad. Se avisa a la Dirección.`]
         };
         const [tono, titulo, texto, pasos] = HECHO[resultado];
         form.hidden = true;
         // Lo de la cita que ya no es cierto se quita (el aviso de pausa no queda encima del resultado)
         $('[data-retoma]').hidden = true;
         $('[data-antecedente]').hidden = true;
-        $('[data-hecho-datos]').replaceChildren(resultado === 'terminado' ? datosLista([['Número de expediente', expediente]]) : document.createTextNode(''));
-        if (resultado === 'terminado') { const v = $('[data-hecho-datos] .datos-valor'); if (v) v.classList.add('mono'); }
-        if (resultado === 'no_es_la_persona') $('[data-hecho-texto]').after(el('p', { class: 'pendiente', texto: 'Pendiente (P79): a quién de la Dirección se avisa y por qué medio.' }));
         // La siguiente cita del mismo día que falta atender
         APD.cargar().then((nuevos) => {
           const dia = P.diaDe(s.cita_en);
@@ -318,8 +315,9 @@
         });
         const visor = $('[data-visor]');
         if (visor && visor.open) visor.close();
-        $('[data-estado]').replaceChildren(APD.estado({ ok: 'Atendida', marcha: 'En pausa', pend: 'Cita nueva', error: 'Cerrada' }[tono], tono));
-        APD.pintaDesenlace($('[data-hecho]'), { tono, titulo, texto, pasos, quien: P.REVISORA.nombre, icono: resultado === 'no_es_la_persona' ? 'candado' : undefined });
+        $('[data-estado]').replaceChildren(APD.estado({ ok: 'Atendida', proceso: 'En pausa', atencion: 'Cita nueva', rechazo: 'Cerrada' }[tono], tono));
+        FormKit.resultado($('[data-hecho]'), { tono, titulo, texto, pasos, quien: P.REVISORA.nombre });
+        if (resultado === 'no_es_la_persona') $('[data-hecho] [data-resultado-acciones]').before(el('p', { class: 'pendiente', texto: 'Pendiente (P79): a quién de la Dirección se avisa y por qué medio.' }));
       }
     });
 
@@ -335,7 +333,7 @@
         no_es_la_persona: { titulo: `¿No atender a ${nombre}?`, si: 'Sí, no atender y bloquear la cuenta',
           consecuencias: ['La cuenta queda bloqueada: la persona no podrá entrar hasta que se aclare su identidad.', 'Se avisa a la Dirección con su nota.'] }
       }[resultado];
-      APD.confirma(boton, Object.assign({ peligro: true, irreversible: resultado === 'cerrar' }, CONFIRMA)).then((si) => { if (si) enviar(); });
+      FormKit.confirma(boton, Object.assign({ peligro: true, irreversible: resultado === 'cerrar' }, CONFIRMA)).then((si) => { if (si) enviar(); });
       return true;
     };
 

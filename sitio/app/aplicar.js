@@ -202,7 +202,7 @@
         G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); });
       } else if (b.dataset.accion === 'reponer') {
         const r = codigoDe(f.inscripcion.id);
-        APD.confirma(b, { titulo: `¿Reponer el código de ${nombre}?`,
+        FormKit.confirma(b, { titulo: `¿Reponer el código de ${nombre}?`,
           consecuencias: [`El código ${r.codigo} deja de servir.`, 'El examen sigue igual con el código nuevo: mismas preguntas, respuestas guardadas y el tiempo que le quede.'],
           si: 'Sí, reponer el código' })
           .then((si) => { if (si) API.reponer(r.codigo, INSTRUCTOR.usuario).then((nuevo) => { recientes[f.inscripcion.id] = Date.now(); pinta(true); FormKit.anuncia(`Código nuevo de ${nombre}: ${nuevo.codigo.split('').join(' ')}.`); }); });

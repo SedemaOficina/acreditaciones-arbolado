@@ -106,7 +106,7 @@ function revisaEnPagina() {
   if (de.scrollWidth > window.innerWidth + 1) r.desborde = `${de.scrollWidth}px de ancho en una ventana de ${window.innerWidth}px`;
   // Texto recortado: contenedor con overflow oculto cuyo contenido es más ancho o alto que la caja
   for (const el of document.querySelectorAll('body *')) {
-    if (!visible(el) || el.closest('.solo-lector,.contexto-resumen,svg,[data-visor-hojas],.tabla-marco,.visor-hojas')) continue;
+    if (!visible(el) || el.closest('.solo-lector,svg,[data-visor-hojas],.tabla-marco,.visor-hojas')) continue;
     const cs = getComputedStyle(el);
     if (/hidden|clip/.test(cs.overflowX + cs.overflowY) && el.textContent.trim() && !el.matches('textarea,input,select,img,canvas')
       && (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2) && cs.textOverflow !== 'ellipsis') {
@@ -131,7 +131,7 @@ function revisaEnPagina() {
   const fijo = (el) => { for (let x = el; x && x !== document.body; x = x.parentElement) { const p = getComputedStyle(x).position; if (p === 'fixed' || p === 'sticky') return true; } return false; };
   const hojas = [];
   for (const el of document.querySelectorAll('body *')) {
-    if (!visible(el) || el.closest('.solo-lector,.contexto-resumen,svg,canvas,[data-visor-hojas],select,option')) continue;
+    if (!visible(el) || el.closest('.solo-lector,svg,canvas,[data-visor-hojas],select,option')) continue;
     const propio = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
     if (!(propio || el.matches('input:not([type=hidden]),select,textarea,button,img,svg.icono'))) continue;
     if (el.matches('svg.icono') && el.closest('button,a,label')) continue;

@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="formkit/css/nucleo.css">
 <link rel="stylesheet" href="formkit/modulos/archivos/archivos.css">
 <link rel="stylesheet" href="formkit/modulos/version/version.css">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css">
+<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css">
 <link rel="stylesheet" href="app/apd.css?v=0.41">
 </head>
 <body>
@@ -183,12 +185,13 @@
     </div>
   </form>
 
-  <section class="tarjeta" data-hecho hidden tabindex="-1" aria-labelledby="t-hecho">
-    <h2 class="titulo-paso" id="t-hecho" data-hecho-titulo>Listo: ya cargaste el documento</h2>
-    <p data-hecho-texto></p>
-    <p class="texto-gris">Versión de prueba: el archivo se guarda sólo en este navegador.</p>
-    <div class="acciones acciones-izq">
-      <a class="btn btn-secundario" href="tramites.html">Ir a Mis trámites</a>
+  <!-- Lo que pasó y qué sigue (módulo «resultado» del estándar, P113) -->
+  <section class="tarjeta resultado" data-hecho data-resultado hidden>
+    <div data-resultado-acciones>
+      <p class="texto-gris">Versión de prueba: el archivo se guarda sólo en este navegador.</p>
+      <div class="acciones acciones-izq">
+        <a class="btn btn-secundario" href="tramites.html">Ir a Mis trámites</a>
+      </div>
     </div>
   </section>
 </main>
@@ -207,6 +210,8 @@
 <script src="formkit/js/iconos.js"></script>
 <script src="formkit/js/formkit.core.js"></script>
 <script src="formkit/modulos/archivos/archivos.js"></script>
+<script src="formkit/modulos/estado/estado.js"></script>
+<script src="formkit/modulos/resultado/resultado.js"></script>
 <script src="app/corregir.js?v=0.41"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.41"></script>

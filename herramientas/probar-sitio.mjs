@@ -518,15 +518,15 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await page.goto(BASE + 'verificar.html');
   await page.fill('#numero', vigente.numero);
   await page.click('[data-accion="enviar"]');
-  await page.waitForSelector('[data-resultado]:not([hidden])');
-  comprueba((await page.getAttribute('[data-resultado]', 'data-tono')) === 'ok', t(`verificar: ${vigente.numero} vigente`));
+  await page.waitForSelector('[data-verificacion]:not([hidden])');
+  comprueba((await page.getAttribute('[data-verificacion]', 'data-tono')) === 'ok', t(`verificar: ${vigente.numero} vigente`));
   // Días para vencer, contados desde hoy (en la prueba, la fecha simulada) (decisión 2026-10-17)
   const faltan = Math.round((new Date(`${vigente.vence_en}T12:00:00-06:00`) - new Date(`${datos.fecha_corte}T12:00:00-06:00`)) / 86400000);
   const esperado = faltan > 1 ? `Faltan ${faltan.toLocaleString('es-MX')} días` : faltan === 1 ? 'Falta 1 día' : faltan === 0 ? 'Vence hoy' : `Venció hace ${-faltan}`;
-  comprueba((await page.textContent('[data-resultado]')).includes(esperado), t(`verificar: dice cuánto falta para vencer (${esperado})`));
+  comprueba((await page.textContent('[data-verificacion]')).includes(esperado), t(`verificar: dice cuánto falta para vencer (${esperado})`));
   await page.fill('#numero', noVigente.numero);
   await page.click('[data-accion="enviar"]');
-  await page.waitForFunction(() => document.querySelector('[data-resultado]').dataset.tono === 'error');
+  await page.waitForFunction(() => document.querySelector('[data-verificacion]').dataset.tono === 'error');
   bien(t(`verificar: ${noVigente.numero} no vigente (segunda consulta sin recargar)`));
   await captura(page, `09-verificar-${sufijo}`);
   await sinDesborde(page, t('verificar'));
@@ -872,16 +872,16 @@ async function recorridoGuardado(navegador) {
   comprueba((await page.textContent('[data-resumen]')).includes('EXP-'), t('el resultado anuncia el número de expediente que se abre'));
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-hecho]:not([hidden])');
-  const exp = (await page.textContent('[data-hecho-datos]')).match(/EXP-\d{4}-\d{4}/);
+  const exp = (await page.textContent('[data-hecho]')).match(/EXP-\d{4}-\d{4}/);
   comprueba(Boolean(exp), t(`el cotejo terminado muestra el expediente${exp ? ' ' + exp[0] : ''}`));
-  const pasos = await page.$$eval('[data-hecho] ol.sigue-pasos > li', (l) => l.map((x) => x.textContent));
+  const pasos = await page.$$eval('[data-hecho] ol.secuencia > li', (l) => l.map((x) => x.textContent));
   comprueba(pasos.length === 3 && /expediente físico/.test(pasos[0]) && /grupo/.test(pasos[1]) && /Qué sigue/.test(await page.textContent('[data-hecho]')),
     t('el cotejo terminado dice qué sigue en pasos numerados, no en un párrafo'));
   await page.goto(BASE + 'tramites.html');
   await page.waitForSelector('[data-solicitudes] .ficha');
   const lista = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
   comprueba(/En espera de grupo/.test(lista) && exp && lista.includes(exp[0]), t('la persona ve «En espera de grupo» y su número de expediente'));
-  comprueba(await page.locator('[data-solicitudes] .ficha', { hasText: folio }).locator('ol.sigue-pasos > li').count() === 3, t('«Mis trámites»: lo que sigue después del cotejo va en pasos numerados'));
+  comprueba(await page.locator('[data-solicitudes] .ficha', { hasText: folio }).locator('ol.secuencia > li').count() === 3, t('«Mis trámites»: lo que sigue después del cotejo va en pasos numerados'));
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-foto-estado] .estado');
   comprueba(/confirmada/i.test(await page.textContent('[data-foto-estado]')), t('en «Mi perfil» su fotografía queda confirmada'));
@@ -1092,8 +1092,9 @@ async function personal(navegador, ancho, alto, sufijo) {
   await page.focus('[data-accion="enviar"]');
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-hecho]:not([hidden])');
-  comprueba(/Validada: cita el/.test(await page.textContent('[data-hecho-titulo]')) && (await page.getAttribute('[data-hecho]', 'data-tono')) === 'ok' && /Quedó guardado/.test(await page.textContent('[data-hecho]')),
-    t('valida y asigna la cita: resultado en verde, con «Quedó guardado» (avisos y confirmaciones)'));
+  comprueba(/Validada: cita el/.test(await page.textContent('[data-hecho] .resultado-titulo')) && await page.$eval('[data-hecho]', (x) => x.classList.contains('resultado-ok'))
+    && /Quedó guardado a las \d{2}:\d{2} · /.test(await page.textContent('[data-hecho] .resultado-meta')),
+    t('valida y asigna la cita: resultado del estándar en verde, con «Quedó guardado a las HH:MM · quien»'));
 
   // Perfil que no cumple, opción C: el comprobante muestra otro grado → se observa el comprobante
   await page.goto(BASE + `revisar.html?folio=${noCumple.folio}`);
@@ -1116,7 +1117,8 @@ async function personal(navegador, ancho, alto, sufijo) {
   await page.click('[data-accion="enviar"]');
   await page.click('dialog [data-r="si"]');
   await page.waitForSelector('[data-hecho]:not([hidden])');
-  comprueba(/Rechazada/.test(await page.textContent('[data-hecho-titulo]')) && (await page.getAttribute('[data-hecho]', 'data-tono')) === 'error', t('rechaza al confirmar: resultado en rojo, distinto de la validación'));
+  comprueba(/Rechazada/.test(await page.textContent('[data-hecho] .resultado-titulo')) && await page.$eval('[data-hecho]', (x) => x.classList.contains('resultado-rechazo'))
+    && (await page.locator('[data-hecho] .resultado-motivo').count()) === 1, t('rechaza al confirmar: resultado en rojo con el motivo citado, distinto de la validación'));
 
   // Reenviada: vueltas anteriores y documento corregido
   await page.goto(BASE + `revisar.html?folio=${reenviada.folio}`);
@@ -1288,7 +1290,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.click('[data-acciones] button:has-text("Cancelar el grupo")');
   const dlg = await texto('#dlg-cancelar');
   comprueba(/¿Cancelar el grupo APD-G-\d{4}-\d{3}\?/.test(dlg) && /No se puede deshacer/.test(dlg) && /Volver sin cambios/.test(dlg) && /Sí, cancelar el grupo/.test(dlg)
-    && (await pg.$$eval('#dlg-cancelar .confirmacion-lista li', (l) => l.length)) > 0, t('cancelar: el diálogo nombra el grupo, lista las consecuencias y no repite «Cancelar» en sus dos botones'));
+    && (await pg.$$eval('#dlg-cancelar .dialogo-consecuencias li', (l) => l.length)) > 0, t('cancelar: el diálogo nombra el grupo, lista las consecuencias y no repite «Cancelar» en sus dos botones'));
   await captura(pg, `grupos-dialogo-cancelar-${sufijo}`);
   await pg.fill('#motivo-cancelar', 'No se reunió el cupo mínimo en el plazo previsto.');
   await pg.click('#cancelar [data-accion="enviar"]');
