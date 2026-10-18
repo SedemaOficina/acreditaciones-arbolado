@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.51 | 18/10/26, 11:51 a.m. | Asistencia: ✓ y ✗ en la tira, sin días por venir; recorrido de prueba de todos los días |
 | 0.50 | 18/10/26, 11:36 a.m. | Bloque 69: asistencia como lista del día (propuesta A) y ficha compacta |
 | 0.49 | 18/10/26, 11:04 a.m. | Bloque 68: material de estudio (página pública y pantalla del personal) |
 | 0.48 | 18/10/26, 10:29 a.m. | Bloque 67: renglones completos, chips sin partir y concentrado de asistencia |
