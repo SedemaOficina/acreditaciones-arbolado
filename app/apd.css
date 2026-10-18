@@ -356,7 +356,12 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 .asis-quien p { margin: 0; }
 .asis-nombre { font-weight: var(--peso-semi); font-size: var(--t-md); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
 .asis-puntos { display: flex; align-items: center; gap: var(--e-2); }
+.asis-historia { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); }
+.asis-tira { display: contents; }
 .asis-riesgo:empty { display: none; }
+/* La etiqueta de riesgo no se parte en dos renglones; en teléfono, si no cabe junto a la tira, baja completa */
+.asis-riesgo .estado { white-space: nowrap; font-size: var(--t-xs); }
+.asis-recorrido { margin-block-start: var(--e-4); }
 .asis-opciones { display: flex; gap: var(--e-2); margin: 0; padding: 0; border: 0; min-width: 0; }
 .asis-opcion { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: var(--objetivo-min); min-height: var(--objetivo-min); padding-inline: var(--e-3); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto); font-weight: var(--peso-semi); font-size: var(--t-md); cursor: pointer; }
 .asis-opcion-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
