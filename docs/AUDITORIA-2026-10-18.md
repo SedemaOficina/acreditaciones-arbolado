@@ -59,10 +59,10 @@ formulario del material.
    conservó; el primer día del curso también pasó a dd/mm/aaaa; un solo esquema del servidor para el material;
    revisión, cotejo y asistencia avisan antes de salir pero no guardan borrador.
 
-**Fallas del estándar (rodeadas en el proyecto, para el documento de fallas):** palabras partidas en tablas
-(`overflow-wrap:anywhere`), etiqueta de estado que no se parte en modo tarjeta, acuse con fecha larga y reloj de 12
-horas (P128), «Hoja 1 de 2» repetido en el visor, rótulos de tabla en negritas oscuras, y el borrador automático
-(`data-borrador`) que guarda también lo que llena la página y no admite archivos.
+**Fallas del estándar (rodeadas en el proyecto cuando se pudo; anotadas en el documento de fallas):** palabras partidas
+en tablas (P145), etiqueta de estado que no se parte en modo tarjeta (P126), acuse con fecha larga y reloj de 12 horas
+(P128), «Hoja 1 de 2» repetido en el visor (P146), rótulos de tabla en negritas oscuras (P147) y el borrador automático
+(`data-borrador`) que guarda también lo que llena la página y no admite archivos (P148).
 
 **Aceptado como está:** en la corrección, la página lleva el foco al paso de documentos al abrir, así que «Ir al
 contenido» no es lo primero del teclado; el botón «Menú de pruebas» (sólo en la prueba) puede quedar sobre el pie del

@@ -714,6 +714,38 @@
       "titulo": "«Pago de derechos» → «cuota»",
       "recomendacion": "Sistema: textos, catálogo y base.",
       "lineamientos": "Anteproyecto 0.4: Cap. VII."
+    },
+    {
+      "id": "P145",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Hallazgo del estándar: la tabla parte palabras dentro de botones, folios y fechas",
+      "recomendacion": "El módulo tabla pone overflow-wrap: anywhere en .tabla-valor; en computadora la columna se encoge hasta partir «Revisa / r», «Abr / ir» o «10/10/20 / 26» (solicitudes por revisar, grupos). Solución provisional: app/apd.css pone overflow-wrap: break-word en .tabla-bandeja .tabla-valor desde 760 px y white-space: nowrap en .mono, .btn y .btn-enlace dentro de la tabla. Propuesta para el estándar: break-word en lugar de anywhere, nowrap para botones, etiquetas y folios dentro de la tabla, y columna de acciones con width: 1%."
+    },
+    {
+      "id": "P146",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Hallazgo del estándar: el visor repite «Hoja 1 de 2»",
+      "recomendacion": "El visor de PDF muestra el número de hoja arriba y otra vez debajo de la hoja (revisión documental y cotejo, en teléfono). Sin solución provisional. Propuesta: dejar uno solo, el de la barra del visor."
+    },
+    {
+      "id": "P147",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Hallazgo del estándar: los rótulos de la tabla en teléfono van en negritas oscuras",
+      "recomendacion": "En modo tarjeta, el rótulo de cada celda va en negritas y tinta oscura, y en el bloque «Revisa antes de enviar» sobre fondo gris; en las fichas del resto del sistema el rótulo va en gris, peso normal, y el dato destaca. Sin solución provisional. Propuesta: unificar con la ficha (rótulo gris, peso normal, dato a la derecha)."
+    },
+    {
+      "id": "P148",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Hallazgo del estándar: el borrador automático (data-borrador) guarda lo que llena la página y no admite archivos",
+      "recomendacion": "El borrador del núcleo escucha también los eventos que lanza la página al precargar datos (por ejemplo, al continuar una solicitud), así que guarda como «capturado por la persona» lo que no tocó; y no conserva los archivos cargados. Solución provisional: la solicitud escribe su propio borrador sólo con cambios de la persona (event.isTrusted) y guarda los documentos en el almacén de la prueba; usa del núcleo la restauración (ctx.restauraBorrador) y la franja (data-franja-borrador). Propuesta: ignorar eventos no confiables y permitir que el proyecto registre un proveedor para los archivos."
     }
   ],
   "resueltos": [
