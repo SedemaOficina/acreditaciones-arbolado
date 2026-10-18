@@ -591,6 +591,14 @@
       "desde": "2026-10-18",
       "titulo": "Teléfono, correo y horario de la Secretaría para aclaraciones del trámite",
       "recomendacion": "Ninguna pantalla de la persona da un medio de contacto, y varias la mandan a «acudir a la Secretaría» (activar una cuenta del registro anterior cuyo nombre no coincide, cuenta bloqueada, dudas del pago). Hace falta el teléfono, el correo y el horario de atención que se publicarán, para ponerlos en «Mis trámites», «Crea tu cuenta» y «Entrar» (auditoría integral, alta 7)."
+    },
+    {
+      "id": "P133",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "¿Se puede dictaminar con la acreditación de poda vencida?",
+      "recomendacion": "Hoy (R43, decisión de Liber) la acreditación de dictaminador técnico sigue vigente hasta su propia fecha aunque venza la de poda y derribo; la poda sólo se exige vigente al iniciar una solicitud de dictaminador (R05). La Dirección debe confirmar si los lineamientos permiten dictaminar sin poda vigente. Si no lo permiten, R43 cambia: al vencer la poda, la de dictaminador se suspende (la verificación pública diría «No vigente» y la persona lo vería en «Mis trámites»). Mientras, un dictaminador con la poda vencida debe renovar primero la de poda para poder renovar la de dictaminador; los avisos de vencimiento por correo (P121) deberían decirlo."
     }
   ],
   "resueltos": [
