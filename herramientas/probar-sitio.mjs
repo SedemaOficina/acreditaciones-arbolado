@@ -5,7 +5,7 @@
 //   · una pantalla no muestra lo que debe (acuse, estados, observaciones, resultado de verificación).
 //
 // Uso:  node herramientas/probar-sitio.mjs <url-base> [carpeta-de-capturas]
-//   p. ej. con el sitio servido localmente:  (cd sitio && python3 -m http.server 8765) &
+//   p. ej. con `npm run probar-sitio`, que sirve sitio/ mientras dura (herramientas/con-servidor.sh)
 //          node herramientas/probar-sitio.mjs http://localhost:8765/ verificacion/capturas
 // Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
 

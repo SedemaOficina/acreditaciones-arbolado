@@ -5,7 +5,7 @@
 //   · un camino no termina como debe: aprobar, no aprobar, tiempo agotado, suspensión, código repuesto,
 //     código inexistente o mal escrito, recarga a mitad del examen.
 //
-// Uso:  (cd sitio && python3 -m http.server 8765) &
+// Uso:  AXE=<ruta a axe.min.js> npm run probar-examen   (sirve sitio/ mientras dura, herramientas/con-servidor.sh), o con un servidor ya encendido:
 //       AXE=<ruta a axe.min.js> CHROMIUM=<ruta opcional> node herramientas/probar-examen.mjs http://localhost:8765/ [carpeta-de-capturas]
 
 import { chromium } from 'playwright';

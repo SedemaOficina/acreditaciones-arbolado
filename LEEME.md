@@ -78,8 +78,7 @@ con `openpyxl`.
 git clone --depth 1 https://github.com/SedemaOficina/estandares-sia ../estandares-sia
 npm run construir-sitio -- ../estandares-sia/formularios   # copia el estándar, la versión, los ficticios y genera los documentos
 npm run probar-esquemas -- ../estandares-sia/formularios   # esquemas del servidor y su validación con validar.mjs
-(cd sitio && python3 -m http.server 8765) &         # cualquier servidor estático
-AXE=../estandares-sia/formularios/vendor/axe-core/axe.min.js npm run probar-sitio   # teléfono y escritorio, consola, accesibilidad, capturas
+AXE=../estandares-sia/formularios/vendor/axe-core/axe.min.js npm run probar-sitio   # sirve sitio/ en el puerto 8765 mientras dura (herramientas/con-servidor.sh); teléfono y escritorio, consola, accesibilidad, capturas
 AXE=../estandares-sia/formularios/vendor/axe-core/axe.min.js npm run probar-examen  # examen en línea: aplicar.html y examen.html, de punta a punta
 npm run auditar                                     # todas las pantallas en teléfono y escritorio: consola, enlaces, encimados, objetivos táctiles, botones
 npm run volumen                                     # pantallas del personal con volumen real (sitio servido)
