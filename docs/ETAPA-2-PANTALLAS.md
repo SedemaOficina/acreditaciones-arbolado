@@ -5,6 +5,9 @@ sitio con sus pruebas (decisiones del 2026-10-16). Acceso simulado mientras no h
 
 ## 1. Pantallas
 
+Pantallas del personal «para computadora» (decisión 2026-10-17): se diseñan y revisan primero en escritorio; en teléfono
+sólo se cuida que funcionen. La asistencia y el examen se cuidan en los dos tamaños.
+
 | Pantalla | Archivo | Qué hace |
 |---|---|---|
 | Solicitudes por revisar | `sitio/revision.html` · `app/revision.js` | Bandeja de las solicitudes enviadas, de la que más espera a la más reciente. Búsqueda por nombre, CURP, folio de la solicitud o número de expediente; filtros por acreditación, nueva o renovación y vuelta de revisión (plegados en teléfono bajo «Filtrar»). Señala carrera por clasificar, perfil que podría no cumplir y documentos corregidos |

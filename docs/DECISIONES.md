@@ -20,6 +20,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-15 | Las preguntas de opción se muestran como lista, una opción por renglón y con el botón de opción visible (variante `opciones-lista` del estándar), en lugar de tarjetas en rejilla, que confundían. Aplica a todo el sistema, también al Sí/No. Se eligió entre cuatro estilos | Liber Saltijeral |
 | 2026-10-15 | Los documentos que carga la persona se aceptan sólo en PDF (antes también JPG y PNG). Las fotografías siguen siendo imagen. A quien tenga una foto del documento se le sugiere convertirla con el escáner de su teléfono | Liber Saltijeral |
 | 2026-10-15 | El requisito de la CURP y el campo de CURP de la cuenta llevan el enlace oficial para obtenerla: https://www.gob.mx/curp/ | Liber Saltijeral |
+| 2026-10-17 | **Pantallas del personal «para computadora»**: revisión documental, citas, cotejo, grupos, espera, grupo y aplicar el examen se diseñan y se revisan primero en escritorio; en teléfono sólo se cuida que funcionen (sin desborde, todo alcanzable), sin pulir su apariencia. No se bloquea el teléfono: una computadora con la pantalla ampliada se ve igual de angosta y el estándar pide que todo funcione en ambos. Siguen cuidadas en los dos tamaños: todas las pantallas de la persona solicitante, el examen y la asistencia (el instructor la captura en el aula) | Liber Saltijeral |
 
 ## Cuentas
 

@@ -838,4 +838,6 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   escritorio, sin errores ni tablas ensanchadas.
 - Pruebas: `probar-sitio.mjs` 534 de 534 con axe; `probar-examen.mjs` 63 de 63; `probar-volumen.mjs` 50 de 50;
   esquemas sin errores; `probar-base` 162; auditor de CSS sin hallazgos; `auditar-campos` 171 campos.
+- Liber aceptó declarar las pantallas del personal «para computadora»: primero escritorio; en teléfono sólo que funcionen
+  (DECISIONES, Alcance). No se bloquea el teléfono. Asistencia, examen y todas las pantallas de la persona se cuidan en ambos.
 
