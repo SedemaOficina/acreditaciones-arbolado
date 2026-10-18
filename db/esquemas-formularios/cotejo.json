@@ -1,6 +1,6 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-18T00:57:17.794Z",
+  "generado": "2026-10-18T07:04:16.759Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
@@ -230,7 +230,7 @@
       ]
     },
     "coincide_identificacion_oficial": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Identificación oficial",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -263,7 +263,7 @@
       ]
     },
     "diferencia_identificacion_oficial": {
-      "etiqueta": "¿Qué no coincide? · Identificación oficial",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -302,7 +302,7 @@
       ]
     },
     "coincide_curp": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Clave Única de Registro de Población (CURP)",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -335,7 +335,7 @@
       ]
     },
     "diferencia_curp": {
-      "etiqueta": "¿Qué no coincide? · Clave Única de Registro de Población (CURP)",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -374,7 +374,7 @@
       ]
     },
     "coincide_comprobante_domicilio": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Comprobante de domicilio",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -407,7 +407,7 @@
       ]
     },
     "diferencia_comprobante_domicilio": {
-      "etiqueta": "¿Qué no coincide? · Comprobante de domicilio",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -446,7 +446,7 @@
       ]
     },
     "coincide_constancia_situacion_fiscal": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Constancia de situación fiscal",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -479,7 +479,7 @@
       ]
     },
     "diferencia_constancia_situacion_fiscal": {
-      "etiqueta": "¿Qué no coincide? · Constancia de situación fiscal",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -518,7 +518,7 @@
       ]
     },
     "coincide_comprobante_estudios": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Comprobante de estudios",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -551,7 +551,7 @@
       ]
     },
     "diferencia_comprobante_estudios": {
-      "etiqueta": "¿Qué no coincide? · Comprobante de estudios",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -590,7 +590,7 @@
       ]
     },
     "coincide_curriculum_vitae": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Currículum vitae",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -623,7 +623,7 @@
       ]
     },
     "diferencia_curriculum_vitae": {
-      "etiqueta": "¿Qué no coincide? · Currículum vitae",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -662,7 +662,7 @@
       ]
     },
     "coincide_comprobantes_experiencia": {
-      "etiqueta": "¿Coincide con el que trae la persona? · Comprobantes de experiencia",
+      "etiqueta": "¿Coincide con el que trae la persona?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -695,7 +695,7 @@
       ]
     },
     "diferencia_comprobantes_experiencia": {
-      "etiqueta": "¿Qué no coincide? · Comprobantes de experiencia",
+      "etiqueta": "¿Qué no coincide?",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",

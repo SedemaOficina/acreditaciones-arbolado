@@ -132,7 +132,7 @@ La revisión es un formulario del estándar que arranca a mano (`data-formkit="m
 datos calculados (`<input type="hidden" data-auxiliar>` del estándar 1.1.0): `perfil_revision`, `revisar_<requisito>`
 (documento cargado y sin rechazo por perfil) y `resultado`; el servidor los calcula con `validaPayload(…, { auxiliares })`.
 Los motivos frecuentes de cada observación son `data-chips-fijos` (módulo `chips`, P65). Los textos del estándar se
-ven en usted (`app/config-usted.js`). Los siete bloques de documentos se
+ven en usted (`app/mensajes-usted.js`, todos en `mensajes` desde la 1.3.2). Los siete bloques de documentos se
 generan del catálogo de requisitos en `herramientas/construir-sitio.mjs` (marcadores `revision-documentos` y
 `revision-auxiliares`). Módulos del estándar: `opciones`, `modal` (`FormKit.confirma` para rechazar), `chips`, `visor` y `tabla`
 (bandeja). El esquema del servidor es `db/esquemas-formularios/revisar.json`; `herramientas/probar-esquemas.mjs` lo

@@ -74,18 +74,9 @@
         el('td', {}, [el('a', { class: 'btn btn-secundario btn-chico', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `${abrir} el grupo ${g.folio}`, texto: abrir })])
       ]);
     }));
-    // En teléfono cada celda muestra su encabezado (data-etiqueta). El módulo tabla del estándar lo hace sólo cuando la
-    // página tiene un formulario que lo inicie; esta no tiene (hallazgo P110): se pone aquí igual que el módulo.
-    const ths = Array.from(document.querySelectorAll('[data-tabla] thead th'));
-    for (const tr of document.querySelectorAll('[data-filas] tr')) {
-      Array.from(tr.children).forEach((td, i) => {
-        if (!ths[i]) return;
-        const visible = ths[i].cloneNode(true);
-        for (const s of visible.querySelectorAll('.solo-lector')) s.remove();
-        td.dataset.etiqueta = ths[i].textContent.trim();
-        if (!visible.textContent.trim()) td.dataset.etiquetaOculta = '';
-      });
-    }
+    // En teléfono cada celda muestra su encabezado: desde la 1.3.4 el módulo tabla se inicia solo (aun sin formulario) y
+    // con «formkit:tabla» vuelve a leer las filas que se pintaron (P110)
+    $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
     const activos = todos.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado)).length;
     $('[data-cuenta]').textContent = `${plural(todos.length, 'grupo', 'grupos')}: ${plural(activos, 'activo', 'activos')} (por confirmar, confirmados o en curso).`;
   }).catch(() => {

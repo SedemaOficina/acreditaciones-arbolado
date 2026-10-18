@@ -1240,6 +1240,8 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.click('#confirmar [data-accion="enviar"]');
   await pg.waitForTimeout(300);
   comprueba(!/hecho=confirmado/.test(pg.url()) && (await pg.getAttribute('#fecha_inicio', 'aria-invalid')) === 'true', t('confirmar con menos de 7 días de anticipación marca el error junto a la fecha'));
+  const msjFecha = await pg.evaluate(() => { const c = document.querySelector('[data-campo="fecha_inicio"] .error, [data-campo="fecha_inicio"] [id^="err-"]'); return c ? c.textContent : ''; });
+  comprueba(/anterior al \d{2}\/\d{2}\/\d{4}/.test(msjFecha) && !/\b(Escribe|Revisa|Elige)\b/.test(msjFecha), t(`el límite de la fecha se dice en día/mes/año y en usted («${msjFecha.trim()}»)`));
   await captura(pg, `grupos-confirmar-error-${sufijo}`);
   await pg.fill('#fecha_inicio', fechaMas(12));
   await pg.click('#confirmar [data-accion="enviar"]');

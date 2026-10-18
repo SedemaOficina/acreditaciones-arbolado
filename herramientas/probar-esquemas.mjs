@@ -20,6 +20,11 @@ const { validaPayload } = await import(pathToFileURL(join(estandar, 'codigo/serv
 // regla del perfil del dictaminador (mínimo de experiencia, limitesSegun).
 await import(pathToFileURL(join(raiz, 'sitio/app/codigo-examen.js')).href);
 await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
+// Textos de usted de las pantallas del personal (desde la 1.3.2 todos viven en «mensajes», P95): el servidor los recibe
+// igual, con validaPayload(…, { mensajes })
+await import(pathToFileURL(join(raiz, 'sitio/app/mensajes-usted.js')).href);
+const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar']);
+let ultimo = null;
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
 const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
 
@@ -42,13 +47,15 @@ for (const parte of ['contacto', 'adscripcion', 'foto']) {
   esquema[`perfil-${parte}`] = JSON.parse(readFileSync(join(salida, `perfil-${parte}.json`), 'utf8'));
 }
 rmSync(join(salida, 'datos.json'), { force: true });
-// Examen en línea: el formulario de la persona (entrar con su código) y el de quien aplica (suspender un examen).
-// Se toma sólo el formulario: la herramienta del estándar lee como parte del último campo un control que está fuera
-// del formulario (la casilla «Marcarla para revisar» de examen.html la volvía «casilla»; hallazgo P90).
-// Grupos (bloque 53): crear un grupo (específico o combinado), confirmarlo, dar de baja y cancelar. La base revisa además
-// cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
-for (const [archivo, id, nombre] of [['examen.html', 'entrar', 'examen-entrar'], ['aplicar.html', 'suspender', 'examen-suspender'],
-  ['espera.html', 'crear', 'grupo-crear'], ['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar']]) {
+// Examen en línea (entrar con su código; suspender un examen) y crear un grupo: páginas de un solo formulario, que la
+// herramienta del estándar lee completas (desde la 1.3.3 sólo cuenta lo que está dentro del <form>, P90).
+for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.html', 'examen-suspender'], ['espera.html', 'grupo-crear']]) {
+  execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', archivo), join(salida, `${nombre}.json`)]);
+  esquema[nombre] = JSON.parse(readFileSync(join(salida, `${nombre}.json`), 'utf8'));
+}
+// Un grupo (bloque 53): confirmar, dar de baja y cancelar están en la misma página; se toma cada formulario por su id. La
+// base revisa además cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
+for (const [archivo, id, nombre] of [['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar']]) {
   const m = readFileSync(join(raiz, 'sitio', archivo), 'utf8').match(new RegExp(`<form id="${id}"[\\s\\S]*?</form>`));
   const html = join(temporal, `${nombre}.html`);
   writeFileSync(html, `<!DOCTYPE html><html lang="es-MX"><body>${m[0]}</body></html>`);
@@ -126,7 +133,9 @@ function caso(nombre, form, datos, espera, archivos = []) {
   const ctx = Object.fromEntries(Object.entries(datos).filter(([k]) => k.startsWith('_')));
   const recibido = Object.fromEntries(Object.entries(datos).filter(([k, v]) => !k.startsWith('_') && v !== undefined
     && !(esquema[form].campos[k] && esquema[form].campos[k].tipo === 'archivos')));
-  const r = validaPayload({ datos: recibido, archivos, meta }, esquema[form], { config, catalogos, auxiliares: auxiliaresDe(form, ctx), limitesSegun });
+  const r = validaPayload({ datos: recibido, archivos, meta }, esquema[form], { config, catalogos, auxiliares: auxiliaresDe(form, ctx), limitesSegun,
+    mensajes: PERSONAL.has(form) ? globalThis.APD_MENSAJES_USTED : undefined });
+  ultimo = r;
   const campos = r.errores.map((e) => e.campo);
   const ok = espera === true ? r.ok : !r.ok && espera.every((c) => campos.includes(c)) && campos.every((c) => espera.includes(c));
   console.log(`${ok ? 'BIEN' : 'MAL '}  ${nombre}${ok ? '' : ` → ${JSON.stringify([...new Set(campos)])}`}`);
@@ -238,6 +247,12 @@ const llega = { _cargados: PODA, se_presento: 'si', identidad: 'misma' };
 caso('Cotejo: todo coincide, pago y factura → terminado', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura }, true, conFactura);
 caso('Cotejo: terminado sin la factura ni sus datos se rechaza', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si' }, ['factura_pago', 'factura_rfc', 'factura_razon_social', 'factura_folio_fiscal']);
 caso('Cotejo: un folio fiscal mal escrito y un RFC que no existe se rechazan', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'XAXX019901000', factura_folio_fiscal: '6F1C2D3E-4A5B' }, ['factura_rfc', 'factura_folio_fiscal'], conFactura);
+{
+  const m = (ultimo.errores.find((e) => e.campo === 'factura_folio_fiscal') || {}).mensaje || '';
+  const ok = /Cópielo/.test(m) && !/Cópialo/.test(m);
+  console.log(`${ok ? 'BIEN' : 'MAL '}  Cotejo: el servidor responde el folio fiscal mal escrito en usted${ok ? '' : ` → ${m}`}`);
+  if (!ok) fallas++;
+}
 caso('Cotejo: el folio fiscal en minúsculas y sin guiones se acepta (se normaliza)', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_folio_fiscal: '6f1c2d3e4a5b4c6d8e7f9a0b1c2d3e4f' }, true, conFactura);
 caso('Cotejo: un documento sin cotejar se rechaza', 'cotejo', { ...llega, ...coinciden(PODA.slice(1)), pago: 'si', ...factura }, ['coincide_identificacion_oficial'], conFactura);
 caso('Cotejo: sin pago no se pide factura, pero sí la cita nueva', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'no' }, ['cita_fecha', 'cita_hora']);

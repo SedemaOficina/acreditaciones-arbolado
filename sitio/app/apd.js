@@ -394,13 +394,11 @@
   }
   const CORREO_EN_USO = 'Este correo ya está registrado en otra cuenta. Escribe otro; si es tuyo y no recuerdas esa cuenta, pide ayuda a la Secretaría.';
 
-  /* Avisa al núcleo que la página cambió el valor de un control (input y change, como al escribir). El combo del
-     estándar abre su lista con cualquier «input», también al llenar un borrador o un perfil sin que la persona esté en
-     el campo, y la lista tapa la pregunta siguiente (hallazgo P99): si el combo no tiene el foco, se cierra. */
+  /* Avisa al núcleo que la página cambió el valor de un control (input y change, como al escribir). Desde la 1.3.3 el
+     combo del estándar ya no abre su lista cuando la página llena el campo (P99). */
   function avisa(c) {
     c.dispatchEvent(new Event('input', { bubbles: true }));
     c.dispatchEvent(new Event('change', { bubbles: true }));
-    if (c.getAttribute('role') === 'combobox' && document.activeElement !== c) c.dispatchEvent(new Event('blur'));
   }
 
   global.APD = {
