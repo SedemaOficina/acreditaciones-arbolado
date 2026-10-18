@@ -325,3 +325,47 @@ body > main { flex: 1 0 auto; width: 100%; }
 .resultado-icono { width: var(--e-6); height: var(--e-6); flex: none; }
 .resultado[data-tono="ok"] .resultado-situacion { color: var(--ok-txt); }
 .resultado[data-tono="error"] .resultado-situacion { color: var(--error-txt); }
+/* «Qué sigue» en pasos numerados (Liber, 2026-10-17; hallazgo P119): la misma forma que la secuencia del acuse, más
+   compacta, para desenlaces, avisos y la ficha de «Mis trámites» */
+.pasos-titulo { margin: var(--e-3) 0 var(--e-2); font-family: var(--fuente-titulo); font-weight: var(--peso-fuerte); color: var(--texto); }
+.pasos { margin: 0; padding: 0; list-style: none; counter-reset: paso; display: grid; gap: var(--e-3); }
+.pasos-item { position: relative; min-height: var(--e-6); padding-inline-start: var(--e-8); counter-increment: paso; color: var(--texto); }
+.pasos-item::before {
+  content: counter(paso);
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: grid;
+  place-items: center;
+  width: var(--e-6);
+  height: var(--e-6);
+  border: var(--b-2) solid var(--guinda);
+  border-radius: var(--r-pill);
+  background: var(--guinda-cl);
+  font-family: var(--fuente-titulo);
+  font-size: var(--t-sm);
+  font-weight: var(--peso-fuerte);
+  color: var(--guinda);
+}
+.pasos-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset-block: calc(var(--e-6) + var(--b-2)) calc(var(--e-3) * -1 + var(--b-2));
+  inset-inline-start: calc(var(--e-3) - var(--b-1));
+  width: var(--b-2);
+  background: var(--dorado);
+}
+.desenlace-pasos { margin-block-end: var(--e-4); }
+/* «En espera» agrupada por adscripción (Liber, 2026-10-17): cada bloque abre con su adscripción, cuántas son, si
+   alcanzan para un grupo propio y una casilla para elegirlas a todas. En teléfono el título del bloque no es tarjeta */
+tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: none; border: 0; display: flex; align-items: center; gap: var(--e-2); }
+.fila-adscripcion td { padding: 0; border: 0; }
+.fila-adscripcion th { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); padding: 0; background: none; font-family: var(--fuente-cuerpo); font-weight: var(--peso-normal); color: var(--texto); }
+.adscripcion-nombre { font-family: var(--fuente-titulo); font-weight: var(--peso-fuerte); color: var(--guinda); }
+.adscripcion-cuenta { font-size: var(--t-sm); color: var(--gris); }
+@media (min-width: 760px) {
+  tr.fila-adscripcion { display: table-row; background: var(--blanco); }
+  .fila-adscripcion td { display: table-cell; padding: var(--e-4) var(--e-3) var(--e-2); border-top: var(--b-2) solid var(--guinda); }
+  .fila-adscripcion th { display: table-cell; padding: var(--e-4) var(--e-3) var(--e-2); border-top: var(--b-2) solid var(--guinda); }
+  .adscripcion-cuenta, .adscripcion-nombre { margin-inline-end: var(--e-3); }
+}

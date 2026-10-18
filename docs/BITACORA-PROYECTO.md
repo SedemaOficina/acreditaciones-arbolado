@@ -793,3 +793,21 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   P116 (el resumen de errores habla de «campos» y repite etiquetas sin contexto), P117 (`FormKit.anuncia` permite
   mensajes que no se ven) y P118 (no hay módulo de etiquetas de estado).
 
+## 2026-10-17 · Bloque 57 · «Qué sigue» en pasos; espera agrupada por adscripción
+
+- Liber: los cierres que encadenan varias acciones («Abra el expediente físico… El siguiente paso es asignarle un
+  grupo… La persona ve su número…») se leen mejor como pasos numerados. Nuevo `APD.sigueEn` (texto del hecho y lista
+  `ol.pasos` bajo «Qué sigue»), que usan `APD.aviso`, `APD.pintaDesenlace` (opción `pasos`) y la ficha de «Mis
+  trámites». Aplicado donde había dos o más acciones en orden (detalle en `docs/ETAPA-2-PANTALLAS.md`, §2d). En el
+  cotejo terminado se quitó el dato «Siguiente paso», que repetía el paso 2; con la cita sin pago, la ficha ya no repite
+  los pasos del aviso.
+- Liber: «En espera» agrupada por adscripción. Un bloque por adscripción con su cuenta, «Alcanza para un grupo propio»
+  o cuántas faltan, y una casilla para elegirlas a todas (marca intermedia si sólo algunas). La columna «Adscripción»
+  pasa a ser el título del bloque. En teléfono el título del bloque no es tarjeta.
+- Corrección: la espera salía en «-1 días» con solicitudes enviadas en el navegador, que llevan la fecha real (posterior
+  a la simulada). `APD_PERSONAL.espera` y `enEspera` ya no dan días negativos.
+- Pruebas: `probar-sitio.mjs` 534 de 534 con axe (8 nuevas: agrupación, cuenta por bloque, casilla del bloque, días no
+  negativos, pasos del cotejo terminado y de «Mis trámites»); `probar-examen.mjs` 63 de 63; esquemas sin errores; auditor
+  de CSS sin hallazgos; `auditar-campos` 171 campos en 18 archivos; `npm run auditar` sólo los dos encimados conocidos.
+- Hallazgo nuevo para el estándar: P119 (la secuencia numerada de «qué sigue» sólo existe dentro del acuse).
+

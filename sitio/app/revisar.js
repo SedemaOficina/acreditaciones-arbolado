@@ -289,7 +289,8 @@
           validada: { tono: 'ok', titulo: `Validada: cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
             texto: `${nombre} ya ve en «Mis trámites» su cita de cotejo en el ${APD.sede(datos).nombre} y los datos para pagar.` },
           con_observaciones: { tono: 'pend', titulo: `Con observaciones: ${observados === 1 ? '1 documento regresa' : `${observados} documentos regresan`} a la persona`,
-            texto: `${nombre} ve en «Mis trámites» qué debe corregir. Cuando reenvíe su solicitud, volverá a «Solicitudes por revisar», marcada como reenviada.` },
+            texto: `${nombre} ya ve en «Mis trámites» qué debe corregir.`,
+            pasos: [`${nombre} corrige y reenvía su solicitud.`, 'La solicitud vuelve a «Solicitudes por revisar», marcada como reenviada.'] },
           rechazada: { tono: 'error', titulo: 'Rechazada por perfil', cita: d.motivo_rechazo || '',
             texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` }
         }[resultado];

@@ -178,6 +178,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-17 | La fotografía de la cuenta tiene que verse clara: el día del examen, quien lo aplica la usa para confirmar que es la persona y tomarle asistencia. Así lo dice la ayuda en «Crea tu cuenta» y al cambiarla en «Mi perfil» | Liber Saltijeral |
 | 2026-10-17 | El sitio usa el Estándar de formularios del SIA 1.3.1 (`SedemaOficina/estandares-sia`, carpeta `formularios/`) y quita las soluciones provisionales que el estándar ya resolvió (P37–P47, P52, P56, P61, P65–P67, P70–P73, P81, P82, P86, P87) | Instrucción del proyecto |
 | 2026-10-17 | En las pantallas del personal los textos del estándar se ven en usted (`app/config-usted.js`, sin editar `formkit/`); en las de la persona solicitante, en tú, como el estándar | Instrucción del proyecto |
+| 2026-10-17 | La espera de un curso se muestra **agrupada por adscripción**: cada bloque dice cuántas personas son, si alcanzan para un grupo propio y permite elegirlas a todas. Los bloques van en el orden de quien más espera en cada uno; dentro, el mismo orden de antigüedad | Liber Saltijeral |
 
 ## Vigencia y renovación
 
@@ -210,6 +211,7 @@ resuelve en `app/apd.js` y `app/apd.css` y lo anota como hallazgo (P113 a P118).
 | 2026-10-17 | Etiquetas de estado en cinco familias, siempre con icono además del color: hecho (palomita), te toca actuar (alerta), en marcha (reloj), cerrado sin éxito (equis) y terminado (fin). Para la persona, la etiqueta dice qué hacer («Corrige y reenvía», «Acude a tu cita»); para el personal, la situación («Con observaciones», «Cita asignada») | Liber Saltijeral |
 | 2026-10-17 | «Mis trámites» muestra primero las solicitudes en curso y, arriba de su ficha, lo que cambió (cita nueva, grupo cancelado, observaciones) | Liber Saltijeral |
 | 2026-10-17 | El resumen de errores habla de respuestas y nombra el documento al que pertenece cada una («Para continuar, faltan 3 respuestas»), no de «campos» | Liber Saltijeral |
+| 2026-10-17 | Cuando lo que sigue son dos o más acciones en orden, va en **pasos numerados** bajo «Qué sigue», no encadenado en un párrafo: el texto dice el hecho y cada paso, quién hace qué (desenlaces del personal, avisos y «Mis trámites») | Liber Saltijeral |
 
 ## Lo que hay que corregir en los lineamientos
 

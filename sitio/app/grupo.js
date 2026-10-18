@@ -23,11 +23,13 @@
     const n = Number(params.get('n')) || 0;
     // [tono, título, texto]: aviso con título e icono (propuesta «Avisos y confirmaciones», 2026-10-17)
     const textos = {
-      creado: ['ok', `Grupo creado con ${plural(n, 'persona', 'personas')}`, 'Todavía no está confirmado: se confirma cuando tenga al menos el mínimo de personas, con su fecha, hora de entrada e instructor.'],
+      creado: ['ok', `Grupo creado con ${plural(n, 'persona', 'personas')}`, { texto: 'Todavía no está confirmado.', pasos: [
+        'Complete al menos el mínimo de personas.', 'Elija el primer día, la hora de entrada y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
       agregadas: ['ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`, ''],
       confirmado: ['ok', 'Grupo confirmado', 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.'],
       baja: ['ok', 'La persona salió del grupo', 'Regresó a la espera con su antigüedad.'],
-      baja_integracion: ['pend', 'El grupo dejó de estar confirmado', 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta: vuelva a confirmarlo cuando se complete.'],
+      baja_integracion: ['pend', 'El grupo dejó de estar confirmado', { texto: 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta.', pasos: [
+        'Agregue personas hasta completar el mínimo.', 'Vuelva a confirmar el grupo.'] }],
       cancelado: ['info', 'Grupo cancelado', 'Las personas regresaron a la espera con su antigüedad.']
     };
     if (!textos[hecho]) return;

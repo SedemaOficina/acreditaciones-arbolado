@@ -25,8 +25,8 @@
     $('#t-espera').textContent = `En espera · ${nombre}`;
     const alerta = APD.parametro(datos, 'dias_alerta_espera');
     $('[data-orden]').textContent = renov
-      ? `Por la fecha en que vence su acreditación, de la más próxima (o ya vencida) a la más lejana. Quien tiene la acreditación vencida no puede ejercerla mientras espera. Desde los ${alerta} días de espera se marca como prioritaria.`
-      : `De la que más espera a la más reciente; desde los ${alerta} días se marca como prioritaria.`;
+      ? `Agrupadas por adscripción; primero la de quien tiene la acreditación más próxima a vencer (o ya vencida). Dentro de cada adscripción, por la fecha en que vence, de la más próxima a la más lejana. Quien tiene la acreditación vencida no puede ejercerla mientras espera. Desde los ${alerta} días de espera se marca como prioritaria.`
+      : `Agrupadas por adscripción; primero la de quien más espera. Dentro de cada adscripción, de la que más espera a la más reciente; desde los ${alerta} días se marca como prioritaria.`;
     $('[data-leyenda]').textContent = `Personas en espera de grupo de ${nombre.toLowerCase()}`;
 
     const lista = P.enEspera(datos, tipo, modalidad);
@@ -35,24 +35,69 @@
       ? `${plural(lista.length, 'persona en espera', 'personas en espera')}${prioritarias ? ` · ${plural(prioritarias, 'prioritaria', 'prioritarias')}` : ''}.`
       : 'Nadie espera grupo en este curso.';
 
-    // Encabezado: en renovación, cuándo vence la acreditación que se renueva
-    $('[data-encabezado]').replaceChildren(...['Elegir', 'Persona', 'Folio de la solicitud', 'Adscripción', ...(renov ? ['Vence'] : []), 'Espera']
+    // Encabezado: en renovación, cuándo vence la acreditación que se renueva. La adscripción ya no es columna: es el
+    // título de cada bloque
+    const columnas = ['Elegir', 'Persona', 'Folio de la solicitud', ...(renov ? ['Vence'] : []), 'Espera'];
+    $('[data-encabezado]').replaceChildren(...columnas
       .map((t, i) => el('th', { scope: 'col' }, i === 0 ? [el('span', { class: 'solo-lector', texto: t })] : [document.createTextNode(t)])));
-    const filas = lista.map((x) => {
-      const quien = APD.nombreCompleto(x.p);
-      const casilla = el('input', { class: 'casilla-input', type: 'checkbox', value: x.s.folio, 'aria-label': `Elegir a ${quien}` });
-      const espera = `${x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`}${x.prioritaria ? ' · prioritaria' : ''}`;
-      const tr = el('tr', { 'data-folio': x.s.folio }, [
-        el('td', {}, [el('label', { class: 'elegir' }, [casilla])]),
-        el('td', { texto: quien }),
-        el('td', {}, [el('span', { class: 'mono', texto: x.s.folio })]),
-        el('td', { texto: x.organizacion }),
-        ...(renov ? [el('td', {}, [x.vence ? estado(`${fecha(x.vence)}${x.vencida ? ' · vencida' : ''}`, x.vencida ? 'error' : 'marcha', x.vencida ? undefined : 'fecha') : document.createTextNode('')])] : []),
-        el('td', {}, [estado(espera, x.prioritaria ? 'pend' : 'marcha')])
+
+    /* Agrupadas por adscripción (Liber, 2026-10-17): un grupo de una organización se arma con su propia gente, así que
+       cada bloque dice cuántas son y si alcanzan para un grupo propio, y permite elegirlas a todas. Los bloques van en
+       el orden de quien más espera en cada uno (la lista ya viene así); dentro, el mismo orden. Independientes y
+       adscripciones sin organización registrada sólo pueden ir a un grupo combinado. */
+    const bloques = [];
+    for (const x of lista) {
+      const clave = x.s.organizacion_id || `sin:${x.organizacion}`;
+      let b = bloques.find((y) => y.clave === clave);
+      if (!b) { b = { clave, nombre: x.organizacion, propia: Boolean(x.s.organizacion_id), xs: [] }; bloques.push(b); }
+      b.xs.push(x);
+    }
+    const filas = [];
+    const cuerpos = bloques.map((b, k) => {
+      const n = b.xs.length;
+      const idT = `adsc-${k}`;
+      const todas = el('input', { class: 'casilla-input', type: 'checkbox', 'aria-label': n === 1 ? `Elegir a la persona de ${b.nombre}` : `Elegir a las ${n} personas de ${b.nombre}` });
+      const falta = c.cupo_minimo - n;
+      const van = n === 1 ? 'va' : 'van';
+      const situacion = !b.propia ? el('span', { class: 'texto-gris', texto: `${n === 1 ? 'Va' : 'Van'} a un grupo combinado` })
+        : falta <= 0 ? estado('Alcanza para un grupo propio', 'ok')
+          : el('span', { class: 'texto-gris', texto: `${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para un grupo propio de ${c.cupo_minimo}; o ${van} a un grupo combinado` });
+      const cabeza = el('tr', { class: 'fila-adscripcion', 'data-adscripcion': b.clave }, [
+        el('td', {}, [el('label', { class: 'elegir' }, [todas])]),
+        el('th', { scope: 'rowgroup', colspan: String(columnas.length - 1), id: idT }, [
+          el('span', { class: 'adscripcion-nombre', texto: b.nombre }),
+          el('span', { class: 'adscripcion-cuenta', texto: plural(n, 'persona', 'personas') }),
+          situacion
+        ])
       ]);
-      return { x, tr, casilla };
+      const propias = b.xs.map((x) => {
+        const quien = APD.nombreCompleto(x.p);
+        const casilla = el('input', { class: 'casilla-input', type: 'checkbox', value: x.s.folio, 'aria-label': `Elegir a ${quien}` });
+        const espera = `${x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`}${x.prioritaria ? ' · prioritaria' : ''}`;
+        const tr = el('tr', { 'data-folio': x.s.folio }, [
+          el('td', {}, [el('label', { class: 'elegir' }, [casilla])]),
+          el('td', { texto: quien }),
+          el('td', {}, [el('span', { class: 'mono', texto: x.s.folio })]),
+          ...(renov ? [el('td', {}, [x.vence ? estado(`${fecha(x.vence)}${x.vencida ? ' · vencida' : ''}`, x.vencida ? 'error' : 'marcha', x.vencida ? undefined : 'fecha') : document.createTextNode('')])] : []),
+          el('td', {}, [estado(espera, x.prioritaria ? 'pend' : 'marcha')])
+        ]);
+        return { x, tr, casilla };
+      });
+      filas.push(...propias);
+      // La casilla del bloque elige o quita a todas; refleja si están todas, ninguna o algunas
+      const refleja = () => {
+        const m = propias.filter((f) => f.casilla.checked).length;
+        todas.checked = m === n;
+        todas.indeterminate = m > 0 && m < n;
+      };
+      todas.addEventListener('change', () => {
+        for (const f of propias) f.casilla.checked = todas.checked;
+        propias[0].casilla.dispatchEvent(new Event('change'));
+      });
+      for (const f of propias) f.casilla.addEventListener('change', refleja);
+      return el('tbody', { class: 'bloque-adscripcion', 'aria-labelledby': idT }, [cabeza, ...propias.map((f) => f.tr)]);
     });
-    $('[data-filas]').replaceChildren(...filas.map((f) => f.tr));
+    $('[data-filas]').replaceWith(...(cuerpos.length ? cuerpos : [el('tbody', { 'data-filas': '' })]));
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
 
     /* Grupos de este curso que reciben personas; si se llegó desde un grupo, sólo ése */

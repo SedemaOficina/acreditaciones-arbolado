@@ -23,8 +23,8 @@
     borrador: { texto: 'Borrador', tono: 'pend', sigue: 'Termina de cargar tus documentos y envía tu solicitud.' },
     enviada: { texto: 'En revisión documental', tono: 'marcha', sigue: 'La Secretaría hace la revisión documental de tu solicitud: revisa que tus documentos estén completos y correctos.' },
     con_observaciones: { texto: 'Corrige y reenvía', personal: 'Con observaciones', tono: 'pend', sigue: 'Corrige lo que se indica abajo y vuelve a enviar tu solicitud.' },
-    validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', icono: 'fecha', sigue: 'Acude a tu cita con los mismos documentos que cargaste, impresos, y con tu comprobante de pago.' },
-    lista_para_curso: { texto: 'En espera de grupo', tono: 'marcha', sigue: 'Tu cotejo terminó. El siguiente paso es que la Secretaría te asigne un grupo del curso; te avisará las fechas y la sede.' },
+    validada_en_linea: { texto: 'Acude a tu cita', personal: 'Cita asignada', tono: 'pend', icono: 'fecha', sigue: { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', 'Acude a tu cita con tus documentos y tu comprobante.'] } },
+    lista_para_curso: { texto: 'En espera de grupo', tono: 'marcha', sigue: { texto: 'Tu cotejo terminó.', pasos: ['La Secretaría te asigna un grupo del curso.', 'Te avisa las fechas, la hora de entrada y la sede.', 'Asistes al curso y, el último día, presentas el examen.'] } },
     inscrita: { texto: 'Con grupo asignado', tono: 'ok', sigue: 'Asiste a tu curso en las fechas indicadas.' },
     aprobada: { texto: 'Aprobada', tono: 'ok', sigue: 'La Secretaría emite tu acreditación.' },
     acreditada: { texto: 'Acreditación emitida', tono: 'ok', sigue: 'Recoge tu acreditación en persona.' },
@@ -242,10 +242,24 @@
   /* Aviso con título: tono ok (hecho), error (no se pudo), pend (atención), info. Devuelve el elemento. */
   const CLASE_AVISO = { ok: 'aviso-ok', error: 'aviso-bloqueo', pend: 'aviso-advertencia', info: '' };
   const ICONO_AVISO = { ok: 'ok', error: 'error', pend: 'alerta', info: 'info' };
+  /* «Qué sigue» en pasos numerados (Liber, 2026-10-17): cuando lo que sigue son varias acciones en orden, van en una
+     lista numerada, no encadenadas en un párrafo. Recibe un texto, una lista de pasos o { texto, pasos, titulo };
+     el texto dice el hecho y los pasos, en orden, quién hace qué. Hallazgo P119. */
+  function sigueEn(x) {
+    if (!x) return [];
+    if (typeof x === 'string') return [el('p', { texto: x })];
+    const o = Array.isArray(x) ? { pasos: x } : x;
+    const pasos = (o.pasos || []).filter(Boolean);
+    return [
+      o.texto ? el('p', { texto: o.texto }) : null,
+      pasos.length ? el('p', { class: 'pasos-titulo', texto: o.titulo || 'Qué sigue' }) : null,
+      pasos.length ? el('ol', { class: 'pasos' }, pasos.map((t) => el('li', { class: 'pasos-item', texto: t }))) : null
+    ].filter(Boolean);
+  }
   function aviso(tono, titulo, texto, extra) {
     return el('div', { class: `aviso ${CLASE_AVISO[tono] || ''}`.trim(), 'data-aviso': tono }, [
       icono(ICONO_AVISO[tono] || 'info'),
-      el('div', { class: 'aviso-texto' }, [titulo ? el('p', { class: 'aviso-titulo', texto: titulo }) : null, texto ? el('p', { texto }) : null].concat(extra || []))
+      el('div', { class: 'aviso-texto' }, [titulo ? el('p', { class: 'aviso-titulo', texto: titulo }) : null].concat(sigueEn(texto), extra || []))
     ]);
   }
   /* Pinta un aviso en un contenedor existente (lo crea dentro si hace falta), lo muestra y, si se pide, le da el foco */
@@ -261,7 +275,7 @@
   /* Resultado de una decisión: «Quedó guardado» (lo hizo el sistema) y, en el título, el desenlace del trámite con su
      color e icono. seccion: la tarjeta [data-hecho] con [data-hecho-titulo] y [data-hecho-texto]. */
   const horaCorta = (d) => d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
-  function pintaDesenlace(seccion, { tono, titulo, texto, cita, quien, icono: nombreIcono }) {
+  function pintaDesenlace(seccion, { tono, titulo, texto, pasos, cita, quien, icono: nombreIcono }) {
     seccion.classList.add('desenlace');
     seccion.dataset.tono = tono;
     let guardado = seccion.querySelector('[data-desenlace-guardado]');
@@ -270,7 +284,10 @@
     const t = seccion.querySelector('[data-hecho-titulo]');
     if (t) t.replaceChildren(el('span', { class: 'desenlace-marca' }, [icono(nombreIcono || ICONO_TONO[tono] || 'info')]), document.createTextNode(titulo));
     const p = seccion.querySelector('[data-hecho-texto]');
-    if (p && texto !== undefined) p.textContent = texto;
+    if (p && texto !== undefined) { p.textContent = texto; p.hidden = !texto; }
+    const pasosPrevios = seccion.querySelector('[data-desenlace-pasos]');
+    if (pasosPrevios) pasosPrevios.remove();
+    if (pasos && pasos.length && p) p.after(el('div', { class: 'desenlace-pasos', 'data-desenlace-pasos': '' }, sigueEn({ pasos })));
     const previa = seccion.querySelector('[data-desenlace-cita]');
     if (previa) previa.remove();
     if (cita && t) t.after(el('blockquote', { class: 'desenlace-cita', 'data-desenlace-cita': '', texto: cita }));
@@ -388,7 +405,7 @@
     cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, estado, estadoSolicitud, nombrePersonal, icono, aviso, pintaAviso, pintaDesenlace, confirma, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
+    el, estado, estadoSolicitud, nombrePersonal, sigueEn, icono, aviso, pintaAviso, pintaDesenlace, confirma, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa
   };
 }(window));

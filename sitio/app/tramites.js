@@ -108,8 +108,8 @@
       const vigentes = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && pausa.docs.includes(d.requisito));
       const cargados = vigentes.filter((d) => d.cargado_real && d.cargado_real > pausa.real);
       sigue = cargados.length === pausa.docs.length
-        ? `Ya cargaste el documento correcto. Regresa con la persona que te atiende en el ${lugar.nombre}, con el documento impreso, para terminar tu cotejo.`
-        : 'Tu cita de cotejo está en pausa: un documento no coincidió con el que cargaste. Consíguelo hoy, cárgalo aquí y regresa con la persona que te atiende.';
+        ? { texto: 'Ya cargaste el documento correcto.', pasos: ['Imprímelo.', `Regresa con la persona que te atiende en el ${lugar.nombre}.`, 'Ahí termina tu cotejo.'] }
+        : { texto: 'Tu cita de cotejo está en pausa: un documento no coincidió con el que cargaste.', pasos: ['Consigue hoy el documento correcto.', 'Cárgalo aquí, en «Mis trámites».', 'Regresa con la persona que te atiende, con el documento impreso.'] };
       if (cargados.length < pausa.docs.length) {
         extra.push(el('div', { class: 'aviso aviso-advertencia' }, [
           el('div', { class: 'aviso-texto' }, [
@@ -123,8 +123,10 @@
     // nueva por no presentarse o por no traer el comprobante de pago, observaciones del cotejo, grupo cancelado
     const cambio = [];
     if (s.estado === 'validada_en_linea' && s.cita_motivo && s.cita_anterior) {
+      // Sin pago, el aviso ya trae sus pasos; no se repiten abajo
+      if (s.cita_motivo === 'sin_pago') sigue = '';
       cambio.push(s.cita_motivo === 'sin_pago'
-        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', `Tu cita nueva es el ${fechaHora(s.cita_en)}. El monto es el mismo; lleva el comprobante impreso.`)
+        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', { texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}.`, pasos: ['Paga los derechos con los mismos datos: el monto es el mismo.', 'Imprime tu comprobante de pago.', 'Acude a tu cita nueva con el comprobante y tus documentos impresos.'] })
         : APD.aviso('pend', `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.`));
     }
     const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
@@ -160,13 +162,13 @@
         if (a.entregada_en) sigue = `La recogiste el ${fecha(a.entregada_en)}.`;
         else {
           const entrega = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
-          sigue = `Tu acreditación está lista desde el ${fecha(a.emitida_en)}. Recógela en persona con tu identificación oficial. Ahí te toman la fotografía que lleva tu credencial y, al recibirla, firmas el comprobante de recepción.`;
+          sigue = { texto: `Tu acreditación está lista desde el ${fecha(a.emitida_en)}.`, pasos: ['Recógela en persona, con tu identificación oficial.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
           pares.push(['Dónde recogerla', ...sedeTexto(lugar.nombre)]);
           extra.push(APD.limpia(entrega) ? el('p', { texto: APD.limpia(entrega) }) : el('p', { class: 'pendiente', texto: 'Pendiente: días y horario de entrega.' }));
         }
       }
     }
-    if (s.estado === 'aprobada') sigue = 'Aprobaste el examen. Recoge tu credencial hoy mismo, en la sede, antes de irte: ahí te toman la fotografía que lleva y firmas el comprobante de recepción.';
+    if (s.estado === 'aprobada') sigue = { texto: 'Aprobaste el examen.', pasos: ['Recoge tu credencial hoy mismo, en la sede, antes de irte.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
@@ -196,7 +198,7 @@
         etiqueta
       ]),
       ...cambio,
-      sigue ? el('p', { class: 'ficha-sigue', texto: sigue }) : null,
+      sigue ? (typeof sigue === 'string' ? el('p', { class: 'ficha-sigue', texto: sigue }) : el('div', { class: 'ficha-sigue' }, APD.sigueEn(sigue))) : null,
       ...extra,
       datosLista(pares),
       motivo,

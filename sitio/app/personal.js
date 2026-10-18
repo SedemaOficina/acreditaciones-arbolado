@@ -50,8 +50,10 @@
     const local = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
     return Math.round((d(local(hasta)) - d(local(desde))) / 86400000);
   }
+  /* Días de espera, nunca negativos: en la prueba, lo enviado en este navegador lleva la fecha real, que puede ser
+     posterior a la fecha simulada (se veía «-1 días») */
   function espera(desde, corte) {
-    const n = dias(desde, corte);
+    const n = Math.max(0, dias(desde, corte));
     return { n, texto: n === 0 ? 'Hoy' : n === 1 ? '1 día' : `${n} días`, tono: n >= UMBRAL.rojo ? 'error' : n >= UMBRAL.ambar ? 'pend' : '' };
   }
   const ORDINAL = ['', '1.ª', '2.ª', '3.ª', '4.ª', '5.ª', '6.ª'];
@@ -175,7 +177,7 @@
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const lista = datos.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === tipo && s.modalidad === modalidad).map((s) => {
       const desde = s.lista_para_curso_en || s.estado_desde;
-      const n = dias(desde, hoy);
+      const n = Math.max(0, dias(desde, hoy));
       const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
       const vence = ant ? ant.vence_en : null;
       return { s, p: persona[s.solicitante_id] || {}, organizacion: organizacionDe(datos, s), desde, dias: n, prioritaria: n >= alerta,

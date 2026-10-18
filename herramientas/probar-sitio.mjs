@@ -871,10 +871,14 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector('[data-hecho]:not([hidden])');
   const exp = (await page.textContent('[data-hecho-datos]')).match(/EXP-\d{4}-\d{4}/);
   comprueba(Boolean(exp), t(`el cotejo terminado muestra el expediente${exp ? ' ' + exp[0] : ''}`));
+  const pasos = await page.$$eval('[data-hecho] ol.pasos > li', (l) => l.map((x) => x.textContent));
+  comprueba(pasos.length === 3 && /expediente físico/.test(pasos[0]) && /grupo/.test(pasos[1]) && /Qué sigue/.test(await page.textContent('[data-hecho]')),
+    t('el cotejo terminado dice qué sigue en pasos numerados, no en un párrafo'));
   await page.goto(BASE + 'tramites.html');
   await page.waitForSelector('[data-solicitudes] .ficha');
   const lista = await page.locator('[data-solicitudes] .ficha', { hasText: folio }).textContent();
   comprueba(/En espera de grupo/.test(lista) && exp && lista.includes(exp[0]), t('la persona ve «En espera de grupo» y su número de expediente'));
+  comprueba(await page.locator('[data-solicitudes] .ficha', { hasText: folio }).locator('ol.pasos > li').count() === 3, t('«Mis trámites»: lo que sigue después del cotejo va en pasos numerados'));
   await page.goto(BASE + 'datos.html');
   await page.waitForSelector('[data-foto-estado] .estado');
   comprueba(/confirmada/i.test(await page.textContent('[data-foto-estado]')), t('en «Mi perfil» su fotografía queda confirmada'));
@@ -1199,12 +1203,25 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
 
   // Completar el grupo en integración con la persona que más espera
   await pg.goto(BASE + 'espera.html?curso=poda-nueva');
-  await pg.waitForSelector('[data-filas] tr');
-  const primero = await pg.getAttribute('[data-filas] tr:first-child', 'data-folio');
+  await pg.waitForSelector('.bloque-adscripcion tr[data-folio]');
+  const primero = await pg.getAttribute('.bloque-adscripcion tr[data-folio]', 'data-folio');
+  // Agrupada por adscripción: un bloque por adscripción, con cuántas son y si alcanzan para un grupo propio
+  const bloques = await pg.$$eval('.bloque-adscripcion', (bs) => bs.map((b) => ({ nombre: b.querySelector('.adscripcion-nombre').textContent,
+    n: b.querySelectorAll('tr[data-folio]').length, cuenta: b.querySelector('.adscripcion-cuenta').textContent })));
+  comprueba(bloques.length > 1 && new Set(bloques.map((b) => b.nombre)).size === bloques.length
+    && bloques.every((b) => b.cuenta === (b.n === 1 ? '1 persona' : `${b.n} personas`)), t('espera agrupada por adscripción, una vez cada una, con su cuenta'));
+  comprueba((await pg.$$eval('[data-tabla] .estado', (l) => l.map((e) => e.textContent))).every((x) => !/^\s*-\d/.test(x)), t('la espera nunca sale en días negativos'));
+  const varias = await pg.$('.bloque-adscripcion:has(tr[data-folio] + tr[data-folio])');
+  if (varias) {
+    await (await varias.$('.fila-adscripcion input')).check();
+    const marcadas = await varias.$$eval('tr[data-folio] input', (l) => l.every((i) => i.checked));
+    comprueba(marcadas && /personas elegidas/.test(await texto('[data-elegidas]')), t('la casilla de la adscripción elige a todas sus personas'));
+    await (await varias.$('.fila-adscripcion input')).uncheck();
+  }
   await pg.click(`[data-destinos] button:has-text("${integracion.folio}")`);
   comprueba(/No se agregó a nadie/.test(await texto('[data-error-eleccion]')) && await pg.evaluate(() => document.activeElement && document.activeElement.closest('[data-error-eleccion]') !== null)
     && (await pg.$$('.elegir.falta-marcar')).length > 0, t('sin elegir a nadie: el error sale junto a los botones, con el foco ahí, y se señalan las casillas'));
-  await pg.check('[data-filas] tr:first-child input');
+  await pg.check(`tr[data-folio="${primero}"] input`);
   await sinDesborde(pg, t('espera'));
   await captura(pg, `grupos-espera-${sufijo}`);
   await pg.click(`[data-destinos] button:has-text("${integracion.folio}")`);
@@ -1254,9 +1271,9 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
 
   // Crear un grupo combinado de renovación con toda la espera y cancelarlo
   await pg.goto(BASE + 'espera.html?curso=poda-renovacion');
-  await pg.waitForSelector('[data-filas] tr');
-  const enEspera = (await pg.$$('[data-filas] tr')).length;
-  for (const k of await pg.$$('[data-filas] input')) await k.check();
+  await pg.waitForSelector('.bloque-adscripcion tr[data-folio]');
+  const enEspera = (await pg.$$('.bloque-adscripcion tr[data-folio]')).length;
+  for (const k of await pg.$$('.bloque-adscripcion tr[data-folio] input')) await k.check();
   await pg.click('[data-destinos] button:has-text("Crear un grupo")');
   await pg.waitForSelector('dialog[open]');
   await pg.click('dialog[open] .btn-primario');
@@ -1272,8 +1289,8 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.click('#cancelar [data-accion="enviar"]');
   await pg.waitForURL(/hecho=cancelado/);
   await pg.goto(BASE + 'espera.html?curso=poda-renovacion');
-  await pg.waitForSelector('[data-filas] tr');
-  comprueba((await pg.$$('[data-filas] tr')).length === enEspera, t('al cancelar, las personas regresan a la espera'));
+  await pg.waitForSelector('.bloque-adscripcion tr[data-folio]');
+  comprueba((await pg.$$('.bloque-adscripcion tr[data-folio]')).length === enEspera, t('al cancelar, las personas regresan a la espera'));
 
   // Asistencia del instructor: no guarda con alguien sin marcar; guarda el día y avisa a quien ya no tiene derecho
   await pg.goto(BASE + 'asistencia.html');

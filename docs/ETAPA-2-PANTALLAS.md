@@ -80,6 +80,9 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
 - Asistencia: la captura el instructor, día por día, sólo de los días que ya ocurrieron; se corrige mientras el curso
   siga y no haya examen. El último día se registra al pasar lista en el salón de cómputo, no en el aula (P94, por
   decidir; opción recomendada), para no capturarlo dos veces.
+- «En espera» va agrupada por adscripción (decisión 2026-10-17): un bloque por organización, alcaldía o dependencia, y
+  otro de independientes, con cuántas son, si alcanzan para un grupo propio (sólo una organización registrada) y una
+  casilla para elegirlas a todas. Los días de espera nunca salen negativos.
 - Quién arma los grupos: P92 (hoy, el perfil de revisión y cotejo). Horarios: P91.
 - La base lo vuelve a aplicar: `apd.grupo_cambio`, `apd.inscripcion_alta`, `apd.inscripcion_cambio`, `apd.asistencia_captura`.
   En la prueba, lo hecho se guarda en el navegador («apd.personal.grupos») y `app/archivos-prueba.js` lo aplica como la base.
@@ -97,6 +100,10 @@ En el menú de pruebas, «Entrar como» → «Personal de la Secretaría» lleva
   filas que faltan.
 - Etiquetas por familia (`APD.estado`, `APD.estadoSolicitud`, `APD.nombrePersonal`) en todas las bandejas y fichas.
 - Examen: «Aprobaste» / «No aprobaste» con icono, calificación y mínimo; el aviso del último minuto se ve junto al reloj.
+- «Qué sigue» en pasos numerados (`APD.sigueEn`, `ol.pasos`) cuando son dos o más acciones en orden: cotejo terminado, en
+  pausa y con observaciones; revisión con observaciones; corregir; grupo creado y grupo que dejó de estar confirmado;
+  examen aprobado; y en «Mis trámites», cita asignada, cita sin pago, cita en pausa, espera de grupo, aprobada y
+  acreditación lista.
 
 ## 2 bis. Visor de documentos
 

@@ -655,6 +655,14 @@
       "desde": "2026-10-17",
       "titulo": "Hallazgo del estándar: no hay módulo de etiquetas de estado",
       "recomendacion": "Cada sistema inventa sus colores de estado; en éste había 9 tonos sin regla y algunas etiquetas sin icono, que dependían sólo del color. Solución provisional: APD.estado(texto, tono, icono) con cinco familias, siempre con icono: hecho (ok, palomita), te toca actuar (pend, alerta), en marcha (marcha, reloj), cerrado sin éxito (error, cerrar) y terminado (cerrado, fin). Propuesta para el estándar: módulo «estado» con esas familias y el icono obligatorio."
+    },
+    {
+      "id": "P119",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-17",
+      "titulo": "Hallazgo del estándar: la secuencia numerada de «qué sigue» sólo existe dentro del acuse",
+      "recomendacion": "El módulo acuse trae .secuencia para «qué sigue», pero centrada, con su ancho y su filete, y sólo se carga con el acuse. Un desenlace del personal, un aviso o la ficha de un trámite que dicen qué sigue en varias acciones terminaban encadenándolas en un párrafo («Abra el expediente… El siguiente paso es… La persona ve…»). Solución provisional: APD.sigueEn (texto, pasos) con ol.pasos en apd.css, la misma forma más compacta, en desenlaces, avisos y «Mis trámites». Propuesta para el estándar: sacar la secuencia a una pieza del núcleo («pasos») que use cualquier aviso, resultado o tarjeta, y la regla de redacción: dos o más acciones en orden van en pasos numerados; el texto dice el hecho y los pasos, quién hace qué."
     }
   ],
   "resueltos": [

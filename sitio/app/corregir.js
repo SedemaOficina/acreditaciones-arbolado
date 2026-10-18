@@ -53,8 +53,8 @@
       },
       alEnviar() {
         form.hidden = true;
-        APD.pintaDesenlace($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento',
-          texto: `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}, con el documento impreso, para terminar tu cotejo.` });
+        APD.pintaDesenlace($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento', texto: '',
+          pasos: ['Imprime el documento que cargaste.', `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}.`, 'Ahí termina tu cotejo.'] });
       }
     });
   }).catch(() => falla('No se pudo cargar tu información. Intenta de nuevo más tarde.'));

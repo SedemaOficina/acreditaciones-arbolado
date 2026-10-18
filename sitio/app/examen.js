@@ -251,7 +251,7 @@
       ['Enviado', APD.fechaHora(ex.terminado_en)]
     ]));
     $('[data-resultado-sigue]').replaceChildren(ex.aprobado
-      ? APD.aviso('ok', 'Quédate en la sede', 'Avisa a quien aplica el examen: hoy mismo se te toma la fotografía de tu credencial y se te entrega.')
+      ? APD.aviso('ok', 'Quédate en la sede', { texto: 'Tu credencial se entrega hoy mismo.', pasos: ['Avisa a quien aplica el examen que aprobaste.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] })
       : APD.aviso('info', 'Tu calificación quedó registrada', 'No se puede cambiar. Para intentarlo de nuevo, inicia una solicitud nueva desde tu cuenta, con su pago de derechos.'));
     muestra('resultado');
   }
