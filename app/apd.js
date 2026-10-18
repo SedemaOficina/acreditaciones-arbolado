@@ -62,8 +62,37 @@
     // cada vez, para que todas las pantallas vean lo último (app/archivos-prueba.js)
     // Antes, lo guardado hace más de 7 días sin uso se borra (alta 1 de la auditoría integral)
     // (se lee al resolver: archivos-prueba.js se carga después de la página que llama)
-    return promesa.then((d) => { const P = global.APD_ARCHIVOS_PRUEBA; return P ? P.caduca().then(() => P.mezcla(d)) : d; });
+    return promesa.then((d) => { const P = global.APD_ARCHIVOS_PRUEBA; const b = desdeCitas(d); return P ? P.caduca().then(() => P.mezcla(b)) : b; });
   }
+
+  /* Lo que las pantallas leen de la solicitud y la base guarda en sus citas (apd.cita): la cita nueva y su motivo (no se
+     presentó o no llevó el comprobante), la pausa y las inasistencias. Parte del contrato de la API (auditoría integral,
+     alta 5): GET /apd/mis-tramites lo entregará así. Lo hecho en la prueba (archivos-prueba.js) se aplica después. */
+  function desdeCitas(d) {
+    if (!d || !Array.isArray(d.cita) || !d.cita.length) return d;
+    const porSol = {};
+    for (const c of d.cita) (porSol[c.solicitud_id] = porSol[c.solicitud_id] || []).push(c);
+    const solicitud = d.solicitud.map((s) => {
+      const cs = (porSol[s.id] || []).slice().sort((a, b) => String(a.programada_en).localeCompare(String(b.programada_en)));
+      if (!cs.length) return s;
+      const x = Object.assign({}, s, { inasistencias: cs.filter((c) => c.resultado === 'no_se_presento').length });
+      const actual = cs[cs.length - 1];
+      const previa = cs[cs.length - 2];
+      if (s.estado === 'validada_en_linea' && actual.resultado === 'pendiente' && previa && ['no_se_presento', 'sin_pago'].includes(previa.resultado)) {
+        x.cita_motivo = previa.resultado === 'sin_pago' ? 'sin_pago' : 'inasistencia';
+        x.cita_anterior = previa.programada_en;
+      }
+      if (s.estado === 'validada_en_linea' && actual.resultado === 'en_pausa') {
+        const docs = d.documento.filter((doc) => doc.solicitud_id === s.id && doc.vigente && doc.estado === 'con_observacion').map((doc) => doc.requisito);
+        x.cotejo_pausa = { desde: actual.pausada_en, real: actual.pausada_en, cita_en: actual.programada_en, docs };
+      }
+      return x;
+    });
+    return Object.assign({}, d, { solicitud });
+  }
+
+  /* ¿Este documento se cargó después de poner la cita en pausa? (en la prueba, la hora real de carga; en la base, cargado_en) */
+  const cargadoTras = (doc, pausa) => Boolean(pausa && pausa.real) && new Date(doc.cargado_real || doc.cargado_en) > new Date(pausa.real);
 
   /* ----- Fechas: todo en hora de la Ciudad de México ----- */
   function aFecha(iso) { return iso ? new Date(iso.length === 10 ? `${iso}T12:00:00-06:00` : iso) : null; }
@@ -393,7 +422,7 @@
 
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
-    cargar, fecha, fechaHora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence,
+    cargar, cargadoTras, fecha, fechaHora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
     el, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, familia, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, ADSCRIPCIONES, adscripcionTexto, adscripcionPares, adscripcionDe,

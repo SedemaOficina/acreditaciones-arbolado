@@ -101,7 +101,7 @@
   function cargadosEnPausa(datos, s) {
     const pausa = s.cotejo_pausa;
     if (!pausa) return [];
-    return datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && pausa.docs.includes(d.requisito) && d.cargado_real && d.cargado_real > pausa.real);
+    return datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && pausa.docs.includes(d.requisito) && APD.cargadoTras(d, pausa));
   }
   /* Todas las citas (apd.cita): las abiertas se atienden; las cerradas quedan como registro de su día */
   function citas(datos) {
