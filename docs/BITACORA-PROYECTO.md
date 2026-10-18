@@ -972,3 +972,20 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   Se aplica en todas las pantallas que usan `APD.datosLista` («Mi perfil», «Mis trámites», revisión, cotejo, grupos,
   datos de pago). Quedan fuera de este cambio los rótulos de los formularios, que son del estándar.
 - Pruebas: `probar-sitio` 564 (con axe), `probar-examen` 63, `probar-volumen` y auditor de CSS, correctos.
+
+## 2026-10-18 · Bloque 67 · Renglones completos, chips y concentrado de asistencia
+
+- Liber: en varias pantallas la línea bajo el título pasaba al segundo renglón con espacio de sobra («reenviada con
+  correcciones…», solicitudes por revisar, citas de cotejo). Causa: el estándar limita `.bajada` y `.ayuda-bloque` a
+  70 caracteres. El proyecto quita el límite y arma las líneas de datos con `APD.meta` (cada segmento no se parte; en
+  teléfono, cada uno baja completo). Hallazgo del estándar P134.
+- Liber: los chips de motivos frecuentes se veían mal. Causa: el estándar los limita a 240 px y los encoge (el motivo
+  largo se partía dentro de la píldora) y su paso del cursor es igual a «elegido». El proyecto: `flex-shrink: 0`,
+  `max-width: 100%` y el paso del cursor sólo marca el borde. Hallazgo del estándar P135.
+- Liber: la asistencia por día tiene sentido porque se pasa lista, pero hace falta verla en conjunto. Nuevo
+  `APD_PERSONAL.pintaConcentrado`: tabla con una fila por persona y una columna por día (Asistió / Faltó / Sin
+  capturar / Hoy / Por venir; el día del examen, Presente / No llegó), días asistidos y situación ante el examen
+  (Con derecho, Ya no puede faltar, Sin derecho, Lo presentó). Está al pie de «Asistencia» y en la ficha del grupo en
+  curso o concluido (el registro queda después del curso).
+- Pruebas: `probar-sitio` 572 (con axe; nuevas: concentrado tras guardar y en un grupo concluido), `probar-examen` 57,
+  `probar-volumen` y auditor de CSS, correctos.

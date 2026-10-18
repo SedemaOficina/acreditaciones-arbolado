@@ -80,12 +80,12 @@
 
     /* ----- Cabeza: la solicitud y la persona ----- */
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
-    $('[data-bajada]').replaceChildren(
-      document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio }),
-      document.createTextNode(v.n > 1
-        ? ` · enviada el ${fecha(s.enviada_en)} · reenviada con correcciones el ${fecha(s.estado_desde)} · ${v.n}.ª revisión`
-        : ` · enviada el ${fecha(s.enviada_en)} · primera revisión`)
-    );
+    $('[data-bajada]').replaceChildren(...APD.meta([
+      [document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio })],
+      `enviada el ${fecha(s.enviada_en)}`,
+      v.n > 1 ? `reenviada con correcciones el ${fecha(s.estado_desde)}` : null,
+      v.n > 1 ? `${v.n}.ª revisión` : 'primera revisión'
+    ]));
     $('[data-estado]').replaceChildren(APD.estado('En revisión documental', 'marcha'));
     const podaVigente = datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda')
       .sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];

@@ -1402,8 +1402,17 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.waitForSelector('.asistencia-fila');
   comprueba(/guardada/.test(await texto('[data-hecho]')), t('la asistencia del día se guarda'));
   if (falto) comprueba(/Ya no tiene derecho a examen/.test(await texto('[data-personas]')), t('quien faltó dos días ve que ya no tiene derecho a examen'));
+  // Concentrado (pedido de Liber 2026-10-18): todos los días por persona, con lo recién guardado
+  const conc = await texto('[data-concentrado]');
+  comprueba((await pg.$$('[data-conc-filas] tr')).length > 0 && /Días asistidos/.test(conc) && (!falto || /Faltó/.test(conc)),
+    t('el concentrado muestra los días de cada persona, con la falta recién guardada'));
   await sinDesborde(pg, t('asistencia'));
   await captura(pg, `asistencia-guardada-${sufijo}`);
+  // La ficha de un grupo concluido conserva la asistencia de conjunto
+  await pg.goto(BASE + `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'concluido').folio}`);
+  await pg.waitForSelector('[data-conc-filas] tr');
+  comprueba(/Sin derecho/.test(await texto('[data-concentrado]')), t('la ficha de un grupo concluido muestra la asistencia por día y quién se quedó sin derecho'));
+  await sinDesborde(pg, t('grupo concluido con su concentrado'));
   comprueba(enCurso && errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 }

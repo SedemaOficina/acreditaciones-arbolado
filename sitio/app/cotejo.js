@@ -75,10 +75,11 @@
 
     /* ----- Cabeza: la cita, la solicitud y la persona ----- */
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
-    $('[data-bajada]').replaceChildren(
-      document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio }),
-      document.createTextNode(` · cita del ${fechaHora(s.cita_en)} · documentos validados en línea el ${fecha(s.estado_desde)}`)
-    );
+    $('[data-bajada]').replaceChildren(...APD.meta([
+      [document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio })],
+      `cita del ${fechaHora(s.cita_en)}`,
+      `documentos validados en línea el ${fecha(s.estado_desde)}`
+    ]));
     $('[data-estado]').replaceChildren(retoma ? APD.estado('Cita en pausa', 'marcha') : APD.estado('Cita asignada', 'pend', 'fecha'));
     const iniciales = `${(p.nombre || '').charAt(0)}${(p.primer_apellido || '').charAt(0)}`;
     const foto = el('div', { class: 'perfil-foto perfil-foto-chica' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: iniciales })]);

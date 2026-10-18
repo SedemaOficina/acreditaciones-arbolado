@@ -599,6 +599,22 @@
       "desde": "2026-10-18",
       "titulo": "¿Se puede dictaminar con la acreditación de poda vencida?",
       "recomendacion": "Hoy (R43, decisión de Liber) la acreditación de dictaminador técnico sigue vigente hasta su propia fecha aunque venza la de poda y derribo; la poda sólo se exige vigente al iniciar una solicitud de dictaminador (R05). La Dirección debe confirmar si los lineamientos permiten dictaminar sin poda vigente. Si no lo permiten, R43 cambia: al vencer la poda, la de dictaminador se suspende (la verificación pública diría «No vigente» y la persona lo vería en «Mis trámites»). Mientras, un dictaminador con la poda vencida debe renovar primero la de poda para poder renovar la de dictaminador; los avisos de vencimiento por correo (P121) deberían decirlo."
+    },
+    {
+      "id": "P134",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Hallazgo del estándar: la bajada y la ayuda de bloque se cortan a 70 caracteres",
+      "recomendacion": "«.bajada» y «.ayuda-bloque» llevan max-width: 70ch. En una tarjeta ancha, una línea de datos (folio · fechas · revisión) o una bajada de una oración pasa al segundo renglón aunque sobre espacio, y se lee como si fueran dos cosas distintas (revisión documental, solicitudes por revisar, citas de cotejo, asistencia, grupos). Solución provisional: el proyecto quita el límite (max-width: none) y arma las líneas de datos con segmentos que no se parten (APD.meta). Propuesta: limitar a 70ch sólo el texto corrido, no la bajada ni las líneas de datos, o dar una variante para líneas de datos."
+    },
+    {
+      "id": "P135",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "Hallazgo del estándar: chips de motivos frecuentes partidos y con «hover» igual a elegido",
+      "recomendacion": "Los chips fijos (motivos frecuentes) tienen --ancho-chip-max: 240px y se encogen dentro de la fila: un motivo largo («No coincide con el nombre de la cuenta») se parte en dos renglones dentro de la píldora. Además, al pasar el cursor el chip toma el mismo fondo que cuando está elegido (aria-pressed) y parece seleccionado. Solución provisional: .chip-fijo { max-width: 100%; flex-shrink: 0 } (si no cabe, pasa completo al renglón siguiente) y el paso del cursor sólo marca el borde. Propuesta: adoptar ambas en el módulo de chips."
     }
   ],
   "resueltos": [
