@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="formkit/css/tokens.css">
 <link rel="stylesheet" href="formkit/css/base.css">
 <link rel="stylesheet" href="formkit/css/nucleo.css">
-<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css">
 <link rel="stylesheet" href="formkit/modulos/opciones/opciones.css">
 <link rel="stylesheet" href="formkit/modulos/version/version.css">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css">
@@ -33,39 +32,37 @@
   <div data-hecho hidden></div>
 
   <section class="tarjeta" aria-labelledby="t-asistencia" data-con-grupo hidden>
-    <div class="grupo-cabeza">
-      <div>
-        <h2 class="titulo-paso" id="t-asistencia">Asistencia</h2>
-        <p class="bajada" data-bajada></p>
+    <!-- Propuesta A (decisión de Liber, 2026-10-18): una sola lista, la del día; la historia de cada persona en una tira
+         de puntos y una etiqueta sólo cuando hay riesgo. Sin botones por día ni concentrado: corregir otro día es la
+         excepción y la vista de conjunto queda en la ficha del grupo. -->
+    <h2 class="titulo-paso" id="t-asistencia" data-titulo-dia>Asistencia</h2>
+    <p class="bajada" data-bajada></p>
+    <p class="ayuda" data-regla></p>
+    <div class="asis-leyenda" aria-hidden="true">
+      <span><span class="asis-punto asis-si"></span>asistió</span>
+      <span><span class="asis-punto asis-no"></span>faltó</span>
+      <span><span class="asis-punto asis-hoy"></span>hoy</span>
+      <span><span class="asis-punto asis-futuro"></span>por venir</span>
+      <span><span class="asis-punto asis-examen"></span>examen</span>
+    </div>
+    <div data-avisos></div>
+    <p class="ayuda ayuda-bloque" data-ultimo-dia hidden></p>
+
+    <div class="asis-lista" data-personas aria-labelledby="t-asistencia"></div>
+    <div class="asis-pie" data-acciones>
+      <p class="asis-totales" role="status" data-totales></p>
+      <!-- Junto al botón: lo que no se pudo guardar o lo que se acaba de marcar (APD.pintaAviso) -->
+      <div data-falta-marcar hidden></div>
+      <div class="acciones-grupo">
+        <button type="button" class="btn btn-secundario" data-todas>Marcar a todas «Asistió»</button>
+        <button type="button" class="btn btn-primario" data-guardar>Guardar la asistencia</button>
       </div>
-      <span data-situacion></span>
     </div>
-    <p class="resumen-filtro" role="status" data-totales></p>
-    <div class="dias" role="group" aria-label="Día del curso" data-dias></div>
-    <p class="ayuda ayuda-bloque" data-ultimo-dia></p>
-
-    <h3 class="titulo-bloque" id="t-dia" data-titulo-dia>Día</h3>
-    <p class="ayuda" data-ayuda-dia></p>
-    <div data-personas aria-labelledby="t-dia"></div>
-    <!-- Junto al botón: lo que no se pudo guardar o lo que se acaba de marcar (APD.pintaAviso) -->
-    <div data-falta-marcar hidden></div>
-    <div class="acciones-grupo" data-acciones>
-      <button type="button" class="btn btn-secundario" data-todas>Marcar a todas «Asistió»</button>
-      <button type="button" class="btn btn-primario" data-guardar>Guardar la asistencia</button>
-    </div>
-    <p class="ayuda">Queda registrado en el sistema quién capturó cada día y cuándo. Mientras el curso siga, la asistencia de un día ya guardado se puede corregir.</p>
-
-    <!-- Concentrado: todos los días del curso a la vista (P.pintaConcentrado); se actualiza al guardar cada día -->
-    <h3 class="titulo-bloque" id="t-concentrado">Concentrado del curso</h3>
-    <p class="ayuda">Lo guardado hasta hoy, por persona y por día. El día del examen muestra el pase de lista del salón de cómputo.</p>
-    <div class="tabla-marco" data-tabla data-clave="concentrado" data-concentrado>
-      <table class="tabla tabla-bandeja tabla-concentrado">
-        <caption class="solo-lector" data-conc-leyenda>Asistencia del grupo por persona y por día</caption>
-        <thead><tr data-conc-encabezado></tr></thead>
-        <tbody data-conc-filas></tbody>
-      </table>
-      <p class="tabla-vacia" data-conc-vacia hidden>El grupo no tiene personas.</p>
-    </div>
+    <details class="asis-otro-dia" data-otro-dia>
+      <summary>Corregir otro día</summary>
+      <ul class="lista-simple" data-dias></ul>
+    </details>
+    <p class="ayuda">Queda registrado en el sistema quién capturó cada día y cuándo. Mientras el curso siga, la asistencia de un día ya guardado se puede corregir. La vista de todos los días está en la ficha del grupo.</p>
   </section>
 
   <section class="tarjeta" aria-labelledby="t-mis-grupos" data-sin-grupo hidden>
@@ -89,7 +86,6 @@
 <script src="app/mensajes-usted.js?v=0.49"></script>
 <script src="formkit/js/iconos.js"></script>
 <script src="formkit/js/formkit.core.js"></script>
-<script src="formkit/modulos/tabla/tabla.js"></script>
 <script src="formkit/modulos/estado/estado.js"></script>
 <script src="app/examen-grupo.js?v=0.49"></script>
 <script src="app/asistencia.js?v=0.49"></script>

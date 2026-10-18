@@ -297,7 +297,7 @@
     };
     const $$ = (s) => marco.querySelector(s);
     const dias = Array.from({ length: ultimo }, (_, k) => k + 1);
-    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `Día ${n} · ${APD.fecha(fechaDia(n)).slice(0, 5)}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días asistidos', 'Examen']
+    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fecha(fechaDia(n)).slice(0, 5)}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días', 'Examen']
       .map((t) => el('th', { scope: 'col', texto: t })));
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const sols = Object.fromEntries(datos.solicitud.map((s) => [s.id, s]));
@@ -307,17 +307,20 @@
       const quien = APD.nombreCompleto(persona[s.solicitante_id] || {});
       let asistidos = 0;
       let faltas = 0;
+      // Ficha compacta (propuesta A, 2026-10-18): ✓ y ✗ con su texto para el lector; sólo «Sin derecho» lleva color
+      const marca = (simbolo, texto, clase) => el('td', { class: clase }, [el('span', { 'aria-hidden': 'true', texto: simbolo }), el('span', { class: 'solo-lector', texto })]);
       const celdas = dias.map((n) => {
         const r = registro(i.id, n);
-        if (r === true) { asistidos += 1; return el('td', { class: 'conc-si', texto: n === ultimo && ultimo > 1 ? 'Presente' : 'Asistió' }); }
-        if (r === false) { faltas += 1; return el('td', {}, [el('strong', { class: 'conc-no', texto: n === ultimo && ultimo > 1 ? 'No llegó' : 'Faltó' })]); }
+        const examen = n === ultimo && ultimo > 1;
+        if (r === true) { asistidos += 1; return marca('✓', examen ? 'Presente' : 'Asistió', 'conc-si'); }
+        if (r === false) { if (!examen) faltas += 1; return marca('✗', examen ? 'No llegó' : 'Faltó', 'conc-no'); }
         const f = fechaDia(n);
         if (f < hoy) return el('td', {}, [el('span', { class: 'conc-hueco', texto: 'Sin capturar' })]);
-        return el('td', { class: 'texto-gris', texto: f === hoy ? 'Hoy' : 'Por venir' });
+        return el('td', { class: 'texto-gris', texto: f === hoy ? 'Hoy' : '—' });
       });
-      const derecho = faltas > permitidas ? estado('Sin derecho', 'error')
-        : registro(i.id, ultimo) === true ? estado('Lo presentó', 'cerrado')
-          : faltas === permitidas && faltas ? estado('Ya no puede faltar', 'pend') : estado('Con derecho', 'ok');
+      const sinDerecho = faltas > permitidas;
+      const derecho = el('span', { class: sinDerecho ? 'conc-sin-derecho' : 'texto-gris',
+        texto: sinDerecho ? 'Sin derecho' : registro(i.id, ultimo) === true ? 'Lo presentó' : faltas === permitidas && faltas ? 'Ya no puede faltar' : 'Con derecho' });
       return el('tr', {}, [el('td', { texto: quien }), ...celdas, el('td', { class: 'sin-corte', texto: `${asistidos} de ${ultimo}` }), el('td', {}, [derecho])]);
     });
     $$('[data-conc-filas]').replaceChildren(...filas);

@@ -1012,3 +1012,18 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-base` y `probar-reglas` 173, `probar-sitio` 602 (con axe; 13 nuevas de material), `probar-examen`
   57, `probar-esquemas`, `probar-volumen` y auditor de CSS, correctos.
 
+## 2026-10-18 · Bloque 69 · Asistencia: lista del día (propuesta A)
+
+- Liber: la pantalla de asistencia tenía demasiado (botones por día, avisos por persona, concentrado con etiquetas).
+  Se le mostraron la pantalla actual y dos propuestas lado a lado (lienzo «Asistencia: propuestas»); eligió la A.
+- «Asistencia»: título con el día («Día 2 de 5 · miércoles 14/10»), regla de faltas permitidas y leyenda de la tira
+  de puntos; una fila por persona con fotografía, nombre, puntos (asistió, faltó, hoy, sin capturar, por venir,
+  examen; con su texto para el lector de pantalla) y los dos botones; etiqueta sólo con riesgo; «3 asistieron · 1
+  faltó · 1 sin marcar» junto a «Guardar»; «Corregir otro día» con los días anteriores (y «Volver al día de hoy»).
+  Un día anterior sin capturar se sigue avisando arriba. El día del examen sólo dice que la asistencia se registra
+  al pasar lista. Con 10 personas, en teléfono la pantalla pasa de 7 351 px a unos 2 300 px.
+- Ficha del grupo: «Asistencia por día» con ✓ (gris) y ✗ (negritas), «Sin capturar» con su texto, y sólo «Sin
+  derecho» en color; la falta del día del examen ya no cuenta para el derecho a examen.
+- Pruebas: `probar-sitio` 602 (con axe; las de asistencia, actualizadas a la lista del día), `probar-examen` 57,
+  `probar-volumen` y auditor de CSS, correctos.
+

@@ -46,9 +46,9 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   comprueba(/no hoy/.test(ap) && /Faltan días del curso por capturar/.test(ap), t('aplicar: otro grupo avisa que su examen no es hoy y que faltan días por capturar'));
 
   // A1 y M9: asistencia señala el día sin capturar y resume el grupo
-  await ir('asistencia.html?folio=APD-G-2026-024', '.dia-btn');
-  comprueba(/sin capturar/.test(await texto('.dia-btn-falta')) && /Falta capturar el día 2/.test(await texto('[data-con-grupo]')), t('asistencia: el día 2 pasado sin capturar se señala arriba y en su botón'));
-  comprueba(/con derecho a examen/.test(await texto('[data-totales]')), t('asistencia: resumen del grupo arriba'));
+  await ir('asistencia.html?folio=APD-G-2026-024', '.asistencia-fila');
+  comprueba(/sin capturar/.test(await texto('[data-dias]')) && /Falta capturar el día 2/.test(await texto('[data-avisos]')), t('asistencia: el día 2 pasado sin capturar se señala arriba y en «Corregir otro día»'));
+  comprueba(/asisti|falt/.test(await texto('[data-totales]')), t('asistencia: lo marcado se resume junto a «Guardar»'));
   await sinDesborde('asistencia');
 
   // A3 y M6: citas de días anteriores sin registrar y pausa vencida

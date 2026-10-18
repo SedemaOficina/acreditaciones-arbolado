@@ -272,17 +272,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 .acciones-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-block-start: var(--e-4); }
 .acciones-grupo .btn { width: auto; }
 /* Asistencia: días del curso y una fila por persona */
-.dias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block: var(--e-3); }
-.dia-btn { min-height: var(--objetivo-min); padding: var(--e-1) var(--e-4); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto); font: inherit; font-size: var(--t-sm); cursor: pointer; }
-.dia-btn[aria-pressed="true"] { border-color: var(--guinda); box-shadow: inset 0 calc(var(--b-2) * -1) 0 var(--guinda); font-weight: var(--peso-semi); }
-.dia-btn:disabled { color: var(--gris); border-style: dashed; cursor: default; }
-.dia-btn:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
-.asistencia-fila { display: grid; gap: var(--e-3); padding-block: var(--e-3); border-bottom: var(--b-1) solid var(--linea); }
-.asistencia-quien { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-3); align-items: center; }
-.asistencia-quien p { margin: 0; }
+.asistencia-fila { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--e-3); align-items: center; padding-block: var(--e-3); border-bottom: var(--b-1) solid var(--linea); }
 .asistencia-foto { width: var(--objetivo-min); height: calc(var(--objetivo-min) * 1.25); object-fit: cover; border-radius: var(--r-ctrl); border: var(--b-1) solid var(--linea); }
-.asistencia-fila .grupo { margin: 0; }
-@media (min-width: 760px) { .asistencia-fila { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
 .acciones-grupo + .ayuda { margin-block-start: var(--e-4); }
 
 /* ───── Avisos, confirmaciones, etiquetas y «qué sigue» ─────
@@ -315,10 +306,11 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
   .fila-adscripcion th { display: table-cell; padding: var(--e-4) var(--e-3) var(--e-2); border-top: var(--b-2) solid var(--guinda); }
   .adscripcion-cuenta, .adscripcion-nombre { margin-inline-end: var(--e-3); }
 }
-/* Día del curso que ya pasó sin capturar (auditoría de tareas, A1) */
-.dia-btn-falta { border-color: var(--error); border-style: dashed; color: var(--error-txt); background: var(--error-bg); }
-/* Concentrado de asistencia (P.pintaConcentrado): la falta y el día sin capturar se leen por el texto y, además, por su color */
-.conc-no { color: var(--error-txt); }
+/* Asistencia por día en la ficha del grupo (P.pintaConcentrado, propuesta A): ✓ en gris, ✗ en tinta y negritas; sólo
+   «Sin derecho» lleva color. El día sin capturar se lee por su texto. */
+.conc-si { text-align: center; font-size: var(--t-base); color: var(--gris); }
+.conc-no { text-align: center; font-size: var(--t-base); color: var(--texto); font-weight: var(--peso-fuerte); }
+.conc-sin-derecho { color: var(--error-txt); font-weight: var(--peso-fuerte); }
 .conc-hueco { color: var(--pend-txt); font-style: italic; }
 /* «En espera»: la cuenta de elegidas acompaña el desplazamiento (auditoría de tareas, M4) */
 .barra-seleccion { position: sticky; top: env(safe-area-inset-top); z-index: var(--z-lista); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-4); margin-block-start: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); font-weight: var(--peso-semi); }
@@ -349,3 +341,32 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 /* Material de estudio · personal: la edición y la fecha de carga bajo el dato; las acciones del renglón */
 .material-edicion-celda { display: block; color: var(--gris-cl); font-size: var(--t-sm); }
 .material-acciones { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); }
+
+/* Asistencia · propuesta A (decisión de Liber, 2026-10-18): la tira de puntos de los días y los dos botones del día.
+   La tira se lee también por su texto (solo-lector); el color no es lo único que distingue: faltó es un aro, hoy un aro
+   punteado, por venir un punto chico y el examen un aro dorado. */
+.asis-leyenda { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); margin-block: var(--e-2) var(--e-3); color: var(--gris); font-size: var(--t-sm); }
+.asis-leyenda > span { display: inline-flex; align-items: center; gap: var(--e-2); }
+.asis-punto { display: inline-block; flex: none; width: var(--e-3); height: var(--e-3); border-radius: 50%; box-sizing: border-box; }
+.asis-si { background: var(--ok); }
+.asis-no { background: var(--blanco); border: var(--b-2) solid var(--error); }
+.asis-hoy { border: var(--b-2) dashed var(--guinda); }
+.asis-sin { border: var(--b-2) dotted var(--pend); }
+.asis-futuro { width: var(--e-2); height: var(--e-2); margin-inline: var(--b-2); background: var(--borde); }
+.asis-examen { border: var(--b-2) solid var(--dorado); }
+.asis-quien { display: grid; gap: var(--e-1); min-width: 0; }
+.asis-quien p { margin: 0; }
+.asis-nombre { font-weight: var(--peso-semi); font-size: var(--t-md); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
+.asis-puntos { display: flex; align-items: center; gap: var(--e-2); }
+.asis-riesgo:empty { display: none; }
+.asis-opciones { display: flex; gap: var(--e-2); margin: 0; padding: 0; border: 0; min-width: 0; }
+.asis-opcion { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: var(--objetivo-min); min-height: var(--objetivo-min); padding-inline: var(--e-3); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto); font-weight: var(--peso-semi); font-size: var(--t-md); cursor: pointer; }
+.asis-opcion-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.asis-opcion:has(.asis-opcion-input:focus-visible) { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+.asis-opcion-si:has(.asis-opcion-input:checked) { background: var(--ok); border-color: var(--ok); color: var(--blanco); }
+.asis-opcion-no:has(.asis-opcion-input:checked) { background: var(--error); border-color: var(--error); color: var(--blanco); }
+.asis-pie { display: grid; gap: var(--e-3); margin-block-start: var(--e-4); }
+.asis-totales { margin: 0; font-weight: var(--peso-medio); }
+.asis-otro-dia { margin-block: var(--e-4) var(--e-2); }
+.asis-otro-dia > summary { cursor: pointer; color: var(--azul); text-decoration: underline; padding-block: var(--e-2); width: fit-content; }
+

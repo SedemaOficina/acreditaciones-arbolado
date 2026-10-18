@@ -1390,22 +1390,21 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   // Hay dos grupos en curso (el del caso «aprobó hoy» termina en la fecha de corte): se abre el que sigue en clases
   await pg.goto(BASE + `asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`);
   await pg.waitForSelector('.asistencia-fila');
-  comprueba(/examen/.test(await texto('[data-dias]')) && await pg.isDisabled('.dia-btn:last-child'), t('el último día no se captura aquí (se registra al pasar lista en el examen)'));
+  // Propuesta A (2026-10-18): la lista del día de hoy; el último día (examen) no se ofrece para capturar
+  comprueba(/^Día 2 de 5/.test(await texto('[data-titulo-dia]')) && !/examen/i.test(await texto('[data-dias]')) && (await pg.$$('.asis-puntos .asis-examen')).length > 0,
+    t('la lista es la del día de hoy y el examen no se captura aquí (se registra al pasar lista)'));
+  comprueba((await pg.$$('.asis-puntos')).length === (await pg.$$('.asistencia-fila')).length, t('cada persona muestra su tira de días'));
   await pg.click('[data-guardar]');
   comprueba(await pg.isVisible('[data-falta-marcar]'), t('no se guarda la asistencia con personas sin marcar'));
   await captura(pg, `asistencia-${sufijo}`);
   await pg.click('[data-todas]');
-  const falto = await pg.$('.asistencia-fila:has-text("Faltó el día 1")');
+  const falto = await pg.$('.asistencia-fila:has(.asis-puntos .asis-punto:first-child.asis-no)');
   if (falto) await (await falto.$('input[value="no"]')).check();
   await pg.click('[data-guardar]');
   await pg.waitForURL(/hecho=asistencia/);
   await pg.waitForSelector('.asistencia-fila');
   comprueba(/guardada/.test(await texto('[data-hecho]')), t('la asistencia del día se guarda'));
-  if (falto) comprueba(/Ya no tiene derecho a examen/.test(await texto('[data-personas]')), t('quien faltó dos días ve que ya no tiene derecho a examen'));
-  // Concentrado (pedido de Liber 2026-10-18): todos los días por persona, con lo recién guardado
-  const conc = await texto('[data-concentrado]');
-  comprueba((await pg.$$('[data-conc-filas] tr')).length > 0 && /Días asistidos/.test(conc) && (!falto || /Faltó/.test(conc)),
-    t('el concentrado muestra los días de cada persona, con la falta recién guardada'));
+  if (falto) comprueba(/Sin derecho a examen/.test(await texto('[data-personas]')), t('quien faltó dos días se marca sin derecho a examen'));
   await sinDesborde(pg, t('asistencia'));
   await captura(pg, `asistencia-guardada-${sufijo}`);
   // La ficha de un grupo concluido conserva la asistencia de conjunto
