@@ -815,3 +815,12 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   y el día que vence; el de 90 días choca con la ventana de renovación de 30 días y queda como preaviso sin enlace
   mientras Liber decide). Los avisos A0 y A3 bis se agregaron como propuesta a `docs/AVISOS-POR-CORREO.md`.
 
+
+## 2026-10-17 · Bloque 58 · Auditoría de tareas de las pantallas del personal
+
+- Liber pidió revisar las pantallas del personal con tres métodos (una pregunta de trabajo por pantalla, cada regla
+  visible donde se aplica y volúmenes reales) y entregar hallazgos antes de cambiar nada. Resultado en
+  `docs/AUDITORIA-TAREAS-2026-10-17.md`: 5 de prioridad alta, 11 media y 8 baja, cada uno comprobado en el código.
+  Escenario de volumen y guion de capturas en `docs/auditoria-tareas/`. No se cambió código del sitio.
+- Decisión que queda para Liber (A4): si la cuenta de inasistencias a la cita de cotejo se reinicia cuando la solicitud
+  se vuelve a validar.
