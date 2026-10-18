@@ -1064,3 +1064,13 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-sitio` 658 (con axe), `probar-examen` 73, `probar-volumen`, `probar-esquemas` 118, `probar-base` y
   `probar-reglas` 173, auditor de CSS, esquema y pendientes al día, `auditar-sitio` (56 pantallas, 153 botones).
 
+
+## 2026-10-18 · Bloque 73 · Sin supervisor, examen de prueba de 10 preguntas y calendario en las fechas
+
+- Decisión definitiva de Liber: no habrá perfil ni acreditación de supervisor. Se quitó de las decisiones abiertas y de
+  los documentos del proyecto (anteproyecto de lineamientos, registro de reforma de la Norma, banco del examen propuesto).
+- Examen en línea: por ahora sólo la interfaz, con 10 preguntas ficticias de opción múltiple; el examen real y su
+  página se construyen después. Se quitaron casos, tablas y opciones con imagen del prototipo.
+- Fecha de la cita (revisión y cotejo) y primer día del curso: además de escribirla, se elige en el calendario del
+  navegador, que la escribe en dd/mm/aaaa (app/apd.js). La fecha de nacimiento sigue sin calendario.
+- Pruebas: `probar-sitio` 660 (con axe; incluye el calendario de la cita), `probar-examen` 74, `probar-esquemas`.
