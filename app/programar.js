@@ -64,6 +64,7 @@
     const form = $('#programar');
     form.hidden = false;
     const minimo = P.primerDiaPosible(datos);
+    const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     const inhabiles = new Set(P.diasInhabiles(datos));
     const excepto = gExistente ? gExistente.id : null;
@@ -71,17 +72,21 @@
     const finDe = (d) => APD.sumaDias(d, dur - 1);
     const sede = APD.sede(datos).nombre;
     $('[data-ayuda-semana]').textContent = dur > 1
-      ? `Toque el día en que empieza (de preferencia, un lunes). El curso dura ${dur} días seguidos; el examen es el último, en el PILARES. Desde el ${APD.diaSemana(minimo)} ${fecha(minimo)}: ${anticipacion} días después de hoy.`
-      : `Toque el día del curso. Dura un día y el examen es ese mismo día, en el PILARES. Desde el ${APD.diaSemana(minimo)} ${fecha(minimo)}: ${anticipacion} días después de hoy.`;
+      ? `Toque el día en que empieza (de preferencia, un lunes). El curso dura ${dur} días seguidos; el examen es el último, en el PILARES. Desde el ${APD.diaSemana(minimo)} ${fecha(minimo)}: ${anticipacion} días después de hoy; hasta el ${fecha(maximo)}, un año después.`
+      : `Toque el día del curso. Dura un día y el examen es ese mismo día, en el PILARES. Desde el ${APD.diaSemana(minimo)} ${fecha(minimo)}: ${anticipacion} días después de hoy; hasta el ${fecha(maximo)}, un año después.`;
 
     /* ----- Paso 1 · calendario ----- */
     const fi = $('#fecha_inicio');
     $('[data-campo="fecha_inicio"]').dataset.min = minimo;
+    $('[data-campo="fecha_inicio"]').dataset.max = maximo;
     const isoDe = (t) => (V() && V().isoDeDma ? V().isoDeDma(t) : '') || '';
     let inicio = null;
     let mes = null; // AAAA-MM
     let foco = null; // día con el tabindex del calendario
     const mesDe = (d) => d.slice(0, 7);
+    // El calendario va del mes de hoy al del último día posible: una fecha fuera (?semana=2099-01-05, 01/01/2099 escrito)
+    // no lo lleva a ese mes
+    const mesValido = (d) => Boolean(d) && mesDe(d) >= mesDe(hoy) && mesDe(d) <= mesDe(maximo);
     const primerElegible = () => {
       // Primero un lunes (como se piensa la semana); si en medio año no hay, el primer día que se pueda
       for (let d = P.lunesDe(minimo), k = 0; k < 26; k++, d = APD.sumaDias(d, 7)) if (d >= minimo && !razon(d)) return d;
@@ -97,8 +102,9 @@
     if (pedida && !razon(pedida)) inicio = pedida;
     else if (!pedida && gExistente && gExistente.fecha_inicio && !razon(gExistente.fecha_inicio)) inicio = gExistente.fecha_inicio;
     else if (!pedida) inicio = primerElegible();
-    mes = mesDe(inicio || pedida || minimo);
-    foco = inicio || pedida || minimo;
+    const pedidaValida = mesValido(pedida) ? pedida : null;
+    mes = mesDe(inicio || pedidaValida || minimo);
+    foco = inicio || pedidaValida || minimo;
 
     function etiquetaDia(d, r, enRango, k) {
       const base = `${APD.diaSemana(d)} ${APD.diaMes(d, true)}`;
@@ -139,6 +145,7 @@
       }
       $('[data-dias]').replaceChildren(...filas);
       $('[data-mes="-1"]').disabled = mes <= mesDe(hoy);
+      $('[data-mes="1"]').disabled = mes >= mesDe(maximo);
       if (enfocar) { const b = $(`.cal-dia[data-fecha="${foco}"]`); if (b) b.focus(); }
     }
     /* Elegir un día (calendario o campo): el campo se llena en día/mes/año y el estándar lo valida */
@@ -179,7 +186,7 @@
       }
       if (!nuevo) return;
       e.preventDefault();
-      if (mesDe(nuevo) < mesDe(hoy)) return;
+      if (!mesValido(nuevo)) return;
       foco = nuevo;
       mes = mesDe(nuevo);
       pintaCalendario(true);
@@ -208,7 +215,7 @@
         return;
       }
       if (d === inicio) return;
-      if (!elige(d, true)) { inicio = null; mes = mesDe(d); foco = d; }
+      if (!elige(d, true)) { inicio = null; if (mesValido(d)) { mes = mesDe(d); foco = d; } }
       pintaTodo(false);
     };
     fi.addEventListener('input', deCampo);
