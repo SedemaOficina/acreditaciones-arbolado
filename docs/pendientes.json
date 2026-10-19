@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-18",
+  "actualizado": "2026-10-19",
   "grupos": [
     {
       "id": "direccion",
@@ -62,8 +62,8 @@
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-14",
-      "titulo": "Comprobante de domicilio: no pedirlo al emitir los lineamientos; hoy la norma lo exige",
-      "recomendacion": "Decisión de Liber (2026-10-16): al emitir los lineamientos no se pide, porque es un dato personal que no se utiliza en ningún paso del trámite. Mientras la norma vigente lo exija, la solicitud lo sigue pidiendo y la revisión lo acepta u observa. Al publicarse los lineamientos sin él, se quita el requisito del catálogo (apd.requisito) y del aviso de privacidad. Pregunta abierta al área (Liber, 18/10/2026): ¿para qué se pide el comprobante de domicilio? Ningún paso lo usa (notificaciones electrónicas, sede única, factura con la constancia fiscal). Único uso posible: notificar en persona el inicio de una suspensión o revocación, para lo que bastaría el domicilio como dato, sin comprobante.",
+      "titulo": "Comprobante de domicilio: no pedirlo al emitir los lineamientos; hoy lo pide el procedimiento del área, no una norma publicada",
+      "recomendacion": "Decisión de Liber (2026-10-16): al emitir los lineamientos no se pide, porque es un dato personal que no se utiliza en ningún paso del trámite. Mientras se consulta a la Dirección Jurídica (decisión de Liber, 19/10/2026), la solicitud lo sigue pidiendo y la revisión lo acepta u observa. Al publicarse los lineamientos sin él, se quita el requisito del catálogo (apd.requisito) y del aviso de privacidad. Pregunta abierta al área (Liber, 18/10/2026): ¿para qué se pide el comprobante de domicilio? Ningún paso lo usa (notificaciones electrónicas, sede única, factura con la constancia fiscal). Único uso posible: notificar en persona el inicio de una suspensión o revocación, para lo que bastaría el domicilio como dato, sin comprobante. Auditoría del 19/10/2026 (G1-01): ni la NADF-001-RNAT-2015 ni la Ley Ambiental lo exigen para la acreditación (las dos remiten los requisitos a los lineamientos: NADF 5.1; Ley, art. 111, párr. 2); el requisito viene del borrador del área (docs/insumos-lineamientos-borrador.txt). Pregunta a Jurídico: ¿hay fundamento para pedirlo antes de publicar los lineamientos?",
       "lineamientos": "Anteproyecto 0.4: Anexo 1 (no se pide); notas, fila 2. Incorporado: no se pide."
     },
     {
@@ -142,7 +142,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Monto vigente de cada curso y la publicación de la Gaceta que lo fija (hoy hay montos ficticios)",
-      "recomendacion": "Pedir a la Dirección o a Finanzas el artículo y los montos vigentes de los cuatro conceptos. El personal los captura en la base con la publicación y la fecha desde la que aplican. Hallazgo (18/10/2026): el Aviso SEDEMA de la Gaceta del 27/10/2025 trata los cuatro cursos como ingresos de aplicación automática; sus claves, conceptos y cuotas se fijaron en un Aviso del 14/02/2025 (por conseguir), con reducciones de hasta 75 %. Lo que se paga sería una «cuota», no un «derecho» (P144).",
+      "recomendacion": "Pedir a la Dirección o a Finanzas el artículo y los montos vigentes de los cuatro conceptos. El personal los captura en la base con la publicación y la fecha desde la que aplican. Hallazgo (18/10/2026): el Aviso SEDEMA de la Gaceta del 27/10/2025 trata los cuatro cursos como ingresos de aplicación automática; sus claves, conceptos y cuotas se fijaron en el Aviso de la Gaceta No. 1548 del 14/02/2025. La reducción de hasta 75 % que prevé el Aviso del 27/10/2025 es sólo para trabajadores adscritos a la Secretaría. Lo que se paga sería una «cuota», no un «derecho» (P144). Auditoría del 19/10/2026 (G1-02): cuotas con IVA por persona del Aviso del 14/02/2025: poda nueva $4,264.00 (2.7.1.1), poda renovación $767.00 (2.7.1.2), dictaminador nuevo $6,025.00 (2.7.1.2.11), dictaminador renovación $1,210.00 (2.5.18.1). Falta confirmar las cifras en el ejemplar y con Finanzas si siguen vigentes en 2026.",
       "lineamientos": "Anteproyecto 0.4: Art. 49. Cambia a «cuota» (ingresos de aplicación automática)."
     },
     {
@@ -542,7 +542,7 @@
       "bloquea": "etapa 3",
       "desde": "2026-10-17",
       "titulo": "Dos revisoras pueden abrir y decidir la misma solicitud al mismo tiempo",
-      "recomendacion": "Hallazgo de la auditoría de tareas (M11). Con varias personas en revisión, nada impide que dos abran la misma solicitud de la bandeja. En la etapa 3, con la API: marcar en la bandeja «La está revisando …» mientras alguien la tiene abierta y, al registrar, avisar si otra persona ya la decidió (la base rechaza el segundo cambio de estado). En la versión de prueba no aplica: todo ocurre en un solo navegador."
+      "recomendacion": "Hallazgo de la auditoría de tareas (M11). Con varias personas en revisión, nada impide que dos abran la misma solicitud de la bandeja. En la etapa 3, con la API: marcar en la bandeja «La está revisando …» mientras alguien la tiene abierta y, al registrar, avisar si otra persona ya la decidió (desde la versión 0.57 la base bloquea la solicitud y rechaza la segunda revisión de la misma vuelta con apd:revision_ya_registrada; auditoría del 19/10/2026, E2-01; contrato de la API en P159). En la versión de prueba no aplica: todo ocurre en un solo navegador."
     },
     {
       "id": "P124",
@@ -676,7 +676,7 @@
       "bloquea": "no",
       "desde": "2026-10-18",
       "titulo": "Reposición de la credencial",
-      "recomendacion": "Sistema: función nueva; ¿lleva cuota?.",
+      "recomendacion": "Sistema: función nueva. Cuota: el Aviso de la Gaceta No. 1548 del 14/02/2025 fija «Reposición de acreditaciones», por tarjeta, $88.00 con IVA (clave 2.5.17.1; auditoría del 19/10/2026, G1-02); confirmar vigencia con Finanzas.",
       "lineamientos": "Anteproyecto 0.4: Cap. II."
     },
     {
@@ -779,7 +779,7 @@
       "bloquea": "no",
       "desde": "2026-10-18",
       "titulo": "Hallazgo del estándar: la escritura guiada de «fecha-dma» convierte una fecha pegada como AAAA-MM-DD en otra fecha válida",
-      "recomendacion": "guiaFechaDma acomoda los dígitos de lo pegado sin reconocer el formato: «2026-10-20» queda como 20/02/6102, que es una fecha real y pasa la validación (auditoría «intentar romperlo», F2-A1). También corta lo pegado con espacios alrededor por el maxlength. Solución provisional: el proyecto normaliza lo pegado (AAAA-MM-DD, con espacios o guiones) antes de la escritura guiada y valida un año razonable. Propuesta para el estándar: reconocer AAAA-MM-DD y DD-MM-AAAA al pegar, quitar espacios antes de limitar el largo y aceptar un rango de años configurable."
+      "recomendacion": "guiaFechaDma acomoda los dígitos de lo pegado sin reconocer el formato: «2026-10-20» queda como 20/02/6102, que es una fecha real y pasa la validación (auditoría «intentar romperlo», F2-A1). También corta lo pegado con espacios alrededor por el maxlength. Solución provisional (desde la 0.56, app/apd.js): el proyecto normaliza lo pegado o insertado de golpe (AAAA-MM-DD, con espacios o guiones) antes de la escritura guiada; la cita tiene un máximo de meses (meses_adelanto_cita) y, desde la 0.57, el primer día del curso un máximo de un año (decisión del 19/10/2026). Sigue sin resolverse en el estándar 1.5.1. Propuesta para el estándar: reconocer AAAA-MM-DD y DD-MM-AAAA al pegar, quitar espacios antes de limitar el largo y aceptar un rango de años configurable."
     },
     {
       "id": "P153",
@@ -852,6 +852,78 @@
       "desde": "2026-10-19",
       "titulo": "Examen en línea: qué hace la pantalla si una respuesta o el envío no llegan al servidor",
       "recomendacion": "Mismo trato que la versión de prueba: la opción no queda marcada, se pide levantar la mano y nunca se muestra un resultado sin confirmar. Va en el contrato de la API (con P29 y P159)."
+    },
+    {
+      "id": "P162",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Borrador interno de lineamientos publicado en el repositorio (docs/insumos-lineamientos-borrador.txt)",
+      "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). Llevarlo a los documentos del Proyecto, junto al anteproyecto, y dejar aquí sólo el cuadro de lo que hay que corregir, o registrar que el área autorizó publicarlo."
+    },
+    {
+      "id": "P163",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Tabla de equivalencias de las reglas R01 a R57 del mapa del trámite",
+      "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). Los Rnn viven en un artefacto privado; pasar al repositorio la tabla Rnn → regla → fila de DECISIONES, o citar la fila de DECISIONES."
+    },
+    {
+      "id": "P164",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Con la poda por vencer, «Mis trámites» muestra dos botones principales",
+      "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). «Iniciar una solicitud» y «Renovar» compiten; decidir cuál es la acción principal."
+    },
+    {
+      "id": "P165",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Decisiones de los equipos de corrección del 18/10 por confirmar",
+      "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05): se conservó la lista «Revisadas en esta prueba» de la bandeja; el primer día del curso pasó a dd/mm/aaaa; un solo esquema del servidor para el material; revisión, cotejo y asistencia avisan antes de salir pero no guardan borrador. Confirmarlas o cambiarlas."
+    },
+    {
+      "id": "P166",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: una fotografía enorme se lee completa antes de revisar su peso",
+      "recomendacion": "El módulo archivos revisa el peso previo sólo para lo que no es foto (seguridad 17/10, D-20). Sigue igual en la 1.5.1. Propuesta: tope previo para fotos (p. ej. 4 veces el máximo) antes de leer el archivo."
+    },
+    {
+      "id": "P167",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Licencia del repositorio público",
+      "recomendacion": "Decisión de Liber (19/10/2026): preguntar a la Secretaría bajo qué licencia se publica el código; mientras, «Todos los derechos reservados, Secretaría del Medio Ambiente» (auditoría 19/10, F3-02)."
+    },
+    {
+      "id": "P168",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Manual técnico de poda: tiene cuota de $299 por ejemplar y el sistema lo publica gratis",
+      "recomendacion": "Decisión de Liber (19/10/2026): confirmar con el área que puede publicarse gratis como material de estudio; mientras, se queda (auditoría 19/10, G1-05)."
+    },
+    {
+      "id": "P169",
+      "grupo": "sia",
+      "bloquea": "datos reales",
+      "desde": "2026-10-19",
+      "titulo": "Bitácora sellada en cadena antes de usar datos reales",
+      "recomendacion": "Decisión de Liber (19/10/2026, auditoría E2-05): ya se guarda la huella de cada respaldo aparte y se prueba la restauración (probar-base, paso 7); antes de datos reales, cada fila de la bitácora guarda la huella de la anterior, con una función de verificación que corre después de cada restauración."
+    },
+    {
+      "id": "P170",
+      "grupo": "sia",
+      "bloquea": "etapa 3",
+      "desde": "2026-10-19",
+      "titulo": "Que una persona sólo pueda tocar sus propias filas (pertenencia en la base)",
+      "recomendacion": "Seguridad 17/10, D-06, parcial desde la 0.57: la asistencia y el examen ya exigen sesión de personal y su propio nombre, pero la base no compara solicitud.solicitante_id con la persona de la sesión. En la etapa 3: contexto apd.solicitante_id y regla de pertenencia; pruebas de la API con dos personas (ver P159)."
     }
   ],
   "resueltos": [

@@ -16,6 +16,9 @@ import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
+// Zona horaria del navegador fija, la de la Ciudad de México (auditoría 2026-10-19, B8-03): las pruebas no dependen de
+// la zona de la máquina. La pasada «fechas» repite «Mis trámites» y «Verificar» en UTC.
+const ZONA = 'America/Mexico_City';
 const BASE = (process.argv[2] || 'http://localhost:8765/').replace(/\/?$/, '/');
 const CAPTURAS = process.argv[3] ? resolve(raiz, process.argv[3]) : null;
 if (CAPTURAS) mkdirSync(CAPTURAS, { recursive: true });
@@ -179,7 +182,7 @@ async function marcaCasillas(page) {
 }
 
 async function recorrido(navegador, ancho, alto, sufijo) {
-  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const contexto = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const page = await contexto.newPage();
   const errores = [];
   page.on('console', (m) => { if (m.type() === 'error') errores.push(`${page.url()} · ${m.text()}`); });
@@ -784,7 +787,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
 const libre = datos.solicitante.find((p) => p.estado === 'activa' && !datos.acreditacion.some((a) => a.solicitante_id === p.id)
   && !datos.solicitud.some((s) => s.solicitante_id === p.id && !FINALES.includes(s.estado)));
 async function solicitudRegresos(navegador, ancho, alto, sufijo) {
-  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const contexto = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const page = await contexto.newPage();
   const errores = [];
   page.on('console', (m) => { if (m.type() === 'error') errores.push(`${page.url()} · ${m.text()}`); });
@@ -886,7 +889,7 @@ const rechazada = datos.solicitud.find((s) => s.estado === 'rechazada');
    cerrar la pestaña, entrar con SU contraseña en otra, enviar una solicitud de poda nueva con documentos reales y verla
    en la bandeja y en la revisión del personal con todos sus documentos y su fotografía. */
 async function recorridoGuardado(navegador) {
-  const contexto = await navegador.newContext({ viewport: { width: 1440, height: 900 } });
+  const contexto = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 1440, height: 900 } });
   const t = (m) => `[guardado] ${m}`;
   const errores = [];
   const vigila = (page) => {
@@ -1100,7 +1103,7 @@ async function caminosCotejo(navegador) {
   const [s1] = citas;
   const p1 = persona(s1.solicitante_id);
   const nuevo = async (ancho = 1280) => {
-    const c = await navegador.newContext({ viewport: { width: ancho, height: 900 } });
+    const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: 900 } });
     const pg = await c.newPage();
     const errores = [];
     pg.on('pageerror', (e) => errores.push(e.message));
@@ -1202,7 +1205,7 @@ async function caminosCotejo(navegador) {
 }
 
 async function personal(navegador, ancho, alto, sufijo) {
-  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const contexto = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const page = await contexto.newPage();
   const errores = [];
   page.on('console', (m) => { if (m.type() === 'error') errores.push(`${page.url()} · ${m.text()}`); });
@@ -1407,7 +1410,7 @@ async function personal(navegador, ancho, alto, sufijo) {
    captura un día de asistencia. */
 async function caminosGrupos(navegador, ancho, alto, sufijo) {
   const t = (m) => `[grupos ${sufijo}] ${m}`;
-  const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const pg = await c.newPage();
   const errores = [];
   pg.on('pageerror', (e) => errores.push(e.message));
@@ -1637,7 +1640,7 @@ const APDfecha = (iso) => iso.split('-').reverse().join('/');
    en «Asistencia» y en «Aplicar el examen». */
 async function caminosProgramar(navegador, ancho, alto, sufijo) {
   const t = (m) => `[programar ${sufijo}] ${m}`;
-  const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const pg = await c.newPage();
   const errores = [];
   pg.on('pageerror', (e) => errores.push(e.message));
@@ -1737,7 +1740,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
 // Material de estudio (decisión 2026-10-18): la página pública sin cuenta y la del personal (agregar, ocultar)
 async function materialEstudio(navegador, ancho, alto, sufijo) {
   const t = (m) => `[material ${sufijo}] ${m}`;
-  const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const pg = await c.newPage();
   const errores = [];
   pg.on('pageerror', (e) => errores.push(e.message));
@@ -1831,7 +1834,7 @@ async function materialEstudio(navegador, ancho, alto, sufijo) {
 /* Lo guardado en la versión de prueba llega a los datos como lo dejaría la base (auditoría 2026-10-18, C1, C2 y B5) */
 async function persistenciaPrueba(navegador) {
   const t = (m) => `[persistencia] ${m}`;
-  const c = await navegador.newContext({ viewport: { width: 1280, height: 900 } });
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 1280, height: 900 } });
   const pg = await c.newPage();
   const errores = [];
   pg.on('pageerror', (e) => errores.push(e.message));
@@ -3111,10 +3114,195 @@ async function romperTres(navegador) {
   });
 }
 
+/* Fechas (auditoría 2026-10-19): fecha pegada como AAAA-MM-DD en cada campo día/mes/año (R4-01, F2-A1), primer día del
+   curso hasta un año después de hoy (decisión 3), plazo de renovación de una acreditación que vence un 29 de febrero
+   (B8-01, decisión 11), «hoy mismo» por el día de la Ciudad (B8-02) y «Mis trámites» y «Verificar» con el navegador en
+   UTC (B8-03). */
+async function fechas(navegador) {
+  const t = (m) => `[fechas] ${m}`;
+  const nuevo = async ({ zona = ZONA, datosDe } = {}) => {
+    const c = await navegador.newContext({ timezoneId: zona, viewport: { width: 1280, height: 900 } });
+    await c.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(BASE).origin });
+    // datosDe: cambia una copia de los ficticios (como la base los entregaría en otro caso)
+    if (datosDe) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(datosDe(structuredClone(datos))) }));
+    const pg = await c.newPage();
+    const errores = [];
+    pg.on('pageerror', (e) => errores.push(e.message));
+    pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, pg, errores };
+  };
+  // Pegar con el portapapeles (Ctrl+V) o insertar de golpe (como un autocompletado); se sale del campo
+  const pega = async (pg, sel, texto) => {
+    await pg.fill(sel, ''); await pg.focus(sel);
+    await pg.evaluate((x) => navigator.clipboard.writeText(x), texto); await pg.keyboard.press('Control+V');
+    await pg.keyboard.press('Tab'); return pg.inputValue(sel);
+  };
+  const inserta = async (pg, sel, texto) => { await pg.fill(sel, ''); await pg.focus(sel); await pg.keyboard.insertText(texto); await pg.keyboard.press('Tab'); return pg.inputValue(sel); };
+  const errorDe = (pg, campo) => pg.evaluate((c) => ((document.querySelector(`[data-campo="${c}"] .err`) || {}).textContent || '').trim(), campo);
+  // Fechas guardadas con un año imposible (grupos y citas)
+  const anioImposible = (pg) => pg.evaluate(() => APD.cargar().then((d) => [...d.grupo.map((g) => g.fecha_inicio), ...d.solicitud.map((s) => s.cita_en), ...(d.cita || []).map((x) => x.programada_en)]
+    .filter((f) => f && Number(String(f).slice(0, 4)) > 2030)));
+  const aceptaTodo = async (pg) => {
+    for (const n of await pg.$$eval('input[value="aceptado"][name^="decision_"]', (l) => [...new Set(l.filter((i) => i.closest('article').offsetParent !== null).map((i) => i.name))])) await pg.check(`input[name="${n}"][value="aceptado"]`);
+  };
+  const corte = datos.fecha_corte;
+  const unAnio = `${corte.slice(8, 10)}/${corte.slice(5, 7)}/${Number(corte.slice(0, 4)) + 1}`; // 14/10/2027 (el corte no es un 29/02)
+
+  // 1 · Revisar: la cita pegada como AAAA-MM-DD
+  let { c, pg, errores } = await nuevo();
+  const porRevisar = datos.solicitud.find((s) => s.folio === 'APD-S-2026-00044' && s.estado === 'enviada');
+  await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
+  await pg.waitForSelector('#formulario:not([hidden])');
+  await aceptaTodo(pg);
+  comprueba(await pega(pg, '#cita_fecha', '2026-11-02') === '02/11/2026', t('revisar: pegar «2026-11-02» en la cita deja 02/11/2026'));
+  comprueba(await pega(pg, '#cita_fecha', ' 2026-11-02 ') === '02/11/2026', t('revisar: también con espacios alrededor'));
+  await pg.selectOption('#cita_hora', '10:00');
+  await pg.click('[data-accion="enviar"]');
+  await pg.waitForSelector('[data-hecho]:not([hidden])');
+  comprueba(/cita el 02\/11\/2026 a las 10:00/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('revisar: la cita queda el 02/11/2026, sin años imposibles'));
+  comprueba(errores.length === 0, t(`revisar sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+
+  // 2 · Cotejo: la cita nueva (no se presentó), insertada de golpe
+  ({ c, pg, errores } = await nuevo());
+  await pg.goto(BASE + `cotejo.html?folio=${conCita.folio}`);
+  await pg.waitForSelector('#formulario:not([hidden])');
+  await pg.check('input[name="se_presento"][value="no"]');
+  comprueba(await inserta(pg, '#cita_fecha', '2026-11-02') === '02/11/2026', t('cotejo: «2026-11-02» insertado de golpe en la cita nueva deja 02/11/2026'));
+  comprueba(await pega(pg, '#cita_fecha', '02.11.2026') === '02/11/2026' && await inserta(pg, '#cita_fecha', '02-11-2026') === '02/11/2026', t('cotejo: dd.mm.aaaa y dd-mm-aaaa también quedan en 02/11/2026'));
+  await pg.selectOption('#cita_hora', '09:30');
+  await pg.click('[data-accion="enviar"]');
+  await pg.waitForSelector('[data-hecho]:not([hidden])');
+  comprueba(/02\/11\/2026/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('cotejo: la cita nueva queda el 02/11/2026, sin años imposibles'));
+  comprueba(errores.length === 0, t(`cotejo sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+
+  // 3 · Programar: primer día pegado; fecha a más de un año, escrita o en ?semana=
+  ({ c, pg, errores } = await nuevo());
+  await pg.goto(BASE + 'programar.html?curso=poda-nueva');
+  await pg.waitForSelector('.cal-dia');
+  comprueba(await pega(pg, '#fecha_inicio', ' 2026-11-09 ') === '09/11/2026' && (await pg.getAttribute('.cal-dia[aria-pressed="true"]', 'data-fecha')) === '2026-11-09',
+    t('programar: pegar « 2026-11-09 » deja 09/11/2026 y el calendario marca ese lunes'));
+  comprueba(await pega(pg, '#fecha_inicio', '2026-11-02') === '02/11/2026' && /del 2 al 6 de noviembre/.test(await pg.textContent('[data-resumen-nombre]')), t('programar: pegar «2026-11-02» deja 02/11/2026 y «Así quedaría» dice del 2 al 6 de noviembre'));
+  await pg.click('[data-programar="confirmar"]');
+  await pg.waitForSelector('[data-resultado]:not([hidden])');
+  comprueba(/Grupo confirmado: Poda nueva · del 2 al 6 de noviembre/.test(await pg.textContent('[data-resultado]')) && (await anioImposible(pg)).length === 0,
+    t('programar: el grupo se confirma del 2 al 6 de noviembre, sin años imposibles'));
+  await c.close();
+  ({ c, pg, errores } = await nuevo());
+  await pg.goto(BASE + 'programar.html?curso=poda-nueva');
+  await pg.waitForSelector('.cal-dia');
+  const gruposAntes = await pg.evaluate(() => APD.cargar().then((d) => d.grupo.length));
+  comprueba((await pg.getAttribute('[data-campo="fecha_inicio"]', 'data-max')) === `${Number(corte.slice(0, 4)) + 1}${corte.slice(4)}` && (await pg.textContent('[data-ayuda-semana]')).includes(`hasta el ${unAnio}`),
+    t(`programar: el primer día tiene máximo un año después de hoy (${unAnio}), y la ayuda lo dice`));
+  await pg.fill('#fecha_inicio', '01/01/2099'); await pg.press('#fecha_inicio', 'Tab');
+  comprueba((await errorDe(pg, 'fecha_inicio')).includes(`posterior al ${unAnio}`) && !/2099/.test(await pg.textContent('[data-mes-nombre]')),
+    t(`programar: 01/01/2099 escrito da el error «…posterior al ${unAnio}» y el calendario no salta a 2099`));
+  await pg.click('[data-programar="confirmar"]');
+  await pg.waitForTimeout(500);
+  comprueba(await pg.isHidden('[data-resultado]') && await pg.evaluate(() => APD.cargar().then((d) => d.grupo.length)) === gruposAntes, t('programar: con 01/01/2099 no se crea ningún grupo'));
+  await pg.goto(BASE + 'programar.html?curso=poda-nueva&semana=2099-01-05');
+  await pg.waitForSelector('.cal-dia');
+  comprueba(await pg.inputValue('#fecha_inicio') === '' && await pg.locator('.cal-dia[aria-pressed="true"]').count() === 0 && /falta más de un año/.test(await pg.textContent('[data-cal-estado]'))
+    && !/2099/.test(await pg.textContent('[data-mes-nombre]')), t('programar: ?semana=2099-01-05 no se acepta y dice por qué'));
+  comprueba(errores.length === 0, t(`programar sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+
+  // 4 · Ficha del grupo: confirmar con el primer día insertado de golpe; 01/01/2099 da error
+  ({ c, pg, errores } = await nuevo());
+  await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await pg.waitForSelector('.plan-grupo');
+  const g4 = datos.grupo.find((g) => g.folio === 'APD-G-2026-004');
+  await pg.evaluate((id) => APD_PERSONAL.guardaGrupo({ tipo: 'agregar', grupo_id: id, folios: ['APD-S-2026-00037'], por: APD_PERSONAL.REVISORA.usuario }), g4.id);
+  await pg.goto(BASE + `grupo.html?folio=${g4.folio}`);
+  await pg.waitForSelector('#confirmar:not([hidden])');
+  await pg.fill('#fecha_inicio', '01/01/2099'); await pg.press('#fecha_inicio', 'Tab');
+  comprueba((await errorDe(pg, 'fecha_inicio')).includes(`posterior al ${unAnio}`), t(`grupo: 01/01/2099 da el error «…posterior al ${unAnio}»`));
+  comprueba(await inserta(pg, '#fecha_inicio', '2026-11-02') === '02/11/2026', t('grupo: «2026-11-02» insertado de golpe deja 02/11/2026'));
+  await pg.selectOption('#hora_entrada', '09:00');
+  await pg.selectOption('#instructor', 'instructor2.ficticio');
+  await pg.click('#confirmar [data-accion="enviar"]');
+  await pg.waitForURL(/hecho=confirmado|folio=APD-G-2026-004$/);
+  await pg.waitForSelector('[data-situacion] .estado');
+  comprueba(await pg.evaluate((f) => APD.cargar().then((d) => { const g = d.grupo.find((x) => x.folio === f); return `${g.estado} ${g.fecha_inicio}`; }), g4.folio) === 'confirmado 2026-11-02'
+    && (await anioImposible(pg)).length === 0, t('grupo: queda confirmado el 02/11/2026, sin años imposibles'));
+  comprueba(errores.length === 0, t(`grupo sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+  await c.close();
+
+  // 5 · Crea tu cuenta: la fecha de nacimiento pegada como AAAA-MM-DD
+  ({ c, pg, errores } = await nuevo());
+  await pg.goto(BASE + 'cuenta.html');
+  await pg.waitForSelector('#fecha_nacimiento');
+  comprueba(await pega(pg, '#fecha_nacimiento', '1985-07-23') === '23/07/1985' && !(await errorDe(pg, 'fecha_nacimiento')), t('cuenta: pegar «1985-07-23» en la fecha de nacimiento deja 23/07/1985'));
+  await c.close();
+
+  // 6 · Acreditación que vence un 29 de febrero: se renueva hasta el 28 de febrero del año siguiente, como la base
+  for (const zona of [ZONA, 'UTC']) {
+    let numero = null;
+    let sujeto = null;
+    ({ c, pg, errores } = await nuevo({ zona, datosDe: (d) => {
+      const a = d.acreditacion.find((x) => x.tipo_acreditacion === 'poda' && d.estado_acreditacion[x.numero] === 'por_vencer'
+        && !d.solicitud.some((s) => s.solicitante_id === x.solicitante_id && !FINALES.includes(s.estado)));
+      d.fecha_corte = '2028-06-01'; a.emitida_en = '2027-03-01'; a.vence_en = '2028-02-29';
+      d.estado_acreditacion[a.numero] = 'vencida_renovable';
+      numero = a.numero; sujeto = a.solicitante_id;
+      return d;
+    } }));
+    await pg.goto(BASE + 'index.html');
+    await pg.evaluate(() => APD.cargar());
+    await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sujeto);
+    await pg.goto(BASE + 'tramites.html');
+    await pg.waitForSelector('.ficha-sigue');
+    const ficha = await pg.locator('article.ficha', { hasText: numero }).first().textContent();
+    comprueba(/renovarla hasta el 28\/02\/2029/.test(ficha), t(`${zona}: vence el 29/02/2028 → «Puedes renovarla hasta el 28/02/2029»`));
+    await c.close();
+  }
+
+  // 7 · «Recoge tu credencial hoy mismo» sólo si aprobó hoy, en el día de la Ciudad (hoy simulado: 14/10/2026)
+  const aprobada = datos.solicitud.find((s) => s.estado === 'aprobada');
+  for (const [desde, hoyMismo] of [['2026-10-14T01:30:00Z', false], ['2026-10-15T03:00:00Z', true]]) {
+    ({ c, pg, errores } = await nuevo({ zona: 'UTC', datosDe: (d) => { d.solicitud.find((s) => s.id === aprobada.id).estado_desde = desde; return d; } }));
+    await pg.goto(BASE + 'index.html');
+    await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), aprobada.solicitante_id);
+    await pg.goto(BASE + 'tramites.html');
+    await pg.waitForSelector('[data-solicitudes] .ficha');
+    const ficha = await pg.locator('[data-solicitudes] .ficha', { hasText: aprobada.folio }).textContent();
+    comprueba(/hoy mismo/.test(ficha) === hoyMismo, t(`aprobó ${desde} (${hoyMismo ? '14' : '13'}/10 en la Ciudad): ${hoyMismo ? 'dice' : 'no dice'} «hoy mismo»`));
+    await c.close();
+  }
+
+  // 8 · Con el navegador en UTC, «Mis trámites» y «Verificar» dicen lo mismo que en la Ciudad de México
+  const personas = [paraDictaminador, persona(inscrita.solicitante_id), persona(conObs.solicitante_id), persona(conCita.solicitante_id), persona(aprobada.solicitante_id)];
+  const vistas = {};
+  for (const zona of [ZONA, 'UTC']) {
+    ({ c, pg, errores } = await nuevo({ zona }));
+    vistas[zona] = [];
+    await pg.goto(BASE + 'index.html');
+    for (const p of personas) {
+      await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), p.id);
+      await pg.goto(BASE + 'tramites.html');
+      await pg.waitForSelector('[data-solicitudes] .ficha, [data-solicitudes] .vacio, [data-acreditaciones] .ficha');
+      await pg.waitForLoadState('networkidle');
+      vistas[zona].push((await pg.textContent('main')).replace(/\s+/g, ' '));
+    }
+    for (const v of [vigente, noVigente]) {
+      await pg.goto(BASE + 'verificar.html');
+      await pg.fill('#numero', v.numero);
+      await pg.click('[data-accion="enviar"]');
+      await pg.waitForSelector('[data-verificacion]:not([hidden])');
+      vistas[zona].push((await pg.textContent('[data-verificacion]')).replace(/\s+/g, ' '));
+    }
+    comprueba(errores.length === 0, t(`${zona}: «Mis trámites» y «Verificar» sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+    await c.close();
+  }
+  const distintas = vistas[ZONA].map((v, i) => (v === vistas.UTC[i] ? null : i)).filter((i) => i !== null);
+  comprueba(distintas.length === 0, t(`UTC: «Mis trámites» de ${personas.length} personas y «Verificar» de 2 números dicen lo mismo que en la Ciudad de México${distintas.length ? ` (distintas: ${distintas.join(', ')})` : ''}`));
+}
+
 async function accesibilidad(navegador) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
-  const page = await navegador.newPage({ viewport: { width: 390, height: 844 } });
+  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
@@ -3184,6 +3372,7 @@ try {
   if (!solo || solo === 'romper') await romper(navegador);
   if (!solo || solo === 'romper' || solo === 'romper2') await romperDos(navegador);
   if (!solo || solo === 'romper' || solo === 'romper3') await romperTres(navegador);
+  if (!solo || solo === 'fechas') await fechas(navegador);
   if (!solo) await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);

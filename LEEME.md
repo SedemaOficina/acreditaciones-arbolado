@@ -47,7 +47,7 @@ principio.
 | `docs/BITACORA-PROYECTO.md` | Bitácora del proyecto por bloques, con los resultados de cada corrida de pruebas |
 | `docs/VERSIONES.md` | Historial de versiones de prueba (generado) |
 | `docs/textos/` | Inventario de textos de las pantallas (`npm run textos`) |
-| `docs/AUDITORIA-*.md`, `docs/auditoria-integral/` y `docs/auditoria-tareas/` | Auditorías anteriores (registro) |
+| `docs/AUDITORIA-*.md`, `docs/auditoria-integral/`, `docs/auditoria-tareas/` y `docs/auditoria-romper/` | Auditorías (registro). La del 19/10/2026 tiene un informe sensible aparte, en los documentos del Proyecto (no en este repositorio) |
 | `maquetas/` | Maquetas aprobadas de cada pantalla (registro de diseño) |
 | `verificacion/capturas/` | Capturas de las pruebas del sitio en teléfono y escritorio (se regeneran en cada corrida; no se versionan, `.gitignore`) |
 | `verificacion/auditoria/` | Resultado de `herramientas/auditar-sitio.mjs`: recorre todas las pantallas en teléfono y escritorio (consola, enlaces, encimados, objetivos táctiles, botones sin efecto) |
@@ -59,7 +59,7 @@ Requiere Node 18+ y un PostgreSQL 13+ **de pruebas** (no hace falta PostGIS).
 
 ```sh
 npm run esquema                                    # regenera tablas y documentación desde db/esquema.json
-PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios y corre las pruebas de reglas
+PGHOST=... PGPORT=... PGUSER=... npm run probar-base   # base desechable: instala, carga ficticios, pruebas de reglas, concurrencia (dos conexiones) y respaldo con restauración
 ```
 
 `probar-base` se niega a correr sobre una base cuyo nombre no contenga «prueba», y se detiene en el primer

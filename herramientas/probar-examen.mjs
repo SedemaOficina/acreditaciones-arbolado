@@ -25,8 +25,9 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 
-async function contexto(ancho) {
-  const c = await navegador.newContext({ viewport: { width: ancho, height: ancho < 600 ? 844 : 900 } });
+/* Zona horaria del navegador fija: la de la Ciudad de México (auditoría 2026-10-19, B8-03); una pasada corta va en UTC */
+async function contexto(ancho, zona = 'America/Mexico_City') {
+  const c = await navegador.newContext({ viewport: { width: ancho, height: ancho < 600 ? 844 : 900 }, timezoneId: zona });
   c.errores = [];
   c.on('page', (p) => vigila(c, p));
   return c;
@@ -429,6 +430,42 @@ async function enviar(ex) {
       `B4: aplicar.html?folio=${folio} avisa («${texto}») y ofrece los grupos en curso, sin abrir otro`);
   }
   ok(c.errores.length === 0, `datos del examen sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
+  await c.close();
+}
+
+// ── Otra zona horaria (auditoría 2026-10-19, B8-03): con el navegador en UTC, «Enviado» y «Mis trámites» dicen lo mismo ──
+{
+  const c = await contexto(1280, 'UTC');
+  const p = await c.newPage();
+  await p.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await p.waitForSelector('[data-filas] tr');
+  const cod = await generar(p, 0);
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+  await entraYEmpieza(ex, cod);
+  await ex.evaluate((x) => APD_EXAMEN_API.pruebas.contestar(x, 'bien'), cod);
+  await ex.reload();
+  await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+  await ex.click('.examen-mapa-titulo');
+  await ex.locator('.examen-numero').last().click();
+  await enviar(ex);
+  const enviado = (await ex.textContent('[data-resultado-datos]')).match(/Enviado\s*(\d{2}\/\d{2}\/\d{4}), (\d{2}):(\d{2})/);
+  const r = await ex.evaluate(async (codigo) => {
+    const reg = JSON.parse(localStorage.getItem(`apd.examen.c.${codigo}`));
+    const d = await APD.cargar();
+    const ins = d.inscripcion.find((i) => i.id === reg.inscripcion_id);
+    const s = d.solicitud.find((x) => x.id === ins.solicitud_id);
+    return { estado: s.estado, solicitante: s.solicitante_id, examen_en: reg.grupo.examen_en };
+  }, cod);
+  // La hora de «Enviado» es la de la Ciudad de México, aunque el navegador esté en UTC (seis horas de diferencia)
+  const horaCiudad = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }).format(new Date()));
+  ok(enviado && enviado[1] === r.examen_en.split('-').reverse().join('/') && [horaCiudad, (horaCiudad + 23) % 24].includes(Number(enviado[2])),
+    `UTC: «Enviado» lleva la fecha del examen y la hora de la Ciudad (${enviado && enviado.slice(1).join(' ')}; hora de la Ciudad ${horaCiudad})`);
+  await p.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), r.solicitante);
+  await p.goto(`${BASE}tramites.html`);
+  await p.waitForSelector('[data-solicitudes] .ficha');
+  ok(r.estado === 'aprobada' && /Aprobada/.test(await p.textContent('[data-solicitudes]')), 'UTC: «Mis trámites» dice que aprobó');
+  ok(c.errores.length === 0, `UTC sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
   await c.close();
 }
 
