@@ -233,6 +233,9 @@
     /* ----- La persona ----- */
     /* equipo: identificador de la pantalla (cada pestaña del navegador tiene el suyo) */
     entrar(codigoEscrito, equipo) {
+      // Sin banco de preguntas (no cargó, vino dañado o vacío), ningún código se puede abrir: no es culpa del código y no
+      // se dice que no existe (auditoría 2026-10-19, B5-03). En el SIA, un error del servidor tampoco parece error de código.
+      if (!BANCO || !Array.isArray(BANCO.reactivos) || !BANCO.reactivos.length) return falla(null, 'No se pudo abrir el examen. Avisa a quien aplica el examen.', 'sin_banco');
       const codigo = global.APD_FORMATOS['codigo-examen'].normaliza(codigoEscrito);
       const t = lee();
       const reg = alDia(t, codigo);
