@@ -1300,6 +1300,7 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - `probar-reglas`: 173 → 298 casos; códigos de error sin caso, de 49 a 1 (`sin_adscripcion`, inalcanzable). De las 15
   pruebas de seguridad de la auditoría pasan 12: queda la pertenencia de la fila a la persona (D-06, P163) y la prueba
   de `public` en PostgreSQL 13-14, que se resuelve en la instalación (REGLAS).
-- Pruebas al cierre de los dos bloques (integrados): `probar-base` 298 de 298, concurrencia 20 de 20, restauración con
-  298 de 298; `probar-esquemas` todos; `probar-sitio` 772 (con axe); `probar-examen` 77; `probar-volumen` 52;
-  `auditar-sitio` 60 pantallas y 201 botones con los mismos 3 avisos aceptados. Versión de prueba 0.57.
+- Integrado sobre «intentar romperlo» 1 a 3 (bloques 75 a 77, que se hicieron en paralelo): la fecha pegada queda con
+  la solución de esos bloques; pendientes renumerados P162 a P170. Pruebas al cierre: `probar-base` 303 de 303,
+  concurrencia 20 de 20, restauración 303 de 303; `probar-esquemas` 128; `probar-sitio` 927 (con axe); `probar-examen`
+  79; `probar-volumen` 52; `auditar-sitio` 60 pantallas y 201 botones, sin avisos nuevos. Versión de prueba 0.57.

@@ -302,8 +302,8 @@ Aprobado: corregir los bloques 1 (fechas) y 2 (base) del plan.
 
 **Trabajo en paralelo.** Mientras se corregían los bloques 1 y 2, otra sesión subió a `main` las correcciones de «intentar romperlo», bloques 1 a 3 (versión 0.56; estado en `docs/AUDITORIA-2026-10-18-romper.md`). Con ellas cambian el estado de F2-A1, F1-8 y de los altos de «romperlo» que este informe daba como abiertos. Las dos líneas se integraron en la 0.57: la fecha pegada quedó con la solución de esa sesión (`app/apd.js`, más completa) y esta agrega el tope de un año, la base y lo demás.
 
-Pruebas al cierre: base 298 de 298, concurrencia 20 de 20, restauración 298 de 298, esquemas 120, sitio 772, examen 77,
-volumen 52, barrido de 60 pantallas con los mismos 3 avisos aceptados. Sin fallas nuevas contra la línea base.
+Pruebas al cierre (0.57, integrada): base 303 de 303, concurrencia 20 de 20, restauración 303 de 303, esquemas 128,
+sitio 927, examen 79, volumen 52, barrido de 60 pantallas sin avisos nuevos. Sin fallas nuevas contra la línea base.
 
 ## 9. Fallas de componentes compartidos (estándar de formularios)
 

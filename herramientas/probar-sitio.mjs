@@ -3166,6 +3166,9 @@ async function fechas(navegador) {
   // 2 · Cotejo: la cita nueva (no se presentó), insertada de golpe
   ({ c, pg, errores } = await nuevo());
   await pg.goto(BASE + `cotejo.html?folio=${conCita.folio}`);
+  // La cita es de otro día: en la prueba se atiende «como si fuera su día» (romper F2 A6)
+  await pg.waitForSelector('[data-atender-simulada]:not([hidden]), #formulario:not([hidden])');
+  if (await pg.isVisible('[data-atender-simulada]')) await pg.click('[data-atender-simulada]');
   await pg.waitForSelector('#formulario:not([hidden])');
   await pg.check('input[name="se_presento"][value="no"]');
   comprueba(await inserta(pg, '#cita_fecha', '2026-11-02') === '02/11/2026', t('cotejo: «2026-11-02» insertado de golpe en la cita nueva deja 02/11/2026'));
@@ -3223,6 +3226,7 @@ async function fechas(navegador) {
   await pg.selectOption('#instructor', 'instructor2.ficticio');
   await pg.click('#confirmar [data-accion="enviar"]');
   await pg.waitForURL(/hecho=confirmado|folio=APD-G-2026-004$/);
+  await pg.waitForLoadState('networkidle');
   await pg.waitForSelector('[data-situacion] .estado');
   comprueba(await pg.evaluate((f) => APD.cargar().then((d) => { const g = d.grupo.find((x) => x.folio === f); return `${g.estado} ${g.fecha_inicio}`; }), g4.folio) === 'confirmado 2026-11-02'
     && (await anioImposible(pg)).length === 0, t('grupo: queda confirmado el 02/11/2026, sin años imposibles'));
