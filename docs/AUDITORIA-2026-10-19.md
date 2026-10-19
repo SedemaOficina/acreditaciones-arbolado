@@ -292,19 +292,24 @@ G1-05 (el Manual técnico de poda tiene cuota de $299 por ejemplar y el sistema 
 
 Aprobado: corregir los bloques 1 (fechas) y 2 (base) del plan.
 
-### Estado de los hallazgos al 19/10/2026 (versión de prueba 0.57, bloques 1 y 2)
+### Estado de los hallazgos al 19/10/2026 (versión de prueba 0.60, bloques 1 a 5)
 
 | Estado | Hallazgos |
 |---|---|
 | **Corregidos** (con la prueba que los encontró: fallaba antes, pasa después) | Altos: R4-01, E2-01, E2-02, E2-03. Medios: R4-02, A1-01, A1-03 (de 49 códigos sin caso queda 1, inalcanzable), A2-01, E2-04, B8-01, G1-02 (P16 y P140), R4-05 (P162 a P165). Bajos: E2-07, D2-01, B8-02, B8-03. Registrados antes: D-01, D-07, D-10 (el permiso de `public` en PostgreSQL 13-14 queda como paso de instalación), D-13 (= E2-06), F2-A1 |
 | **Corregido en parte** | E2-05: huella del respaldo y restauración de prueba en `probar-base`; el sello en cadena de la bitácora queda para antes de datos reales (P169). D-06: asistencia y examen exigen sesión de personal; la pertenencia de la fila a la persona queda para la etapa 3 (P170). G1-01: los documentos ya citan la fuente real; el fondo se consulta con Jurídico (P03) |
-| **Corregidos en el bloque 3** (rama del PR #2) | R4-03, R4-04 (y RI-07), B2-01, E1-01, E1-02, B5-02, B5-03, B5-04, F3-01, R4-07 / A4-01 (en el sitio; quedan variables sin uso en tres herramientas), R4-14, R4-15. B5-01 ya estaba corregido en 0.58. R4-08 en parte: las listas de horas e instructores se quedan en el HTML porque de ahí sale el esquema del servidor |
-| **Abiertos** (bloques 4 a 7) | Los demás de la sección 5. |
+| **Corregidos en el bloque 3** (PR #2, versión 0.59) | R4-03, R4-04 (y RI-07), B2-01, E1-01, E1-02, B5-02, B5-03, B5-04, F3-01, R4-07 / A4-01 (en el sitio; quedan variables sin uso en tres herramientas), R4-14, R4-15. B5-01 ya estaba corregido en 0.58. R4-08 en parte: las listas de horas e instructores se quedan en el HTML porque de ahí sale el esquema del servidor |
+| **Corregidos en los bloques 4 y 5** (PR #3, versión 0.60) | Estándar de formularios 1.5.1: P126 a P131 (1.4.2), P134 y P135 (1.4.4), P145 a P148 (1.5.0 y 1.5.1), con sus soluciones provisionales quitadas (sección 9). P148 corrigió además una falla de la 0.59: tras recuperar un borrador, los documentos cargados después no entraban en él. Documentos: R4-06, R4-09, R4-10, R4-11, R4-12, D3-01, G1-03 y «por vencer» en REGLAS. P152 sigue sin resolverse en la 1.5.1: se queda la solución del proyecto |
+| **Abiertos** (bloques 6 y 7, y la auditoría de pantallas sobre la 1.5.1) | Los demás de la sección 5. |
 
 **Trabajo en paralelo.** Mientras se corregían los bloques 1 y 2, otra sesión subió a `main` las correcciones de «intentar romperlo», bloques 1 a 3 (versión 0.56; estado en `docs/AUDITORIA-2026-10-18-romper.md`). Con ellas cambian el estado de F2-A1, F1-8 y de los altos de «romperlo» que este informe daba como abiertos. Las dos líneas se integraron en la 0.57: la fecha pegada quedó con la solución de esa sesión (`app/apd.js`, más completa) y esta agrega el tope de un año, la base y lo demás.
 
 Pruebas al cierre (0.57, integrada): base 303 de 303, concurrencia 20 de 20, restauración 303 de 303, esquemas 128,
 sitio 927, examen 79, volumen 52, barrido de 60 pantallas sin avisos nuevos. Sin fallas nuevas contra la línea base.
+
+Pruebas al cierre de los bloques 4 y 5 (0.60): base 303 de 303, concurrencia 20 de 20, restauración correcta,
+esquemas 131, sitio 1029, examen 79, volumen 64, auditor de CSS del estándar 0; `auditar-sitio`, los mismos 2 avisos
+ya conocidos. Sin fallas nuevas contra la 0.59.
 
 ## 9. Fallas de componentes compartidos (estándar de formularios)
 
