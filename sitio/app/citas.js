@@ -91,6 +91,23 @@
       pinta();
     });
   }
+  /* Encabezado del día por resultado de la cita (decisión 7 de la auditoría del 2026-10-19, Liber; B2-01): «8 citas: 7
+     atendidas, 1 no se presentó». «Atendida» es sólo la cita con ese resultado (apd.cita.resultado), no toda la que ya se
+     cerró; las abiertas (también las de un día anterior sin registrar) van «por atender». */
+  const DESGLOSE_DE = { cerrada: 'no_se_presento' };
+  const DESGLOSE = [
+    ['atendida', '1 atendida', (k) => `${k} atendidas`],
+    ['con_observaciones', '1 regresó con observaciones', (k) => `${k} regresaron con observaciones`],
+    ['no_se_presento', '1 no se presentó', (k) => `${k} no se presentaron`],
+    ['sin_pago', '1 sin pago', (k) => `${k} sin pago`],
+    ['pausa_vencida', '1 pausa vencida', (k) => `${k} pausas vencidas`],
+    ['no_es_la_persona', '1 no era la persona', (k) => `${k} no eran la persona`],
+    ['cancelada', '1 cancelada', (k) => `${k} canceladas`],
+    ['pendiente', '1 por atender', (k) => `${k} por atender`]
+  ];
+  const desglose = (cuenta) => DESGLOSE.filter(([k]) => cuenta[k]).map(([k, uno, varios]) => (cuenta[k] === 1 ? uno : varios(cuenta[k])))
+    .concat(Object.keys(cuenta).filter((k) => !DESGLOSE.some(([x]) => x === k)).map((k) => `${cuenta[k]} ${(P.SITUACION[k] || { texto: k }).texto.toLowerCase()}`))
+    .join(', ');
   function pinta() {
     const q = norm(document.getElementById('buscar').value);
     // El día elegido queda en la dirección (?dia=): al volver del cotejo, con «Atrás» o al recargar, la agenda sigue en
@@ -98,13 +115,13 @@
     const url = new URL(location.href);
     if (url.searchParams.get('dia') !== dia) { url.searchParams.set('dia', dia); history.replaceState(null, '', url); }
     let n = 0;
-    let atendidas = 0;
+    const cuenta = {};
     for (const f of filas) {
       const ve = q ? f.texto.includes(q) : f.dia === dia;
       f.tr.hidden = !ve;
       // Al buscar en todos los días, la hora lleva también la fecha
       f.hora.textContent = q ? `${APD.fecha(f.dia)} ${P.horaDe(f.c.en)}` : P.horaDe(f.c.en);
-      if (ve) { n += 1; if (!f.c.pendiente) atendidas += 1; }
+      if (ve) { n += 1; const k = f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
     }
     $('[data-col-hora]').textContent = q ? 'Fecha y hora' : 'Hora';
     $('[data-dia]').textContent = q ? 'Resultados en todos los días' : diaLargo(dia);
@@ -119,7 +136,7 @@
     $('[data-cuenta]').textContent = q
       ? (n ? `${n === 1 ? 'Una cita coincide' : `${n} citas coinciden`} con la búsqueda.` : 'Ninguna cita coincide con la búsqueda.')
       : !n ? 'No hay citas este día.'
-        : `${n === 1 ? '1 cita' : `${n} citas`}: ${atendidas === 1 ? '1 atendida' : `${atendidas} atendidas`} y ${n - atendidas} por atender.`;
+        : `${n === 1 ? '1 cita' : `${n} citas`}: ${desglose(cuenta)}.`;
   }
   for (const b of botones) {
     b.addEventListener('click', () => {

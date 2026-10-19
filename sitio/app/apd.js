@@ -57,10 +57,20 @@
   const MODALIDADES = { nueva: 'Solicitud nueva', renovacion: 'Renovación' };
 
   let promesa = null;
+  /* En cada tabla de los datos, sólo lo que tiene forma de registro (un objeto): un null o un valor suelto se salta, en vez
+     de tumbar las pantallas que la recorren (auditoría 2026-10-19, B5-04; lo mismo que hace la mezcla con lo guardado en
+     el navegador, F4 A6). Una tabla que falta sigue siendo un error de carga. */
+  const esRegistro = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
+  function soloRegistros(d) {
+    if (!esRegistro(d)) throw new Error('datos');
+    for (const [k, v] of Object.entries(d)) if (Array.isArray(v) && v.some((x) => !esRegistro(x))) d[k] = v.filter(esRegistro);
+    return d;
+  }
   function cargar() {
     if (!promesa) {
       promesa = fetch('datos/ficticios.json', { cache: 'no-store' })
-        .then((r) => { if (!r.ok) throw new Error('datos'); return r.json(); });
+        .then((r) => { if (!r.ok) throw new Error('datos'); return r.json(); })
+        .then(soloRegistros);
     }
     // Versión de prueba: lo registrado en este navegador (cuentas, solicitudes, documentos, cambios de perfil) se suma
     // cada vez, para que todas las pantallas vean lo último (app/archivos-prueba.js)
@@ -183,12 +193,6 @@
   /* Días naturales que faltan para que venza (negativo si ya venció), contados desde hoy (decisión 2026-10-17) */
   function diasParaVencer(datos, venceEn) {
     return Math.round((aFecha(venceEn) - aFecha(hoy(datos))) / 86400000);
-  }
-  function textoVence(n) {
-    if (n > 1) return `Faltan ${n.toLocaleString('es-MX')} días`;
-    if (n === 1) return 'Falta 1 día';
-    if (n === 0) return 'Vence hoy';
-    return n === -1 ? 'Venció hace 1 día' : `Venció hace ${(-n).toLocaleString('es-MX')} días`;
   }
   /* Las filas de vencimiento de una ficha, con el rótulo según el caso (auditoría 2026-10-18, D10: «Para vencer» con
      «Venció hace 523 días» se leía al revés): vigente, «Vence el» y «Vence en»; vencida, «Venció el» y «Vencida hace». */
@@ -840,8 +844,8 @@
     fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
-    cursoCorto, cursoLargo, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
-    cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,
+    cursoCorto, cursoLargo, MESES, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
+    cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,

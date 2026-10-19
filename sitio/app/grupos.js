@@ -10,7 +10,8 @@
      · «Próximas semanas»: esta semana (grupos en curso, «Día X de Y» o «examen hoy») y las siguientes, cada una con su
        grupo (cupo de 25 lugares, «Completar con las N que más esperan», «Confirmar el grupo», «Ver a las personas») o, si
        está libre y se puede (7 días de anticipación, sin otro curso igual esas fechas), «Programar un curso esta semana».
-       Al final, «Sin fecha» y los grupos que ya terminaron.
+       Arriba, «Su fecha ya pasó» (propuestas vencidas y confirmados que no iniciaron), con «Elegir otra semana»; al
+       final, «Sin fecha» y los grupos que ya terminaron.
    Cada grupo se reconoce por su nombre calculado (APD.nombreGrupo, propuesta D) y su folio en chico. Lo hecho se guarda
    como en la espera y en la ficha (APD_PERSONAL.guardaGrupo: agregar, confirmar); la base lo vuelve a aplicar
    (apd.inscripcion_alta, apd.grupo_cambio). En la etapa 3 los datos los da la API del personal. */
@@ -160,13 +161,12 @@
       const lista = soloOrg ? espera.filter((x) => x.s.organizacion_id === soloOrg) : espera;
       const activos = delCurso.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado)).length;
       $('[data-cuenta]').textContent = `${largo}: ${plural(espera.length, 'persona en espera', 'personas en espera')} · ${plural(activos, 'grupo activo', 'grupos activos')} (por confirmar, confirmados o en curso).`;
-      pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg });
+      pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe: delCurso.filter((x) => x.recibe) });
       pintaSemanas({ tipo, modalidad, c, largo, delCurso, espera });
     }
 
     /* ----- En espera ----- */
-    function pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg }) {
-      const alerta = APD.parametro(datos, 'dias_alerta_espera') || 31;
+    function pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
       $('#t-espera').textContent = `En espera · ${lista.length}`;
       $('[data-orden]').textContent = renov ? 'primero quien vence antes' : 'primero quien más espera';
       const modo = $('[data-modo-grupo]');
@@ -183,35 +183,36 @@
         $('.aviso-texto', modo).append(el('p', {}, [volver]));
       }
       const filas = [];
-      const casilla = (x, etiqueta) => {
-        const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio, 'aria-label': etiqueta || null });
+      // La fila de cada persona y el bloque de su organización, los mismos de «Programar» (P.filaEspera, P.bloqueEspera)
+      const persona = (x, conAdscripcion) => {
+        const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio });
         filas.push({ x, k });
-        return k;
+        return P.filaEspera(x, k, conAdscripcion);
       };
-      const espera = (x) => {
-        const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
-        const partes = [x.prioritaria ? estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias })];
-        if (renov && x.vence) partes.push(x.vencida ? estado(`Vencida el ${fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `vence el ${fecha(x.vence)}` }));
-        return el('span', { class: 'plan-persona-espera' }, partes);
+      /* «Su grupo» de cada organización (decisión 2 de la auditoría del 2026-10-19, Liber; DECISIONES, 17/10): si ya tiene un
+         grupo propio que recibe personas, se dice cuál y cuántas le faltan; si no, si alcanzan para uno propio */
+      const suGrupo = (org) => (org ? delCursoRecibe.find((y) => y.g.integracion === 'especifico' && y.g.organizacion_id === org) : null);
+      const textoSuGrupo = (y) => {
+        const falta = y.g.cupo_minimo - y.n;
+        return `Su grupo ${y.g.folio}: ${y.n} de ${y.g.cupo_maximo}${falta > 0 ? `, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : `, caben ${y.lugar}`}`;
       };
-      const persona = (x, conAdscripcion) => el('label', { class: 'plan-persona' }, [
-        casilla(x),
-        el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
-        espera(x),
-        conAdscripcion ? el('span', { class: 'plan-persona-org', texto: x.organizacion }) : null
-      ]);
+      const situacionBloque = (b) => {
+        const y = suGrupo(b.clave);
+        if (y) return estado(textoSuGrupo(y), y.n < y.g.cupo_minimo ? 'pend' : 'ok');
+        const falta = c.cupo_minimo - b.xs.length;
+        return falta <= 0 ? estado('Alcanza para un grupo propio', 'ok')
+          : el('span', { class: 'plan-bloque-grupo', texto: `${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para un grupo propio de ${c.cupo_minimo}; o van a un grupo combinado` });
+      };
       const bloques = P.bloquesEspera(lista).map((b, i) => {
-        if (!b.junta) return persona(b.xs[0], true);
-        const todas = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', 'aria-label': `Elegir a las ${b.xs.length} personas de ${b.nombre}` });
+        if (!b.junta) {
+          // Sola de su organización, pero con su grupo: también se dice
+          const y = suGrupo(b.xs[0].s.organizacion_id);
+          const fila = persona(b.xs[0], true);
+          if (y) fila.append(el('span', { class: 'plan-persona-org' }, [estado(textoSuGrupo(y), y.n < y.g.cupo_minimo ? 'pend' : 'ok')]));
+          return fila;
+        }
         const propias = b.xs.map((x) => persona(x, false));
-        const suyas = () => filas.filter((f) => b.xs.includes(f.x));
-        todas.addEventListener('change', () => { for (const f of suyas()) f.k.checked = todas.checked; pintaEleccion(); });
-        const refleja = () => { const m = suyas().filter((f) => f.k.checked).length; todas.checked = m === b.xs.length; todas.indeterminate = m > 0 && m < b.xs.length; };
-        const bloque = el('div', { class: 'plan-bloque', role: 'group', 'aria-labelledby': `bloque-${i}` }, [
-          el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id: `bloque-${i}`, texto: `${b.nombre} · ${b.xs.length} personas, juntas` })]),
-          ...propias
-        ]);
-        bloque.addEventListener('change', (e) => { if (e.target !== todas) refleja(); });
+        const { bloque } = P.bloqueEspera(b, `bloque-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => pintaEleccion());
         return bloque;
       });
       $('[data-personas]').replaceChildren(...(bloques.length ? bloques : [el('p', { class: 'texto-gris', texto: soloOrg ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
@@ -289,11 +290,20 @@
       const lunes0 = P.lunesDe(hoy);
       const activos = delCurso.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado));
       const conFecha = activos.filter((x) => x.g.fecha_inicio && (x.g.estado === 'en_curso' || APD.ultimoDia(datos, x.g) >= lunes0));
-      const sinFecha = activos.filter((x) => !conFecha.includes(x));
+      // Con fecha, pero ya pasó: una propuesta que nadie confirmó o un grupo confirmado que no inició (P124). No son «Sin
+      // fecha»: van en su sección, arriba, para elegir otra semana (auditoría 2026-10-19, R4-04 y RI-07)
+      const pasada = activos.filter((x) => !conFecha.includes(x) && x.g.fecha_inicio);
+      const sinFecha = activos.filter((x) => !conFecha.includes(x) && !x.g.fecha_inicio);
       // Semana de cada grupo: la de su primer día; un grupo en curso que empezó antes, en esta semana
       const semanaDe = (x) => Math.max(0, Math.round((new Date(`${P.lunesDe(x.g.fecha_inicio)}T12:00:00-06:00`) - new Date(`${lunes0}T12:00:00-06:00`)) / (7 * 86400000)));
       const total = Math.max(SEMANAS, ...conFecha.map((x) => semanaDe(x) + 1));
       const secciones = [];
+      if (pasada.length) {
+        secciones.push(el('section', { class: 'plan-semana', 'aria-labelledby': 'semana-pasada', 'data-semana': 'pasada' }, [
+          el('h4', { class: 'plan-semana-titulo', id: 'semana-pasada' }, [el('span', { class: 'plan-semana-nombre', texto: 'Su fecha ya pasó' })]),
+          el('div', { class: 'plan-semana-cuerpo' }, pasada.sort((a, b) => a.g.fecha_inicio.localeCompare(b.g.fecha_inicio)).map((x) => tarjeta(x, espera, 'h5', true)))
+        ]));
+      }
       for (let i = 0; i < total; i++) {
         const lunes = APD.sumaDias(lunes0, 7 * i);
         const domingo = APD.sumaDias(lunes, 6);
@@ -340,12 +350,15 @@
     }
 
     /* La tarjeta de un grupo en su semana */
-    function tarjeta(x, espera, nivel) {
+    /* pasada: su fecha ya pasó (propuesta vencida, o confirmado que no inició): sin el examen como si fuera a ocurrir */
+    function tarjeta(x, espera, nivel, pasada) {
       const { g, c } = x;
       const dia = P.diaDelCurso(datos, g);
       const fin = APD.ultimoDia(datos, g);
-      const situacion = dia ? estado(dia.texto, 'marcha') : estado(x.situacion.texto, x.situacion.tono);
-      const examen = !g.fecha_inicio ? null : c.dias_duracion > 1 ? `examen el ${APD.diaSemana(fin)} ${fecha(fin).slice(0, 5)} en el PILARES` : 'examen ese día en el PILARES';
+      const situacion = dia ? estado(dia.texto, 'marcha')
+        : pasada && g.estado === 'en_integracion' ? estado('Propuesta vencida', 'pend')
+          : pasada ? estado(`${x.situacion.texto} · no inició`, 'pend') : estado(x.situacion.texto, x.situacion.tono);
+      const examen = !g.fecha_inicio || pasada ? null : c.dias_duracion > 1 ? `examen el ${APD.diaSemana(fin)} ${fecha(fin).slice(0, 5)} en el PILARES` : 'examen ese día en el PILARES';
       // Un grupo por confirmar lleno ya no recibe, pero se confirma y se le elige semana como cualquiera (auditoría
       // «intentar romperlo», F3 M3): el cupo y esas acciones van con «por confirmar»; sólo «Completar» pide lugar
       const integra = g.estado === 'en_integracion';
@@ -370,7 +383,8 @@
         if (falta > 0) {
           const van = P.lasQueMasEsperan(espera, falta, filtro);
           if (van.length) {
-            const b = el('button', { type: 'button', class: 'btn btn-primario btn-chico', texto: van.length === 1 ? 'Completar con la que más espera' : `Completar con las ${van.length} que más esperan` });
+            // Con la fecha ya pasada, lo principal es elegir otra semana
+            const b = el('button', { type: 'button', class: `btn ${pasada ? 'btn-secundario' : 'btn-primario'} btn-chico`, texto: van.length === 1 ? 'Completar con la que más espera' : `Completar con las ${van.length} que más esperan` });
             b.addEventListener('click', () => {
               // Deshabilitado mientras guarda (F3 B10); el aviso dice cuántas entraron de verdad (F3 M1)
               const libera = APD.ocupa(b);
@@ -386,8 +400,8 @@
       }
       if (integra && falta <= 0) acciones.push(botonConfirmar(x));
       if (integra) {
-        acciones.push(el('a', { class: 'btn btn-secundario btn-chico', href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
-          texto: g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana' }));
+        acciones.push(el('a', { class: `btn ${pasada ? 'btn-primario' : 'btn-secundario'} btn-chico`, href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
+          texto: pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana' }));
       }
       acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado}`, texto: 'Ver a las personas' }));
       partes.push(el('div', { class: 'plan-grupo-acciones' }, acciones));

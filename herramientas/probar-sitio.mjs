@@ -10,7 +10,7 @@
 // Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
 
 import { chromium } from 'playwright';
-import { readFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
@@ -794,7 +794,6 @@ async function solicitudRegresos(navegador, ancho, alto, sufijo) {
   page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`));
   const t = (m) => `[solicitud ${sufijo}] ${m}`;
   const llega = (re) => page.waitForURL(re, { timeout: 5000 }).then(() => true, () => false);
-  const tituloPaso = () => page.$eval(`${pasoVisible} .titulo-paso`, (e) => e.textContent).catch(() => '');
   const enPaso = (re) => page.waitForFunction((r) => { const p = document.querySelector('section[data-paso]:not([hidden]) .titulo-paso'); return p && new RegExp(r).test(p.textContent); }, re, { timeout: 4000 }).then(() => true, () => false);
 
   // B7: un enlace con ?folio= sin sesión pasa por «Entrar» y regresa a la misma solicitud, con su folio
@@ -1112,6 +1111,36 @@ async function caminosCotejo(navegador) {
   };
   const abre = (pg, folio) => abreCotejo(pg, folio);
   const registra = async (pg) => { await pg.click('[data-accion="enviar"]'); await pg.waitForSelector('[data-hecho]:not([hidden])'); };
+
+  // B2-01 (decisión 7 de la auditoría del 2026-10-19): el encabezado de cada día de la agenda desglosa por resultado de la
+  // cita (apd.cita.resultado), como lo contaría la base: «8 citas: 7 atendidas, 1 no se presentó»
+  {
+    const { c, pg } = await nuevo();
+    const diaMX = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: ZONA });
+    const porDia = {};
+    for (const x of datos.cita) {
+      const d = diaMX(x.programada_en);
+      const abierta = ['pendiente', 'en_pausa'].includes(x.resultado);
+      const k = x.resultado === 'en_pausa' && d < datos.fecha_corte ? 'pausa_vencida' : abierta ? 'pendiente' : x.resultado;
+      (porDia[d] ||= {})[k] = (porDia[d][k] || 0) + 1;
+    }
+    const ORDEN = [['atendida', 'atendida', 'atendidas'], ['no_se_presento', 'no se presentó', 'no se presentaron'], ['sin_pago', 'sin pago', 'sin pago'],
+      ['pausa_vencida', 'pausa vencida', 'pausas vencidas'], ['cancelada', 'cancelada', 'canceladas'], ['pendiente', 'por atender', 'por atender']];
+    let iguales = 0;
+    const distintos = [];
+    for (const [d, k] of Object.entries(porDia).sort()) {
+      const n = Object.values(k).reduce((a, b) => a + b, 0);
+      const esperado = `${n === 1 ? '1 cita' : `${n} citas`}: ${ORDEN.filter(([r]) => k[r]).map(([r, uno, varios]) => `${k[r]} ${k[r] === 1 ? uno : varios}`).join(', ')}.`;
+      await pg.goto(BASE + `citas.html?dia=${d}`);
+      await pg.waitForSelector('[data-filas] tr', { state: 'attached' });
+      const leido = ((await pg.textContent('[data-cuenta]')) || '').trim();
+      if (leido === esperado) iguales += 1; else distintos.push(`${d}: «${leido}» ≠ «${esperado}»`);
+    }
+    comprueba(!distintos.length && iguales > 10, t(`el encabezado de cada día (${iguales}) desglosa por resultado, como la base${distintos.length ? ': ' + distintos.join('; ') : ''}`));
+    comprueba(/8 citas: 7 atendidas, 1 no se presentó\./.test(((await (async () => { await pg.goto(BASE + 'citas.html?dia=2026-10-06'); await pg.waitForSelector('[data-filas] tr', { state: 'attached' }); return pg.textContent('[data-cuenta]'); })()) || '')),
+      t('el 06/10: «8 citas: 7 atendidas, 1 no se presentó» (no «8 atendidas»)'));
+    await c.close();
+  }
   // Día/mes/año: la fecha de la cita nueva usa el formato «fecha-dma» del estándar (D9)
   // La cita nueva no queda antes de la perdida (F2 A6): el día siguiente al de la cita (en la prueba se atiende «como si
   // fuera su día»)
@@ -1482,12 +1511,20 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(/Poda nueva · del 26 al 30 de octubre/.test(tramA) && tramA.includes(g005.folio) && tramA.includes('26/10/2026'), t('«Mis trámites»: el grupo confirmado por su nombre calculado, con su folio y su primer día'));
   await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
 
-  // ── Desde la ficha de un grupo: «Agregar personas de la espera» (la dirección vieja espera.html lleva a Grupos) ──
+  // ── Desde la ficha de un grupo: «Agregar personas de la espera», con el botón de la ficha (auditoría 2026-10-19,
+  // R4-14: antes se entraba por espera.html y el enlace real no se recorría) ──
+  await pg.goto(BASE + `grupo.html?folio=${integracion.folio}`);
+  const agregar = pg.locator('[data-acciones] a', { hasText: /^Agregar personas de la espera \(\d+ en espera\)$/ });
+  await agregar.waitFor();
+  await Promise.all([pg.waitForURL(/grupos\.html/), agregar.click()]);
+  await pg.waitForSelector('.plan-persona input');
+  comprueba(pg.url() === `${BASE}grupos.html?curso=poda-nueva&grupo=${integracion.folio}` && /Agregando personas a «Poda nueva · sin fecha»/.test(await texto('[data-modo-grupo]'))
+    && (await pg.$$('[data-destinos] button')).length === 1, t('R4-14: «Agregar personas de la espera» de la ficha lleva a Grupos con el curso y el grupo; sólo ese grupo recibe'));
+  // La dirección vieja (espera.html) lleva al mismo lugar
   await pg.goto(BASE + `espera.html?curso=poda-nueva&grupo=${integracion.folio}`);
   await pg.waitForURL(/grupos\.html\?curso=poda-nueva&grupo=/);
   await pg.waitForSelector('.plan-persona input');
-  comprueba(/Agregando personas a «Poda nueva · sin fecha»/.test(await texto('[data-modo-grupo]')) && (await pg.$$('[data-destinos] button')).length === 1,
-    t('espera.html lleva a Grupos con el curso y el grupo; sólo ese grupo recibe'));
+  comprueba(pg.url() === `${BASE}grupos.html?curso=poda-nueva&grupo=${integracion.folio}`, t('espera.html lleva a la misma dirección de Grupos'));
   const primero = await pg.getAttribute('.plan-persona input', 'value');
   await pg.check(`.plan-persona input[value="${primero}"]`);
   await pg.click('[data-destinos] button');
@@ -1630,6 +1667,28 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await sinDesborde(pg, t('grupo concluido con su concentrado'));
   comprueba(enCurso && errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
+
+  // R4-04 y RI-07 (auditoría 2026-10-19): una propuesta vencida (APD-G-2026-005 al 28/09) y un grupo confirmado cuya semana
+  // pasó sin iniciar (APD-G-2026-004 al 05/10) no van en «Sin fecha»: van en «Su fecha ya pasó», con «Elegir otra semana»
+  const pasados = JSON.parse(JSON.stringify(datos));
+  for (const g of pasados.grupo) {
+    if (g.folio === 'APD-G-2026-005') g.fecha_inicio = '2026-09-28';
+    if (g.folio === 'APD-G-2026-004') Object.assign(g, { estado: 'confirmado', fecha_inicio: '2026-10-05', hora_entrada: '09:00:00', instructor: 'instructor2.ficticio' });
+  }
+  const c2 = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+  await c2.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(pasados), contentType: 'application/json' }));
+  const p2 = await c2.newPage();
+  await p2.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await p2.waitForSelector('.plan-semana');
+  const enSin = await p2.$$eval('.plan-semana[data-semana=""] .plan-grupo', (l) => l.map((x) => x.dataset.grupo));
+  const enPasada = await p2.$$eval('.plan-semana[data-semana="pasada"] .plan-grupo', (l) => l.map((x) => x.dataset.grupo));
+  const t005 = (await p2.textContent('.plan-grupo[data-grupo="APD-G-2026-005"]')) || '';
+  comprueba(!enSin.length && enPasada.join() === 'APD-G-2026-005,APD-G-2026-004' && /Su fecha ya pasó/.test(await p2.textContent('[data-semanas]')),
+    t('un grupo con fecha pasada no va en «Sin fecha»: va en «Su fecha ya pasó»'));
+  comprueba(/Propuesta vencida/.test(t005) && !/examen el/.test(t005) && (await p2.getAttribute('.plan-grupo[data-grupo="APD-G-2026-005"] a:has-text("Elegir otra semana")', 'href')) === 'programar.html?curso=poda-nueva&grupo=APD-G-2026-005'
+    && /no inició/.test(await p2.textContent('.plan-grupo[data-grupo="APD-G-2026-004"]')), t('la propuesta vencida lo dice, sin examen por venir, y lleva a «Elegir otra semana»; el confirmado dice que no inició'));
+  await sinDesborde(p2, t('su fecha ya pasó'));
+  await c2.close();
 }
 const APDfecha = (iso) => iso.split('-').reverse().join('/');
 
@@ -1647,6 +1706,58 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
   const texto = async (sel) => (await pg.textContent(sel)) || '';
   const sinFecha = datos.grupo.find((g) => g.estado === 'en_integracion' && !g.fecha_inicio);
+
+  // E1-02 (auditoría 2026-10-19): ?grupo= con texto libre no se repite en pantalla; un folio con forma de folio, sí
+  await pg.goto(BASE + `programar.html?grupo=${encodeURIComponent('APD-G-2026-999. Llame al 0000000000 para confirmar')}`);
+  await pg.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-bajada]').textContent));
+  const reflejo = await pg.evaluate(() => document.body.innerText);
+  await pg.goto(BASE + 'programar.html?grupo=APD-G-2026-999');
+  await pg.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-bajada]').textContent));
+  comprueba(!/Llame al|0000000000/.test(reflejo) && /No se encontró ese grupo/.test(reflejo) && /No se encontró el grupo APD-G-2026-999\./.test(await texto('[data-bajada]')),
+    t('E1-02: el texto libre de ?grupo= no se repite en pantalla; un folio válido que no existe, sí'));
+
+  // B5-02 (auditoría 2026-10-19): salir con cambios lo advierte el navegador; recargar, «Atrás» y «Adelante» conservan la
+  // semana elegida (va en la dirección)
+  {
+    const c2 = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+    const p2 = await c2.newPage();
+    const dialogos = [];
+    p2.on('dialog', (d) => { dialogos.push(d.type()); d.accept(); });
+    await p2.goto(BASE + 'programar.html?curso=poda-nueva');
+    await p2.waitForSelector('.cal-dia');
+    const sinCambios = await p2.evaluate(() => { const ev = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(ev); return ev.defaultPrevented; });
+    await p2.click('.cal-dia[data-fecha="2026-11-16"]');
+    await p2.selectOption('#hora_entrada', '07:00');
+    await p2.reload();
+    await p2.waitForSelector('.cal-dia');
+    comprueba(!sinCambios && dialogos.includes('beforeunload') && (await p2.inputValue('#fecha_inicio')) === '16/11/2026' && /semana=2026-11-16/.test(p2.url()),
+      t('B5-02: recargar con cambios lo advierte y conserva la semana elegida; sin cambios no advierte'));
+    await p2.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await p2.waitForSelector('.plan-persona input');
+    await p2.goto(BASE + 'programar.html?curso=poda-nueva');
+    await p2.waitForSelector('.cal-dia');
+    await p2.click('.cal-dia[data-fecha="2026-11-23"]');
+    await p2.goBack();
+    await p2.waitForURL(/grupos\.html/);
+    await p2.goForward();
+    await p2.waitForSelector('.cal-dia');
+    comprueba((await p2.inputValue('#fecha_inicio')) === '23/11/2026', t('B5-02: «Atrás» y «Adelante» conservan la semana elegida'));
+    await c2.close();
+  }
+  // R4-15 (auditoría 2026-10-19): el calendario del curso no lleva el atributo del botón de calendario de los campos de
+  // fecha, y su leyenda dice los días de anticipación del parámetro (aquí 10)
+  {
+    const diez = JSON.parse(JSON.stringify(datos));
+    diez.parametro.find((p) => p.clave === 'dias_anticipacion_grupo').valor = '10';
+    const c2 = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+    await c2.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(diez), contentType: 'application/json' }));
+    const p2 = await c2.newPage();
+    await p2.goto(BASE + 'programar.html?curso=poda-nueva');
+    await p2.waitForSelector('.cal-dia');
+    comprueba(!(await p2.evaluate(() => Boolean(document.querySelector('.cal-dia').closest('[data-calendario]')))) && /menos de 10 días/.test(await p2.textContent('[data-leyenda-no]')),
+      t('R4-15: el calendario del curso no es un [data-calendario] y su leyenda toma los días del parámetro'));
+    await c2.close();
+  }
 
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
   await pg.waitForSelector('.plan-persona input');
@@ -1740,6 +1851,11 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
 // Material de estudio (decisión 2026-10-18): la página pública sin cuenta y la del personal (agregar, ocultar)
 async function materialEstudio(navegador, ancho, alto, sufijo) {
   const t = (m) => `[material ${sufijo}] ${m}`;
+  // F3-01 (auditoría 2026-10-19): cada PDF que el proyecto abre con pdf.js por su cuenta lleva isEvalSupported: false,
+  // como el visor del estándar
+  const llamadas = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js'))
+    .flatMap((f) => readFileSync(join(raiz, 'sitio/app', f), 'utf8').split('\n').filter((l) => /getDocument\(/.test(l)).map((l) => [f, l]));
+  comprueba(llamadas.length > 0 && llamadas.every(([, l]) => /isEvalSupported: false/.test(l)), t(`F3-01: cada llamada a getDocument( de sitio/app (${llamadas.length}) lleva isEvalSupported: false`));
   const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const pg = await c.newPage();
   const errores = [];
@@ -2282,6 +2398,52 @@ async function romper(navegador) {
   await pg.waitForSelector('[data-sin-grupo]:not([hidden]), [data-con-grupo]:not([hidden])');
   comprueba(await pg.isVisible('[data-sin-grupo]') && await pg.locator('[data-mis-grupos] a[href="aplicar.html?folio=APD-G-2026-006"]').count() === 1,
     t('F3 M9: con un solo grupo y su examen hoy, «Asistencia» muestra «Pasar lista y aplicar»'));
+  // E1-01 (decisión 12 de la auditoría del 2026-10-19): el instructor no abre ni opera, con ?folio=, el grupo de otra persona
+  for (const pagina of ['asistencia', 'aplicar']) {
+    await pg.goto(BASE + `${pagina}.html?folio=APD-G-2026-003`);
+    await pg.waitForSelector('[data-sin-grupo]:not([hidden]), [data-con-grupo]:not([hidden])');
+    comprueba(await pg.isVisible('[data-sin-grupo]') && await pg.isHidden('[data-con-grupo]') && /Este grupo lo da otra persona/.test(await pg.textContent('[data-sin-grupo-texto]'))
+      && !(await pg.$$eval('main a[href*="APD-G-2026-003"]', (l) => l.length)), t(`E1-01: «${pagina}.html?folio=» de un grupo de otro instructor dice «Este grupo lo da otra persona» y no lo abre ni lo ofrece`));
+  }
+  await c.close();
+  // B5-03 (auditoría 2026-10-19): si el banco del examen no carga, un código válido no se da por inexistente
+  ({ c, pg, errores } = await contexto());
+  await pg.goto(BASE + 'aplicar.html?folio=APD-G-2026-003');
+  const presente = pg.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).first();
+  const insB5 = await presente.getAttribute('data-ins');
+  await presente.click();
+  await pg.waitForSelector(`tr[data-ins="${insB5}"] .examen-codigo`);
+  const codigoB5 = (await pg.textContent(`tr[data-ins="${insB5}"] .examen-codigo`)).trim();
+  await c.route('**/datos/examen-ficticio.js*', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: 'global.APD_EXAMEN_BANCO = {' }));
+  const exB5 = await c.newPage();
+  await exB5.goto(BASE + 'examen.html');
+  await exB5.fill('#codigo', codigoB5);
+  await exB5.click('#entrar [data-accion="enviar"]');
+  await exB5.waitForSelector('#entrar [data-estado-envio]:not([hidden])');
+  const juntoB5 = await exB5.evaluate(() => document.querySelector('#codigo').closest('[data-campo]').innerText);
+  comprueba(!/no existe/.test(juntoB5) && /No se pudo abrir el examen\. Avisa a quien aplica el examen\./.test(await exB5.textContent('#entrar [data-estado-envio]')),
+    t('B5-03: sin banco del examen, el código válido no se da por inexistente: «No se pudo abrir el examen. Avisa a quien aplica el examen.»'));
+  await c.close();
+  // B5-04 (auditoría 2026-10-19): un registro null en los datos no tumba las pantallas de grupos
+  ({ c, pg, errores } = await contexto());
+  await conRuta(pg, (j) => { j.grupo.push(null); j.inscripcion.push(null); });
+  const cargaron = [];
+  for (const [pagina, sel] of [['grupos.html?curso=poda-nueva', '.plan-grupo'], ['programar.html?curso=poda-nueva', '.cal-dia'], ['aplicar.html?folio=APD-G-2026-003', '[data-con-grupo]:not([hidden])'], ['asistencia.html?folio=APD-G-2026-003', '.asistencia-fila']]) {
+    await pg.goto(BASE + pagina);
+    cargaron.push(await pg.waitForSelector(sel, { timeout: 8000 }).then(() => true, () => false) && !/No se pud/.test(await pg.textContent('main')));
+  }
+  comprueba(cargaron.every(Boolean), t(`B5-04: con un grupo y una inscripción null en los datos, Grupos, Programar, Aplicar y Asistencia cargan (${cargaron.join(', ')})`));
+  sinErrores(errores, 'B5-04');
+  await c.close();
+  // B5-01 (ya corregido en 0.58, F3 B2): sin las tablas de grupos, «Programar» no deja el formulario a medias ni lo envía
+  ({ c, pg, errores } = await contexto());
+  await conRuta(pg, (j) => { delete j.grupo; delete j.inscripcion; });
+  await pg.goto(BASE + 'programar.html?curso=poda-nueva');
+  await pg.waitForFunction(() => /No se pudo cargar/.test(document.querySelector('[data-bajada]').textContent));
+  await pg.keyboard.press('Enter');
+  await pg.waitForTimeout(300);
+  comprueba(await pg.isHidden('#programar') && !(await pg.$$eval('[data-programar]', (l) => l.filter((b) => b.offsetParent).length)) && /programar\.html\?curso=poda-nueva$/.test(pg.url()),
+    t('B5-01: sin datos de grupos, «Programar» oculta el formulario y sus botones, y no envía nada'));
   await c.close();
 
   /* ── F4 · datos, material y menú de pruebas ── */
@@ -3344,8 +3506,54 @@ async function accesibilidad(navegador) {
   await page.close();
 }
 
+/* ── Limpieza del código (auditoría 2026-10-19, R4-07, A4-01 y R4-08) ──
+   Sin clases de apd.css que nada usa, sin nombres exportados por APD y APD_PERSONAL que nadie usa fuera de su archivo
+   (salvo los que se usan dentro), y las horas y los instructores de grupo.html y programar.html iguales. */
+async function limpieza(navegador) {
+  const t = (m) => `[limpieza] ${m}`;
+  const leer = (r) => readFileSync(join(raiz, r), 'utf8');
+  const app = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js')).map((f) => `sitio/app/${f}`);
+  const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html')).map((f) => `sitio/${f}`);
+  // Las pantallas, el código del proyecto y el del estándar (que arma parte del marcado), sin vendor
+  const estandar = (d) => readdirSync(join(raiz, d), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (e.name === 'vendor' ? [] : estandar(`${d}/${e.name}`)) : e.name.endsWith('.js') ? [`${d}/${e.name}`] : []));
+  const fuentes = [...app, ...paginas, ...estandar('sitio/formkit')].map(leer).join('\n');
+  // Clases: las que se arman con una plantilla (asis-opcion-${v}) se buscan por su prefijo
+  const css = leer('sitio/app/apd.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const clases = [...new Set([...css.matchAll(/\.(-?[a-zA-Z_][\w-]*)/g)].map((m) => m[1]))];
+  const usada = (c) => new RegExp(`(?<![\\w-])${c}(?![\\w-])`).test(fuentes) || /^asis-opcion-(si|no)$/.test(c) && fuentes.includes('asis-opcion-${');
+  const sinUso = clases.filter((c) => !usada(c));
+  comprueba(!sinUso.length, t(`apd.css sin clases que nada usa${sinUso.length ? ': ' + sinUso.join(', ') : ''}`));
+  // Exportados: se usan fuera de su archivo, o están en la lista de los que se usan sólo dentro
+  const DENTRO = { APD: ['fechaPegada', 'activa'], APD_PERSONAL: ['proximosDe', 'retiraGrupo'] };
+  for (const [archivo, global, alias] of [['sitio/app/apd.js', 'APD', '(?:APD|window\\.APD)'], ['sitio/app/personal.js', 'APD_PERSONAL', '(?:APD_PERSONAL|P)']]) {
+    const propio = leer(archivo);
+    const m = propio.match(new RegExp(`global\\.${global} = \\{([\\s\\S]*?)\\};`));
+    const nombres = m[1].split(',').map((x) => x.trim().split(':')[0].trim()).filter(Boolean);
+    const otros = [...app.filter((f) => f !== archivo), ...paginas, ...readdirSync(join(raiz, 'herramientas')).filter((f) => f.endsWith('.mjs')).map((f) => `herramientas/${f}`)].map(leer).join('\n');
+    const sinUsoJs = nombres.filter((n) => !DENTRO[global].includes(n) && !new RegExp(`${alias}\\.${n}\\b|\\{[^}]*\\b${n}\\b[^}]*\\}\\s*=\\s*${alias}\\b`).test(otros));
+    comprueba(!sinUsoJs.length, t(`${global}: cada nombre exportado se usa fuera de su archivo${sinUsoJs.length ? '; sin uso: ' + sinUsoJs.join(', ') : ''}`));
+  }
+  // R4-08: las listas cerradas de horas e instructores se quedan en el HTML (de ahí sale el esquema del servidor), pero
+  // son las mismas en la ficha del grupo y en «Programar», y los instructores, los de APD_PERSONAL
+  const c = await navegador.newContext({ timezoneId: ZONA });
+  const pg = await c.newPage();
+  const listas = [];
+  for (const [url, sel] of [['programar.html?curso=poda-nueva', '.cal-dia'], ['grupo.html?folio=APD-G-2026-005', '#confirmar']]) {
+    await pg.goto(BASE + url);
+    await pg.waitForSelector(sel, { state: 'attached' });
+    // «Programar» agrega al nombre del instructor si está libre esas fechas: se comparan los valores
+    listas.push(JSON.stringify(await pg.evaluate(() => ['#instructor', '#hora_entrada'].map((s) => [...document.querySelectorAll(`${s} option`)].map((o) => o.value)))));
+  }
+  const nombresIguales = await pg.$$eval('#instructor option', (l) => l.filter((o) => o.value).every((o) => APD_PERSONAL.nombreInstructor(o.value) === o.textContent) && l.length > 1);
+  comprueba(listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /"07:00"/.test(listas[0]) && nombresIguales,
+    t('horas de entrada e instructores: la misma lista en la ficha del grupo y en «Programar», con los instructores de APD_PERSONAL'));
+  comprueba(!/const MESES = \[/.test(leer('sitio/app/programar.js')) && !/nombreCurso/.test(fuentes), t('sin copias de MESES ni de nombreCurso (APD.MESES, APD.cursoLargo)'));
+  await c.close();
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 try {
+  if (!process.env.SOLO || process.env.SOLO === 'limpieza') await limpieza(navegador);
   // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
   const solo = process.env.SOLO || '';
   if (!solo) {

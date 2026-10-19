@@ -24,7 +24,7 @@
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
   const plural = APD.plural;
   const params = new URLSearchParams(location.search);
-  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const MESES = APD.MESES;
   const mayuscula = (t) => t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1);
   const V = () => window.FORMKIT_VALIDACIONES;
 
@@ -37,7 +37,9 @@
 
     /* Sin curso: se elige aquí */
     if (!curso) {
-      $('[data-bajada]').textContent = params.get('grupo') ? `No se encontró el grupo ${params.get('grupo')}. Elija el curso que quiere programar.` : 'Elija el curso que quiere programar.';
+      // Lo que trae la dirección no se repite en pantalla: sólo un folio con forma de folio (auditoría 2026-10-19, E1-02)
+      const g = params.get('grupo');
+      $('[data-bajada]').textContent = g ? `No se encontró ${/^APD-G-\d{4}-\d{3}$/.test(g) ? `el grupo ${g}` : 'ese grupo'}. Elija el curso que quiere programar.` : 'Elija el curso que quiere programar.';
       $('[data-sin-curso]').hidden = false;
       $('[data-cursos]').replaceChildren(...P.CURSOS.map(([t, m]) => el('li', {}, [el('a', { class: 'btn btn-secundario', href: `programar.html?curso=${P.claveCurso(t, m)}`, texto: APD.cursoLargo(t, m) })])));
       return;
@@ -63,9 +65,18 @@
       : 'Tres decisiones, en el orden en que se piensan: qué semana, quién lo da y a qué hora, y quiénes van. El sistema propone; usted ajusta.';
     const form = $('#programar');
     form.hidden = false;
+    /* Salir a mitad pierde lo elegido: el navegador lo advierte mientras haya algo sin guardar, como en las otras pantallas
+       del personal (auditoría 2026-10-19, B5-02). Sólo cuenta lo que hace quien programa, no lo que propone la página. */
+    let sinGuardar = false;
+    const marcaCambio = (e) => { if (e.isTrusted && !form.hidden) sinGuardar = true; };
+    form.addEventListener('input', marcaCambio);
+    form.addEventListener('change', marcaCambio);
+    window.addEventListener('beforeunload', (e) => { if (sinGuardar && !form.hidden) { e.preventDefault(); e.returnValue = ''; } });
     const minimo = P.primerDiaPosible(datos);
     const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
+    // La leyenda dice los días de anticipación del parámetro, como la regla (auditoría 2026-10-19, R4-15)
+    $('[data-leyenda-no]').textContent = `No se puede: menos de ${anticipacion} días u otro curso igual esas fechas`;
     const inhabiles = new Set(P.diasInhabiles(datos));
     const excepto = gExistente ? gExistente.id : null;
     const razon = (d) => P.razonNoInicio(datos, tipo, modalidad, d, excepto);
@@ -158,13 +169,22 @@
       inicio = d;
       mes = mesDe(d);
       foco = d;
+      recuerdaSemana(d);
       if (!desdeCampo) { fi.value = V().dmaDeIso(d); APD.avisa(fi); }
       diga(dur > 1 ? `Elegido: ${APD.rangoFechas(d, finDe(d), hoy.slice(0, 4))}; el examen, el ${APD.diaSemana(finDe(d))} ${APD.diaMes(finDe(d))}.` : `Elegido: ${APD.diaSemana(d)} ${APD.diaMes(d)}, con su examen.`);
       return true;
     }
+    /* La semana elegida queda en la dirección (&semana=): recargar, «Atrás» y «Adelante» la conservan (auditoría 2026-10-19,
+       B5-02). Lo demás (instructor, hora, personas) no: salir con cambios lo advierte el navegador (abajo). */
+    function recuerdaSemana(d) {
+      const url = new URL(location.href);
+      if (d) url.searchParams.set('semana', d); else url.searchParams.delete('semana');
+      if (url.href !== location.href) history.replaceState(history.state, '', url);
+    }
     $('[data-dias]').addEventListener('click', (e) => {
       const b = e.target.closest('.cal-dia');
       if (!b) return;
+      if (e.isTrusted) sinGuardar = true;
       elige(b.dataset.fecha);
       foco = b.dataset.fecha;
       pintaTodo(true);
@@ -209,13 +229,14 @@
         const completo = /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(fi.value.trim());
         if (!fi.value.trim() || completo) {
           inicio = null;
+          recuerdaSemana(null);
           pintaTodo(false);
           if (completo) diga(`${fi.value.trim()} no es una fecha real. Escriba otra o elija el día en el calendario.`);
         }
         return;
       }
       if (d === inicio) return;
-      if (!elige(d, true)) { inicio = null; if (mesValido(d)) { mes = mesDe(d); foco = d; } }
+      if (!elige(d, true)) { inicio = null; recuerdaSemana(null); if (mesValido(d)) { mes = mesDe(d); foco = d; } }
       pintaTodo(false);
     };
     fi.addEventListener('input', deCampo);
@@ -282,29 +303,18 @@
       $('[data-campo="integracion"]').hidden = true;
     }
     const filas = [];
+    // La fila de cada persona y el bloque de su organización, los mismos de «Grupos» (P.filaEspera, P.bloqueEspera)
     const persona = (x, conOrg) => {
-      const k = el('input', { class: 'casilla-input', type: 'checkbox', value: x.s.folio, checked: propuestas.has(x.s.folio) });
+      const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio, checked: propuestas.has(x.s.folio) });
       filas.push({ x, k });
-      const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
-      return el('label', { class: 'plan-persona' }, [k,
-        el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
-        el('span', { class: 'plan-persona-espera' }, [x.prioritaria ? APD.estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias }),
-          x.vence ? (x.vencida ? APD.estado(`Vencida el ${fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `vence el ${fecha(x.vence)}` })) : null]),
-        conOrg ? el('span', { class: 'plan-persona-org', texto: x.organizacion }) : null]);
+      return P.filaEspera(x, k, conOrg);
     };
     const items = P.bloquesEspera(espera).map((b, i) => {
       if (!b.junta) return el('li', {}, [persona(b.xs[0], true)]);
-      const todas = el('input', { class: 'casilla-input', type: 'checkbox', 'aria-label': `Elegir a las ${b.xs.length} personas de ${b.nombre}` });
       const propias = b.xs.map((x) => persona(x, false));
-      const suyas = () => filas.filter((f) => b.xs.includes(f.x));
-      const refleja = () => { const m = suyas().filter((f) => f.k.checked).length; todas.checked = m === b.xs.length; todas.indeterminate = m > 0 && m < b.xs.length; };
-      todas.addEventListener('change', () => { for (const f of suyas()) f.k.checked = todas.checked; pintaTodo(false); });
-      const li = el('li', {}, [el('div', { class: 'plan-bloque', role: 'group', 'aria-labelledby': `pb-${i}` }, [
-        el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id: `pb-${i}`, texto: `${b.nombre} · ${b.xs.length} personas, juntas` })]),
-        ...propias])]);
-      li.addEventListener('change', (e) => { if (e.target !== todas) refleja(); });
-      setTimeout(refleja);
-      return li;
+      const { bloque, refleja } = P.bloqueEspera(b, `pb-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), null, () => pintaTodo(false));
+      refleja();
+      return el('li', {}, [bloque]);
     });
     $('[data-personas]').replaceChildren(...(items.length ? items : [el('li', { class: 'texto-gris', texto: propia ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
     $('[data-personas]').addEventListener('change', () => pintaTodo(false));
@@ -317,11 +327,57 @@
       const org = orgDeElegidas();
       const nombre = org ? (elegidas()[0] || {}).organizacion : '';
       $('[data-especifico-de]').textContent = org ? `Sólo de ${nombre}` : 'Sólo de una organización';
+      const y = suGrupo();
       $('[data-especifico-desc]').textContent = org
-        ? `Recibe únicamente a la gente de ${nombre}.${total() < c.cupo_minimo ? ` Para confirmarlo se necesitan ${c.cupo_minimo} de esa organización.` : ''}`
+        ? `Recibe únicamente a la gente de ${nombre}.${total() < c.cupo_minimo ? ` Para confirmarlo se necesitan ${c.cupo_minimo} de esa organización.` : ''}${y ? ` Ya tiene su grupo ${y.g.folio}, que recibe personas.` : ''}`
         : 'Todas las elegidas tienen que ser de la misma organización registrada; ahora son de varias o independientes.';
     }
     const integracion = () => (gExistente ? gExistente.integracion : (($('input[name="integracion"]:checked') || {}).value || 'combinado'));
+
+    /* «Su grupo» (decisión 2 de la auditoría del 2026-10-19, Liber; auditoría de tareas, M3): si todas las elegidas son de
+       una organización que ya tiene un grupo propio de este curso que recibe personas, se dice y se ofrece agregarlas ahí;
+       crear otro de esa organización pide confirmación (con dos grupos, ninguno llega al mínimo) */
+    const propiosQueReciben = P.grupos(datos).filter((x) => x.recibe && x.g.integracion === 'especifico' && x.g.tipo_acreditacion === tipo && x.g.modalidad === modalidad);
+    const suGrupo = () => { const org = gExistente ? null : orgDeElegidas(); return org ? propiosQueReciben.find((x) => x.g.organizacion_id === org) || null : null; };
+    const cajaSuGrupo = $('[data-su-grupo]');
+    const activasEn = (d, gid) => new Set(d.inscripcion.filter((i) => i.grupo_id === gid && i.activa).map((i) => (d.solicitud.find((s) => s.id === i.solicitud_id) || {}).folio));
+    function agregaASuGrupo(y, boton) {
+      const folios = elegidas().map((x) => x.s.folio);
+      if (folios.length > y.lugar) {
+        APD.pintaAviso(cajaSuGrupo, 'error', 'Eligió más personas de las que caben', `«${y.calculado}» tiene lugar para ${plural(y.lugar, 'persona', 'personas')}; eligió ${folios.length}.`, true);
+        return;
+      }
+      const libera = APD.ocupa(boton);
+      if (!libera) return;
+      let entraron = [];
+      P.guardaGrupoComprobado({
+        eventos: () => ({ tipo: 'agregar', grupo_id: y.g.id, folios, por: P.REVISORA.usuario }),
+        comprueba(d2, d1) {
+          const antes = activasEn(d1, y.g.id);
+          const ahora = activasEn(d2, y.g.id);
+          entraron = folios.filter((f) => ahora.has(f) && !antes.has(f));
+          return entraron.length ? null : 'no se agregó a nadie: el grupo ya no recibe personas o ya tienen grupo';
+        }
+      }).then(() => {
+        sinGuardar = false;
+        const no = folios.filter((f) => !entraron.includes(f));
+        location.href = `grupo.html?folio=${encodeURIComponent(y.g.folio)}&hecho=agregadas&n=${entraron.length}${no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
+      }).catch((e) => {
+        libera();
+        APD.pintaAviso(cajaSuGrupo, 'error', `No se agregó a nadie a «${y.calculado}»`, e && e.motivo ? `${mayuscula(e.motivo)}. Vuelva a cargar la página para ver la espera de ahora.` : 'No se pudo guardar; intente de nuevo.', true);
+      });
+    }
+    function pintaSuGrupo() {
+      const y = suGrupo();
+      if (!y) { cajaSuGrupo.hidden = true; cajaSuGrupo.replaceChildren(); return; }
+      const nombre = (elegidas()[0] || {}).organizacion;
+      const falta = y.g.cupo_minimo - y.n;
+      APD.pintaAviso(cajaSuGrupo, 'info', `${nombre} ya tiene su grupo`,
+        `El grupo ${y.g.folio} tiene ${y.n} de ${y.g.cupo_maximo}${falta > 0 ? `, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : ''} y recibe personas. Conviene agregarlas ahí: con dos grupos de la misma organización, ninguno llega al mínimo.`);
+      const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Agregarlas a ${y.g.folio}` });
+      b.addEventListener('click', () => agregaASuGrupo(y, b));
+      $('.aviso-texto', cajaSuGrupo).append(el('p', {}, [b]));
+    }
 
     /* ----- Así quedaría ----- */
     function pintaResumen() {
@@ -348,6 +404,7 @@
       pintaCalendario(enfocar);
       pintaInstructores();
       pintaIntegracion();
+      pintaSuGrupo();
       pintaResumen();
     }
     if (gExistente) {
@@ -393,7 +450,14 @@
           return Promise.resolve({ rechazado: true });
         }
         const libera = APD.ocupa(botones.filter((b) => !b.matches('[data-accion="enviar"]')));
-        return guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, integracion: integracion() })
+        // Un segundo grupo de una organización que ya tiene el suyo: se pregunta antes (decisión 2, 2026-10-19)
+        const y = esp ? suGrupo() : null;
+        const sigue = !y ? Promise.resolve(true) : FormKit.confirma(botones.find((b) => b.dataset.programar === accion) || botones[0], {
+          titulo: `¿Crear otro grupo de ${(elegidas()[0] || {}).organizacion}?`,
+          consecuencias: [`Ya tiene el grupo ${y.g.folio}, con ${y.n} de ${y.g.cupo_maximo}, que recibe personas.`,
+            `Con dos grupos de la misma organización, ninguno llega al mínimo. Para agregarlas a ese grupo, elija «No» y use «Agregarlas a ${y.g.folio}».`],
+          si: 'Sí, crear otro grupo', no: 'No' });
+        return sigue.then((si) => (si ? guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, integracion: integracion() }) : { rechazado: true }))
           .finally(() => { if (libera) libera(); });
       },
       alEnviar(r) { if (r && r.rechazado) return; muestraResultado(r); },
@@ -442,6 +506,7 @@
     }
 
     function muestraResultado({ datos: d2, g, confirmar, fuera }) {
+      sinGuardar = false;
       const x = P.grupo(d2, g);
       const nombre = APD.nombreGrupo(g, d2);
       const quedo = g.estado === 'confirmado';

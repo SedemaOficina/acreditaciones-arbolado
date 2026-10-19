@@ -1304,3 +1304,25 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   la solución de esos bloques; pendientes renumerados P162 a P170. Pruebas al cierre: `probar-base` 303 de 303,
   concurrencia 20 de 20, restauración 303 de 303; `probar-esquemas` 128; `probar-sitio` 927 (con axe); `probar-examen`
   79; `probar-volumen` 52; `auditar-sitio` 60 pantallas y 201 botones, sin avisos nuevos. Versión de prueba 0.57.
+
+## 2026-10-19 · Bloque 81 · Correcciones de la auditoría: Grupos y personal (bloque 3)
+
+- «Grupos»: cada organización vuelve a decir «Su grupo APD-G-…: N de 25, le faltan M para el mínimo» (o si alcanzan para
+  uno propio); «Programar un curso» avisa y ofrece «Agregarlas a APD-G-…», y crear un segundo grupo de esa organización
+  pide confirmación (R4-03, decisión 2). Sección nueva «Su fecha ya pasó»: «Propuesta vencida» con «Elegir otra semana»
+  y «Confirmado · no inició» (R4-04, RI-07).
+- «Citas de cotejo» desglosa su encabezado: atendidas, no se presentaron, sin pago, pausa vencida y canceladas
+  («8 citas: 7 atendidas, 1 no se presentó»; B2-01, decisión 7).
+- El instructor sólo abre sus grupos: con un grupo ajeno, también por `?folio=`, «Asistencia» y «Aplicar el examen» dicen
+  «Este grupo lo da otra persona» (E1-01, decisión 12).
+- «Programar»: sólo repite el folio de `?grupo=` si tiene la forma de un folio (E1-02); avisa antes de salir con cambios
+  y guarda la semana en la dirección (B5-02); sin datos no deja botones activos (B5-01, ya corregido en 0.58; prueba
+  nueva). Examen sin banco: «No se pudo abrir el examen. Avisa a quien aplica el examen.» (B5-03). Un registro dañado en
+  los datos ya no tumba las pantallas de grupos (B5-04). pdf.js con `isEvalSupported: false` en el material (F3-01).
+- Limpieza: código y 17 clases CSS sin uso fuera; una sola fila de persona y de bloque de organización para Grupos y
+  Programar; `APD.cursoLargo` y `APD.MESES` sin copias; `data-calendario-curso` y la leyenda de anticipación del
+  parámetro (R4-07, R4-08, R4-15). Las listas de horas e instructores se quedan en el HTML porque de ahí sale el esquema
+  del servidor; una prueba nueva (`SOLO=limpieza`) comprueba que coinciden con `APD_PERSONAL`. La prueba de «Agregar
+  personas de la espera» ya pulsa el botón real de la ficha (R4-14).
+- Pruebas: `probar-base` 303 de 303, concurrencia 20 de 20, restauración correcta; `probar-esquemas` 128;
+  `probar-sitio` 960 (con axe; 33 nuevas); `probar-examen` 79; `probar-volumen` 64 (12 nuevas).

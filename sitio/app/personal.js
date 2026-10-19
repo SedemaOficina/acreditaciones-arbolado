@@ -199,7 +199,10 @@
      perfil «revisión y cotejo». Lo hecho en la prueba se guarda en «apd.personal.grupos» (una lista de eventos, en
      orden) y APD.cargar lo aplica como la base (app/archivos-prueba.js, aplicaGrupos). */
   const GRUPOS = A.CLAVES.grupos;
-  /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27) */
+  /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27). Son los mismos de las
+     listas cerradas de grupo.html y programar.html, que se quedan en el HTML porque de ahí sale el esquema con que el
+     servidor valida (esquema-desde-html del estándar); probar-sitio comprueba que coinciden (auditoría 2026-10-19,
+     R4-08). Las horas de entrada sólo están en esas dos listas. */
   const INSTRUCTORES = [
     { usuario: 'instructor.ficticio', nombre: 'Laura Ejemplo Instructora' },
     { usuario: 'instructor2.ficticio', nombre: 'Instructor Ejemplo Dos' }
@@ -250,7 +253,6 @@
   const CURSOS = [['poda', 'nueva'], ['poda', 'renovacion'], ['dictaminador', 'nueva'], ['dictaminador', 'renovacion']];
   const claveCurso = (t, m) => `${t}-${m}`;
   const deClave = (k) => CURSOS.find(([t, m]) => claveCurso(t, m) === k) || null;
-  const nombreCurso = (t, m) => `${APD.TIPOS[t]} · ${m === 'renovacion' ? 'renovación' : 'nueva'}`;
   const INTEGRACION = { especifico: 'De una organización', combinado: 'Combinado' };
 
   /* Adscripción con la que se envió la solicitud (copia de la de la cuenta) */
@@ -299,7 +301,7 @@
     const org = g.organizacion_id ? datos.organizacion.find((o) => o.id === g.organizacion_id) : null;
     return { g, c, inscritas, n: inscritas.length, ultimo, dia, situacion: { texto, tono: sit.tono }, recibe, lugar: g.cupo_maximo - inscritas.length,
       integracion: g.integracion === 'especifico' ? `${INTEGRACION.especifico} · ${org ? org.nombre : ''}` : INTEGRACION.combinado,
-      nombre: nombreCurso(g.tipo_acreditacion, g.modalidad), calculado: APD.nombreGrupo(g, datos) };
+      nombre: APD.cursoLargo(g.tipo_acreditacion, g.modalidad), calculado: APD.nombreGrupo(g, datos) };
   }
   const ORDEN_GRUPO = { en_curso: 0, confirmado: 1, en_integracion: 2, concluido: 3, cancelado: 4 };
   function grupos(datos) {
@@ -312,17 +314,9 @@
     const n = datos.grupo.map((g) => String(g.folio).match(new RegExp(`^APD-G-${anio}-(\\d+)$`))).filter(Boolean).map((m) => Number(m[1]));
     return `APD-G-${anio}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3, '0')}`;
   }
-  /* Texto del cupo: «4 de 25 · falta 1 para el mínimo de 5» */
-  function cupoTexto(x) {
-    const falta = x.g.cupo_minimo - x.n;
-    return falta > 0 ? `${x.n} de ${x.g.cupo_maximo} · ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${x.g.cupo_minimo}` : `${x.n} de ${x.g.cupo_maximo}`;
-  }
 
   /* ----- Planear los cursos (propuestas A, B y D aprobadas por Liber el 2026-10-18) -----
      Lo que comparten «Grupos» (planeador por curso), «Programar un curso» y «Mis grupos de hoy». */
-  /* Horas de entrada: la misma lista cerrada de 24 horas que la ficha del grupo (grupo.html). Horarios de prueba: los
-     define el área (P91). */
-  const HORAS = ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00'];
   /* Lunes de la semana de una fecha (las semanas van de lunes a domingo) */
   function lunesDe(iso) {
     const d = new Date(`${String(iso).slice(0, 10)}T12:00:00-06:00`);
@@ -396,6 +390,32 @@
       if (elegidas.length + b.xs.length <= n) elegidas.push(...b.xs);
     }
     return elegidas;
+  }
+  /* ----- Personas de la espera con su casilla: la fila y el bloque que comparten «Grupos» y «Programar» (R4-08) -----
+     filaEspera: nombre, cuánto lleva esperando (prioritaria desde dias_alerta_espera), en renovación cuándo vence y, si va
+     sola, su organización; casilla es el <input type="checkbox"> que la elige. */
+  function filaEspera(x, casilla, conOrganizacion) {
+    const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
+    const espera = [x.prioritaria ? estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias })];
+    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `vence el ${APD.fecha(x.vence)}` }));
+    return el('label', { class: 'plan-persona' }, [casilla,
+      el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
+      el('span', { class: 'plan-persona-espera' }, espera),
+      conOrganizacion ? el('span', { class: 'plan-persona-org', texto: x.organizacion }) : null]);
+  }
+  /* El bloque de una organización (propuesta A): una casilla elige a todas y se marca a medias cuando sólo algunas lo
+     están. propias: las filas del bloque; casillas: sus casillas; extra: lo que va junto al nombre (su grupo);
+     alCambiar: después de marcar o desmarcar a todas. Devuelve { bloque, refleja }. */
+  function bloqueEspera(b, id, propias, casillas, extra, alCambiar) {
+    const todas = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', 'aria-label': `Elegir a las ${b.xs.length} personas de ${b.nombre}` });
+    const refleja = () => { const m = casillas.filter((k) => k.checked).length; todas.checked = m === casillas.length; todas.indeterminate = m > 0 && m < casillas.length; };
+    todas.addEventListener('change', () => { for (const k of casillas) k.checked = todas.checked; if (alCambiar) alCambiar(); });
+    const bloque = el('div', { class: 'plan-bloque', role: 'group', 'aria-labelledby': id }, [
+      el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id, texto: `${b.nombre} · ${b.xs.length} personas, juntas` }), extra || null]),
+      ...propias
+    ]);
+    bloque.addEventListener('change', (e) => { if (e.target !== todas) refleja(); });
+    return { bloque, refleja };
   }
   /* Situación de un grupo en una fecha: «Día 2 de 5», «Examen hoy» (en curso), o null */
   function diaDelCurso(datos, g) {
@@ -520,8 +540,8 @@
     marco.dispatchEvent(new CustomEvent('formkit:tabla'));
   }
 
-  global.APD_PERSONAL = { HORAS, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
+  global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
-    nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
+    organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };
 }(window));
