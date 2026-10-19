@@ -17,7 +17,9 @@
 
    Respuestas frecuentes fijas: data-chips-fijos="Texto uno|Texto dos" en el
    [data-campo] muestra siempre esa lista (por ejemplo, los motivos para
-   observar un documento). No guarda nada en el dispositivo, así que sirve
+   pedir que se corrija algo). Si varios campos comparten etiqueta,
+   data-chips-etiqueta cambia la etiqueta en el nombre del grupo y
+   data-chips-fijos-nombre le da un nombre propio. No guarda nada en el dispositivo, así que sirve
    también en datos personales. En un texto largo, el chip agrega su texto
    al final («… Falta una página.») para que la persona lo complete; en un
    campo corto, lo pone como respuesta.
@@ -92,7 +94,7 @@
         const caja = document.createElement('div');
         caja.className = 'chips';
         caja.setAttribute('role', 'group');
-        caja.setAttribute('aria-label', `Usados antes en ${ctx.etiquetaDe(n).toLowerCase()}`);
+        caja.setAttribute('aria-label', plantilla(M.chipsHistorial, { etiqueta: ctx.etiquetaDe(n).toLowerCase() }));
         antesDelControl(ctl, caja);
 
         const lee = () => { try { return JSON.parse(almacen.lee(clave(n)) || '[]'); } catch (e) { return []; } };
@@ -116,8 +118,8 @@
 
         caja.addEventListener('click', (e) => {
           const q = e.target.closest('[data-chip-quitar]');
-          if (q) { escribe(lee().filter((v) => v !== q.dataset.chipQuitar)); pinta(); anuncia(`Sugerencia quitada.`); return; }
-          if (e.target.closest('[data-chips-borrar]')) { almacen.borra(clave(n)); pinta(); anuncia('Historial borrado.'); ctl.focus(); return; }
+          if (q) { escribe(lee().filter((v) => v !== q.dataset.chipQuitar)); pinta(); anuncia(M.chipsQuitada); return; }
+          if (e.target.closest('[data-chips-borrar]')) { almacen.borra(clave(n)); pinta(); anuncia(M.chipsBorrado); ctl.focus(); return; }
           const b = e.target.closest('[data-chip]');
           if (!b) return;
           ctl.value = b.dataset.chip;

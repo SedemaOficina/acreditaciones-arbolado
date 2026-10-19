@@ -350,156 +350,47 @@
   }
 
   /* ----- Borrador en este dispositivo (B2) -----
-     Los campos, el paso y los documentos. Se escribe sólo cuando la persona cambia algo (no cuando la página llena
-     los datos de la solicitud que continúa), por eso no usa el borrador automático del núcleo (data-borrador), que
-     también guardaba lo que pone la página; sí usa su restauración (ctx.restauraBorrador) y su franja
-     (data-franja-borrador). Los archivos van al almacén de la prueba con un folio propio del borrador
-     («borrador:<persona>:<folio>»): la mezcla de la prueba no lo aplica a ninguna solicitud, y «Borrar lo guardado»,
-     «Empezar de cero» y la caducidad de 7 días lo borran. Al enviar, el borrador se borra. */
-  function borrador(datos, persona, alRecuperar) {
-    const B = window.APD_SOLICITUD.borrador;
-    const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
+     Es el del núcleo (estándar 1.5.0, P148): la clave la pone app/config-solicitud.js en el formulario y los documentos los
+     guarda su proveedor de archivos. El núcleo guarda los campos y el paso desde el primer gesto de la persona, así que
+     lo que esta página precarga al continuar una solicitud no crea un borrador. Aquí queda lo propio del trámite:
+       · la franja se ofrece cuando la solicitud ya está lista para la persona (el núcleo la muestra al iniciar el
+         formulario, antes de que lleguen sus datos) y nunca si hoy no puede pedir nada;
+       · al recuperarlo, las declaraciones se vuelven a marcar (no se recuperan), un tipo que ya no se puede pedir no queda
+         elegido, y cuando llegan los documentos se recalculan el curso, la experiencia y, si iba en ella, la revisión;
+       · la recuperación y el descarte se dicen también en pantalla. */
+  const franja = document.querySelector('[data-franja-borrador]');
+  const notaBorrador = document.querySelector('[data-borrador-recuperado]');
+  const DECLARACIONES = ['protesta', 'aviso', 'humano'];
+  let solicitudLista = false;
+  let franjaEnEspera = false;
+  const esperaFranja = () => { if (franja && !franja.hidden && !solicitudLista) { franja.hidden = true; franjaEnEspera = true; } };
+  document.addEventListener('DOMContentLoaded', esperaFranja);
+  function borrador(alRecuperar) {
     const { ctx } = FormKit.iniciar(form);
+    esperaFranja();
     // La carrera escrita (combo libre) también revisa su formato (auditoría «intentar romperlo», F1 12)
     APD.formatoEnCombos(ctx);
-    const franja = document.querySelector('[data-franja-borrador]');
-    const indicador = document.querySelector('[data-guardado]');
-    const M = FormKit.config.mensajes;
-    const folioBorrador = `borrador:${persona.id}:${new URLSearchParams(location.search).get('folio') || 'nueva'}`;
-    const DECLARACIONES = ['protesta', 'aviso', 'humano']; // se vuelven a marcar cada vez
-    const enBorrador = {}; // campo → { clave, nombre, tipo, size, blob }
-    let tocado = false;
-    let sinGuardar = false; // un archivo que no se pudo guardar: se avisa antes de salir
-    let restaurando = false;
-    let temporizador = 0;
-
-    const lee = () => {
-      try {
-        const b = JSON.parse(localStorage.getItem(B.clave) || 'null');
-        if (!b || b.v !== B.version || Date.now() - b.t > FormKit.config.borrador.ttlDias * 864e5) return null;
-        return b;
-      } catch (e) { return null; }
-    };
-    function datosActuales() {
-      const d = {};
-      for (const n of ctx.nombres()) {
-        const e = ctx.envoltura(n);
-        const t = ctx.tipoDe(e);
-        if (DECLARACIONES.includes(n) || e.hasAttribute('data-sensible') || t === 'auxiliar' || (ctx.tipos.has(t) && !ctx.tipos.get(t).enBorrador)) continue;
-        d[n] = ctx.valorDe(n);
-      }
-      return d;
-    }
-    function escribe() {
-      clearTimeout(temporizador);
-      if (!tocado || form.hidden) return;
-      const extra = FormKit.ganchos.estadoBorrador ? FormKit.ganchos.estadoBorrador(form) : {};
-      const archivos = Object.fromEntries(Object.entries(enBorrador).map(([k, v]) => [k, { clave: v.clave, nombre: v.nombre, tipo: v.tipo }]));
-      try {
-        localStorage.setItem(B.clave, JSON.stringify(Object.assign({ v: B.version, t: Date.now(), datos: datosActuales(), archivos }, extra)));
-      } catch (e) { sinGuardar = true; return; }
-      if (indicador) {
-        indicador.textContent = M.borradorGuardado;
-        indicador.setAttribute('data-visible', '');
-        setTimeout(() => indicador.removeAttribute('data-visible'), FormKit.config.borrador.visibleMs);
-      }
-    }
-    const programa = () => { clearTimeout(temporizador); temporizador = setTimeout(escribe, FormKit.config.borrador.retardoMs); };
-    const cambio = (e) => { if (e.isTrusted && !restaurando) { tocado = true; programa(); } };
-    form.addEventListener('input', cambio);
-    form.addEventListener('change', cambio);
-    form.addEventListener('formkit:paso', () => { if (tocado) programa(); });
-    window.addEventListener('pagehide', () => { if (temporizador) escribe(); });
-    window.addEventListener('beforeunload', (e) => { if (sinGuardar && !form.hidden) { e.preventDefault(); e.returnValue = ''; } });
-
-    /* Archivos: al quedar listo uno nuevo se guarda; al quitarlo, sale del borrador */
-    const campos = Array.from(form.querySelectorAll('[data-campo]')).filter((c) => c.querySelector('[data-archivos]'));
-    function revisaArchivos() {
-      for (const campo of campos) {
-        const n = campo.dataset.campo;
-        const vivo = FormKit.archivos.de(campo).find((a) => a.estado !== 'error');
-        const antes = enBorrador[n];
-        // Quitado: sale del borrador (mientras se recupera, el archivo todavía se está procesando)
-        if (!vivo) { if (antes && !restaurando) { delete enBorrador[n]; tocado = true; programa(); } continue; }
-        const listo = vivo.estado === 'listo' && vivo.blob ? vivo : null;
-        if (!listo || (antes && antes.blob === listo.blob)) continue;
-        const en = new Date().toISOString();
-        const registro = { clave: `${folioBorrador}|${n}|${en}`, nombre: listo.nombre, tipo: listo.tipo, size: listo.size, blob: listo.blob };
-        enBorrador[n] = registro;
-        if (restaurando) continue;
-        tocado = true;
-        if (!P) { sinGuardar = true; continue; }
-        P.guardaDocumento(folioBorrador, n, { blob: listo.blob, nombre: listo.nombre, tipo: listo.tipo, size: listo.size }, { en })
-          .then(programa, () => { sinGuardar = true; });
-      }
-    }
-    for (const campo of campos) new MutationObserver(revisaArchivos).observe(campo.querySelector('.lista-arch'), { childList: true, subtree: true, attributes: true });
-
-    /* Los archivos del borrador, del almacén de la prueba (IndexedDB «apd-prueba», índice «folio»). Se leen aquí porque
-       app/archivos-prueba.js no exporta una lectura por folio (pedido a su dueño: exportarla y usarla aquí). */
-    function documentosDelBorrador() {
-      if (P && typeof P.documentos === 'function') return P.documentos(folioBorrador);
-      return new Promise((ok) => {
-        let r;
-        try { r = indexedDB.open('apd-prueba'); } catch (e) { ok([]); return; }
-        r.onerror = () => ok([]);
-        r.onsuccess = () => {
-          const db = r.result;
-          if (!db.objectStoreNames.contains('documentos')) { db.close(); ok([]); return; }
-          const q = db.transaction('documentos', 'readonly').objectStore('documentos').index('folio').getAll(folioBorrador);
-          q.onsuccess = () => { db.close(); ok(q.result || []); };
-          q.onerror = () => { db.close(); ok([]); };
-        };
-      });
-    }
-    function recupera(b) {
-      restaurando = true;
+    const anterior = FormKit.ganchos.restauraBorrador;
+    FormKit.ganchos.restauraBorrador = (f, b) => {
+      if (anterior) anterior(f, b);
+      if (f !== form) return;
+      for (const n of DECLARACIONES) for (const c of form.querySelectorAll(`input[name="${n}"]`)) c.checked = false;
       // El tipo restaurado vuelve a calcular el curso y sus documentos; uno que ya no se puede pedir no queda elegido
       for (const r of radios('tipo')) if (r.disabled) r.checked = false;
       const r = radios('tipo').find((x) => x.checked);
       if (r) avisa(r);
-      const archivos = Object.entries(b.archivos || {});
-      const docs = archivos.length ? documentosDelBorrador() : Promise.resolve([]);
-      return docs.then((lista) => {
-        for (const [n, a] of archivos) {
-          const campo = form.querySelector(`[data-campo="${n}"]`);
-          const doc = (lista || []).find((x) => x.clave === a.clave);
-          if (!campo || !doc || !doc.blob || FormKit.archivos.de(campo).length) continue;
-          const f = new File([doc.blob], a.nombre, { type: a.tipo || doc.blob.type });
-          enBorrador[n] = { clave: a.clave, nombre: a.nombre, tipo: a.tipo, size: f.size, blob: f };
-          FormKit.archivos.agrega([f], campo);
-        }
-      }).catch(() => {}).then(() => new Promise((ok) => setTimeout(ok, 50))).then(() => {
-        restaurando = false;
-        tocado = true;
-        alRecuperar();
-        programa();
-      });
-    }
-
-    const previo = lee();
-    if (previo && franja) {
-      franja.hidden = false;
+      FormKit.anuncia(FormKit.config.mensajes.borradorRecuperado, { visible: notaBorrador });
+      // Los documentos llegan del proveedor después de restaurar los campos
+      setTimeout(() => window.APD_SOLICITUD.borradorArchivos.leyendo().catch(() => {}).then(() => setTimeout(alRecuperar, 50)), 0);
+    };
+    if (franja) {
       franja.addEventListener('click', (e) => {
-        const a = e.target.closest('[data-borrador]');
-        if (!a) return;
-        const confirma = franja.querySelector('[data-borrador-confirma]');
-        if (a.dataset.borrador === 'recuperar') {
-          ctx.restauraBorrador(previo);
-          franja.hidden = true;
-          recupera(previo).then(() => FormKit.anuncia('Recuperaste lo que habías capturado.', { visible: document.querySelector('[data-borrador-recuperado]') }));
-        } else if (a.dataset.borrador === 'descartar') { confirma.hidden = false; franja.querySelector('[data-borrador="descartar-si"]').focus(); }
-        else if (a.dataset.borrador === 'conservar') { confirma.hidden = true; franja.querySelector('[data-borrador="recuperar"]').focus(); }
-        else if (a.dataset.borrador === 'descartar-si') {
-          try { localStorage.removeItem(B.clave); } catch (err) { /* sin almacenamiento */ }
-          // Con los documentos que se cargaron, como dice la confirmación (auditoría «intentar romperlo», F1 7)
-          if (P) P.borraDocumentos(folioBorrador).catch(() => {});
-          for (const k of Object.keys(enBorrador)) delete enBorrador[k];
-          franja.hidden = true;
-          FormKit.anuncia('Se descartó el borrador.', { visible: document.querySelector('[data-borrador-recuperado]') });
-        }
+        const a = e.target.closest('[data-borrador="descartar-si"]');
+        if (a) FormKit.anuncia('Se descartó el borrador.', { visible: notaBorrador });
       });
     }
+    solicitudLista = true;
+    if (franjaEnEspera) franja.hidden = false;
   }
 
   APD.cargar().then((datos) => {
@@ -518,12 +409,12 @@
     const s = folio ? continua(datos, persona, folio) : null;
     const hayFormulario = folio ? Boolean(s) : nueva(datos, persona);
     experiencia(datos);
-    if (!hayFormulario) return;
+    if (!hayFormulario) { esperaFranja(); return; }
     // Corregir y reenviar abre donde está lo que hay que corregir: el paso de documentos (D2)
     if (s && s.estado === 'con_observaciones') irSinHistorial(1);
     historial();
     editarDesdeRevision();
-    borrador(datos, persona, () => {
+    borrador(() => {
       alCambiarTipo();
       experiencia(datos);
       // Si lo recuperado deja a la persona en la revisión, se vuelve a pintar con lo de ahora

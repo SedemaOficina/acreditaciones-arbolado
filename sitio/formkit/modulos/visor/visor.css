@@ -37,7 +37,6 @@
 .visor-hojas{flex:1 1 auto;min-height:0;overflow:auto;padding:var(--e-3);background:var(--linea);border-radius:var(--r-ctrl)}
 .visor-hoja-pdf{margin:0 0 var(--e-4)}
 .visor-lienzo{display:block;width:100%;height:auto;margin:0 auto;background:var(--blanco);box-shadow:var(--sombra-lista)}
-.visor-pie{margin-top:var(--e-1);font-size:var(--t-xs);text-align:center;color:var(--texto)}
 /* Visor del navegador, cuando pdf.js no se pudo cargar. */
 .visor-marco{display:block;width:100%;min-height:var(--alto-mapa);height:100%;background:var(--blanco);border:0}
 .visor-nota{margin:0;font-size:var(--t-xs)}

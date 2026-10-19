@@ -289,6 +289,15 @@ caso('Cotejo: un folio fiscal mal escrito y un RFC que no existe se rechazan', '
 // RFC con espacios o guiones (F2 M2): el largo se mide ya normalizado
 caso('Cotejo: el RFC con espacios y guiones se acepta (se normaliza)', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'XAXX-010101 000' }, true, conFactura);
 caso('Cotejo: un RFC de 14 caracteres se rechaza', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'MUPA800101AB12' }, ['factura_rfc'], conFactura);
+// P129 (estándar 1.4.2): el RFC conserva la Ñ también en el servidor, aunque llegue descompuesta (N + tilde combinante)
+caso('Cotejo: un RFC con Ñ se acepta', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'muño800101ab1' }, true, conFactura);
+{
+  const conEnie = JSON.stringify(ultimo.datos || ultimo.limpios || ultimo.valores || {}).includes('MUÑO800101AB1');
+  caso('Cotejo: un RFC con la Ñ descompuesta se acepta', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'MUN\u0303O800101AB1' }, true, conFactura);
+  const descompuesta = JSON.stringify(ultimo.datos || ultimo.limpios || ultimo.valores || {}).includes('MUÑO800101AB1');
+  console.log(`${conEnie && descompuesta ? 'BIEN' : 'MAL '}  Cotejo: el servidor guarda el RFC con su Ñ (MUÑO800101AB1), no con N`);
+  if (!(conEnie && descompuesta)) fallas++;
+}
 caso('Cotejo: el folio fiscal en minúsculas y sin guiones se acepta (se normaliza)', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_folio_fiscal: '6f1c2d3e4a5b4c6d8e7f9a0b1c2d3e4f' }, true, conFactura);
 caso('Cotejo: un documento sin cotejar se rechaza', 'cotejo', { ...llega, ...coinciden(PODA.slice(1)), pago: 'si', ...factura }, ['coincide_identificacion_oficial'], conFactura);
 caso('Cotejo: sin pago no se pide factura, pero sí la cita nueva', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'no' }, ['cita_fecha', 'cita_hora']);

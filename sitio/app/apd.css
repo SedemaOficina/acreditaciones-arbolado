@@ -166,16 +166,8 @@ body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-
 .resumen-filtro { color: var(--gris); font-size: var(--t-sm); margin-block: 0 var(--e-2); }
 .tabla-bandeja { font-size: var(--t-sm); }
 .tabla-bandeja tr[hidden] { display: none; }
-/* Folios, botones y fechas de las tablas del personal: no se parten. El estándar pone overflow-wrap:anywhere en
-   .tabla-valor (formkit/modulos/tabla/tabla.css) y en computadora la columna se encogía hasta partir «Revisar» o
-   «10/10/2026» (auditoría 2026-10-18, E1; hallazgo para el estándar). En teléfono (tarjeta) la etiqueta de estado sí
-   se parte en renglones, para no salirse de la tarjeta (E2); en computadora va en uno. */
-.tabla-bandeja .mono, .tabla-bandeja .btn, .tabla-bandeja .btn-enlace, .tabla-bandeja .sin-corte { white-space: nowrap; }
-.tabla-bandeja .estado { max-width: 100%; }
-@media (min-width: 760px) {
-  .tabla-bandeja .tabla-valor { overflow-wrap: break-word; }
-  .tabla-bandeja .estado { white-space: nowrap; }
-}
+/* Folios, botones y fechas de las tablas del personal no se parten, y la etiqueta de estado se parte en teléfono y va en
+   un renglón en computadora: desde la 1.4.2 y la 1.5.0 lo hace el estándar (P126 y P145, módulos «estado» y «tabla»). */
 .senales { display: flex; flex-wrap: wrap; gap: var(--e-1); }
 .btn-chico { min-height: var(--objetivo-min); padding-block: var(--e-1); padding-inline: var(--e-3); font-size: var(--t-sm); }
 /* Revisión de una solicitud */
@@ -217,14 +209,8 @@ body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-
 .perfil-seccion-cabeza .btn { width: auto; }
 /* La ayuda de una sección va bajo su título y separada de los datos (2026-10-18) */
 .perfil-seccion-cabeza + .ayuda { margin-block-end: var(--e-4); }
-/* Bajadas y ayudas de bloque a todo el ancho de su contenedor (decisión de Liber 2026-10-18, hallazgo P134): con el
-   ancho de lectura del estándar (70ch) una línea corta pasaba al renglón de abajo dejando medio espacio vacío */
-.bajada, .ayuda-bloque { max-width: none; }
-/* Respuestas frecuentes (chips fijos, hallazgo P135): el estándar las limita a 240 px y una frase larga se partía en
-   dos renglones dentro de la píldora; aquí no se encogen: si no caben, pasan completas al renglón siguiente (sólo una más ancha que la fila se parte), y el paso del cursor sólo
-   marca el borde, para que no parezca elegida */
-.chip-fijo { max-width: 100%; flex-shrink: 0; }
-.chip-fijo:hover { color: var(--texto); background: var(--blanco); }
+/* Bajadas y ayudas de bloque a todo el ancho de su tarjeta (P134) y motivos frecuentes completos, sin parecer elegidos
+   al pasar el cursor (P135): desde la 1.4.4 lo hace el estándar. */
 @media (min-width: 560px) {
   .perfil-cabeza { grid-template-columns: auto minmax(0, 1fr); justify-items: start; align-items: center; text-align: start; }
   .perfil-quien { justify-items: start; }
@@ -316,7 +302,7 @@ body > main { flex: 1 0 auto; width: 100%; }
    Desde la 1.4.0 y la 1.4.1 son del estándar: FormKit.aviso (P115), FormKit.confirma (P113), el módulo «resultado»
    (P113), .btn-peligro relleno (P114), el módulo «estado» con cinco familias (P118) y .secuencia en el núcleo (P119).
    Aquí sólo queda lo propio del proyecto. */
-/* Párrafos dentro de un aviso armado por el proyecto (avisos con pasos o en páginas sin núcleo) */
+/* Párrafos dentro del cuerpo de un aviso (div.aviso-texto de FormKit.aviso o escrito en el HTML) */
 .aviso-texto > p { margin: 0; }
 .aviso-texto > p:not(:first-child), .aviso-texto > .secuencia { margin-block-start: var(--e-2); }
 /* Título de «Qué sigue» antes de una secuencia, fuera del módulo «resultado» */
@@ -349,9 +335,6 @@ body > main { flex: 1 0 auto; width: 100%; }
   .tabla-concentrado td:first-child { font-weight: var(--peso-normal); }
   .tabla-concentrado .conc-si, .tabla-concentrado .conc-no { text-align: center; }
 }
-/* Una etiqueta larga se parte en líneas: el módulo «estado» la deja en un renglón (white-space: nowrap) y en teléfono
-   ensanchaba su tarjeta o su tabla (hallazgo nuevo para el estándar). En las bandejas sigue en un renglón. */
-.estado { white-space: normal; }
 
 /* Material de estudio (decisión 2026-10-18): un documento por bloque, con su archivo y los apartados que conviene
    estudiar; cada apartado abre el PDF en su página. Sin tarjetas dentro de la tarjeta: una línea fina los separa. */
@@ -428,7 +411,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 .grupo-titulo { display: inline-grid; gap: var(--b-2); min-width: 0; }
 .grupo-nombre { overflow-wrap: anywhere; }
 .grupo-folio { font-size: var(--t-xs); font-weight: var(--peso-normal); color: var(--gris); letter-spacing: 0; }
-.grupo-bajada-datos { display: block; margin-block-start: var(--e-1); }
+/* La línea de datos (.linea-datos del estándar) bajo el nombre del grupo, en Asistencia */
+.grupo-bajada-datos { margin-block-start: var(--e-1); }
 .titulo-paso .grupo-folio { font-size: var(--t-sm); }
 
 /* Planeador: cabeza con la fecha de hoy y «Programar un curso»; los cuatro cursos como botones con aria-pressed */
@@ -496,7 +480,6 @@ body > main { flex: 1 0 auto; width: 100%; }
 .plan-grupo[data-situacion="en_integracion"] { border-color: var(--dorado); box-shadow: inset var(--b-4) 0 0 var(--dorado); }
 .plan-grupo-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--e-2) var(--e-3); }
 .plan-grupo-nombre { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); min-width: 0; }
-.plan-grupo-datos { margin: 0; font-size: var(--t-sm); color: var(--gris); }
 .plan-grupo-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
 .plan-grupo-acciones .btn { width: auto; }
 /* Cupo: un lugar por persona (25), lo ocupado, lo que falta para el mínimo (punteado) y lo libre */
@@ -577,7 +560,6 @@ body > main { flex: 1 0 auto; width: 100%; }
 .hoy-grupo { display: grid; gap: var(--e-2); padding: var(--e-4); border: var(--b-1) solid var(--linea); border-inline-start: var(--b-4) solid var(--guinda); border-radius: var(--r-caja); background: var(--blanco); }
 .hoy-grupo-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--e-2) var(--e-3); }
 .hoy-grupo-nombre { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); min-width: 0; }
-.hoy-grupo-datos { margin: 0; font-size: var(--t-sm); color: var(--gris); }
 .hoy-grupo .btn-primario { margin-inline-start: 0; }
 .hoy-proximos { display: grid; gap: var(--e-2); margin: 0; padding-inline-start: var(--e-5); list-style: disc; }
 .hoy-proximo-estado { display: block; font-size: var(--t-sm); color: var(--gris); }

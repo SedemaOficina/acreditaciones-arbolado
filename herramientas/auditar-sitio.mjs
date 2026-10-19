@@ -196,6 +196,11 @@ for (const [vistaNombre, vista] of Object.entries(VISTAS)) {
     const contexto = await navegador.newContext(vista);
     if (sesion) await contexto.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
     const page = await contexto.newPage();
+    // Una pantalla con cambios sin guardar pregunta antes de salir («Programar un curso», B5-02): al volver a cargarla
+    // para el botón siguiente se sale (sin esto, el diálogo se descartaba, la carga se cancelaba con ERR_ABORTED y la
+    // auditoría se detenía desde la 0.59)
+    let huboDialogo = false;
+    page.on('dialog', (d) => { if (d.type() === 'beforeunload') { d.accept().catch(() => {}); return; } huboDialogo = true; d.dismiss().catch(() => {}); });
     const consola = [];
     page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) consola.push(`${m.type()}: ${m.text()}`); });
     page.on('pageerror', (e) => consola.push(`excepción: ${e.message}`));
@@ -234,8 +239,7 @@ for (const [vistaNombre, vista] of Object.entries(VISTAS)) {
         if (!mismo) continue;
         const loc = page.locator(`[data-auditoria="${mismo.i}"]`);
         const antes = await page.evaluate(huella);
-        let dialogo = false;
-        page.once('dialog', (d) => { dialogo = true; d.dismiss().catch(() => {}); });
+        huboDialogo = false;
         const paginasAntes = contexto.pages().length;
         presionados++;
         // El enlace «Ir al contenido» sólo aparece con el teclado: se prueba con Tab y Enter
@@ -253,7 +257,7 @@ for (const [vistaNombre, vista] of Object.entries(VISTAS)) {
         await page.waitForTimeout(500);
         const despues = await page.evaluate(huella).catch(() => 'navegó');
         const nueva = contexto.pages().length > paginasAntes;
-        if (antes === despues && !dialogo && !nueva) agrega(nombre, vistaNombre, 'botón sin efecto visible', b.nombre);
+        if (antes === despues && !huboDialogo && !nueva) agrega(nombre, vistaNombre, 'botón sin efecto visible', b.nombre);
         for (const p of contexto.pages().slice(1)) await p.close();
       }
     }

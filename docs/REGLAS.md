@@ -46,7 +46,7 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 | Estado | Cuándo | ¿Opera? |
 |---|---|---|
 | `vigente` | De la emisión a 31 días antes del vencimiento | Sí |
-| `por_vencer` | Últimos 30 días naturales, día del vencimiento incluido | Sí, y ya puede renovar |
+| `por_vencer` | Los 30 días naturales antes del vencimiento y el día del vencimiento (31 días; parámetro `dias_antes_renovacion` = 30) | Sí, y ya puede renovar |
 | `vencida_renovable` | Hasta un año después del vencimiento | **No** |
 | `vencida_no_renovable` | Después | **No**; tramita como nueva |
 

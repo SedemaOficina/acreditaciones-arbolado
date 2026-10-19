@@ -61,7 +61,7 @@
     // Nombre calculado y, debajo, el folio en chico (propuesta D, 2026-10-18): el folio no cambia
     document.title = `${x.calculado} · ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
     $('#t-grupo').replaceChildren(APD.grupoTitulo(g, datos));
-    $('[data-bajada]').replaceChildren(...APD.meta([x.nombre, g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado', `creado el ${fecha(g.creado_en)}`]));
+    $('[data-bajada]').replaceChildren(APD.lineaDatos([x.nombre, g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado', `creado el ${fecha(g.creado_en)}`]));
     $('[data-situacion]').replaceChildren(estado(x.situacion.texto, x.situacion.tono));
 
     /* Cupo */

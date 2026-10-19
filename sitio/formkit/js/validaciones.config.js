@@ -32,6 +32,8 @@
   /* Formatos de archivo para leerlos: en mayúsculas y sin repetir JPEG (jpg y jpeg son el mismo). */
   const formatosArchivo = (exts) => [...new Set((exts || []).map((e) => String(e).trim().toUpperCase()).map((e) => (e === 'JPG' ? 'JPEG' : e)))].join(', ');
   const sinAcentos = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  /* La Ñ es letra, no acento: el RFC la admite y no se cambia por N. */
+  const sinAcentosSalvoEnie = (v) => [...String(v ?? '').normalize('NFC')].map((c) => (c === 'Ñ' || c === 'ñ' ? c : sinAcentos(c))).join('');
   const esFechaReal = (a, m, d) => { const f = new Date(Date.UTC(a, m - 1, d)); return f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d; };
 
   /* Fecha escrita como día/mes/año (formato «fecha-dma»): 23/07/1985,
@@ -118,7 +120,6 @@
   const CURP = {
     largo: 18,
     re: /^[A-Z][AEIOUX][A-Z]{2}\d{6}[HMX][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]\d$/,
-    sexos: ['H', 'M', 'X'],
     entidades: ['AS', 'BC', 'BS', 'CC', 'CL', 'CM', 'CS', 'CH', 'DF', 'DG', 'GT', 'GR', 'HG', 'JC', 'MC', 'MN', 'MS', 'NT', 'NL', 'OC', 'PL', 'QT', 'QR', 'SP', 'SL', 'SR', 'TC', 'TS', 'TL', 'VZ', 'YN', 'ZS', 'NE'],
     verificarDigito: true,
     alfabeto: '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'
@@ -272,7 +273,7 @@
     rfc: {
       descripcion: 'RFC: 12 caracteres (persona moral) o 13 (persona física). Estructura a confirmar con el emisor [Fuente: __]',
       inputmode: 'text', autocomplete: 'off',
-      normaliza: (v) => sinAcentos(recorta(v)).toUpperCase().replace(/[\s-]/g, ''),
+      normaliza: (v) => sinAcentosSalvoEnie(recorta(v)).toUpperCase().replace(/[\s-]/g, ''),
       valida: (v, a = {}, cfg = CONFIG) => {
         if (!/^([A-ZÑ&]{3,4})(\d{6})([A-Z0-9]{3})$/.test(v)) return cfg.mensajes.fmtRfc;
         const aa = Number(v.slice(-9, -7)), mm = Number(v.slice(-7, -5)), dd = Number(v.slice(-5, -3));
@@ -486,7 +487,7 @@
     }
   };
 
-  /* «curp-fecha-dma»: el mismo cruce, con el nombre que usan los proyectos con fecha día/mes/año. */
+  /* «curp-fecha-dma»: el mismo cruce, para los formularios que piden la fecha como día/mes/año. */
   CRUZADAS['curp-fecha-dma'] = { ...CRUZADAS['curp-fecha'], descripcion: 'La fecha de nacimiento (día/mes/año) coincide con la contenida en la CURP' };
 
   /* ---------- Archivos ---------- */
@@ -514,9 +515,10 @@
 
   /* ---------- Configuración ---------- */
   const CONFIG = {
-    version: '1.4.1',
+    version: '1.5.1',
     idioma: 'es-MX',
-    fechas: { zonaHoraria: 'America/Mexico_City' },
+    /* horas24: el reloj de las fechas que se muestran (acuse, borrador, resultado); false, con a.m. y p.m. */
+    fechas: { zonaHoraria: 'America/Mexico_City', horas24: true },
     /* Ámbito territorial. `cp` restringe el rango; `coordenadas` el
        rectángulo envolvente. Un formulario de alcance nacional pone null. */
     ambito: {
@@ -548,7 +550,7 @@
       maximoOpciones: 'Elige como máximo {max} opciones en «{etiqueta}».',
       soloLista: 'Elige una opción de la lista en «{etiqueta}».',
       repiteOpcion: '«{texto}» ya está en la lista: elige esa opción.',
-      edadMinima: 'Se requiere una edad mínima de {edad} años. Si la persona tiene menos, su madre, padre o tutor debe llenar el formulario.',
+      edadMinima: 'Se requiere una edad mínima de {edad} años.',
       edadMaxima: 'La edad máxima es de {edad} años.',
       curpNombre: 'La CURP no corresponde con el nombre y los apellidos que escribiste. Escríbelos tal como aparecen en tu CURP.',
       curpSinSegundo: 'Tu CURP indica que tienes segundo apellido. Escríbelo tal como aparece en tu CURP.',
@@ -681,7 +683,6 @@
       filaConfirma: '¿Quitar esta fila? Tiene datos capturados.',
       repetibleMin: 'Agrega al menos {min} elementos en «{etiqueta}».',
       repetibleMax: 'Como máximo se admiten {max} elementos en «{etiqueta}».',
-      mapaSinPunto: 'Sin punto marcado.',
       mapaPunto: 'Punto marcado: {lat}, {lon}.',
       mapaFuera: 'El punto queda fuera del ámbito. Muévelo o escribe la dirección.',
       chipsBorrar: 'Borrar historial',
@@ -694,7 +695,51 @@
       visorError: 'No se pudo mostrar el documento aquí. Ábrelo en otra pestaña con el enlace de arriba.',
       visorNavegador: 'Se muestra con el visor del navegador. Si no lo ves completo, ábrelo en otra pestaña con el enlace de arriba.',
       visorHoja: 'Hoja {n} de {total}',
-      sesionExpira: 'Tu sesión terminará en {min} minutos. Guarda o continúa para mantenerla.'
+      /* Textos de los módulos que antes estaban escritos en su código: así también se cambian aquí. */
+      archRechazoProceso: 'no se pudo procesar el archivo. Intenta de nuevo.',
+      copiarBoton: 'Copiado',
+      copiarBotonFallo: 'No se pudo copiar',
+      enlaceNuevaPestana: '(se abre en otra pestaña)',
+      descargaBoton: 'Preparando…',
+      enlaceMapaSin: 'No encontramos coordenadas en ese texto. Pega el enlace completo de Google Maps (el que empieza con google.com/maps) o escribe las coordenadas.',
+      enlaceMapaCorto: 'Los enlaces cortos de Google Maps no traen las coordenadas. Ábrelo en Google Maps: en el celular, mantén presionado el punto y copia los números que aparecen; en la computadora, haz clic derecho sobre el punto. Pégalos en «Coordenadas».',
+      enlaceMapaCentro: 'Ese enlace marca el centro de la pantalla, no un punto: tomamos {coordenadas}. Revisa que sea el lugar.',
+      enlaceMapaTomadas: 'Coordenadas tomadas del enlace: {coordenadas}.',
+      enlaceMapaOrden: 'se acomodaron latitud y longitud',
+      enlaceMapaSigno: 'se agregó el signo menos a la longitud, que en la Ciudad siempre es negativa',
+      enlaceMapaAnuncio: 'Coordenadas: {coordenadas}{notas}.',
+      conjuncion: ' y ',
+      fechaEdadCalculada: '{etiqueta}: {edad} años, calculada con la fecha de nacimiento.',
+      fechaAtajos: 'Atajos de periodo',
+      fechaUltimos: 'Últimos {n} días',
+      fechaPeriodo: 'Periodo: del {desde} al {hasta}',
+      curpDerivado: '{etiqueta}: {valor}, tomado de la CURP.',
+      sexoH: 'Hombre',
+      sexoM: 'Mujer',
+      sexoX: 'No binario',
+      cascadaCpTomado: '{etiqueta}: {valor}, tomado del catálogo. Puedes corregirlo.',
+      cascadaTomadaCp: '{etiqueta}: {valor}, tomada del código postal.',
+      chipsHistorial: 'Usados antes en {etiqueta}',
+      chipsQuitada: 'Sugerencia quitada.',
+      chipsBorrado: 'Historial borrado.',
+      mapaGestoTactil: 'Usa dos dedos para mover el mapa',
+      mapaGestoRueda: 'Usa Ctrl + rueda para acercar',
+      mapaGestoRuedaMac: 'Usa ⌘ + rueda para acercar',
+      mapaSinBase: 'Sin mapa base configurado: puedes colocar y mover el punto igual, o escribir la dirección.',
+      mapaMarcador: 'Punto marcado; arrástralo para moverlo',
+      mapaConfirmar: 'Confirmar punto',
+      mapaConfirmado: 'Punto confirmado',
+      mapaSinUbicacion: 'No se pudo obtener tu ubicación. Toca el mapa o escribe la dirección.',
+      cargando: 'Cargando…',
+      repetibleAgregado: '{etiqueta} {n} agregado.',
+      repetibleQuitado: 'Fila {n} quitada.',
+      pestanaAnuncio: 'Pestaña {nombre}',
+      paginacionAnterior: 'Anterior',
+      paginacionSiguiente: 'Siguiente',
+      paginacionMas: 'Cargar más',
+      paginacionActual: 'Página {n}, actual',
+      compartido: 'Compartido.',
+      borradorRecuperado: 'Borrador recuperado en este dispositivo.'
     }
   };
 

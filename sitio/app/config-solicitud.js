@@ -36,29 +36,83 @@
    página y en el servidor (app/perfil-academico.js). El catálogo de carreras llega cuando la página carga los datos
    (APD_SOLICITUD.usaCatalogo); antes, el mínimo es 0. */
 let catalogoCarreras = null;
-/* Borrador en este dispositivo (auditoría 2026-10-18, B2; lo escribe y lo recupera app/solicitud.js): uno por persona y
-   por solicitud (la nueva o la del folio que se continúa). Con el prefijo «apd.», la caducidad de 7 días y «Empezar de
-   cero» lo borran como todo lo de la prueba. */
-const claveBorrador = (() => {
-  const sesion = typeof APD !== 'undefined' ? APD.leeSesion() : null;
-  const folio = new URLSearchParams(location.search).get('folio') || 'nueva';
-  return `apd.borrador.solicitud.${sesion && sesion.id ? sesion.id : 'sin-sesion'}.${folio}`;
+const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
+/* Borrador en este dispositivo (auditoría 2026-10-18, B2): el del núcleo (data-borrador, estándar 1.5.0, P148), uno por
+   persona y por solicitud (la nueva o la del folio que se continúa). La clave se pone aquí, antes de que el núcleo inicie
+   el formulario. Con el prefijo «apd.», la caducidad de 7 días y «Empezar de cero» lo borran como todo lo de la prueba.
+   El núcleo lo empieza con el primer gesto de la persona: lo que la página precarga al continuar una solicitud no lo
+   crea. Lo propio del trámite al recuperarlo (las declaraciones se vuelven a marcar, el curso se recalcula) está en
+   app/solicitud.js. */
+const sesionBorrador = typeof APD !== 'undefined' ? APD.leeSesion() : null;
+const personaBorrador = sesionBorrador && sesionBorrador.id ? sesionBorrador.id : 'sin-sesion';
+const folioBorrador = new URLSearchParams(location.search).get('folio') || 'nueva';
+document.getElementById('formulario').dataset.borrador = `apd.borrador.solicitud.${personaBorrador}.${folioBorrador}`;
+document.getElementById('formulario').dataset.borradorVersion = '1';
+/* Los documentos del borrador: proveedor de archivos del núcleo (FormKit.iniciar(form, { borradorArchivos }), P148). Van al
+   almacén de la prueba (app/archivos-prueba.js) con un folio propio del borrador («borrador:<persona>:<folio>»), que la
+   mezcla de la prueba no aplica a ninguna solicitud y el menú cuenta como borrador; uno por campo, el último que eligió la
+   persona. Las escrituras van en fila, una a la vez. Si el navegador no deja guardar un documento, se avisa antes de salir
+   de la página. En la etapa 3, la API guarda los documentos de la solicitud en borrador. */
+const borradorArchivos = (() => {
+  const P = global_archivos() ? APD_ARCHIVOS_PRUEBA : null;
+  const folio = `borrador:${personaBorrador}:${folioBorrador}`;
+  const guardados = new Map(); // campo → el archivo que ya está guardado (o null)
+  const sinGuardar = new Set();
+  let fila = Promise.resolve();
+  let lectura = null;
+  let borrado = null;
+  const enFila = (fn) => { fila = fila.then(fn, fn); return fila; };
+  window.addEventListener('beforeunload', (e) => { if (sinGuardar.size) { e.preventDefault(); e.returnValue = ''; } });
+  return {
+    folio,
+    guarda(campo, archivos) {
+      const f = archivos[0] || null;
+      if ((guardados.has(campo) ? guardados.get(campo) : null) === f) return null;
+      guardados.set(campo, f);
+      if (!P) { if (f) sinGuardar.add(campo); return null; }
+      return enFila(() => P.documentos(folio)
+        .then((lista) => Promise.all(lista.filter((d) => d.requisito === campo).map((d) => P.quitaDocumento(folio, campo, d.cargado_en))))
+        .then(() => f && P.guardaDocumento(folio, campo, { blob: f, nombre: f.name, tipo: f.type, size: f.size }))
+        .then(() => sinGuardar.delete(campo), () => sinGuardar.add(campo)));
+    },
+    // El último documento guardado de cada campo, como File; el que se devuelve ya está guardado (no se escribe otra vez)
+    lee(campo) {
+      if (!P) return [];
+      lectura = lectura || enFila(() => P.documentos(folio));
+      return lectura.then((lista) => {
+        const d = (lista || []).filter((x) => x.requisito === campo && x.blob).sort((a, b) => String(a.cargado_en).localeCompare(String(b.cargado_en))).pop();
+        if (!d) return [];
+        const f = new File([d.blob], d.nombre_original, { type: d.tipo_mime || d.blob.type });
+        guardados.set(campo, f);
+        return [f];
+      });
+    },
+    // Al descartar, al vencer o al enviar: el núcleo avisa por cada campo; se borran todos una sola vez
+    borra() {
+      guardados.clear();
+      sinGuardar.clear();
+      lectura = null;
+      if (!P) return null;
+      const listo = () => { borrado = null; };
+      borrado = borrado || enFila(() => P.borraDocumentos(folio)).then(listo, listo);
+      return borrado;
+    },
+    // Lo que se está leyendo al recuperar (app/solicitud.js espera a que lleguen los documentos)
+    leyendo: () => lectura || Promise.resolve([])
+  };
 })();
-window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; }, borrador: { clave: claveBorrador, version: '1' } };
+window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; }, borradorArchivos };
 window.FORMKIT_CONFIG = {
   archivos: { mb: 5, extensiones: ['pdf'], max: 1 },
   // Formato propio «carrera» (app/formatos-propios.js): la carrera escrita lleva letras (auditoría «intentar romperlo», F1 12)
   formatos: window.APD_FORMATOS,
-  // El acuse con la hora de 24 horas (decisión 2026-10-17; el módulo acuse 1.4.1 la daba en 12 horas: P128, F4 M7)
-  idioma: 'es-MX-u-hc-h23',
   // «pesa 5.0 MB y el máximo es 5 MB» parecía que sí cabía (redondeo del estándar; F4 B6)
   mensajes: { archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduce su tamaño o elige otro.' },
   limitesSegun: { experiencia: (r) => APD_PERFIL_ACADEMICO.minimoExperiencia(catalogoCarreras, r) }
 };
 
-const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
-
 window.FORMKIT_OPCIONES = {
+  borradorArchivos,
   // Un rechazo como el de la API (la sesión cambió, la solicitud ya no se puede enviar): su mensaje y su enlace, en lugar
   // del «No se pudo enviar» general (bloque 2)
   alFallar(e, form) { APD.muestraRechazo(e, form); },
@@ -149,13 +203,11 @@ window.FORMKIT_OPCIONES = {
                 return APD_ARCHIVOS_PRUEBA.retiraEnvio(folio, guardado).catch(() => {}).then(() => Promise.reject(APD.rechazo('No se envió tu solicitud',
                   op && op.motivo ? op.motivo : 'Tu solicitud cambió en otra pestaña mientras la enviabas.', aTramites, 'conflicto')));
               }
-              // Enviada: el borrador de esta solicitud ya no sirve, con sus archivos (F1 7 y F4 M6: se quedaban en este
+              // Enviada: el núcleo borra el borrador y el proveedor, sus documentos (F1 7 y F4 M6: se quedaban en este
               // navegador y el menú los contaba como «documentos cargados aparte»)
-              try { localStorage.removeItem(claveBorrador); } catch (e) { /* sin almacenamiento */ }
-              const borrados = global_archivos() && p.id ? APD_ARCHIVOS_PRUEBA.borraDocumentos(`borrador:${p.id}:${continua || 'nueva'}`).catch(() => {}) : null;
               // El acuse dice el día simulado de la prueba, como el resto del trámite (F4 M7); con la API, la hora del servidor
               const fecha = global_archivos() ? APD_ARCHIVOS_PRUEBA.alCorte(datos, ahora) : ahora;
-              return Promise.resolve(borrados).then(() => ({ folio, fecha }));
+              return { folio, fecha };
             }), (e) => {
               if (e && e.codigo === 'folio_ocupado' && intento < 3) return APD.cargar().then((d2) => enviaCon(d2, intento + 1));
               throw e;

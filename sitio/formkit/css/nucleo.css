@@ -40,7 +40,7 @@
 .ayuda:empty{margin:0}
 /* Ayuda de bloque: va una vez bajo el título de la sección cuando vale igual
    para todos sus campos; la ayuda de cada campo queda para lo propio de él. */
-.ayuda-bloque{max-width:var(--ancho-lectura);margin-bottom:var(--e-4);font-size:var(--t-sm);line-height:var(--interlineado-compacto);color:var(--gris-cl)}
+.ayuda-bloque{margin-bottom:var(--e-4);font-size:var(--t-sm);line-height:var(--interlineado-compacto);color:var(--gris-cl)}
 .contador{margin-top:var(--e-1);font-size:var(--t-xs);text-align:right;color:var(--gris-cl)}
 
 /* Error del campo: icono + palabra «Error» + qué hacer. No depende del rojo. */

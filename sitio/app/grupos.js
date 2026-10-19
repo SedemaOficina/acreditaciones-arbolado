@@ -23,8 +23,8 @@
   const plural = APD.plural;
   const mayus = (t) => t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1);
   const params = new URLSearchParams(location.search);
-  /* Esta semana y las siguientes que se muestran siempre (al menos 6 después de la actual); las que tienen un grupo más
-     adelante se agregan */
+  /* Las semanas que se muestran siempre: esta semana y siete más (8 en total); las que tienen un grupo más adelante se
+     agregan */
   const SEMANAS = 8;
   const NOMBRE_SEMANA = ['Esta semana', 'La siguiente'];
 
@@ -363,7 +363,7 @@
       // «intentar romperlo», F3 M3): el cupo y esas acciones van con «por confirmar»; sólo «Completar» pide lugar
       const integra = g.estado === 'en_integracion';
       const conCupo = x.recibe || integra;
-      const datosLinea = APD.meta([
+      const datosLinea = APD.lineaDatos([
         g.integracion === 'especifico' ? 'De una organización' : 'Combinado',
         conCupo ? null : plural(x.n, 'persona', 'personas'),
         g.hora_entrada ? `entrada ${APD.hhmm(g.hora_entrada)}` : 'sin hora',
@@ -372,7 +372,7 @@
       ]);
       const partes = [
         el('div', { class: 'plan-grupo-cabeza' }, [el(nivel, { class: 'plan-grupo-nombre' }, [APD.grupoTitulo(g, datos)]), situacion]),
-        el('p', { class: 'plan-grupo-datos' }, datosLinea)
+        datosLinea
       ];
       const acciones = [];
       const falta = g.cupo_minimo - x.n;

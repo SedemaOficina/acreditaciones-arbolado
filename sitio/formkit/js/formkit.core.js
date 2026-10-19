@@ -1,5 +1,5 @@
 /* =========================================================
-   formkit.core.js · Estándar de formularios del SIA (SEDEMA) · v1.4.1
+   formkit.core.js · Estándar de formularios del SIA (SEDEMA) · v1.5.1
 
    Núcleo obligatorio. Lee la declaración de cada campo de sus ATRIBUTOS
    (required, data-formato, data-si, data-cruzada, data-uso…) y toma
@@ -7,11 +7,11 @@
    la superficie para quien programa es el HTML; la fuente de verdad de la
    validación es un solo archivo de configuración.
 
-   Qué hace el núcleo: anuncios para lector de pantalla, preparación de cada
-   campo (marca de obligatorio, ayuda, error, contador), visibilidad
-   condicional, validación individual y cruzada con el momento acordado
-   (decisión C5), resumen de errores con foco, borrador local, envío sin
-   duplicados y registro de módulos. Todo lo demás es un módulo opcional
+   Qué hace el núcleo: anuncios que también se ven, avisos (FormKit.aviso),
+   preparación de cada campo (marca de obligatorio, ayuda, error, contador),
+   visibilidad condicional, validación individual y cruzada con el momento
+   acordado (decisión C5), resumen de errores con foco, borrador local, envío
+   sin duplicados y registro de módulos. Todo lo demás es un módulo opcional
    (codigo/modulos/*) que se carga sólo si el formulario lo usa.
 
    Sin dependencias, sin manejadores en línea (eventos por delegación), sin
@@ -39,6 +39,13 @@
   const normalizaBusqueda = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
   let contadorIds = 0;
   const idUnico = (p) => `${p}-${++contadorIds}`;
+
+  /* Fecha y hora para leer («17 de octubre de 2026 a las 23:27»), en la zona de la
+     configuración y con su reloj: 24 horas salvo fechas.horas24 = false. */
+  const relojDe = (cfg) => ((cfg.fechas || {}).horas24 === false ? 'h12' : 'h23');
+  function fechaHora(valor, cfg = FormKit.config) {
+    return new Date(valor).toLocaleString(cfg.idioma, { dateStyle: 'long', timeStyle: 'short', timeZone: (cfg.fechas || {}).zonaHoraria, hourCycle: relojDe(cfg) });
+  }
 
   /* Fusión profunda de la configuración base con los ajustes del formulario
      (window.FORMKIT_CONFIG): el formulario sólo escribe lo que cambia. */
@@ -106,33 +113,45 @@
   }
 
   /* ---------- Avisos (FRM-39) ----------
-     FormKit.aviso(lugar, { tono, titulo, texto, foco }) pinta un aviso con el
-     icono y el rol de su tono, su título y su texto. Si lugar ya es un .aviso,
-     se pinta ahí; si no, va al principio de lugar y sustituye al que haya
-     puesto antes. foco: true cuando responde a una acción de la persona. El
-     marcado es el del contrato (<span class="aviso-texto">), así que sirve
-     también dentro de un <p class="aviso">. */
+     FormKit.aviso(lugar, { tono, titulo, texto, pasos, foco }) pinta un aviso
+     con el icono y el rol de su tono, su título, su texto y, si hay varias
+     acciones en orden, su secuencia «qué sigue» (FRM-84). texto es una cadena
+     (va en un <p>) o un nodo, por ejemplo un <p> con un enlace; pasos, una
+     lista de cadenas o nodos. Si lugar ya es un .aviso, se pinta ahí; si no,
+     va al principio de lugar y sustituye al que haya puesto antes. El cuerpo
+     es un <div class="aviso-texto">: una lista no cabe en un <p>, así que un
+     <p class="aviso"> se cambia por un <div> con sus mismos atributos (la
+     función devuelve el aviso pintado). foco: true cuando responde a una
+     acción de la persona. */
   const TONOS_AVISO = {
     neutro: { clase: '', icono: 'info', rol: '' },
     advertencia: { clase: 'aviso-advertencia', icono: 'alerta', rol: '' },
     bloqueo: { clase: 'aviso-bloqueo', icono: 'error', rol: 'alert' },
     ok: { clase: 'aviso-ok', icono: 'ok', rol: 'status' }
   };
-  function aviso(lugar, { tono = 'neutro', titulo = '', texto = '', foco = false } = {}) {
+  function aviso(lugar, { tono = 'neutro', titulo = '', texto = '', pasos = [], foco = false } = {}) {
     const t = TONOS_AVISO[tono] || TONOS_AVISO.neutro;
     let a = lugar.classList.contains('aviso') ? lugar : $(':scope > [data-aviso-formkit]', lugar);
     if (!a) { a = document.createElement('div'); a.dataset.avisoFormkit = ''; lugar.prepend(a); }
+    if (a.tagName === 'P') { const d = document.createElement('div'); for (const at of [...a.attributes]) d.setAttribute(at.name, at.value); a.replaceWith(d); a = d; }
     a.className = ['aviso', t.clase, ...[...a.classList].filter((c) => !/^aviso(-|$)/.test(c))].filter(Boolean).join(' ');
     if (t.rol) a.setAttribute('role', t.rol); else a.removeAttribute('role');
-    const cuerpo = document.createElement('span');
+    const cuerpo = document.createElement('div');
     cuerpo.className = 'aviso-texto';
     if (titulo) { const h = document.createElement('strong'); h.className = 'aviso-titulo'; h.textContent = titulo; cuerpo.appendChild(h); }
-    if (texto) cuerpo.appendChild(document.createTextNode(texto));
+    for (const x of [].concat(texto)) if (x || x === 0) cuerpo.appendChild(x instanceof Node ? x : Object.assign(document.createElement('p'), { textContent: x }));
+    const lista = [].concat(pasos).filter(Boolean);
+    if (lista.length) {
+      const ol = document.createElement('ol');
+      ol.className = 'secuencia';
+      for (const x of lista) { const li = document.createElement('li'); li.className = 'secuencia-item'; li.append(x instanceof Node ? x : String(x)); ol.appendChild(li); }
+      cuerpo.appendChild(ol);
+    }
     a.replaceChildren(icono(t.icono), cuerpo);
     a.hidden = false;
     if (foco) { a.tabIndex = -1; a.focus(); }
     /* Sin rol ni foco nadie lo leería: se anuncia, y ya está a la vista. */
-    else if (!t.rol) anuncia([titulo, texto].filter(Boolean).join(' '));
+    else if (!t.rol) anuncia([...cuerpo.querySelectorAll(':scope > *, li')].filter((e) => e.tagName !== 'OL').map((e) => e.textContent.trim()).join(' '));
     return a;
   }
 
@@ -146,7 +165,7 @@
   function iniciar(formulario, opciones = {}) {
     const form = typeof formulario === 'string' ? $(formulario) : formulario;
     if (!form) throw new Error(`FormKit: no existe el formulario «${formulario}»`);
-    /* Un formulario se inicia una sola vez (P111): si ya arrancó solo al
+    /* Un formulario se inicia una sola vez: si ya arrancó solo al
        cargar, la llamada de la página le suma sus opciones (enviar, alEnviar…)
        y recibe la misma instancia, sin duplicar escuchas. */
     const previa = iniciados.get(form);
@@ -646,7 +665,8 @@
 
     /* ----- Borrador local -----
        Se activa con data-borrador="clave" en el <form>. Versionado con
-       data-borrador-version. Excluye campos data-sensible y archivos. */
+       data-borrador-version. Excluye campos data-sensible y archivos (éstos, sólo
+       con un proveedor que dé la página: opciones.borradorArchivos, en archivos.js). */
     const claveBorrador = form.dataset.borrador || '';
     const versionBorrador = form.dataset.borradorVersion || '1';
     let temporizadorBorrador = 0;
@@ -655,9 +675,21 @@
     let terminado = false;
     const indicador = $('[data-guardado]');
     const franja = $('[data-franja-borrador]');
+    /* Lo que la página escribe sola (al precargar una solicitud para continuarla) no es
+       un borrador de la persona: el borrador empieza con su primer gesto en el formulario
+       (un evento confiable: escribir, elegir, tocar, soltar un archivo). Lo que cambien
+       después la página o los módulos entra en el mismo borrador. */
+    let personaActuo = false;
+    for (const t of ['input', 'change', 'click', 'drop']) form.addEventListener(t, (e) => { if (e.isTrusted) personaActuo = true; }, true);
+    /* Lo que va en el borrador además de los datos (los archivos, con su proveedor): el
+       módulo se suscribe y el núcleo le avisa al escribir, restaurar o borrar el borrador. */
+    const suscritosBorrador = [];
+    const alBorrador = (def) => { suscritosBorrador.push(def); };
+    const avisaBorrador = (accion, b) => { for (const x of suscritosBorrador) if (x[accion]) x[accion](b); };
+    function borraBorrador() { almacen.borra(claveBorrador); avisaBorrador('borra'); }
 
     function programaBorrador() {
-      if (!claveBorrador || !arrancado || terminado) return;
+      if (!claveBorrador || !arrancado || terminado || !personaActuo) return;
       clearTimeout(temporizadorBorrador);
       temporizadorBorrador = setTimeout(escribeBorrador, cfg.borrador.retardoMs);
     }
@@ -673,6 +705,7 @@
     function escribeBorrador() {
       const extra = FormKit.ganchos.estadoBorrador ? FormKit.ganchos.estadoBorrador(form) : {};
       const ok = almacen.escribe(claveBorrador, JSON.stringify({ v: versionBorrador, t: Date.now(), datos: datosBorrador(), ...extra }));
+      avisaBorrador('escribe');
       if (ok && indicador) {
         indicador.textContent = M.borradorGuardado;
         indicador.setAttribute('data-visible', '');
@@ -689,9 +722,9 @@
       if (!crudo) return null;
       try {
         const b = JSON.parse(crudo);
-        if (b.v !== versionBorrador || Date.now() - b.t > cfg.borrador.ttlDias * MS_POR_DIA) { almacen.borra(claveBorrador); return null; }
+        if (b.v !== versionBorrador || Date.now() - b.t > cfg.borrador.ttlDias * MS_POR_DIA) { borraBorrador(); return null; }
         return b;
-      } catch (e) { almacen.borra(claveBorrador); return null; }
+      } catch (e) { borraBorrador(); return null; }
     }
     function restauraBorrador(b) {
       for (const [n, v] of Object.entries(b.datos || {})) {
@@ -707,19 +740,20 @@
       aplicaCondicionales();
       for (const n of nombres()) { actualizaContador(n); const a = $('textarea', envoltura(n)); if (a) autoAlto(a); }
       if (FormKit.ganchos.restauraBorrador) FormKit.ganchos.restauraBorrador(form, b);
-      anuncia(M.borradorGuardado.replace('guardado', 'recuperado'));
+      avisaBorrador('restaura', b);
+      anuncia(M.borradorRecuperado);
     }
     function iniciaFranja(b) {
       franja.hidden = false;
       const f = $('[data-borrador-fecha]', franja);
-      if (f) f.textContent = new Date(b.t).toLocaleString(cfg.idioma, { dateStyle: 'long', timeStyle: 'short' });
+      if (f) f.textContent = fechaHora(b.t, cfg);
       franja.addEventListener('click', (e) => {
         const a = e.target.closest('[data-borrador]');
         if (!a) return;
         const confirma = $('[data-borrador-confirma]', franja);
         if (a.dataset.borrador === 'recuperar') { restauraBorrador(b); franja.hidden = true; }
-        else if (a.dataset.borrador === 'descartar') { if (confirma) { confirma.hidden = false; const si = $('[data-borrador="descartar-si"]', franja); if (si) si.focus(); } else { almacen.borra(claveBorrador); franja.hidden = true; } }
-        else if (a.dataset.borrador === 'descartar-si') { almacen.borra(claveBorrador); franja.hidden = true; }
+        else if (a.dataset.borrador === 'descartar') { if (confirma) { confirma.hidden = false; const seguro = $('[data-borrador="conservar"]', franja); if (seguro) seguro.focus(); } else { borraBorrador(); franja.hidden = true; } }
+        else if (a.dataset.borrador === 'descartar-si') { borraBorrador(); franja.hidden = true; }
         else if (a.dataset.borrador === 'conservar') { confirma.hidden = true; $('[data-borrador="recuperar"]', franja).focus(); }
       });
     }
@@ -795,7 +829,7 @@
         const respuesta = await enviarFn(arma(), { signal: control.signal });
         terminado = true;
         clearTimeout(temporizadorBorrador);
-        if (claveBorrador) almacen.borra(claveBorrador);
+        if (claveBorrador) borraBorrador();
         if (opciones.alEnviar) opciones.alEnviar(respuesta, form); else form.dispatchEvent(new CustomEvent('formkit:enviado', { detail: respuesta }));
         return true;
       } catch (e) {
@@ -915,7 +949,7 @@
       $, $$, plantilla, icono, anuncia, almacen, idUnico, pesoTxt, normalizaBusqueda,
       envoltura, envolturas, nombres, tipoDe, controlesDe, controlPrincipal, valorDe, textoDeValor, etiquetaDe, esObligatorio, activo, atributosDe,
       validaCampo, validaYPinta, validaContenedor, marca, marcaError, limpia, muestraResumen, quitaResumen, revisaResumen, enfocaCampo,
-      aplicaCondicionales, programaBorrador, leeBorrador, restauraBorrador, enviar, arma, preparaCampo, estadoDe, datosActuales
+      aplicaCondicionales, programaBorrador, alBorrador, leeBorrador, restauraBorrador, enviar, arma, preparaCampo, estadoDe, datosActuales
     };
 
     /* ----- Arranque ----- */
@@ -953,7 +987,7 @@
   /* Formularios iniciados en la página, para marcar un error desde fuera
      sin tener a mano la instancia. */
   const instancias = [];
-  /* Cada formulario iniciado, con sus opciones: para no iniciarlo dos veces (P111). */
+  /* Cada formulario iniciado, con sus opciones: para no iniciarlo dos veces. */
   const iniciados = new WeakMap();
   const marcaErrorGlobal = (campo, mensaje) => instancias.some((i) => i.marcaError(campo, mensaje));
 
@@ -963,7 +997,7 @@
     registra, iniciar, anuncia, aviso, icono, almacen,
     /* FormKit.marcaError(campo, mensaje): pinta el error junto al campo, en el formulario que lo tenga. */
     marcaError: marcaErrorGlobal,
-    utilidades: { $, $$, plantilla, pesoTxt, normalizaBusqueda, idUnico, fusiona },
+    utilidades: { $, $$, plantilla, pesoTxt, normalizaBusqueda, idUnico, fusiona, fechaHora, relojDe },
     /* Ganchos que un módulo puede ocupar: validaTodo (pasos), submit, estadoBorrador, restauraBorrador, erroresServidor. */
     ganchos: {}
   };

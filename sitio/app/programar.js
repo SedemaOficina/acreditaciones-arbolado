@@ -440,13 +440,10 @@
         if (esp && !orgDeElegidas()) { inst.marcaError('integracion', 'Para un grupo de una sola organización, todas las elegidas tienen que ser de ella.'); falta.push('que todas las elegidas sean de la misma organización, o un grupo combinado'); }
         if (falta.length) {
           // Lo que falta, junto a los botones y con el foco ahí; cada campo, además, con su error
-          const a = APD.aviso('error', confirmar ? (gExistente ? 'No se confirmó el grupo' : 'No se creó el grupo') : 'No se guardó el grupo',
-            confirmar ? 'Para confirmarlo falta:' : 'Falta:', [el('ul', { class: 'lista-obs' }, falta.map((t) => el('li', { texto: mayuscula(t) })))]);
-          a.setAttribute('role', 'alert');
-          a.tabIndex = -1;
-          avisoFalta.replaceChildren(a);
           avisoFalta.hidden = false;
-          a.focus();
+          avisoFalta.replaceChildren();
+          FormKit.aviso(avisoFalta, { tono: 'bloqueo', titulo: confirmar ? (gExistente ? 'No se confirmó el grupo' : 'No se creó el grupo') : 'No se guardó el grupo',
+            texto: [confirmar ? 'Para confirmarlo falta:' : 'Falta:', el('ul', { class: 'lista-obs' }, falta.map((t) => el('li', { texto: mayuscula(t) })))], foco: true });
           return Promise.resolve({ rechazado: true });
         }
         const libera = APD.ocupa(botones.filter((b) => !b.matches('[data-accion="enviar"]')));

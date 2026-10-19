@@ -537,7 +537,7 @@
         // confirmado nunca llegaría a su primer día. «Iniciar el curso hoy» (menú de pruebas, en la ficha del grupo)
         // hace lo que la base permite: mover el primer día de un grupo confirmado a hoy y pasarlo a «en curso»
         // (apd.grupo_cambio: confirmado → en_curso desde su primer día, con el cupo mínimo). En el sistema el curso
-        // empieza en la fecha confirmada; quién lo pasa a «en curso» está por decidir (P92).
+        // empieza en la fecha confirmada; quién lo pasa a «en curso» está por decidir (P124).
         if (g.estado !== 'confirmado' || activas(g.id).length < g.cupo_minimo || !g.instructor) return;
         g = ponGrupo(g, { estado: 'en_curso', estado_desde: en, fecha_inicio: hoy, inicio_simulado: true, fecha_inicio_confirmada: g.fecha_inicio });
       } else if (e.tipo === 'cancelar') {

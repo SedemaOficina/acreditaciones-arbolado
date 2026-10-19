@@ -191,12 +191,12 @@
       if (s.cita_motivo === 'sin_pago') sigue = '';
       else sigue = { pasos: ['Imprime los mismos documentos que cargaste.', 'Si ya pagaste, lleva el comprobante de ese pago; si no, paga con los datos de abajo.', `Acude a tu cita nueva ${acudeEl} con tus documentos y tu comprobante.`] };
       cambio.push(s.cita_motivo === 'sin_pago'
-        ? APD.aviso('pend', 'No presentaste tu comprobante de pago', { texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}.`, pasos: ['Si ya pagaste, imprime el comprobante de ese pago: no pagues otra vez.', 'Si todavía no pagas, paga con los datos de abajo e imprime tu comprobante.', `Acude a tu cita nueva ${acudeEl} con el comprobante y tus documentos impresos.`] })
-        : APD.aviso('pend', `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.`));
+        ? FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: 'No presentaste tu comprobante de pago', texto: [`Tu cita nueva es el ${fechaHora(s.cita_en)}.`, APD.tituloPasos()], pasos: ['Si ya pagaste, imprime el comprobante de ese pago: no pagues otra vez.', 'Si todavía no pagas, paga con los datos de abajo e imprime tu comprobante.', `Acude a tu cita nueva ${acudeEl} con el comprobante y tus documentos impresos.`] })
+        : FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.` }));
     }
     const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
     if (s.estado === 'lista_para_curso' && ultimaIns && !ultimaIns.activa && /^Grupo cancelado/.test(ultimaIns.motivo_baja || '')) {
-      cambio.push(APD.aviso('pend', 'Tu grupo se canceló', 'Sigues en espera de grupo con tu misma antigüedad. La Secretaría te asignará otro y te avisará las fechas.'));
+      cambio.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: 'Tu grupo se canceló', texto: 'Sigues en espera de grupo con tu misma antigüedad. La Secretaría te asignará otro y te avisará las fechas.' }));
     }
     const porInasistencia = APD.cerradaPorInasistencia(s);
     if (porInasistencia) {
@@ -212,8 +212,8 @@
         && new Date(c.atendida_en || c.programada_en) > new Date(ultimaRev || 0));
       const enCotejo = desdeCita || obs.some((d) => d.en_cotejo);
       if (obs.length) {
-        cambio.push(APD.aviso('pend', enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste' : 'Lo que debes corregir', '',
-          [el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: APD.observacionDe(req[d.requisito] || d.requisito, d.observacion) })))]));
+        cambio.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste' : 'Lo que debes corregir',
+          texto: el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: APD.observacionDe(req[d.requisito] || d.requisito, d.observacion) }))) }));
       }
       // El plazo con su fecha (auditoría 2026-10-18, D3). La regla del plazo todavía no está en la base (P02: propuesta de
       // 20 días hábiles): se dice cuándo llegaron las observaciones y la fecha límite queda marcada por confirmar.

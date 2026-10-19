@@ -23,7 +23,8 @@
      </form>
    Ganchos que ocupa: validaTodo (revalida todos los pasos al enviar),
    submit (Enter avanza en lugar de enviar), estadoBorrador/restauraBorrador
-   (paso actual y pasos hechos).
+   (paso actual y pasos hechos) y erroresServidor (abre el primer paso con un
+   error que devolvió el servidor).
    ========================================================= */
 (function () {
   'use strict';

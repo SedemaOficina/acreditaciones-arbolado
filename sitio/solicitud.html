@@ -7,19 +7,19 @@
 <title>Solicitud de acreditación · Acreditaciones de arbolado urbano</title>
 <meta name="description" content="Solicita o renueva tu acreditación de poda y derribo o de dictaminador técnico. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/combo/combo.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/pasos/pasos.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/revision/revision.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/acuse/acuse.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/copiar/copiar.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/combo/combo.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/pasos/pasos.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/archivos/archivos.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/revision/revision.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/acuse/acuse.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/copiar/copiar.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.59">
 </head>
 <body>
@@ -28,7 +28,7 @@
 
 <header class="cabecera">
   <div class="cabecera-int">
-    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="3829" height="771" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="477" height="96" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
     <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano</h1></div>
   </div>
 </header>
@@ -44,17 +44,18 @@
     <div class="acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
   </section>
 
-  <!-- Borrador en este dispositivo (auditoría 2026-10-18, B2): franja del estándar; la escribe y la atiende app/solicitud.js,
-       que guarda los campos, el paso y los documentos sólo cuando la persona cambia algo. Sin la fecha: el borrador guarda
-       la hora real y la prueba vive en una fecha simulada. -->
+  <!-- Borrador en este dispositivo (auditoría 2026-10-18, B2): el del núcleo y su franja (estándar 1.5.0 y 1.5.1, P148). Empieza
+       con el primer gesto de la persona: lo que la página precarga al continuar una solicitud no lo crea. Los documentos los
+       guarda el proveedor de archivos (app/config-solicitud.js). Sin la fecha: el borrador guarda la hora real y la prueba
+       vive en una fecha simulada. «Recuperar borrador» es secundario y «Empezar de nuevo» lleva el foco a «Conservar». -->
   <div class="franja" data-franja-borrador hidden>
     <p class="franja-texto">Tienes una solicitud sin enviar guardada en este dispositivo, con lo que habías capturado y los documentos que cargaste. Guardar el avance no es enviar la solicitud.</p>
-    <button type="button" class="btn btn-primario" data-borrador="recuperar">Seguir donde ibas</button>
+    <button type="button" class="btn btn-secundario" data-borrador="recuperar">Recuperar borrador</button>
     <button type="button" class="btn btn-secundario" data-borrador="descartar">Empezar de nuevo</button>
     <div class="aviso aviso-advertencia" data-borrador-confirma hidden>
       <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
-      <div class="aviso-texto"><p><strong class="aviso-titulo">¿Descartar lo que habías capturado?</strong> Se borra de este dispositivo, con los documentos que cargaste, y no se puede deshacer.</p>
-        <div class="acciones"><button type="button" class="btn-enlace" data-borrador="conservar">Conservar</button><button type="button" class="btn btn-peligro" data-borrador="descartar-si">Sí, descartar</button></div></div>
+      <div class="aviso-texto"><p><strong class="aviso-titulo">¿Descartar el borrador?</strong> Se borra lo que capturaste en este dispositivo, con los documentos que cargaste, y no se puede deshacer.</p>
+        <div class="acciones"><button type="button" class="btn-enlace" data-borrador="conservar">Conservar</button><button type="button" class="btn btn-peligro" data-borrador="descartar-si">Descartar borrador</button></div></div>
     </div>
   </div>
   <p class="nota-borrador" data-borrador-recuperado role="status" hidden></p>
@@ -661,17 +662,17 @@
 <script src="app/archivos-prueba.js?v=0.59"></script>
 <script src="app/formatos-propios.js?v=0.59"></script>
 <script src="app/config-solicitud.js?v=0.59"></script>
-<script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
-<script src="formkit/js/iconos.js?v=1.4.1"></script>
-<script src="formkit/js/formkit.core.js?v=1.4.1"></script>
-<script src="formkit/modulos/combo/combo.js?v=1.4.1"></script>
-<script src="formkit/modulos/pasos/pasos.js?v=1.4.1"></script>
-<script src="formkit/modulos/archivos/archivos.js?v=1.4.1"></script>
-<script src="formkit/modulos/revision/revision.js?v=1.4.1"></script>
-<script src="formkit/modulos/acuse/acuse.js?v=1.4.1"></script>
-<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
-<script src="formkit/modulos/copiar/copiar.js?v=1.4.1"></script>
-<script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
+<script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
+<script src="formkit/js/iconos.js?v=1.5.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.5.1"></script>
+<script src="formkit/modulos/combo/combo.js?v=1.5.1"></script>
+<script src="formkit/modulos/pasos/pasos.js?v=1.5.1"></script>
+<script src="formkit/modulos/archivos/archivos.js?v=1.5.1"></script>
+<script src="formkit/modulos/revision/revision.js?v=1.5.1"></script>
+<script src="formkit/modulos/acuse/acuse.js?v=1.5.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
+<script src="formkit/modulos/copiar/copiar.js?v=1.5.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
 <script src="app/solicitud.js?v=0.59"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.59"></script>

@@ -813,6 +813,10 @@ async function solicitudRegresos(navegador, ancho, alto, sufijo) {
   await page.click('[data-volver]');
   comprueba(await llega(new RegExp(`solicitud\\.html\\?folio=${conObs.folio}$`)) && await enPaso('Carga tus documentos') && await page.isHidden('[data-sin-opciones]'),
     t('B6: de regreso, la solicitud sigue disponible donde iba'));
+  // P148 (estándar 1.5.0): lo que la página precarga al continuar una solicitud no crea un borrador; sólo la persona
+  await page.waitForTimeout(800);
+  comprueba(await page.isHidden('[data-franja-borrador]') && await page.evaluate((f) => !Object.keys(localStorage).some((k) => k.startsWith('apd.borrador.') && k.endsWith(`.${f}`)), conObs.folio),
+    t('P148: continuar una solicitud precargada, sin tocar nada, no crea un borrador'));
   // D1: en la revisión, lo ya cargado se dice «Ya cargado», no «No indicado»
   for (const n of await page.$$eval(`${pasoVisible} [data-campo^="doc_"][data-requerido]`, (els) => els.filter((e) => e.offsetParent !== null).map((e) => e.dataset.campo))) {
     await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, PDF);
@@ -845,10 +849,16 @@ async function solicitudRegresos(navegador, ancho, alto, sufijo) {
   await page.reload();
   await page.waitForFunction(() => document.getElementById('tramite').value === 'poda_nueva');
   comprueba(await page.isVisible('[data-franja-borrador]'), t('B2: al recargar, la franja ofrece seguir donde iba'));
+  // 1.5.1: un solo botón guinda por pantalla; «Recuperar borrador» es secundario
+  const recuperar = await page.$eval('[data-borrador="recuperar"]', (b) => ({ texto: b.textContent.trim(), clase: b.className }));
+  comprueba(recuperar.texto === 'Recuperar borrador' && /btn-secundario/.test(recuperar.clase) && !/btn-primario/.test(recuperar.clase),
+    t(`1.5.1: «Recuperar borrador» es un botón secundario (${recuperar.texto} · ${recuperar.clase})`));
   await page.click('[data-borrador="recuperar"]');
   const recuperados = await page.waitForFunction(() => document.querySelectorAll('[data-archivos] .lista-arch li[data-estado="listo"]').length === 2, null, { timeout: 5000 }).then(() => true, () => false);
   comprueba(recuperados && await enPaso('Carga tus documentos') && await page.inputValue('#carrera_tecnica') === 'Técnico en jardinería',
-    t('B2: «Seguir donde ibas» recupera el paso, lo escrito y los 2 documentos cargados'));
+    t('B2: «Recuperar borrador» recupera el paso, lo escrito y los 2 documentos cargados'));
+  comprueba(/Borrador recuperado/.test(await page.textContent('[data-borrador-recuperado]')) && await page.isVisible('[data-borrador-recuperado]'),
+    t('B2: la recuperación se dice también en pantalla'));
   for (const n of campos.slice(2)) {
     await page.setInputFiles(`[data-campo="${n}"] [data-archivos] > input[type="file"]`, PDF);
     await page.waitForSelector(`[data-campo="${n}"] .lista-arch li[data-estado="listo"]`);
@@ -860,6 +870,17 @@ async function solicitudRegresos(navegador, ancho, alto, sufijo) {
   const boton = await page.textContent(`${pasoVisible} [data-accion="siguiente"]`);
   await page.click(`${pasoVisible} [data-accion="siguiente"]`);
   comprueba(/Volver a la revisión/.test(boton) && await enPaso('Revisa antes de enviar'), t('B13: después de «Editar», «Volver a la revisión» regresa directo, sin recorrer los pasos'));
+  await marcaCasillas(page);
+  // P148 · el borrador del núcleo recupera la revisión con todos los documentos (proveedor de archivos), pero no las
+  // declaraciones: se vuelven a marcar cada vez
+  await page.waitForTimeout(1500);
+  await page.reload();
+  await page.waitForSelector('[data-franja-borrador]:not([hidden])');
+  await page.click('[data-borrador="recuperar"]');
+  const todos = await page.waitForFunction((n) => document.querySelectorAll('[data-archivos] .lista-arch li[data-estado="listo"]').length === n, campos.length, { timeout: 5000 }).then(() => true, () => false);
+  const marcadas = await page.$$eval('input[name="protesta"], input[name="aviso"], input[name="humano"]', (l) => l.filter((c) => c.checked).length);
+  comprueba(todos && await enPaso('Revisa antes de enviar') && marcadas === 0,
+    t(`P148: el borrador recupera la revisión con los ${campos.length} documentos y sin las declaraciones (${marcadas} marcadas)`));
   await marcaCasillas(page);
   await page.click('[data-accion="enviar"]');
   await page.waitForSelector('[data-acuse]:not([hidden])');
@@ -2089,6 +2110,9 @@ async function romper(navegador) {
   await pg.reload();
   await pg.waitForSelector('[data-franja-borrador]:not([hidden])');
   await pg.click('[data-borrador="descartar"]');
+  // 1.5.1 (FRM-42): «Empezar de nuevo» lleva el foco a «Conservar», no al botón que borra, y ése dice «Descartar borrador»
+  const foco151 = await pg.evaluate(() => ({ foco: document.activeElement && document.activeElement.dataset.borrador, borra: document.querySelector('[data-borrador="descartar-si"]').textContent.trim() }));
+  comprueba(foco151.foco === 'conservar' && foco151.borra === 'Descartar borrador', t(`1.5.1: «Empezar de nuevo» lleva el foco a «Conservar» y el botón que borra dice «Descartar borrador» (${JSON.stringify(foco151)})`));
   await pg.click('[data-borrador="descartar-si"]');
   comprueba(await esperaQue(pg, (f) => APD_ARCHIVOS_PRUEBA.documentos(f).then((l) => l.length === 0), folioB),
     t('F1 7: «Empezar de nuevo» borra también los documentos del borrador'));
@@ -3549,6 +3573,233 @@ async function limpieza(navegador) {
     t('horas de entrada e instructores: la misma lista en la ficha del grupo y en «Programar», con los instructores de APD_PERSONAL'));
   comprueba(!/const MESES = \[/.test(leer('sitio/app/programar.js')) && !/nombreCurso/.test(fuentes), t('sin copias de MESES ni de nombreCurso (APD.MESES, APD.cursoLargo)'));
   await c.close();
+  await estandarAlDia();
+}
+
+// ── Estándar de formularios 1.5.1 (auditoría 2026-10-19, bloque 4): lo que el estándar ya resuelve no se rodea en el
+// proyecto (P126, P130, P131, P134, P135, P145, P148) y el proyecto no usa textos que el estándar retiró ──
+async function estandarAlDia() {
+  const t = (m) => `[estándar 1.5.1] ${m}`;
+  const leer = (r) => readFileSync(join(raiz, r), 'utf8');
+  const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html'));
+  const app = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js')).map((f) => leer(`sitio/app/${f}`)).join('\n');
+  comprueba(/versión 1\.5\.1 del /.test(leer('sitio/formkit/LEEME.md')), t('sitio/formkit es la copia de la 1.5.1'));
+  // P130: el <img> del logotipo dice el tamaño real del archivo (477 × 96), en todas las páginas
+  const png = readFileSync(join(raiz, 'sitio/formkit/imagenes/logotipo-sedema.png'));
+  const [ancho, alto] = [png.readUInt32BE(16), png.readUInt32BE(20)];
+  const malas = paginas.filter((p) => { const m = leer(`sitio/${p}`).match(/<img class="cabecera-logo"[^>]*>/); return !m || !m[0].includes(`width="${ancho}" height="${alto}"`); });
+  comprueba(ancho === 477 && alto === 96 && !malas.length, t(`P130: logotipo de ${ancho} × ${alto} y el mismo tamaño en el <img> de las ${paginas.length} páginas${malas.length ? '; distinto en: ' + malas.join(', ') : ''}`));
+  // Reglas de apd.css que el estándar ya trae: etiquetas de estado (P126), bajadas (P134), chips fijos (P135), tablas (P145)
+  const css = leer('sitio/app/apd.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const sobran = [
+    [/(^|\})\s*\.estado\s*\{/, '.estado'], [/\.tabla-bandeja \.estado/, '.tabla-bandeja .estado'], [/\.chip-fijo/, '.chip-fijo'],
+    [/\.bajada[^{]*\{[^}]*max-width:\s*none/, '.bajada max-width: none'], [/\.tabla-bandeja \.(tabla-valor|mono|btn|btn-enlace)\b/, '.tabla-bandeja .tabla-valor/.mono/.btn']
+  ].filter(([re]) => re.test(css)).map(([, n]) => n);
+  comprueba(!sobran.length, t(`apd.css no repite lo que el estándar ya resuelve${sobran.length ? '; sobra: ' + sobran.join(', ') : ''}`));
+  // P131 y P134: los avisos son FormKit.aviso y las líneas de datos, .linea-datos (sin APD.aviso ni APD.meta)
+  comprueba(!/APD\.aviso\(|APD\.meta\(/.test(app) && !/\n\s*function (aviso|meta)\(/.test(leer('sitio/app/apd.js')), t('P131 y P134: sin APD.aviso ni APD.meta'));
+  // P148: el borrador de la solicitud es el del núcleo, con el almacén de la prueba como proveedor de archivos
+  comprueba(/borradorArchivos/.test(leer('sitio/app/config-solicitud.js')) && !/localStorage\.setItem/.test(leer('sitio/app/solicitud.js')), t('P148: el borrador de la solicitud es el del núcleo, con proveedor de archivos'));
+  // 1.5.1: «sesionExpira» se retiró del estándar; el proyecto no lo define
+  comprueba(!/sesionExpira\s*:/.test(leer('sitio/app/mensajes-usted.js')), t('1.5.1: mensajes-usted.js no define «sesionExpira» (retirado)'));
+}
+
+/* Una foto JPG como la de un teléfono, con su ubicación en el EXIF (GPS: 19° 25′ N, 99° 8′ W). El navegador hace el JPG
+   (canvas) y aquí se le agrega el segmento APP1 «Exif» con un IFD GPS (TIFF big-endian). Es ruido muy comprimido: al
+   recodificarla pesa más que la original, el caso en que la 1.4.1 guardaba la original con su ubicación (P127). */
+function exifConGps() {
+  const b = [];
+  const u16 = (n) => b.push((n >> 8) & 255, n & 255);
+  const u32 = (n) => { u16(Math.floor(n / 65536)); u16(n % 65536); };
+  const racional = (n, d) => { u32(n); u32(d); };
+  b.push(0x4D, 0x4D); u16(42); u32(8); // cabecera TIFF; IFD0 en 8
+  u16(1); u16(0x8825); u16(4); u32(1); u32(26); u32(0); // IFD0: GPSInfo → IFD GPS en 26
+  u16(4); // IFD GPS: latitud N y longitud W, cada una con tres racionales (80 y 104)
+  u16(1); u16(2); u32(2); b.push(0x4E, 0, 0, 0);
+  u16(2); u16(5); u32(3); u32(80);
+  u16(3); u16(2); u32(2); b.push(0x57, 0, 0, 0);
+  u16(4); u16(5); u32(3); u32(104);
+  u32(0);
+  racional(19, 1); racional(25, 1); racional(36, 1);
+  racional(99, 1); racional(8, 1); racional(2, 1);
+  const tiff = Buffer.from(b);
+  const largo = 2 + 6 + tiff.length;
+  return Buffer.concat([Buffer.from([0xFF, 0xE1, largo >> 8, largo & 255]), Buffer.from('Exif\0\0', 'latin1'), tiff]);
+}
+async function jpgConGps(page) {
+  const datosUrl = await page.evaluate(() => {
+    const c = document.createElement('canvas'); c.width = 400; c.height = 500;
+    const x = c.getContext('2d'); const img = x.createImageData(400, 500);
+    let semilla = 7; const azar = () => { semilla = (semilla * 1103515245 + 12345) % 2147483648; return semilla % 256; };
+    for (let i = 0; i < img.data.length; i += 4) { img.data[i] = azar(); img.data[i + 1] = azar(); img.data[i + 2] = azar(); img.data[i + 3] = 255; }
+    x.putImageData(img, 0, 0);
+    return c.toDataURL('image/jpeg', 0.08);
+  });
+  const jpg = Buffer.from(datosUrl.split(',')[1], 'base64');
+  return { name: 'foto-telefono.jpg', mimeType: 'image/jpeg', buffer: Buffer.concat([jpg.subarray(0, 2), exifConGps(), jpg.subarray(2)]) };
+}
+const tieneExif = (bytes) => Buffer.from(bytes).includes(Buffer.from('Exif\0\0', 'latin1'));
+
+// ── Estándar 1.5.1 en pantalla (bloque 4 de la auditoría del 19/10/2026), en teléfono y escritorio: etiquetas de estado
+// largas (P126), foto sin ubicación (P127), hora en 24 horas (P128), RFC con Ñ (P129), avisos con pasos y enlaces (P131),
+// líneas de datos y bajadas (P134), motivos frecuentes (P135) y tablas (P145) ──
+async function estandarPantallas(navegador, ancho, alto, sufijo) {
+  const t = (m) => `[estándar 1.5.1 ${sufijo}] ${m}`;
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+  const pg = await c.newPage();
+  const errores = [];
+  pg.on('console', (m) => { if (m.type() === 'error') errores.push(`${pg.url()} · ${m.text()}`); });
+  pg.on('pageerror', (e) => errores.push(`${pg.url()} · ${e.message}`));
+  // Salir de un formulario a medias (el cotejo) pregunta antes de salir: aquí se sale
+  pg.on('dialog', (d) => d.accept().catch(() => {}));
+  const escritorio = ancho >= 760;
+  // Una etiqueta de estado larga: se parte en renglones en teléfono, sin ensanchar su tarjeta ni la página
+  const etiquetaLarga = async (sel, donde) => {
+    const r = await pg.evaluate((s) => {
+      const e = [...document.querySelectorAll(s)].find((x) => x.offsetParent !== null);
+      if (!e) return null;
+      const texto = [...e.childNodes].reverse().find((n) => n.nodeType === 3 && n.textContent.trim());
+      (texto || e).textContent = 'Confirmado · no inició · la Dirección de Infraestructura Verde lo revisa con el instructor';
+      const caja = e.closest('.plan-grupo, .plan-persona, tr, .tarjeta') || e.parentElement;
+      const rects = [...e.getClientRects()];
+      return { renglones: Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight || 20)), ancho: e.getBoundingClientRect().width,
+        caja: caja.getBoundingClientRect().right, pantalla: document.documentElement.clientWidth, desborde: document.documentElement.scrollWidth > window.innerWidth + 1, rects: rects.length };
+    }, sel);
+    comprueba(r && !r.desborde && r.caja <= r.pantalla + 1 && (escritorio || r.renglones >= 2),
+      t(`P126: en ${donde}, una etiqueta de estado larga ${escritorio ? 'no ensancha su tarjeta' : 'se parte en renglones y no ensancha su tarjeta ni la página'} (${JSON.stringify(r)})`));
+  };
+  await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await pg.waitForSelector('.plan-grupo .estado');
+  await etiquetaLarga('.plan-grupo .estado', '«Grupos»');
+  await captura(pg, `151-grupos-etiqueta-larga-${sufijo}`);
+  await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await pg.waitForSelector('.plan-persona');
+  // «En espera» ya es la espera del planeador; si nadie trae etiqueta, se le pone una a la primera fila
+  await pg.evaluate(() => { const f = document.querySelector('.plan-persona'); if (f && !f.querySelector('.estado')) f.querySelector('.plan-persona-nombre, span').after(APD.estado('Prioritaria', 'pend')); });
+  await etiquetaLarga('.plan-persona .estado', '«En espera» (la espera del planeador)');
+  await captura(pg, `151-espera-etiqueta-larga-${sufijo}`);
+  // P145 y P126: en la tabla de computadora, botones, folios y etiquetas no se parten
+  await pg.goto(BASE + 'revision.html');
+  await pg.waitForSelector('[data-filas] tr');
+  const tabla = await pg.evaluate(() => {
+    const ws = (s) => [...document.querySelectorAll(s)].filter((e) => e.offsetParent !== null).map((e) => getComputedStyle(e).whiteSpace);
+    return { mono: ws('.tabla .mono'), btn: ws('.tabla .btn, .tabla .btn-enlace'), estado: ws('.tabla .estado') };
+  });
+  const todos = (l, v) => l.length > 0 && l.every((x) => x === v);
+  comprueba(escritorio ? todos(tabla.mono, 'nowrap') && todos(tabla.btn, 'nowrap') && todos(tabla.estado, 'nowrap') : tabla.estado.length > 0 && tabla.estado.every((x) => x !== 'nowrap'),
+    t(`P145 y P126: en «Solicitudes por revisar» ${escritorio ? 'folios, botones y etiquetas no se parten' : 'la etiqueta de la tarjeta sí se parte'} (${JSON.stringify(Object.fromEntries(Object.entries(tabla).map(([k, v]) => [k, [...new Set(v)]])))})`));
+  await captura(pg, `151-solicitudes-por-revisar-${sufijo}`);
+
+  // P134: líneas de datos con .linea-datos; cada dato entero, y en un renglón cuando cabe
+  const lineas = async (donde) => {
+    const r = await pg.evaluate(() => [...document.querySelectorAll('.linea-datos')].filter((e) => e.offsetParent !== null).map((e) => {
+      const items = [...e.querySelectorAll('.linea-datos-item')];
+      const tops = new Set(items.map((i) => Math.round(i.getBoundingClientRect().top)));
+      const partidos = items.filter((i) => new Set([...i.getClientRects()].map((x) => Math.round(x.top))).size > 1 || getComputedStyle(i).whiteSpace !== 'nowrap').length;
+      const r = document.createRange(); r.selectNodeContents(e);
+      const necesita = items.reduce((s, i) => s + i.getBoundingClientRect().width, 0) + (items.length - 1) * 12;
+      return { items: items.length, renglones: tops.size, partidos, cabe: necesita <= e.getBoundingClientRect().width, texto: e.textContent.trim().slice(0, 60) };
+    }));
+    const malas = r.filter((x) => x.partidos || (x.cabe && x.renglones > 1));
+    comprueba(r.length > 0 && !malas.length, t(`P134: en ${donde}, ${r.length} línea(s) de datos con cada dato entero y en un renglón cuando cabe${malas.length ? '; mal: ' + JSON.stringify(malas) : ''}`));
+    return r;
+  };
+  const porRevisar = datos.solicitud.find((s) => s.estado === 'enviada');
+  await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
+  await pg.waitForSelector('[data-bajada] .linea-datos');
+  await lineas('la revisión documental');
+  // P135: motivos frecuentes completos (un renglón cada uno, sin encogerse) y al pasar el cursor sólo cambia el borde
+  const doc = await pg.$eval('[data-doc]:not([hidden]) input[value="con_observacion"]', (i) => i.name);
+  await pg.check(`input[name="${doc}"][value="con_observacion"]`, { force: true });
+  const chip = `[data-campo="${doc.replace('decision_', 'observacion_')}"] .chip-fijo`;
+  await pg.waitForSelector(chip);
+  const chips = await pg.$$eval(chip, (l) => l.map((b) => { const r = document.createRange(); r.selectNodeContents(b); return { texto: b.textContent.trim(), renglones: new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size, encoge: getComputedStyle(b).flexShrink }; }));
+  const antes = await pg.$eval(chip, (b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).borderColor]);
+  await pg.hover(chip);
+  await pg.waitForTimeout(250);
+  const encima = await pg.$eval(chip, (b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).borderColor]);
+  comprueba(chips.length === 5 && chips.every((x) => x.renglones === 1 && x.encoge === '0') && antes[0] === encima[0] && antes[1] !== encima[1],
+    t(`P135: los ${chips.length} motivos frecuentes van completos en un renglón y al pasar el cursor sólo cambia el borde (${JSON.stringify({ largos: chips.filter((x) => x.renglones > 1).map((x) => x.texto), fondo: [antes[0], encima[0]], borde: [antes[1], encima[1]] })})`));
+  await pg.mouse.move(0, 0);
+  await captura(pg, `151-revision-documental-${sufijo}`);
+  await abreCotejo(pg, conCita.folio);
+  await lineas('el cotejo');
+  // P129: el RFC conserva la Ñ (en la página y en lo que se envía)
+  await pg.check('input[name="se_presento"][value="si"]', { force: true });
+  await pg.check('input[name="identidad"][value="misma"]', { force: true });
+  for (const k of await pg.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await pg.check(`input[name="coincide_${k}"][value="si"]`, { force: true });
+  await pg.check('input[name="pago"][value="si"]', { force: true });
+  await pg.fill('#factura_rfc', 'muño800101ab1');
+  await pg.press('#factura_rfc', 'Tab');
+  const rfc = await pg.evaluate(() => ({ valor: document.getElementById('factura_rfc').value, error: (document.querySelector('[data-campo="factura_rfc"] .err') || {}).textContent || '',
+    envia: FormKit.iniciar(document.getElementById('formulario')).payload().datos.factura_rfc }));
+  comprueba(rfc.valor === 'MUÑO800101AB1' && !rfc.error.trim() && rfc.envia === 'MUÑO800101AB1', t(`P129: un RFC con Ñ se conserva en el cotejo y en lo que se envía (${JSON.stringify(rfc)})`));
+  await pg.$eval('#factura_rfc', (e) => e.scrollIntoView({ block: 'center' }));
+  await pg.screenshot({ path: CAPTURAS ? join(CAPTURAS, `151-cotejo-rfc-enie-${sufijo}.png`) : undefined }).catch(() => {});
+  await pg.goto(BASE + `citas.html?dia=${conCita.cita_en.slice(0, 10)}`);
+  await pg.waitForSelector('[data-filas] tr:not([hidden])');
+  await captura(pg, `151-citas-${sufijo}`);
+  await pg.goto(BASE + 'grupo.html?folio=APD-G-2026-005');
+  await pg.waitForSelector('[data-bajada] .linea-datos');
+  await lineas('la ficha del grupo');
+  await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
+  await pg.waitForSelector('[data-bajada] .linea-datos');
+  await lineas('«Asistencia»');
+  await captura(pg, `151-asistencia-${sufijo}`);
+  await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await pg.waitForSelector('.plan-grupo .linea-datos');
+  await lineas('«Grupos»');
+  await captura(pg, `151-grupos-${sufijo}`);
+
+  // P131: avisos con pasos (secuencia numerada) y con enlace, en div.aviso-texto, con el icono de su tono
+  const aviso = (sel) => pg.$eval(sel, (a) => ({ cuerpo: a.querySelector('.aviso-texto') && a.querySelector('.aviso-texto').tagName, icono: Boolean(a.querySelector(':scope > svg.icono')),
+    pasos: a.querySelectorAll('ol.secuencia > li.secuencia-item').length, enlaces: a.querySelectorAll('.aviso-texto a').length, titulo: (a.querySelector('.aviso-titulo') || {}).textContent }));
+  const enIntegracion = datos.grupo.find((g) => g.estado === 'en_integracion');
+  await pg.goto(BASE + `grupos.html?curso=${enIntegracion.tipo_acreditacion}-${enIntegracion.modalidad}&grupo=${enIntegracion.folio}`);
+  await pg.waitForSelector('[data-modo-grupo] .aviso');
+  const conEnlace = await aviso('[data-modo-grupo] .aviso');
+  comprueba(conEnlace.cuerpo === 'DIV' && conEnlace.icono && conEnlace.enlaces === 1, t(`P131: el aviso «Agregando personas a …» lleva su enlace en div.aviso-texto, con icono (${JSON.stringify(conEnlace)})`));
+  await captura(pg, `151-aviso-con-enlace-${sufijo}`);
+  const sinPago = await pg.evaluate(async () => { const d = await APD.cargar(); const s = d.solicitud.find((x) => x.estado === 'validada_en_linea' && x.cita_motivo === 'sin_pago'); return s ? d.solicitante.find((p) => p.id === s.solicitante_id).curp : null; });
+  await entra(pg, sinPago);
+  const conPasos = await aviso('.aviso:has(ol.secuencia)');
+  comprueba(conPasos.cuerpo === 'DIV' && conPasos.icono && conPasos.pasos === 3 && /comprobante de pago/.test(conPasos.titulo), t(`P131: «No presentaste tu comprobante de pago» lleva sus 3 pasos en una secuencia numerada (${JSON.stringify(conPasos)})`));
+  await pg.$eval('.aviso:has(ol.secuencia)', (e) => e.scrollIntoView({ block: 'center' }));
+  await captura(pg, `151-aviso-con-pasos-${sufijo}`);
+  await pg.click('[data-sesion] button');
+
+  // P127 y P128: «Crea tu cuenta» con una foto JPG con su ubicación: se agrega y lo que se guarda no lleva EXIF; el acuse
+  // dice la hora en 24 horas
+  const foto = await jpgConGps(pg);
+  await pg.goto(BASE + 'cuenta.html');
+  await pg.fill('#nombre', NUEVA.nombre);
+  await pg.fill('#primer_apellido', NUEVA.primer_apellido);
+  await pg.fill('#segundo_apellido', NUEVA.segundo_apellido);
+  await pg.fill('#fecha_nacimiento', dma(NUEVA.nacimiento));
+  await pg.fill('#curp', NUEVA.curp);
+  await pg.fill('#correo', `${NUEVA.curp.toLowerCase()}@ejemplo.local`);
+  await pg.fill('#correo2', `${NUEVA.curp.toLowerCase()}@ejemplo.local`);
+  await pg.fill('#telefono', '0000000077');
+  await pg.fill('#contrasena', 'una frase larga de prueba');
+  await pg.fill('#contrasena2', 'una frase larga de prueba');
+  await pg.check('input[name="adscrito"][value="no"]', { force: true });
+  await pg.setInputFiles('[data-campo="foto"] [data-archivos] > input[type="file"]:not([data-entrada-camara])', foto);
+  const agregada = await pg.waitForSelector('[data-campo="foto"] .lista-arch li[data-estado="listo"]', { timeout: 8000 }).then(() => true, () => false);
+  await captura(pg, `151-cuenta-foto-con-gps-${sufijo}`);
+  await marcaCasillas(pg);
+  await pg.click('[data-accion="enviar"]');
+  await pg.waitForSelector('[data-acuse]:not([hidden])');
+  const guardada = await pg.evaluate(async (curp) => { const r = await APD_ARCHIVOS_PRUEBA.foto(curp); return r && r.blob ? [...new Uint8Array(await r.blob.arrayBuffer())] : null; }, NUEVA.curp);
+  comprueba(tieneExif(foto.buffer) && agregada && guardada && guardada[0] === 0xFF && guardada[1] === 0xD8 && !tieneExif(guardada),
+    t(`P127: una foto JPG con su ubicación (EXIF con GPS) se agrega y se guarda como JPG sin EXIF (${guardada ? `${guardada.length} bytes, EXIF: ${tieneExif(guardada) ? 'sí' : 'no'}` : 'no se guardó'})`));
+  const recibida = (await pg.textContent('[data-acuse-fecha]')) || '';
+  comprueba(/\b([01]\d|2[0-3]):[0-5]\d\b/.test(recibida) && !/[ap]\.\s?m\./.test(recibida), t(`P128: el acuse de «Crea tu cuenta» dice la hora en 24 horas («${recibida.trim()}»)`));
+  // La fecha del borrador y del acuse salen de la misma función del núcleo: zona de la Ciudad y 24 horas
+  const reloj = await pg.evaluate(() => FormKit.utilidades.fechaHora('2026-10-18T05:27:00Z'));
+  comprueba(/17 de octubre de 2026/.test(reloj) && /23:27/.test(reloj) && !/[ap]\.\s?m\./.test(reloj), t(`P128: FormKit.utilidades.fechaHora escribe la hora de la Ciudad en 24 horas («${reloj}»)`));
+  await captura(pg, `151-cuenta-acuse-${sufijo}`);
+  comprueba(!errores.length, t(`sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+  await c.close();
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
@@ -3585,9 +3836,14 @@ try {
   if (!solo || solo === 'romper' || solo === 'romper2') await romperDos(navegador);
   if (!solo || solo === 'romper' || solo === 'romper3') await romperTres(navegador);
   if (!solo || solo === 'fechas') await fechas(navegador);
+  if (!solo || solo === 'estandar') {
+    await estandarPantallas(navegador, 390, 844, 'telefono');
+    await estandarPantallas(navegador, 1280, 900, 'escritorio');
+  }
   if (!solo) await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
+  if (process.env.PILA) console.error(e.stack);
 } finally {
   await navegador.close();
 }

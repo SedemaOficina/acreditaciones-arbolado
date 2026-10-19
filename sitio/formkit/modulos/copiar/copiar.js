@@ -43,7 +43,7 @@
         const sh = e.target.closest('[data-compartir]');
         if (sh) {
           const datos = { title: sh.dataset.compartirTitulo || document.title, text: sh.dataset.compartirTexto || '', url: sh.dataset.compartirUrl || location.href };
-          if (navigator.share) { try { await navigator.share(datos); confirma(sh, 'Compartido.', true); } catch (err) { /* la persona canceló */ } }
+          if (navigator.share) { try { await navigator.share(datos); confirma(sh, M.compartido, true); } catch (err) { /* la persona canceló */ } }
           else { const ok = await copia(datos.url); confirma(sh, ok ? `${M.compartirFallo} ${M.copiado}` : M.compartirFallo, ok); }
         }
       });
@@ -62,7 +62,7 @@
         anuncia(texto, !ok);
         const nodo = [...b.childNodes].reverse().find((x) => x.nodeType === 3 && x.textContent.trim()) || b.appendChild(document.createTextNode(''));
         if (b.dataset.textoOriginal === undefined) b.dataset.textoOriginal = nodo.textContent;
-        nodo.textContent = ok ? ' Copiado' : ' No se pudo copiar';
+        nodo.textContent = ` ${ok ? M.copiarBoton : M.copiarBotonFallo}`;
         clearTimeout(Number(b.dataset.temporizador));
         b.dataset.temporizador = String(setTimeout(() => { nodo.textContent = b.dataset.textoOriginal; }, FormKit.config.borrador.visibleMs));
       }

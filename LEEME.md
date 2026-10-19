@@ -38,7 +38,7 @@ principio.
 | `datos/ficticios.json` | Expedientes ficticios exportados de la base, con sus mismas tablas (generado) |
 | `datos/examen-ficticio.js` | Banco ficticio del examen en línea: 10 preguntas de opción múltiple sólo para probar la interfaz (el real nunca entra al repositorio, P85) |
 | `sitio/` | Versión de prueba de las pantallas de la persona solicitante y del personal (se publica tal cual en GitHub Pages) |
-| `sitio/formkit/` | Copia sin cambios del Estándar de formularios del SIA 1.4.1 (`SedemaOficina/estandares-sia`, carpeta `formularios/`; generada) |
+| `sitio/formkit/` | Copia sin cambios del Estándar de formularios del SIA 1.5.1 (`SedemaOficina/estandares-sia`, carpeta `formularios/`; generada) |
 | `sitio/material/` | PDF del material de estudio (documentos públicos de la Secretaría) |
 | `db/esquemas-formularios/` | Esquema de cada formulario para la validación en el servidor (generado del HTML) |
 | `docs/ETAPA-1-PANTALLAS.md` | Pantallas, archivos del estándar, configuración, validación en el servidor y lista de cierre |
@@ -67,10 +67,10 @@ paso que falle. Los resultados de la última corrida de cada prueba están en la
 
 ## Cómo se construye y se prueba el sitio
 
-Requiere un clon de `SedemaOficina/estandares-sia` junto a este repositorio (el Estándar de formularios del SIA 1.4.1
+Requiere un clon de `SedemaOficina/estandares-sia` junto a este repositorio (el Estándar de formularios del SIA 1.5.1
 vive en su carpeta `formularios/`) y `npm install` (Playwright para las pruebas). `git clone --depth 1` baja la versión
 más reciente del estándar, no una fija: hay que comprobar que la primera versión de `formularios/CHANGELOG.md` sea la
-1.4.1 (`construir-sitio` la anota en `sitio/formkit/LEEME.md`). Playwright necesita su navegador:
+1.5.1 (`construir-sitio` la anota en `sitio/formkit/LEEME.md`). Playwright necesita su navegador:
 `npx playwright install chromium`, o `CHROMIUM=<ruta a un Chromium>` en cada prueba. `npm run textos` requiere Python
 con `openpyxl`.
 
