@@ -72,7 +72,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
       "titulo": "Secciones «Del pago» y «Del curso» del borrador, y visto bueno del check list del cotejo",
-      "recomendacion": "El check list del cotejo ya lo genera el sistema desde los requisitos de cada curso (cotejo.html); falta que la Dirección lo confirme y entregue las secciones «Del pago» y «Del curso». (El Anexo 1 de carreras afines ya no se necesita: la carrera la valida el personal.) El anteproyecto de lineamientos ya redacta el pago (Cap. VII), el curso y la evaluación (Cap. V, secciones cuarta y quinta) y la lista de cotejo (Anexo 2): falta el visto bueno del área.",
+      "recomendacion": "El check list del cotejo ya lo genera el sistema desde los requisitos de cada curso (cotejo.html); falta que la Dirección lo confirme y entregue las secciones «Del pago» y «Del curso». (El Anexo 1 del borrador del área, de carreras afines, ya no se necesita: la carrera la valida el personal.) El anteproyecto de lineamientos ya redacta el pago (Cap. VII), el curso y la evaluación (Cap. V, secciones cuarta y quinta) y la lista de cotejo (Anexo 2): falta el visto bueno del área.",
       "lineamientos": "Anteproyecto 0.4: Cap. V, secciones tercera a quinta; Cap. VII; Anexo 2. Redactadas en el anteproyecto."
     },
     {
@@ -346,7 +346,7 @@
       "desde": "2026-10-15",
       "titulo": "Verificar los requisitos que aparecen en la página de inicio",
       "recomendacion": "Revisar contra los lineamientos la lista de requisitos por acreditación y modalidad que muestra index.html (sale del catálogo apd.requisito y apd.requisito_curso); lo que se corrija se cambia en el catálogo y se refleja en inicio, solicitud y documentos.",
-      "lineamientos": "Anteproyecto 0.4: Anexo 1. El Anexo 1 es la fuente."
+      "lineamientos": "Anteproyecto 0.4: Anexo 1. El Anexo 1 del anteproyecto es la fuente."
     },
     {
       "id": "P64",
@@ -507,7 +507,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-17",
       "titulo": "Cómo se actualiza una fotografía ya confirmada (renovación, cambio de aspecto)",
-      "recomendacion": "Ya confirmada, la persona no la cambia y en la cita no se toma otra (decisión 2026-10-17); pero debe verse clara para el pase de lista del examen. Recomendación: al iniciar una renovación la persona puede cargar una fotografía nueva, que se vuelve a confirmar contra la identificación en la cita de cotejo. La base conserva la carga por el personal (origen cotejo) por si se prefiere que la tome la Secretaría. Liber lo dejó pendiente (2026-10-17); no detiene grupos ni asistencia. Los lineamientos (Anexo 1) suponen que en la renovación se puede cargar una fotografía nueva; si se decide otra cosa, corregir el anexo.",
+      "recomendacion": "Ya confirmada, la persona no la cambia y en la cita no se toma otra (decisión 2026-10-17); pero debe verse clara para el pase de lista del examen. Recomendación: al iniciar una renovación la persona puede cargar una fotografía nueva, que se vuelve a confirmar contra la identificación en la cita de cotejo. La base conserva la carga por el personal (origen cotejo) por si se prefiere que la tome la Secretaría. Liber lo dejó pendiente (2026-10-17); no detiene grupos ni asistencia. Los lineamientos (Anexo 1 del anteproyecto) suponen que en la renovación se puede cargar una fotografía nueva; si se decide otra cosa, corregir el anexo.",
       "lineamientos": "Anteproyecto 0.4: Anexo 1, fila 1. El anexo supone que sí se actualiza."
     },
     {
@@ -562,54 +562,6 @@
       "recomendacion": "Dos decisiones chocan (auditoría integral): la del 2026-10-17 dice que el grupo que vuelve a integración conserva su fecha, hora e instructor como propuesta, y la de 7 días de anticipación impide volver a confirmarlo con esa fecha si faltan menos de 7 días. Opciones: conservarla sólo si aún faltan 7 días (si no, se elige otra al confirmar); permitir reconfirmar con la misma fecha porque las personas ya estaban avisadas; o perder la fecha siempre. Liber lo deja pendiente (2026-10-18)."
     },
     {
-      "id": "P126",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: la etiqueta de estado no se corta en renglones y ensancha su tarjeta en teléfono",
-      "recomendacion": "El módulo estado pone white-space: nowrap en .estado. En teléfono, una etiqueta larga ensancha la tarjeta de «Grupos» y la tabla de «En espera» más allá de la pantalla. Solución provisional: app/apd.css deja .estado con white-space: normal y sólo .tabla-bandeja .estado conserva nowrap. Propuesta para el estándar: nowrap sólo en celdas de tabla en computadora."
-    },
-    {
-      "id": "P127",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: la fotografía puede conservar su EXIF, ubicación GPS incluida",
-      "recomendacion": "El módulo archivos sólo usa la versión recodificada (sin EXIF) cuando pesa menos que el original; si la foto ya venía comprimida o la recodificación falla, se guarda el original con su EXIF aunque conservarExif sea falso. Sin solución provisional todavía. Propuesta: recodificar siempre que conservarExif sea falso y, si no se puede, quitar el segmento APP1 o rechazar el archivo."
-    },
-    {
-      "id": "P128",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: el acuse y el borrador escriben la hora en 12 horas con «p.m.»",
-      "recomendacion": "El módulo acuse y el núcleo (hora del borrador) usan dateStyle long y timeStyle short, que en es-MX dan «11:27 p.m.»; el sistema usa 24 horas y el módulo resultado también. Sin solución provisional todavía (la parte de la fecha simulada es del proyecto). Propuesta: hour12: false, como en el módulo resultado."
-    },
-    {
-      "id": "P129",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: el formato rfc cambia la Ñ por N",
-      "recomendacion": "normaliza pasa el valor por sinAcentos, que quita la tilde de la Ñ: un RFC de factura con Ñ se guarda con N, sin aviso. Sin solución provisional todavía. Propuesta: proteger la Ñ antes de quitar acentos, como APD.nombreDeArchivo."
-    },
-    {
-      "id": "P130",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: el logotipo pesa 110 KB",
-      "recomendacion": "logotipo-sedema.png mide 3829 px de ancho y se muestra a unos 200 px en todas las pantallas. Propuesta: una versión al doble del tamaño mostrado, o SVG."
-    },
-    {
-      "id": "P131",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: FormKit.aviso sólo recibe texto",
-      "recomendacion": "No puede llevar la secuencia «qué sigue» (P119) ni un enlace, y arma span.aviso-texto, donde una lista no es válida. Solución provisional: APD.aviso arma el marcado del contrato (div.aviso-texto con ol.secuencia) para los avisos con pasos o enlaces; los de sólo texto usan FormKit.aviso. Propuesta: aceptar pasos y un nodo como texto, con div.aviso-texto."
-    },
-    {
       "id": "P132",
       "grupo": "direccion",
       "bloquea": "no",
@@ -617,22 +569,6 @@
       "titulo": "Teléfono, correo y horario de la Secretaría para aclaraciones del trámite",
       "recomendacion": "Ninguna pantalla de la persona da un medio de contacto, y varias la mandan a «acudir a la Secretaría» (activar una cuenta del registro anterior cuyo nombre no coincide, cuenta bloqueada, dudas del pago). Hace falta el teléfono, el correo y el horario de atención que se publicarán, para ponerlos en «Mis trámites», «Crea tu cuenta» y «Entrar» (auditoría integral, alta 7).",
       "lineamientos": "Anteproyecto 0.4: Cap. XI. Incorporado."
-    },
-    {
-      "id": "P134",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: la bajada y la ayuda de bloque se cortan a 70 caracteres",
-      "recomendacion": "«.bajada» y «.ayuda-bloque» llevan max-width: 70ch. En una tarjeta ancha, una línea de datos (folio · fechas · revisión) o una bajada de una oración pasa al segundo renglón aunque sobre espacio, y se lee como si fueran dos cosas distintas (revisión documental, solicitudes por revisar, citas de cotejo, asistencia, grupos). Solución provisional: el proyecto quita el límite (max-width: none) y arma las líneas de datos con segmentos que no se parten (APD.meta). Propuesta: limitar a 70ch sólo el texto corrido, no la bajada ni las líneas de datos, o dar una variante para líneas de datos."
-    },
-    {
-      "id": "P135",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: chips de motivos frecuentes partidos y con «hover» igual a elegido",
-      "recomendacion": "Los chips fijos (motivos frecuentes) tienen --ancho-chip-max: 240px y se encogen dentro de la fila: un motivo largo («No coincide con el nombre de la cuenta») se parte en dos renglones dentro de la píldora. Además, al pasar el cursor el chip toma el mismo fondo que cuando está elegido (aria-pressed) y parece seleccionado. Solución provisional: .chip-fijo { max-width: 100%; flex-shrink: 0 } (si no cabe, pasa completo al renglón siguiente) y el paso del cursor sólo marca el borde. Propuesta: adoptar ambas en el módulo de chips."
     },
     {
       "id": "P136",
@@ -716,38 +652,6 @@
       "lineamientos": "Anteproyecto 0.4: Cap. VII."
     },
     {
-      "id": "P145",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: la tabla parte palabras dentro de botones, folios y fechas",
-      "recomendacion": "El módulo tabla pone overflow-wrap: anywhere en .tabla-valor; en computadora la columna se encoge hasta partir «Revisa / r», «Abr / ir» o «10/10/20 / 26» (solicitudes por revisar, grupos). Solución provisional: app/apd.css pone overflow-wrap: break-word en .tabla-bandeja .tabla-valor desde 760 px y white-space: nowrap en .mono, .btn y .btn-enlace dentro de la tabla. Propuesta para el estándar: break-word en lugar de anywhere, nowrap para botones, etiquetas y folios dentro de la tabla, y columna de acciones con width: 1%."
-    },
-    {
-      "id": "P146",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: el visor repite «Hoja 1 de 2»",
-      "recomendacion": "El visor de PDF muestra el número de hoja arriba y otra vez debajo de la hoja (revisión documental y cotejo, en teléfono). Sin solución provisional. Propuesta: dejar uno solo, el de la barra del visor."
-    },
-    {
-      "id": "P147",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: los rótulos de la tabla en teléfono van en negritas oscuras",
-      "recomendacion": "En modo tarjeta, el rótulo de cada celda va en negritas y tinta oscura, y en el bloque «Revisa antes de enviar» sobre fondo gris; en las fichas del resto del sistema el rótulo va en gris, peso normal, y el dato destaca. Sin solución provisional. Propuesta: unificar con la ficha (rótulo gris, peso normal, dato a la derecha)."
-    },
-    {
-      "id": "P148",
-      "grupo": "estandar",
-      "bloquea": "no",
-      "desde": "2026-10-18",
-      "titulo": "Hallazgo del estándar: el borrador automático (data-borrador) guarda lo que llena la página y no admite archivos",
-      "recomendacion": "El borrador del núcleo escucha también los eventos que lanza la página al precargar datos (por ejemplo, al continuar una solicitud), así que guarda como «capturado por la persona» lo que no tocó; y no conserva los archivos cargados. Solución provisional: la solicitud escribe su propio borrador sólo con cambios de la persona (event.isTrusted) y guarda los documentos en el almacén de la prueba; usa del núcleo la restauración (ctx.restauraBorrador) y la franja (data-franja-borrador). Propuesta: ignorar eventos no confiables y permitir que el proyecto registre un proveedor para los archivos."
-    },
-    {
       "id": "P149",
       "grupo": "direccion",
       "bloquea": "no",
@@ -761,7 +665,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-18",
       "titulo": "Días inhábiles de la Secretaría para programar cursos",
-      "recomendacion": "«Programar un curso» ya marca los días inhábiles en el calendario (parámetro dias_inhabiles), pero hoy no tiene ninguna fecha: no se inventan. Pedir el calendario oficial de días inhábiles publicado en la Gaceta y capturarlo como parámetro; también sirve para el cómputo de plazos en días hábiles de los lineamientos.",
+      "recomendacion": "«Programar un curso» ya marca los días inhábiles en el calendario (lugar listo para un parámetro dias_inhabiles, previsto pero que todavía no existe en la base), pero hoy no tiene ninguna fecha: no se inventan. Pedir el calendario oficial de días inhábiles publicado en la Gaceta y capturarlo como parámetro; también sirve para el cómputo de plazos en días hábiles de los lineamientos.",
       "lineamientos": "Anteproyecto 0.4: Cómputo de plazos (Cap. I). Los inhábiles los fija la Secretaría por acuerdo en la Gaceta."
     },
     {
@@ -779,7 +683,7 @@
       "bloquea": "no",
       "desde": "2026-10-18",
       "titulo": "Hallazgo del estándar: la escritura guiada de «fecha-dma» convierte una fecha pegada como AAAA-MM-DD en otra fecha válida",
-      "recomendacion": "guiaFechaDma acomoda los dígitos de lo pegado sin reconocer el formato: «2026-10-20» queda como 20/02/6102, que es una fecha real y pasa la validación (auditoría «intentar romperlo», F2-A1). También corta lo pegado con espacios alrededor por el maxlength. Solución provisional (desde la 0.56, app/apd.js): el proyecto normaliza lo pegado o insertado de golpe (AAAA-MM-DD, con espacios o guiones) antes de la escritura guiada; la cita tiene un máximo de meses (meses_adelanto_cita) y, desde la 0.57, el primer día del curso un máximo de un año (decisión del 19/10/2026). Sigue sin resolverse en el estándar 1.5.1. Propuesta para el estándar: reconocer AAAA-MM-DD y DD-MM-AAAA al pegar, quitar espacios antes de limitar el largo y aceptar un rango de años configurable."
+      "recomendacion": "guiaFechaDma acomoda los dígitos de lo pegado sin reconocer el formato: «2026-10-20» queda como 20/02/6102, que es una fecha real y pasa la validación (auditoría «intentar romperlo», F2-A1). También corta lo pegado con espacios alrededor por el maxlength. Solución provisional (desde la 0.56, app/apd.js): el proyecto normaliza lo pegado o insertado de golpe (AAAA-MM-DD, con espacios o guiones) antes de la escritura guiada; la cita tiene un máximo de meses (meses_adelanto_cita) y, desde la 0.57, el primer día del curso un máximo de un año (decisión del 19/10/2026). Sigue sin resolverse en el estándar 1.5.1. Propuesta para el estándar: reconocer AAAA-MM-DD y DD-MM-AAAA al pegar, quitar espacios antes de limitar el largo y aceptar un rango de años configurable. Sigue sin resolverse en la 1.5.1 (2026-10-19): la solución provisional de app/apd.js se queda."
     },
     {
       "id": "P153",
@@ -787,7 +691,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: el módulo de archivos acepta PDF con contraseña y pierde el foco al volver a pintar la lista",
-      "recomendacion": "Sólo revisa la firma %PDF: un PDF con /Encrypt se acepta y después el personal no lo puede abrir en el visor. Además, al cargar un archivo el foco se va a <body>. Solución provisional: app/apd.js (pdfConContrasena) lo rechaza al cargar y al enviar, y devuelve el foco al «Quitar» del archivo cargado. Propuesta: revisar /Encrypt y conservar el foco en el módulo; repetir la regla en el servidor."
+      "recomendacion": "Sólo revisa la firma %PDF: un PDF con /Encrypt se acepta y después el personal no lo puede abrir en el visor. Además, al cargar un archivo el foco se va a <body>. Solución provisional: app/apd.js (pdfConContrasena) lo rechaza al cargar y al enviar, y devuelve el foco al «Quitar» del archivo cargado. Propuesta: revisar /Encrypt y conservar el foco en el módulo; repetir la regla en el servidor. Sigue igual en la 1.5.1."
     },
     {
       "id": "P154",
@@ -795,7 +699,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: con un solo archivo se aplica el total por omisión de 25 MB, y el mensaje de peso redondea mal",
-      "recomendacion": "Sin data-total-mb, un archivo de 26 a 30 MB se rechaza por «superar los 25 MB en total» aunque su máximo sea 30 MB; y pesoTxt dice «pesa 30.0 MB y el máximo es 30 MB» para uno apenas mayor. Solución provisional: el material de estudio declara el total desde su parámetro y el proyecto usa sus propios mensajes. Propuesta: con un solo archivo, el total es el máximo por archivo; redondear hacia arriba al mostrar el peso."
+      "recomendacion": "Sin data-total-mb, un archivo de 26 a 30 MB se rechaza por «superar los 25 MB en total» aunque su máximo sea 30 MB; y pesoTxt dice «pesa 30.0 MB y el máximo es 30 MB» para uno apenas mayor. Solución provisional: el material de estudio declara el total desde su parámetro y el proyecto usa sus propios mensajes. Propuesta: con un solo archivo, el total es el máximo por archivo; redondear hacia arriba al mostrar el peso. Sigue igual en la 1.5.1."
     },
     {
       "id": "P155",
@@ -803,7 +707,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: maxlength y la escritura guiada se aplican antes de limpiar lo pegado",
-      "recomendacion": "En fecha, CURP, RFC y folio fiscal, lo pegado con espacios o guiones se corta por el largo máximo antes de normalizarse (P152 es el caso de la fecha). Solución provisional: app/apd.js limpia lo pegado y el proyecto subió los maxlength. Propuesta: normalizar al pegar y medir el largo después."
+      "recomendacion": "En fecha, CURP, RFC y folio fiscal, lo pegado con espacios o guiones se corta por el largo máximo antes de normalizarse (P152 es el caso de la fecha). Solución provisional: app/apd.js limpia lo pegado y el proyecto subió los maxlength. Propuesta: normalizar al pegar y medir el largo después. Sigue igual en la 1.5.1."
     },
     {
       "id": "P156",
@@ -811,7 +715,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: el combo libre ignora data-formato",
-      "recomendacion": "Un campo combo con texto libre no valida su formato (por ejemplo, la carrera acepta sólo emojis o puntos). Solución provisional: APD.formatoEnCombos aplica el formato del proyecto. Propuesta: que el combo libre valide data-formato como cualquier campo de texto."
+      "recomendacion": "Un campo combo con texto libre no valida su formato (por ejemplo, la carrera acepta sólo emojis o puntos). Solución provisional: APD.formatoEnCombos aplica el formato del proyecto. Propuesta: que el combo libre valide data-formato como cualquier campo de texto. Sigue igual en la 1.5.1."
     },
     {
       "id": "P157",
@@ -819,7 +723,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: botonEnviar() sólo bloquea el primer botón de envío",
-      "recomendacion": "En un formulario con dos botones de envío (por ejemplo «Crear y confirmar» y «Guardar sin confirmar» en «Programar un curso»), el segundo queda activo mientras se guarda y un doble clic manda dos envíos. Solución provisional: APD.ocupa en el proyecto. Propuesta: bloquear todos los botones de envío del formulario mientras se guarda."
+      "recomendacion": "En un formulario con dos botones de envío (por ejemplo «Crear y confirmar» y «Guardar sin confirmar» en «Programar un curso»), el segundo queda activo mientras se guarda y un doble clic manda dos envíos. Solución provisional: APD.ocupa en el proyecto. Propuesta: bloquear todos los botones de envío del formulario mientras se guarda. Sigue igual en la 1.5.1."
     },
     {
       "id": "P158",
@@ -827,7 +731,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: un rechazo del servidor con mensaje y sin errores por campo se muestra como «No se pudo enviar»",
-      "recomendacion": "Cuando la API rechaza algo que no es de un campo (por ejemplo, la sesión cambió o la solicitud ya cambió de estado), el estándar pinta el mensaje genérico y se pierde la razón. Solución provisional: APD.muestraRechazo. Propuesta: mostrar el mensaje del rechazo y, si trae, un enlace."
+      "recomendacion": "Cuando la API rechaza algo que no es de un campo (por ejemplo, la sesión cambió o la solicitud ya cambió de estado), el estándar pinta el mensaje genérico y se pierde la razón. Solución provisional: APD.muestraRechazo. Propuesta: mostrar el mensaje del rechazo y, si trae, un enlace. Sigue igual en la 1.5.1."
     },
     {
       "id": "P159",
@@ -1405,6 +1309,78 @@
       "como": "Todos los de una solicitud nueva (decisión de Liber, 2026-10-18), porque la Secretaría no tiene copia; la base lo exige con faltan_documentos_kobo.",
       "fecha": "2026-10-18",
       "lineamientos": "Anteproyecto 0.4: Transitorio Tercero. Incorporado."
+    },
+    {
+      "id": "P126",
+      "titulo": "Estándar: la etiqueta de estado no se corta en renglones y ensancha su tarjeta en teléfono (P126)",
+      "como": "Lo resolvió la versión 1.4.2 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitaron de app/apd.css .estado { white-space: normal } y las reglas de .tabla-bandeja .estado.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P127",
+      "titulo": "Estándar: la fotografía puede conservar su EXIF, ubicación GPS incluida (P127)",
+      "como": "Lo resolvió la versión 1.4.2 (con el ajuste de la 1.4.3) del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y no tenía solución provisional que quitar: sin conservarExif, la foto de «Crea tu cuenta» y de «Mi perfil» se guarda recodificada y sin EXIF ni ubicación (comprobado con una foto con GPS, bitácora bloque 82).",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P128",
+      "titulo": "Estándar: el acuse y el borrador escriben la hora en 12 horas con «p.m.» (P128)",
+      "como": "Lo resolvió la versión 1.4.2 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitó de config-cuenta.js y config-solicitud.js el idioma es-MX-u-hc-h23 que forzaba las 24 horas del acuse.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P129",
+      "titulo": "Estándar: el formato rfc cambia la Ñ por N (P129)",
+      "como": "Lo resolvió la versión 1.4.2 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y no tenía solución provisional que quitar. Un RFC que se hubiera guardado con N en lugar de Ñ no se corrige solo (en los datos ficticios no hay ninguno).",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P130",
+      "titulo": "Estándar: el logotipo pesa 110 KB (P130)",
+      "como": "Lo resolvió la versión 1.4.2 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Los <img> del logotipo de las 21 páginas dicen width=\"477\" height=\"96\".",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P131",
+      "titulo": "Estándar: FormKit.aviso sólo recibe texto (P131)",
+      "como": "Lo resolvió la versión 1.4.2 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitó APD.aviso: los avisos con pasos o con un enlace son FormKit.aviso; «Mis trámites», el inicio y «Material de estudio» cargan el núcleo para eso.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P134",
+      "titulo": "Estándar: la bajada y la ayuda de bloque se cortan a 70 caracteres (P134)",
+      "como": "Lo resolvió la versión 1.4.4 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitó el max-width: none de .bajada y .ayuda-bloque, y APD.meta: las líneas de datos son <p class=\"linea-datos\"> con cada dato en .linea-datos-item (APD.lineaDatos).",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P135",
+      "titulo": "Estándar: chips de motivos frecuentes partidos y con «hover» igual a elegido (P135)",
+      "como": "Lo resolvió la versión 1.4.4 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitaron las reglas de .chip-fijo y de su paso del cursor.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P145",
+      "titulo": "Estándar: la tabla parte palabras dentro de botones, folios y fechas (P145)",
+      "como": "Lo resolvió la versión 1.5.0 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitaron de app/apd.css las reglas de .tabla-bandeja .tabla-valor, .mono, .btn y .btn-enlace; los folios de las tablas ya iban en <span class=\"mono\">.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P146",
+      "titulo": "Estándar: el visor repite «Hoja 1 de 2» (P146)",
+      "como": "Lo resolvió la versión 1.5.0 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y no tenía solución provisional que quitar.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P147",
+      "titulo": "Estándar: los rótulos de la tabla en teléfono van en negritas oscuras (P147)",
+      "como": "Lo resolvió la versión 1.5.0 del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y no tenía solución provisional que quitar.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P148",
+      "titulo": "Estándar: el borrador automático (data-borrador) guarda lo que llena la página y no admite archivos (P148)",
+      "como": "Lo resolvió la versión 1.5.0 (con el ajuste de privacidad de la 1.5.1) del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitó el borrador propio de app/solicitud.js: la solicitud usa el del núcleo (data-borrador) y el almacén de documentos de la prueba es su proveedor borradorArchivos (app/config-solicitud.js).",
+      "fecha": "2026-10-19"
     }
   ]
 }
