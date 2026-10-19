@@ -2564,6 +2564,8 @@ async function romperDos(navegador) {
   const t = (m) => `[romper 2] ${m}`;
   const contexto = async (ancho = 1280, alto = 900) => {
     const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+    // Una violación de la política de contenido cuenta como error de consola (B7-01)
+    await c.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => console.error(`CSP: ${e.violatedDirective} ${e.blockedURI} ${e.sourceFile}:${e.lineNumber}`)));
     const errores = [];
     const pagina = async (url) => {
       const pg = await c.newPage();
@@ -3530,7 +3532,7 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado === 'cita futura') await page.waitForSelector('[data-futura]:not([hidden])');
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
-    await page.addScriptTag({ content: axe });
+    await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
       .violations.map((x) => `${x.id} (${x.nodes.length})`));
     comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);

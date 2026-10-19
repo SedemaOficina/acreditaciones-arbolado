@@ -50,7 +50,7 @@ jobs:
       - name: Esquema generado al día
         run: node herramientas/generar-esquema.mjs --verificar
       - name: probar-base (reglas, permisos, concurrencia, respaldo y restauración)
-        run: bash herramientas/probar-base.sh
+        run: bash herramientas/en-github.sh probar-base bash herramientas/probar-base.sh
       - name: Los ficticios regenerados son los guardados (A3-01)
         run: git diff --exit-code -- datos/ficticios.json
 
@@ -88,16 +88,16 @@ jobs:
           git diff --exit-code -- docs/PENDIENTES.md docs/tablero-pendientes.html
       - name: probar-esquemas (validación del servidor desde el HTML)
         run: |
-          node herramientas/probar-esquemas.mjs "$ESTANDAR"
+          bash herramientas/en-github.sh probar-esquemas node herramientas/probar-esquemas.mjs "$ESTANDAR"
           git diff --exit-code -- db/esquemas-formularios
       - name: probar-sitio (teléfono y escritorio, con axe)
-        run: npm run probar-sitio
+        run: bash herramientas/en-github.sh probar-sitio npm run probar-sitio
       - name: probar-examen
         if: ${{ !cancelled() }}
-        run: npm run probar-examen
+        run: bash herramientas/en-github.sh probar-examen npm run probar-examen
       - name: probar-volumen
         if: ${{ !cancelled() }}
-        run: npm run volumen
+        run: bash herramientas/en-github.sh probar-volumen npm run volumen
       - name: Capturas, si algo falló
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
