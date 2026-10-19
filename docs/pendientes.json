@@ -780,6 +780,38 @@
       "desde": "2026-10-18",
       "titulo": "Hallazgo del estándar: la escritura guiada de «fecha-dma» convierte una fecha pegada como AAAA-MM-DD en otra fecha válida",
       "recomendacion": "guiaFechaDma acomoda los dígitos de lo pegado sin reconocer el formato: «2026-10-20» queda como 20/02/6102, que es una fecha real y pasa la validación (auditoría «intentar romperlo», F2-A1). También corta lo pegado con espacios alrededor por el maxlength. Solución provisional: el proyecto normaliza lo pegado (AAAA-MM-DD, con espacios o guiones) antes de la escritura guiada y valida un año razonable. Propuesta para el estándar: reconocer AAAA-MM-DD y DD-MM-AAAA al pegar, quitar espacios antes de limitar el largo y aceptar un rango de años configurable."
+    },
+    {
+      "id": "P153",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: el módulo de archivos acepta PDF con contraseña y pierde el foco al volver a pintar la lista",
+      "recomendacion": "Sólo revisa la firma %PDF: un PDF con /Encrypt se acepta y después el personal no lo puede abrir en el visor. Además, al cargar un archivo el foco se va a <body>. Solución provisional: app/apd.js (pdfConContrasena) lo rechaza al cargar y al enviar, y devuelve el foco al «Quitar» del archivo cargado. Propuesta: revisar /Encrypt y conservar el foco en el módulo; repetir la regla en el servidor."
+    },
+    {
+      "id": "P154",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: con un solo archivo se aplica el total por omisión de 25 MB, y el mensaje de peso redondea mal",
+      "recomendacion": "Sin data-total-mb, un archivo de 26 a 30 MB se rechaza por «superar los 25 MB en total» aunque su máximo sea 30 MB; y pesoTxt dice «pesa 30.0 MB y el máximo es 30 MB» para uno apenas mayor. Solución provisional: el material de estudio declara el total desde su parámetro y el proyecto usa sus propios mensajes. Propuesta: con un solo archivo, el total es el máximo por archivo; redondear hacia arriba al mostrar el peso."
+    },
+    {
+      "id": "P155",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: maxlength y la escritura guiada se aplican antes de limpiar lo pegado",
+      "recomendacion": "En fecha, CURP, RFC y folio fiscal, lo pegado con espacios o guiones se corta por el largo máximo antes de normalizarse (P152 es el caso de la fecha). Solución provisional: app/apd.js limpia lo pegado y el proyecto subió los maxlength. Propuesta: normalizar al pegar y medir el largo después."
+    },
+    {
+      "id": "P156",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: el combo libre ignora data-formato",
+      "recomendacion": "Un campo combo con texto libre no valida su formato (por ejemplo, la carrera acepta sólo emojis o puntos). Solución provisional: APD.formatoEnCombos aplica el formato del proyecto. Propuesta: que el combo libre valide data-formato como cualquier campo de texto."
     }
   ],
   "resueltos": [
