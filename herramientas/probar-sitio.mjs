@@ -1511,12 +1511,20 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(/Poda nueva · del 26 al 30 de octubre/.test(tramA) && tramA.includes(g005.folio) && tramA.includes('26/10/2026'), t('«Mis trámites»: el grupo confirmado por su nombre calculado, con su folio y su primer día'));
   await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
 
-  // ── Desde la ficha de un grupo: «Agregar personas de la espera» (la dirección vieja espera.html lleva a Grupos) ──
+  // ── Desde la ficha de un grupo: «Agregar personas de la espera», con el botón de la ficha (auditoría 2026-10-19,
+  // R4-14: antes se entraba por espera.html y el enlace real no se recorría) ──
+  await pg.goto(BASE + `grupo.html?folio=${integracion.folio}`);
+  const agregar = pg.locator('[data-acciones] a', { hasText: /^Agregar personas de la espera \(\d+ en espera\)$/ });
+  await agregar.waitFor();
+  await Promise.all([pg.waitForURL(/grupos\.html/), agregar.click()]);
+  await pg.waitForSelector('.plan-persona input');
+  comprueba(pg.url() === `${BASE}grupos.html?curso=poda-nueva&grupo=${integracion.folio}` && /Agregando personas a «Poda nueva · sin fecha»/.test(await texto('[data-modo-grupo]'))
+    && (await pg.$$('[data-destinos] button')).length === 1, t('R4-14: «Agregar personas de la espera» de la ficha lleva a Grupos con el curso y el grupo; sólo ese grupo recibe'));
+  // La dirección vieja (espera.html) lleva al mismo lugar
   await pg.goto(BASE + `espera.html?curso=poda-nueva&grupo=${integracion.folio}`);
   await pg.waitForURL(/grupos\.html\?curso=poda-nueva&grupo=/);
   await pg.waitForSelector('.plan-persona input');
-  comprueba(/Agregando personas a «Poda nueva · sin fecha»/.test(await texto('[data-modo-grupo]')) && (await pg.$$('[data-destinos] button')).length === 1,
-    t('espera.html lleva a Grupos con el curso y el grupo; sólo ese grupo recibe'));
+  comprueba(pg.url() === `${BASE}grupos.html?curso=poda-nueva&grupo=${integracion.folio}`, t('espera.html lleva a la misma dirección de Grupos'));
   const primero = await pg.getAttribute('.plan-persona input', 'value');
   await pg.check(`.plan-persona input[value="${primero}"]`);
   await pg.click('[data-destinos] button');
@@ -1734,6 +1742,20 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
     await p2.goForward();
     await p2.waitForSelector('.cal-dia');
     comprueba((await p2.inputValue('#fecha_inicio')) === '23/11/2026', t('B5-02: «Atrás» y «Adelante» conservan la semana elegida'));
+    await c2.close();
+  }
+  // R4-15 (auditoría 2026-10-19): el calendario del curso no lleva el atributo del botón de calendario de los campos de
+  // fecha, y su leyenda dice los días de anticipación del parámetro (aquí 10)
+  {
+    const diez = JSON.parse(JSON.stringify(datos));
+    diez.parametro.find((p) => p.clave === 'dias_anticipacion_grupo').valor = '10';
+    const c2 = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+    await c2.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(diez), contentType: 'application/json' }));
+    const p2 = await c2.newPage();
+    await p2.goto(BASE + 'programar.html?curso=poda-nueva');
+    await p2.waitForSelector('.cal-dia');
+    comprueba(!(await p2.evaluate(() => Boolean(document.querySelector('.cal-dia').closest('[data-calendario]')))) && /menos de 10 días/.test(await p2.textContent('[data-leyenda-no]')),
+      t('R4-15: el calendario del curso no es un [data-calendario] y su leyenda toma los días del parámetro'));
     await c2.close();
   }
 
