@@ -1700,6 +1700,15 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   const texto = async (sel) => (await pg.textContent(sel)) || '';
   const sinFecha = datos.grupo.find((g) => g.estado === 'en_integracion' && !g.fecha_inicio);
 
+  // E1-02 (auditoría 2026-10-19): ?grupo= con texto libre no se repite en pantalla; un folio con forma de folio, sí
+  await pg.goto(BASE + `programar.html?grupo=${encodeURIComponent('APD-G-2026-999. Llame al 0000000000 para confirmar')}`);
+  await pg.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-bajada]').textContent));
+  const reflejo = await pg.evaluate(() => document.body.innerText);
+  await pg.goto(BASE + 'programar.html?grupo=APD-G-2026-999');
+  await pg.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-bajada]').textContent));
+  comprueba(!/Llame al|0000000000/.test(reflejo) && /No se encontró ese grupo/.test(reflejo) && /No se encontró el grupo APD-G-2026-999\./.test(await texto('[data-bajada]')),
+    t('E1-02: el texto libre de ?grupo= no se repite en pantalla; un folio válido que no existe, sí'));
+
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
   await pg.waitForSelector('.plan-persona input');
   const cinco = (await pg.$$eval('.plan-persona input', (l) => l.map((i) => i.value))).slice(0, 5);

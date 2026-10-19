@@ -37,7 +37,9 @@
 
     /* Sin curso: se elige aquí */
     if (!curso) {
-      $('[data-bajada]').textContent = params.get('grupo') ? `No se encontró el grupo ${params.get('grupo')}. Elija el curso que quiere programar.` : 'Elija el curso que quiere programar.';
+      // Lo que trae la dirección no se repite en pantalla: sólo un folio con forma de folio (auditoría 2026-10-19, E1-02)
+      const g = params.get('grupo');
+      $('[data-bajada]').textContent = g ? `No se encontró ${/^APD-G-\d{4}-\d{3}$/.test(g) ? `el grupo ${g}` : 'ese grupo'}. Elija el curso que quiere programar.` : 'Elija el curso que quiere programar.';
       $('[data-sin-curso]').hidden = false;
       $('[data-cursos]').replaceChildren(...P.CURSOS.map(([t, m]) => el('li', {}, [el('a', { class: 'btn btn-secundario', href: `programar.html?curso=${P.claveCurso(t, m)}`, texto: APD.cursoLargo(t, m) })])));
       return;
