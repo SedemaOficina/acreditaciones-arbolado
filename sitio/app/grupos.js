@@ -160,12 +160,12 @@
       const lista = soloOrg ? espera.filter((x) => x.s.organizacion_id === soloOrg) : espera;
       const activos = delCurso.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado)).length;
       $('[data-cuenta]').textContent = `${largo}: ${plural(espera.length, 'persona en espera', 'personas en espera')} · ${plural(activos, 'grupo activo', 'grupos activos')} (por confirmar, confirmados o en curso).`;
-      pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg });
+      pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg, delCursoRecibe: delCurso.filter((x) => x.recibe) });
       pintaSemanas({ tipo, modalidad, c, largo, delCurso, espera });
     }
 
     /* ----- En espera ----- */
-    function pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg }) {
+    function pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
       const alerta = APD.parametro(datos, 'dias_alerta_espera') || 31;
       $('#t-espera').textContent = `En espera · ${lista.length}`;
       $('[data-orden]').textContent = renov ? 'primero quien vence antes' : 'primero quien más espera';
@@ -200,15 +200,35 @@
         espera(x),
         conAdscripcion ? el('span', { class: 'plan-persona-org', texto: x.organizacion }) : null
       ]);
+      /* «Su grupo» de cada organización (decisión 2 de la auditoría del 2026-10-19, Liber; DECISIONES, 17/10): si ya tiene un
+         grupo propio que recibe personas, se dice cuál y cuántas le faltan; si no, si alcanzan para uno propio */
+      const suGrupo = (org) => (org ? delCursoRecibe.find((y) => y.g.integracion === 'especifico' && y.g.organizacion_id === org) : null);
+      const textoSuGrupo = (y) => {
+        const falta = y.g.cupo_minimo - y.n;
+        return `Su grupo ${y.g.folio}: ${y.n} de ${y.g.cupo_maximo}${falta > 0 ? `, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : `, caben ${y.lugar}`}`;
+      };
+      const situacionBloque = (b) => {
+        const y = suGrupo(b.clave);
+        if (y) return estado(textoSuGrupo(y), y.n < y.g.cupo_minimo ? 'pend' : 'ok');
+        const falta = c.cupo_minimo - b.xs.length;
+        return falta <= 0 ? estado('Alcanza para un grupo propio', 'ok')
+          : el('span', { class: 'plan-bloque-grupo', texto: `${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para un grupo propio de ${c.cupo_minimo}; o van a un grupo combinado` });
+      };
       const bloques = P.bloquesEspera(lista).map((b, i) => {
-        if (!b.junta) return persona(b.xs[0], true);
+        if (!b.junta) {
+          // Sola de su organización, pero con su grupo: también se dice
+          const y = suGrupo(b.xs[0].s.organizacion_id);
+          const fila = persona(b.xs[0], true);
+          if (y) fila.append(el('span', { class: 'plan-persona-org' }, [estado(textoSuGrupo(y), y.n < y.g.cupo_minimo ? 'pend' : 'ok')]));
+          return fila;
+        }
         const todas = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', 'aria-label': `Elegir a las ${b.xs.length} personas de ${b.nombre}` });
         const propias = b.xs.map((x) => persona(x, false));
         const suyas = () => filas.filter((f) => b.xs.includes(f.x));
         todas.addEventListener('change', () => { for (const f of suyas()) f.k.checked = todas.checked; pintaEleccion(); });
         const refleja = () => { const m = suyas().filter((f) => f.k.checked).length; todas.checked = m === b.xs.length; todas.indeterminate = m > 0 && m < b.xs.length; };
         const bloque = el('div', { class: 'plan-bloque', role: 'group', 'aria-labelledby': `bloque-${i}` }, [
-          el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id: `bloque-${i}`, texto: `${b.nombre} · ${b.xs.length} personas, juntas` })]),
+          el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id: `bloque-${i}`, texto: `${b.nombre} · ${b.xs.length} personas, juntas` }), situacionBloque(b)]),
           ...propias
         ]);
         bloque.addEventListener('change', (e) => { if (e.target !== todas) refleja(); });

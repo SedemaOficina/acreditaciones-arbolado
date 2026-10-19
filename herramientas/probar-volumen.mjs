@@ -95,6 +95,28 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   await pg.check('.plan-persona input');
   comprueba(/1 elegida/.test(await texto('[data-elegidas]')), t('planeador: la barra lleva la cuenta de elegidas'));
   await sinDesborde('planeador con 112 en espera');
+  // R4-03 (decisión 2 de la auditoría del 2026-10-19): el bloque de una organización dice «su grupo» y cuántas le faltan
+  const cabJardines = (await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).find((x) => /Jardines/.test(x)) || '';
+  comprueba(/Su grupo APD-G-2026-021: 3 de 25, le faltan 2 para el mínimo/.test(cabJardines), t('planeador: el bloque de Jardines dice «Su grupo APD-G-2026-021» y cuántas le faltan'));
+  comprueba((await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).some((x) => /grupo propio de 5; o van a un grupo combinado|Alcanza para un grupo propio/.test(x)),
+    t('planeador: el bloque de una organización sin grupo dice si alcanzan para uno propio'));
+  // … y «Programar» avisa antes de crearle un segundo grupo, y ofrece agregarlas al suyo
+  const jardines = d.organizacion.find((o) => /Jardines/.test(o.nombre));
+  const dosJardines = d.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva' && s.organizacion_id === jardines.id).slice(0, 2).map((s) => s.folio);
+  await ir(`programar.html?curso=poda-nueva&personas=${dosJardines.join(',')}`, '.cal-dia');
+  comprueba(await pg.isVisible('[data-su-grupo] .aviso') && /ya tiene su grupo/.test(await texto('[data-su-grupo]')) && /APD-G-2026-021/.test(await texto('[data-su-grupo]')),
+    t('programar: con personas de Jardines, avisa que ya tiene su grupo APD-G-2026-021'));
+  await pg.check('input[name="integracion"][value="especifico"]');
+  await pg.click('[data-programar="guardar"]');
+  await pg.waitForSelector('dialog.dialogo-confirma[open]');
+  comprueba(/¿Crear otro grupo de Jardines/.test(await texto('dialog.dialogo-confirma[open]')), t('programar: crear un segundo grupo de Jardines pide confirmación'));
+  await pg.click('dialog.dialogo-confirma[open] [data-r="no"]');
+  await pg.waitForTimeout(300);
+  comprueba((await pg.evaluate(() => JSON.parse(localStorage.getItem('apd.personal.grupos') || '[]').filter((e) => e.tipo === 'crear').length)) === 0, t('programar: con «No» no se crea el segundo grupo'));
+  await Promise.all([pg.waitForURL(/grupo\.html/), pg.click('[data-su-grupo] button')]);
+  await pg.waitForSelector('[data-filas] tr');
+  comprueba(/grupo\.html\?folio=APD-G-2026-021/.test(pg.url()) && (await Promise.all(dosJardines.map((f) => pg.isVisible(`[data-filas] tr[data-folio="${f}"]`)))).every(Boolean),
+    t('programar: «Agregarlas a APD-G-2026-021» las agrega a su grupo y abre su ficha'));
 
   // M8: la bandeja resume cuántas llevan más tiempo
   await ir('revision.html', '[data-filas] tr');

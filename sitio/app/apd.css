@@ -517,7 +517,10 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 .plan-persona:has(.casilla-input:checked) { border-color: var(--guinda); background: var(--guinda-cl); }
 /* Las de una misma organización, juntas en un bloque */
 .plan-bloque { display: grid; gap: var(--e-2); padding: var(--e-3); border: var(--b-1) dashed var(--dorado); border-radius: var(--r-ctrl); background: var(--beige); }
-.plan-bloque-cabeza { display: flex; align-items: center; gap: var(--e-3); min-height: var(--objetivo-min); cursor: pointer; }
+.plan-bloque-cabeza { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--e-1) var(--e-3); min-height: var(--objetivo-min); cursor: pointer; }
+/* «Su grupo …» o si alcanzan para uno propio, debajo del nombre de la organización (decisión 2, 2026-10-19) */
+.plan-bloque-cabeza > :nth-child(3) { grid-column: 2; justify-self: start; }
+.plan-bloque-grupo { font-size: var(--t-sm); color: var(--gris); }
 .plan-bloque-cabeza > .casilla-input { margin: 0; }
 .plan-bloque-nombre { font: var(--peso-semi) var(--t-sm)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--dorado-txt); overflow-wrap: anywhere; }
 /* En teléfono la barra va al final de la lista (las pantallas del personal son para computadora; en teléfono sólo se
