@@ -96,14 +96,34 @@ COMMENT ON FUNCTION apd.ahora() IS 'now(), o la hora simulada en el entorno de p
 CREATE FUNCTION apd.hoy() RETURNS date
   LANGUAGE sql STABLE AS $$ SELECT (apd.ahora() AT TIME ZONE 'America/Mexico_City')::date $$;
 
+-- La bitácora la escriben sólo las reglas (D-13 y E2-06, auditoría 2026-10-19): la cuenta del servicio no tiene INSERT
+-- sobre apd.bitacora (05-apd-rol-y-permisos.sql). Esta función escribe con los permisos de quien instala (SECURITY
+-- DEFINER, con search_path fijo) y sólo cuando la llama un disparador (pg_trigger_depth() > 0): nadie la llama directo
+-- para fabricar renglones. Quién, cuándo y desde dónde no son parámetros: los pone apd.bitacora_alta.
 CREATE FUNCTION apd.registrar(p_accion text, p_entidad text, p_entidad_id text, p_detalle text DEFAULT '')
-  RETURNS void LANGUAGE plpgsql AS $$
+  RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
+BEGIN
+  IF pg_trigger_depth() = 0 THEN
+    PERFORM apd.error('bitacora_directa', 'La bitácora sólo la escriben las reglas de la base');
+  END IF;
+  INSERT INTO apd.bitacora (accion, entidad, entidad_id, detalle)
+  VALUES (p_accion, p_entidad, p_entidad_id, coalesce(p_detalle, ''));
+END $$;
+
+-- Cada renglón nuevo de la bitácora lleva la fecha de la base y quién y desde dónde según el contexto de la transacción,
+-- aunque quien inserta (también la administración) mande otra cosa
+CREATE FUNCTION apd.bitacora_alta() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE tipo text := apd.contexto('usuario_tipo');
 BEGIN
-  INSERT INTO apd.bitacora (fecha, usuario, usuario_tipo, procedencia, accion, entidad, entidad_id, detalle)
-  VALUES (apd.ahora(), apd.contexto('usuario'), CASE WHEN tipo = '' THEN 'sistema' ELSE tipo END,
-          apd.contexto('procedencia'), p_accion, p_entidad, p_entidad_id, coalesce(p_detalle, ''));
+  NEW.id := gen_random_uuid();
+  NEW.fecha := apd.ahora();
+  NEW.usuario := apd.contexto('usuario');
+  NEW.usuario_tipo := CASE WHEN tipo = '' THEN 'sistema' ELSE tipo END;
+  NEW.procedencia := apd.contexto('procedencia');
+  RETURN NEW;
 END $$;
+CREATE TRIGGER bitacora_alta BEFORE INSERT ON apd.bitacora
+  FOR EACH ROW EXECUTE FUNCTION apd.bitacora_alta();
 
 -- Nombre comparable: sin acentos, minúsculas, sin puntuación y sin espacios dobles («C.F.E.» = «CFE»).
 CREATE FUNCTION apd.normalizar(t text) RETURNS text
@@ -114,7 +134,9 @@ CREATE FUNCTION apd.normalizar(t text) RETURNS text
 $$;
 
 -- Folios y números de expediente: un contador por serie y año, avanzado en un solo paso para que dos altas simultáneas nunca
--- reciban el mismo número. SECURITY DEFINER: la cuenta del servicio no toca folio_contador directamente.
+-- reciban el mismo número. SECURITY DEFINER: la cuenta del servicio no toca folio_contador directamente, y tampoco puede
+-- llamar esta función (decisión 6, 2026-10-19: sin EXECUTE): la llaman sólo las reglas que dan de alta solicitudes, grupos
+-- y acreditaciones, que corren con los permisos de quien instala (SECURITY DEFINER, search_path fijo).
 CREATE FUNCTION apd.siguiente_folio(p_serie text, p_anio smallint) RETURNS integer
   LANGUAGE sql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
   INSERT INTO apd.folio_contador AS f (serie, anio, ultimo) VALUES (p_serie, p_anio, 1)
@@ -160,6 +182,25 @@ BEGIN
 END $$;
 CREATE TRIGGER curso_cambio BEFORE UPDATE ON apd.curso
   FOR EACH ROW EXECUTE FUNCTION apd.curso_cambio();
+
+-- Qué pide cada curso (apd.requisito_curso): agregar, quitar o cambiar un requisito cambia lo que se exige a cada
+-- solicitud, así que queda en la bitácora con lo que había (E2-04, auditoría 2026-10-19). El disparador se crea en
+-- 04-apd-catalogos.sql, después del catálogo inicial, para que la instalación no llene la bitácora.
+CREATE FUNCTION apd.requisito_curso_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE r apd.requisito_curso := CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+BEGIN
+  PERFORM apd.registrar(CASE TG_OP WHEN 'INSERT' THEN 'requisito_agregado' WHEN 'DELETE' THEN 'requisito_quitado' ELSE 'requisito_cambiado' END,
+    'curso', r.tipo_acreditacion || '/' || r.modalidad,
+    CASE TG_OP
+      WHEN 'INSERT' THEN format('%s · orden %s · %s', NEW.requisito, NEW.orden, CASE WHEN NEW.obligatorio THEN 'obligatorio' ELSE 'si aplica' END)
+      WHEN 'DELETE' THEN format('%s · orden %s · %s', OLD.requisito, OLD.orden, CASE WHEN OLD.obligatorio THEN 'obligatorio' ELSE 'si aplica' END)
+      ELSE concat_ws('; ', NEW.requisito,
+        CASE WHEN NEW.orden IS DISTINCT FROM OLD.orden THEN format('orden %s → %s', OLD.orden, NEW.orden) END,
+        CASE WHEN NEW.obligatorio IS DISTINCT FROM OLD.obligatorio THEN format('obligatorio %s → %s', OLD.obligatorio, NEW.obligatorio) END,
+        CASE WHEN NEW.nota IS DISTINCT FROM OLD.nota THEN format('nota «%s» → «%s»', OLD.nota, NEW.nota) END)
+    END);
+  RETURN NULL;
+END $$;
 
 -- ───────────────────────────── Organizaciones ─────────────────────────────
 
@@ -361,7 +402,35 @@ CREATE TRIGGER solicitante_alta BEFORE INSERT ON apd.solicitante
 -- La CURP identifica la cuenta. La Secretaría puede corregirla, con motivo en la bitácora (decisión de
 -- cuentas, 2026-10-14). Quien solicita no la cambia: si se equivocó, lo pide a la Secretaría.
 CREATE FUNCTION apd.solicitante_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  cambio_estado text := CASE WHEN NEW.estado IS DISTINCT FROM OLD.estado THEN format('%s → %s', OLD.estado, NEW.estado) END;
+  bloqueo_antes boolean;
+  bloqueo_despues boolean;
 BEGIN
+  -- Bloqueo por intentos fallidos (D-07, auditoría 2026-10-19): al llegar a intentos_maximos, la base bloquea la entrada
+  -- minutos_bloqueo minutos (parámetros); mientras dura, más intentos no lo alargan. Poner o quitar un bloqueo vigente, y
+  -- cada cambio de estado de la cuenta, quedan en la bitácora (E2-04), en un solo renglón por cambio.
+  IF NEW.intentos_fallidos > OLD.intentos_fallidos
+     AND NEW.intentos_fallidos >= apd.parametro_texto('intentos_maximos')::integer
+     AND (NEW.bloqueada_hasta IS NULL OR NEW.bloqueada_hasta <= apd.ahora()) THEN
+    NEW.bloqueada_hasta := apd.ahora() + make_interval(mins => apd.parametro_texto('minutos_bloqueo')::integer);
+  END IF;
+  bloqueo_antes := OLD.bloqueada_hasta IS NOT NULL AND OLD.bloqueada_hasta > apd.ahora();
+  bloqueo_despues := NEW.bloqueada_hasta IS NOT NULL AND NEW.bloqueada_hasta > apd.ahora();
+  IF bloqueo_despues AND NEW.bloqueada_hasta IS DISTINCT FROM OLD.bloqueada_hasta THEN
+    PERFORM apd.registrar('bloqueo_intentos', 'solicitante', NEW.id::text,
+      concat_ws(' · ', format('Entrada bloqueada hasta el %s tras %s intentos fallidos',
+                              to_char(NEW.bloqueada_hasta AT TIME ZONE 'America/Mexico_City', 'DD/MM/YYYY HH24:MI'), NEW.intentos_fallidos),
+                cambio_estado));
+    cambio_estado := NULL;
+  ELSIF bloqueo_antes AND NOT bloqueo_despues THEN
+    PERFORM apd.registrar('desbloqueo_intentos', 'solicitante', NEW.id::text,
+      concat_ws(' · ', format('Se quita el bloqueo por intentos que duraba hasta el %s (intentos: %s → %s)',
+                              to_char(OLD.bloqueada_hasta AT TIME ZONE 'America/Mexico_City', 'DD/MM/YYYY HH24:MI'),
+                              OLD.intentos_fallidos, NEW.intentos_fallidos),
+                cambio_estado, nullif(apd.contexto('motivo'), '')));
+    cambio_estado := NULL;
+  END IF;
   NEW.nombre := apd.mayusculas(NEW.nombre);
   NEW.primer_apellido := apd.mayusculas(NEW.primer_apellido);
   NEW.segundo_apellido := apd.mayusculas(NEW.segundo_apellido);
@@ -388,7 +457,11 @@ BEGIN
       PERFORM apd.error('bloqueo_de_personal', 'Sólo la Secretaría bloquea o desbloquea una cuenta por identidad');
     END IF;
     PERFORM apd.registrar('bloqueo', 'solicitante', NEW.id::text,
-      concat_ws(' · ', coalesce(NEW.bloqueo_motivo, 'desbloqueo'), nullif(apd.contexto('motivo'), '')));
+      concat_ws(' · ', coalesce(NEW.bloqueo_motivo, 'desbloqueo'), cambio_estado, nullif(apd.contexto('motivo'), '')));
+    cambio_estado := NULL;
+  END IF;
+  IF cambio_estado IS NOT NULL THEN
+    PERFORM apd.registrar('estado', 'solicitante', NEW.id::text, concat_ws(' · ', cambio_estado, nullif(apd.contexto('motivo'), '')));
   END IF;
   IF OLD.bloqueo_motivo IS NOT NULL AND NEW.bloqueo_motivo IS NOT NULL AND NEW.estado <> 'bloqueada' THEN
     PERFORM apd.error('bloqueo_por_identidad', 'La cuenta sigue bloqueada mientras la Secretaría aclara la identidad de la persona');
@@ -404,6 +477,39 @@ BEGIN
 END $$;
 CREATE TRIGGER solicitante_cambio BEFORE UPDATE ON apd.solicitante
   FOR EACH ROW EXECUTE FUNCTION apd.solicitante_cambio();
+
+-- Entrada con CURP y contraseña (D-07). El backend, al comprobar la contraseña, llama una de las dos:
+--   · apd.anotar_intento(curp) si no coincide: suma el intento en un solo paso (UPDATE … RETURNING, sin carreras entre
+--     dos intentos simultáneos) y devuelve los intentos y hasta cuándo queda bloqueada (NULL si no lo está). Un bloqueo
+--     ya vencido empieza la cuenta de nuevo. Una CURP sin cuenta no devuelve nada (el backend da el mensaje general);
+--   · apd.acceso_correcto(curp) si coincide: con un bloqueo vigente la rechaza (cuenta_bloqueada_intentos) aunque la
+--     contraseña sea correcta; si no, vuelve el contador a 0.
+CREATE FUNCTION apd.anotar_intento(p_curp text) RETURNS TABLE (intentos integer, bloqueada_hasta timestamptz)
+  LANGUAGE sql AS $$
+  UPDATE apd.solicitante s
+     SET intentos_fallidos = CASE WHEN s.bloqueada_hasta IS NOT NULL AND s.bloqueada_hasta <= apd.ahora() THEN 1
+                                  ELSE least(s.intentos_fallidos + 1, 32000) END,
+         bloqueada_hasta = CASE WHEN s.bloqueada_hasta <= apd.ahora() THEN NULL ELSE s.bloqueada_hasta END
+   WHERE s.curp = upper(trim(p_curp))
+  RETURNING s.intentos_fallidos::integer, s.bloqueada_hasta
+$$;
+COMMENT ON FUNCTION apd.anotar_intento(text) IS 'Suma un intento de entrada fallido y bloquea al llegar a intentos_maximos (parámetros). Devuelve intentos y fin del bloqueo.';
+
+CREATE FUNCTION apd.acceso_correcto(p_curp text) RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE hasta timestamptz;
+BEGIN
+  SELECT s.bloqueada_hasta INTO hasta FROM apd.solicitante s WHERE s.curp = upper(trim(p_curp)) FOR UPDATE;
+  IF NOT FOUND THEN RETURN false; END IF;
+  IF hasta > apd.ahora() THEN
+    PERFORM apd.error('cuenta_bloqueada_intentos', format(
+      'Por seguridad, tu cuenta está bloqueada por varios intentos fallidos. Vuelve a intentarlo después de las %s',
+      to_char(hasta AT TIME ZONE 'America/Mexico_City', 'HH24:MI')));
+  END IF;
+  UPDATE apd.solicitante s SET intentos_fallidos = 0, bloqueada_hasta = NULL
+   WHERE s.curp = upper(trim(p_curp)) AND (s.intentos_fallidos <> 0 OR s.bloqueada_hasta IS NOT NULL);
+  RETURN true;
+END $$;
+COMMENT ON FUNCTION apd.acceso_correcto(text) IS 'Entrada correcta: rechaza si hay un bloqueo por intentos vigente; si no, vuelve el contador a 0.';
 
 -- Fotografía de frente de la persona (decisión 2026-10-14, Liber): obligatoria al crear la cuenta; sirve
 -- para reconocerla en el cotejo y el curso, y quien aplica el examen la usa para confirmar su identidad y
@@ -537,9 +643,25 @@ COMMENT ON VIEW apd.verificacion_publica IS 'Consulta pública por número de ac
 
 -- ───────────────────────────── Acreditaciones ─────────────────────────────
 
-CREATE FUNCTION apd.acreditacion_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+-- SECURITY DEFINER (con search_path fijo): pide el número de la serie a apd.siguiente_folio, que la cuenta del servicio
+-- no puede llamar directo (decisión 6, 2026-10-19).
+CREATE FUNCTION apd.acreditacion_alta() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
 DECLARE s apd.solicitud;
 BEGIN
+  -- Una acreditación migrada (registro anterior: Kobo o papel) sólo la da de alta la carga de migración, con su fecha
+  -- de emisión real (no futura) y su número original, que nunca tiene la forma de la serie del sistema: así no choca con
+  -- una emisión y no detiene la serie (D-01, auditoría 2026-10-19)
+  IF NEW.origen <> 'sistema' THEN
+    IF apd.contexto('usuario_tipo') <> 'migracion' THEN
+      PERFORM apd.error('migracion_sin_permiso', 'Una acreditación del registro anterior sólo la da de alta la carga de migración');
+    END IF;
+    IF NEW.emitida_en IS NULL OR NEW.emitida_en > apd.hoy() THEN
+      PERFORM apd.error('migrada_futura', 'Una acreditación migrada conserva su fecha de emisión, que no puede ser posterior a hoy');
+    END IF;
+    IF NEW.numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$' THEN
+      PERFORM apd.error('migrada_con_serie', 'El número de una acreditación migrada no puede tener la forma de la serie del sistema (PD-AAAA-NNNN o DT-AAAA-NNNN)');
+    END IF;
+  END IF;
   IF NEW.emitida_en IS NULL THEN NEW.emitida_en := apd.hoy(); END IF;
   NEW.vence_en := (NEW.emitida_en + interval '1 year' - interval '1 day')::date;
   IF NEW.entregada_en IS NOT NULL AND NEW.origen = 'sistema' THEN
@@ -628,7 +750,9 @@ CREATE TRIGGER acreditacion_cambio BEFORE UPDATE ON apd.acreditacion
 
 -- ───────────────────────────── Solicitudes ─────────────────────────────
 
-CREATE FUNCTION apd.solicitud_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+-- SECURITY DEFINER (con search_path fijo): el folio sale de apd.siguiente_folio, que la cuenta del servicio no puede
+-- llamar directo (decisión 6, 2026-10-19)
+CREATE FUNCTION apd.solicitud_alta() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
 DECLARE anio smallint := extract(year FROM apd.hoy())::smallint;
 BEGIN
   IF NEW.estado <> 'borrador' THEN
@@ -923,8 +1047,8 @@ BEGIN
            SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.id AND c.resultado = 'atendida' AND c.atendida_en >= OLD.estado_desde) THEN
         PERFORM apd.error('cotejo_sin_cita', 'Registre la cita de cotejo como atendida para concluir el cotejo');
       END IF;
-      -- El expediente físico es de la persona: se abre en su primer cotejo y lo usan todos sus trámites
-      IF OLD.estado = 'validada_en_linea' THEN PERFORM apd.asignar_expediente(NEW.solicitante_id); END IF;
+      -- El expediente físico es de la persona: se abre en su primer cotejo y lo usan todos sus trámites (lo abre
+      -- apd.solicitud_expediente, después de este disparador)
       -- La espera empieza la primera vez; si regresa de un grupo, conserva su antigüedad
       IF NEW.lista_para_curso_en IS NULL THEN NEW.lista_para_curso_en := apd.ahora(); END IF;
     WHEN 'inscrita' THEN
@@ -972,20 +1096,60 @@ CREATE TRIGGER solicitud_cambio BEFORE UPDATE ON apd.solicitud
   FOR EACH ROW EXECUTE FUNCTION apd.solicitud_cambio();
 
 CREATE FUNCTION apd.solicitud_cambio_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE estudios text[] := ARRAY[]::text[];
 BEGIN
+  -- La cita que asigna o cambia el personal, y lo que la persona corrige de sus estudios después de enviar (E2-04,
+  -- auditoría 2026-10-19): sin esto no se reconstruye quién movió la cita ni qué cambió entre dos envíos
+  IF NEW.cita_en IS DISTINCT FROM OLD.cita_en THEN
+    PERFORM apd.registrar('cita_asignada', 'solicitud', NEW.id::text,
+      format('%s → %s', coalesce(to_char(OLD.cita_en AT TIME ZONE 'America/Mexico_City', 'DD/MM/YYYY HH24:MI'), 'sin cita'),
+                        coalesce(to_char(NEW.cita_en AT TIME ZONE 'America/Mexico_City', 'DD/MM/YYYY HH24:MI'), 'sin cita')));
+  END IF;
+  IF OLD.estado <> 'borrador' THEN
+    IF NEW.nivel_estudios IS DISTINCT FROM OLD.nivel_estudios THEN
+      estudios := estudios || format('nivel %s → %s', coalesce(OLD.nivel_estudios, '—'), coalesce(NEW.nivel_estudios, '—')); END IF;
+    IF NEW.carrera IS DISTINCT FROM OLD.carrera THEN
+      estudios := estudios || format('carrera %s → %s', coalesce(OLD.carrera, '—'), coalesce(NEW.carrera, '—')); END IF;
+    IF NEW.carrera_tecnica IS DISTINCT FROM OLD.carrera_tecnica THEN
+      estudios := estudios || format('carrera técnica %s → %s', coalesce(OLD.carrera_tecnica, '—'), coalesce(NEW.carrera_tecnica, '—')); END IF;
+    IF NEW.estatus_estudios IS DISTINCT FROM OLD.estatus_estudios THEN
+      estudios := estudios || format('situación %s → %s', coalesce(OLD.estatus_estudios, '—'), coalesce(NEW.estatus_estudios, '—')); END IF;
+    IF NEW.anios_experiencia IS DISTINCT FROM OLD.anios_experiencia THEN
+      estudios := estudios || format('experiencia %s → %s', coalesce(OLD.anios_experiencia::text, '—'), coalesce(NEW.anios_experiencia::text, '—')); END IF;
+    IF cardinality(estudios) > 0 THEN
+      PERFORM apd.registrar('estudios', 'solicitud', NEW.id::text, array_to_string(estudios, '; '));
+    END IF;
+  END IF;
   IF NEW.estado <> OLD.estado THEN
     PERFORM apd.registrar('estado', 'solicitud', NEW.id::text,
       concat_ws(' · ', format('%s → %s', OLD.estado, NEW.estado), nullif(NEW.motivo_cierre, ''), nullif(apd.contexto('motivo'), '')));
-    -- Al cancelar estando en un grupo, la persona sale del grupo
     IF NEW.estado IN ('cancelada') THEN
+      -- Al cancelar estando en un grupo, la persona sale del grupo
       UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Solicitud cancelada: ' || NEW.motivo_cierre
        WHERE solicitud_id = NEW.id AND activa;
+      -- …y su cita de cotejo abierta (por atender o en pausa) se cierra como «cancelada», con el motivo (decisión 8,
+      -- 2026-10-19; hallazgo A2-01): no queda abierta para siempre ni cuenta en la agenda ni en el cupo por horario
+      UPDATE apd.cita SET resultado = 'cancelada', observacion = 'Solicitud cancelada: ' || NEW.motivo_cierre
+       WHERE solicitud_id = NEW.id AND resultado IN ('pendiente', 'en_pausa');
     END IF;
   END IF;
   RETURN NULL;
 END $$;
 CREATE TRIGGER solicitud_cambio_registrar AFTER UPDATE ON apd.solicitud
   FOR EACH ROW EXECUTE FUNCTION apd.solicitud_cambio_registrar();
+
+-- El expediente físico es de la persona: se abre al concluir su primer cotejo (validada → lista para curso) y lo usan
+-- todos sus trámites. SECURITY DEFINER (con search_path fijo): apd.asignar_expediente no la puede llamar directo la
+-- cuenta del servicio (decisión 6, 2026-10-19); se abre sólo por esta regla.
+CREATE FUNCTION apd.solicitud_expediente() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
+BEGIN
+  IF OLD.estado = 'validada_en_linea' AND NEW.estado = 'lista_para_curso' THEN
+    PERFORM apd.asignar_expediente(NEW.solicitante_id);
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER solicitud_expediente AFTER UPDATE ON apd.solicitud
+  FOR EACH ROW EXECUTE FUNCTION apd.solicitud_expediente();
 
 -- ───────────────────────────── Citas de cotejo ─────────────────────────────
 -- Decisiones 2026-10-17 (Liber). Cada cita queda registrada con lo que pasó en ella:
@@ -1034,6 +1198,20 @@ DECLARE
 BEGIN
   IF (NEW.solicitud_id, NEW.programada_en, NEW.creada_en) IS DISTINCT FROM (OLD.solicitud_id, OLD.programada_en, OLD.creada_en) THEN
     PERFORM apd.error('campo_inmutable', 'La solicitud y la fecha de una cita no cambian: se asigna una cita nueva');
+  END IF;
+  -- «Cancelada» no lo registra nadie: lo pone la base cuando la solicitud se cancela con la cita abierta (decisión 8,
+  -- 2026-10-19), la cancele la persona o el personal
+  IF NEW.resultado = 'cancelada' AND OLD.resultado IS DISTINCT FROM 'cancelada' THEN
+    IF OLD.resultado NOT IN ('pendiente', 'en_pausa') THEN
+      PERFORM apd.error('cita_cerrada', 'Esta cita ya se cerró');
+    END IF;
+    IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'cancelada' THEN
+      PERFORM apd.error('cita_sin_cancelacion', 'Una cita queda como cancelada sólo al cancelar su solicitud');
+    END IF;
+    NEW.pausada_en := OLD.pausada_en;
+    NEW.atendida_por := apd.contexto('usuario');
+    NEW.atendida_en := apd.ahora();
+    RETURN NEW;
   END IF;
   IF apd.contexto('usuario_tipo') <> 'personal' THEN
     PERFORM apd.error('cita_de_personal', 'Lo que pasó en la cita lo registra la Secretaría');
@@ -1123,10 +1301,26 @@ END $$;
 
 -- ───────────────────────────── Revisión y documentos ─────────────────────────────
 
-CREATE FUNCTION apd.revision_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+-- Dos personas del personal que deciden a la vez la misma solicitud (E2-01, RI-03 y RI-06, auditoría 2026-10-19; decisión 4):
+-- la revisión y la decisión sobre un documento bloquean la solicitud (FOR UPDATE) antes de mirar su estado, así que la
+-- segunda espera a la primera y ve lo que hizo. Si la solicitud ya no está en su turno porque otra persona registró la
+-- revisión de esta vuelta (desde que llegó a su estado actual), el error lo dice con su propio código.
+CREATE FUNCTION apd.fuera_de_turno(s apd.solicitud, mensaje text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
-  IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'enviada' THEN
-    PERFORM apd.error('revision_fuera_de_turno', 'Sólo se revisa una solicitud enviada');
+  IF EXISTS (SELECT 1 FROM apd.revision r WHERE r.solicitud_id = s.id AND r.revisada_en >= s.estado_desde) THEN
+    PERFORM apd.error('revision_ya_registrada',
+      format('Otra persona del personal ya registró la revisión de esta solicitud («%s»): recargue para ver lo que decidió',
+             apd.nombre_estado(s.estado)));
+  END IF;
+  PERFORM apd.error('revision_fuera_de_turno', mensaje);
+END $$;
+
+CREATE FUNCTION apd.revision_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE s apd.solicitud;
+BEGIN
+  SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id FOR UPDATE;
+  IF s.estado <> 'enviada' THEN
+    PERFORM apd.fuera_de_turno(s, 'Sólo se revisa una solicitud enviada');
   END IF;
   IF NEW.resultado = 'con_observaciones' AND trim(NEW.observacion_general) = ''
      AND NOT EXISTS (SELECT 1 FROM apd.documento d WHERE d.solicitud_id = NEW.solicitud_id AND d.vigente AND d.estado = 'con_observacion') THEN
@@ -1148,7 +1342,11 @@ BEGIN
      SET estado = CASE NEW.resultado WHEN 'validada' THEN 'validada_en_linea' WHEN 'rechazada' THEN 'rechazada'
                                      ELSE 'con_observaciones' END,
          motivo_cierre = CASE NEW.resultado WHEN 'rechazada' THEN NEW.observacion_general ELSE motivo_cierre END
-   WHERE id = NEW.solicitud_id;
+   WHERE id = NEW.solicitud_id AND estado = 'enviada';
+  -- Con la solicitud bloqueada en revision_alta no debería pasar; si pasa, la revisión no queda sin efecto
+  IF NOT FOUND THEN
+    PERFORM apd.error('revision_ya_registrada', 'Otra persona del personal ya registró la revisión de esta solicitud: recargue para ver lo que decidió');
+  END IF;
   RETURN NULL;
 END $$;
 CREATE TRIGGER revision_aplicar AFTER INSERT ON apd.revision
@@ -1223,6 +1421,7 @@ CREATE TRIGGER documento_alta BEFORE INSERT ON apd.documento
   FOR EACH ROW EXECUTE FUNCTION apd.documento_alta();
 
 CREATE FUNCTION apd.documento_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE s apd.solicitud;
 BEGIN
   IF (NEW.solicitud_id, NEW.requisito, NEW.archivo_clave, NEW.nombre_original, NEW.nombre_archivo, NEW.tipo_mime,
       NEW.tamano_bytes, NEW.sha256, NEW.cargado_en)
@@ -1234,20 +1433,28 @@ BEGIN
   IF NEW.vigente AND NOT OLD.vigente THEN
     PERFORM apd.error('documento_inmutable', 'Una carga sustituida no vuelve a ser la vigente');
   END IF;
-  IF (NEW.estado, NEW.observacion) IS DISTINCT FROM (OLD.estado, OLD.observacion) THEN
+  IF (NEW.estado, NEW.observacion, NEW.revisado_por) IS DISTINCT FROM (OLD.estado, OLD.observacion, OLD.revisado_por) THEN
     IF NOT OLD.vigente THEN
       PERFORM apd.error('documento_sustituido', 'Sólo se revisa la carga vigente');
     END IF;
+    -- La solicitud se bloquea mientras se decide el documento (decisión 4, 2026-10-19): una revisión simultánea espera
+    SELECT * INTO s FROM apd.solicitud WHERE id = NEW.solicitud_id FOR UPDATE;
     -- En revisión documental, o en el cotejo con la cita abierta: lo que coincide o no con lo que trae la persona
-    IF (SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) <> 'enviada'
-       AND NOT ((SELECT estado FROM apd.solicitud WHERE id = NEW.solicitud_id) = 'validada_en_linea'
+    IF s.estado <> 'enviada'
+       AND NOT (s.estado = 'validada_en_linea'
                 AND EXISTS (SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.solicitud_id AND c.resultado IN ('pendiente', 'en_pausa'))) THEN
-      PERFORM apd.error('revision_fuera_de_turno', 'Sólo se revisan documentos de una solicitud enviada o en su cita de cotejo');
+      PERFORM apd.fuera_de_turno(s, 'Sólo se revisan documentos de una solicitud enviada o en su cita de cotejo');
     END IF;
     IF coalesce(NEW.revisado_por, '') = '' THEN
       PERFORM apd.error('revision_sin_responsable', 'La revisión de un documento registra quién la hizo');
     END IF;
     NEW.revisado_en := apd.ahora();
+    -- Cada decisión sobre un documento queda en la bitácora, con lo que había antes (E2-04): revisado_por se sobrescribe
+    IF (NEW.estado, NEW.observacion) IS DISTINCT FROM (OLD.estado, OLD.observacion) THEN
+      PERFORM apd.registrar('documento', 'solicitud', NEW.solicitud_id::text,
+        concat_ws(' · ', format('%s: %s → %s', NEW.requisito, OLD.estado, NEW.estado), nullif(NEW.observacion, ''),
+                  CASE WHEN OLD.revisado_por IS NOT NULL THEN 'antes lo decidió ' || OLD.revisado_por END));
+    END IF;
   END IF;
   RETURN NEW;
 END $$;
@@ -1258,7 +1465,19 @@ CREATE TRIGGER documento_cambio BEFORE UPDATE ON apd.documento
 -- Decisiones de cursos y grupos (2026-10-14): cupo 5–25 copiado al crear; ningún grupo abre con menos
 -- del mínimo; grupos específicos (una organización) o combinados; los cuatro cursos no se mezclan.
 
-CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+-- El primer día de un curso es, a lo más, dentro de un año (decisión 3, 2026-10-19): una fecha pegada como AAAA-MM-DD que
+-- la pantalla entiende como el año 6110, o un 2099 escrito de más, no confirma un grupo que no puede empezar (RI-04)
+CREATE FUNCTION apd.comprobar_inicio_grupo(p_inicio date) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE tope date := (apd.hoy() + interval '12 months')::date;  -- el mismo cálculo que la pantalla, ese día incluido
+BEGIN
+  IF p_inicio > tope THEN
+    PERFORM apd.error('inicio_muy_lejano', format('El primer día del curso puede ser, a lo más, dentro de 12 meses: a más tardar el %s',
+      to_char(tope, 'DD/MM/YYYY')));
+  END IF;
+END $$;
+
+-- SECURITY DEFINER (con search_path fijo): el folio sale de apd.siguiente_folio (decisión 6, 2026-10-19)
+CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
 DECLARE
   c apd.curso;
   anio smallint := extract(year FROM apd.hoy())::smallint;
@@ -1270,6 +1489,7 @@ BEGIN
   IF NEW.estado <> 'en_integracion' THEN
     PERFORM apd.error('alta_fuera_de_integracion', 'Un grupo nuevo se crea sin confirmar («En integración»)');
   END IF;
+  PERFORM apd.comprobar_inicio_grupo(NEW.fecha_inicio);
   NEW.cupo_minimo := c.cupo_minimo;
   NEW.cupo_maximo := c.cupo_maximo;
   -- Todos los cursos son en la sede única (Vivero Nezahualcóyotl, decisión 2026-10-16), salvo que se indique otra
@@ -1310,6 +1530,18 @@ BEGIN
     END IF;
     PERFORM apd.registrar('cambio_instructor', 'grupo', NEW.id::text,
       format('%s → %s', coalesce(OLD.instructor, 'sin instructor'), coalesce(NEW.instructor, 'sin instructor')));
+  END IF;
+  -- Primer día, hora de entrada y sede: con el tope de un año, y cada cambio en la bitácora con lo que había (E2-04)
+  IF NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio THEN
+    PERFORM apd.comprobar_inicio_grupo(NEW.fecha_inicio);
+  END IF;
+  IF (NEW.fecha_inicio, NEW.hora_entrada, NEW.sede) IS DISTINCT FROM (OLD.fecha_inicio, OLD.hora_entrada, OLD.sede) THEN
+    PERFORM apd.registrar('cambio_programacion', 'grupo', NEW.id::text, concat_ws('; ',
+      CASE WHEN NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio THEN format('primer día %s → %s',
+        coalesce(to_char(OLD.fecha_inicio, 'DD/MM/YYYY'), 'sin fecha'), coalesce(to_char(NEW.fecha_inicio, 'DD/MM/YYYY'), 'sin fecha')) END,
+      CASE WHEN NEW.hora_entrada IS DISTINCT FROM OLD.hora_entrada THEN format('hora %s → %s',
+        coalesce(to_char(OLD.hora_entrada, 'HH24:MI'), 'sin hora'), coalesce(to_char(NEW.hora_entrada, 'HH24:MI'), 'sin hora')) END,
+      CASE WHEN NEW.sede IS DISTINCT FROM OLD.sede THEN format('sede %s → %s', coalesce(OLD.sede, 'sin sede'), coalesce(NEW.sede, 'sin sede')) END));
   END IF;
   NEW.estado_desde := OLD.estado_desde;
   IF NEW.estado = OLD.estado THEN RETURN NEW; END IF;
@@ -1434,6 +1666,11 @@ CREATE TRIGGER inscripcion_alta BEFORE INSERT ON apd.inscripcion
 
 CREATE FUNCTION apd.inscripcion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+  -- El grupo se bloquea antes de dar la baja (decisión 4, 2026-10-19; E2-02 y RI-01): una confirmación o una segunda baja
+  -- simultánea espera, y la que llega después cuenta a las personas que de verdad quedan. Sin esto, el grupo quedaba
+  -- confirmado por debajo del mínimo. La inscripción misma ya está bloqueada por la sentencia que la cambia, así que un
+  -- examen o una asistencia que se capturan a la vez también esperan (E2-03).
+  PERFORM 1 FROM apd.grupo WHERE id = NEW.grupo_id FOR UPDATE;
   IF (NEW.solicitud_id, NEW.grupo_id, NEW.inscrita_en) IS DISTINCT FROM (OLD.solicitud_id, OLD.grupo_id, OLD.inscrita_en)
      OR (NEW.activa AND NOT OLD.activa) OR (NOT OLD.activa AND NEW.motivo_baja IS DISTINCT FROM OLD.motivo_baja) THEN
     PERFORM apd.error('inscripcion_inmutable', 'La inscripción a un grupo sólo se modifica para dar de baja a la persona');
@@ -1480,9 +1717,18 @@ DECLARE
   g apd.grupo;
   c apd.curso;
   activa boolean;
+  sol uuid;
 BEGIN
+  -- La inscripción se bloquea mientras se comprueba (decisión 4, 2026-10-19; E2-03): un examen o una baja simultáneos
+  -- esperan, y esta captura ve lo que hicieron
+  SELECT i.activa, i.solicitud_id INTO activa, sol FROM apd.inscripcion i WHERE i.id = NEW.inscripcion_id FOR UPDATE;
   SELECT gr.* INTO g FROM apd.inscripcion i JOIN apd.grupo gr ON gr.id = i.grupo_id WHERE i.id = NEW.inscripcion_id;
-  SELECT i.activa INTO activa FROM apd.inscripcion i WHERE i.id = NEW.inscripcion_id;
+  -- La asistencia la captura el personal (instructor), a su propio nombre: quien capturó lo pone la base con la cuenta de
+  -- la sesión (D-06, en lo que se puede en la base)
+  IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('usuario') = '' THEN
+    PERFORM apd.error('captura_de_personal', 'La asistencia la captura el personal de la Secretaría con su cuenta');
+  END IF;
+  NEW.capturada_por := apd.contexto('usuario');
   SELECT * INTO c FROM apd.curso WHERE tipo_acreditacion = g.tipo_acreditacion AND modalidad = g.modalidad;
   IF NOT activa THEN
     PERFORM apd.error('inscripcion_inactiva', 'La persona ya no está en el grupo');
@@ -1500,6 +1746,16 @@ BEGIN
     PERFORM apd.error('dia_futuro', 'No se captura asistencia de un día que no ha ocurrido');
   END IF;
   NEW.capturada_en := apd.ahora();
+  -- Una corrección de asistencia queda en la bitácora con el valor anterior (E2-04)
+  IF TG_OP = 'UPDATE' AND (NEW.asistio IS DISTINCT FROM OLD.asistio OR NEW.dia IS DISTINCT FROM OLD.dia
+                           OR NEW.inscripcion_id IS DISTINCT FROM OLD.inscripcion_id) THEN
+    IF (NEW.dia, NEW.inscripcion_id) IS DISTINCT FROM (OLD.dia, OLD.inscripcion_id) THEN
+      PERFORM apd.error('campo_inmutable', 'El día y la persona de una asistencia no cambian');
+    END IF;
+    PERFORM apd.registrar('asistencia', 'solicitud', sol::text,
+      format('Día %s: %s → %s (antes capturó %s)', NEW.dia, CASE WHEN OLD.asistio THEN 'asistió' ELSE 'faltó' END,
+             CASE WHEN NEW.asistio THEN 'asistió' ELSE 'faltó' END, OLD.capturada_por));
+  END IF;
   RETURN NEW;
 END $$;
 CREATE TRIGGER asistencia_captura BEFORE INSERT OR UPDATE ON apd.asistencia
@@ -1512,8 +1768,15 @@ DECLARE
   activa boolean;
   asistidos integer;
 BEGIN
+  -- La inscripción se bloquea mientras se comprueba (decisión 4, 2026-10-19; E2-03 y RI-02): una baja o una corrección de
+  -- asistencia simultáneas esperan, y la que llega después ve el examen
+  SELECT i.activa INTO activa FROM apd.inscripcion i WHERE i.id = NEW.inscripcion_id FOR UPDATE;
   SELECT gr.* INTO g FROM apd.inscripcion i JOIN apd.grupo gr ON gr.id = i.grupo_id WHERE i.id = NEW.inscripcion_id;
-  SELECT i.activa INTO activa FROM apd.inscripcion i WHERE i.id = NEW.inscripcion_id;
+  -- La calificación la captura el personal o el examen en línea, a su propio nombre (D-06, en lo que se puede en la base)
+  IF apd.contexto('usuario_tipo') NOT IN ('personal', 'sistema') OR apd.contexto('usuario') = '' THEN
+    PERFORM apd.error('captura_de_personal', 'La calificación la captura el personal de la Secretaría con su cuenta');
+  END IF;
+  NEW.capturado_por := apd.contexto('usuario');
   SELECT * INTO c FROM apd.curso WHERE tipo_acreditacion = g.tipo_acreditacion AND modalidad = g.modalidad;
   IF NOT activa THEN
     PERFORM apd.error('inscripcion_inactiva', 'La persona ya no está en el grupo');

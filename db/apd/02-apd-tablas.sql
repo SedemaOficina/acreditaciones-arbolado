@@ -95,6 +95,7 @@ CREATE TABLE apd.requisito_curso (
   CONSTRAINT requisito_curso_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad),
   CONSTRAINT requisito_curso_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)
 );
+CREATE INDEX requisito_curso_requisito ON apd.requisito_curso (requisito);
 COMMENT ON TABLE apd.requisito_curso IS 'Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.';
 COMMENT ON COLUMN apd.requisito_curso.tipo_acreditacion IS 'Curso';
 COMMENT ON COLUMN apd.requisito_curso.modalidad IS 'Curso';
@@ -168,7 +169,7 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_curp_uk UNIQUE (curp),
   CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente),
   CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp)),
-  CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
+  CONSTRAINT solicitante_correo_ck CHECK (apd.correo_valido(correo)),
   CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$'),
   CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
   CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa')),
@@ -180,6 +181,7 @@ CREATE TABLE apd.solicitante (
 );
 CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre);
 CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar';
+CREATE INDEX solicitante_organizacion ON apd.solicitante (organizacion_id);
 COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
 COMMENT ON COLUMN apd.solicitante.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitante.curp IS 'CURP en mayúsculas; identificador único de la cuenta';
@@ -194,8 +196,8 @@ COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígito
 COMMENT ON COLUMN apd.solicitante.numero_expediente IS 'Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
 COMMENT ON COLUMN apd.solicitante.contrasena_hash IS 'scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar';
 COMMENT ON COLUMN apd.solicitante.estado IS 'activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)';
-COMMENT ON COLUMN apd.solicitante.intentos_fallidos IS 'Intentos de entrada fallidos seguidos';
-COMMENT ON COLUMN apd.solicitante.bloqueada_hasta IS 'Fin del bloqueo por intentos';
+COMMENT ON COLUMN apd.solicitante.intentos_fallidos IS 'Intentos de entrada fallidos seguidos. Lo lleva apd.anotar_intento(); el acceso correcto lo vuelve a 0 (apd.acceso_correcto)';
+COMMENT ON COLUMN apd.solicitante.bloqueada_hasta IS 'Fin del bloqueo por intentos: lo pone la base al llegar a intentos_maximos, por minutos_bloqueo minutos (parámetros); poner o quitar un bloqueo queda en la bitácora';
 COMMENT ON COLUMN apd.solicitante.bloqueo_motivo IS 'identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base';
 COMMENT ON COLUMN apd.solicitante.debe_cambiar_contrasena IS 'Tiene una contraseña temporal de un solo uso';
 COMMENT ON COLUMN apd.solicitante.creada_en IS 'Alta de la cuenta';
@@ -227,6 +229,7 @@ CREATE TABLE apd.fotografia (
   CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))
 );
 CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente;
+CREATE INDEX fotografia_solicitante ON apd.fotografia (solicitante_id, cargada_en);
 COMMENT ON TABLE apd.fotografia IS 'Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en el curso; quien aplica el examen la usa para confirmar su identidad y su asistencia, por eso debe verse clara. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta (en la cita no se toma otra). No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.';
 COMMENT ON COLUMN apd.fotografia.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.fotografia.solicitante_id IS 'Persona';
@@ -281,13 +284,14 @@ CREATE TABLE apd.acreditacion (
   CONSTRAINT acreditacion_tipo_ck CHECK (tipo_acreditacion IN ('poda', 'dictaminador')),
   CONSTRAINT acreditacion_origen_ck CHECK (origen IN ('sistema', 'kobo', 'papel')),
   CONSTRAINT acreditacion_origen_solicitud_ck CHECK ((origen = 'sistema') = (solicitud_id IS NOT NULL)),
-  CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en))
+  CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en)),
+  CONSTRAINT acreditacion_numero_serie_ck CHECK ((origen = 'sistema') = (numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$'))
 );
 CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acreditacion, vence_en DESC);
 CREATE INDEX acreditacion_vence ON apd.acreditacion (vence_en);
 COMMENT ON TABLE apd.acreditacion IS 'Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.';
 COMMENT ON COLUMN apd.acreditacion.id IS 'Identificador interno';
-COMMENT ON COLUMN apd.acreditacion.numero IS 'Número impreso en la credencial; lo asigna la base si no se migra. Formato provisional: Liber lo definirá';
+COMMENT ON COLUMN apd.acreditacion.numero IS 'Número impreso en la credencial; lo asigna la base si no se migra (serie PD-AAAA-NNNN o DT-AAAA-NNNN, formato provisional: Liber lo definirá). Una migrada conserva el suyo, que nunca tiene la forma de la serie del sistema, para que no choque con una emisión';
 COMMENT ON COLUMN apd.acreditacion.solicitante_id IS 'Titular';
 COMMENT ON COLUMN apd.acreditacion.tipo_acreditacion IS 'poda o dictaminador';
 COMMENT ON COLUMN apd.acreditacion.solicitud_id IS 'Solicitud que la originó; vacía si se migró';
@@ -342,7 +346,7 @@ CREATE TABLE apd.solicitud (
   CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada')),
   CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL)),
   CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal),
-  CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$'),
+  CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR apd.rfc_valido(factura_rfc)),
   CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'),
   CONSTRAINT solicitud_nivel_ck CHECK (nivel_estudios IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria', 'tecnica', 'licenciatura', 'maestria', 'doctorado')),
   CONSTRAINT solicitud_estatus_ck CHECK (estatus_estudios IN ('en_curso', 'trunco', 'concluido', 'titulado')),
@@ -356,6 +360,9 @@ CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_
 CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en);
 CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id);
 CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id);
+CREATE INDEX solicitud_revision ON apd.solicitud (estado, estado_desde);
+CREATE INDEX solicitud_persona ON apd.solicitud (solicitante_id, creada_en);
+CREATE INDEX solicitud_carrera ON apd.solicitud (carrera_id);
 COMMENT ON TABLE apd.solicitud IS 'Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.';
 COMMENT ON COLUMN apd.solicitud.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitud.folio IS 'Folio público; lo asigna la base (APD-S-AAAA-NNNNN)';
@@ -420,19 +427,20 @@ CREATE TABLE apd.cita (
   creada_en                  timestamptz   NOT NULL DEFAULT now(),
   CONSTRAINT cita_pk PRIMARY KEY (id),
   CONSTRAINT cita_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
-  CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona')),
+  CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona', 'cancelada')),
   CONSTRAINT cita_cerrada_ck CHECK ((resultado IN ('pendiente', 'en_pausa')) = (atendida_en IS NULL)),
   CONSTRAINT cita_pausa_ck CHECK (resultado <> 'en_pausa' OR pausada_en IS NOT NULL),
-  CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona') OR length(trim(observacion)) > 0)
+  CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona', 'cancelada') OR length(trim(observacion)) > 0)
 );
 CREATE UNIQUE INDEX cita_una_abierta ON apd.cita (solicitud_id) WHERE resultado IN ('pendiente', 'en_pausa');
 CREATE INDEX cita_agenda ON apd.cita (programada_en);
-COMMENT ON TABLE apd.cita IS 'Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.';
+CREATE INDEX cita_solicitud ON apd.cita (solicitud_id, programada_en);
+COMMENT ON TABLE apd.cita IS 'Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. Si la solicitud se cancela con la cita abierta, la base la cierra como cancelada, con el motivo (decisión 8, 2026-10-19). La solicitud guarda en cita_en la cita vigente.';
 COMMENT ON COLUMN apd.cita.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.cita.solicitud_id IS 'Solicitud';
 COMMENT ON COLUMN apd.cita.programada_en IS 'Día y hora de la cita (la cita_en de la solicitud al crearla)';
-COMMENT ON COLUMN apd.cita.resultado IS 'pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento o no_es_la_persona';
-COMMENT ON COLUMN apd.cita.observacion IS 'En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona)';
+COMMENT ON COLUMN apd.cita.resultado IS 'pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento, no_es_la_persona o cancelada (la solicitud se canceló con la cita abierta; lo pone la base)';
+COMMENT ON COLUMN apd.cita.observacion IS 'En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona). Cancelada: el motivo de la cancelación de la solicitud';
 COMMENT ON COLUMN apd.cita.pausada_en IS 'Cuándo quedó en pausa; la pausa sólo dura ese día. Lo pone la base';
 COMMENT ON COLUMN apd.cita.atendida_por IS 'Cuenta del personal que la cerró (acceso). Lo pone la base';
 COMMENT ON COLUMN apd.cita.atendida_en IS 'Cuándo se cerró. Lo pone la base';
@@ -466,6 +474,8 @@ CREATE TABLE apd.documento (
   CONSTRAINT documento_observacion_ck CHECK (estado <> 'con_observacion' OR length(trim(observacion)) > 0)
 );
 CREATE UNIQUE INDEX documento_uno_vigente ON apd.documento (solicitud_id, requisito) WHERE vigente;
+CREATE INDEX documento_solicitud ON apd.documento (solicitud_id, cargado_en);
+CREATE INDEX documento_requisito ON apd.documento (requisito);
 COMMENT ON TABLE apd.documento IS 'Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.';
 COMMENT ON COLUMN apd.documento.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.documento.solicitud_id IS 'Solicitud';
@@ -514,6 +524,7 @@ CREATE TABLE apd.grupo (
   CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)
 );
 CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado);
+CREATE INDEX grupo_organizacion ON apd.grupo (organizacion_id);
 COMMENT ON TABLE apd.grupo IS 'Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con el cupo mínimo y nunca pasa del máximo.';
 COMMENT ON COLUMN apd.grupo.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.grupo.folio IS 'Folio del grupo; lo asigna la base (APD-G-AAAA-NNN)';
@@ -548,6 +559,8 @@ CREATE TABLE apd.inscripcion (
 );
 CREATE UNIQUE INDEX inscripcion_una_activa ON apd.inscripcion (solicitud_id) WHERE activa;
 CREATE INDEX inscripcion_grupo ON apd.inscripcion (grupo_id) WHERE activa;
+CREATE INDEX inscripcion_grupo_historial ON apd.inscripcion (grupo_id, inscrita_en);
+CREATE INDEX inscripcion_solicitud ON apd.inscripcion (solicitud_id, inscrita_en);
 COMMENT ON TABLE apd.inscripcion IS 'Una solicitud en un grupo. No se borra: una baja o una cancelación la deja inactiva y la solicitud regresa a la bandeja con su antigüedad.';
 COMMENT ON COLUMN apd.inscripcion.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.inscripcion.solicitud_id IS 'Solicitud';
@@ -571,7 +584,7 @@ COMMENT ON TABLE apd.asistencia IS 'Asistencia por día de curso, capturada por 
 COMMENT ON COLUMN apd.asistencia.inscripcion_id IS 'Inscripción';
 COMMENT ON COLUMN apd.asistencia.dia IS 'Día del curso, desde 1';
 COMMENT ON COLUMN apd.asistencia.asistio IS 'Asistió ese día';
-COMMENT ON COLUMN apd.asistencia.capturada_por IS 'Cuenta del instructor (acceso)';
+COMMENT ON COLUMN apd.asistencia.capturada_por IS 'Cuenta del personal que capturó (acceso). Lo pone la base: la cuenta de la sesión (apd.usuario)';
 COMMENT ON COLUMN apd.asistencia.capturada_en IS 'Captura';
 
 CREATE TABLE apd.examen (
@@ -590,7 +603,7 @@ COMMENT ON TABLE apd.examen IS 'Calificación del examen final: la captura el in
 COMMENT ON COLUMN apd.examen.inscripcion_id IS 'Inscripción';
 COMMENT ON COLUMN apd.examen.presentado_en IS 'Fecha del examen';
 COMMENT ON COLUMN apd.examen.calificacion IS 'De 0.0 a 10.0';
-COMMENT ON COLUMN apd.examen.capturado_por IS 'Cuenta del instructor (acceso) o del sistema de examen en línea';
+COMMENT ON COLUMN apd.examen.capturado_por IS 'Cuenta del instructor (acceso) o del sistema de examen en línea. Lo pone la base: la cuenta de la sesión (apd.usuario)';
 COMMENT ON COLUMN apd.examen.origen IS 'captura: la registra el instructor; examen_web: la registra el examen en línea del salón de cómputo del PILARES (R36; prototipo en la versión de prueba)';
 COMMENT ON COLUMN apd.examen.capturado_en IS 'Captura';
 
