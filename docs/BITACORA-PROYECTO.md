@@ -1257,3 +1257,50 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Decisiones nuevas en `docs/DECISIONES.md` («Decisiones del 2026-10-19 (auditoría «intentar romperlo», bloque 3)»);
   hallazgos marcados en `docs/AUDITORIA-2026-10-18-romper.md` («Estado de las correcciones») y en
   `docs/auditoria-romper/F4-datos-navegador.md` («Estado»).
+
+## 2026-10-19 · Bloque 78 · Auditoría profesional (0.55)
+
+- Pedida por Liber. En solo lectura, sobre el commit f58d284: seis revisores en paralelo (pruebas y datos, seguridad,
+  robustez e integridad de la base, documentos y código, cotejo normativo, fechas), un revisor independiente para los
+  frentes con altos y el auditor principal. Alcance aprobado: lo que no depende del estándar; pantallas, accesibilidad
+  y textos, después de actualizar al estándar 1.5.1.
+- Resultado: 55 hallazgos nuevos (0 críticos, 5 altos, 16 medios, 29 bajos, 5 informativos). Informe público:
+  `docs/AUDITORIA-2026-10-19.md`; la parte sensible (seguridad de la base y cotejo del anteproyecto) está en los
+  documentos del Proyecto. Huellas del repositorio iguales antes y después.
+- Liber respondió las 15 preguntas (DECISIONES, «Decisiones del 2026-10-19») y aprobó corregir los bloques 1 y 2.
+  Pendientes nuevos P162 a P170; P03, P16, P122, P140 y P152 al día.
+
+## 2026-10-19 · Bloque 79 · Correcciones de la auditoría: fechas (bloque 1)
+
+- Fecha pegada o insertada de golpe (AAAA-MM-DD, AAAA/MM/DD, dd-mm-aaaa, dd.mm.aaaa, con espacios) en los cinco campos
+  de fecha: `app/apd.js` la deja en dd/mm/aaaa antes de la escritura guiada del estándar (R4-01, F2-A1, solución
+  provisional de P152). La fecha de nacimiento también fallaba («1985-07-23» → 19/08/5072).
+- Primer día del curso: máximo hoy + 12 meses, ese día incluido, en Programar, la ficha del grupo y `?semana=`
+  (decisión 3).
+- `sumaMeses` calcula como la base: 29/02/2028 + 12 meses = 28/02/2029 (B8-01, decisión 11). «Recoge tu credencial
+  hoy mismo» por el día de la Ciudad de México (B8-02).
+- Pruebas: zona horaria fija en `probar-sitio` y `probar-examen`, con una pasada en UTC (B8-03); pasada nueva
+  `SOLO=fechas` con 28 comprobaciones (18 fallaban con el código anterior).
+
+## 2026-10-19 · Bloque 80 · Correcciones de la auditoría: base de datos (bloque 2)
+
+- Dos personas a la vez: `FOR UPDATE` en revisión, decisión de documentos, baja, asistencia y examen; código nuevo
+  `apd:revision_ya_registrada` (E2-01 a E2-03; decisión 4). `herramientas/probar-concurrencia.sh` (paso 6 de
+  `probar-base`): 20 escenarios, antes 3 bien, ahora 20. El arnés del revisor independiente: 291 órdenes, 0 violaciones.
+  En algunos órdenes PostgreSQL resuelve un interbloqueo abortando una transacción (40P01): REGLAS dice cómo debe
+  responder el backend.
+- Tope del primer día del grupo en la base (`inicio_muy_lejano`); cita «cancelada» al cancelar la solicitud (A2-01,
+  decisión 8; «Citas de cotejo» la muestra); CURP, RFC y correo con las mismas reglas que el formulario (A1-01).
+- Bitácora: registra las 10 acciones que faltaban (E2-04); `apd_api` ya no escribe en ella y fecha, usuario y
+  procedencia los pone la base (D-13). `apd_api` ya no pide folios ni abre expedientes directamente (E2-07, decisión 6).
+  Acreditaciones migradas sólo con `usuario_tipo = 'migracion'`, fecha no futura y número fuera de la serie (D-01).
+  Bloqueo por intentos (`intentos_maximos`, `minutos_bloqueo`, `apd.anotar_intento`; D-07). `search_path` sin
+  `public` (D-10). Índices de la bandeja y del historial (D2-01). Respaldo con huella aparte y restauración de prueba:
+  paso 7 de `probar-base` (decisión 5).
+- `probar-reglas`: 173 → 298 casos; códigos de error sin caso, de 49 a 1 (`sin_adscripcion`, inalcanzable). De las 15
+  pruebas de seguridad de la auditoría pasan 12: queda la pertenencia de la fila a la persona (D-06, P163) y la prueba
+  de `public` en PostgreSQL 13-14, que se resuelve en la instalación (REGLAS).
+- Integrado sobre «intentar romperlo» 1 a 3 (bloques 75 a 77, que se hicieron en paralelo): la fecha pegada queda con
+  la solución de esos bloques; pendientes renumerados P162 a P170. Pruebas al cierre: `probar-base` 303 de 303,
+  concurrencia 20 de 20, restauración 303 de 303; `probar-esquemas` 128; `probar-sitio` 927 (con axe); `probar-examen`
+  79; `probar-volumen` 52; `auditar-sitio` 60 pantallas y 201 botones, sin avisos nuevos. Versión de prueba 0.57.

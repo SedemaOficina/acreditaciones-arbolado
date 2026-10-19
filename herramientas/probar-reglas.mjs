@@ -11,6 +11,7 @@
 //   · { sqlstate: '42501' }   — un error de PostgreSQL: 42501 permiso, 23505 duplicado, 23514 restricción.
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 const base = process.argv[2];
 if (!base || !base.includes('prueba')) {
@@ -83,6 +84,28 @@ const MATERIAL_NUEVO = (clave, mime = 'application/pdf', tam = 1000) =>
   `INSERT INTO apd.material_estudio (clave, titulo, descripcion, edicion, archivo_clave, nombre_archivo, tipo_mime, tamano_bytes, sha256, paginas)
    VALUES ('${clave}', 'Documento de prueba', 'Para probar las reglas del material de estudio.', 'Edición de prueba',
            'prueba/' || gen_random_uuid(), 'prueba.pdf', '${mime}', ${tam}, repeat('d', 64), 3);`;
+
+// ── Para los casos de las correcciones del 19/10/2026 ──
+const q = (v) => `'${String(v).replace(/'/g, "''")}'`;
+// CURP de 17 caracteres + su dígito verificador, como el Estándar (para probar sólo la fecha)
+const ALFABETO_CURP = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+const curpCon = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO_CURP.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
+const S44 = `(SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00044')`;
+const G5 = `(SELECT id FROM apd.grupo WHERE folio = 'APD-G-2026-005')`;
+// La inscripción activa de APD-S-2026-00021 (grupo de la alcaldía, en curso desde el 13/10) y su asistencia de los días 2 a 5
+const INS21 = `(SELECT i.id FROM apd.inscripcion i JOIN apd.solicitud s ON s.id = i.solicitud_id WHERE s.folio = 'APD-S-2026-00021' AND i.activa)`;
+const ASISTE21 = `INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT ${INS21}, d, true, 'x' FROM generate_series(2, 5) d;`;
+const SIN_ACRED = `(SELECT s.id FROM apd.solicitante s WHERE NOT EXISTS (SELECT 1 FROM apd.acreditacion a WHERE a.solicitante_id = s.id) ORDER BY s.curp LIMIT 1)`;
+const ACTIVA = `(SELECT id FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)`;
+const COMO = (tipo, usuario = 'prueba.automatica') => `SELECT set_config('apd.usuario', '${usuario}', true), set_config('apd.usuario_tipo', '${tipo}', true);`;
+// Bitácora: cuántos renglones deja una acción (E2-04)
+const B0 = `CREATE TEMP TABLE b0 AS SELECT count(*) AS n FROM apd.bitacora;`;
+const MAS = (n, accion) => `DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.bitacora) = (SELECT n FROM b0) + ${n};${accion ? ` ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = '${accion}' AND usuario = 'prueba.automatica');` : ''} END $$;`;
+// Cinco intentos de entrada fallidos de la primera cuenta activa (D-07), con lo que devolvió cada uno
+const INTENTOS5 = `CREATE TEMP TABLE r (n integer, intentos integer, bloqueada_hasta timestamptz);
+     DO $$ BEGIN FOR k IN 1..5 LOOP
+       INSERT INTO r SELECT k, a.* FROM apd.anotar_intento((SELECT curp FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)) a;
+     END LOOP; END $$;`;
 
 const casos = [
   // ── Vigencia con fechas movidas (PD-2025-K101 se emitió el 25/10/2025 y vence el 24/10/2026) ──
@@ -347,6 +370,7 @@ const casos = [
        factura_folio_fiscal = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', estado = 'lista_para_curso' WHERE id = (SELECT id FROM s);`],
   ['La cuenta no borra citas', { sqlstate: '42501' }, null, `DELETE FROM apd.cita;`],
   ['La cuenta no cambia la fecha de una cita: se asigna otra', { sqlstate: '42501' }, null, `UPDATE apd.cita SET programada_en = now();`],
+  // Como administración: la cuenta del servicio ya no llama asignar_expediente (decisión 6, 2026-10-19); lo abre la regla del cotejo
   ['Un segundo trámite de la misma persona usa su mismo expediente', 'ok', null, `
      CREATE TEMP TABLE p AS SELECT s.solicitante_id, pe.numero_expediente
        FROM apd.solicitud s JOIN apd.solicitante pe ON pe.id = s.solicitante_id
@@ -360,7 +384,7 @@ const casos = [
      DO $$ BEGIN
        ASSERT (SELECT numero_expediente FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM p)) = (SELECT numero_expediente FROM p);
        ASSERT (SELECT count(*) FROM apd.solicitante WHERE numero_expediente IS NOT NULL) = (SELECT n FROM c);
-     END $$;`],
+     END $$;`, 'admin'],
   ['El número de expediente no se cambia', { sqlstate: '42501' }, null, `
      UPDATE apd.solicitante SET numero_expediente = 'X' WHERE numero_expediente IS NOT NULL;`],
   ['Al validar con cita, la solicitud recibe su referencia de pago', 'ok', null, `DO $$ BEGIN
@@ -816,7 +840,399 @@ const casos = [
      UPDATE apd.solicitud SET cita_en = '2027-04-20 10:00-06' WHERE id = ${CITA_SOL};`],
   ['En una base de producción, simular la fecha es un error', { codigo: 'simulacion_prohibida' }, '2026-10-20 10:00', `
      CREATE OR REPLACE FUNCTION apd.entorno() RETURNS text LANGUAGE sql STABLE AS $$ SELECT 'produccion'::text $$;
-     SELECT apd.hoy();`, 'admin']
+     SELECT apd.hoy();`, 'admin'],
+
+  // ═══════════════ Correcciones de la auditoría del 19/10/2026 (bloque 2, base) ═══════════════
+  // ── E2-04 · Cada decisión que cambia un trámite deja su renglón en la bitácora (las 11 acciones de r3/base-5) ──
+  ['Bitácora · aceptar un documento en la revisión deja un renglón (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND requisito = 'curp' AND vigente;
+     ${MAS(1, 'documento')}`],
+  ['Bitácora · observar un documento deja un renglón (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Ilegible', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND requisito = 'curp' AND vigente;
+     ${MAS(1, 'documento')}`],
+  ['Bitácora · corregir la asistencia de un día deja un renglón con el valor anterior (E2-04)', 'ok', '2026-10-14 10:00', `${B0}
+     UPDATE apd.asistencia SET asistio = false, capturada_por = 'prueba.automatica' WHERE dia = 1 AND inscripcion_id = ${INS21};
+     ${MAS(1, 'asistencia')}
+     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'asistencia' AND usuario = 'prueba.automatica' AND detalle LIKE 'Día 1: % → faltó%'); END $$;`],
+  ['Bitácora · mover la fecha y la hora de un grupo por confirmar deja un renglón (E2-04)', 'ok', '2026-10-14 10:00', `${B0}
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-30', hora_entrada = '07:00' WHERE id = ${GRUPO_INTEGRACION};
+     ${MAS(1, 'cambio_programacion')}`],
+  ['Bitácora · cambiar la cita de una solicitud deja un renglón (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.solicitud SET cita_en = '2026-11-02 10:00-06' WHERE id = ${S44};
+     ${MAS(1, 'cita_asignada')}`],
+  ['Bitácora · lo que la persona corrige de sus estudios después de enviar deja un renglón (E2-04)', 'ok', null, `${B0}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET nivel_estudios = 'maestria', carrera = 'Ciencias Forestales', anios_experiencia = 7 WHERE id = ${DICT_OBS};
+     ${MAS(1, 'estudios')}`],
+  ['Bitácora · quitar un requisito de un curso deja un renglón (E2-04)', 'ok', null, `${B0}
+     DELETE FROM apd.requisito_curso WHERE ctid = (SELECT ctid FROM apd.requisito_curso WHERE NOT obligatorio LIMIT 1);
+     ${MAS(1, 'requisito_quitado')}`],
+  ['Bitácora · hacer opcional un requisito obligatorio deja un renglón (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.requisito_curso SET obligatorio = false WHERE ctid = (SELECT ctid FROM apd.requisito_curso WHERE obligatorio LIMIT 1);
+     ${MAS(1, 'requisito_cambiado')}`],
+  ['Bitácora · bloquear una cuenta por intentos deja un renglón (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.solicitante SET estado = 'bloqueada', bloqueada_hasta = now() + interval '15 minutes', intentos_fallidos = 5
+      WHERE id = (SELECT solicitante_id FROM apd.solicitud WHERE id = ${S44});
+     ${MAS(1, 'bloqueo_intentos')}`],
+  ['Bitácora · dar de baja una cuenta deja un renglón (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.solicitante SET estado = 'inactiva' WHERE id = (SELECT solicitante_id FROM apd.solicitud WHERE id = ${S44});
+     ${MAS(1, 'estado')}`],
+  ['Bitácora · validar en línea deja un renglón por cada decisión: 4 documentos, la cita y el estado (E2-04)', 'ok', null, `${B0}
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND vigente;
+     UPDATE apd.solicitud SET cita_en = '2026-10-21 10:00-06' WHERE id = ${S44};
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');
+     ${MAS(6)}`],
+
+  // ── D-13 y E2-06 · La bitácora la escriben sólo las reglas ──
+  ['La cuenta del servicio no escribe renglones de bitácora directo (D-13)', { sqlstate: '42501' }, null, `
+     INSERT INTO apd.bitacora (accion, entidad, entidad_id, detalle) VALUES ('emision', 'acreditacion', 'x', 'renglón directo');`],
+  ['Ni llamando apd.registrar fuera de una regla (D-13)', { codigo: 'bitacora_directa' }, null, `
+     SELECT apd.registrar('estado', 'solicitud', 'x', 'renglón directo');`],
+  ['Si se permite, la fecha y la cuenta no se pueden escoger (D-13)', 'ok', null, `
+     DO $$ BEGIN
+       BEGIN
+         INSERT INTO apd.bitacora (fecha, usuario, usuario_tipo, accion, entidad, entidad_id, detalle)
+         VALUES ('2025-01-01 09:00-06', 'otra.persona', 'migracion', 'emision', 'acreditacion', 'x', 'renglón inventado');
+       EXCEPTION WHEN insufficient_privilege OR raise_exception THEN RETURN; END;
+       ASSERT NOT EXISTS (SELECT 1 FROM apd.bitacora WHERE detalle = 'renglón inventado' AND (fecha < now() - interval '1 minute' OR usuario = 'otra.persona'));
+     END $$;`],
+  ['Aun la administración: fecha, cuenta, tipo y procedencia de un renglón los pone la base (D-13)', 'ok', '2026-10-14 10:00', `
+     SELECT set_config('apd.procedencia', '192.0.2.99', true);
+     INSERT INTO apd.bitacora (fecha, usuario, usuario_tipo, procedencia, accion, entidad, entidad_id, detalle)
+     VALUES ('2025-01-01 09:00-06', 'otra.persona', 'migracion', '10.0.0.1', 'emision', 'acreditacion', 'x', 'renglón inventado');
+     DO $$ BEGIN ASSERT (SELECT (fecha, usuario, usuario_tipo, procedencia) = ('2026-10-14 10:00-06'::timestamptz, 'prueba.automatica', 'personal', '192.0.2.99')
+                          FROM apd.bitacora WHERE detalle = 'renglón inventado'); END $$;`, 'admin'],
+  ['apd.registrar corre con search_path fijo y los permisos de quien instala', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT prosecdef AND proconfig @> ARRAY['search_path=apd, pg_temp'] FROM pg_proc WHERE oid = 'apd.registrar(text, text, text, text)'::regprocedure); END $$;`],
+  ['Toda función del esquema que corre con los permisos de quien instala tiene search_path fijo', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM pg_proc WHERE pronamespace = 'apd'::regnamespace AND prosecdef
+                         AND NOT coalesce(proconfig @> ARRAY['search_path=apd, pg_temp'], false));
+     ASSERT (SELECT count(*) FROM pg_proc WHERE pronamespace = 'apd'::regnamespace AND prosecdef) = 7; END $$;`],
+
+  // ── E2-07 · Decisión 6: la cuenta del servicio no pide folios ni abre expedientes directamente ──
+  ['La cuenta del servicio no pide folios directamente (E2-07)', { sqlstate: '42501' }, null, `SELECT apd.siguiente_folio('PD', 2026::smallint);`],
+  ['La cuenta del servicio no abre expedientes directamente (E2-07)', { sqlstate: '42501' }, null, `
+     SELECT apd.asignar_expediente((SELECT id FROM apd.solicitante WHERE numero_expediente IS NULL AND estado = 'activa' ORDER BY curp LIMIT 1));`],
+  ['Las altas siguen recibiendo su folio sin huecos: solicitud y grupo (E2-07)', 'ok', '2026-10-14 10:00', `
+     INSERT INTO apd.grupo (id, tipo_acreditacion, modalidad, integracion) VALUES ('00000000-0000-4000-a000-000000000051', 'poda', 'nueva', 'combinado');
+     DO $$ BEGIN ASSERT (SELECT folio FROM apd.grupo WHERE id = '00000000-0000-4000-a000-000000000051')
+                      = 'APD-G-2026-' || lpad((SELECT count(*) FROM apd.grupo WHERE folio LIKE 'APD-G-2026-%')::text, 3, '0'); END $$;`],
+
+  // ── Decisión 3 · El primer día de un curso: a lo más dentro de un año ──
+  ['El primer día de un grupo no pasa de 12 meses desde hoy: con hoy 14/10/2026, el 15/10/2027 se rechaza (decisión 3)', { codigo: 'inicio_muy_lejano' }, '2026-10-14 10:00', `
+     UPDATE apd.grupo SET fecha_inicio = '2027-10-15' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['El primer día puede ser justo a los 12 meses: con hoy 14/10/2026, el 14/10/2027 pasa (decisión 3)', 'ok', '2026-10-14 10:00', `
+     UPDATE apd.grupo SET fecha_inicio = '2027-10-14' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Un grupo nuevo con el primer día en el año 6110 (fecha pegada) se rechaza (decisión 3)', { codigo: 'inicio_muy_lejano' }, '2026-10-14 10:00', `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'nueva', 'combinado', '6110-02-20');`],
+
+  // ── A2-01 · Decisión 8: al cancelar, la cita abierta queda «cancelada» ──
+  ['Al cancelar con la cita por atender, la cita queda «cancelada» con el motivo y en la bitácora (decisión 8)', 'ok', null, `
+     CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;
+     UPDATE apd.solicitud SET estado = 'cancelada', motivo_cierre = 'La persona desistió.' WHERE id = (SELECT id FROM s);
+     DO $$ BEGIN
+       ASSERT NOT EXISTS (SELECT 1 FROM apd.cita WHERE solicitud_id = (SELECT id FROM s) AND resultado IN ('pendiente', 'en_pausa'));
+       ASSERT (SELECT observacion = 'Solicitud cancelada: La persona desistió.' AND atendida_en IS NOT NULL FROM apd.cita
+                WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'cancelada');
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE entidad_id = (SELECT id FROM s)::text AND accion = 'cita' AND detalle LIKE 'pendiente → cancelada%');
+     END $$;`],
+  ['También la cita en pausa, aunque cancele la persona (decisión 8)', 'ok', '2026-10-20 10:30', `
+     CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;
+     ${PAUSA_CURP}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET estado = 'cancelada', motivo_cierre = 'Ya no puede asistir.' WHERE id = (SELECT id FROM s);
+     DO $$ BEGIN ASSERT (SELECT resultado = 'cancelada' AND pausada_en IS NOT NULL FROM apd.cita
+                          WHERE solicitud_id = (SELECT id FROM s) ORDER BY creada_en DESC LIMIT 1); END $$;`],
+  ['APD-S-2026-00045 (cancelada) tiene su cita «cancelada», con el motivo (decisión 8)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT bool_and(c.resultado = 'cancelada' AND c.observacion LIKE 'Solicitud cancelada: %') FROM apd.cita c
+              JOIN apd.solicitud s ON s.id = c.solicitud_id WHERE s.folio = 'APD-S-2026-00045'); END $$;`],
+  ['Ninguna cita queda abierta en una solicitud sin cita asignada (A2-01)', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.cita c JOIN apd.solicitud s ON s.id = c.solicitud_id
+                         WHERE c.resultado IN ('pendiente', 'en_pausa') AND s.estado <> 'validada_en_linea'); END $$;`],
+  ['Una cita no se marca «cancelada» a mano (decisión 8)', { codigo: 'cita_sin_cancelacion' }, null, `
+     UPDATE apd.cita SET resultado = 'cancelada', observacion = 'x' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`],
+
+  // ── D-01 · Acreditaciones migradas (pruebas 1 a 4 de r2 y la restricción) ──
+  ['D-01 · Una sesión de solicitante no da de alta una acreditación migrada', { codigo: 'migracion_sin_permiso' }, null, `
+     ${COMO('solicitante')}
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('PD-2025-K900', ${SIN_ACRED}, 'poda', '2025-12-01', 'kobo');`],
+  ['D-01 · El personal tampoco: la migración es sólo de la cuenta de migración', { codigo: 'migracion_sin_permiso' }, null, `
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('PD-2025-K901', ${SIN_ACRED}, 'poda', '2025-12-01', 'papel');`],
+  ['D-01 · Una migrada no usa la serie del sistema (PD-AAAA-NNNN): chocaría con la siguiente emisión', { codigo: 'migrada_con_serie' }, null, `
+     ${COMO('migracion')}
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('PD-2026-0009', ${SIN_ACRED}, 'poda', '2026-10-01', 'kobo');`],
+  ['D-01 · Una migrada no se emite en el futuro', { codigo: 'migrada_futura' }, '2026-10-17 10:00', `
+     ${COMO('migracion')}
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('PD-2026-K902', ${SIN_ACRED}, 'dictaminador', '2026-12-01', 'kobo');`],
+  ['D-01 · La carga de migración da de alta una con su número original y su fecha', 'ok', '2026-10-17 10:00', `
+     ${COMO('migracion')}
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('PD-2025-K903', ${SIN_ACRED}, 'poda', '2025-12-01', 'kobo');
+     DO $$ BEGIN ASSERT (SELECT vence_en = '2026-11-30' FROM apd.acreditacion WHERE numero = 'PD-2025-K903'); END $$;`],
+  ['D-01 · Aun sin disparadores (administración), una migrada con la forma de la serie la rechaza la restricción', { sqlstate: '23514' }, null, `
+     SET LOCAL session_replication_role = replica;
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, vence_en, origen)
+     VALUES ('PD-2026-0009', ${SIN_ACRED}, 'poda', '2026-10-01', '2027-09-30', 'kobo');`, 'admin'],
+  ['Una migrada sin número se rechaza', { codigo: 'migrada_sin_numero' }, null, `
+     ${COMO('migracion')}
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('  ', ${SIN_ACRED}, 'poda', '2025-12-01', 'kobo');`],
+
+  // ── D-07 · Bloqueo por intentos fallidos ──
+  ['D-07 · Existe el parámetro del número de intentos y del tiempo de bloqueo', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT count(*) FROM apd.parametro WHERE clave ~ '(intento|bloqueo)') >= 2;
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'intentos_maximos') = '5';
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'minutos_bloqueo') = '15'; END $$;`],
+  ['D-07 · Al llegar al máximo de intentos la base pone bloqueada_hasta', 'ok', null, `
+     ${COMO('sistema')}
+     UPDATE apd.solicitante SET intentos_fallidos = 5 WHERE id = ${ACTIVA};
+     DO $$ BEGIN ASSERT (SELECT bloqueada_hasta > apd.ahora() FROM apd.solicitante WHERE id = (SELECT id FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)); END $$;`],
+  ['D-07 · Quitar un bloqueo vigente deja constancia en la bitácora', 'ok', null, `
+     ${COMO('sistema')}
+     UPDATE apd.solicitante SET intentos_fallidos = 5, bloqueada_hasta = now() + interval '15 minutes' WHERE id = ${ACTIVA};
+     UPDATE apd.solicitante SET intentos_fallidos = 0, bloqueada_hasta = NULL WHERE id = ${ACTIVA};
+     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE entidad_id = (SELECT id::text FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)
+                                 AND accion = 'desbloqueo_intentos'); END $$;`],
+  ['D-07 · Cinco intentos fallidos con apd.anotar_intento bloquean la entrada 15 minutos', 'ok', '2026-10-14 10:00', `
+     ${COMO('sistema')}
+     ${INTENTOS5}
+     DO $$ BEGIN
+       ASSERT (SELECT intentos FROM r WHERE n = 4) = 4 AND (SELECT bloqueada_hasta FROM r WHERE n = 4) IS NULL;
+       ASSERT (SELECT intentos FROM r WHERE n = 5) = 5;
+       ASSERT (SELECT bloqueada_hasta FROM r WHERE n = 5) = '2026-10-14 10:15-06';
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'bloqueo_intentos' AND usuario = 'prueba.automatica');
+     END $$;`],
+  ['D-07 · Más intentos durante el bloqueo no lo alargan', 'ok', '2026-10-14 10:00', `
+     ${COMO('sistema')}
+     ${INTENTOS5}
+     SELECT set_config('apd.ahora_simulado', '2026-10-14 10:10:00-06', true);
+     DO $$ BEGIN ASSERT (SELECT bloqueada_hasta FROM apd.anotar_intento((SELECT curp FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)))
+                      = '2026-10-14 10:15-06'; END $$;`],
+  ['D-07 · Con el bloqueo vigente, ni la contraseña correcta entra', { codigo: 'cuenta_bloqueada_intentos' }, '2026-10-14 10:00', `
+     ${COMO('sistema')}
+     ${INTENTOS5}
+     SELECT apd.acceso_correcto((SELECT curp FROM apd.solicitante WHERE id = ${ACTIVA}));`],
+  ['D-07 · Pasado el bloqueo, el acceso correcto vuelve el contador a 0', 'ok', '2026-10-14 10:00', `
+     ${COMO('sistema')}
+     ${INTENTOS5}
+     SELECT set_config('apd.ahora_simulado', '2026-10-14 10:16:00-06', true);
+     DO $$ BEGIN ASSERT apd.acceso_correcto((SELECT curp FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1));
+                  ASSERT (SELECT intentos_fallidos = 0 AND bloqueada_hasta IS NULL FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1); END $$;`],
+  ['D-07 · Un intento después de un bloqueo vencido empieza la cuenta de nuevo', 'ok', '2026-10-14 10:00', `
+     ${COMO('sistema')}
+     ${INTENTOS5}
+     SELECT set_config('apd.ahora_simulado', '2026-10-14 10:20:00-06', true);
+     DO $$ BEGIN ASSERT (SELECT intentos = 1 AND bloqueada_hasta IS NULL FROM apd.anotar_intento((SELECT curp FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1))); END $$;`],
+  ['D-07 · Un intento con una CURP sin cuenta no devuelve nada', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.anotar_intento('XAXX991231HNEXXX09')); END $$;`],
+
+  // ── D-10 · public fuera del search_path de la cuenta ──
+  ['D-10 · El search_path de apd_api no incluye public', 'ok', null, `DO $$ BEGIN
+     ASSERT current_setting('search_path') !~ 'public'; END $$;`],
+  // La prueba 13 de r2 concede CREATE a PUBLIC (como PostgreSQL 13-14 de fábrica) y espera 42501: eso sólo se cumple con
+  // el REVOKE que hace la administración (docs/REGLAS.md, «Permisos»). Aquí se comprueba que en esta base nadie puede crear en public.
+  ['D-10 · Ni la cuenta ni PUBLIC pueden crear en public (en PostgreSQL 13-14, tras el REVOKE de REGLAS.md)', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT has_schema_privilege('apd_api', 'public', 'CREATE');
+     ASSERT NOT has_schema_privilege('public', 'public', 'CREATE'); END $$;`, 'admin'],
+
+  // ── D-06 · Lo que se puede en la base: quién captura asistencia y examen ──
+  // Pendiente (D-06, fuera de la base): la pertenencia de la fila a la persona de la sesión (contexto apd.solicitante_id o
+  // RLS) y que las tablas con datos de personas tengan seguridad por renglón; se resuelve con el backend en la etapa 3.
+  ['D-06 · La asistencia la captura una sesión de personal, no de solicitante', { codigo: 'captura_de_personal' }, '2026-10-14 10:00', `
+     ${COMO('solicitante', 'instructor.ficticio')}
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT i.id, 2, true, 'otra.persona' FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
+      WHERE g.estado = 'en_curso' AND i.activa
+        AND NOT EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.dia = 2) LIMIT 1;`],
+  ['D-06 · Quien captura la asistencia queda como la cuenta de la sesión (capturada_por = apd.usuario)', 'ok', '2026-10-14 10:00', `
+     ${COMO('personal', 'instructor.ficticio')}
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT i.id, 2, true, 'otra.persona' FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
+      WHERE g.estado = 'en_curso' AND i.activa
+        AND NOT EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.dia = 2) LIMIT 1;
+     DO $$ BEGIN ASSERT NOT EXISTS (SELECT 1 FROM apd.asistencia WHERE capturada_por = 'otra.persona'); END $$;`],
+  ['D-06 · La calificación la captura una sesión de personal, a su propio nombre', { codigo: 'captura_de_personal' }, '2026-10-17 10:00', `
+     ${ASISTE21}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'otra.persona');`],
+  ['D-06 · Quien captura la calificación queda como la cuenta de la sesión', 'ok', '2026-10-17 10:00', `
+     ${ASISTE21}
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'otra.persona');
+     DO $$ BEGIN ASSERT (SELECT capturado_por FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-17') = 'prueba.automatica'; END $$;`],
+
+  // ── E2-01 a E2-03 en secuencia (con dos conexiones: herramientas/probar-concurrencia.sh) ──
+  ['Una segunda revisión de la misma vuelta se rechaza: ya la registró otra persona (E2-01)', { codigo: 'revision_ya_registrada' }, null, `
+     ${LISTA_PARA_VALIDAR(S44)}
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${S44}, 'con_observaciones', 'Otra revisión.', 'otra.revisora');`],
+  ['Un documento ya decidido en esta vuelta no se vuelve a revisar (E2-01)', { codigo: 'revision_ya_registrada' }, null, `
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${S44}, 'con_observaciones', 'Corrige la CURP.', 'prueba.automatica');
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'otra.revisora' WHERE solicitud_id = ${S44} AND requisito = 'curp' AND vigente;`],
+  ['Una solicitud que no está enviada no se revisa', { codigo: 'revision_fuera_de_turno' }, null, `
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${BORRADOR}, 'validada', 'prueba.automatica');`],
+  ['Los documentos de una solicitud en espera de grupo ya no se revisan', { codigo: 'revision_fuera_de_turno' }, null, `
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'x', revisado_por = 'prueba.automatica'
+      WHERE ctid = (SELECT d.ctid FROM apd.documento d JOIN apd.solicitud s ON s.id = d.solicitud_id
+                     WHERE s.estado = 'lista_para_curso' AND d.vigente ORDER BY s.folio LIMIT 1);`],
+  ['Las observaciones necesitan un texto general o un documento observado', { codigo: 'observaciones_vacias' }, null, `
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'con_observaciones', 'prueba.automatica');`],
+  ['No se da de baja a quien ya presentó examen (E2-03)', { codigo: 'baja_con_examen' }, '2026-10-17 10:00', `
+     ${ASISTE21}
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'x');
+     UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = (SELECT inscripcion_id FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-17');`],
+  ['Con el examen capturado, la asistencia ya no cambia (E2-03)', { codigo: 'asistencia_cerrada' }, '2026-10-17 10:00', `
+     ${ASISTE21}
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'x');
+     UPDATE apd.asistencia SET asistio = false WHERE dia = 5 AND inscripcion_id = (SELECT inscripcion_id FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-17');`],
+  ['Una inscripción dada de baja no recibe calificación', { codigo: 'inscripcion_inactiva' }, '2026-10-17 10:00', `
+     ${ASISTE21}
+     CREATE TEMP TABLE i AS SELECT ${INS21} AS id;
+     UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = (SELECT id FROM i);
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ((SELECT id FROM i), '2026-10-17', 9, 'x');`],
+  ['Una baja necesita motivo', { codigo: 'baja_sin_motivo' }, null, `
+     UPDATE apd.inscripcion SET activa = false WHERE id = (SELECT id FROM apd.inscripcion WHERE grupo_id = ${GRUPO_INTEGRACION} AND activa LIMIT 1);`],
+  ['Una inscripción dada de baja no se reactiva', { codigo: 'inscripcion_inmutable' }, null, `
+     UPDATE apd.inscripcion SET activa = true WHERE ctid = (SELECT ctid FROM apd.inscripcion WHERE NOT activa LIMIT 1);`],
+
+  // ── A1-03 · Un caso por cada regla con código que no tenía ninguno ──
+  ['Ni la administración cambia la marca de dato de prueba de una cuenta', { codigo: 'campo_inmutable' }, null, `
+     UPDATE apd.solicitante SET es_ficticio = false WHERE id = ${ACTIVA};`, 'admin'],
+  ['Ni la administración cambia el número de expediente', { codigo: 'expediente_fijo' }, null, `
+     UPDATE apd.solicitante SET numero_expediente = 'EXP-2026-9999' WHERE id = (SELECT id FROM apd.solicitante WHERE numero_expediente IS NOT NULL ORDER BY curp LIMIT 1);`, 'admin'],
+  ['Ni la administración modifica una acreditación emitida', { codigo: 'acreditacion_inmutable' }, null, `
+     UPDATE apd.acreditacion SET vence_en = vence_en + 30 WHERE numero = 'PD-2026-0001';`, 'admin'],
+  ['Para pasar a observaciones hay que registrar la revisión', { codigo: 'sin_revision' }, null, `
+     UPDATE apd.solicitud SET estado = 'con_observaciones' WHERE id = ${S44};`],
+  ['Validar sin todos los documentos aceptados se rechaza', { codigo: 'documentos_sin_aceptar' }, null, `
+     UPDATE apd.solicitud SET cita_en = '2026-10-21 10:00-06' WHERE id = ${S44};
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');`],
+  ['Validar sin cita de cotejo se rechaza', { codigo: 'sin_cita' }, null, `
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND vigente;
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');`],
+  ['Cambiar los estudios de una solicitud enviada se rechaza', { codigo: 'solicitud_cerrada' }, null, `
+     UPDATE apd.solicitud SET nivel_estudios = 'secundaria' WHERE id = ${S44};`],
+  ['El curso de una solicitud enviada no cambia', { codigo: 'curso_fijo' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET modalidad = 'renovacion' WHERE id = ${DICT_OBS};`],
+  ['Dictaminador nueva sin años de experiencia no se envía', { codigo: 'falta_perfil' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET anios_experiencia = NULL WHERE id = ${DICT_OBS};
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${DICT_OBS};`],
+  ['Una solicitud nace como borrador', { codigo: 'alta_fuera_de_borrador' }, null, `
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, estado) VALUES (${SIN_ACRED}, 'poda', 'nueva', 'enviada');`],
+  ['La acreditación a renovar es de la persona', { codigo: 'anterior_no_corresponde' }, '2026-10-20 10:00', `
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id)
+     VALUES (${PERSONA_VIGENTE}, 'poda', 'renovacion', ${ACRED_POR_VENCER});`],
+  ['Sólo se renueva la acreditación más reciente', { codigo: 'anterior_no_es_la_ultima' }, '2026-10-20 10:00', `
+     ${COMO('migracion')}
+     INSERT INTO apd.acreditacion (id, numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('00000000-0000-4000-a000-000000000052', 'PD-2024-K999', ${PERSONA_VIGENTE}, 'poda', '2024-11-20', 'kobo');
+     ${COMO('solicitante')}
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id)
+     VALUES (${PERSONA_VIGENTE}, 'poda', 'renovacion', '00000000-0000-4000-a000-000000000052');`],
+  ['Con la cita validada, pasar a observaciones exige decir qué no coincidió', { codigo: 'cotejo_sin_motivo' }, null, `
+     UPDATE apd.solicitud SET estado = 'con_observaciones' WHERE id = ${CITA_SOL};`],
+  ['Una cita sólo nace al asignarla a una solicitud validada', { codigo: 'cita_fuera_de_turno' }, null, `
+     INSERT INTO apd.cita (solicitud_id, programada_en) VALUES (${S44}, '2026-10-21 10:00-06');`],
+  ['Una cita en pausa no regresa a «Por atender»', { codigo: 'cita_transicion' }, '2026-10-20 10:30', `
+     ${PAUSA_CURP}
+     UPDATE apd.cita SET resultado = 'pendiente' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'en_pausa';`],
+  ['Con un documento que no coincidió no se concluye el cotejo', { codigo: 'documentos_sin_cotejar' }, '2026-10-20 10:30', `
+     CREATE TEMP TABLE s AS SELECT id, solicitante_id FROM apd.solicitud WHERE id = ${CITA_SOL};
+     ${DOC_PEQUENO('(SELECT id FROM s)', 'factura_pago')}
+     UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = (SELECT solicitante_id FROM s) AND vigente AND estado = 'pendiente';
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'No coincide.', revisado_por = 'prueba.automatica'
+      WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'curp' AND vigente;
+     UPDATE apd.cita SET resultado = 'atendida' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
+     UPDATE apd.solicitud SET factura_rfc = 'XAXX010101000', factura_razon_social = 'Persona de prueba',
+       factura_folio_fiscal = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', estado = 'lista_para_curso' WHERE id = (SELECT id FROM s);`],
+  ['Sólo con una inscripción activa la solicitud queda con grupo', { codigo: 'sin_inscripcion' }, null, `
+     UPDATE apd.solicitud SET estado = 'inscrita' WHERE id = (SELECT solicitud_id FROM apd.bandeja_demanda ORDER BY folio LIMIT 1);`],
+  ['Quien sigue en su grupo no regresa a la espera', { codigo: 'sigue_inscrita' }, null, `
+     UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`],
+  ['Sin calificación no hay resultado', { codigo: 'sin_examen' }, null, `
+     UPDATE apd.solicitud SET estado = 'aprobada' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`],
+  ['El resultado sale de la calificación', { codigo: 'resultado_no_corresponde' }, '2026-10-17 10:00', `
+     ${ASISTE21}
+     SET LOCAL session_replication_role = replica;
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'x');
+     SET LOCAL session_replication_role = origin;
+     UPDATE apd.solicitud SET estado = 'no_acreditada' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`, 'admin'],
+  ['Con la asistencia mínima no se marca «sin derecho a examen»', { codigo: 'con_derecho_examen' }, '2026-10-17 10:00', `
+     ${ASISTE21}
+     UPDATE apd.solicitud SET estado = 'sin_derecho_examen' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`],
+  ['Sin acreditación emitida la solicitud no queda como acreditada', { codigo: 'sin_acreditacion' }, null, `
+     UPDATE apd.solicitud SET estado = 'acreditada' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1);`],
+  ['La acreditación corresponde a la persona de la solicitud', { codigo: 'acreditacion_no_corresponde' }, '2026-10-17 10:00', `
+     INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id)
+     SELECT ${SIN_ACRED}, 'poda', id FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
+  ['La acreditación se emite con la fecha del día', { codigo: 'emision_con_otra_fecha' }, '2026-10-17 10:00', `
+     INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id, emitida_en)
+     SELECT solicitante_id, 'poda', id, '2026-01-01' FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
+  ['La entrega no se registra al emitir', { codigo: 'entrega_al_emitir' }, '2026-10-17 10:00', `
+     INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id, entregada_en)
+     SELECT solicitante_id, 'poda', id, '2026-10-17' FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
+  ['La entrega no se registra con fecha futura', { codigo: 'entrega_futura' }, null, `
+     UPDATE apd.acreditacion SET entregada_en = apd.hoy() + 5 WHERE origen = 'sistema' AND entregada_en IS NULL AND numero LIKE 'PD-2026-%';`],
+  ['Un curso inactivo no abre grupos', { codigo: 'curso_inactivo' }, null, `
+     UPDATE apd.curso SET activo = false WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva';
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion) VALUES ('poda', 'nueva', 'combinado');`],
+  ['Un grupo nuevo nace en integración', { codigo: 'alta_fuera_de_integracion' }, null, `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, estado) VALUES ('poda', 'nueva', 'combinado', 'confirmado');`],
+  ['Un grupo confirmado siempre tiene instructor', { codigo: 'sin_instructor' }, null, `
+     UPDATE apd.grupo SET instructor = NULL WHERE id = ${GRUPO_EN_CURSO};`],
+  ['El curso no empieza antes de su primer día', { codigo: 'antes_de_inicio' }, '2026-10-14 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id) SELECT id, ${G5} FROM apd.solicitud
+      WHERE folio IN ('APD-S-2026-00037', 'APD-S-2026-00038', 'APD-S-2026-00031', 'APD-S-2026-00036');
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${G5};
+     UPDATE apd.grupo SET estado = 'en_curso' WHERE id = ${G5};`],
+  ['Sólo se agregan solicitudes en espera de grupo', { codigo: 'solicitud_no_lista' }, null, `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id) VALUES (${BORRADOR}, ${GRUPO_INTEGRACION});`],
+  ['La asistencia se captura mientras el curso está en marcha', { codigo: 'grupo_no_en_curso' }, '2026-10-14 10:00', `
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT id, 1, true, 'x' FROM apd.inscripcion WHERE grupo_id = ${G5} AND activa LIMIT 1;`],
+  ['No se captura asistencia de un día que el curso no tiene', { codigo: 'dia_inexistente' }, '2026-10-20 10:00', `
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) VALUES (${INS21}, 6, true, 'x');`],
+  ['Ese documento no se pide para ese curso', { codigo: 'requisito_ajeno' }, null, DOC_PEQUENO(BORRADOR, 'comprobante_estudios')],
+  ['Una carga sustituida no se revisa', { codigo: 'documento_sustituido' }, null, `
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica'
+      WHERE ctid = (SELECT ctid FROM apd.documento WHERE NOT vigente ORDER BY cargado_en LIMIT 1);`],
+  ['Una fotografía sustituida no vuelve a ser la vigente', { codigo: 'foto_inmutable' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${FOTO(COTEJO_PERSONA)}
+     UPDATE apd.fotografia SET vigente = true WHERE solicitante_id = ${COTEJO_PERSONA} AND NOT vigente;`],
+  ['Sólo se confirma la fotografía vigente', { codigo: 'foto_sustituida' }, null, `
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     ${FOTO(COTEJO_PERSONA)}
+     SELECT set_config('apd.usuario_tipo', 'personal', true);
+     UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = ${COTEJO_PERSONA} AND NOT vigente AND estado = 'pendiente';`],
+  ['Una institución necesita nombre', { codigo: 'organizacion_sin_nombre' }, null, `
+     INSERT INTO apd.organizacion (tipo, nombre) VALUES ('privada', ' ... ');`],
+  ['Una carrera necesita nombre', { codigo: 'carrera_sin_nombre' }, null, `
+     INSERT INTO apd.carrera (nombre) VALUES (' -- ');`],
+  ['Un parámetro que falta da su propio error', { codigo: 'parametro_inexistente' }, null, `
+     SELECT apd.parametro_texto('no_existe');`],
+
+  // ── A1-01 · La base rechaza lo mismo que el formulario (además del cruce de abajo) ──
+  ['CURP con fecha imposible: la base la rechaza (A1-01)', { sqlstate: '23514' }, null, `
+     SELECT set_config('apd.motivo', 'Prueba', true);
+     UPDATE apd.solicitante SET curp = ${q(curpCon('EEMJ761307HNEJSN0'))} WHERE id = ${ACTIVA};`],
+  ['CURP con nacimiento en el futuro: la base la rechaza (A1-01)', { sqlstate: '23514' }, null, `
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES (${q(curpCon('EEMJ300707HNEJSNA'))}, 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);`],
+  ['Correo de más de 120 caracteres: la base lo rechaza (A1-01)', { sqlstate: '23514' }, null, `
+     UPDATE apd.solicitante SET correo = repeat('a', 120) || '@ejemplo.mx' WHERE id = ${ACTIVA};`],
+  ['Correo con terminación de una letra: la base lo rechaza (A1-01)', { sqlstate: '23514' }, null, `
+     UPDATE apd.solicitante SET correo = 'persona@ejemplo.c' WHERE id = ${ACTIVA};`],
+  ['RFC con fecha imposible: la base lo rechaza (A1-01)', { sqlstate: '23514' }, null, `
+     UPDATE apd.solicitud SET factura_rfc = 'EJE011310AB1' WHERE id = ${CITA_SOL};`],
+  ['RFC con Ñ: la base lo conserva (P129)', 'ok', null, `
+     UPDATE apd.solicitud SET factura_rfc = 'ÑEJE010110AB1' WHERE id = ${CITA_SOL};
+     DO $$ BEGIN ASSERT (SELECT factura_rfc FROM apd.solicitud WHERE factura_rfc LIKE 'Ñ%') = 'ÑEJE010110AB1'; END $$;`]
 ];
 
 let fallas = 0;
@@ -844,5 +1260,72 @@ for (const [nombre, espera, fecha, cuerpo, quien = 'apd_api'] of casos) {
   const esperado = espera === 'ok' ? 'sin error' : espera.codigo || espera.sqlstate || espera.mensaje;
   console.log(`${bien ? 'BIEN ' : 'FALLA'} ${nombre}${bien ? '' : `\n      esperaba: ${esperado}\n      obtuvo:   ${(err.split('\n').find((l) => l.startsWith('ERROR')) || 'sin error').trim()}${codigo ? ' [' + codigo + ']' : ''}`}`);
 }
-console.log(`\n${casos.length - fallas} de ${casos.length} casos correctos.`);
+let total = casos.length;
+const informa = (bien, nombre, detalle = '') => {
+  total++;
+  if (!bien) fallas++;
+  console.log(`${bien ? 'BIEN ' : 'FALLA'} ${nombre}${bien || !detalle ? '' : `\n      ${detalle}`}`);
+};
+
+// ── A1-01 · La base rechaza lo mismo que el formulario: el validador del Estándar (el mismo del formulario y de su
+// validación en el servidor, validaciones.config.js) contra las funciones que usan las restricciones de la base ──
+await import('../sitio/formkit/js/validaciones.config.js');
+const FORMATOS = globalThis.FORMKIT_VALIDACIONES.FORMATOS || globalThis.FORMKIT_VALIDACIONES.formatos;
+const BASE_DE = { curp: 'apd.curp_valida', rfc: 'apd.rfc_valido', correo: 'apd.correo_valido' };
+const cruces = [
+  ['curp', 'CURP correcta', curpCon('EEMJ760707HNEJSN0')],
+  ['curp', 'CURP con mes 13 (fecha imposible)', curpCon('EEMJ761307HNEJSN0')],
+  ['curp', 'CURP con 30 de febrero', curpCon('EEMJ760230HNEJSN0')],
+  ['curp', 'CURP del 29 de febrero de un año bisiesto (1976)', curpCon('EEMJ760229HNEJSN0')],
+  ['curp', 'CURP del 29 de febrero de un año no bisiesto (1977)', curpCon('EEMJ770229HNEJSN0')],
+  ['curp', 'CURP con nacimiento en el futuro (2030: carácter 17 letra)', curpCon('EEMJ300707HNEJSNA')],
+  ['curp', 'CURP del siglo 2000 (2005: carácter 17 letra)', curpCon('EEMJ050707HNEJSNA')],
+  ['curp', 'CURP con dígito verificador equivocado', curpCon('EEMJ760707HNEJSN0').slice(0, 17) + '9'],
+  ['rfc', 'RFC con fecha imposible (mes 13)', 'EJE011310AB1'],
+  ['rfc', 'RFC con Ñ', 'ÑEJE010110AB1'],
+  ['rfc', 'RFC de persona física', 'EJEM760707AB1'],
+  ['rfc', 'RFC del 29 de febrero de 2000', 'EJE000229AB1'],
+  ['correo', 'correo con dominio de una letra final', 'a@b.c'],
+  ['correo', 'correo de 130 caracteres', 'a'.repeat(119) + '@ejemplo.mx'],
+  ['correo', 'correo de 120 caracteres exactos', 'a'.repeat(109) + '@ejemplo.mx'],
+  ['correo', 'correo con dos letras al final', 'persona@ejemplo.mx'],
+  ['correo', 'correo sin arroba', 'persona.ejemplo.mx']
+];
+const consulta = cruces.map(([fmt, , crudo], i) => {
+  const f = FORMATOS[fmt];
+  const v = f.normaliza ? f.normaliza(crudo) : crudo;
+  cruces[i].push(v);
+  return `SELECT ${i}, ${BASE_DE[fmt]}(${q(v)});`;
+}).join('\n');
+const rc = spawnSync('psql', ['-X', '-q', '-At', '-F', '|', '-d', base, '-U', 'apd_api', '-v', 'ON_ERROR_STOP=1'], { input: consulta, encoding: 'utf8' });
+const enBase = Object.fromEntries((rc.stdout || '').trim().split('\n').filter(Boolean).map((l) => l.split('|')));
+for (const [i, [fmt, nombre, , v]] of cruces.entries()) {
+  const form = FORMATOS[fmt].valida(v, fmt === 'correo' ? { maxlength: 120 } : {}) ? 'rechaza' : 'acepta';
+  const bd = enBase[i] === 't' ? 'acepta' : enBase[i] === 'f' ? 'rechaza' : `sin respuesta (${(rc.stderr || '').trim().slice(0, 80)})`;
+  informa(form === bd, `Cruce formulario ↔ base (A1-01) · ${nombre}: el formulario ${form}`, `la base ${bd}`);
+}
+// …y las restricciones de la base usan esas mismas funciones
+const rd = spawnSync('psql', ['-X', '-q', '-At', '-d', base, '-c',
+  `SELECT string_agg(pg_get_constraintdef(oid), ' ') FROM pg_constraint WHERE conname IN ('solicitante_curp_ck', 'solicitante_correo_ck', 'solicitud_factura_rfc_ck')`], { encoding: 'utf8' });
+informa(['curp_valida(', 'correo_valido(', 'rfc_valido('].every((f) => (rd.stdout || '').includes(f)),
+  'Las restricciones de CURP, correo y RFC usan las funciones del cruce', (rd.stdout || rd.stderr || '').trim().slice(0, 200));
+
+// ── A1-03 · Cada regla con código tiene un caso que la provoca. Las que todavía no lo tienen se anotan aquí con su
+// porqué; una regla nueva sin caso hace fallar la prueba. Cuentan también los casos de probar-concurrencia.sh. ──
+const SIN_CASO_ANOTADAS = {
+  sin_adscripcion: 'defensiva: una cuenta activa siempre tiene adscripción (solicitante_adscripcion_activa_ck), así que no se alcanza'
+};
+const reglas = readFileSync(new URL('../db/apd/03-apd-reglas.sql', import.meta.url), 'utf8');
+const concurrencia = readFileSync(new URL('./probar-concurrencia.sh', import.meta.url), 'utf8');
+const codigos = [...new Set([...reglas.matchAll(/apd\.error\('([a-z_]+)'/g)].map((m) => m[1]))].sort();
+const conCaso = new Set(casos.filter(([, e]) => e && e.codigo).map(([, e]) => e.codigo));
+for (const m of concurrencia.matchAll(/^verifica "[^"]*" "?([a-z_|]+)"?/gm)) m[1].split('|').forEach((c) => conCaso.add(c));
+const sinCaso = codigos.filter((c) => !conCaso.has(c));
+const nuevosSinCaso = sinCaso.filter((c) => !(c in SIN_CASO_ANOTADAS));
+const yaConCaso = Object.keys(SIN_CASO_ANOTADAS).filter((c) => conCaso.has(c) || !codigos.includes(c));
+informa(!nuevosSinCaso.length && !yaConCaso.length,
+  `Cada regla con código tiene un caso (${codigos.length} códigos; sin caso, anotados: ${sinCaso.length ? sinCaso.join(', ') : 'ninguno'})`,
+  [nuevosSinCaso.length ? `sin caso y sin anotar: ${nuevosSinCaso.join(', ')}` : '', yaConCaso.length ? `ya no van en SIN_CASO_ANOTADAS: ${yaConCaso.join(', ')}` : ''].filter(Boolean).join('; '));
+
+console.log(`\n${total - fallas} de ${total} casos correctos.`);
 process.exit(fallas ? 1 : 0);

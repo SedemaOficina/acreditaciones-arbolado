@@ -180,18 +180,20 @@
       }
       const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
       const minimo = APD.sumaDias(hoy, anticipacion);
+      const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
       const fi = $('#fecha_inicio');
       // Fecha día/mes/año (formato «fecha-dma», D9): el estándar lee el mínimo de data-min del campo (AAAA-MM-DD) y lo
       // dice en día/mes/año; la página trabaja con AAAA-MM-DD
       $('[data-campo="fecha_inicio"]').dataset.min = minimo;
+      $('[data-campo="fecha_inicio"]').dataset.max = maximo;
       const iso = () => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(fi.value)) || '';
       // La propuesta de un grupo que regresó a integración se ofrece de nuevo
-      if (g.fecha_inicio && g.fecha_inicio >= minimo) fi.value = fecha(g.fecha_inicio);
+      if (g.fecha_inicio && g.fecha_inicio >= minimo && g.fecha_inicio <= maximo) fi.value = fecha(g.fecha_inicio);
       if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
-        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fecha(minimo)}. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
-        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo ? `${base}: del ${fecha(iso())} al ${fecha(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
+        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fecha(minimo)} y hasta el ${fecha(maximo)}, un año después de hoy. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
+        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo && iso() <= maximo ? `${base}: del ${fecha(iso())} al ${fecha(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
       };
       fi.addEventListener('input', ayudaFecha);
       fi.addEventListener('change', ayudaFecha);
@@ -202,6 +204,7 @@
         enviar(payload) {
           const d = Object.assign({}, payload.datos, { fecha_inicio: (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(payload.datos.fecha_inicio)) || payload.datos.fecha_inicio });
           if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fecha(minimo)}.` }] });
+          if (d.fecha_inicio > maximo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso empieza a más tardar un año después de hoy: hasta el ${fecha(maximo)}.` }] });
           // Como la API: con lo guardado de ahora (otra pestaña pudo dar de baja a alguien) y comprobando después que quedó
           // confirmado (auditoría «intentar romperlo», F3 M2: «Grupo confirmado» aunque seguía por confirmar). Lo escrito
           // se conserva.

@@ -27,7 +27,11 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
   ('sede', 'Vivero Nezahualcóyotl',
    'Lugar único de la cita de cotejo, del curso y de la entrega de acreditaciones (decisión 2026-10-16, Liber).'),
   ('sede_direccion', '[pendiente] Dirección y referencias para llegar al Vivero Nezahualcóyotl.',
-   'Cómo llegar a la sede; se muestra a la persona con la cita, el grupo y la entrega.');
+   'Cómo llegar a la sede; se muestra a la persona con la cita, el grupo y la entrega.'),
+  ('intentos_maximos', '5',
+   'Intentos de entrada fallidos seguidos con los que la cuenta se bloquea (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].'),
+  ('minutos_bloqueo', '15',
+   'Minutos que dura el bloqueo de la entrada al llegar a intentos_maximos; más intentos no lo alargan (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].');
 
 -- Cupos 5–25 iguales para los cuatro cursos (corrección R23 y R24, 2026-10-14; antes 10–25).
 -- Duración (corrección R31): 5 días la primera vez y 1 día la renovación, en poda y en dictaminador.
@@ -118,6 +122,11 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('poda', 'renovacion',         'acuse_entrega',              90, true,  ''),
   ('dictaminador', 'nueva',      'acuse_entrega',              90, true,  ''),
   ('dictaminador', 'renovacion', 'acuse_entrega',              90, true,  '');
+
+-- Desde aquí, agregar, quitar o cambiar un requisito de un curso queda en la bitácora (E2-04; la función está en
+-- 03-apd-reglas.sql). Se crea después del catálogo inicial para que la instalación no llene la bitácora.
+CREATE TRIGGER requisito_curso_registrar AFTER INSERT OR UPDATE OR DELETE ON apd.requisito_curso
+  FOR EACH ROW EXECUTE FUNCTION apd.requisito_curso_registrar();
 
 -- Instituciones que el formulario ofrece por nombre (decisión 2026-10-15, Liber): las dependencias de la Ciudad
 -- y federales de la lista, y las 16 alcaldías de la Ciudad de México. Las demás las agrega la base cuando una

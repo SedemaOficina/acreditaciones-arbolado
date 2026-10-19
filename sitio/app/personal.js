@@ -119,7 +119,9 @@
     cerrada: { texto: 'No se presentó · solicitud cerrada', tono: 'error' },
     sin_pago: { texto: 'Sin pago · cita nueva', tono: 'pend' },
     con_observaciones: { texto: 'Regresó con observaciones', tono: 'marcha' },
-    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error' }
+    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error' },
+    // La solicitud se canceló con la cita abierta: la base la cierra así (decisión 8, 2026-10-19)
+    cancelada: { texto: 'Cancelada', tono: 'error' }
   };
   /* Documentos que la persona cargó después de que su cita quedó en pausa */
   function cargadosEnPausa(datos, s) {
@@ -328,6 +330,9 @@
   }
   /* Primer día en que puede empezar un curso que se confirma hoy: dias_anticipacion_grupo días después (R25) */
   const primerDiaPosible = (datos) => APD.sumaDias(APD.hoy(datos), APD.parametro(datos, 'dias_anticipacion_grupo') || 7);
+  /* Último día en que puede empezar un curso: un año después de hoy, ese día incluido (decisión 3 de la auditoría del
+     2026-10-19, Liber: en la pantalla y en la base). En la prueba, «hoy» es la fecha simulada, como en el mínimo. */
+  const ultimoDiaPosible = (datos) => APD.sumaMeses(APD.hoy(datos), 12);
   /* Días inhábiles del calendario oficial: [por confirmar]. Mientras la Secretaría no los publique no se inventan; el
      lugar queda listo (parámetro dias_inhabiles de la base, AAAA-MM-DD separados por coma, cuando exista). */
   function diasInhabiles(datos) {
@@ -352,6 +357,7 @@
     const fin = APD.sumaDias(inicio, c.dias_duracion - 1);
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días: el curso empieza al menos ${anticipacion} días después de confirmarlo` };
+    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año: el curso empieza a más tardar un año después de hoy, el ${APD.fecha(ultimoDiaPosible(datos))}` };
     const otro = choques(datos, tipo, modalidad, inicio, fin, exceptoId)[0];
     if (otro) return { clave: 'otro_curso', texto: `ya hay un curso de ${APD.cursoCorto(tipo, modalidad).toLowerCase()} esas fechas (${APD.nombreGrupo(otro, datos, { sinCurso: true }).toLowerCase()}, ${otro.folio})`, grupo: otro };
     const inhabiles = diasInhabiles(datos);
@@ -514,7 +520,7 @@
     marco.dispatchEvent(new CustomEvent('formkit:tabla'));
   }
 
-  global.APD_PERSONAL = { HORAS, lunesDe, primerDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
+  global.APD_PERSONAL = { HORAS, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };
