@@ -40,6 +40,8 @@
     const minimo = P.primerDiaPosible(datos);
     const todos = P.grupos(datos);
 
+    /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) */
+    const elegidasDe = new Map();
     /* ----- Selector de cursos ----- */
     const botones = P.CURSOS.map(([t, m]) => {
       const lista = P.enEspera(datos, t, m);
@@ -55,6 +57,7 @@
         // Sin «Atrás» de más: la dirección cambia en su lugar y conserva el curso al recargar o al volver
         history.replaceState(null, '', `${location.pathname}?curso=${clave}`);
         modoGrupo = null;
+        noRecibe = null;
         pinta();
       });
       return b;
@@ -63,6 +66,8 @@
 
     /* Desde un grupo: sólo ese grupo recibe (si todavía recibe personas) */
     let modoGrupo = gPedido ? todos.find((x) => x.g.id === gPedido.id && x.recibe) || null : null;
+    // Un enlace guardado a un grupo que ya no recibe (concluido, en curso, lleno): se dice, con su ficha (F3 B6)
+    let noRecibe = gPedido && !modoGrupo ? P.grupo(datos, gPedido) : null;
     avisoHecho();
     pinta();
 
@@ -75,12 +80,14 @@
       const x = P.grupo(datos, g);
       const falta = g.cupo_minimo - x.n;
       const enlace = el('p', {}, [el('a', { href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Ver a las personas del grupo' })]);
+      // Sin fecha, dos grupos se llaman igual: el aviso lleva el folio, como el botón (auditoría «intentar romperlo», F3 B5)
+      const cual = g.fecha_inicio ? x.calculado : `${x.calculado} · ${g.folio}`;
       if (hecho === 'agregadas') {
-        APD.pintaAviso($('[data-hecho]'), 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} a «${x.calculado}»`,
+        APD.pintaAviso($('[data-hecho]'), 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} a «${cual}»`,
           falta > 0 ? `Le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.`
             : g.estado === 'en_integracion' ? 'Ya tiene el mínimo: puede confirmarlo.' : `Tiene ${plural(x.n, 'persona', 'personas')}.`, true);
       } else if (hecho === 'confirmado') {
-        APD.pintaAviso($('[data-hecho]'), 'ok', `Grupo confirmado: «${x.calculado}»`, 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.', true);
+        APD.pintaAviso($('[data-hecho]'), 'ok', `Grupo confirmado: «${cual}»`, 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.', true);
       } else return;
       $('[data-hecho] .aviso-texto').append(enlace);
       // Que recargar la página no repita el aviso
@@ -119,7 +126,12 @@
       $('#t-espera').textContent = `En espera · ${lista.length}`;
       $('[data-orden]').textContent = renov ? 'primero quien vence antes' : 'primero quien más espera';
       const modo = $('[data-modo-grupo]');
-      modo.hidden = !modoGrupo;
+      modo.hidden = !modoGrupo && !noRecibe;
+      if (!modoGrupo && noRecibe) {
+        APD.pintaAviso(modo, 'info', `«${noRecibe.calculado}» ya no recibe personas`,
+          `Su situación es «${noRecibe.situacion.texto}»${noRecibe.lugar <= 0 ? ' y está lleno' : ''}. Abajo está la espera del curso, para agregarlas a otro grupo.`);
+        $('.aviso-texto', modo).append(el('p', {}, [el('a', { href: `grupo.html?folio=${encodeURIComponent(noRecibe.g.folio)}`, texto: 'Ver la ficha del grupo' })]));
+      }
       if (modoGrupo) {
         const volver = el('a', { href: `grupos.html?curso=${clave}`, texto: 'Ver toda la espera del curso' });
         APD.pintaAviso(modo, 'info', `Agregando personas a «${modoGrupo.calculado}»`,
@@ -159,7 +171,9 @@
         return bloque;
       });
       $('[data-personas]').replaceChildren(...(bloques.length ? bloques : [el('p', { class: 'texto-gris', texto: soloOrg ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
-      for (const f of filas) f.k.addEventListener('change', pintaEleccion);
+      const guardadas = elegidasDe.get(clave) || new Set();
+      for (const f of filas) { if (guardadas.has(f.x.s.folio)) f.k.checked = true; f.k.addEventListener('change', pintaEleccion); }
+      for (const b of $('[data-personas]').querySelectorAll('.plan-bloque')) b.dispatchEvent(new Event('change'));
 
       const barra = $('[data-barra]');
       barra.hidden = !filas.length;
@@ -167,6 +181,7 @@
       error.hidden = true;
       const elegidas = () => filas.filter((f) => f.k.checked);
       function pintaEleccion() {
+        elegidasDe.set(clave, new Set(elegidas().map((f) => f.x.s.folio)));
         const n = elegidas().length;
         $('[data-elegidas]').textContent = n ? plural(n, 'elegida', 'elegidas') : 'Ninguna elegida';
         if (n) { error.hidden = true; for (const x of document.querySelectorAll('.falta-marcar')) x.classList.remove('falta-marcar'); }
@@ -283,9 +298,13 @@
       const fin = APD.ultimoDia(datos, g);
       const situacion = dia ? estado(dia.texto, 'marcha') : estado(x.situacion.texto, x.situacion.tono);
       const examen = !g.fecha_inicio ? null : c.dias_duracion > 1 ? `examen el ${APD.diaSemana(fin)} ${fecha(fin).slice(0, 5)} en el PILARES` : 'examen ese día en el PILARES';
+      // Un grupo por confirmar lleno ya no recibe, pero se confirma y se le elige semana como cualquiera (auditoría
+      // «intentar romperlo», F3 M3): el cupo y esas acciones van con «por confirmar»; sólo «Completar» pide lugar
+      const integra = g.estado === 'en_integracion';
+      const conCupo = x.recibe || integra;
       const datosLinea = APD.meta([
         g.integracion === 'especifico' ? 'De una organización' : 'Combinado',
-        x.recibe ? null : plural(x.n, 'persona', 'personas'),
+        conCupo ? null : plural(x.n, 'persona', 'personas'),
         g.hora_entrada ? `entrada ${APD.hhmm(g.hora_entrada)}` : 'sin hora',
         g.instructor ? P.nombreInstructor(g.instructor) : 'sin instructor',
         examen
@@ -295,9 +314,9 @@
         el('p', { class: 'plan-grupo-datos' }, datosLinea)
       ];
       const acciones = [];
+      const falta = g.cupo_minimo - x.n;
+      if (conCupo) partes.push(cupo(x));
       if (x.recibe) {
-        const falta = g.cupo_minimo - x.n;
-        partes.push(cupo(x));
         const propia = g.integracion === 'especifico';
         const filtro = propia ? (y) => y.s.organizacion_id === g.organizacion_id : null;
         if (falta > 0) {
@@ -312,11 +331,11 @@
             acciones.push(b);
           }
         }
-        if (g.estado === 'en_integracion' && falta <= 0) acciones.push(botonConfirmar(x));
-        if (g.estado === 'en_integracion') {
-          acciones.push(el('a', { class: 'btn btn-secundario btn-chico', href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
-            texto: g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana' }));
-        }
+      }
+      if (integra && falta <= 0) acciones.push(botonConfirmar(x));
+      if (integra) {
+        acciones.push(el('a', { class: 'btn btn-secundario btn-chico', href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
+          texto: g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana' }));
       }
       acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado}`, texto: 'Ver a las personas' }));
       partes.push(el('div', { class: 'plan-grupo-acciones' }, acciones));
@@ -333,7 +352,7 @@
         el('div', { class: 'plan-cupo-barra', 'aria-hidden': 'true' }, celdas),
         el('p', { class: 'plan-cupo-texto' }, falta > 0
           ? [document.createTextNode(`${x.n} de ${g.cupo_maximo} · `), el('strong', { texto: `${falta === 1 ? 'falta 1' : `faltan ${falta}`} para confirmarlo` }), document.createTextNode(` (mínimo ${g.cupo_minimo})`)]
-          : [document.createTextNode(`${x.n} de ${g.cupo_maximo} · ${x.lugar === 1 ? 'cabe 1 más' : `caben ${x.lugar} más`}${hasta}`)])
+          : [document.createTextNode(`${x.n} de ${g.cupo_maximo} · ${x.lugar <= 0 ? 'lleno' : x.lugar === 1 ? `cabe 1 más${hasta}` : `caben ${x.lugar} más${hasta}`}`)])
       ]);
     }
 

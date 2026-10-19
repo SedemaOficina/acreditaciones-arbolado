@@ -47,6 +47,35 @@
   };
   let abierta = null;
 
+  /* ----- Aviso de que algo cambió en lo guardado (auditoría «intentar romperlo», F2 B1) -----
+     localStorage avisa solo a las otras pestañas (evento storage); IndexedDB no. Cada escritura en IndexedDB de la prueba
+     lo dice por un canal del mismo origen, y alCambiar(fn) junta las dos señales y la vuelta a la pestaña (foco), para
+     que una pantalla abierta (la agenda de citas, el cotejo que se retoma) vuelva a leer lo de ahora. En la etapa 3 la
+     pantalla consulta la API al volver el foco o cada minuto. */
+  let canal = null;
+  try { canal = typeof global.BroadcastChannel === 'function' ? new global.BroadcastChannel('apd-prueba') : null; } catch (e) { canal = null; }
+  function avisaCambio() { try { if (canal) canal.postMessage('cambio'); } catch (e) { /* sin canal: queda el foco */ } }
+  const despuesDe = (promesa) => promesa.then((r) => { avisaCambio(); return r; });
+  function alCambiar(fn) {
+    let t = 0;
+    const programa = () => { clearTimeout(t); t = setTimeout(fn, 150); };
+    if (canal) canal.addEventListener('message', programa);
+    global.addEventListener('storage', (e) => {
+      if (!e.key || (e.key.startsWith('apd.') && !e.key.startsWith(CLAVES.latido) && e.key !== CLAVES.ultimoUso)) programa();
+    });
+    global.addEventListener('focus', programa);
+    global.document.addEventListener('visibilitychange', () => { if (global.document.visibilityState === 'visible') programa(); });
+  }
+
+  /* Las preguntas del banco ficticio vigente (datos/examen-ficticio.js), sin la clave de respuestas: un examen guardado con
+     otro banco (preguntas que ya no existen) se ignora en la mezcla igual que en el servidor simulado del examen, también
+     en las pantallas que no cargan el banco (auditoría «intentar romperlo», F4 M5). probar-examen comprueba que esta
+     lista sea la del banco. */
+  const PREGUNTAS_BANCO = ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10'];
+  const preguntasBanco = () => (global.APD_EXAMEN_BANCO && Array.isArray(global.APD_EXAMEN_BANCO.reactivos)
+    ? global.APD_EXAMEN_BANCO.reactivos.map((r) => r.clave) : PREGUNTAS_BANCO);
+  const delBanco = (r) => Array.isArray(r.preguntas) && r.preguntas.length > 0 && r.preguntas.every((k) => preguntasBanco().includes(k));
+
   function abre() {
     if (abierta) return abierta;
     abierta = new Promise((ok, mal) => {
@@ -97,7 +126,7 @@
   function clavesLs(prefijo) { try { return Object.keys(global.localStorage).filter((k) => k.startsWith(prefijo)); } catch (e) { return []; } }
   function codigosExamen() {
     const lista = [];
-    for (const k of clavesLs(CLAVES.examen)) { const r = leeLs(k, null); if (r && r.inscripcion_id) lista.push(r); }
+    for (const k of clavesLs(CLAVES.examen)) { const r = leeLs(k, null); if (r && r.inscripcion_id && delBanco(r)) lista.push(r); }
     return lista;
   }
 
@@ -108,7 +137,7 @@
   function guardaEnvio(solicitud, archivos) {
     const ahora = new Date().toISOString();
     const envio = Object.assign({}, solicitud, { guardada_en: ahora });
-    return cambia(SOLS, solicitud.folio, (previo) => {
+    return despuesDe(cambia(SOLS, solicitud.folio, (previo) => {
       const envios = previo ? (previo.envios || [Object.assign({}, previo, { envios: undefined })]) : [];
       return Object.assign({}, previo && envios[0] ? envios[0] : envio, { folio: solicitud.folio, envios: envios.concat([envio]), guardada_en: ahora });
     }).then(() => tx(DOCS, 'readwrite', (s) => {
@@ -116,22 +145,37 @@
         s.put({ clave: `${solicitud.folio}|${a.requisito}|${ahora}`, folio: solicitud.folio, requisito: a.requisito, blob: a.blob, envio: true,
           nombre_original: a.nombre, tipo_mime: a.tipo, tamano_bytes: a.size, cargado_en: ahora });
       }
-    }));
+    })));
   }
   /* Un documento suelto, con historial (no sustituye la carga anterior en el almacén): la corrección de un documento
      que no coincidió en el cotejo, o la factura que carga el personal. extra: { en, estado, cargado_por, motivo } */
   function guardaDocumento(folio, requisito, a, extra) {
     const { en, ...resto } = extra || {};
     const ahora = en || new Date().toISOString();
-    return tx(DOCS, 'readwrite', (s) => s.put(Object.assign({ clave: `${folio}|${requisito}|${ahora}`, folio, requisito, blob: a.blob,
-      nombre_original: a.nombre, tipo_mime: a.tipo, tamano_bytes: a.size, cargado_en: ahora }, resto)));
+    return despuesDe(tx(DOCS, 'readwrite', (s) => s.put(Object.assign({ clave: `${folio}|${requisito}|${ahora}`, folio, requisito, blob: a.blob,
+      nombre_original: a.nombre, tipo_mime: a.tipo, tamano_bytes: a.size, cargado_en: ahora }, resto))));
   }
   function solicitudes() { return tx(SOLS, 'readonly', (s) => s.getAll()).catch(() => []); }
   function todosLosDocumentos() { return tx(DOCS, 'readonly', (s) => s.getAll()).catch(() => []); }
+  /* Los documentos de un folio, por el índice «folio» (lo usa el borrador de la solicitud: «borrador:<persona>:<folio>») */
+  function documentos(folio) { return tx(DOCS, 'readonly', (s) => s.index('folio').getAll(folio)).then((r) => r || []).catch(() => []); }
+  /* Borra los documentos de un folio: «Empezar de nuevo» y el envío borran los del borrador (auditoría «intentar
+     romperlo», F1 7 y F4 M6: se quedaban en este navegador y el menú los contaba como «cargados aparte») */
+  function borraDocumentos(folio) {
+    return despuesDe(abre().then((db) => new Promise((ok, mal) => {
+      const t = db.transaction(DOCS, 'readwrite');
+      const s = t.objectStore(DOCS);
+      const q = s.index('folio').getAllKeys(folio);
+      q.onsuccess = () => { for (const k of q.result || []) s.delete(k); };
+      t.oncomplete = () => ok();
+      t.onerror = () => mal(t.error);
+      t.onabort = () => mal(t.error);
+    })));
+  }
 
   /* ----- Fotografía de la persona: { blob, nombre, tipo } por CURP ----- */
   function guardaFoto(curp, a) {
-    return tx(FOTOS, 'readwrite', (s) => s.put({ curp, blob: a.blob, nombre_original: a.nombre, tipo_mime: a.tipo, cargada_en: new Date().toISOString() }));
+    return despuesDe(tx(FOTOS, 'readwrite', (s) => s.put({ curp, blob: a.blob, nombre_original: a.nombre, tipo_mime: a.tipo, cargada_en: new Date().toISOString() })));
   }
   function foto(curp) { return curp ? tx(FOTOS, 'readonly', (s) => s.get(curp)).catch(() => null) : Promise.resolve(null); }
   function fotos() { return tx(FOTOS, 'readonly', (s) => s.count()).catch(() => 0); }
@@ -144,12 +188,12 @@
      de un documento deja la anterior como no vigente y conserva si estaba publicado; el archivo no se modifica. */
   function guardaMaterial(registro) {
     const ahora = new Date().toISOString();
-    if (registro.blob) return tx(MATERIAL, 'readwrite', (s) => s.put(Object.assign({ guardado_en: ahora }, registro)));
+    if (registro.blob) return despuesDe(tx(MATERIAL, 'readwrite', (s) => s.put(Object.assign({ guardado_en: ahora }, registro))));
     const { id, ...cambios } = registro;
-    return cambia(MATERIAL, id, (previo) => {
+    return despuesDe(cambia(MATERIAL, id, (previo) => {
       if (previo && previo.blob) return Object.assign({}, previo, { cambios: Object.assign({}, previo.cambios, cambios) });
       return Object.assign({ guardado_en: ahora }, previo, cambios, { id });
-    });
+    }));
   }
   function materiales() { return tx(MATERIAL, 'readonly', (s) => s.getAll()).catch(() => []); }
   const urls = {};
@@ -164,7 +208,9 @@
         const i = filas.findIndex((m) => m.id === r.id);
         if (i >= 0 && !blob) { filas[i] = Object.assign({}, filas[i], campos); continue; }
         // Un cambio sin su documento (lo dejó así una versión anterior de la prueba, que sustituía el registro): no se aplica
-        if (!blob || !campos.clave) continue;
+        // Una carga incompleta (de una versión anterior de la prueba, sin páginas ni nombre de archivo) tampoco: se veía
+        // «undefined páginas» (auditoría «intentar romperlo», F4 B7). La base exige los dos (apd.material_estudio).
+        if (!blob || !campos.clave || !(Number(campos.paginas) > 0) || !campos.nombre_archivo) continue;
         // Carga nueva: sustituye a la vigente del mismo documento y hereda si estaba publicada; después, sus cambios
         const previa = filas.find((m) => m.clave === r.clave && m.vigente);
         if (previa) { previa.vigente = false; campos.publicado = previa.publicado; }
@@ -187,7 +233,7 @@
      cuenta (auditoría 2026-10-18, A 8.3: quedaba una cuenta con la CURP vacía). */
   function guardaCuenta({ curp, id, persona, contrasena }) {
     if (!curp || !id) return Promise.reject(new Error('sin_curp'));
-    return resumen(contrasena).then((r) => tx(CUENTAS, 'readwrite', (s) => s.put({ curp, id, persona, resumen: r, creada_en: new Date().toISOString() })));
+    return despuesDe(resumen(contrasena).then((r) => tx(CUENTAS, 'readwrite', (s) => s.put({ curp, id, persona, resumen: r, creada_en: new Date().toISOString() }))));
   }
   function cuentas() { return tx(CUENTAS, 'readonly', (s) => s.getAll()).catch(() => []); }
   function cuenta(curp) { return curp ? tx(CUENTAS, 'readonly', (s) => s.get(curp)).catch(() => null) : Promise.resolve(null); }
@@ -241,19 +287,28 @@
     });
     return revisada;
   }
+  /* El borrador de una solicitud: «apd.borrador.solicitud.<persona>.<folio>» en localStorage (app/config-solicitud.js) y
+     sus archivos con folio «borrador:<persona>:<folio>» */
+  const BORRADOR_LS = 'apd.borrador.solicitud.';
+  const folioDeBorrador = (k) => { const r = k.slice(BORRADOR_LS.length); const i = r.lastIndexOf('.'); return `borrador:${r.slice(0, i)}:${r.slice(i + 1)}`; };
   /* Lo guardado, para el menú de pruebas: cuántos registros de cada cosa */
   function guardado() {
     const cuantos = (clave) => Object.values(leeLs(clave, {}) || {}).reduce((n, v) => n + (Array.isArray(v) ? v.length : 1), 0);
+    // Los archivos de un borrador de solicitud (folio «borrador:…») no son documentos cargados aparte: se cuentan como
+    // borradores (auditoría «intentar romperlo», F4 M6)
+    const deBorrador = (x) => String(x.folio || '').startsWith('borrador:');
     return Promise.all([solicitudes(), fotos(), cuentas(), todosLosDocumentos(), materiales()]).then(([s, f, c, docs, mat]) => ({
       cuentas: c.length, fotos: f,
       envios: s.reduce((n, x) => n + ((x.envios || []).length || 1), 0),
-      documentos: docs.filter((x) => !x.envio && String(x.clave).split('|').length > 2).length,
+      documentos: docs.filter((x) => !x.envio && !deBorrador(x) && String(x.clave).split('|').length > 2).length,
+      borradores: new Set(docs.filter(deBorrador).map((x) => x.folio).concat(clavesLs(BORRADOR_LS).map(folioDeBorrador))).size,
+      borradorArchivos: docs.filter(deBorrador).length,
       perfiles: Object.keys(leePerfiles()).length,
       material: mat.length,
       revisiones: cuantos(CLAVES.revisiones), cotejos: cuantos(CLAVES.cotejos), grupos: eventosGrupos().length,
       lista: Object.keys(paseDeLista()).length, examenes: clavesLs(CLAVES.examen).length,
       // Cualquier otra clave de la prueba (por ejemplo, una señal de pantalla abierta del examen)
-      otras: clavesLs('apd.').filter((k) => ![CLAVES.sesion, CLAVES.ultimoUso, CLAVES.inicio].includes(k)).length
+      otras: clavesLs('apd.').filter((k) => ![CLAVES.sesion, CLAVES.ultimoUso, CLAVES.inicio].includes(k) && !k.startsWith(BORRADOR_LS)).length
     }));
   }
 
@@ -449,7 +504,8 @@
       if (!listaCuentas.length && !folios.length && !Object.keys(perfiles).length && !eventosGrupo.length) return datos;
       const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice(),
         revision: datos.revision.slice(), fotografia: datos.fotografia.slice(), cita: (datos.cita || []).slice(),
-        grupo: datos.grupo.slice(), inscripcion: datos.inscripcion.slice(), asistencia: datos.asistencia.slice(), examen: (datos.examen || []).slice() });
+        grupo: datos.grupo.slice(), inscripcion: datos.inscripcion.slice(), asistencia: datos.asistencia.slice(), examen: (datos.examen || []).slice(),
+        carrera: (datos.carrera || []).slice() });
       const t = reloj(datos);
       const { alCorte, mayor } = t;
       // Cuentas: una del registro anterior queda activa; una nueva se agrega como persona de la prueba (la cuenta se
@@ -466,6 +522,27 @@
       const persona = (id) => d.solicitante.findIndex((x) => x.id === id);
       const cambiaPersona = (id, cambios) => { const i = persona(id); if (i >= 0) d.solicitante[i] = Object.assign({}, d.solicitante[i], cambios); };
       const citaEn = (fecha, hora) => `${fecha}T${hora || '09:00'}:00-06:00`;
+      const hoy = datos.fecha_corte || global.APD.hoy(datos);
+      const momentoDe = (k) => ((d.requisito || []).find((r) => r.clave === k) || {}).momento;
+      /* Perfil del dictaminador y experiencia mínima de una solicitud, con el catálogo de carreras de ahora (el de la base,
+         con lo que el personal clasificó en la prueba) */
+      const conPerfil = (x) => {
+        if (x.tipo_acreditacion !== 'dictaminador') return x;
+        const pf = global.APD.perfilAcademico(d, x.nivel_estudios, x.estatus_estudios, x.carrera);
+        return Object.assign({}, x, { perfil_academico: pf ? pf.perfil : null, experiencia_minima: pf ? pf.minimo : null });
+      };
+      /* La clasificación de una carrera en la revisión (P62) queda en el catálogo (apd.carrera.grupo) y la base recalcula el
+         perfil de las solicitudes abiertas con esa carrera (apd.carrera_clasificada; auditoría «intentar romperlo», F2 M3) */
+      const ABIERTAS = ['borrador', 'enviada', 'con_observaciones'];
+      function clasifica(carrera, grupo) {
+        const norm = global.APD_PERFIL_ACADEMICO.normaliza;
+        const n = norm(carrera);
+        if (!n || !['afin', 'disciplina_afin', 'no_afin'].includes(grupo)) return;
+        const i = d.carrera.findIndex((x) => x.nombre_normalizado === n);
+        if (i >= 0) d.carrera[i] = Object.assign({}, d.carrera[i], { grupo });
+        else d.carrera.push({ id: `prueba-carrera:${n}`, nombre: String(carrera).trim(), nombre_normalizado: n, grupo, activa: true, es_ficticio: true, de_prueba: true });
+        d.solicitud = d.solicitud.map((x) => (x.tipo_acreditacion === 'dictaminador' && ABIERTAS.includes(x.estado) && norm(x.carrera) === n ? conPerfil(x) : x));
+      }
       const nombreReq = (k) => ((d.requisito || []).find((r) => r.clave === k) || {}).nombre || k;
 
       for (const folio of folios) {
@@ -478,7 +555,7 @@
           // Solicitud nueva de la prueba: entra enviada (su primer envío); un reenvío posterior es otro evento «envio»
           let p = d.solicitante.find((x) => x.id === primero.persona.id) || d.solicitante.find((x) => x.curp === primero.persona.curp);
           if (!p) { p = Object.assign({ id: `prueba:${primero.persona.curp || primero.folio}`, estado: 'activa', de_prueba: true }, primero.persona); d.solicitante.push(p); }
-          const perfil = primero.tipo_acreditacion === 'dictaminador' ? global.APD.perfilAcademico(datos, primero.nivel_estudios, primero.estatus_estudios, primero.carrera) : null;
+          const perfil = primero.tipo_acreditacion === 'dictaminador' ? global.APD.perfilAcademico(d, primero.nivel_estudios, primero.estatus_estudios, primero.carrera) : null;
           const enviada = alCorte(primero.enviada_en);
           d.solicitud.push({ id: `prueba:${primero.folio}`, folio: primero.folio, solicitante_id: p.id, estado: 'enviada', estado_desde: enviada,
             enviada_en: enviada, creada_en: enviada, tipo_acreditacion: primero.tipo_acreditacion, modalidad: primero.modalidad,
@@ -519,14 +596,23 @@
               cargado_en: en, cargado_real: a.cargado_en, cargado_por: a.cargado_por || 'persona', motivo: a.motivo || null,
               nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob, de_prueba: true });
           } else if (e.tipo === 'envio') {
-            // Envío o reenvío: vuelve a revisión documental
-            pon({ estado: 'enviada', estado_desde: fecha(e.r.estado_desde || e.en), de_prueba: true, cotejo_pausa: null });
+            // Envío o reenvío: vuelve a revisión documental con lo que la persona corrigió (estudios, experiencia) y la
+            // adscripción que tiene hoy en «Mi perfil», como la base al pasar a «enviada»; en dictaminador se recalculan el
+            // perfil y la experiencia mínima (decisión 2026-10-16, opción C; auditoría «intentar romperlo», F1 5). Sólo lo
+            // que el envío trae: un envío sin un campo no lo borra.
+            const env = e.r || {};
+            const corregido = {};
+            for (const k of ['nivel_estudios', 'carrera', 'carrera_tecnica', 'estatus_estudios', 'anios_experiencia']) if (k in env) corregido[k] = env[k];
+            const pe = env.persona || {};
+            if (pe.adscripcion) Object.assign(corregido, { adscripcion: pe.adscripcion, organizacion_id: pe.organizacion_id || null, organizacion_nombre: pe.organizacion_nombre || '' });
+            pon(Object.assign(conPerfil(Object.assign({}, s, corregido)), { estado: 'enviada', estado_desde: fecha(env.estado_desde || e.en), de_prueba: true, cotejo_pausa: null }));
           } else if (e.tipo === 'revision') {
             // Revisión del personal: la persona ve el resultado en «Mis trámites» como lo dejaría la base
             const rev = e.rev;
             const rd = rev.datos || {};
             const RESULTADO = { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' };
             if (s.estado !== 'enviada' || !RESULTADO[rev.resultado]) continue;
+            if (rd.clasificacion && s.perfil_academico === 'por_clasificar') { clasifica(s.carrera, rd.clasificacion); s = d.solicitud[i]; }
             const en = fecha(rev.en);
             d.revision.push({ solicitud_id: id, revisor: rev.revisor, resultado: rev.resultado, revisada_en: en, observacion_general: rd.mensaje_general || rd.motivo_rechazo || '', de_prueba: true });
             for (const x of docsVigentes()) {
@@ -555,8 +641,20 @@
           const cd = c.datos || {};
           const abierta = d.cita.findIndex((x) => x.solicitud_id === id && ['pendiente', 'en_pausa'].includes(x.resultado));
           const programada = abierta >= 0 ? d.cita[abierta].programada_en : c.cita_en;
-          const en = fecha(c.en, programada);
+          // Lo que pasó en una cita se registra su día, no antes (la base: cita_futura; auditoría «intentar romperlo», F2
+          // A6). Sólo la prueba atiende una cita futura «como si fuera su día», marcada simulada (la fecha no avanza).
+          if (global.APD.diaDe(programada) > hoy && !c.simulada) return;
           const noCoinciden = Object.keys(cd).filter((k) => k.startsWith('coincide_') && cd[k] === 'no').map((k) => k.slice(9));
+          if (c.resultado === 'terminado') {
+            // Terminar el cotejo exige que todos los documentos coincidan (la base: documentos_sin_cotejar). Al retomar una
+            // pausa, el que no coincidió sólo cuenta si la persona cargó otro después (F2 A7); lo cotejado queda aceptado.
+            if (noCoinciden.length) return;
+            const pausa = s.cotejo_pausa;
+            if (pausa && (pausa.docs || []).some((k) => !docsVigentes().some((x) => x.requisito === k && global.APD.cargadoTras(x, pausa)))) return;
+            for (const k of Object.keys(cd).filter((x) => x.startsWith('coincide_') && cd[x] === 'si').map((x) => x.slice(9))) marcaDoc(k, { estado: 'aceptado' });
+            if (docsVigentes().some((x) => momentoDe(x.requisito) === 'en_linea' && x.estado !== 'aceptado')) return;
+          }
+          const en = fecha(c.en, programada);
           // La observación de la cita (C 3.1): lo que no coincidió, documento por documento; la base la exige en una cita
           // en pausa, con observaciones o de otra persona (cita_observacion_ck) y la usa como motivo («Cotejo: …»)
           const observacion = [cd.nota_identidad, ...noCoinciden.map((k) => `${nombreReq(k)}: ${String(cd[`diferencia_${k}`] || '').trim()}`)]
@@ -624,9 +722,12 @@
     });
   }
 
+  /* Una fecha y hora real, en el día simulado de la prueba (el acuse de la solicitud: F4 M7) */
+  function alCorte(datos, iso) { return datos && datos.fecha_corte ? reloj(datos).alCorte(iso) : iso; }
+
   global.APD_ARCHIVOS_PRUEBA = {
-    CLAVES, caduca, comoLista, listaPorFolio, eventosGrupos,
-    guardaEnvio, guardaDocumento, guardaFoto, foto,
+    CLAVES, caduca, comoLista, listaPorFolio, eventosGrupos, alCambiar, avisaCambio, alCorte, PREGUNTAS_BANCO,
+    guardaEnvio, guardaDocumento, documentos, borraDocumentos, guardaFoto, foto,
     guardaCuenta, cuenta, contrasenaValida, guardaPerfil, borraTodo, borraPestana, guardado, mezcla,
     guardaMaterial, mezclaMaterial
   };

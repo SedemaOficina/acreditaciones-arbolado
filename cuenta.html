@@ -83,7 +83,7 @@
       <label class="etiqueta" for="fecha_nacimiento">Fecha de nacimiento</label>
       <p class="ayuda" id="ay-fecha_nacimiento">Escribe día, mes y año; las diagonales se ponen solas. Ejemplo: 23/07/1985</p>
       <!-- Se escribe, sin calendario (decisión 2026-10-16): formato fecha-dma del estándar, con escritura guiada que pasa sola al mes y al año. El placeholder sólo recuerda el orden; la etiqueta y la ayuda van aparte. -->
-      <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="bday" aria-describedby="ay-fecha_nacimiento">
+      <input class="control control-corto" id="fecha_nacimiento" name="fecha_nacimiento" type="text" inputmode="numeric" maxlength="14" placeholder="dd/mm/aaaa" autocomplete="bday" aria-describedby="ay-fecha_nacimiento">
     </div>
 
     <!-- Tres validaciones cruzadas del estándar: la fecha escrita como día/mes/año (curp-fecha-dma), el nombre y
@@ -95,7 +95,7 @@
       <label class="etiqueta" for="curp">CURP</label>
       <p class="ayuda">18 caracteres. Si no la tienes a la mano, <a href="https://www.gob.mx/curp/" target="_blank" rel="noopener">consúltala en gob.mx<span class="solo-lector"> (se abre en otra pestaña)</span></a>.</p>
       <!-- autocomplete off: el navegador no tiene un valor de autocompletado para la CURP; se escribe cada vez. -->
-      <input class="control" id="curp" name="curp" type="text" maxlength="18" autocomplete="off" spellcheck="false">
+      <input class="control" id="curp" name="curp" type="text" maxlength="24" autocomplete="off" spellcheck="false">
     </div>
     </div>
 

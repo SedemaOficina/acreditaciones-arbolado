@@ -17,7 +17,9 @@
   const nuevaPestana = () => el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' });
 
   /* «34 - Capítulo 3. Poda de árboles (sólo dictaminador)» ↔ { pagina: 34, titulo, tipo_acreditacion } */
-  const RENGLON = /^\s*(\d{1,4})\s*[-–—·|]\s*(.+?)\s*(\((?:s[oó]lo\s+)?dictaminador\))?\s*$/i;
+  // La página, con cualquier número de cifras: el rango lo revisa la comprobación de páginas (auditoría «intentar
+  // romperlo», F4 B5: «12345 - Lejos» decía que no empezaba con la página)
+  const RENGLON = /^\s*(\d+)\s*[-–—·|]\s*(.+?)\s*(\((?:s[oó]lo\s+)?dictaminador\))?\s*$/i;
   const temasATexto = (temas) => (temas || []).map((t) => `${t.pagina} - ${t.titulo}${t.tipo_acreditacion === 'dictaminador' ? ' (sólo dictaminador)' : ''}`).join('\n');
   function textoATemas(texto, paginas) {
     const temas = [];
@@ -27,6 +29,9 @@
       if (!m) return { error: `El renglón ${i + 1} no empieza con la página y un guion: «${r.slice(0, 40)}».` };
       const pagina = Number(m[1]);
       if (paginas && (pagina < 1 || pagina > paginas)) return { error: `El renglón ${i + 1} cita la página ${pagina}, pero el documento tiene ${paginas} páginas.` };
+      // Un apartado repetido (misma página y mismo título) se avisa: la página pública lo mostraba varias veces (F4 B4)
+      const igual = temas.findIndex((t) => t.pagina === pagina && APD.normalizaBusqueda(t.titulo) === APD.normalizaBusqueda(m[2]));
+      if (igual >= 0) return { error: `El renglón ${i + 1} repite el apartado del renglón ${igual + 1}: «${pagina} - ${m[2]}».` };
       temas.push(Object.assign({ titulo: m[2], pagina }, m[3] ? { tipo_acreditacion: 'dictaminador' } : {}));
     }
     return { temas };
@@ -52,6 +57,11 @@
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'material');
     const maximo = Number(APD.parametro(datos, 'tamano_maximo_material_bytes')) || 31457280;
+    // El máximo por archivo y el total del campo, del parámetro (un solo archivo): sin el total, el estándar aplicaba sus
+    // 25 MB y un PDF de 26 a 30 MB se rechazaba (auditoría «intentar romperlo», F4 A7)
+    const campoArchivo = form.querySelector('[data-campo="archivo"]');
+    campoArchivo.dataset.mb = String(maximo / 1048576);
+    campoArchivo.dataset.totalMb = String(maximo / 1048576);
     // La prueba vive en la fecha simulada (fecha_corte): lo hecho hoy se registra ese día, a la hora real
     const ahora = () => `${datos.fecha_corte}T${new Date().toLocaleTimeString('en-GB', { timeZone: 'America/Mexico_City', hour12: false })}-06:00`;
     $('[data-maximo]').textContent = APD.tamano(maximo);
@@ -183,6 +193,12 @@
           const base = modo === 'reemplazar' ? actual : null;
           let temas = base ? base.temas : [];
           if (!base) { const t = textoATemas(d.temas, paginas); if (t.error) return falla('temas', t.error); temas = t.temas; }
+          // Al reemplazar, los apartados que ya tenía deben caber en el archivo nuevo: un apartado en una página que ya no
+          // existe llevaría a «#page=» de nada (F4 M4)
+          if (base) {
+            const t = textoATemas(temasATexto(base.temas), paginas);
+            if (t.error) return falla('archivo', `El archivo nuevo tiene ${paginas === 1 ? '1 página' : `${paginas} páginas`} y no le caben los apartados de «Qué estudiar»: ${t.error.charAt(0).toLocaleLowerCase('es-MX')}${t.error.slice(1)} Corríjalos primero en «Editar datos» o elija otro archivo.`);
+          }
           const registro = {
             id, clave: base ? base.clave : claveDe(d.titulo, vigentes.map((m) => m.clave)),
             titulo: base ? base.titulo : d.titulo.trim(), edicion: base ? base.edicion : d.edicion.trim(), descripcion: base ? base.descripcion : d.descripcion.trim(),

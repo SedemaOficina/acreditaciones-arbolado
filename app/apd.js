@@ -290,12 +290,20 @@
   /* «Documento: observación» sin repetir el documento y con minúscula después de los dos puntos (D11): «Constancia de
      situación fiscal: La constancia de situación fiscal no está actualizada» → «Constancia de situación fiscal: no está
      actualizada». Una sigla al inicio («CURP …») se respeta. */
+  /* Sólo se pasa a minúscula una palabra común al inicio de una frase (artículo, verbo, adverbio); un nombre propio
+     («Juárez no es tu alcaldía…») se queda como lo escribió el personal (auditoría «intentar romperlo», F2 B3). */
+  const INICIOS_COMUNES = new Set(['el', 'la', 'los', 'las', 'lo', 'un', 'una', 'unos', 'unas', 'no', 'se', 'si', 'sí', 'es', 'está', 'están',
+    'esta', 'este', 'estos', 'estas', 'ese', 'esa', 'su', 'sus', 'tu', 'tus', 'le', 'les', 'hay', 'falta', 'faltan', 'tiene', 'tienen',
+    'debe', 'deben', 'corresponde', 'aparece', 'aparecen', 'viene', 'vienen', 'muestra', 'dice', 'trae', 'carga', 'cargaste', 'sube',
+    'corrige', 'revisa', 'vuelve', 'envía', 'agrega', 'incluye', 'por', 'para', 'con', 'sin', 'de', 'del', 'en', 'al', 'ya', 'solo',
+    'sólo', 'pertenece', 'presenta', 'presentaste', 'necesita', 'necesitas', 'puede', 'puedes', 'fue', 'son', 'era', 'parece']);
   function observacionDe(nombreDoc, texto) {
     let t = paraTi(texto);
     const n = normaliza(nombreDoc);
     const sin = t.match(/^(?:el|la|los|las)\s+(.*)$/i);
     if (sin && n && normaliza(sin[1]).startsWith(`${n} `)) t = sin[1].slice(nombreDoc.length).trim();
-    if (/^\p{Lu}\p{Ll}/u.test(t)) t = t.charAt(0).toLocaleLowerCase('es-MX') + t.slice(1);
+    const primera = (t.match(/^\p{L}+/u) || [''])[0];
+    if (/^\p{Lu}\p{Ll}/u.test(t) && INICIOS_COMUNES.has(primera.toLocaleLowerCase('es-MX'))) t = t.charAt(0).toLocaleLowerCase('es-MX') + t.slice(1);
     return t ? `${nombreDoc}: ${t}` : nombreDoc;
   }
 
@@ -590,7 +598,144 @@
     ]);
   }
 
+  /* ===== Lo que el proyecto rodea del estándar 1.4.1 (auditoría «intentar romperlo», 18/10/2026) =====
+     Cada pieza dice qué hallazgo atiende; el arreglo de fondo queda pedido al estándar. */
+
+  /* ----- Lo que se pega o pone el autocompletado, antes de la escritura guiada y del maxlength (F2 A1, B2, M2; F1 11) -----
+     La escritura guiada de «fecha-dma» corre en cada «input» con el cursor al final, también al pegar: «2026-10-20» se
+     volvía 20/02/6102. Y el maxlength corta lo pegado antes de que el formato quite espacios y guiones («MUPA 800101 AB1»
+     quedaba en MUPA800101A; una CURP con un espacio perdía su último carácter). Aquí, en la fase de captura (antes que el
+     estándar), lo pegado se limpia como lo haría su formato y la fecha AAAA-MM-DD, con espacios o con guiones, se vuelve
+     dd/mm/aaaa. El largo lo revisa la validación del formato, ya con el texto limpio. */
+  const dos = (n) => String(n).padStart(2, '0');
+  function fechaPegada(texto) {
+    const t = String(texto || '').trim();
+    let m = t.match(/^(\d{4})\s*[-/.\s]\s*(\d{1,2})\s*[-/.\s]\s*(\d{1,2})$/);
+    if (m) return `${dos(m[3])}/${dos(m[2])}/${m[1]}`;
+    m = t.match(/^(\d{1,2})\s*[-/.\s]\s*(\d{1,2})\s*[-/.\s]\s*(\d{4})$/);
+    if (m) return `${dos(m[1])}/${dos(m[2])}/${m[3]}`;
+    return t.replace(/\s+/g, '');
+  }
+  const PEGADO = {
+    'fecha-dma': fechaPegada,
+    curp: (t) => String(t).replace(/\s+/g, ''),
+    rfc: (t) => String(t).replace(/[\s-]+/g, ''),
+    'folio-fiscal': (t) => String(t).replace(/\s+/g, ''),
+    'numero-acreditacion': (t) => String(t).trim()
+  };
+  const formatoDe = (c) => { const campo = c && c.closest && c.closest('[data-campo][data-formato]'); return campo ? campo.dataset.formato : ''; };
+  document.addEventListener('paste', (e) => {
+    const c = e.target;
+    if (!(c instanceof global.HTMLInputElement)) return;
+    const f = PEGADO[formatoDe(c)];
+    const texto = e.clipboardData ? e.clipboardData.getData('text') : null;
+    if (!f || texto == null) return;
+    e.preventDefault();
+    const ini = c.selectionStart == null ? c.value.length : c.selectionStart;
+    const fin = c.selectionEnd == null ? c.value.length : c.selectionEnd;
+    let v = c.value.slice(0, ini) + f(texto) + c.value.slice(fin);
+    if (formatoDe(c) === 'fecha-dma') v = fechaPegada(v);
+    c.value = v;
+    try { c.setSelectionRange(v.length, v.length); } catch (err) { /* control sin selección */ }
+    c.dispatchEvent(new global.InputEvent('input', { bubbles: true, inputType: 'insertFromPaste' }));
+    c.dispatchEvent(new Event('change', { bubbles: true }));
+  }, true);
+  // El autocompletado, el dictado o arrastrar texto ponen la fecha completa de una vez (a veces como AAAA-MM-DD o con
+  // espacios): se acomoda antes de la escritura guiada. El maxlength de estos campos deja lugar a los espacios.
+  document.addEventListener('input', (e) => {
+    const c = e.target;
+    if (!(c instanceof global.HTMLInputElement) || formatoDe(c) !== 'fecha-dma' || (e.inputType && e.inputType.startsWith('delete'))) return;
+    const deUnaVez = e.inputType && e.inputType.startsWith('insert') && e.inputType !== 'insertText' ? true : Boolean(e.data && e.data.length > 1);
+    if (deUnaVez || /^\s*\d{4}\s*[-/.]\s*\d{1,2}\s*[-/.]\s*\d{1,2}\s*$/.test(c.value)) {
+      const v = fechaPegada(c.value);
+      if (v !== c.value) { c.value = v; try { c.setSelectionRange(v.length, v.length); } catch (err) { /* sin selección */ } }
+    }
+  }, true);
+
+  /* ----- El foco después de cargar un archivo (F1 13) -----
+     El módulo «archivos» vuelve a pintar la lista cuando el archivo queda listo y quita el botón que tenía el foco (su
+     «Quitar»): el foco caía en <body> y el lector de pantalla perdía la posición. Si eso pasa, el foco vuelve al «Quitar»
+     del archivo recién cargado (o a «Elegir archivo» si ya no hay archivo). */
+  let ultimoFoco = null;
+  let ultimaZona = null;
+  document.addEventListener('focusin', (e) => { ultimoFoco = e.target; ultimaZona = e.target.closest ? e.target.closest('[data-archivos]') : null; });
+  function vigilaFocoArchivos(zona) {
+    new MutationObserver(() => setTimeout(() => {
+      const perdido = !document.activeElement || document.activeElement === document.body;
+      if (!perdido || ultimaZona !== zona || (ultimoFoco && ultimoFoco.isConnected && ultimoFoco.offsetParent !== null)) return;
+      const quitar = Array.from(zona.querySelectorAll('.arch-quitar')).pop();
+      const elegir = zona.querySelector('.zona-carga');
+      const destino = quitar || (elegir && elegir.offsetParent !== null ? elegir : null);
+      if (destino) destino.focus();
+    })).observe(zona, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-lleno', 'data-estado'] });
+  }
+
+  /* ----- PDF con contraseña (F1 8) -----
+     El módulo «archivos» sólo revisa la firma %PDF: un PDF protegido se aceptaba y el personal no lo podía abrir en la
+     revisión. Un PDF que trae /Encrypt (contraseña para abrirlo o para cambiarlo) se rechaza al cargarlo, con su mensaje
+     en la lista del campo; el envío simulado lo vuelve a revisar (la API deberá repetirlo en el servidor). */
+  function pdfConContrasena(blob) {
+    if (!blob || typeof blob.arrayBuffer !== 'function') return Promise.resolve(false);
+    return blob.arrayBuffer().then((b) => new TextDecoder('latin1').decode(new Uint8Array(b)).includes('/Encrypt')).catch(() => false);
+  }
+  const revisados = new WeakSet();
+  function vigilaContrasena(zona) {
+    const campo = zona.closest('[data-campo]');
+    if (!campo) return;
+    new MutationObserver(() => {
+      if (!global.FormKit || !global.FormKit.archivos) return;
+      const lista = global.FormKit.archivos.de(campo);
+      lista.forEach((a) => {
+        if (a.estado !== 'listo' || !a.blob || revisados.has(a.blob) || !/\.pdf$/i.test(a.nombre || '')) return;
+        revisados.add(a.blob);
+        pdfConContrasena(a.blob).then((protegido) => {
+          if (!protegido) return;
+          const i = global.FormKit.archivos.de(campo).indexOf(a);
+          const quitar = i >= 0 ? zona.querySelector(`[data-quitar="${i}"]`) : null;
+          if (quitar) quitar.click();
+          const M = (global.FormKit.config && global.FormKit.config.mensajes) || {};
+          const usted = Boolean(global.APD_MENSAJES_USTED);
+          const motivo = usted ? 'el PDF tiene contraseña o protección. Guárdelo sin protección (por ejemplo, imprímalo como PDF) y vuelva a cargarlo.'
+            : 'tu PDF tiene contraseña o protección. Guárdalo sin protección (por ejemplo, imprímelo como PDF) y vuelve a cargarlo.';
+          const dest = zona.querySelector('[data-rechazos]');
+          if (!dest) return;
+          const titulo = (M.archRechazoTitulo || 'No se agregó «{nombre}»:').replace('{nombre}', a.nombre);
+          dest.replaceChildren(el('p', { class: 'arch-rechazo', role: 'alert' }, [icono('error', 'icono icono-sm'), el('strong', { texto: titulo }), document.createTextNode(` ${motivo}`)]));
+        });
+      });
+    }).observe(zona.querySelector('.lista-arch') || zona, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-estado'] });
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    for (const zona of document.querySelectorAll('[data-archivos]')) { vigilaFocoArchivos(zona); vigilaContrasena(zona); }
+  });
+
+  /* ----- Formato de un combo libre (F1 12) -----
+     El tipo «combo» del estándar no aplica data-formato: con data-libre acepta cualquier texto («🌳🌳🌳»). Después de
+     FormKit.iniciar, la página pasa su contexto y el combo también revisa su formato, como un campo de texto. */
+  function formatoEnCombos(ctx) {
+    const t = ctx && ctx.tipos && ctx.tipos.get('combo');
+    if (!t || t.apdFormato) return;
+    const original = t.valida;
+    t.valida = (envoltura, v, a) => {
+      const m = original ? original(envoltura, v, a) : '';
+      const f = !m && envoltura.dataset.formato && ctx.cfg.formatos[envoltura.dataset.formato];
+      return m || (f ? f.valida(f.normaliza(v), a || {}, ctx.cfg) : '');
+    };
+    t.apdFormato = true;
+  }
+
+  /* Lo guardado cambió en otra pestaña o la pestaña volvió a tener el foco (versión de prueba: APD_ARCHIVOS_PRUEBA;
+     con la API, al volver el foco). F2 B1 y A7. */
+  function alCambiar(fn) {
+    if (global.APD_ARCHIVOS_PRUEBA && global.APD_ARCHIVOS_PRUEBA.alCambiar) return global.APD_ARCHIVOS_PRUEBA.alCambiar(fn);
+    global.addEventListener('focus', fn);
+    return undefined;
+  }
+  /* Los meses de anticipación máxima de una cita de cotejo (parámetro meses_adelanto_cita; F2 M4) */
+  const mesesCita = (datos) => parametro(datos, 'meses_adelanto_cita') || 6;
+
   global.APD = {
+    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,

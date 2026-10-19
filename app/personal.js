@@ -321,8 +321,14 @@
   /* Las que más esperan, hasta n lugares: por bloques completos, para que una organización no se separe; un bloque que no
      cabe se salta y sigue el siguiente. filtro (opcional) deja sólo a quien puede ir (un grupo de una organización). */
   function lasQueMasEsperan(lista, n, filtro) {
+    const candidatas = filtro ? lista.filter(filtro) : lista;
+    // En un grupo de una organización, o si todas las que esperan son de la misma, no hay a quién no separar: se toman
+    // una por una, en su orden (auditoría «intentar romperlo», F3 M4: un bloque de 13 no cabía en 2 lugares y no se
+    // proponía a nadie)
+    const orgs = new Set(candidatas.map((x) => x.s.organizacion_id || null));
+    if (filtro || (orgs.size === 1 && !orgs.has(null))) return candidatas.slice(0, Math.max(0, n));
     const elegidas = [];
-    for (const b of bloquesEspera(filtro ? lista.filter(filtro) : lista)) {
+    for (const b of bloquesEspera(candidatas)) {
       if (elegidas.length >= n) break;
       if (elegidas.length + b.xs.length <= n) elegidas.push(...b.xs);
     }

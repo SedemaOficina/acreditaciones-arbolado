@@ -72,7 +72,8 @@
     envioLimite: 'Por ahora no se pueden recibir más envíos desde este equipo. Lo que capturó no se perdió; intente más tarde.',
     descargaError: 'No se pudo preparar el archivo. Intente de nuevo.',
     archRechazoFirma: 'el contenido del archivo no corresponde a su extensión. Elija el archivo original.',
-    archRechazoPeso: 'pesa {peso} y el máximo es {mb} MB. Reduzca su tamaño o elija otro.',
+    // «pesa 30.0 MB y el máximo es 30 MB» parecía que sí cabía (redondeo del estándar; auditoría «intentar romperlo», F4 B6)
+    archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduzca su tamaño o elija otro.',
     archRechazoDuplicado: 'ya adjuntó ese mismo archivo.',
     archLleno: 'Ya adjuntó los {max} archivos. Para cambiar uno, quítelo.',
     archLlenoUno: 'Ya adjuntó el archivo. Para cambiarlo, quítelo.',

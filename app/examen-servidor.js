@@ -221,6 +221,13 @@
       const reg = alDia(t, codigo);
       if (!reg) return falla('codigo', 'Ese código no existe. Revisa que lo escribiste igual que en tu papel.', 'no_existe');
       if (reg.reemplazado_por) return falla('codigo', 'Ese código ya no sirve porque se te dio otro. Usa el código nuevo o pide ayuda a quien aplica el examen.', 'reemplazado');
+      // Un examen enviado sólo se vuelve a ver en la pantalla en que se presentó; en otra computadora el código ya no
+      // muestra el nombre ni la calificación a quien tenga el papel (código de un solo uso; auditoría «intentar romperlo»,
+      // F3 B11). La persona ve su calificación en «Mis trámites».
+      if (situacion(reg) === 'terminado') {
+        const l = leeLatido(codigo);
+        if (!equipo || !l || l.equipo !== equipo) return falla('codigo', 'Este examen ya se envió: el código ya no sirve. Tu calificación la ves en «Mis trámites».', 'terminado');
+      }
       if (['sin_empezar', 'contestando'].includes(situacion(reg)) && equipo) {
         const l = leeLatido(codigo);
         if (l && l.equipo !== equipo && Date.now() - l.t < VIVA_MS) {

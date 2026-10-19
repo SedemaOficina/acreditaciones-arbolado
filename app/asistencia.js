@@ -30,7 +30,10 @@
     // El personal de grupos llega con ?folio; el instructor, a «Mis grupos de hoy» (propuesta D, 2026-10-18): con un solo
     // grupo con clase o examen hoy entra directo; con varios, los elige por su nombre calculado
     const misDeHoy = P.gruposDeHoy(datos, P.INSTRUCTORA.usuario);
-    const g0 = pedido ? enCurso.find((g) => g.folio === pedido) : misDeHoy.length === 1 ? misDeHoy[0] : null;
+    // Si el único grupo de hoy tiene hoy su examen, no se entra directo a corregir un día anterior: se muestra «Mis grupos
+    // de hoy», con «Pasar lista y aplicar» (auditoría «intentar romperlo», F3 M9)
+    const unico = misDeHoy.length === 1 && !(P.diaDelCurso(datos, misDeHoy[0]) || {}).examen ? misDeHoy[0] : null;
+    const g0 = pedido ? enCurso.find((g) => g.folio === pedido) : unico;
     if (!g0) {
       $('[data-sin-grupo]').hidden = false;
       if (pedido) {
@@ -64,6 +67,8 @@
       return { i, s, p, quien: APD.nombreCompleto(p) };
     }).sort((a, b) => a.quien.localeCompare(b.quien, 'es'));
     const capturada = (insId, dia) => { const a = datos.asistencia.find((r) => r.inscripcion_id === insId && r.dia === dia); return a ? a.asistio : null; };
+    // Quien ya tiene su calificación registrada ya no cambia su asistencia: la base lo rechaza (asistencia_cerrada; F3 M8)
+    const cerrada = (f) => (datos.examen || []).some((x) => x.inscripcion_id === f.i.id);
 
     /* Días: se capturan del primero al penúltimo, sólo los que ya ocurrieron. Sin ?dia, el de hoy */
     const diaDe = (n) => APD.sumaDias(g.fecha_inicio, n - 1);
@@ -123,15 +128,19 @@
       // En la prueba, guardar lleva al día siguiente (?guardado = el día que se guardó); en el SIA se queda en el día
       const n = Number(params.get('guardado') || params.get('dia'));
       const asistieron = personas.filter((f) => capturada(f.i.id, n) === true).length;
-      const sigue = n !== dia ? ` Sigue el día ${dia} (simulado).` : prueba && n === ultimoDia - 1 ? ' Lo que sigue es el examen, el último día.' : '';
+      // «(simulado)» sólo en un día que todavía no llega; al corregir un día anterior se vuelve al de hoy (F3 B1)
+      const sigue = n === dia ? (prueba && n === ultimoDia - 1 ? ' Lo que sigue es el examen, el último día.' : '')
+        : dia === deHoy ? ` Sigue el día de hoy (día ${dia}).` : diaDe(dia) > hoy ? ` Sigue el día ${dia} (simulado).` : ` Sigue el día ${dia}.`;
+      const noEntraron = Number(params.get('cerradas')) || 0;
       APD.pintaAviso($('[data-hecho]'), 'ok', `Asistencia del día ${n} guardada`,
-        `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.${sigue}`, true);
+        `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.${sigue}${noEntraron ? ` ${noEntraron === 1 ? 'A 1 persona no se le cambió' : `A ${noEntraron} personas no se les cambió`}: ya presentó el examen.` : ''}`, true);
       if (prueba && n === ultimoDia - 1) {
         $('[data-hecho]').append(el('p', { class: 'nota-prueba' }, [document.createTextNode('Versión de prueba: '),
           el('a', { href: `aplicar.html?folio=${encodeURIComponent(g.folio)}`, texto: `ir a «Aplicar el examen» (día ${ultimoDia})` })]));
       }
       params.delete('hecho');
       params.delete('guardado');
+      params.delete('cerradas');
       history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
     }
 
@@ -178,7 +187,7 @@
       const m = r ? r.value : '';
       const faltas = faltasDe(f, m);
       fila.querySelector('[data-marcas]').replaceChildren(...marcas(f, m));
-      const riesgo = faltas > permitidas ? estado('Sin derecho a examen', 'error') : faltas === permitidas && faltas ? estado('Ya no puede faltar', 'pend') : null;
+      const riesgo = cerrada(f) ? null : faltas > permitidas ? estado('Sin derecho a examen', 'error') : faltas === permitidas && faltas ? estado('Ya no puede faltar', 'pend') : null;
       fila.querySelector('[data-aviso]').replaceChildren(...(riesgo ? [riesgo] : []));
       pintaTotales();
     }
@@ -194,8 +203,9 @@
     $('[data-personas]').replaceChildren(...personas.map((f) => {
       const valor = capturada(f.i.id, dia);
       const nombre = `a-${f.i.id}`;
+      const fija = cerrada(f);
       const opcion = (v, etq) => el('label', { class: `asis-opcion asis-opcion-${v}` }, [
-        el('input', { class: 'asis-opcion-input', type: 'radio', name: nombre, value: v, autocomplete: 'off', checked: valor === (v === 'si') }),
+        el('input', { class: 'asis-opcion-input', type: 'radio', name: nombre, value: v, autocomplete: 'off', checked: valor === (v === 'si'), disabled: fija }),
         el('span', { texto: etq })]);
       const foto = el('img', { class: 'asistencia-foto', alt: `Fotografía de ${f.quien}`, src: 'data:,' });
       G.fotoDe(f.p.curp, f.quien).then((url) => { foto.src = url; });
@@ -204,7 +214,8 @@
         el('div', { class: 'asis-quien' }, [
           el('p', { class: 'asis-nombre', texto: f.quien }),
           // La etiqueta de riesgo va en el mismo renglón que la tira, para no alargar la fila (pedido de Liber, 2026-10-18)
-          el('p', { class: 'asis-historia' }, [el('span', { class: 'asis-marcas', 'data-marcas': '' }), el('span', { class: 'asis-riesgo', 'data-aviso': '' })])
+          el('p', { class: 'asis-historia' }, [el('span', { class: 'asis-marcas', 'data-marcas': '' }), el('span', { class: 'asis-riesgo', 'data-aviso': '' })]),
+          fija ? el('p', { class: 'asis-cerrada', texto: 'Ya presentó el examen: su asistencia ya no cambia.' }) : null
         ]),
         el('fieldset', { class: 'asis-opciones' }, [
           el('legend', { class: 'solo-lector', texto: `¿${f.quien} asistió el día ${dia}?` }),
@@ -224,7 +235,7 @@
 
     $('[data-todas]').addEventListener('click', () => {
       sinGuardar = true;
-      for (const r of document.querySelectorAll('[data-personas] input[value="si"]')) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+      for (const r of document.querySelectorAll('[data-personas] input[value="si"]:not(:disabled)')) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
       for (const f of document.querySelectorAll('.falta-marcar')) f.classList.remove('falta-marcar');
       // Lo que antes sólo oía el lector de pantalla también se ve (hallazgo P117)
       APD.pintaAviso($('[data-falta-marcar]'), 'info', `${plural(personas.length, 'persona marcada', 'personas marcadas')} «Asistió»`, 'Cambie a «Faltó» a quien no vino y guarde.');
@@ -232,8 +243,11 @@
     $('[data-guardar]').addEventListener('click', () => {
       const lista = {};
       const sinMarcar = [];
+      let cerradas = 0;
       for (const f of personas) {
         const v = marcado(f);
+        // Quien ya presentó el examen no va en la lista: la base no lo cambiaría (asistencia_cerrada)
+        if (cerrada(f)) { if (v && (v === 'si') !== capturada(f.i.id, dia)) cerradas += 1; continue; }
         if (v) lista[f.i.id] = v === 'si'; else sinMarcar.push(f);
       }
       const aviso = $('[data-falta-marcar]');
@@ -250,8 +264,11 @@
         sinGuardar = false;
         // Versión de prueba: pasa al día siguiente del curso (el examen no se captura aquí). En el SIA se queda en el
         // día: los días que no han pasado no se capturan (decisión de Liber, 2026-10-18)
+        // Al corregir un día anterior a hoy se vuelve al de hoy (F3 B1)
+        const extra = cerradas ? `&cerradas=${cerradas}` : '';
+        if (diaDe(dia) < hoy && deHoy) { location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&hecho=asistencia&guardado=${dia}${extra}`; return; }
         const siguiente = prueba && dia + 1 < ultimoDia ? dia + 1 : dia;
-        location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${siguiente}&hecho=asistencia&guardado=${dia}`;
+        location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${siguiente}&hecho=asistencia&guardado=${dia}${extra}`;
       }).catch(() => {
         APD.pintaAviso(aviso, 'error', 'No se pudo guardar la asistencia', 'Lo marcado sigue aquí; intente de nuevo.', true);
       });

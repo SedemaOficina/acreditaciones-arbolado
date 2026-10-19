@@ -31,9 +31,9 @@
     <h2 class="titulo-paso">Verifica una acreditación</h2>
     <p class="bajada">Antes de contratar a alguien para podar, derribar o dictaminar árboles, confirma que su acreditación esté vigente.</p>
 
-    <div class="campo" data-campo="numero" data-formato="folio" data-requerido data-uso="Buscar la acreditación que se quiere verificar.">
+    <div class="campo" data-campo="numero" data-formato="numero-acreditacion" data-requerido data-uso="Buscar la acreditación que se quiere verificar.">
       <label class="etiqueta" for="numero">Número de acreditación</label>
-      <p class="ayuda">Viene impreso en la acreditación. Por ejemplo: <span class="sin-corte">PD-2026-0001</span>.</p>
+      <p class="ayuda">Viene impreso en la acreditación. Por ejemplo: <span class="sin-corte">PD-2026-0001</span>. Puedes escribirlo con o sin guiones.</p>
       <input class="control" id="numero" name="numero" type="text" maxlength="20" autocomplete="off" spellcheck="false">
     </div>
 
@@ -54,6 +54,7 @@
 
 <script src="app/perfil-academico.js?v=0.55"></script>
 <script src="app/apd.js?v=0.55"></script>
+<script src="app/formatos-propios.js?v=0.55"></script>
 <script src="app/config-verificar.js?v=0.55"></script>
 <script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <script src="formkit/js/iconos.js?v=1.4.1"></script>

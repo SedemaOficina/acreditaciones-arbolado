@@ -155,6 +155,9 @@
   APD.cargar().then((datos) => {
     const p = APD.requiereSesion(datos);
     if (!p) return;
+    // Lo último guardado: «Editar» propone esto, no lo de la primera carga (auditoría «intentar romperlo», F1 6: el correo
+    // y la adscripción regresaban en silencio a los anteriores)
+    let actuales = datos;
     pinta(datos, p);
     const TEXTOS = {
       contacto: ['Se guardó tu contacto', ''],
@@ -166,8 +169,10 @@
       FormKit.iniciar(f, {
         enviar: (payload, ctx) => APD_PERFIL.guarda(k, payload, ctx),
         alEnviar() {
-          cierra(k);
           APD.cargar().then((d) => {
+            // Se cierra con los datos ya leídos: «Editar» vuelve a aparecer con lo recién guardado
+            actuales = d;
+            cierra(k);
             pinta(d, APD.personaDeSesion(d));
             guardado(k, TEXTOS[k]);
             const h = k === 'foto' ? $('#t-perfil') : $(`#t-${k}`);
@@ -179,7 +184,7 @@
           if (error && error.mensaje && aviso) aviso.textContent = error.mensaje;
         }
       });
-      for (const b of $$(`[data-editar="${k}"]`)) b.addEventListener('click', () => abre(k, datos));
+      for (const b of $$(`[data-editar="${k}"]`)) b.addEventListener('click', () => abre(k, actuales));
       $('[data-cancelar]', f).addEventListener('click', () => cierra(k, true));
     }
   }).catch(() => {

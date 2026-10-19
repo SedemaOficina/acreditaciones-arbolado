@@ -155,7 +155,7 @@
       APD.icono('alerta'),
       el('div', { class: 'aviso-texto' }, [
         el('strong', { class: 'aviso-titulo', texto: 'Corrige este documento' }),
-        el('p', { texto: APD.paraTi(d.observacion) || 'Tiene una observación de la Secretaría.' }),
+        el('p', { class: 'con-renglones', texto: APD.paraTi(d.observacion) || 'Tiene una observación de la Secretaría.' }),
         el('p', { class: 'doc-observacion-archivo' }, [document.createTextNode('El que cargaste: '),
           el('a', { href: urlDe(d), target: '_blank', rel: 'noopener' }, [document.createTextNode(nombre), el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])])
       ])
@@ -360,6 +360,8 @@
     const B = window.APD_SOLICITUD.borrador;
     const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
     const { ctx } = FormKit.iniciar(form);
+    // La carrera escrita (combo libre) también revisa su formato (auditoría «intentar romperlo», F1 12)
+    APD.formatoEnCombos(ctx);
     const franja = document.querySelector('[data-franja-borrador]');
     const indicador = document.querySelector('[data-guardado]');
     const M = FormKit.config.mensajes;
@@ -490,6 +492,9 @@
         else if (a.dataset.borrador === 'conservar') { confirma.hidden = true; franja.querySelector('[data-borrador="recuperar"]').focus(); }
         else if (a.dataset.borrador === 'descartar-si') {
           try { localStorage.removeItem(B.clave); } catch (err) { /* sin almacenamiento */ }
+          // Con los documentos que se cargaron, como dice la confirmación (auditoría «intentar romperlo», F1 7)
+          if (P) P.borraDocumentos(folioBorrador).catch(() => {});
+          for (const k of Object.keys(enBorrador)) delete enBorrador[k];
           franja.hidden = true;
           FormKit.anuncia('Se descartó el borrador.', { visible: document.querySelector('[data-borrador-recuperado]') });
         }
