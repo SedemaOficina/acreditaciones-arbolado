@@ -19,11 +19,18 @@
      <div class="tabla-marco" data-tabla data-clave="folio">
        <table class="tabla"><caption class="tabla-titulo">Solicitudes</caption>
          <thead><tr><th scope="col" data-ordenable>Folio</th>…<th scope="col">Acciones</th></tr></thead>
-         <tbody>…<td><button type="button" class="btn-icono" data-accion-fila="ver">…</button></td></tr></tbody>
+         <tbody><tr data-folio="EJ-123"><td><span class="mono">EJ-123</span></td>…<td><button type="button" class="btn-icono" data-accion-fila="ver">…</button></td></tr></tbody>
        </table>
        <p class="tabla-vacia" data-tabla-vacia hidden>No hay resultados con esos filtros.</p>
+       <p data-tabla-cargando hidden>Cargando…</p>
+       <div class="aviso aviso-bloqueo" data-tabla-error tabindex="-1" hidden>…<div class="aviso-texto"></div></div>
      </div>
-   Una celda con data-etiqueta escrito en el HTML conserva ese rótulo.
+   Una celda con data-etiqueta escrito en el HTML conserva ese rótulo. El
+   contenido de cada celda va en .tabla-valor (lo pone el módulo). En
+   computadora no se parten botones, folios (.mono) ni etiquetas, y la
+   columna de acciones (encabezado sólo para el lector) toma el ancho de sus
+   botones. Desde código: FormKit.tabla.inicia() para tablas agregadas
+   después y FormKit.tabla.estado(marco, 'cargando' | 'error' | '', texto).
    ========================================================= */
 (function () {
   'use strict';
@@ -45,7 +52,7 @@
     function etiquetaCeldas() {
       const encabezados = ths();
       for (const tr of $$('tbody tr', tabla)) $$('td', tr).forEach((td, i) => {
-        /* El contenido de la celda va junto en .tabla-valor: en teléfono es la columna del valor (P104). */
+        /* El contenido de la celda va junto en .tabla-valor: en teléfono es la columna del valor. */
         if (!(td.children.length === 1 && td.firstElementChild.classList.contains('tabla-valor') && td.childNodes.length === 1)) {
           const valor = document.createElement('div');
           valor.className = 'tabla-valor';

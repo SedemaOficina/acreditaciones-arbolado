@@ -24,12 +24,12 @@
      · oculta: elemento o lista de elementos que ya no aplican (el panel de
        decisión), que se ocultan.
    Lo que la página ponga en lugar con data-resultado-acciones (por ejemplo,
-   «Volver a la bandeja») se conserva al final.
+   «Volver a la lista de solicitudes») se conserva al final.
 
    Contrato HTML:
      <section class="resultado" data-resultado hidden>
        <div class="acciones" data-resultado-acciones>
-         <a class="btn btn-primario" href="bandeja.html">Volver a la bandeja</a>
+         <a class="btn btn-primario" href="solicitudes.html">Volver a la lista de solicitudes</a>
        </div>
      </section>
    ========================================================= */
@@ -65,7 +65,7 @@
     /* «Quedó guardado a las 14:30 · Ana López»: la hora en la zona del formulario. */
     const cuando = hora ? new Date(hora) : new Date();
     const zona = { timeZone: cfg.fechas.zonaHoraria };
-    const horaTxt = cuando.toLocaleTimeString(cfg.idioma, { ...zona, hour: '2-digit', minute: '2-digit', hour12: false });
+    const horaTxt = cuando.toLocaleTimeString(cfg.idioma, { ...zona, hour: '2-digit', minute: '2-digit', hourCycle: FormKit.utilidades.relojDe(cfg) });
     const dia = (d) => d.toLocaleDateString(cfg.idioma, { ...zona, dateStyle: 'long' });
     const esHoy = dia(cuando) === dia(new Date());
     const meta = document.createElement('p');

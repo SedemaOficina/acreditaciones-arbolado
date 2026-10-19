@@ -108,8 +108,16 @@ a{color:var(--azul)}
   color:var(--gris);
 }
 
-/* Bajada del título de paso: dice qué se pide y para qué. */
-.bajada{max-width:var(--ancho-lectura);margin-bottom:var(--e-5);font-size:var(--t-md);color:var(--gris)}
+/* Bajada del título de paso: dice qué se pide y para qué. Ocupa el ancho de su
+   tarjeta: limitada a 70ch, una bajada de una oración pasaba al segundo renglón
+   aunque sobrara espacio. El límite de lectura es para el texto corrido. */
+.bajada{margin-bottom:var(--e-5);font-size:var(--t-md);color:var(--gris)}
+/* Texto corrido (varios párrafos que se leen de seguido): hasta 70 caracteres por renglón. */
+.texto-corrido{max-width:var(--ancho-lectura)}
+/* Línea de datos (folio · fechas · revisión): cada dato, en .linea-datos-item, no se parte;
+   si no cabe, pasa completo al renglón siguiente. Los puntos medios van en el HTML. */
+.linea-datos{font-size:var(--t-sm);color:var(--gris)}
+.linea-datos-item{white-space:nowrap}
 
 /* ---------- Encabezado y pie institucionales ----------
    El logotipo es ancho (Gobierno · Secretaría): va en su renglón y el título
@@ -140,7 +148,7 @@ a{color:var(--azul)}
 }
 /* Cabecera y pie ponen su margen lateral por fuera y .pagina por dentro: los
    tres miden lo mismo por dentro (--ancho-contenido), así logotipo, título,
-   contenido y pie empiezan en la misma línea (P102). */
+   contenido y pie empiezan en la misma línea. */
 .pie-int{max-width:var(--ancho-contenido);margin-inline:auto}
 
 /* Enlace de salto al contenido: primer elemento enfocable de la página. */

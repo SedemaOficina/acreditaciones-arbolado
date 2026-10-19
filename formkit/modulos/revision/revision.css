@@ -33,8 +33,9 @@
   border-radius:var(--r-ctrl);
   font-size:var(--t-md);
 }
-.rev-dato-etq{padding:var(--e-2) var(--e-3) 0;background:var(--blanco);font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--gris)}
-.rev-dato-valor{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e-2);padding:0 var(--e-3) var(--e-2);background:var(--blanco);white-space:pre-wrap;word-break:break-word}
+/* Como en la ficha y en la tabla del teléfono: rótulo gris de peso normal, dato que destaca. */
+.rev-dato-etq{padding:var(--e-2) var(--e-3) 0;background:var(--blanco);font-size:var(--t-sm);font-weight:var(--peso-normal);color:var(--gris)}
+.rev-dato-valor{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e-2);padding:0 var(--e-3) var(--e-2);background:var(--blanco);font-weight:var(--peso-semi);white-space:pre-wrap;word-break:break-word}
 /* Con un valor largo, el valor se parte en renglones y «Editar» se queda a su lado, arriba. */
 .rev-dato-valor > span{flex:1 1 auto;min-width:0}
 .rev-dato-valor > .btn-enlace{flex:none}
@@ -49,6 +50,6 @@
 @media (min-width:760px){
   .rev-resumen{flex:1 1 auto}
   .rev-datos{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
-  .rev-dato-etq{padding:var(--e-3);background:var(--fondo)}
+  .rev-dato-etq{padding:var(--e-3)}
   .rev-dato-valor{padding:var(--e-3)}
 }

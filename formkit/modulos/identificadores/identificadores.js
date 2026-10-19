@@ -51,7 +51,7 @@
         if (!campo.dataset.deriva) return;
         const valida = !validaCampo(campo.dataset.campo) && ctl.value.length === cfg.curp.largo;
         const datos = valida ? cfg.formatos.curp.deriva(ctl.value) : {};
-        const textos = { H: 'Hombre', M: 'Mujer', X: 'No binario' };
+        const textos = { H: cfg.mensajes.sexoH, M: cfg.mensajes.sexoM, X: cfg.mensajes.sexoX };
         for (const par of campo.dataset.deriva.split(/\s+/).filter(Boolean)) {
           const [clave, destino] = par.split('=');
           const envDestino = envoltura(destino);
@@ -64,7 +64,7 @@
           if (ctlDestino.value !== valor) {
             ctlDestino.value = valor;
             ctlDestino.dispatchEvent(new Event('change', { bubbles: true }));
-            if (valor) anuncia(`${etiquetaDe(destino)}: ${valor}, tomado de la CURP.`);
+            if (valor) anuncia(FormKit.utilidades.plantilla(cfg.mensajes.curpDerivado, { etiqueta: etiquetaDe(destino), valor }));
           }
         }
       }

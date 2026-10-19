@@ -1,6 +1,8 @@
 /* =========================================================
    chips.css · Módulo «chips» · nivel OPCIONAL
    Sugerencias de un toque: botón con estado aria-pressed y su «quitar».
+   Las respuestas frecuentes fijas (.chip-fijo) se ven completas: no se
+   encogen y al pasar el cursor sólo cambian el borde.
    Depende de: nucleo.css. Bloques: componentes → estados.
    ========================================================= */
 
@@ -20,8 +22,10 @@
   color:var(--texto);
 }
 .chip-texto{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Respuesta frecuente fija: sin «quitar», redonda de los dos lados y con su texto completo. */
-.chip-fijo{border-radius:var(--r-pill);text-align:left;cursor:pointer}
+/* Respuesta frecuente fija: sin «quitar», redonda de los dos lados y con su texto completo.
+   No se encoge en la fila: si no cabe, pasa completa al renglón siguiente; sólo se parte
+   si es más larga que la fila entera. */
+.chip-fijo{flex-shrink:0;max-width:100%;border-radius:var(--r-pill);text-align:left;cursor:pointer}
 .chip-quitar{
   display:inline-flex;
   align-items:center;
@@ -40,5 +44,7 @@
 
 /* @bloque estados */
 
-.chip:hover,.chip-quitar:hover{border-color:var(--azul);color:var(--azul)}
+/* Al pasar el cursor sólo cambia el borde: el fondo azul es de la respuesta elegida (aria-pressed). */
+.chip:hover{border-color:var(--azul)}
+.chip-quitar:hover{border-color:var(--azul);color:var(--azul)}
 .chip[aria-pressed="true"]{background:var(--azul-cl);border-color:var(--azul);color:var(--azul);font-weight:var(--peso-semi)}

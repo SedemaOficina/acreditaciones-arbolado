@@ -106,7 +106,7 @@
           anuncia(visibles.length === 0 ? plantilla(M.comboNinguno, { texto: entrada.value }) : visibles.length === 1 ? M.comboUno : plantilla(M.comboVarios, { n: visibles.length }));
         }
 
-        /* Sólo cuando la persona escribe en el campo (P99): si la página lo llena
+        /* Sólo cuando la persona escribe en el campo: si la página lo llena
            (al retomar un borrador), la lista no se abre ni anuncia ni tapa la
            pregunta siguiente. */
         entrada.addEventListener('input', () => { if (document.activeElement === entrada) pinta(); });

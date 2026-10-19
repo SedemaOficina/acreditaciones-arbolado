@@ -16,7 +16,8 @@
 
    Se inicia solo al cargar la página: a la etiqueta que no trae su icono se
    le pone el de su familia. FormKit.estado(el, { tono, texto, anuncia }) la
-   cambia después (anuncia: true cuando cambia por una acción de la persona).
+   cambia después (anuncia: true cuando cambia por una acción de la persona)
+   y FormKit.estado.inicia(contenedor) prepara las que la página pinte después.
 
    Contrato HTML:
      <span class="estado estado-proceso">En revisión</span>

@@ -16,12 +16,15 @@
 /* Teléfono: el encabezado se oculta visualmente (sigue para el lector) y las celdas se apilan. */
 .tabla thead{position:absolute;width:var(--b-1);height:var(--b-1);overflow:hidden;clip:rect(0,0,0,0)}
 .tabla tr{display:block;margin-bottom:var(--e-3);padding:var(--e-2) var(--e-3);background:var(--blanco);border:var(--b-1) solid var(--linea);border-radius:var(--r-ctrl)}
-/* Teléfono: rejilla fija rótulo | valor en cada celda (P104); el valor va en
+/* Teléfono: rejilla fija rótulo | valor en cada celda; el valor va en
    .tabla-valor, que el módulo crea, y se parte en renglones sin bajar entero. */
 .tabla td{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:var(--e-1) var(--e-3);padding:var(--e-2) 0;border-bottom:var(--b-1) solid var(--linea);vertical-align:top}
 .tabla td:last-child{border-bottom:0}
-.tabla td::before{content:attr(data-etiqueta);font-size:var(--t-sm);font-weight:var(--peso-semi);color:var(--gris)}
-.tabla-valor{min-width:0;overflow-wrap:anywhere}
+/* Rótulo y dato como en la ficha: rótulo gris de peso normal, dato que destaca. */
+.tabla td::before{content:attr(data-etiqueta);font-size:var(--t-sm);font-weight:var(--peso-normal);color:var(--gris)}
+/* break-word, no anywhere: una palabra se parte sólo si no cabe en su renglón; anywhere dejaba encoger
+   la columna hasta partir botones, folios y fechas («Revisa / r», «10/10/20 / 26»). */
+.tabla-valor{min-width:0;font-weight:var(--peso-semi);overflow-wrap:break-word}
 /* Columna cuyo encabezado es sólo para el lector de pantalla (acciones): en teléfono tampoco se ve su rótulo. */
 .tabla td[data-etiqueta-oculta]::before{display:none}
 /* Sin rótulo (acciones), el valor ocupa todo el ancho de la tarjeta. */
@@ -48,10 +51,15 @@ td[data-etiqueta-oculta] > .tabla-valor{grid-column:1 / -1}
   .tabla{min-width:var(--ancho-tabla-min)}
   .tabla thead{position:static;width:auto;height:auto;overflow:visible;clip:auto}
   .tabla tr{display:table-row;margin:0;padding:0;background:none;border:0;border-radius:0}
-  /* Computadora: la línea de la fila llega bajo todas las columnas y el contenido va centrado en vertical (P103). */
+  /* Computadora: la línea de la fila llega bajo todas las columnas y el contenido va centrado en vertical. */
   .tabla td{display:table-cell;padding:var(--e-2) var(--e-3);vertical-align:middle}
   .tabla td:last-child{border-bottom:var(--b-1) solid var(--linea)}
   .tabla td::before{display:none}
+  .tabla-valor{font-weight:var(--peso-normal)}
+  /* Botones, folios y etiquetas no se parten; la columna de acciones (encabezado sólo para el
+     lector) toma el ancho de sus botones y el resto queda para los datos. */
+  .tabla .btn,.tabla .btn-enlace,.tabla .mono{white-space:nowrap}
+  .tabla td[data-etiqueta-oculta]{width:1%;white-space:nowrap}
   /* Filas alternas contadas sólo entre las visibles: al filtrar con [hidden], el rayado no pierde el ritmo. */
   .tabla tr:nth-child(even of :not([hidden])){background:var(--guinda-cl)}
 }
