@@ -3484,8 +3484,54 @@ async function accesibilidad(navegador) {
   await page.close();
 }
 
+/* ── Limpieza del código (auditoría 2026-10-19, R4-07, A4-01 y R4-08) ──
+   Sin clases de apd.css que nada usa, sin nombres exportados por APD y APD_PERSONAL que nadie usa fuera de su archivo
+   (salvo los que se usan dentro), y las horas y los instructores de grupo.html y programar.html desde una sola lista. */
+async function limpieza(navegador) {
+  const t = (m) => `[limpieza] ${m}`;
+  const leer = (r) => readFileSync(join(raiz, r), 'utf8');
+  const app = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js')).map((f) => `sitio/app/${f}`);
+  const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html')).map((f) => `sitio/${f}`);
+  // Las pantallas, el código del proyecto y el del estándar (que arma parte del marcado), sin vendor
+  const estandar = (d) => readdirSync(join(raiz, d), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (e.name === 'vendor' ? [] : estandar(`${d}/${e.name}`)) : e.name.endsWith('.js') ? [`${d}/${e.name}`] : []));
+  const fuentes = [...app, ...paginas, ...estandar('sitio/formkit')].map(leer).join('\n');
+  // Clases: las que se arman con una plantilla (asis-opcion-${v}) se buscan por su prefijo
+  const css = leer('sitio/app/apd.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const clases = [...new Set([...css.matchAll(/\.(-?[a-zA-Z_][\w-]*)/g)].map((m) => m[1]))];
+  const usada = (c) => new RegExp(`(?<![\\w-])${c}(?![\\w-])`).test(fuentes) || /^asis-opcion-(si|no)$/.test(c) && fuentes.includes('asis-opcion-${');
+  const sinUso = clases.filter((c) => !usada(c));
+  comprueba(!sinUso.length, t(`apd.css sin clases que nada usa${sinUso.length ? ': ' + sinUso.join(', ') : ''}`));
+  // Exportados: se usan fuera de su archivo, o están en la lista de los que se usan sólo dentro
+  const DENTRO = { APD: ['fechaPegada', 'activa'], APD_PERSONAL: ['proximosDe', 'retiraGrupo'] };
+  for (const [archivo, global, alias] of [['sitio/app/apd.js', 'APD', '(?:APD|window\\.APD)'], ['sitio/app/personal.js', 'APD_PERSONAL', '(?:APD_PERSONAL|P)']]) {
+    const propio = leer(archivo);
+    const m = propio.match(new RegExp(`global\\.${global} = \\{([\\s\\S]*?)\\};`));
+    const nombres = m[1].split(',').map((x) => x.trim().split(':')[0].trim()).filter(Boolean);
+    const otros = [...app.filter((f) => f !== archivo), ...paginas, ...readdirSync(join(raiz, 'herramientas')).filter((f) => f.endsWith('.mjs')).map((f) => `herramientas/${f}`)].map(leer).join('\n');
+    const sinUsoJs = nombres.filter((n) => !DENTRO[global].includes(n) && !new RegExp(`${alias}\\.${n}\\b|\\{[^}]*\\b${n}\\b[^}]*\\}\\s*=\\s*${alias}\\b`).test(otros));
+    comprueba(!sinUsoJs.length, t(`${global}: cada nombre exportado se usa fuera de su archivo${sinUsoJs.length ? '; sin uso: ' + sinUsoJs.join(', ') : ''}`));
+  }
+  // R4-08: las listas de horas e instructores no se escriben en el HTML; las dos pantallas muestran las mismas
+  const opcionesFijas = ['sitio/grupo.html', 'sitio/programar.html'].filter((f) => /<option value="(?:instructor|\d\d:\d\d)/.test(leer(f)));
+  const c = await navegador.newContext({ timezoneId: ZONA });
+  const pg = await c.newPage();
+  const listas = [];
+  for (const [url, sel] of [['programar.html?curso=poda-nueva', '.cal-dia'], ['grupo.html?folio=APD-G-2026-005', '#confirmar']]) {
+    await pg.goto(BASE + url);
+    await pg.waitForSelector(sel, { state: 'attached' });
+    // «Programar» agrega al nombre del instructor si está libre esas fechas: se comparan los valores
+    listas.push(JSON.stringify(await pg.evaluate(() => ['#instructor', '#hora_entrada'].map((s) => [...document.querySelectorAll(`${s} option`)].map((o) => o.value)))));
+  }
+  const nombresFicha = await pg.$$eval('#instructor option', (l) => l.map((o) => o.textContent));
+  comprueba(!opcionesFijas.length && listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /"07:00"/.test(listas[0]) && nombresFicha.includes('Instructor Ejemplo Dos'),
+    t('horas de entrada e instructores: una sola lista (APD_PERSONAL), la misma en la ficha del grupo y en «Programar»'));
+  comprueba(!/const MESES = \[/.test(leer('sitio/app/programar.js')) && !/nombreCurso/.test(fuentes), t('sin copias de MESES ni de nombreCurso (APD.MESES, APD.cursoLargo)'));
+  await c.close();
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 try {
+  if (!process.env.SOLO || process.env.SOLO === 'limpieza') await limpieza(navegador);
   // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
   const solo = process.env.SOLO || '';
   if (!solo) {

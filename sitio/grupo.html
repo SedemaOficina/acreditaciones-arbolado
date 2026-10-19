@@ -94,27 +94,19 @@
       <div class="campo" data-campo="hora_entrada" data-formato="hora" data-requerido data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
         <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
         <p class="ayuda" id="ay-hora-entrada">De 24 horas, la misma todos los días. <span class="pendiente">Horarios de prueba: los define el área, con la hora de salida (P91).</span></p>
-        <!-- Lista cerrada de 24 horas, como la hora de la cita (Liber, 2026-10-17). autocomplete off: la elige quien arma el grupo. -->
+        <!-- Lista cerrada de 24 horas, como la hora de la cita (Liber, 2026-10-17); las horas las pone la página desde
+             APD_PERSONAL (una sola lista con «Programar»). autocomplete off: la elige quien arma el grupo. -->
         <div class="select control-corto"><select class="control control-select" id="hora_entrada" name="hora_entrada" autocomplete="off" aria-describedby="ay-hora-entrada">
             <option value="">Elija</option>
-            <option value="07:00">07:00</option>
-            <option value="07:30">07:30</option>
-            <option value="08:00">08:00</option>
-            <option value="08:30">08:30</option>
-            <option value="09:00">09:00</option>
-            <option value="09:30">09:30</option>
-            <option value="10:00">10:00</option>
         </select></div>
       </div>
       <div class="campo" data-campo="instructor" data-requerido data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
         <label class="etiqueta" for="instructor">Instructor</label>
         <p class="ayuda" id="ay-instructor">Puede cambiar durante el curso; cada día queda quién capturó la asistencia.</p>
-        <!-- Versión de prueba: instructores ficticios. En la etapa 3 la API da las cuentas con perfil «instructor» (P27).
-             autocomplete off: lo elige quien arma el grupo. -->
+        <!-- Versión de prueba: instructores ficticios, que pone la página desde APD_PERSONAL (una sola lista con «Programar»).
+             En la etapa 3 la API da las cuentas con perfil «instructor» (P27). autocomplete off: lo elige quien arma el grupo. -->
         <div class="select control-medio"><select class="control control-select" id="instructor" name="instructor" autocomplete="off" aria-describedby="ay-instructor">
             <option value="">Elija</option>
-            <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
-            <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
         </select></div>
       </div>
       <p class="texto-gris" data-lugar></p>

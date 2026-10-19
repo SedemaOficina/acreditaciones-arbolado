@@ -24,7 +24,7 @@
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
   const plural = APD.plural;
   const params = new URLSearchParams(location.search);
-  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const MESES = APD.MESES;
   const mayuscula = (t) => t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1);
   const V = () => window.FORMKIT_VALIDACIONES;
 
@@ -245,6 +245,7 @@
     /* ----- Paso 2 · instructor y hora ----- */
     const selInstructor = $('#instructor');
     const selHora = $('#hora_entrada');
+    P.pintaListasGrupo(selInstructor, selHora);
     if (gExistente && gExistente.instructor) selInstructor.value = gExistente.instructor;
     if (gExistente && gExistente.hora_entrada) selHora.value = APD.hhmm(gExistente.hora_entrada);
     // La propuesta, si no hay otra: entrada a las 09:00 y el primer instructor libre esas fechas
@@ -301,29 +302,18 @@
       $('[data-campo="integracion"]').hidden = true;
     }
     const filas = [];
+    // La fila de cada persona y el bloque de su organización, los mismos de «Grupos» (P.filaEspera, P.bloqueEspera)
     const persona = (x, conOrg) => {
-      const k = el('input', { class: 'casilla-input', type: 'checkbox', value: x.s.folio, checked: propuestas.has(x.s.folio) });
+      const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio, checked: propuestas.has(x.s.folio) });
       filas.push({ x, k });
-      const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
-      return el('label', { class: 'plan-persona' }, [k,
-        el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
-        el('span', { class: 'plan-persona-espera' }, [x.prioritaria ? APD.estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias }),
-          x.vence ? (x.vencida ? APD.estado(`Vencida el ${fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `vence el ${fecha(x.vence)}` })) : null]),
-        conOrg ? el('span', { class: 'plan-persona-org', texto: x.organizacion }) : null]);
+      return P.filaEspera(x, k, conOrg);
     };
     const items = P.bloquesEspera(espera).map((b, i) => {
       if (!b.junta) return el('li', {}, [persona(b.xs[0], true)]);
-      const todas = el('input', { class: 'casilla-input', type: 'checkbox', 'aria-label': `Elegir a las ${b.xs.length} personas de ${b.nombre}` });
       const propias = b.xs.map((x) => persona(x, false));
-      const suyas = () => filas.filter((f) => b.xs.includes(f.x));
-      const refleja = () => { const m = suyas().filter((f) => f.k.checked).length; todas.checked = m === b.xs.length; todas.indeterminate = m > 0 && m < b.xs.length; };
-      todas.addEventListener('change', () => { for (const f of suyas()) f.k.checked = todas.checked; pintaTodo(false); });
-      const li = el('li', {}, [el('div', { class: 'plan-bloque', role: 'group', 'aria-labelledby': `pb-${i}` }, [
-        el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id: `pb-${i}`, texto: `${b.nombre} · ${b.xs.length} personas, juntas` })]),
-        ...propias])]);
-      li.addEventListener('change', (e) => { if (e.target !== todas) refleja(); });
-      setTimeout(refleja);
-      return li;
+      const { bloque, refleja } = P.bloqueEspera(b, `pb-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), null, () => pintaTodo(false));
+      refleja();
+      return el('li', {}, [bloque]);
     });
     $('[data-personas]').replaceChildren(...(items.length ? items : [el('li', { class: 'texto-gris', texto: propia ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
     $('[data-personas]').addEventListener('change', () => pintaTodo(false));
