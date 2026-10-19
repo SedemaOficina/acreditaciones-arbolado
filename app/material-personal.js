@@ -160,13 +160,14 @@
       const m = porId[b.dataset.id];
       const que = b.dataset.accionMaterial;
       if (que === 'editar' || que === 'reemplazar') { abre(que, m, b); return; }
-      if (que === 'publicar') { guardaCambio(m, { publicado: true }).then(() => vuelve('publicado', m.clave)); return; }
+      // Deshabilitado mientras guarda: un doble clic no guarda dos veces (auditoría «intentar romperlo», bloque 2)
+      if (que === 'publicar') { const libera = APD.ocupa(b); if (libera) guardaCambio(m, { publicado: true }).then(() => vuelve('publicado', m.clave), libera); return; }
       // Ocultar quita el documento a quien estudia: se confirma (módulo modal del estándar)
       FormKit.confirma(b, {
         titulo: `¿Ocultar «${m.titulo}» de la página pública?`,
         consecuencias: ['Deja de verse en «Material de estudio»: quien prepara su examen ya no podrá descargarlo.', 'Se conserva aquí, con sus datos: puede publicarlo de nuevo cuando quiera.'],
         si: 'Ocultar el documento'
-      }).then((si) => { if (si) guardaCambio(m, { publicado: false }).then(() => vuelve('oculto', m.clave)); });
+      }).then((si) => { const libera = si && APD.ocupa(b); if (libera) guardaCambio(m, { publicado: false }).then(() => vuelve('oculto', m.clave), libera); });
     });
 
     FormKit.iniciar(form, {

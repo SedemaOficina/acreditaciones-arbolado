@@ -51,6 +51,7 @@
   const elegido = (nombre) => { const r = $(`input[name="${nombre}"]:checked`, form); return r ? r.value : ''; };
   const lista = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs[0] || '');
   const falla = (texto) => { $('[data-cargando]').textContent = texto; };
+  const retomaInicial = (s) => (s.cotejo_pausa ? 'en_pausa' : 'pendiente');
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'citas');
@@ -74,7 +75,15 @@
     // solicitud se haya vuelto a validar (auditoría de tareas, A4; decisión 2026-10-14 «a la segunda se cierra»)
     const inasistencias = Math.max(s.inasistencias || 0, (datos.cita || []).filter((c) => c.solicitud_id === s.id && c.resultado === 'no_se_presento').length);
     const maxInasistencias = Number(APD.parametro(datos, 'inasistencias_cotejo_maximas')) || 2;
-    const expediente = p.numero_expediente || P.siguienteExpediente(datos);
+    // El expediente lo asigna la base al terminar el cotejo, consecutivo (apd.asignar_expediente): la página no lo anticipa
+    // al abrir; muestra el que quedó (auditoría «intentar romperlo», F2 A4: dos ventanillas daban el mismo a dos personas)
+    const expediente = p.numero_expediente || null;
+    /* La cita que se abrió y su situación (F2 A3): al registrar se compara con lo guardado de ahora; si otra pestaña ya
+       registró algo de esta cita (una inasistencia con cita nueva, una pausa, el cotejo), no se guarda. En la etapa 3, la API
+       responde 409 «Esta cita ya se registró». */
+    const citaAbierta = (datos.cita || []).find((c) => c.solicitud_id === s.id && ['pendiente', 'en_pausa'].includes(c.resultado));
+    const desde = citaAbierta ? citaAbierta.resultado : retomaInicial(s);
+    const ms = (iso) => new Date(iso).getTime();
     const anterior = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
     const nombre = APD.nombreCompleto(p);
 
@@ -250,7 +259,7 @@
       if (sinCotejar) faltan.push(sinCotejar === 1 ? 'si coincide un documento' : `si coinciden ${sinCotejar} documentos`);
       if (conDocs && noCoinciden && !elegido('hoy_documento')) faltan.push('si puede traer hoy el documento correcto');
       if (conDocs && !noCoinciden && !elegido('pago')) faltan.push('si presentó el comprobante de pago');
-      const nuevo = p.numero_expediente ? `esta solicitud se agrega a su expediente físico ${expediente}` : `se abre el expediente físico ${expediente}`;
+      const nuevo = p.numero_expediente ? `esta solicitud se agrega a su expediente físico ${expediente}` : 'se abre su expediente físico (el sistema le da el número al terminar)';
       const TEXTOS = {
         terminado: `Todo coincide y el pago está verificado. Al terminar, ${nuevo} y el siguiente paso es asignarle un grupo del curso.`,
         pausa: `${noCoinciden === 1 ? 'Un documento no coincide' : `${noCoinciden} documentos no coinciden`}: la cita queda en pausa. La persona carga hoy en «Mis trámites» el documento correcto y usted retoma el cotejo cuando regrese.`,
@@ -368,6 +377,23 @@
             // «coincide» el documento que la persona volvió a cargar, leído ahora, no al abrir la página (F2 A7)
             if (futura && !simulada) return mal({ mensaje: `La cita es el ${fecha(diaCita)}: se registra ese día.` });
             const s2 = ahora.solicitud.find((x) => x.folio === folio);
+            // ¿Sigue siendo la cita que se abrió, en la misma situación? (F2 A3)
+            const abiertaAhora = s2 && (ahora.cita || []).find((c) => c.solicitud_id === s2.id && ['pendiente', 'en_pausa'].includes(c.resultado));
+            const misma = s2 && s2.estado === 'validada_en_linea' && abiertaAhora && ms(abiertaAhora.programada_en) === ms(s.cita_en)
+              && abiertaAhora.resultado === desde && (!retoma || (s2.cotejo_pausa && s2.cotejo_pausa.real === pausa.real));
+            if (!misma) {
+              const ahoraEs = !s2 ? 'sin datos' : s2.estado !== 'validada_en_linea' ? `la solicitud está «${APD.nombrePersonal(s2.estado)}»`
+                : abiertaAhora && ms(abiertaAhora.programada_en) !== ms(s.cita_en) ? `tiene otra cita, el ${fechaHora(abiertaAhora.programada_en)}`
+                  : abiertaAhora && abiertaAhora.resultado === 'en_pausa' ? 'la cita está en pausa' : 'la cita ya se cerró';
+              return mal(APD.rechazo('Esta cita ya se registró', `Mientras tenía abierta esta página se registró lo que pasó en ella (en otra pestaña o por otra persona): ${ahoraEs}. No se guardó lo suyo.`,
+                { href: `cotejo.html?folio=${encodeURIComponent(folio)}`, texto: 'Abrir la cita otra vez' }, 'cita_cerrada'));
+            }
+            // Un folio fiscal no se repite (R20; la base: folio_fiscal_repetido; F2 A5): junto al campo, como lo dirá la API
+            const ff = String(d.factura_folio_fiscal || '').trim().toUpperCase();
+            if (resultado === 'terminado' && ff && ahora.solicitud.some((x) => x.id !== s2.id && String(x.factura_folio_fiscal || '').trim().toUpperCase() === ff)) {
+              const mensaje = 'Ese folio fiscal ya está registrado en otra solicitud: revise la factura.';
+              return mal({ mensaje, errores: [{ campo: 'factura_folio_fiscal', mensaje }] });
+            }
             if (retoma && s2 && s2.cotejo_pausa) {
               nuevos = new Set(P.cargadosEnPausa(ahora, s2).map((x) => x.requisito));
               const sinNuevo = pausa.docs.filter((k) => d[`coincide_${k}`] === 'si' && !nuevos.has(k));
@@ -387,15 +413,34 @@
               guardados.push(A.guardaDocumento(s.folio, 'factura_pago', archivo('factura_pago'), { en, estado: 'aceptado', cargado_por: P.REVISORA.usuario }).catch(() => {}));
             }
             return Promise.all(guardados).then(() => {
-              P.guardaCotejo(s.folio, Object.assign({ resultado, datos: d, en, cita_en: s.cita_en, expediente: resultado === 'terminado' ? expediente : null, atendio: P.REVISORA.usuario },
-                simulada ? { simulada: true } : {}));
-              ok({ resultado, d });
+              P.guardaCotejo(s.folio, Object.assign({ resultado, datos: d, en, cita_en: s.cita_en, desde, atendio: P.REVISORA.usuario },
+                retoma ? { pausa_real: pausa.real } : {}, simulada ? { simulada: true } : {}));
+              // Después: lo que quedó, como la respuesta de la API (el expediente que asignó, por ejemplo). Si la base no lo
+              // habría aplicado (otra pestaña registró la cita al mismo tiempo), se retira y se dice: nunca un éxito falso
+              return APD.cargar().then((despues) => {
+                const s3 = despues.solicitud.find((x) => x.folio === folio);
+                const cita = s3 && (despues.cita || []).find((c) => c.solicitud_id === s3.id && ms(c.programada_en) === ms(s.cita_en));
+                const ESPERA = { terminado: 'atendida', pausa: 'en_pausa', con_observaciones: 'con_observaciones', otra_cita: 'sin_pago', no_se_presento: 'no_se_presento', cerrar: 'no_se_presento', no_es_la_persona: 'no_es_la_persona' };
+                const aplicado = cita && cita.resultado === ESPERA[resultado] && (resultado !== 'pausa' || (s3.cotejo_pausa && s3.cotejo_pausa.real === en))
+                  && (resultado !== 'terminado' || s3.estado === 'lista_para_curso');
+                if (aplicado) {
+                  const p3 = despues.solicitante.find((x) => x.id === s3.solicitante_id) || {};
+                  return ok({ resultado, d, expediente: p3.numero_expediente || expediente });
+                }
+                P.retiraCotejo(s.folio, en);
+                const quita = A && resultado === 'terminado' && archivo('factura_pago') ? A.quitaDocumento(s.folio, 'factura_pago', en).catch(() => {}) : null;
+                return Promise.resolve(quita).then(() => mal(APD.rechazo('Esta cita ya se registró', 'Otra pestaña registró lo que pasó en ella al mismo tiempo. No se guardó lo suyo.',
+                  { href: `cotejo.html?folio=${encodeURIComponent(folio)}`, texto: 'Abrir la cita otra vez' }, 'cita_cerrada')));
+              });
             });
           }).catch(mal), 400);
           signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
         });
       },
-      alEnviar({ resultado, d }) {
+      // La cita ya se registró en otra pestaña: su mensaje y su enlace, en lugar del «No se pudo enviar» general
+      // Lo capturado ya no se puede guardar (otra pestaña registró primero): salir o «Abrir … otra vez» no lo advierte
+      alFallar(e) { if (APD.muestraRechazo(e, form) && !e.errores) sinGuardar = false; },
+      alEnviar({ resultado, d, expediente }) {
         const cita = d.cita_fecha ? `${fecha(d.cita_fecha)} a las ${d.cita_hora}` : '';
         // Resultado de la cita con el módulo «resultado» del estándar (1.4.0, P113): [familia, título, texto, pasos]; lo
         // que sigue en varias acciones va en la secuencia «Qué sigue» (P119)

@@ -58,7 +58,8 @@
     const s = datos.solicitud.find((x) => x.folio === folio);
     if (!s) return falla('No se encontró esa solicitud. Vuelva a la bandeja y elíjala de nuevo.');
     // Una solicitud se revisa mientras está enviada: si la persona la reenvió después de una revisión, se revisa otra vez
-    const ya = P.revisiones()[folio];
+    // La última revisión que se aplicó (no una que se guardó en otra pestaña y la base no aplicó: F2 M1)
+    const ya = P.revisiones(datos)[folio];
     if (s.estado !== 'enviada') {
       const actual = APD.nombrePersonal(s.estado);
       return falla(ya ? `Ya registró la revisión de esta solicitud en esta prueba (${ya.texto}). Su situación actual es «${actual}».`
@@ -79,6 +80,12 @@
       .sort((a, b) => a.revisada_en.localeCompare(b.revisada_en));
     const corregidos = new Set(P.corregidos(datos, s).map((d) => d.requisito));
     const v = P.vuelta(datos, s);
+    /* La vuelta que se abrió (auditoría «intentar romperlo», F2 A2 y M1): su situación, desde cuándo y los documentos que se
+       ven. Al registrar se compara con lo guardado de ahora: si otra pestaña ya registró una revisión, o la persona la
+       reenvió con otro documento, no se guarda (en la etapa 3, la API responde 409 «La solicitud cambió»). */
+    const huella = (dd, sol) => [sol.estado, sol.envio_real || sol.estado_desde, ...dd.documento.filter((x) => x.solicitud_id === sol.id && x.vigente)
+      .map((x) => `${x.requisito}|${x.cargado_real || x.cargado_en}|${x.estado}`).sort()].join('~');
+    const abierta = huella(datos, s);
     const dict = s.tipo_acreditacion === 'dictaminador';
 
     /* ----- Cabeza: la solicitud y la persona ----- */
@@ -307,20 +314,39 @@
     const instancia = FormKit.iniciar(form, {
       enviar(payload, { signal }) {
         return new Promise((ok, mal) => {
-          const t = setTimeout(() => {
+          const t = setTimeout(() => APD.cargar().then((ahora) => {
             const d = Object.assign({}, payload.datos, payload.datos.cita_fecha ? { cita_fecha: isoDe(payload.datos.cita_fecha) } : {});
             const resultado = document.getElementById('resultado').value;
+            // Lo guardado de ahora, justo antes de guardar: ¿sigue siendo la vuelta que se abrió?
+            const s2 = ahora.solicitud.find((x) => x.folio === folio);
+            const otraVez = { href: `revisar.html?folio=${encodeURIComponent(folio)}`, texto: 'Abrir la solicitud otra vez' };
+            if (!s2 || s2.estado !== 'enviada') {
+              return mal(APD.rechazo('No se guardó su revisión', `Ya se registró otra revisión de esta solicitud (en otra pestaña o por otra persona): ahora está «${s2 ? APD.nombrePersonal(s2.estado) : 'sin datos'}».`,
+                { href: 'revision.html', texto: 'Volver a la bandeja' }, 'revision_fuera_de_turno'));
+            }
+            if (huella(ahora, s2) !== abierta) {
+              return mal(APD.rechazo('No se guardó su revisión', 'La solicitud cambió desde que la abrió: la persona la reenvió o cargó otro documento. Ábrala otra vez para revisar lo de ahora.', otraVez, 'conflicto'));
+            }
             const textos = {
               validada: `Validada · cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
               con_observaciones: 'Con observaciones',
               rechazada: 'Rechazada'
             };
-            P.guardaRevision(folio, { resultado, texto: textos[resultado], datos: d, revisor: P.REVISORA.usuario, en: new Date().toISOString() });
-            ok({ resultado, d });
-          }, 400);
+            const en = new Date().toISOString();
+            P.guardaRevision(folio, { resultado, texto: textos[resultado], datos: d, revisor: P.REVISORA.usuario, en, desde: s.envio_real || s.estado_desde });
+            // Y después: la revisión se aplicó (como la respuesta de la API); si no, se retira y se dice, nunca un éxito falso
+            return APD.cargar().then((despues) => {
+              if (despues.revision.some((r) => r.solicitud_id === s.id && r.registrada_en === en)) return ok({ resultado, d });
+              P.retiraRevision(folio, en);
+              return mal(APD.rechazo('No se guardó su revisión', 'Otra revisión de esta solicitud se registró al mismo tiempo.', otraVez, 'conflicto'));
+            });
+          }).catch(mal), 400);
           signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
         });
       },
+      // La solicitud cambió en otra pestaña: su mensaje y su enlace, en lugar del «No se pudo enviar» general
+      // Lo capturado ya no se puede guardar (otra pestaña registró primero): salir o «Abrir … otra vez» no lo advierte
+      alFallar(e) { if (APD.muestraRechazo(e, form) && !e.errores) sinGuardar = false; },
       alEnviar({ resultado, d }) {
         const nombre = APD.nombreCompleto(p);
         // Resultado de la decisión con el módulo «resultado» del estándar (1.4.0, P113): título con el desenlace en su

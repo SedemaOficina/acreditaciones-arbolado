@@ -277,9 +277,12 @@
       const folio = new URLSearchParams(location.search).get('folio');
       const g = datos.grupo.find((x) => x.folio === folio);
       if (g && g.estado === 'confirmado') {
-        aqui.push(acciones(boton('Iniciar el curso hoy (simulado)', () => {
+        aqui.push(acciones(boton('Iniciar el curso hoy (simulado)', (e) => {
+          // Un doble clic no lo guarda dos veces (auditoría «intentar romperlo», bloque 2)
+          const libera = APD.ocupa(e.currentTarget);
+          if (!libera) return;
           APD_PERSONAL.guardaGrupo({ tipo: 'iniciar', grupo_id: g.id, por: APD_PERSONAL.REVISORA.usuario })
-            .then(() => { location.href = `grupo.html?folio=${encodeURIComponent(g.folio)}`; }, () => di('No se pudo guardar en este navegador.'));
+            .then(() => { location.href = `grupo.html?folio=${encodeURIComponent(g.folio)}`; }, () => { libera(); di('No se pudo guardar en este navegador.'); });
         })), ayuda(`El grupo empieza hoy (${APD.fecha(datos.fecha_corte)}) en lugar del ${APD.fecha(g.fecha_inicio)} y pasa a «En curso», para capturar la asistencia y aplicar el examen. En el sistema, el curso empieza en la fecha confirmada.`));
       }
     }

@@ -17,7 +17,11 @@
      · el material de estudio que sube el personal (IndexedDB «material»).
    APD.cargar() los suma a los datos ficticios con mezcla() y mezclaMaterial(), así que todas las pantallas —«Mis
    trámites», «Mi perfil», la bandeja, las citas, los grupos, la asistencia, el examen y el material— ven lo mismo.
-   Lo que la base rechazaría, aquí no cambia nada. Nada sale de la computadora; «Borrar lo guardado» y «Empezar de
+   Lo que la base rechazaría, aquí no cambia nada: la mezcla aplica a cada evento las reglas de la base en el momento en
+   que pasó (transiciones de la solicitud y de la cita, una solicitud activa por persona y tipo, folio de solicitud y de
+   grupo únicos, expediente consecutivo, folio fiscal único; auditoría «intentar romperlo», bloque 2), así que dos
+   pestañas o dos personas a la vez quedan como las dejaría la base. Las pantallas vuelven a leer antes de guardar y
+   comprueban después que su cambio se aplicó: si no, lo retiran y lo dicen (nunca un éxito falso). Nada sale de la computadora; «Borrar lo guardado» y «Empezar de
    cero» (menú de pruebas) lo quitan, y se borra solo a los 7 días sin usar la prueba (caduca). Otro navegador u otro
    equipo no lo ven.
 
@@ -103,16 +107,24 @@
       t.onabort = () => mal(t.error);
     }));
   }
-  /* Lee un registro y escribe el que resulte, en la misma transacción */
+  /* Lee un registro y escribe el que resulte, en la misma transacción. Si nuevo() lanza un error (el registro ya no admite
+     el cambio), la transacción se deshace y la promesa se rechaza con ese error: no se guarda nada. nuevo() puede
+     devolver null para borrar el registro. */
   function cambia(almacen, llave, nuevo) {
     return abre().then((db) => new Promise((ok, mal) => {
       const t = db.transaction(almacen, 'readwrite');
       const s = t.objectStore(almacen);
       const g = s.get(llave);
-      g.onsuccess = () => s.put(nuevo(g.result || null));
+      let error = null;
+      g.onsuccess = () => {
+        try {
+          const n = nuevo(g.result || null);
+          if (n === null) s.delete(llave); else s.put(n);
+        } catch (e) { error = e; t.abort(); }
+      };
       t.oncomplete = () => ok();
-      t.onerror = () => mal(t.error);
-      t.onabort = () => mal(t.error);
+      t.onerror = () => mal(error || t.error);
+      t.onabort = () => mal(error || t.error);
     }));
   }
 
@@ -138,6 +150,9 @@
     const ahora = new Date().toISOString();
     const envio = Object.assign({}, solicitud, { guardada_en: ahora });
     return despuesDe(cambia(SOLS, solicitud.folio, (previo) => {
+      // Una solicitud nueva con un folio que otra pestaña acaba de tomar: no se suma como reenvío de la otra (la base
+      // asigna el folio al guardar, solicitud_folio_uk; auditoría «intentar romperlo», bloque 2)
+      if (previo && !solicitud.existente) throw Object.assign(new Error('folio_ocupado'), { codigo: 'folio_ocupado' });
       const envios = previo ? (previo.envios || [Object.assign({}, previo, { envios: undefined })]) : [];
       return Object.assign({}, previo && envios[0] ? envios[0] : envio, { folio: solicitud.folio, envios: envios.concat([envio]), guardada_en: ahora });
     }).then(() => tx(DOCS, 'readwrite', (s) => {
@@ -145,7 +160,7 @@
         s.put({ clave: `${solicitud.folio}|${a.requisito}|${ahora}`, folio: solicitud.folio, requisito: a.requisito, blob: a.blob, envio: true,
           nombre_original: a.nombre, tipo_mime: a.tipo, tamano_bytes: a.size, cargado_en: ahora });
       }
-    })));
+    })).then(() => ahora));
   }
   /* Un documento suelto, con historial (no sustituye la carga anterior en el almacén): la corrección de un documento
      que no coincidió en el cotejo, o la factura que carga el personal. extra: { en, estado, cargado_por, motivo } */
@@ -154,6 +169,27 @@
     const ahora = en || new Date().toISOString();
     return despuesDe(tx(DOCS, 'readwrite', (s) => s.put(Object.assign({ clave: `${folio}|${requisito}|${ahora}`, folio, requisito, blob: a.blob,
       nombre_original: a.nombre, tipo_mime: a.tipo, tamano_bytes: a.size, cargado_en: ahora }, resto))));
+  }
+  /* Retira lo que se acaba de guardar y la base habría rechazado (bloque 2: la página vuelve a leer después de guardar y,
+     si el cambio no se aplicó, lo quita y lo dice; en la base ni siquiera se habría guardado). retiraEnvio quita un
+     envío de la lista del folio (el registro, si era el único) y sus archivos; quitaDocumento, una carga suelta. */
+  function retiraEnvio(folio, guardadaEn) {
+    return despuesDe(cambia(SOLS, folio, (previo) => {
+      if (!previo) return null;
+      const envios = (previo.envios || [previo]).filter((x) => x.guardada_en !== guardadaEn);
+      return envios.length ? Object.assign({}, previo, { envios }) : null;
+    }).then(() => abre()).then((db) => new Promise((ok, mal) => {
+      const t = db.transaction(DOCS, 'readwrite');
+      const s = t.objectStore(DOCS);
+      const q = s.index('folio').getAll(folio);
+      q.onsuccess = () => { for (const a of q.result || []) if (a.envio && a.cargado_en === guardadaEn) s.delete(a.clave); };
+      t.oncomplete = () => ok();
+      t.onerror = () => mal(t.error);
+      t.onabort = () => mal(t.error);
+    })));
+  }
+  function quitaDocumento(folio, requisito, en) {
+    return despuesDe(tx(DOCS, 'readwrite', (s) => s.delete(`${folio}|${requisito}|${en}`)));
   }
   function solicitudes() { return tx(SOLS, 'readonly', (s) => s.getAll()).catch(() => []); }
   function todosLosDocumentos() { return tx(DOCS, 'readonly', (s) => s.getAll()).catch(() => []); }
@@ -423,8 +459,11 @@
         continue;
       }
       if (e.tipo === 'crear') {
+        // El folio no se repite (grupo_folio_uk): un «crear» con un folio que ya tiene otro grupo (dos pestañas de
+        // «Programar» que lo calcularon igual) no se aplica, y los eventos que lo acompañan tampoco, porque llevan el id
+        // propio de esa creación y ese grupo no existe (auditoría «intentar romperlo», F3 A1: sobrescribían al otro)
         const c = curso(e.tipo_acreditacion, e.modalidad);
-        if (!c || d.grupo.some((g) => g.id === e.grupo_id)) continue;
+        if (!c || d.grupo.some((g) => g.id === e.grupo_id || g.folio === e.folio)) continue;
         const g = { id: e.grupo_id, folio: e.folio, tipo_acreditacion: e.tipo_acreditacion, modalidad: e.modalidad, integracion: e.integracion,
           organizacion_id: e.integracion === 'especifico' ? e.organizacion_id : null, cupo_minimo: c.cupo_minimo, cupo_maximo: c.cupo_maximo,
           instructor: null, sede, fecha_inicio: null, hora_entrada: null, estado: 'en_integracion', estado_desde: en, creado_en: en,
@@ -544,6 +583,19 @@
         d.solicitud = d.solicitud.map((x) => (x.tipo_acreditacion === 'dictaminador' && ABIERTAS.includes(x.estado) && norm(x.carrera) === n ? conPerfil(x) : x));
       }
       const nombreReq = (k) => ((d.requisito || []).find((r) => r.clave === k) || {}).nombre || k;
+      /* EXP-AAAA-NNNN: el siguiente del año, con lo asignado hasta ese momento (el formato de APD_PERSONAL.siguienteExpediente) */
+      const siguienteExpediente = () => {
+        const anio = String(hoy).slice(0, 4);
+        const n = d.solicitante.map((x) => String(x.numero_expediente || '').match(new RegExp(`^EXP-${anio}-(\\d+)$`))).filter(Boolean).map((m) => Number(m[1]));
+        return `EXP-${anio}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(4, '0')}`;
+      };
+
+      /* ¿Tenía la persona otra solicitud activa de ese tipo cuando envió ésta? (la base: solicitud_una_activa y la regla
+         solicitud_activa). Cuenta la que sigue activa y la que se cerró después de ese momento. */
+      const FINALES = global.APD.FINALES;
+      const otraActiva = (pid, tipo, cuando) => d.solicitud.some((o) => o.solicitante_id === pid && o.tipo_acreditacion === tipo
+        && t.ms(o.creada_en || o.enviada_en || o.estado_desde) <= t.ms(cuando)
+        && (!FINALES.includes(o.estado) || t.ms(o.estado_desde) > t.ms(cuando)));
 
       for (const folio of folios) {
         const r = registroDe[folio];
@@ -551,12 +603,26 @@
         const primero = envios[0];
         let i = d.solicitud.findIndex((x) => x.folio === folio);
         if (i < 0 && !primero) continue; // algo guardado de una solicitud que ya no existe
-        if (i < 0) {
+        // Un envío nuevo con el folio de una solicitud que ya existe (otra pestaña lo calculó igual): la base no lo admite
+        // (solicitud_folio_uk); no es un reenvío de aquélla (auditoría «intentar romperlo», bloque 2)
+        if (i >= 0 && primero && primero.existente === false) continue;
+        const nueva = i < 0;
+        if (nueva) {
           // Solicitud nueva de la prueba: entra enviada (su primer envío); un reenvío posterior es otro evento «envio»
           let p = d.solicitante.find((x) => x.id === primero.persona.id) || d.solicitante.find((x) => x.curp === primero.persona.curp);
-          if (!p) { p = Object.assign({ id: `prueba:${primero.persona.curp || primero.folio}`, estado: 'activa', de_prueba: true }, primero.persona); d.solicitante.push(p); }
-          const perfil = primero.tipo_acreditacion === 'dictaminador' ? global.APD.perfilAcademico(d, primero.nivel_estudios, primero.estatus_estudios, primero.carrera) : null;
+          // Sin persona no hay solicitud (auditoría «intentar romperlo», F1 2: un envío sin sesión creaba una solicitud de
+          // «prueba:undefined»); la base exige solicitante_id
+          if (!p && !primero.persona.curp) continue;
+          const sinCuenta = !p;
+          if (sinCuenta) p = Object.assign({ id: `prueba:${primero.persona.curp || primero.folio}`, estado: 'activa', de_prueba: true }, primero.persona);
           const enviada = alCorte(primero.enviada_en);
+          // Las reglas de la base al iniciar una solicitud (apd.solicitud_alta): una sola activa por persona y tipo (F1 3:
+          // dos pestañas enviaban dos solicitudes de poda), y la elegibilidad por sus acreditaciones (apd.comprobar_elegibilidad)
+          if (otraActiva(p.id, primero.tipo_acreditacion, enviada)) continue;
+          const op = (global.APD.opciones(Object.assign({}, d, { solicitud: [] }), p) || {})[primero.tipo_acreditacion];
+          if (!op || !op.disponible || op.modalidad !== primero.modalidad) continue;
+          if (sinCuenta) d.solicitante.push(p);
+          const perfil = primero.tipo_acreditacion === 'dictaminador' ? global.APD.perfilAcademico(d, primero.nivel_estudios, primero.estatus_estudios, primero.carrera) : null;
           d.solicitud.push({ id: `prueba:${primero.folio}`, folio: primero.folio, solicitante_id: p.id, estado: 'enviada', estado_desde: enviada,
             enviada_en: enviada, creada_en: enviada, tipo_acreditacion: primero.tipo_acreditacion, modalidad: primero.modalidad,
             nivel_estudios: primero.nivel_estudios, carrera: primero.carrera, carrera_tecnica: primero.carrera_tecnica || null, estatus_estudios: primero.estatus_estudios,
@@ -587,15 +653,26 @@
           ...(cotejos[folio] || []).map((c) => ({ tipo: 'cotejo', en: c.en, c }))
         ].filter((e) => e.en).sort((x, y) => String(x.en).localeCompare(String(y.en)) || ORDEN_TIPO[x.tipo] - ORDEN_TIPO[y.tipo]);
 
+        const cargaDoc = (a) => {
+          const en = fecha(a.cargado_en);
+          d.documento = d.documento.map((x) => (x.solicitud_id === id && x.requisito === a.requisito && x.vigente ? Object.assign({}, x, { vigente: false }) : x));
+          d.documento.push({ solicitud_id: id, requisito: a.requisito, vigente: true, estado: a.estado || 'pendiente', observacion: '',
+            cargado_en: en, cargado_real: a.cargado_en, cargado_por: a.cargado_por || 'persona', motivo: a.motivo || null,
+            nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob, de_prueba: true });
+        };
+        // Los archivos de un envío van con su envío (misma hora): si la base rechaza el envío, tampoco quedan sus archivos
+        const horasDeEnvio = new Set(envios.map((x) => x.guardada_en));
+        const delEnvio = (a) => Boolean(a.envio) && horasDeEnvio.has(a.cargado_en);
         for (const e of eventos) {
           if (e.tipo === 'doc') {
-            const a = e.a;
-            const en = fecha(a.cargado_en);
-            d.documento = d.documento.map((x) => (x.solicitud_id === id && x.requisito === a.requisito && x.vigente ? Object.assign({}, x, { vigente: false }) : x));
-            d.documento.push({ solicitud_id: id, requisito: a.requisito, vigente: true, estado: a.estado || 'pendiente', observacion: '',
-              cargado_en: en, cargado_real: a.cargado_en, cargado_por: a.cargado_por || 'persona', motivo: a.motivo || null,
-              nombre_original: a.nombre_original, tamano_bytes: a.tamano_bytes, tipo_mime: a.tipo_mime, blob: a.blob, de_prueba: true });
+            if (!delEnvio(e.a)) cargaDoc(e.a);
           } else if (e.tipo === 'envio') {
+            // La máquina de estados de la base (apd.solicitud_cambio): sólo se envía una solicitud en borrador o con
+            // observaciones (auditoría «intentar romperlo», F1 4: una pestaña vieja reenviaba una solicitud ya validada y
+            // la regresaba a revisión). El primer envío de una solicitud nueva de la prueba es el que la crea.
+            const primerEnvio = nueva && e.r === primero;
+            if (!primerEnvio && !['borrador', 'con_observaciones'].includes(s.estado)) continue;
+            for (const a of docsDe[folio] || []) if (delEnvio(a) && a.cargado_en === e.r.guardada_en) cargaDoc(a);
             // Envío o reenvío: vuelve a revisión documental con lo que la persona corrigió (estudios, experiencia) y la
             // adscripción que tiene hoy en «Mi perfil», como la base al pasar a «enviada»; en dictaminador se recalculan el
             // perfil y la experiencia mínima (decisión 2026-10-16, opción C; auditoría «intentar romperlo», F1 5). Sólo lo
@@ -605,16 +682,25 @@
             for (const k of ['nivel_estudios', 'carrera', 'carrera_tecnica', 'estatus_estudios', 'anios_experiencia']) if (k in env) corregido[k] = env[k];
             const pe = env.persona || {};
             if (pe.adscripcion) Object.assign(corregido, { adscripcion: pe.adscripcion, organizacion_id: pe.organizacion_id || null, organizacion_nombre: pe.organizacion_nombre || '' });
-            pon(Object.assign(conPerfil(Object.assign({}, s, corregido)), { estado: 'enviada', estado_desde: fecha(env.estado_desde || e.en), de_prueba: true, cotejo_pausa: null }));
+            // envio_real: la hora real del envío, que no depende de la fecha simulada; marca la vuelta de revisión (bloque 2)
+            pon(Object.assign(conPerfil(Object.assign({}, s, corregido)), { estado: 'enviada', estado_desde: fecha(env.estado_desde || e.en), envio_real: e.r.guardada_en || null, de_prueba: true, cotejo_pausa: null }));
           } else if (e.tipo === 'revision') {
             // Revisión del personal: la persona ve el resultado en «Mis trámites» como lo dejaría la base
             const rev = e.rev;
             const rd = rev.datos || {};
             const RESULTADO = { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' };
             if (s.estado !== 'enviada' || !RESULTADO[rev.resultado]) continue;
+            // La revisión es de la vuelta que se abrió: si la solicitud cambió desde entonces (la persona la reenvió con un
+            // documento nuevo que nadie abrió), no se aplica (auditoría «intentar romperlo», F2 A2). La vuelta se reconoce por
+            // la hora real de su envío (o, en una solicitud ficticia que no se ha reenviado, por su estado_desde), que no
+            // cambia con la fecha simulada. Lo guardado antes del bloque 2 no trae «desde» y se aplica como antes.
+            if (rev.desde && rev.desde !== (s.envio_real || s.estado_desde)) continue;
             if (rd.clasificacion && s.perfil_academico === 'por_clasificar') { clasifica(s.carrera, rd.clasificacion); s = d.solicitud[i]; }
             const en = fecha(rev.en);
-            d.revision.push({ solicitud_id: id, revisor: rev.revisor, resultado: rev.resultado, revisada_en: en, observacion_general: rd.mensaje_general || rd.motivo_rechazo || '', de_prueba: true });
+            // registrada_en: la hora real con que la guardó la pantalla, para que la bandeja y la pantalla que la guardó
+            // sepan si se aplicó (F2 M1)
+            d.revision.push({ solicitud_id: id, revisor: rev.revisor, resultado: rev.resultado, revisada_en: en, observacion_general: rd.mensaje_general || rd.motivo_rechazo || '',
+              texto: rev.texto || '', registrada_en: rev.en, de_prueba: true });
             for (const x of docsVigentes()) {
               const dec = rd[`decision_${x.requisito}`];
               if (dec) marcaDoc(x.requisito, { estado: dec, observacion: dec === 'con_observacion' ? rd[`observacion_${x.requisito}`] || '' : '', revisado_en: en, revisado_por: rev.revisor });
@@ -640,7 +726,19 @@
           if (s.estado !== 'validada_en_linea') return;
           const cd = c.datos || {};
           const abierta = d.cita.findIndex((x) => x.solicitud_id === id && ['pendiente', 'en_pausa'].includes(x.resultado));
+          // Sin cita abierta, la cita ya se cerró (la base: cita_cerrada). Sólo lo guardado por versiones anteriores de la
+          // prueba en una solicitud sin ninguna cita registrada se aplica como antes.
+          if (abierta < 0 && d.cita.some((x) => x.solicitud_id === id)) return;
           const programada = abierta >= 0 ? d.cita[abierta].programada_en : c.cita_en;
+          // Lo de dos pestañas con la misma cita (auditoría «intentar romperlo», F2 A3): lo registrado es de la cita que se
+          // abrió, no de la cita nueva que otra pestaña acaba de dar; y desde la situación en que se abrió (pendiente o en
+          // pausa, y la misma pausa). Como la base (apd.cita_cambio): una cita en pausa no pasa a «no se presentó» ni a
+          // «no era la persona» (cita_transicion).
+          if (abierta >= 0 && c.cita_en && t.ms(programada) !== t.ms(c.cita_en)) return;
+          const deAhora = abierta >= 0 ? d.cita[abierta].resultado : 'pendiente';
+          if (c.desde && c.desde !== deAhora) return;
+          if (c.pausa_real && (!s.cotejo_pausa || s.cotejo_pausa.real !== c.pausa_real)) return;
+          if (deAhora === 'en_pausa' && ['no_se_presento', 'cerrar', 'no_es_la_persona'].includes(c.resultado)) return;
           // Lo que pasó en una cita se registra su día, no antes (la base: cita_futura; auditoría «intentar romperlo», F2
           // A6). Sólo la prueba atiende una cita futura «como si fuera su día», marcada simulada (la fecha no avanza).
           if (global.APD.diaDe(programada) > hoy && !c.simulada) return;
@@ -651,8 +749,12 @@
             if (noCoinciden.length) return;
             const pausa = s.cotejo_pausa;
             if (pausa && (pausa.docs || []).some((k) => !docsVigentes().some((x) => x.requisito === k && global.APD.cargadoTras(x, pausa)))) return;
-            for (const k of Object.keys(cd).filter((x) => x.startsWith('coincide_') && cd[x] === 'si').map((x) => x.slice(9))) marcaDoc(k, { estado: 'aceptado' });
-            if (docsVigentes().some((x) => momentoDe(x.requisito) === 'en_linea' && x.estado !== 'aceptado')) return;
+            const coinciden = Object.keys(cd).filter((x) => x.startsWith('coincide_') && cd[x] === 'si').map((x) => x.slice(9));
+            if (docsVigentes().some((x) => momentoDe(x.requisito) === 'en_linea' && x.estado !== 'aceptado' && !coinciden.includes(x.requisito))) return;
+            // Un folio fiscal no se repite entre solicitudes (la base: folio_fiscal_repetido, R20; F2 A5)
+            const ff = String(cd.factura_folio_fiscal || '').trim().toUpperCase();
+            if (ff && d.solicitud.some((x) => x.id !== id && String(x.factura_folio_fiscal || '').trim().toUpperCase() === ff)) return;
+            for (const k of coinciden) marcaDoc(k, { estado: 'aceptado' });
           }
           const en = fecha(c.en, programada);
           // La observación de la cita (C 3.1): lo que no coincidió, documento por documento; la base la exige en una cita
@@ -668,8 +770,11 @@
           const observa = () => { for (const k of noCoinciden) marcaDoc(k, { estado: 'con_observacion', observacion: cd[`diferencia_${k}`] || '', revisado_en: en, revisado_por: c.atendio, en_cotejo: true }); };
           switch (c.resultado) {
             case 'terminado': {
+              // El expediente lo asigna la base al terminar el cotejo, consecutivo y sin huecos (apd.asignar_expediente): el
+              // siguiente en orden de registro, no el que la pantalla anticipó al abrir (auditoría «intentar romperlo», F2
+              // A4: dos ventanillas daban el mismo número a dos personas)
               const p = d.solicitante[persona(s.solicitante_id)] || {};
-              cambiaPersona(s.solicitante_id, { numero_expediente: p.numero_expediente || c.expediente || null });
+              cambiaPersona(s.solicitante_id, { numero_expediente: p.numero_expediente || siguienteExpediente() });
               // La fotografía de su cuenta queda confirmada (en la cita no se toma otra, decisión 2026-10-17)
               const f = d.fotografia.find((x) => x.solicitante_id === s.solicitante_id && x.vigente);
               if (f) d.fotografia = d.fotografia.map((x) => (x === f ? Object.assign({}, x, { estado: 'confirmada', confirmada_en: en, confirmada_por: c.atendio }) : x));
@@ -727,7 +832,7 @@
 
   global.APD_ARCHIVOS_PRUEBA = {
     CLAVES, caduca, comoLista, listaPorFolio, eventosGrupos, alCambiar, avisaCambio, alCorte, PREGUNTAS_BANCO,
-    guardaEnvio, guardaDocumento, documentos, borraDocumentos, guardaFoto, foto,
+    guardaEnvio, retiraEnvio, guardaDocumento, quitaDocumento, documentos, borraDocumentos, guardaFoto, foto,
     guardaCuenta, cuenta, contrasenaValida, guardaPerfil, borraTodo, borraPestana, guardado, mezcla,
     guardaMaterial, mezclaMaterial
   };

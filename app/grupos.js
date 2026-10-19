@@ -20,6 +20,7 @@
   const P = APD_PERSONAL;
   const $ = (s, r) => (r || document).querySelector(s);
   const plural = APD.plural;
+  const mayus = (t) => t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1);
   const params = new URLSearchParams(location.search);
   /* Esta semana y las siguientes que se muestran siempre (al menos 6 después de la actual); las que tienen un grupo más
      adelante se agregan */
@@ -64,6 +65,30 @@
     });
     $('[data-cursos]').replaceChildren(...botones);
 
+    /* Por qué una persona no entró a un grupo, con lo guardado de ahora (como lo diría la API: solicitud_no_lista,
+       cupo_maximo, grupo_cerrado, otra_organizacion) */
+    function porQueNo(d, g, folio) {
+      const s = d.solicitud.find((x) => x.folio === folio);
+      const quien = s ? APD.nombreCompleto(d.solicitante.find((p) => p.id === s.solicitante_id) || {}) : folio;
+      if (!s) return [quien, 'ya no existe'];
+      const ins = d.inscripcion.find((i) => i.solicitud_id === s.id && i.activa);
+      const otro = ins && d.grupo.find((x) => x.id === ins.grupo_id);
+      if (otro && otro.id === g.id) return [quien, 'ya estaba en el grupo'];
+      if (otro) return [quien, `ya está en «${APD.nombreGrupo(otro, d)}» (${otro.folio})`];
+      if (s.estado !== 'lista_para_curso') return [quien, `ya no está en espera («${APD.nombrePersonal(s.estado)}»)`];
+      const x = P.grupo(d, g);
+      if (x.n >= g.cupo_maximo) return [quien, `el grupo se llenó (${x.n} de ${g.cupo_maximo})`];
+      if (!x.recibe) return [quien, `el grupo ya no recibe personas («${x.situacion.texto}»)`];
+      if (g.integracion === 'especifico' && (s.organizacion_id || null) !== g.organizacion_id) return [quien, 'no es de la organización del grupo'];
+      return [quien, 'no se pudo agregar'];
+    }
+    /* «NÉSTOR …: ya está en «…»; ANA …, LUIS …: el grupo se llenó (25 de 25)»: una razón por grupo de personas */
+    function porQueNoEntraron(d, g, folios) {
+      const porRazon = new Map();
+      for (const f of folios) { const [quien, razon] = porQueNo(d, g, f); porRazon.set(razon, (porRazon.get(razon) || []).concat([quien])); }
+      return [...porRazon].map(([razon, quienes]) => `${quienes.join(', ')}: ${razon}`).join('; ');
+    }
+
     /* Desde un grupo: sólo ese grupo recibe (si todavía recibe personas) */
     let modoGrupo = gPedido ? todos.find((x) => x.g.id === gPedido.id && x.recibe) || null : null;
     // Un enlace guardado a un grupo que ya no recibe (concluido, en curso, lleno): se dice, con su ficha (F3 B6)
@@ -83,9 +108,12 @@
       // Sin fecha, dos grupos se llaman igual: el aviso lleva el folio, como el botón (auditoría «intentar romperlo», F3 B5)
       const cual = g.fecha_inicio ? x.calculado : `${x.calculado} · ${g.folio}`;
       if (hecho === 'agregadas') {
-        APD.pintaAviso($('[data-hecho]'), 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} a «${cual}»`,
-          falta > 0 ? `Le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.`
-            : g.estado === 'en_integracion' ? 'Ya tiene el mínimo: puede confirmarlo.' : `Tiene ${plural(x.n, 'persona', 'personas')}.`, true);
+        // n: las que de verdad entraron (lo leído después de guardar); no: las que no, con su razón (F3 M1)
+        const no = (params.get('no') || '').split(',').filter(Boolean);
+        const resto = falta > 0 ? `Le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.`
+          : g.estado === 'en_integracion' ? 'Ya tiene el mínimo: puede confirmarlo.' : `Tiene ${plural(x.n, 'persona', 'personas')}.`;
+        APD.pintaAviso($('[data-hecho]'), no.length ? 'pend' : 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} a «${cual}»`,
+          no.length ? `${no.length === 1 ? '1 de las que eligió no entró' : `${no.length} de las que eligió no entraron`}. ${porQueNoEntraron(datos, g, no)}. ${resto}` : resto, true);
       } else if (hecho === 'confirmado') {
         APD.pintaAviso($('[data-hecho]'), 'ok', `Grupo confirmado: «${cual}»`, 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.', true);
       } else return;
@@ -94,9 +122,25 @@
       history.replaceState(null, '', `${location.pathname}?curso=${clave}`);
     }
 
-    const irConAviso = (hecho, folio, n) => {
-      location.href = `grupos.html?curso=${clave}&hecho=${hecho}&a=${encodeURIComponent(folio)}${n ? `&n=${n}` : ''}`;
+    const irConAviso = (hecho, folio, n, no) => {
+      location.href = `grupos.html?curso=${clave}&hecho=${hecho}&a=${encodeURIComponent(folio)}${n ? `&n=${n}` : ''}${no && no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
     };
+    /* Agregar a un grupo como lo haría la API (auditoría «intentar romperlo», F3 M1 y B10): se guarda, se vuelve a leer y se
+       cuenta a quién inscribió de verdad la base; si no entró nadie, no queda nada guardado y se dice por qué. Resuelve con
+       { n, no } (las que entraron y los folios de las que no). */
+    function agrega(g, folios) {
+      const activasEn = (d) => new Set(d.inscripcion.filter((i) => i.grupo_id === g.id && i.activa).map((i) => (d.solicitud.find((s) => s.id === i.solicitud_id) || {}).folio));
+      let entraron = [];
+      return P.guardaGrupoComprobado({
+        eventos: () => ({ tipo: 'agregar', grupo_id: g.id, folios, por: P.REVISORA.usuario }),
+        comprueba(d2, d1) {
+          const antes = activasEn(d1);
+          const ahora = activasEn(d2);
+          entraron = folios.filter((f) => ahora.has(f) && !antes.has(f));
+          return entraron.length ? null : `No se agregó a nadie: ${porQueNoEntraron(d2, d2.grupo.find((x) => x.id === g.id) || g, folios)}`;
+        }
+      }).then(() => ({ n: entraron.length, no: folios.filter((f) => !entraron.includes(f)) }));
+    }
 
     /* ----- Todo lo del curso elegido ----- */
     function pinta() {
@@ -209,12 +253,16 @@
           const eleg = elegidas();
           const mal = problema(eleg, x);
           if (mal) { falla(mal); return; }
-          P.guardaGrupo({ tipo: 'agregar', grupo_id: x.g.id, folios: eleg.map((f) => f.x.s.folio), por: P.REVISORA.usuario })
-            .then(() => {
-              if (modoGrupo) location.href = `grupo.html?folio=${encodeURIComponent(x.g.folio)}&hecho=agregadas&n=${eleg.length}`;
-              else irConAviso('agregadas', x.g.folio, eleg.length);
+          // Deshabilitado mientras guarda: un doble clic no guarda dos veces (F3 B10)
+          const libera = APD.ocupa(b);
+          if (!libera) return;
+          agrega(x.g, eleg.map((f) => f.x.s.folio))
+            .then(({ n, no }) => {
+              if (modoGrupo) location.href = `grupo.html?folio=${encodeURIComponent(x.g.folio)}&hecho=agregadas&n=${n}${no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
+              else irConAviso('agregadas', x.g.folio, n, no);
             })
-            .catch(() => falla(['No se pudo guardar', 'La elección sigue aquí; intente de nuevo.']));
+            .catch((e) => { libera(); falla(e && e.motivo ? [`No se agregó a nadie a «${x.calculado}»`, `${e.motivo.replace(/^No se agregó a nadie: /, '')}. Vuelva a cargar la página para ver la espera de ahora.`]
+              : ['No se pudo guardar', 'La elección sigue aquí; intente de nuevo.']); });
         });
         return b;
       });
@@ -324,9 +372,13 @@
           if (van.length) {
             const b = el('button', { type: 'button', class: 'btn btn-primario btn-chico', texto: van.length === 1 ? 'Completar con la que más espera' : `Completar con las ${van.length} que más esperan` });
             b.addEventListener('click', () => {
-              P.guardaGrupo({ tipo: 'agregar', grupo_id: g.id, folios: van.map((y) => y.s.folio), por: P.REVISORA.usuario })
-                .then(() => irConAviso('agregadas', g.folio, van.length))
-                .catch(() => APD.pintaAviso($('[data-hecho]'), 'error', 'No se pudo guardar', 'Intente de nuevo.', true));
+              // Deshabilitado mientras guarda (F3 B10); el aviso dice cuántas entraron de verdad (F3 M1)
+              const libera = APD.ocupa(b);
+              if (!libera) return;
+              agrega(g, van.map((y) => y.s.folio))
+                .then(({ n, no }) => irConAviso('agregadas', g.folio, n, no))
+                .catch((e) => { libera(); APD.pintaAviso($('[data-hecho]'), 'error', e && e.motivo ? `No se agregó a nadie a «${x.calculado}»` : 'No se pudo guardar',
+                  e && e.motivo ? `${e.motivo.replace(/^No se agregó a nadie: /, '')}. Vuelva a cargar la página para ver la espera de ahora.` : 'Intente de nuevo.', true); });
             });
             acciones.push(b);
           }
@@ -371,9 +423,18 @@
           si: 'Sí, confirmar el grupo' })
           .then((si) => {
             if (!si) return;
-            P.guardaGrupo({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: g.fecha_inicio, hora_entrada: APD.hhmm(g.hora_entrada), instructor: g.instructor, por: P.REVISORA.usuario })
+            const libera = APD.ocupa(b);
+            if (!libera) return;
+            // Como la API: con lo guardado de ahora (otra pestaña pudo dar de baja a alguien) y comprobando que quedó
+            // confirmado; si no, se dice por qué (F3 M2: «Grupo confirmado» aunque no se confirmó)
+            const deAhora = (d) => d.grupo.find((y) => y.id === g.id);
+            P.guardaGrupoComprobado({
+              antes: (d1) => P.razonNoConfirma(d1, deAhora(d1), g.fecha_inicio),
+              eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: g.fecha_inicio, hora_entrada: APD.hhmm(g.hora_entrada), instructor: g.instructor, por: P.REVISORA.usuario }),
+              comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'confirmado' ? null : P.razonNoConfirma(d2, deAhora(d2), g.fecha_inicio) || 'la base no lo confirmó')
+            })
               .then(() => irConAviso('confirmado', g.folio))
-              .catch(() => APD.pintaAviso($('[data-hecho]'), 'error', 'No se pudo confirmar', 'Intente de nuevo.', true));
+              .catch((e) => { libera(); APD.pintaAviso($('[data-hecho]'), 'error', 'No se confirmó el grupo', e && e.motivo ? `${mayus(e.motivo)}. Vuelva a cargar la página para ver el grupo como está ahora.` : 'Intente de nuevo.', true); });
           });
       });
       return b;

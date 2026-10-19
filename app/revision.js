@@ -34,7 +34,8 @@
     $('[data-umbral-ambar]').textContent = P.UMBRAL.ambar;
     $('[data-umbral-rojo]').textContent = P.UMBRAL.rojo;
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
-    const revisadas = P.revisiones();
+    // Las que se aplicaron, no lo último que se guardó (auditoría «intentar romperlo», F2 M1)
+    const revisadas = P.revisiones(datos);
 
     // Lo que ya se revisó cambió de estado (APD.cargar aplica las revisiones de la prueba); si la persona lo reenvió,
     // vuelve a estar enviada y regresa a la bandeja como reenviada

@@ -178,6 +178,62 @@
     return datos.solicitante.find((x) => x.id === s.id && x.estado === 'activa') || null;
   }
 
+  /* ===== Dos pestañas, dos personas a la vez y doble clic (auditoría «intentar romperlo», bloque 2) =====
+     En el sistema la base y la API detienen casi todo esto; la versión de prueba se comporta igual: cada pantalla vuelve
+     a leer lo guardado justo antes de guardar y, si el cambio ya no procede, no lo guarda y lo dice con el mensaje que
+     daría la API; después de guardar comprueba que se aplicó. Nunca un éxito falso. */
+
+  /* Un rechazo como el que daría la API (409 o 422): título, texto, enlace opcional { href, texto }, el código de la
+     regla y, si es de un campo, errores [{ campo, mensaje }] (el núcleo los pinta junto al campo). */
+  function rechazo(titulo, texto, enlace, codigo, errores) {
+    return Object.assign(new Error(`${titulo}. ${texto}`), { rechazo: true, titulo, texto, enlace: enlace || null, codigo: codigo || 'conflicto',
+      mensaje: `${titulo}. ${texto}`, errores: errores || undefined });
+  }
+  /* Pinta un rechazo en el aviso de envío del formulario ([data-estado-envio]), en lugar del «No se pudo enviar» general
+     del núcleo, con su enlace. Devuelve true si lo pintó. */
+  function muestraRechazo(e, form) {
+    if (!e || !e.rechazo) return false;
+    const a = form && form.querySelector('[data-estado-envio]');
+    const t = a && a.querySelector('.aviso-texto');
+    if (!t) return false;
+    t.replaceChildren(el('strong', { texto: `${e.titulo}. ` }), document.createTextNode(e.texto),
+      ...(e.enlace ? [document.createTextNode(' '), el('a', { href: e.enlace.href, texto: e.enlace.texto })] : []));
+    a.hidden = false;
+    a.focus();
+    return true;
+  }
+
+  /* ----- La sesión con la que se abrió la página (F1 1 y 2) -----
+     La sesión simulada vive en este navegador y la comparten todas las pestañas: si en otra se salía o se entraba con otra
+     cuenta, una pestaña abierta enviaba la solicitud (o «Mi perfil») a nombre de quien entró después, o de nadie. Cada
+     página recuerda con quién se abrió y, antes de guardar a nombre de la sesión, comprueba que siga siendo la misma
+     persona. En la etapa 3 la página manda la persona que espera (solicitante_id) y la API la compara con la de la
+     cookie: si no coincide, 409 y no guarda. */
+  const SESION_AL_ABRIR = (() => { const s = leeSesion(); return s && s.id ? String(s.id) : null; })();
+  function sesionCambio() {
+    const s = leeSesion();
+    const ahora = s && s.id ? String(s.id) : null;
+    if (SESION_AL_ABRIR && ahora === SESION_AL_ABRIR) return null;
+    const volver = encodeURIComponent(global.location.pathname.split('/').pop() + global.location.search);
+    return rechazo(ahora ? 'Tu sesión cambió en otra pestaña' : 'Tu sesión se cerró en otra pestaña',
+      ahora ? 'En otra pestaña se entró con otra cuenta. No se guardó nada, para no mezclar tus datos con los de otra persona.'
+        : 'En otra pestaña se salió de tu cuenta. No se guardó nada.',
+      { href: `entrar.html?volver=${volver}`, texto: 'Vuelve a entrar con tu cuenta' }, 'sesion_cambio');
+  }
+
+  /* ----- Doble clic: un botón propio que guarda queda deshabilitado mientras guarda -----
+     El estándar ya bloquea el botón de envío de sus formularios ([data-accion="enviar"]) mientras envía; los botones
+     propios del proyecto (los de «Grupos», el segundo botón de «Programar», «Guardar la asistencia», «Publicar»…) no.
+     ocupa(boton) lo marca ocupado (aria-disabled y aria-busy) y devuelve la función que lo libera; si ya estaba ocupado
+     devuelve null y la página no guarda otra vez. Al guardar con éxito la página cambia de dirección y no lo libera. */
+  const OCUPADOS = new WeakSet();
+  function ocupa(...botones) {
+    const bs = botones.flat().filter(Boolean);
+    if (bs.some((b) => OCUPADOS.has(b) || b.getAttribute('aria-disabled') === 'true')) return null;
+    for (const b of bs) { OCUPADOS.add(b); b.setAttribute('aria-disabled', 'true'); b.setAttribute('aria-busy', 'true'); }
+    return () => { for (const b of bs) { OCUPADOS.delete(b); b.removeAttribute('aria-disabled'); b.removeAttribute('aria-busy'); } };
+  }
+
   /* ----- Adscripción (decisiones 2026-10-15): es de la persona; cada solicitud copia la que tenga al enviarse ----- */
   const ADSCRIPCIONES = {
     independiente: 'Independiente', privada: 'Empresa, consultoría o particular',
@@ -735,7 +791,7 @@
   const mesesCita = (datos) => parametro(datos, 'meses_adelanto_cita') || 6;
 
   global.APD = {
-    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita,
+    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,

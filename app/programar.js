@@ -351,7 +351,10 @@
 
     /* ----- Guardar ----- */
     let accion = 'confirmar';
-    for (const b of $$('[data-programar]')) b.addEventListener('click', () => { accion = b.dataset.programar; });
+    // Mientras guarda, ninguno de los dos botones vuelve a guardar: el estándar sólo bloquea el primero ([data-accion=
+    // "enviar"]) y «Guardar sin confirmar» mandaba dos creaciones con un doble clic (auditoría «intentar romperlo», F3 M6)
+    const botones = $$('[data-programar]');
+    for (const b of botones) b.addEventListener('click', (e) => { if (b.getAttribute('aria-disabled') === 'true') { e.preventDefault(); e.stopImmediatePropagation(); return; } accion = b.dataset.programar; }, true);
     const avisoFalta = $('[data-falta]');
     const inst = FormKit.iniciar(form, {
       enviar(payload) {
@@ -382,38 +385,62 @@
           a.focus();
           return Promise.resolve({ rechazado: true });
         }
-        return guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, integracion: integracion() });
+        const libera = APD.ocupa(botones.filter((b) => !b.matches('[data-accion="enviar"]')));
+        return guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, integracion: integracion() })
+          .finally(() => { if (libera) libera(); });
       },
       alEnviar(r) { if (r && r.rechazado) return; muestraResultado(r); },
-      alFallar(err) { const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
+      alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
     });
 
-    /* Los eventos de siempre, en orden (la base hace lo mismo en una transacción) */
+    /* Los eventos de siempre, en orden (la base hace lo mismo en una transacción), como lo haría la API (auditoría «intentar
+       romperlo», F3 A1): el folio de un grupo nuevo se calcula al guardar, con lo guardado más reciente (no con lo de cuando
+       se abrió la página), y la creación lleva un id propio; después se lee lo que quedó. Si otra pestaña creó un grupo con
+       ese folio al mismo tiempo, la base rechaza éste y no se toca el otro. */
     function guarda({ ini, hora, instructor, confirmar, integracion: tipoGrupo }) {
       const folios = elegidas().map((x) => x.s.folio);
-      const folio = gExistente ? gExistente.folio : P.siguienteFolioGrupo(datos);
-      const id = gExistente ? gExistente.id : `prueba-grupo:${folio}`;
       const por = P.REVISORA.usuario;
-      const pasos = [];
-      if (gExistente) { if (folios.length) pasos.push({ tipo: 'agregar', grupo_id: id, folios, por }); }
-      else pasos.push({ tipo: 'crear', grupo_id: id, folio, tipo_acreditacion: tipo, modalidad, integracion: tipoGrupo, organizacion_id: tipoGrupo === 'especifico' ? orgDeElegidas() : null, folios, por });
-      pasos.push({ tipo: 'proponer', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
-      if (confirmar) pasos.push({ tipo: 'confirmar', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
-      return pasos.reduce((p, e) => p.then(() => P.guardaGrupo(e)), Promise.resolve())
-        .then(() => APD.cargar())
-        .then((d2) => {
-          const g = d2.grupo.find((x) => x.folio === folio);
-          if (!g) throw Object.assign(new Error('no'), { mensaje: 'No se pudo guardar el grupo en este navegador. Intente de nuevo.' });
-          return { datos: d2, g, confirmar };
-        });
+      let id = gExistente ? gExistente.id : null;
+      return P.guardaGrupoComprobado({
+        // Un grupo que ya existe: sigue por confirmar (otra pestaña pudo confirmarlo o cancelarlo)
+        antes: (d1) => {
+          if (!gExistente) return null;
+          const g1 = d1.grupo.find((x) => x.id === gExistente.id);
+          return !g1 ? 'el grupo ya no existe' : g1.estado !== 'en_integracion' ? `el grupo ya está «${P.grupo(d1, g1).situacion.texto}»` : null;
+        },
+        eventos: (d1) => {
+          const pasos = [];
+          if (gExistente) { if (folios.length) pasos.push({ tipo: 'agregar', grupo_id: id, folios, por }); } else {
+            const folio = P.siguienteFolioGrupo(d1);
+            id = `prueba-grupo:${folio}:${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+            pasos.push({ tipo: 'crear', grupo_id: id, folio, tipo_acreditacion: tipo, modalidad, integracion: tipoGrupo, organizacion_id: tipoGrupo === 'especifico' ? orgDeElegidas() : null, folios, por });
+          }
+          pasos.push({ tipo: 'proponer', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
+          if (confirmar) pasos.push({ tipo: 'confirmar', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
+          return pasos;
+        },
+        comprueba: (d2) => {
+          const g = d2.grupo.find((x) => x.id === id);
+          if (!g) return 'otra pestaña creó un grupo con el mismo folio al mismo tiempo';
+          return g.fecha_inicio === ini ? null : 'la fecha propuesta no se guardó';
+        }
+      }).then(({ datos: d2 }) => {
+        const g = d2.grupo.find((x) => x.id === id);
+        // Las elegidas que de verdad entraron (otra pestaña pudo darles grupo en ese momento): el resultado lo dice
+        const dentro = new Set(d2.inscripcion.filter((i) => i.grupo_id === id && i.activa).map((i) => (d2.solicitud.find((x) => x.id === i.solicitud_id) || {}).folio));
+        return { datos: d2, g, confirmar, fuera: folios.filter((f) => !dentro.has(f)) };
+      }, (e) => Promise.reject(e && e.motivo ? APD.rechazo(gExistente ? 'No se guardó el grupo' : 'No se creó el grupo',
+        `${e.motivo.charAt(0).toLocaleUpperCase('es-MX')}${e.motivo.slice(1)}. No se guardó nada; lo que eligió sigue aquí.`,
+        { href: location.pathname.split('/').pop() + location.search, texto: 'Volver a cargar «Programar»' }, 'conflicto') : e));
     }
 
-    function muestraResultado({ datos: d2, g, confirmar }) {
+    function muestraResultado({ datos: d2, g, confirmar, fuera }) {
       const x = P.grupo(d2, g);
       const nombre = APD.nombreGrupo(g, d2);
       const quedo = g.estado === 'confirmado';
       $('[data-ir-grupo]').href = `grupo.html?folio=${encodeURIComponent(g.folio)}`;
-      const datosTxt = `${g.folio} · ${plural(x.n, 'persona', 'personas')}${g.hora_entrada ? ` · entrada a las ${APD.hhmm(g.hora_entrada)}` : ''}${g.instructor ? ` · ${P.nombreInstructor(g.instructor)}` : ''}.`;
+      const noEntraron = fuera && fuera.length ? ` ${fuera.length === 1 ? '1 de las que eligió no entró' : `${fuera.length} de las que eligió no entraron`}: ya tenían grupo.` : '';
+      const datosTxt = `${g.folio} · ${plural(x.n, 'persona', 'personas')}${g.hora_entrada ? ` · entrada a las ${APD.hhmm(g.hora_entrada)}` : ''}${g.instructor ? ` · ${P.nombreInstructor(g.instructor)}` : ''}.${noEntraron}`;
       if (quedo) {
         FormKit.resultado($('[data-resultado]'), { tono: 'ok', titulo: `Grupo confirmado: ${nombre}`, texto: datosTxt, quien: P.REVISORA.nombre, oculta: form,
           pasos: ['Cada persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
