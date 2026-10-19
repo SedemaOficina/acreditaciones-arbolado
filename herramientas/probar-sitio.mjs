@@ -1630,6 +1630,28 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await sinDesborde(pg, t('grupo concluido con su concentrado'));
   comprueba(enCurso && errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
+
+  // R4-04 y RI-07 (auditoría 2026-10-19): una propuesta vencida (APD-G-2026-005 al 28/09) y un grupo confirmado cuya semana
+  // pasó sin iniciar (APD-G-2026-004 al 05/10) no van en «Sin fecha»: van en «Su fecha ya pasó», con «Elegir otra semana»
+  const pasados = JSON.parse(JSON.stringify(datos));
+  for (const g of pasados.grupo) {
+    if (g.folio === 'APD-G-2026-005') g.fecha_inicio = '2026-09-28';
+    if (g.folio === 'APD-G-2026-004') Object.assign(g, { estado: 'confirmado', fecha_inicio: '2026-10-05', hora_entrada: '09:00:00', instructor: 'instructor2.ficticio' });
+  }
+  const c2 = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+  await c2.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(pasados), contentType: 'application/json' }));
+  const p2 = await c2.newPage();
+  await p2.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await p2.waitForSelector('.plan-semana');
+  const enSin = await p2.$$eval('.plan-semana[data-semana=""] .plan-grupo', (l) => l.map((x) => x.dataset.grupo));
+  const enPasada = await p2.$$eval('.plan-semana[data-semana="pasada"] .plan-grupo', (l) => l.map((x) => x.dataset.grupo));
+  const t005 = (await p2.textContent('.plan-grupo[data-grupo="APD-G-2026-005"]')) || '';
+  comprueba(!enSin.length && enPasada.join() === 'APD-G-2026-005,APD-G-2026-004' && /Su fecha ya pasó/.test(await p2.textContent('[data-semanas]')),
+    t('un grupo con fecha pasada no va en «Sin fecha»: va en «Su fecha ya pasó»'));
+  comprueba(/Propuesta vencida/.test(t005) && !/examen el/.test(t005) && (await p2.getAttribute('.plan-grupo[data-grupo="APD-G-2026-005"] a:has-text("Elegir otra semana")', 'href')) === 'programar.html?curso=poda-nueva&grupo=APD-G-2026-005'
+    && /no inició/.test(await p2.textContent('.plan-grupo[data-grupo="APD-G-2026-004"]')), t('la propuesta vencida lo dice, sin examen por venir, y lleva a «Elegir otra semana»; el confirmado dice que no inició'));
+  await sinDesborde(p2, t('su fecha ya pasó'));
+  await c2.close();
 }
 const APDfecha = (iso) => iso.split('-').reverse().join('/');
 
