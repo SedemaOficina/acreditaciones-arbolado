@@ -763,6 +763,15 @@
       "titulo": "Días inhábiles de la Secretaría para programar cursos",
       "recomendacion": "«Programar un curso» ya marca los días inhábiles en el calendario (parámetro dias_inhabiles), pero hoy no tiene ninguna fecha: no se inventan. Pedir el calendario oficial de días inhábiles publicado en la Gaceta y capturarlo como parámetro; también sirve para el cómputo de plazos en días hábiles de los lineamientos.",
       "lineamientos": "Anteproyecto 0.4: Cómputo de plazos (Cap. I). Los inhábiles los fija la Secretaría por acuerdo en la Gaceta."
+    },
+    {
+      "id": "P151",
+      "grupo": "direccion",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-18",
+      "titulo": "¿Se pueden dar cursos en sábado y domingo?",
+      "recomendacion": "Preguntar al área. Hoy los días del curso son consecutivos (confirmado por Liber, 2026-10-15) y el sistema cuenta también sábado y domingo: un grupo ficticio empieza un sábado. Si no se dan en fin de semana, hay que decidir si el curso de 5 días va siempre de lunes a viernes o si los días se cuentan hábiles (se salta el fin de semana); «Programar un curso» sólo ofrecería lunes a viernes y la base contaría la asistencia y el último día (examen) con días hábiles. Confirmar también si el aula del Vivero y el salón de cómputo del PILARES abren en fin de semana. Se liga con P91 (horario) y P150 (días inhábiles).",
+      "lineamientos": "Anteproyecto 0.4: Art. 37 (curso en días consecutivos). Cambia si se cuentan días hábiles."
     }
   ],
   "resueltos": [
