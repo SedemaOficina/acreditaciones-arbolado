@@ -312,11 +312,6 @@
     const n = datos.grupo.map((g) => String(g.folio).match(new RegExp(`^APD-G-${anio}-(\\d+)$`))).filter(Boolean).map((m) => Number(m[1]));
     return `APD-G-${anio}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3, '0')}`;
   }
-  /* Texto del cupo: «4 de 25 · falta 1 para el mínimo de 5» */
-  function cupoTexto(x) {
-    const falta = x.g.cupo_minimo - x.n;
-    return falta > 0 ? `${x.n} de ${x.g.cupo_maximo} · ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${x.g.cupo_minimo}` : `${x.n} de ${x.g.cupo_maximo}`;
-  }
 
   /* ----- Planear los cursos (propuestas A, B y D aprobadas por Liber el 2026-10-18) -----
      Lo que comparten «Grupos» (planeador por curso), «Programar un curso» y «Mis grupos de hoy». */
@@ -522,6 +517,6 @@
 
   global.APD_PERSONAL = { HORAS, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
-    nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
+    nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };
 }(window));

@@ -31,7 +31,6 @@
 .ficha { display: grid; gap: var(--e-3); padding: var(--e-seccion); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
 .ficha-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-2); }
 .ficha-titulo { font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
-.ficha-folio { font-family: var(--fuente-mono); font-size: var(--t-sm); color: var(--gris); }
 .ficha-sigue { margin: 0; }
 .ficha-material { margin: 0; }
 .ficha-acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); }
@@ -299,33 +298,6 @@ body > main { flex: 1 0 auto; width: 100%; }
 .revision-cabeza .bajada { margin-block-end: 0; }
 
 /* ----- Grupos y asistencia (etapa 2, maqueta aprobada el 2026-10-17) ----- */
-/* Espera por curso: una ficha por curso */
-.cursos { display: grid; gap: var(--e-4); margin: 0 0 var(--e-5); padding: 0; list-style: none; }
-.curso { display: grid; gap: var(--e-2); align-content: start; padding: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); background: var(--blanco); }
-.curso > * { margin: 0; }
-.curso-nombre { font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
-.curso-cifra { font: var(--peso-fuerte) var(--t-xl)/1 var(--fuente-titulo); }
-.curso-cifra span { font: var(--peso-normal) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--gris); }
-.curso .btn { width: auto; justify-self: start; }
-@media (min-width: 760px) { .cursos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1024px) { .cursos { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-/* Elegir personas de la espera */
-.seleccion { display: grid; gap: var(--e-3); margin-block-start: var(--e-4); padding: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); background: var(--blanco); }
-.seleccion > * { margin: 0; }
-/* En teléfono los botones de la espera van a todo el ancho, todos iguales; desde 560 px, a su medida (D16) */
-.seleccion-acciones { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-3); }
-@media (min-width: 560px) { .seleccion .btn { width: auto; justify-self: start; } }
-/* El núcleo empuja el botón primario a la derecha en computadora; aquí van alineados a la izquierda, en orden */
-.seleccion-acciones .btn-primario { margin-inline-start: 0; }
-/* En teléfono (tarjeta) la casilla de cada persona va a la izquierda, en el renglón de su nombre, no sola arriba (D17) */
-tr.fila-persona { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--e-3); align-items: start; }
-.fila-persona .celda-elegir { grid-row: span 4; padding-block: 0; border-bottom: 0; }
-.fila-persona td:not(.celda-elegir) { grid-column: 2; }
-@media (min-width: 760px) {
-  tr.fila-persona { display: table-row; }
-  .fila-persona .celda-elegir { padding-block: var(--e-2); border-bottom: var(--b-1) solid var(--linea); }
-}
-.elegir { display: inline-flex; align-items: center; min-width: var(--objetivo-min); min-height: var(--objetivo-min); }
 /* Un grupo: encabezado con su situación, cupo y acciones */
 .grupo-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
 .grupo-cabeza .bajada { margin-block-end: 0; }
@@ -357,20 +329,6 @@ tr.fila-persona { display: grid; grid-template-columns: auto minmax(0, 1fr); col
 .verificacion-icono { width: var(--e-6); height: var(--e-6); flex: none; }
 .verificacion[data-tono="ok"] .verificacion-situacion { color: var(--ok-txt); }
 .verificacion[data-tono="error"] .verificacion-situacion { color: var(--error-txt); }
-/* «En espera» agrupada por adscripción (Liber, 2026-10-17): cada bloque abre con su adscripción, cuántas son, si
-   alcanzan para un grupo propio y una casilla para elegirlas a todas. En teléfono el título del bloque no es tarjeta */
-tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: none; border: 0; display: flex; align-items: flex-start; gap: var(--e-2); }
-.fila-adscripcion td { padding: 0; border: 0; }
-.fila-adscripcion th { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); padding: 0; background: none; font-family: var(--fuente-cuerpo); font-weight: var(--peso-normal); color: var(--texto); }
-/* El nombre ocupa el alto de la casilla (44 px) para quedar en su mismo renglón (D17) */
-.adscripcion-nombre { display: inline-flex; align-items: center; min-height: var(--objetivo-min); font-family: var(--fuente-titulo); font-weight: var(--peso-fuerte); color: var(--guinda); }
-.adscripcion-cuenta { font-size: var(--t-sm); color: var(--gris); }
-@media (min-width: 760px) {
-  tr.fila-adscripcion { display: table-row; background: var(--blanco); }
-  .fila-adscripcion td { display: table-cell; padding: var(--e-4) var(--e-3) var(--e-2); border-top: var(--b-2) solid var(--guinda); }
-  .fila-adscripcion th { display: table-cell; padding: var(--e-4) var(--e-3) var(--e-2); border-top: var(--b-2) solid var(--guinda); }
-  .adscripcion-cuenta, .adscripcion-nombre { margin-inline-end: var(--e-3); }
-}
 /* Asistencia por día en la ficha del grupo (P.pintaConcentrado, propuesta A): ✓ en gris, ✗ en tinta y negritas; sólo
    «Sin derecho» lleva color. El día sin capturar se lee por su texto. */
 .conc-si { text-align: center; font-size: var(--t-base); color: var(--gris); }
@@ -391,15 +349,9 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
   .tabla-concentrado td:first-child { font-weight: var(--peso-normal); }
   .tabla-concentrado .conc-si, .tabla-concentrado .conc-no { text-align: center; }
 }
-/* «En espera»: la cuenta de elegidas acompaña el desplazamiento (auditoría de tareas, M4) */
-.barra-seleccion { position: sticky; top: env(safe-area-inset-top); z-index: var(--z-lista); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-4); margin-block-start: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); font-weight: var(--peso-semi); }
-.opcion-desc-aviso { color: var(--pend-txt); font-weight: var(--peso-medio); }
-/* «Grupos»: todos los grupos de cada curso que reciben personas (auditoría de tareas, M7) */
-.curso-receptores-titulo { margin: 0; font-size: var(--t-sm); font-weight: var(--peso-semi); }
-.curso-receptores { margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-1); font-size: var(--t-sm); color: var(--gris); }
 /* Una etiqueta larga se parte en líneas: el módulo «estado» la deja en un renglón (white-space: nowrap) y en teléfono
    ensanchaba su tarjeta o su tabla (hallazgo nuevo para el estándar). En las bandejas sigue en un renglón. */
-.estado, .fila-adscripcion .estado { white-space: normal; }
+.estado { white-space: normal; }
 
 /* Material de estudio (decisión 2026-10-18): un documento por bloque, con su archivo y los apartados que conviene
    estudiar; cada apartado abre el PDF en su página. Sin tarjetas dentro de la tarjeta: una línea fina los separa. */

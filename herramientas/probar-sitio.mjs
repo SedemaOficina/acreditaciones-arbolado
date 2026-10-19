@@ -794,7 +794,6 @@ async function solicitudRegresos(navegador, ancho, alto, sufijo) {
   page.on('pageerror', (e) => errores.push(`${page.url()} · ${e.message}`));
   const t = (m) => `[solicitud ${sufijo}] ${m}`;
   const llega = (re) => page.waitForURL(re, { timeout: 5000 }).then(() => true, () => false);
-  const tituloPaso = () => page.$eval(`${pasoVisible} .titulo-paso`, (e) => e.textContent).catch(() => '');
   const enPaso = (re) => page.waitForFunction((r) => { const p = document.querySelector('section[data-paso]:not([hidden]) .titulo-paso'); return p && new RegExp(r).test(p.textContent); }, re, { timeout: 4000 }).then(() => true, () => false);
 
   // B7: un enlace con ?folio= sin sesión pasa por «Entrar» y regresa a la misma solicitud, con su folio
