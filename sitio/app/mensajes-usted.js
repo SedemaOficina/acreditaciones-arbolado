@@ -5,7 +5,9 @@
    grupos, asistencia, aplicar el examen y material de estudio) hablan de usted. Desde la 1.3.2 todos los textos que se ven —los generales,
    los de los formatos (fmt…), las cruzadas (cz…) y la longitud (minimoCaracteres, maximoCaracteres)— viven en
    «mensajes» (P95), y desde la 1.3.4 el formato «fecha» ya da su límite en día/mes/año (P112). Por eso aquí sólo hay
-   textos: sustituye a app/config-usted.js, que además envolvía los formatos para cambiar su redacción.
+   textos: sustituye a app/config-usted.js, que además envolvía los formatos para cambiar su redacción. En la 1.5.1 los
+   textos de los módulos pasaron a «mensajes» (198): de los que se ven en las pantallas del personal (archivos, chips,
+   fecha, visor, tabla, modal, resultado y estado), sólo archRechazoProceso hablaba de tú; los demás no se dirigen a nadie.
 
    En el navegador se carga DESPUÉS de validaciones.config.js y de la configuración de la página, y ANTES del núcleo:
    se suma a FORMKIT_CONFIG.mensajes. En el servidor (etapa 3, y aquí en herramientas/probar-esquemas.mjs) los mismos
@@ -72,6 +74,8 @@
     envioLimite: 'Por ahora no se pueden recibir más envíos desde este equipo. Lo que capturó no se perdió; intente más tarde.',
     descargaError: 'No se pudo preparar el archivo. Intente de nuevo.',
     archRechazoFirma: 'el contenido del archivo no corresponde a su extensión. Elija el archivo original.',
+    // Desde la 1.5.1 es configurable (antes iba escrito en el módulo, de tú)
+    archRechazoProceso: 'no se pudo procesar el archivo. Intente de nuevo.',
     // «pesa 30.0 MB y el máximo es 30 MB» parecía que sí cabía (redondeo del estándar; auditoría «intentar romperlo», F4 B6)
     archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduzca su tamaño o elija otro.',
     archRechazoDuplicado: 'ya adjuntó ese mismo archivo.',
@@ -83,8 +87,8 @@
     // Motivos frecuentes de observación: el grupo lleva el nombre del documento (data-chips-etiqueta, P97)
     chipsFijos: 'Motivos frecuentes para {etiqueta}',
     visorError: 'No se pudo mostrar el documento aquí. Ábralo en otra pestaña con el enlace de arriba.',
-    visorNavegador: 'Se muestra con el visor del navegador. Si no lo ve completo, ábralo en otra pestaña con el enlace de arriba.',
-    sesionExpira: 'Su sesión terminará en {min} minutos. Guarde o continúe para mantenerla.'
+    visorNavegador: 'Se muestra con el visor del navegador. Si no lo ve completo, ábralo en otra pestaña con el enlace de arriba.'
+    // «sesionExpira» se retiró en la 1.5.1 (no hay pieza de sesión en el estándar)
   };
   global.APD_MENSAJES_USTED = M;
   if (global.document) {
