@@ -116,7 +116,18 @@
     return d ? d.toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }) : '';
   }
   function sumaDias(iso, dias) { const d = aFecha(iso); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); }
-  function sumaMeses(iso, meses) { const d = aFecha(iso); d.setMonth(d.getMonth() + meses); return d.toISOString().slice(0, 10); }
+  /* N meses después de una fecha AAAA-MM-DD, como la base (date + interval 'N months'): si el día no existe en el mes de
+     llegada, el último del mes. 29/02/2028 + 12 meses = 28/02/2029 (auditoría 2026-10-19, B8-01; decisión 11). Sin el
+     reloj del navegador: el mismo resultado en cualquier zona horaria. */
+  function sumaMeses(iso, meses) {
+    const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number);
+    const t = a * 12 + (m - 1) + meses;
+    const a2 = Math.floor(t / 12);
+    const m2 = t - a2 * 12 + 1;
+    const ultimo = new Date(Date.UTC(a2, m2, 0)).getUTCDate();
+    const dd = (n) => String(n).padStart(2, '0');
+    return `${a2}-${dd(m2)}-${dd(Math.min(d, ultimo))}`;
+  }
 
   /* El día (AAAA-MM-DD, Ciudad de México) de una fecha y hora */
   const diaDe = (iso) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) : null);
