@@ -19,7 +19,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
 - [`solicitud`](#solicitud) — Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
 - [`revision`](#revision) — Cada ronda de revisión documental en línea, con su resultado. Permite contar cuántas vueltas dio un expediente.
-- [`cita`](#cita) — Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.
+- [`cita`](#cita) — Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. Si la solicitud se cancela con la cita abierta, la base la cierra como cancelada, con el motivo (decisión 8, 2026-10-19). La solicitud guarda en cita_en la cita vigente.
 - [`documento`](#documento) — Archivos cargados por requisito. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`grupo`](#grupo) — Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con el cupo mínimo y nunca pasa del máximo.
 - [`inscripcion`](#inscripcion) — Una solicitud en un grupo. No se borra: una baja o una cancelación la deja inactiva y la solicitud regresa a la bandeja con su antigüedad.
@@ -118,6 +118,7 @@ Restricciones e índices:
 - `CONSTRAINT requisito_curso_pk PRIMARY KEY (tipo_acreditacion, modalidad, requisito)`
 - `CONSTRAINT requisito_curso_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)`
 - `CONSTRAINT requisito_curso_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)`
+- `CREATE INDEX requisito_curso_requisito ON apd.requisito_curso (requisito)`
 
 ## organizacion
 
@@ -178,8 +179,8 @@ Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (ap
 | `numero_expediente` | `text` | No | Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN |
 | `contrasena_hash` | `text` | No | scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar |
 | `estado` | `text` | Sí | activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña) (por omisión: `'activa'`) |
-| `intentos_fallidos` | `smallint` | Sí | Intentos de entrada fallidos seguidos (por omisión: `0`) |
-| `bloqueada_hasta` | `timestamptz` | No | Fin del bloqueo por intentos |
+| `intentos_fallidos` | `smallint` | Sí | Intentos de entrada fallidos seguidos. Lo lleva apd.anotar_intento(); el acceso correcto lo vuelve a 0 (apd.acceso_correcto) (por omisión: `0`) |
+| `bloqueada_hasta` | `timestamptz` | No | Fin del bloqueo por intentos: lo pone la base al llegar a intentos_maximos, por minutos_bloqueo minutos (parámetros); poner o quitar un bloqueo queda en la bitácora |
 | `bloqueo_motivo` | `text` | No | identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base |
 | `debe_cambiar_contrasena` | `boolean` | Sí | Tiene una contraseña temporal de un solo uso (por omisión: `false`) |
 | `creada_en` | `timestamptz` | Sí | Alta de la cuenta (por omisión: `now()`) |
@@ -191,7 +192,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_curp_uk UNIQUE (curp)`
 - `CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente)`
 - `CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp))`
-- `CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$')`
+- `CONSTRAINT solicitante_correo_ck CHECK (apd.correo_valido(correo))`
 - `CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')`
 - `CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`
 - `CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
@@ -202,6 +203,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))`
 - `CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)`
 - `CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar'`
+- `CREATE INDEX solicitante_organizacion ON apd.solicitante (organizacion_id)`
 
 ## fotografia
 
@@ -236,6 +238,7 @@ Restricciones e índices:
 - `CONSTRAINT fotografia_estado_ck CHECK (estado IN ('pendiente', 'confirmada'))`
 - `CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))`
 - `CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente`
+- `CREATE INDEX fotografia_solicitante ON apd.fotografia (solicitante_id, cargada_en)`
 
 ## sesion_solicitante
 
@@ -264,7 +267,7 @@ Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su e
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
-| `numero` | `text` | Sí | Número impreso en la credencial; lo asigna la base si no se migra. Formato provisional: Liber lo definirá |
+| `numero` | `text` | Sí | Número impreso en la credencial; lo asigna la base si no se migra (serie PD-AAAA-NNNN o DT-AAAA-NNNN, formato provisional: Liber lo definirá). Una migrada conserva el suyo, que nunca tiene la forma de la serie del sistema, para que no choque con una emisión |
 | `solicitante_id` | `uuid` | Sí | Titular |
 | `tipo_acreditacion` | `text` | Sí | poda o dictaminador |
 | `solicitud_id` | `uuid` | No | Solicitud que la originó; vacía si se migró |
@@ -284,6 +287,7 @@ Restricciones e índices:
 - `CONSTRAINT acreditacion_origen_ck CHECK (origen IN ('sistema', 'kobo', 'papel'))`
 - `CONSTRAINT acreditacion_origen_solicitud_ck CHECK ((origen = 'sistema') = (solicitud_id IS NOT NULL))`
 - `CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en))`
+- `CONSTRAINT acreditacion_numero_serie_ck CHECK ((origen = 'sistema') = (numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$'))`
 - `CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acreditacion, vence_en DESC)`
 - `CREATE INDEX acreditacion_vence ON apd.acreditacion (vence_en)`
 
@@ -339,7 +343,7 @@ Restricciones e índices:
 - `CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada'))`
 - `CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))`
 - `CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal)`
-- `CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')`
+- `CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR apd.rfc_valido(factura_rfc))`
 - `CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')`
 - `CONSTRAINT solicitud_nivel_ck CHECK (nivel_estudios IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria', 'tecnica', 'licenciatura', 'maestria', 'doctorado'))`
 - `CONSTRAINT solicitud_estatus_ck CHECK (estatus_estudios IN ('en_curso', 'trunco', 'concluido', 'titulado'))`
@@ -352,6 +356,9 @@ Restricciones e índices:
 - `CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en)`
 - `CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id)`
 - `CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id)`
+- `CREATE INDEX solicitud_revision ON apd.solicitud (estado, estado_desde)`
+- `CREATE INDEX solicitud_persona ON apd.solicitud (solicitante_id, creada_en)`
+- `CREATE INDEX solicitud_carrera ON apd.solicitud (carrera_id)`
 
 ## revision
 
@@ -375,15 +382,15 @@ Restricciones e índices:
 
 ## cita
 
-Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.
+Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. Si la solicitud se cancela con la cita abierta, la base la cierra como cancelada, con el motivo (decisión 8, 2026-10-19). La solicitud guarda en cita_en la cita vigente.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
 | `solicitud_id` | `uuid` | Sí | Solicitud |
 | `programada_en` | `timestamptz` | Sí | Día y hora de la cita (la cita_en de la solicitud al crearla) |
-| `resultado` | `text` | Sí | pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento o no_es_la_persona (por omisión: `'pendiente'`) |
-| `observacion` | `text` | Sí | En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona) (por omisión: `''`) |
+| `resultado` | `text` | Sí | pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento, no_es_la_persona o cancelada (la solicitud se canceló con la cita abierta; lo pone la base) (por omisión: `'pendiente'`) |
+| `observacion` | `text` | Sí | En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona). Cancelada: el motivo de la cancelación de la solicitud (por omisión: `''`) |
 | `pausada_en` | `timestamptz` | No | Cuándo quedó en pausa; la pausa sólo dura ese día. Lo pone la base |
 | `atendida_por` | `text` | No | Cuenta del personal que la cerró (acceso). Lo pone la base |
 | `atendida_en` | `timestamptz` | No | Cuándo se cerró. Lo pone la base |
@@ -393,12 +400,13 @@ Restricciones e índices:
 
 - `CONSTRAINT cita_pk PRIMARY KEY (id)`
 - `CONSTRAINT cita_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
-- `CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona'))`
+- `CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona', 'cancelada'))`
 - `CONSTRAINT cita_cerrada_ck CHECK ((resultado IN ('pendiente', 'en_pausa')) = (atendida_en IS NULL))`
 - `CONSTRAINT cita_pausa_ck CHECK (resultado <> 'en_pausa' OR pausada_en IS NOT NULL)`
-- `CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona') OR length(trim(observacion)) > 0)`
+- `CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona', 'cancelada') OR length(trim(observacion)) > 0)`
 - `CREATE UNIQUE INDEX cita_una_abierta ON apd.cita (solicitud_id) WHERE resultado IN ('pendiente', 'en_pausa')`
 - `CREATE INDEX cita_agenda ON apd.cita (programada_en)`
+- `CREATE INDEX cita_solicitud ON apd.cita (solicitud_id, programada_en)`
 
 ## documento
 
@@ -435,6 +443,8 @@ Restricciones e índices:
 - `CONSTRAINT documento_estado_ck CHECK (estado IN ('pendiente', 'aceptado', 'con_observacion'))`
 - `CONSTRAINT documento_observacion_ck CHECK (estado <> 'con_observacion' OR length(trim(observacion)) > 0)`
 - `CREATE UNIQUE INDEX documento_uno_vigente ON apd.documento (solicitud_id, requisito) WHERE vigente`
+- `CREATE INDEX documento_solicitud ON apd.documento (solicitud_id, cargado_en)`
+- `CREATE INDEX documento_requisito ON apd.documento (requisito)`
 
 ## grupo
 
@@ -473,6 +483,7 @@ Restricciones e índices:
 - `CONSTRAINT grupo_confirmado_ck CHECK (estado IN ('en_integracion', 'cancelado') OR (instructor IS NOT NULL AND sede IS NOT NULL AND fecha_inicio IS NOT NULL AND hora_entrada IS NOT NULL))`
 - `CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)`
 - `CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado)`
+- `CREATE INDEX grupo_organizacion ON apd.grupo (organizacion_id)`
 
 ## inscripcion
 
@@ -496,6 +507,8 @@ Restricciones e índices:
 - `CONSTRAINT inscripcion_baja_ck CHECK (activa = (baja_en IS NULL))`
 - `CREATE UNIQUE INDEX inscripcion_una_activa ON apd.inscripcion (solicitud_id) WHERE activa`
 - `CREATE INDEX inscripcion_grupo ON apd.inscripcion (grupo_id) WHERE activa`
+- `CREATE INDEX inscripcion_grupo_historial ON apd.inscripcion (grupo_id, inscrita_en)`
+- `CREATE INDEX inscripcion_solicitud ON apd.inscripcion (solicitud_id, inscrita_en)`
 
 ## asistencia
 
@@ -506,7 +519,7 @@ Asistencia por día de curso, capturada por el instructor; la del último día s
 | `inscripcion_id` | `uuid` | Sí | Inscripción |
 | `dia` | `smallint` | Sí | Día del curso, desde 1 |
 | `asistio` | `boolean` | Sí | Asistió ese día |
-| `capturada_por` | `text` | Sí | Cuenta del instructor (acceso) |
+| `capturada_por` | `text` | Sí | Cuenta del personal que capturó (acceso). Lo pone la base: la cuenta de la sesión (apd.usuario) |
 | `capturada_en` | `timestamptz` | Sí | Captura (por omisión: `now()`) |
 
 Restricciones e índices:
@@ -524,7 +537,7 @@ Calificación del examen final: la captura el instructor o llega del sistema de 
 | `inscripcion_id` | `uuid` | Sí | Inscripción |
 | `presentado_en` | `date` | Sí | Fecha del examen |
 | `calificacion` | `numeric(3,1)` | Sí | De 0.0 a 10.0 |
-| `capturado_por` | `text` | Sí | Cuenta del instructor (acceso) o del sistema de examen en línea |
+| `capturado_por` | `text` | Sí | Cuenta del instructor (acceso) o del sistema de examen en línea. Lo pone la base: la cuenta de la sesión (apd.usuario) |
 | `origen` | `text` | Sí | captura: la registra el instructor; examen_web: la registra el examen en línea del salón de cómputo del PILARES (R36; prototipo en la versión de prueba) (por omisión: `'captura'`) |
 | `capturado_en` | `timestamptz` | Sí | Captura (por omisión: `now()`) |
 

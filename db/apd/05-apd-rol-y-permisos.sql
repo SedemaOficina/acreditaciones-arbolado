@@ -21,8 +21,18 @@ BEGIN
   END IF;
 END $$;
 
-ALTER ROLE apd_api SET search_path = apd, public;
+-- Sin public en su search_path (D-10, auditoría 2026-10-19): nada que alguien cree en public se resuelve antes que lo de
+-- apd (pg_temp, al final, por la misma razón). En PostgreSQL 13 y 14, PUBLIC puede crear en el esquema public por
+-- omisión: ahí, quien administra la base debe correr antes REVOKE CREATE ON SCHEMA public FROM PUBLIC (docs/REGLAS.md,
+-- «Permisos»); este guion lo avisa abajo si no se ha hecho.
+ALTER ROLE apd_api SET search_path = apd, pg_temp;
 REVOKE CREATE ON SCHEMA public FROM apd_api;
+DO $$
+BEGIN
+  IF has_schema_privilege('public', 'public', 'CREATE') THEN
+    RAISE WARNING 'PUBLIC puede crear objetos en el esquema public (PostgreSQL < 15): corra REVOKE CREATE ON SCHEMA public FROM PUBLIC antes de usar la base (docs/REGLAS.md, «Permisos»)';
+  END IF;
+END $$;
 GRANT USAGE ON SCHEMA apd TO apd_api;
 
 -- Configuración editable desde la administración (sólo los valores, nunca las claves)
@@ -83,15 +93,16 @@ GRANT UPDATE (entregada_en) ON apd.acreditacion TO apd_api;
 -- Consultas
 GRANT SELECT ON apd.verificacion_publica, apd.bandeja_demanda, apd.vencidas_en_espera, apd.material_publico TO apd_api;
 
--- La bitácora: sólo leerla y agregarle renglones
-GRANT SELECT, INSERT ON apd.bitacora TO apd_api;
+-- La bitácora: sólo leerla. Los renglones los escriben las reglas por apd.registrar (SECURITY DEFINER, sólo desde un
+-- disparador), con la fecha y el contexto que impone apd.bitacora_alta (D-13 y E2-06, auditoría 2026-10-19)
+GRANT SELECT ON apd.bitacora TO apd_api;
 GRANT SELECT ON apd.migraciones TO apd_api;
 
--- Los folios sólo por la función, que corre con los permisos de quien instala
+-- Folios y expedientes: ni el contador ni sus funciones (decisión 6, 2026-10-19; E2-07). Los piden sólo las reglas que
+-- dan de alta solicitudes, grupos y acreditaciones y la que concluye el cotejo, que corren con los permisos de quien
+-- instala (SECURITY DEFINER, search_path fijo)
 REVOKE ALL ON FUNCTION apd.siguiente_folio(text, smallint) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION apd.siguiente_folio(text, smallint) TO apd_api;
 REVOKE ALL ON FUNCTION apd.asignar_expediente(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION apd.asignar_expediente(uuid) TO apd_api;
 
 INSERT INTO apd.migraciones (version, nombre)
 VALUES (1, 'Instalación')
@@ -104,18 +115,22 @@ ON CONFLICT (version) DO NOTHING;
   Debe funcionar:
       SELECT count(*) FROM apd.bitacora;
       SELECT count(*) FROM apd.bandeja_demanda;
-      SELECT has_table_privilege('apd.bitacora', 'INSERT');      -- t
+      SHOW search_path;                                           -- apd, pg_temp
 
   Debe fallar (permiso denegado o regla); si alguna pasa, la cuenta quedó abierta de más:
       UPDATE apd.bitacora SET detalle = 'x';
       DELETE FROM apd.bitacora;
+      INSERT INTO apd.bitacora (accion, entidad, entidad_id) VALUES ('x', 'x', 'x');
+      SELECT apd.registrar('x', 'x', 'x');
+      SELECT apd.siguiente_folio('PD', 2026::smallint);
+      SELECT apd.asignar_expediente(gen_random_uuid());
       DELETE FROM apd.solicitud;
       DELETE FROM apd.acreditacion;
       UPDATE apd.acreditacion SET vence_en = vence_en + 30;
       UPDATE apd.folio_contador SET ultimo = 0;
       UPDATE apd.parametro SET clave = 'x';
       CREATE TABLE apd.otra (x int);
-      CREATE TABLE public.otra (x int);
+      CREATE TABLE public.otra (x int);         -- en PostgreSQL 13-14, sólo después del REVOKE de «Permisos»
       INSERT INTO apd.migraciones VALUES (2, 'x');
 
   Y el control global, que debe dar 0: ningún permiso directo fuera de su esquema

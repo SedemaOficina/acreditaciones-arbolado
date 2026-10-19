@@ -84,6 +84,9 @@
         "CONSTRAINT requisito_curso_pk PRIMARY KEY (tipo_acreditacion, modalidad, requisito)",
         "CONSTRAINT requisito_curso_curso_fk FOREIGN KEY (tipo_acreditacion, modalidad) REFERENCES apd.curso (tipo_acreditacion, modalidad)",
         "CONSTRAINT requisito_curso_requisito_fk FOREIGN KEY (requisito) REFERENCES apd.requisito (clave)"
+      ],
+      "indices": [
+        "CREATE INDEX requisito_curso_requisito ON apd.requisito_curso (requisito)"
       ]
     },
     {
@@ -139,8 +142,8 @@
         { "nombre": "numero_expediente", "tipo": "text", "nulo": true, "descripcion": "Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN" },
         { "nombre": "contrasena_hash", "tipo": "text", "nulo": true, "descripcion": "scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'activa'", "descripcion": "activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)" },
-        { "nombre": "intentos_fallidos", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Intentos de entrada fallidos seguidos" },
-        { "nombre": "bloqueada_hasta", "tipo": "timestamptz", "nulo": true, "descripcion": "Fin del bloqueo por intentos" },
+        { "nombre": "intentos_fallidos", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Intentos de entrada fallidos seguidos. Lo lleva apd.anotar_intento(); el acceso correcto lo vuelve a 0 (apd.acceso_correcto)" },
+        { "nombre": "bloqueada_hasta", "tipo": "timestamptz", "nulo": true, "descripcion": "Fin del bloqueo por intentos: lo pone la base al llegar a intentos_maximos, por minutos_bloqueo minutos (parámetros); poner o quitar un bloqueo queda en la bitácora" },
         { "nombre": "bloqueo_motivo", "tipo": "text", "nulo": true, "descripcion": "identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base" },
         { "nombre": "debe_cambiar_contrasena", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Tiene una contraseña temporal de un solo uso" },
         { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta de la cuenta" },
@@ -151,7 +154,7 @@
         "CONSTRAINT solicitante_curp_uk UNIQUE (curp)",
         "CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente)",
         "CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp))",
-        "CONSTRAINT solicitante_correo_ck CHECK (correo = lower(correo) AND correo ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')",
+        "CONSTRAINT solicitante_correo_ck CHECK (apd.correo_valido(correo))",
         "CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')",
         "CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
         "CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))",
@@ -163,7 +166,8 @@
       ],
       "indices": [
         "CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)",
-        "CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar'"
+        "CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar'",
+        "CREATE INDEX solicitante_organizacion ON apd.solicitante (organizacion_id)"
       ]
     },
     {
@@ -197,7 +201,8 @@
         "CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))"
       ],
       "indices": [
-        "CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente"
+        "CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente",
+        "CREATE INDEX fotografia_solicitante ON apd.fotografia (solicitante_id, cargada_en)"
       ]
     },
     {
@@ -225,7 +230,7 @@
       "descripcion": "Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
-        { "nombre": "numero", "tipo": "text", "nulo": false, "descripcion": "Número impreso en la credencial; lo asigna la base si no se migra. Formato provisional: Liber lo definirá" },
+        { "nombre": "numero", "tipo": "text", "nulo": false, "descripcion": "Número impreso en la credencial; lo asigna la base si no se migra (serie PD-AAAA-NNNN o DT-AAAA-NNNN, formato provisional: Liber lo definirá). Una migrada conserva el suyo, que nunca tiene la forma de la serie del sistema, para que no choque con una emisión" },
         { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Titular" },
         { "nombre": "tipo_acreditacion", "tipo": "text", "nulo": false, "descripcion": "poda o dictaminador" },
         { "nombre": "solicitud_id", "tipo": "uuid", "nulo": true, "descripcion": "Solicitud que la originó; vacía si se migró" },
@@ -243,7 +248,8 @@
         "CONSTRAINT acreditacion_tipo_ck CHECK (tipo_acreditacion IN ('poda', 'dictaminador'))",
         "CONSTRAINT acreditacion_origen_ck CHECK (origen IN ('sistema', 'kobo', 'papel'))",
         "CONSTRAINT acreditacion_origen_solicitud_ck CHECK ((origen = 'sistema') = (solicitud_id IS NOT NULL))",
-        "CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en))"
+        "CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en))",
+        "CONSTRAINT acreditacion_numero_serie_ck CHECK ((origen = 'sistema') = (numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$'))"
       ],
       "indices": [
         "CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acreditacion, vence_en DESC)",
@@ -299,7 +305,7 @@
         "CONSTRAINT solicitud_estado_ck CHECK (estado IN ('borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita', 'aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada'))",
         "CONSTRAINT solicitud_renovacion_ck CHECK ((modalidad = 'renovacion') = (acreditacion_anterior_id IS NOT NULL))",
         "CONSTRAINT solicitud_factura_folio_uk UNIQUE (factura_folio_fiscal)",
-        "CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR factura_rfc ~ '^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$')",
+        "CONSTRAINT solicitud_factura_rfc_ck CHECK (factura_rfc IS NULL OR apd.rfc_valido(factura_rfc))",
         "CONSTRAINT solicitud_factura_folio_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')",
         "CONSTRAINT solicitud_nivel_ck CHECK (nivel_estudios IN ('ninguna', 'preescolar', 'primaria', 'secundaria', 'preparatoria', 'tecnica', 'licenciatura', 'maestria', 'doctorado'))",
         "CONSTRAINT solicitud_estatus_ck CHECK (estatus_estudios IN ('en_curso', 'trunco', 'concluido', 'titulado'))",
@@ -313,7 +319,10 @@
         "CREATE UNIQUE INDEX solicitud_una_activa ON apd.solicitud (solicitante_id, tipo_acreditacion) WHERE estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada')",
         "CREATE INDEX solicitud_bandeja ON apd.solicitud (tipo_acreditacion, modalidad, estado, lista_para_curso_en)",
         "CREATE INDEX solicitud_organizacion ON apd.solicitud (organizacion_id)",
-        "CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id)"
+        "CREATE INDEX solicitud_anterior ON apd.solicitud (acreditacion_anterior_id)",
+        "CREATE INDEX solicitud_revision ON apd.solicitud (estado, estado_desde)",
+        "CREATE INDEX solicitud_persona ON apd.solicitud (solicitante_id, creada_en)",
+        "CREATE INDEX solicitud_carrera ON apd.solicitud (carrera_id)"
       ]
     },
     {
@@ -338,13 +347,13 @@
     },
     {
       "nombre": "cita",
-      "descripcion": "Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. La solicitud guarda en cita_en la cita vigente.",
+      "descripcion": "Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. Si la solicitud se cancela con la cita abierta, la base la cierra como cancelada, con el motivo (decisión 8, 2026-10-19). La solicitud guarda en cita_en la cita vigente.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
         { "nombre": "solicitud_id", "tipo": "uuid", "nulo": false, "descripcion": "Solicitud" },
         { "nombre": "programada_en", "tipo": "timestamptz", "nulo": false, "descripcion": "Día y hora de la cita (la cita_en de la solicitud al crearla)" },
-        { "nombre": "resultado", "tipo": "text", "nulo": false, "defecto": "'pendiente'", "descripcion": "pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento o no_es_la_persona" },
-        { "nombre": "observacion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona)" },
+        { "nombre": "resultado", "tipo": "text", "nulo": false, "defecto": "'pendiente'", "descripcion": "pendiente, en_pausa, atendida, con_observaciones, sin_pago, no_se_presento, no_es_la_persona o cancelada (la solicitud se canceló con la cita abierta; lo pone la base)" },
+        { "nombre": "observacion", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "En pausa o con observaciones: qué no coincidió (lo ve la persona). Si no era la persona: lo que observó el personal (lo lee la Dirección, no la persona). Cancelada: el motivo de la cancelación de la solicitud" },
         { "nombre": "pausada_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cuándo quedó en pausa; la pausa sólo dura ese día. Lo pone la base" },
         { "nombre": "atendida_por", "tipo": "text", "nulo": true, "descripcion": "Cuenta del personal que la cerró (acceso). Lo pone la base" },
         { "nombre": "atendida_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cuándo se cerró. Lo pone la base" },
@@ -353,14 +362,15 @@
       "restricciones": [
         "CONSTRAINT cita_pk PRIMARY KEY (id)",
         "CONSTRAINT cita_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)",
-        "CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona'))",
+        "CONSTRAINT cita_resultado_ck CHECK (resultado IN ('pendiente', 'en_pausa', 'atendida', 'con_observaciones', 'sin_pago', 'no_se_presento', 'no_es_la_persona', 'cancelada'))",
         "CONSTRAINT cita_cerrada_ck CHECK ((resultado IN ('pendiente', 'en_pausa')) = (atendida_en IS NULL))",
         "CONSTRAINT cita_pausa_ck CHECK (resultado <> 'en_pausa' OR pausada_en IS NOT NULL)",
-        "CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona') OR length(trim(observacion)) > 0)"
+        "CONSTRAINT cita_observacion_ck CHECK (resultado NOT IN ('en_pausa', 'con_observaciones', 'no_es_la_persona', 'cancelada') OR length(trim(observacion)) > 0)"
       ],
       "indices": [
         "CREATE UNIQUE INDEX cita_una_abierta ON apd.cita (solicitud_id) WHERE resultado IN ('pendiente', 'en_pausa')",
-        "CREATE INDEX cita_agenda ON apd.cita (programada_en)"
+        "CREATE INDEX cita_agenda ON apd.cita (programada_en)",
+        "CREATE INDEX cita_solicitud ON apd.cita (solicitud_id, programada_en)"
       ]
     },
     {
@@ -396,7 +406,9 @@
         "CONSTRAINT documento_observacion_ck CHECK (estado <> 'con_observacion' OR length(trim(observacion)) > 0)"
       ],
       "indices": [
-        "CREATE UNIQUE INDEX documento_uno_vigente ON apd.documento (solicitud_id, requisito) WHERE vigente"
+        "CREATE UNIQUE INDEX documento_uno_vigente ON apd.documento (solicitud_id, requisito) WHERE vigente",
+        "CREATE INDEX documento_solicitud ON apd.documento (solicitud_id, cargado_en)",
+        "CREATE INDEX documento_requisito ON apd.documento (requisito)"
       ]
     },
     {
@@ -434,7 +446,8 @@
         "CONSTRAINT grupo_cancelado_ck CHECK (estado <> 'cancelado' OR length(trim(coalesce(motivo_cancelacion, ''))) > 0)"
       ],
       "indices": [
-        "CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado)"
+        "CREATE INDEX grupo_curso_estado ON apd.grupo (tipo_acreditacion, modalidad, estado)",
+        "CREATE INDEX grupo_organizacion ON apd.grupo (organizacion_id)"
       ]
     },
     {
@@ -457,7 +470,9 @@
       ],
       "indices": [
         "CREATE UNIQUE INDEX inscripcion_una_activa ON apd.inscripcion (solicitud_id) WHERE activa",
-        "CREATE INDEX inscripcion_grupo ON apd.inscripcion (grupo_id) WHERE activa"
+        "CREATE INDEX inscripcion_grupo ON apd.inscripcion (grupo_id) WHERE activa",
+        "CREATE INDEX inscripcion_grupo_historial ON apd.inscripcion (grupo_id, inscrita_en)",
+        "CREATE INDEX inscripcion_solicitud ON apd.inscripcion (solicitud_id, inscrita_en)"
       ]
     },
     {
@@ -467,7 +482,7 @@
         { "nombre": "inscripcion_id", "tipo": "uuid", "nulo": false, "descripcion": "Inscripción" },
         { "nombre": "dia", "tipo": "smallint", "nulo": false, "descripcion": "Día del curso, desde 1" },
         { "nombre": "asistio", "tipo": "boolean", "nulo": false, "descripcion": "Asistió ese día" },
-        { "nombre": "capturada_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso)" },
+        { "nombre": "capturada_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del personal que capturó (acceso). Lo pone la base: la cuenta de la sesión (apd.usuario)" },
         { "nombre": "capturada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Captura" }
       ],
       "restricciones": [
@@ -483,7 +498,7 @@
         { "nombre": "inscripcion_id", "tipo": "uuid", "nulo": false, "descripcion": "Inscripción" },
         { "nombre": "presentado_en", "tipo": "date", "nulo": false, "descripcion": "Fecha del examen" },
         { "nombre": "calificacion", "tipo": "numeric(3,1)", "nulo": false, "descripcion": "De 0.0 a 10.0" },
-        { "nombre": "capturado_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso) o del sistema de examen en línea" },
+        { "nombre": "capturado_por", "tipo": "text", "nulo": false, "descripcion": "Cuenta del instructor (acceso) o del sistema de examen en línea. Lo pone la base: la cuenta de la sesión (apd.usuario)" },
         { "nombre": "origen", "tipo": "text", "nulo": false, "defecto": "'captura'", "descripcion": "captura: la registra el instructor; examen_web: la registra el examen en línea del salón de cómputo del PILARES (R36; prototipo en la versión de prueba)" },
         { "nombre": "capturado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Captura" }
       ],
