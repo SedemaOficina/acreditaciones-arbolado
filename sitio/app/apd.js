@@ -66,6 +66,15 @@
     for (const [k, v] of Object.entries(d)) if (Array.isArray(v) && v.some((x) => !esRegistro(x))) d[k] = v.filter(esRegistro);
     return d;
   }
+  // Los datos no se entregan antes de que la página termine de cargar: el núcleo del estándar inicia sus formularios
+  // (FormKit.pasos y demás) al terminar de leerse la página, y archivos-prueba.js va después de la página que llama. Si
+  // los datos llegaban antes (una segunda pestaña con la política de contenido, bloque 6), la solicitud usaba
+  // FormKit.pasos sin iniciar. Con la API pasaría igual con una respuesta rápida. El setTimeout deja correr antes a
+  // todos los que esperan DOMContentLoaded.
+  const paginaLista = new Promise((listo) => {
+    const tras = () => setTimeout(listo, 0);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tras, { once: true }); else tras();
+  });
   function cargar() {
     if (!promesa) {
       promesa = fetch('datos/ficticios.json', { cache: 'no-store' })
@@ -77,7 +86,7 @@
     // Antes, lo guardado hace más de 7 días sin uso se borra (alta 1 de la auditoría integral)
     // (se lee al resolver: archivos-prueba.js se carga después de la página que llama)
     // El material de estudio que subió el personal en este navegador, también (con la URL de cada archivo)
-    return promesa.then((d) => {
+    return Promise.all([promesa, paginaLista]).then(([d]) => {
       const P = global.APD_ARCHIVOS_PRUEBA;
       const b = desdeCitas(d);
       if (!P) return Object.assign({}, b, { material_estudio: (b.material_estudio || []).map((m) => Object.assign({}, m, { url: m.archivo_clave })) });
