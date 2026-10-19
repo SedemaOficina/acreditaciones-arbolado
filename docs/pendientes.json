@@ -828,6 +828,22 @@
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: un rechazo del servidor con mensaje y sin errores por campo se muestra como «No se pudo enviar»",
       "recomendacion": "Cuando la API rechaza algo que no es de un campo (por ejemplo, la sesión cambió o la solicitud ya cambió de estado), el estándar pinta el mensaje genérico y se pierde la razón. Solución provisional: APD.muestraRechazo. Propuesta: mostrar el mensaje del rechazo y, si trae, un enlace."
+    },
+    {
+      "id": "P159",
+      "grupo": "etapa3",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Contrato de concurrencia de la API (etapa 3)",
+      "recomendacion": "La API debe garantizar lo que dice ETAPA-2-PANTALLAS, sección 2e: sesión esperada y respuesta 409, versión de lo que se decide, transiciones válidas, una solicitud activa por tipo, folios y expediente asignados por la base, folio fiscal único, la respuesta es lo que quedó e Idempotency-Key también en los botones propios. Para el personal, comparar con el usuario del SIA (va con P27)."
+    },
+    {
+      "id": "P160",
+      "grupo": "decision",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Dos pestañas de «Cargar el documento correcto» guardan dos cargas",
+      "recomendacion": "La base deja vigente la última carga. Decidir si se avisa a la persona que ya había otra carga en curso o si basta con conservar la última."
     }
   ],
   "resueltos": [
