@@ -29,7 +29,7 @@
   FormKit.registra('fecha', {
     selector: '[data-hoy],[data-ahora],[data-rango],[data-formato="fecha"][data-deriva],[data-formato="fecha-dma"]',
     iniciar(form, ctx) {
-      const { $, $$, cfg, M, anuncia, envoltura, controlPrincipal, validaYPinta, programaBorrador } = ctx;
+      const { $, $$, cfg, M, plantilla, anuncia, envoltura, controlPrincipal, validaYPinta, programaBorrador } = ctx;
 
       form.addEventListener('click', (e) => {
         const b = e.target.closest('[data-hoy],[data-ahora],[data-atajo]');
@@ -83,7 +83,7 @@
             if (!c || c.value === edad) continue;
             c.value = edad;
             c.dispatchEvent(new Event('change', { bubbles: true }));
-            if (edad) anuncia(`${ctx.etiquetaDe(d)}: ${edad} años, calculada con la fecha de nacimiento.`);
+            if (edad) anuncia(plantilla(M.fechaEdadCalculada, { etiqueta: ctx.etiquetaDe(d), edad }));
           }
         };
         ctl.addEventListener('input', calcula);
@@ -101,14 +101,14 @@
         const caja = document.createElement('div');
         caja.className = 'fecha-atajos';
         caja.setAttribute('role', 'group');
-        caja.setAttribute('aria-label', 'Atajos de periodo');
+        caja.setAttribute('aria-label', M.fechaAtajos);
         for (const d of dias) {
           const b = document.createElement('button');
           b.type = 'button';
           b.className = 'btn btn-secundario fecha-atajo';
           b.dataset.atajo = String(d);
           b.dataset.rangoIni = ini; b.dataset.rangoFin = fin;
-          b.textContent = `Últimos ${d} días`;
+          b.textContent = plantilla(M.fechaUltimos, { n: d });
           caja.appendChild(b);
         }
         r.prepend(caja);
@@ -123,7 +123,7 @@
         ini.value = desde.toISOString().slice(0, 10); fin.value = hoy;
         for (const c of [ini, fin]) { c.dispatchEvent(new Event('input', { bubbles: true })); c.dispatchEvent(new Event('change', { bubbles: true })); }
         validaYPinta(b.dataset.rangoIni); validaYPinta(b.dataset.rangoFin);
-        anuncia(`Periodo: del ${ini.value} al ${fin.value}`);
+        anuncia(plantilla(M.fechaPeriodo, { desde: cfg.dmaDeIso(ini.value) || ini.value, hasta: cfg.dmaDeIso(fin.value) || fin.value }));
         $$('[data-atajo]', b.parentNode).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       }
     }

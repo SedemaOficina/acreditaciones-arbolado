@@ -33,14 +33,13 @@
            <a class="btn-enlace visor-abrir" data-visor-abrir href="#" target="_blank" rel="noopener">Abrir en otra pestaña …</a>
          </div>
          <p class="visor-pagina" data-visor-pagina aria-live="polite"></p>
-         <p class="aviso visor-aviso" data-visor-aviso hidden></p>
+         <div class="aviso visor-aviso" data-visor-aviso hidden></div>
          <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
          <p class="visor-nota" data-visor-nota hidden></p>
        </dialog>
      </div>
    Desde código: FormKit.visor.abre({ url, titulo, archivo, tipo, nota }, boton).
    Para una imagen sin extensión en la dirección (blob:), data-visor-tipo="image/png".
-   Tomado del sistema de acreditaciones (P67).
    ========================================================= */
 (function (global) {
   'use strict';
@@ -48,8 +47,8 @@
   const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
   const AJUSTAR = 2; /* 100 %: la hoja al ancho del visor */
   /* pdf.js se busca en vendor/pdfjs-dist/, junto a la carpeta que contiene
-     modulos/: codigo/ en el estándar (formularios/vendor/) o la copia de un
-     proyecto (sitio/formkit/ → sitio/vendor/); con dist/formkit.js, junto a
+     modulos/: codigo/ en el estándar (formularios/vendor/) o una copia del
+     estándar (<carpeta>/formkit/ → <carpeta>/vendor/); con dist/formkit.js, junto a
      dist/. Si está en otro lugar, FORMKIT_CONFIG.visor.pdfjs. */
   const src = document.currentScript && document.currentScript.src;
   const raiz = src && src.match(/^(.*\/)(?:modulos\/visor\/visor|formkit)\.js(?:\?.*)?$/);
@@ -63,7 +62,8 @@
   let observador = null;
 
   const base = () => { const r = cfg.visor.pdfjs || PDFJS_JUNTO || 'vendor/pdfjs-dist/'; return new URL(r.endsWith('/') ? r : `${r}/`, document.baseURI).href; };
-  const di = (texto) => { aviso.textContent = texto; aviso.hidden = !texto; };
+  /* Aviso con el icono de su tono (FRM-39), pintado por el núcleo. */
+  const di = (texto) => { if (!texto) { aviso.hidden = true; return; } aviso = FormKit.aviso(aviso, { tono: 'advertencia', texto }); };
   const hoja = (n, total) => FormKit.utilidades.plantilla(M.visorHoja, { n, total });
   const esImagen = (tipo, nombre) => /^image\//.test(tipo || '') || /\.(jpe?g|png|webp|gif)(\?.*)?$/i.test(nombre || '');
 
@@ -107,10 +107,9 @@
       const fig = document.createElement('figure');
       fig.className = 'visor-hoja-pdf';
       fig.dataset.hoja = String(n);
-      const pie = document.createElement('figcaption');
-      pie.className = 'visor-pie';
-      pie.textContent = hoja(n, doc.numPages);
-      fig.append(lienzo, pie);
+      /* Sin pie «Hoja n de total»: ya lo dice el contador de la barra, y repetido debajo
+         de la hoja confundía. Al lector se lo dice el nombre del lienzo. */
+      fig.append(lienzo);
       figuras.push(fig);
       await pagina.render({ canvasContext: lienzo.getContext('2d'), viewport: vista }).promise;
     }
