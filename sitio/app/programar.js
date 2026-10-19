@@ -247,7 +247,6 @@
     /* ----- Paso 2 · instructor y hora ----- */
     const selInstructor = $('#instructor');
     const selHora = $('#hora_entrada');
-    P.pintaListasGrupo(selInstructor, selHora);
     if (gExistente && gExistente.instructor) selInstructor.value = gExistente.instructor;
     if (gExistente && gExistente.hora_entrada) selHora.value = APD.hhmm(gExistente.hora_entrada);
     // La propuesta, si no hay otra: entrada a las 09:00 y el primer instructor libre esas fechas

@@ -199,7 +199,10 @@
      perfil «revisión y cotejo». Lo hecho en la prueba se guarda en «apd.personal.grupos» (una lista de eventos, en
      orden) y APD.cargar lo aplica como la base (app/archivos-prueba.js, aplicaGrupos). */
   const GRUPOS = A.CLAVES.grupos;
-  /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27) */
+  /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27). Son los mismos de las
+     listas cerradas de grupo.html y programar.html, que se quedan en el HTML porque de ahí sale el esquema con que el
+     servidor valida (esquema-desde-html del estándar); probar-sitio comprueba que coinciden (auditoría 2026-10-19,
+     R4-08). Las horas de entrada sólo están en esas dos listas. */
   const INSTRUCTORES = [
     { usuario: 'instructor.ficticio', nombre: 'Laura Ejemplo Instructora' },
     { usuario: 'instructor2.ficticio', nombre: 'Instructor Ejemplo Dos' }
@@ -314,15 +317,6 @@
 
   /* ----- Planear los cursos (propuestas A, B y D aprobadas por Liber el 2026-10-18) -----
      Lo que comparten «Grupos» (planeador por curso), «Programar un curso» y «Mis grupos de hoy». */
-  /* Horas de entrada: lista cerrada de 24 horas, la misma en la ficha del grupo y en «Programar» (pintaListasGrupo).
-     Horarios de prueba: los define el área (P91). */
-  const HORAS = ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00'];
-  /* Las listas de instructor y de hora de entrada de grupo.html y programar.html, desde INSTRUCTORES y HORAS: una sola
-     fuente (auditoría 2026-10-19, R4-08). En la etapa 3 los instructores los da la API (cuentas con perfil «instructor»). */
-  function pintaListasGrupo(selInstructor, selHora) {
-    if (selInstructor) selInstructor.append(...INSTRUCTORES.map((i) => el('option', { value: i.usuario, texto: i.nombre })));
-    if (selHora) selHora.append(...HORAS.map((h) => el('option', { value: h, texto: h })));
-  }
   /* Lunes de la semana de una fecha (las semanas van de lunes a domingo) */
   function lunesDe(iso) {
     const d = new Date(`${String(iso).slice(0, 10)}T12:00:00-06:00`);
@@ -546,7 +540,7 @@
     marco.dispatchEvent(new CustomEvent('formkit:tabla'));
   }
 
-  global.APD_PERSONAL = { pintaListasGrupo, filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
+  global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };

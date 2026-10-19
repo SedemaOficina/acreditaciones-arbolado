@@ -3508,7 +3508,7 @@ async function accesibilidad(navegador) {
 
 /* ── Limpieza del código (auditoría 2026-10-19, R4-07, A4-01 y R4-08) ──
    Sin clases de apd.css que nada usa, sin nombres exportados por APD y APD_PERSONAL que nadie usa fuera de su archivo
-   (salvo los que se usan dentro), y las horas y los instructores de grupo.html y programar.html desde una sola lista. */
+   (salvo los que se usan dentro), y las horas y los instructores de grupo.html y programar.html iguales. */
 async function limpieza(navegador) {
   const t = (m) => `[limpieza] ${m}`;
   const leer = (r) => readFileSync(join(raiz, r), 'utf8');
@@ -3533,8 +3533,8 @@ async function limpieza(navegador) {
     const sinUsoJs = nombres.filter((n) => !DENTRO[global].includes(n) && !new RegExp(`${alias}\\.${n}\\b|\\{[^}]*\\b${n}\\b[^}]*\\}\\s*=\\s*${alias}\\b`).test(otros));
     comprueba(!sinUsoJs.length, t(`${global}: cada nombre exportado se usa fuera de su archivo${sinUsoJs.length ? '; sin uso: ' + sinUsoJs.join(', ') : ''}`));
   }
-  // R4-08: las listas de horas e instructores no se escriben en el HTML; las dos pantallas muestran las mismas
-  const opcionesFijas = ['sitio/grupo.html', 'sitio/programar.html'].filter((f) => /<option value="(?:instructor|\d\d:\d\d)/.test(leer(f)));
+  // R4-08: las listas cerradas de horas e instructores se quedan en el HTML (de ahí sale el esquema del servidor), pero
+  // son las mismas en la ficha del grupo y en «Programar», y los instructores, los de APD_PERSONAL
   const c = await navegador.newContext({ timezoneId: ZONA });
   const pg = await c.newPage();
   const listas = [];
@@ -3544,9 +3544,9 @@ async function limpieza(navegador) {
     // «Programar» agrega al nombre del instructor si está libre esas fechas: se comparan los valores
     listas.push(JSON.stringify(await pg.evaluate(() => ['#instructor', '#hora_entrada'].map((s) => [...document.querySelectorAll(`${s} option`)].map((o) => o.value)))));
   }
-  const nombresFicha = await pg.$$eval('#instructor option', (l) => l.map((o) => o.textContent));
-  comprueba(!opcionesFijas.length && listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /"07:00"/.test(listas[0]) && nombresFicha.includes('Instructor Ejemplo Dos'),
-    t('horas de entrada e instructores: una sola lista (APD_PERSONAL), la misma en la ficha del grupo y en «Programar»'));
+  const nombresIguales = await pg.$$eval('#instructor option', (l) => l.filter((o) => o.value).every((o) => APD_PERSONAL.nombreInstructor(o.value) === o.textContent) && l.length > 1);
+  comprueba(listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /"07:00"/.test(listas[0]) && nombresIguales,
+    t('horas de entrada e instructores: la misma lista en la ficha del grupo y en «Programar», con los instructores de APD_PERSONAL'));
   comprueba(!/const MESES = \[/.test(leer('sitio/app/programar.js')) && !/nombreCurso/.test(fuentes), t('sin copias de MESES ni de nombreCurso (APD.MESES, APD.cursoLargo)'));
   await c.close();
 }
