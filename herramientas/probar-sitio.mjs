@@ -2380,6 +2380,45 @@ async function romper(navegador) {
       && !(await pg.$$eval('main a[href*="APD-G-2026-003"]', (l) => l.length)), t(`E1-01: «${pagina}.html?folio=» de un grupo de otro instructor dice «Este grupo lo da otra persona» y no lo abre ni lo ofrece`));
   }
   await c.close();
+  // B5-03 (auditoría 2026-10-19): si el banco del examen no carga, un código válido no se da por inexistente
+  ({ c, pg, errores } = await contexto());
+  await pg.goto(BASE + 'aplicar.html?folio=APD-G-2026-003');
+  const presente = pg.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).first();
+  const insB5 = await presente.getAttribute('data-ins');
+  await presente.click();
+  await pg.waitForSelector(`tr[data-ins="${insB5}"] .examen-codigo`);
+  const codigoB5 = (await pg.textContent(`tr[data-ins="${insB5}"] .examen-codigo`)).trim();
+  await c.route('**/datos/examen-ficticio.js*', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: 'global.APD_EXAMEN_BANCO = {' }));
+  const exB5 = await c.newPage();
+  await exB5.goto(BASE + 'examen.html');
+  await exB5.fill('#codigo', codigoB5);
+  await exB5.click('#entrar [data-accion="enviar"]');
+  await exB5.waitForSelector('#entrar [data-estado-envio]:not([hidden])');
+  const juntoB5 = await exB5.evaluate(() => document.querySelector('#codigo').closest('[data-campo]').innerText);
+  comprueba(!/no existe/.test(juntoB5) && /No se pudo abrir el examen\. Avisa a quien aplica el examen\./.test(await exB5.textContent('#entrar [data-estado-envio]')),
+    t('B5-03: sin banco del examen, el código válido no se da por inexistente: «No se pudo abrir el examen. Avisa a quien aplica el examen.»'));
+  await c.close();
+  // B5-04 (auditoría 2026-10-19): un registro null en los datos no tumba las pantallas de grupos
+  ({ c, pg, errores } = await contexto());
+  await conRuta(pg, (j) => { j.grupo.push(null); j.inscripcion.push(null); });
+  const cargaron = [];
+  for (const [pagina, sel] of [['grupos.html?curso=poda-nueva', '.plan-grupo'], ['programar.html?curso=poda-nueva', '.cal-dia'], ['aplicar.html?folio=APD-G-2026-003', '[data-con-grupo]:not([hidden])'], ['asistencia.html?folio=APD-G-2026-003', '.asistencia-fila']]) {
+    await pg.goto(BASE + pagina);
+    cargaron.push(await pg.waitForSelector(sel, { timeout: 8000 }).then(() => true, () => false) && !/No se pud/.test(await pg.textContent('main')));
+  }
+  comprueba(cargaron.every(Boolean), t(`B5-04: con un grupo y una inscripción null en los datos, Grupos, Programar, Aplicar y Asistencia cargan (${cargaron.join(', ')})`));
+  sinErrores(errores, 'B5-04');
+  await c.close();
+  // B5-01 (ya corregido en 0.58, F3 B2): sin las tablas de grupos, «Programar» no deja el formulario a medias ni lo envía
+  ({ c, pg, errores } = await contexto());
+  await conRuta(pg, (j) => { delete j.grupo; delete j.inscripcion; });
+  await pg.goto(BASE + 'programar.html?curso=poda-nueva');
+  await pg.waitForFunction(() => /No se pudo cargar/.test(document.querySelector('[data-bajada]').textContent));
+  await pg.keyboard.press('Enter');
+  await pg.waitForTimeout(300);
+  comprueba(await pg.isHidden('#programar') && !(await pg.$$eval('[data-programar]', (l) => l.filter((b) => b.offsetParent).length)) && /programar\.html\?curso=poda-nueva$/.test(pg.url()),
+    t('B5-01: sin datos de grupos, «Programar» oculta el formulario y sus botones, y no envía nada'));
+  await c.close();
 
   /* ── F4 · datos, material y menú de pruebas ── */
   ({ c, pg, errores } = await contexto());
