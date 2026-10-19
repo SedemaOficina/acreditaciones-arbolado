@@ -72,6 +72,7 @@ antes de cerrar esa etapa; *no* = se puede avanzar.
 | P139 | Aceptar expresamente las notificaciones electrónicas | Sistema: casilla en «Crea tu cuenta». | Anteproyecto 0.4: Cap. XI. | lanzamiento |
 | P140 | Reposición de la credencial | Sistema: función nueva; ¿lleva cuota?. | Anteproyecto 0.4: Cap. II. | no |
 | P141 | Catálogo público de carreras clasificadas | Sistema: página pública. | Anteproyecto 0.4: Art. 18; Transitorio Octavo. | no |
+| P160 | Dos pestañas de «Cargar el documento correcto» guardan dos cargas | La base deja vigente la última carga. Decidir si se avisa a la persona que ya había otra carga en curso o si basta con conservar la última. | — | no |
 
 ## Finanzas y Gaceta Oficial (pago de derechos)
 
@@ -106,6 +107,7 @@ antes de cerrar esa etapa; *no* = se puede avanzar.
 | P55 | Cambio de correo en «Mi perfil» sin comprobar que el correo nuevo es de la persona | Enviar un enlace de confirmación al correo nuevo y un aviso al anterior (aviso C3; requiere el servicio de correo, P23). Ya construido: el correo nuevo no puede ser el de otra cuenta activa. | Anteproyecto 0.4: Cap. XI. Incorporado. | etapa 3 |
 | P80 | Tarea nocturna que cierra las citas en pausa no retomadas | La pausa del cotejo sólo dura el día de la cita. apd.cerrar_pausas_vencidas() regresa con observaciones las que no se retomaron; hay que programarla cada noche (cron del servidor o pg_cron) con la cuenta del servicio. Pedirlo al SIA junto con el despliegue. | — | etapa 3 |
 | P122 | Dos revisoras pueden abrir y decidir la misma solicitud al mismo tiempo | Hallazgo de la auditoría de tareas (M11). Con varias personas en revisión, nada impide que dos abran la misma solicitud de la bandeja. En la etapa 3, con la API: marcar en la bandeja «La está revisando …» mientras alguien la tiene abierta y, al registrar, avisar si otra persona ya la decidió (la base rechaza el segundo cambio de estado). En la versión de prueba no aplica: todo ocurre en un solo navegador. | — | etapa 3 |
+| P159 | Contrato de concurrencia de la API (etapa 3) | La API debe garantizar lo que dice ETAPA-2-PANTALLAS, sección 2e: sesión esperada y respuesta 409, versión de lo que se decide, transiciones válidas, una solicitud activa por tipo, folios y expediente asignados por la base, folio fiscal único, la respuesta es lo que quedó e Idempotency-Key también en los botones propios. Para el personal, comparar con el usuario del SIA (va con P27). | — | no |
 
 ## Unidad de Transparencia (datos personales)
 

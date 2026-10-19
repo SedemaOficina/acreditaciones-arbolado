@@ -831,7 +831,7 @@
     },
     {
       "id": "P159",
-      "grupo": "etapa3",
+      "grupo": "sia",
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Contrato de concurrencia de la API (etapa 3)",
@@ -839,7 +839,7 @@
     },
     {
       "id": "P160",
-      "grupo": "decision",
+      "grupo": "liber",
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Dos pestañas de «Cargar el documento correcto» guardan dos cargas",
