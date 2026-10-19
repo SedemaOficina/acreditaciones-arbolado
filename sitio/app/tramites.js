@@ -260,7 +260,9 @@
     }
     // La credencial se entrega en la oficina del Vivero, después del examen (decisión 2026-10-18); «hoy mismo» sólo el día
     // del examen (auditoría integral, media)
-    const delDia = APD.diaDe(s.estado_desde) === APD.hoy(datos) || (s.estado_desde || '').slice(0, 10) === APD.hoy(datos);
+    // El día de la Ciudad de México, no los 10 primeros caracteres del texto: con una hora en UTC («…T01:30:00Z») esos
+    // son el día siguiente (auditoría 2026-10-19, B8-02). APD.diaDe también acepta una fecha sola (AAAA-MM-DD).
+    const delDia = APD.diaDe(s.estado_desde) === APD.hoy(datos);
     if (s.estado === 'aprobada') sigue = { texto: 'Aprobaste el examen.', pasos: [delDia ? 'Recoge tu credencial hoy mismo, en la oficina del Vivero, antes de irte.' : 'Recoge tu credencial en la oficina del Vivero.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';

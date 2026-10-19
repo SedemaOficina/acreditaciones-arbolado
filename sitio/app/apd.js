@@ -129,8 +129,8 @@
     return `${a2}-${dd(m2)}-${dd(Math.min(d, ultimo))}`;
   }
 
-  /* El día (AAAA-MM-DD, Ciudad de México) de una fecha y hora */
-  const diaDe = (iso) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) : null);
+  /* El día (AAAA-MM-DD, Ciudad de México) de una fecha y hora; una fecha sola (AAAA-MM-DD) es ese mismo día */
+  const diaDe = (iso) => (iso ? aFecha(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) : null);
   /* Una cita en pausa sólo dura su día: después ya no se retoma y la solicitud regresa con observaciones (P80) */
   function pausaVencida(datos, s) {
     return Boolean(s && s.cotejo_pausa) && diaDe(s.cotejo_pausa.cita_en || s.cita_en) < hoy(datos);
