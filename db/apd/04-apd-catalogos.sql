@@ -13,7 +13,7 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
   ('tamano_maximo_archivo_bytes', '5242880',
    'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).'),
   ('tamano_maximo_material_bytes', '31457280',
-   'Tamaño máximo de cada PDF de material de estudio: 30 MB (el manual de poda pesa unos 18 MB; decisión 2026-10-18).'),
+   'Tamaño máximo de cada PDF de material de estudio: 30 MB (el manual de poda publicado pesa 11.7 MB; decisión 2026-10-18).'),
   ('pago_instrucciones', '[pendiente] Banco, cuenta o CLABE y forma de pago: los define la Secretaría de Administración y Finanzas.',
    'Cómo pagar los derechos; se muestra a la persona con su cita y su referencia (decisión 2026-10-14).'),
   ('entrega_lugar', '[pendiente] Si no puedes quedarte el día del examen: días y horario para recoger tu credencial en el Vivero (P10).',
