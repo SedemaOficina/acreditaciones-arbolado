@@ -226,7 +226,12 @@
     const fila = (ins) => filas.find((f) => f.inscripcion.id === ins);
     const codigoDe = (ins) => codigos.find((r) => r.inscripcion_id === ins && r.situacion !== 'reemplazado');
 
-    /* Acciones por persona */
+    /* Acciones por persona. Si el navegador no guardó el pase de lista o el código (almacenamiento bloqueado o lleno), se
+       dice: la fila quedaba igual, sin código ni aviso (auditoría «intentar romperlo», F4 M3) */
+    const noSeHizo = (nombre) => (err) => {
+      pinta(true);
+      APD.pintaAviso($('[data-aviso-accion]'), 'error', `No se registró a ${nombre}`, (err && err.mensaje) || 'No se pudo registrar. Intente de nuevo.', true);
+    };
     let suspenderA = null;
     $('[data-filas]').addEventListener('click', (e) => {
       const b = e.target.closest('[data-accion]');
@@ -234,15 +239,15 @@
       const f = fila(b.dataset.ins);
       const nombre = APD.nombreCompleto(f.persona);
       if (b.dataset.accion === 'presente') {
-        G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario).then((r) => { pinta(true); FormKit.anuncia(`${nombre}, presente. Su código: ${r.codigo.split('').join(' ')}.`); });
+        G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario).then((r) => { pinta(true); FormKit.anuncia(`${nombre}, presente. Su código: ${r.codigo.split('').join(' ')}.`); }, noSeHizo(nombre));
       } else if (b.dataset.accion === 'ausente') {
-        G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); });
+        G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); }, noSeHizo(nombre));
       } else if (b.dataset.accion === 'reponer') {
         const r = codigoDe(f.inscripcion.id);
         FormKit.confirma(b, { titulo: `¿Reponer el código de ${nombre}?`,
           consecuencias: [`El código ${r.codigo} deja de servir.`, 'El examen sigue igual con el código nuevo: mismas preguntas, respuestas guardadas y el tiempo que le quede.'],
           si: 'Sí, reponer el código' })
-          .then((si) => { if (si) API.reponer(r.codigo, INSTRUCTOR.usuario).then((nuevo) => { recientes[f.inscripcion.id] = Date.now(); pinta(true); FormKit.anuncia(`Código nuevo de ${nombre}: ${nuevo.codigo.split('').join(' ')}.`); }); });
+          .then((si) => { if (si) API.reponer(r.codigo, INSTRUCTOR.usuario).then((nuevo) => { recientes[f.inscripcion.id] = Date.now(); pinta(true); FormKit.anuncia(`Código nuevo de ${nombre}: ${nuevo.codigo.split('').join(' ')}.`); }, noSeHizo(nombre)); });
       } else if (b.dataset.accion === 'suspender') {
         suspenderA = { codigo: codigoDe(f.inscripcion.id).codigo, nombre, boton: b };
         $('[data-suspender-titulo]').textContent = `¿Suspender el examen de ${nombre}?`;

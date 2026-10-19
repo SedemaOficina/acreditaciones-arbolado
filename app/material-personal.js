@@ -153,6 +153,13 @@
     const vuelve = (que, clave) => { location.href = `material-personal.html?hecho=${que}&doc=${encodeURIComponent(clave)}`; };
     // Un cambio lleva sólo lo que cambia: archivos-prueba.js lo combina con lo guardado del documento (C4)
     const guardaCambio = (m, cambios) => A.guardaMaterial(Object.assign({ id: m.id, actualizado_en: ahora(), actualizado_por: P.REVISORA.usuario }, cambios));
+    /* El navegador no guardó (sin IndexedDB, bloqueado o lleno): se dice arriba de la lista y el botón se libera (auditoría
+       «intentar romperlo», F4 M2: no pasaba nada y quedaba un rechazo de promesa sin atender) */
+    const noGuardo = (libera, que) => () => {
+      libera();
+      $('[data-resultado]').hidden = true;
+      APD.pintaAviso($('[data-aviso-material]'), 'error', 'No se guardó', APD.textoNoGuardo(que, 'usted'), true);
+    };
 
     $('[data-filas]').addEventListener('click', (e) => {
       const b = e.target.closest('[data-accion-material]');
@@ -161,15 +168,16 @@
       const que = b.dataset.accionMaterial;
       if (que === 'editar' || que === 'reemplazar') { abre(que, m, b); return; }
       // Deshabilitado mientras guarda: un doble clic no guarda dos veces (auditoría «intentar romperlo», bloque 2)
-      if (que === 'publicar') { const libera = APD.ocupa(b); if (libera) guardaCambio(m, { publicado: true }).then(() => vuelve('publicado', m.clave), libera); return; }
+      if (que === 'publicar') { const libera = APD.ocupa(b); if (libera) guardaCambio(m, { publicado: true }).then(() => vuelve('publicado', m.clave), noGuardo(libera, `el cambio de «${m.titulo}»`)); return; }
       // Ocultar quita el documento a quien estudia: se confirma (módulo modal del estándar)
       FormKit.confirma(b, {
         titulo: `¿Ocultar «${m.titulo}» de la página pública?`,
         consecuencias: ['Deja de verse en «Material de estudio»: quien prepara su examen ya no podrá descargarlo.', 'Se conserva aquí, con sus datos: puede publicarlo de nuevo cuando quiera.'],
         si: 'Ocultar el documento'
-      }).then((si) => { const libera = si && APD.ocupa(b); if (libera) guardaCambio(m, { publicado: false }).then(() => vuelve('oculto', m.clave), libera); });
+      }).then((si) => { const libera = si && APD.ocupa(b); if (libera) guardaCambio(m, { publicado: false }).then(() => vuelve('oculto', m.clave), noGuardo(libera, `el cambio de «${m.titulo}»`)); });
     });
 
+    const sinGuardar = (que) => () => Promise.reject(APD.noGuardo('No se guardó', que, 'usted'));
     FormKit.iniciar(form, {
       enviar(payload) {
         const d = payload.datos;
@@ -182,7 +190,7 @@
           const t = textoATemas(d.temas, actual.paginas);
           if (t.error) return falla('temas', t.error);
           return guardaCambio(actual, { titulo: d.titulo.trim(), edicion: d.edicion.trim(), descripcion: d.descripcion.trim(), tipo_acreditacion: tipo, temas: t.temas })
-            .then(() => ({ modo, clave: actual.clave }));
+            .then(() => ({ modo, clave: actual.clave }), sinGuardar('los datos del documento'));
         }
         if (!archivo) return falla('archivo', 'Elija el PDF.');
         return archivo.blob.arrayBuffer().then((buffer) => Promise.all([
@@ -209,9 +217,11 @@
             sha256: suma, paginas, cargado_en: ahora(), cargado_por: P.REVISORA.usuario, actualizado_en: null, actualizado_por: null,
             blob: archivo.blob
           };
-          return A.guardaMaterial(registro).then(() => ({ modo, clave: registro.clave }));
+          return A.guardaMaterial(registro).then(() => ({ modo, clave: registro.clave }), sinGuardar(base ? 'el archivo nuevo' : 'el documento'));
         }));
       },
+      // Lo que el navegador no guardó: con su mensaje, no el «No se pudo enviar… intente de nuevo» general (F4 M2)
+      alFallar(e) { APD.muestraRechazo(e, form); },
       alEnviar({ modo, clave }) { vuelve(modo, clave); }
     });
   }).catch(() => {

@@ -246,6 +246,8 @@ body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-
 /* Versión de prueba: dónde estás en el trámite, siempre a la vista bajo la franja (app/pruebas.js, 2026-10-17) */
 .ubicacion-prueba { border-block-end: var(--b-1) dashed var(--pend); background: var(--blanco); }
 .ubicacion-prueba-int { max-width: var(--ancho-pagina); margin: 0 auto; padding: var(--e-2) var(--e-pagina); font-size: var(--t-sm); text-align: center; }
+/* Avisos de la prueba bajo la ubicación: lo guardado caducó o hay registros que no se pudieron leer (bloque 3, 2026-10-19) */
+.aviso-prueba { max-width: var(--ancho-pagina); margin: var(--e-3) auto 0; padding-inline: var(--e-pagina); }
 
 /* ----- Citas de cotejo (etapa 2, 2026-10-17) ----- */
 .agenda-dia { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); margin-block: var(--e-4); }

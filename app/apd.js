@@ -71,9 +71,44 @@
       const P = global.APD_ARCHIVOS_PRUEBA;
       const b = desdeCitas(d);
       if (!P) return Object.assign({}, b, { material_estudio: (b.material_estudio || []).map((m) => Object.assign({}, m, { url: m.archivo_clave })) });
-      return P.caduca().then(() => P.mezcla(b)).then((x) => P.mezclaMaterial(x));
+      // Si lo guardado caducó, la página lo dice una vez (auditoría «intentar romperlo», F4 B3: la persona caía en «Entrar»
+      // sin saber por qué); la marca vive en esta pestaña y la lee el menú de pruebas (app/pruebas.js)
+      return P.caduca().then((vencida) => { if (vencida) marcaCaducada(); return P.mezcla(b); }).then((x) => P.mezclaMaterial(x));
     });
   }
+  /* ----- Lo guardado en la prueba caducó (F4 B3) -----
+     caduca() lo borra todo, también lo de esta pestaña, y devuelve si venció. La marca va en sessionStorage, para que la
+     vea la pantalla a la que lleva la página (sin sesión, «Entrar»), y en memoria, por si sessionStorage está bloqueado.
+     Se marca una sola vez por página; caducada() la lee y la quita un momento después (si la página se va enseguida a
+     «Entrar», la marca llega a ésa): el aviso sale una vez. */
+  const CLAVE_CADUCADA = 'apd.prueba.caducada';
+  let caducadaAqui = false;
+  let caducadaMarcada = false;
+  function marcaCaducada() {
+    if (caducadaMarcada) return;
+    caducadaMarcada = true;
+    caducadaAqui = true;
+    try { global.sessionStorage.setItem(CLAVE_CADUCADA, '1'); } catch (e) { /* sin almacenamiento: queda la marca en memoria */ }
+  }
+  function caducada() {
+    let si = caducadaAqui;
+    try { si = si || global.sessionStorage.getItem(CLAVE_CADUCADA) === '1'; } catch (e) { /* sin almacenamiento */ }
+    caducadaAqui = false;
+    if (si) setTimeout(() => { try { global.sessionStorage.removeItem(CLAVE_CADUCADA); } catch (e) { /* sin almacenamiento */ } }, 1500);
+    return si;
+  }
+
+  /* ----- El navegador no permitió guardar (auditoría «intentar romperlo», bloque 3) -----
+     En la versión de prueba todo se guarda en este navegador; si está en modo privado, con el almacenamiento bloqueado o
+     lleno, lo que se iba a guardar no queda. Ninguna pantalla lo da por guardado: dice esto, con el trato de quien lo lee
+     («tú» para la persona solicitante, «usted» para el personal). Es el texto que ya daba «Crea tu cuenta» (2026-10-17).
+     En la etapa 3 no aplica: lo guarda la API. */
+  function textoNoGuardo(que, trato) {
+    const usted = trato === 'usted';
+    return `Este navegador no permitió guardar ${que} (puede estar en modo privado o con el almacenamiento bloqueado o lleno). ${usted ? 'Pruebe' : 'Prueba'} en una ventana normal o en otro navegador.`;
+  }
+  /* El mismo aviso como rechazo de la API, para APD.muestraRechazo: título, texto y código «almacenamiento» */
+  function noGuardo(titulo, que, trato) { return rechazo(titulo, textoNoGuardo(que, trato), null, 'almacenamiento'); }
 
   /* Lo que las pantallas leen de la solicitud y la base guarda en sus citas (apd.cita): la cita nueva y su motivo (no se
      presentó o no llevó el comprobante), la pausa y las inasistencias. Parte del contrato de la API (auditoría integral,
@@ -792,6 +827,7 @@
 
   global.APD = {
     fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa,
+    textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,

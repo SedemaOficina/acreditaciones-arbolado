@@ -54,7 +54,8 @@
   document.addEventListener('DOMContentLoaded', marcaInternos);
 
   const lee = () => { try { return window.sessionStorage.getItem(CLAVE) === 'si'; } catch (e) { return false; } };
-  const escribe = (v) => { try { window.sessionStorage.setItem(CLAVE, v ? 'si' : ''); } catch (e) { /* sin almacenamiento: no se recuerda */ } };
+  // Devuelve si quedó guardado: sin almacenamiento, el menú lo dice en lugar de recargar sin cambio (bloque 3)
+  const escribe = (v) => { try { window.sessionStorage.setItem(CLAVE, v ? 'si' : ''); return true; } catch (e) { return false; } };
   const pagina = (location.pathname.split('/').pop() || 'index.html');
   const form = document.querySelector('form[data-formkit]');
 
@@ -361,12 +362,17 @@
       el('p', {}, [el('strong', { texto: 'Preguntas obligatorias: ' }), document.createTextNode(sinObligatorias ? 'desactivadas' : 'activadas')]),
       ayuda('Desactívalas para avanzar sin llenar; los formatos y la CURP se siguen revisando.'),
       acciones((() => {
-        const b = boton(sinObligatorias ? 'Activar las preguntas obligatorias' : 'Desactivar las preguntas obligatorias', () => { escribe(!sinObligatorias); location.reload(); });
+        const b = boton(sinObligatorias ? 'Activar las preguntas obligatorias' : 'Desactivar las preguntas obligatorias', () => {
+          if (!escribe(!sinObligatorias)) { di(APD.textoNoGuardo('este ajuste')); return; }
+          location.reload();
+        });
         b.setAttribute('aria-pressed', sinObligatorias ? 'true' : 'false');
         return b;
       })())
     ]) : null;
     const cuenta = el('p', {}, [el('strong', { texto: 'Guardado en este navegador: ' }), el('span', { 'data-guardado': '', texto: '…' })]);
+    // Registros guardados que la mezcla no pudo leer (auditoría «intentar romperlo», F4 A6): se dicen aquí y bajo la franja
+    let danados = Number(datos.prueba_ignorados) || 0;
     const borrar = boton('Borrar lo guardado', () => {
       if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return;
       // Una sola lista de borrado (C 1.2). Si la sesión era de una cuenta creada en la prueba, se cierra (C 1.4)
@@ -374,10 +380,17 @@
       APD_ARCHIVOS_PRUEBA.borraTodo().then(() => {
         const cerrada = antes && !APD.leeSesion();
         di(cerrada ? 'Se borró lo guardado en este navegador y se cerró la sesión de la cuenta creada en la prueba.' : 'Se borró lo guardado en este navegador.');
+        danados = 0;
+        for (const a of document.querySelectorAll('[data-aviso-prueba="ignorados"]')) a.remove();
         pintaGuardado();
       }, () => di('No se pudo borrar.'));
     });
-    function pintaGuardado() { guardado().then((g) => { cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g); borrar.hidden = !hayGuardado(g); }); }
+    function pintaGuardado() {
+      guardado().then((g) => {
+        cuenta.querySelector('[data-guardado]').textContent = textoGuardado(g) + (danados ? `; ${textoDanados(danados).toLocaleLowerCase('es-MX')}` : '');
+        borrar.hidden = !hayGuardado(g) && !danados;
+      });
+    }
     pintaGuardado();
 
     const hijos = [
@@ -404,7 +417,8 @@
           if (c.pantalla) { location.href = c.pantalla; return; }
           // Del registro anterior, sin cuenta: «Crea tu cuenta» llenada con su CURP
           if (c.migrada) { APD.cierraSesion(); location.href = `cuenta.html?migrada=${encodeURIComponent(c.persona.id)}`; return; }
-          if (c.clave !== 'nueva') { APD.guardaSesion({ id: c.persona.id }); location.href = 'tramites.html'; return; }
+          // Si el navegador no deja guardar la sesión, se dice: «Mis trámites» mandaría a «Entrar» sin decir por qué (F4 M1)
+          if (c.clave !== 'nueva') { if (!APD.guardaSesion({ id: c.persona.id })) return di(APD.textoNoGuardo('la sesión de prueba')); location.href = 'tramites.html'; return; }
           // Persona nueva: se le crea una cuenta de prueba (con la contraseña común de prueba), guardada en este navegador.
           // Sin la regla de la CURP (validaciones.config.js) no hay CURP y no se crea (A 8.3)
           const n = personaNueva();
@@ -413,7 +427,8 @@
           APD_ARCHIVOS_PRUEBA.guardaCuenta({ curp: n.curp, id, contrasena: APD.CONTRASENA_FICTICIA,
             persona: { nombre: n.nombre.toLocaleUpperCase('es-MX'), primer_apellido: n.primer.toLocaleUpperCase('es-MX'), segundo_apellido: n.segundo.toLocaleUpperCase('es-MX'),
               sexo: n.sexo, correo: correoDe(n.curp), telefono: '0000000099', adscripcion: 'independiente', organizacion_id: null, organizacion_nombre: '' } })
-            .then(() => { APD.guardaSesion({ id }); location.href = 'tramites.html'; }, () => di('No se pudo crear la persona nueva en este navegador.'));
+            .then(() => { if (!APD.guardaSesion({ id })) return di(APD.textoNoGuardo('la sesión de prueba')); location.href = 'tramites.html'; return null; },
+              () => di(APD.textoNoGuardo('la persona nueva')));
         }))
       ]),
       seccion('Ir a otra pantalla', [el('div', { class: 'menu-pruebas-grupos' }, PANTALLAS.map(([grupo, lista]) => el('div', {}, [
@@ -473,6 +488,23 @@
     ]);
   }
 
+  /* Avisos de la prueba bajo la franja, una vez por pantalla (auditoría «intentar romperlo», bloque 3): lo guardado se
+     borró por la caducidad de 7 días (F4 B3; sale sólo en la primera pantalla después de borrarse) y los registros
+     guardados que no se pudieron leer (F4 A6; sale mientras sigan guardados) */
+  const textoDanados = (n) => (n === 1 ? '1 registro guardado no se pudo leer' : `${n} registros guardados no se pudieron leer`);
+  function avisosDeLaPrueba(datos) {
+    const avisos = [];
+    const pon = (clave, titulo, texto) => {
+      const c = el('div', { class: 'aviso-prueba', 'data-aviso-prueba': clave });
+      APD.pintaAviso(c, 'pend', titulo, texto, false);
+      avisos.push(c);
+    };
+    if (APD.caducada()) pon('caducada', 'Lo guardado en esta prueba se borró', 'Pasaron más de 7 días sin usarla en este navegador: se borró lo que se había hecho y se cerró la sesión. Los casos ficticios siguen en el menú de pruebas.');
+    const n = Number(datos.prueba_ignorados) || 0;
+    if (n) pon('ignorados', textoDanados(n), 'Se ignoran y lo demás se ve como siempre. «Borrar lo guardado», en el menú de pruebas, los quita.');
+    return avisos;
+  }
+
   function monta() {
     fetch('VERSION', { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((v) => {
       if (!/^0\./.test(v.trim())) return;
@@ -483,7 +515,7 @@
         const m = migrada && pagina === 'cuenta.html' && form ? APD_CASOS_PRUEBA.migradas(datos).find((x) => x.id === migrada) : null;
         if (m) setTimeout(() => { const aviso = llenaMigrada(m); const e = dialogo.querySelector('.menu-pruebas-estado'); if (e) e.textContent = aviso; }, 300);
         const franja = document.querySelector('.entorno-pruebas');
-        if (franja) franja.after(ubicacion(datos));
+        if (franja) franja.after(ubicacion(datos), ...avisosDeLaPrueba(datos));
         const abre = el('button', { type: 'button', class: 'btn btn-secundario menu-pruebas-boton', 'aria-haspopup': 'dialog', texto: 'Menú de pruebas' });
         abre.addEventListener('click', () => dialogo.showModal());
         const pie = document.querySelector('footer') || document.body;

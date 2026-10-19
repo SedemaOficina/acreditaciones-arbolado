@@ -82,9 +82,13 @@ window.FORMKIT_OPCIONES = {
             .then(() => P.cuenta(d.curp)) : Promise.resolve(true);
           guarda.then((guardada) => {
             if (!guardada) throw new Error('sin cuenta guardada');
-            APD.guardaSesion({ id });
-            ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
-          }).catch(() => mal({ mensaje: 'Este navegador no permitió guardar tu cuenta de prueba (puede estar en modo privado o con el almacenamiento bloqueado). Prueba en una ventana normal o en otro navegador.' }));
+            // La sesión también: si no se guarda, el acuse decía «cuenta creada» y «Mis trámites» mandaba a «Entrar» sin
+            // decir por qué (auditoría «intentar romperlo», F4 M1)
+            if (!APD.guardaSesion({ id })) {
+              return mal({ mensaje: `Tu cuenta de prueba quedó guardada, pero ${APD.textoNoGuardo('tu sesión').replace(/^Este/, 'este')}` });
+            }
+            return ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
+          }).catch(() => mal({ mensaje: APD.textoNoGuardo('tu cuenta de prueba') }));
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
