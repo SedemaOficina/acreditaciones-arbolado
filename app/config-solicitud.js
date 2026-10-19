@@ -49,8 +49,6 @@ window.FORMKIT_CONFIG = {
   archivos: { mb: 5, extensiones: ['pdf'], max: 1 },
   // Formato propio «carrera» (app/formatos-propios.js): la carrera escrita lleva letras (auditoría «intentar romperlo», F1 12)
   formatos: window.APD_FORMATOS,
-  // El acuse con la hora de 24 horas (decisión 2026-10-17; el módulo acuse 1.4.1 la daba en 12 horas: P128, F4 M7)
-  idioma: 'es-MX-u-hc-h23',
   // «pesa 5.0 MB y el máximo es 5 MB» parecía que sí cabía (redondeo del estándar; F4 B6)
   mensajes: { archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduce su tamaño o elige otro.' },
   limitesSegun: { experiencia: (r) => APD_PERFIL_ACADEMICO.minimoExperiencia(catalogoCarreras, r) }
