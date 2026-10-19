@@ -317,11 +317,56 @@
       const org = orgDeElegidas();
       const nombre = org ? (elegidas()[0] || {}).organizacion : '';
       $('[data-especifico-de]').textContent = org ? `Sólo de ${nombre}` : 'Sólo de una organización';
+      const y = suGrupo();
       $('[data-especifico-desc]').textContent = org
-        ? `Recibe únicamente a la gente de ${nombre}.${total() < c.cupo_minimo ? ` Para confirmarlo se necesitan ${c.cupo_minimo} de esa organización.` : ''}`
+        ? `Recibe únicamente a la gente de ${nombre}.${total() < c.cupo_minimo ? ` Para confirmarlo se necesitan ${c.cupo_minimo} de esa organización.` : ''}${y ? ` Ya tiene su grupo ${y.g.folio}, que recibe personas.` : ''}`
         : 'Todas las elegidas tienen que ser de la misma organización registrada; ahora son de varias o independientes.';
     }
     const integracion = () => (gExistente ? gExistente.integracion : (($('input[name="integracion"]:checked') || {}).value || 'combinado'));
+
+    /* «Su grupo» (decisión 2 de la auditoría del 2026-10-19, Liber; auditoría de tareas, M3): si todas las elegidas son de
+       una organización que ya tiene un grupo propio de este curso que recibe personas, se dice y se ofrece agregarlas ahí;
+       crear otro de esa organización pide confirmación (con dos grupos, ninguno llega al mínimo) */
+    const propiosQueReciben = P.grupos(datos).filter((x) => x.recibe && x.g.integracion === 'especifico' && x.g.tipo_acreditacion === tipo && x.g.modalidad === modalidad);
+    const suGrupo = () => { const org = gExistente ? null : orgDeElegidas(); return org ? propiosQueReciben.find((x) => x.g.organizacion_id === org) || null : null; };
+    const cajaSuGrupo = $('[data-su-grupo]');
+    const activasEn = (d, gid) => new Set(d.inscripcion.filter((i) => i.grupo_id === gid && i.activa).map((i) => (d.solicitud.find((s) => s.id === i.solicitud_id) || {}).folio));
+    function agregaASuGrupo(y, boton) {
+      const folios = elegidas().map((x) => x.s.folio);
+      if (folios.length > y.lugar) {
+        APD.pintaAviso(cajaSuGrupo, 'error', 'Eligió más personas de las que caben', `«${y.calculado}» tiene lugar para ${plural(y.lugar, 'persona', 'personas')}; eligió ${folios.length}.`, true);
+        return;
+      }
+      const libera = APD.ocupa(boton);
+      if (!libera) return;
+      let entraron = [];
+      P.guardaGrupoComprobado({
+        eventos: () => ({ tipo: 'agregar', grupo_id: y.g.id, folios, por: P.REVISORA.usuario }),
+        comprueba(d2, d1) {
+          const antes = activasEn(d1, y.g.id);
+          const ahora = activasEn(d2, y.g.id);
+          entraron = folios.filter((f) => ahora.has(f) && !antes.has(f));
+          return entraron.length ? null : 'no se agregó a nadie: el grupo ya no recibe personas o ya tienen grupo';
+        }
+      }).then(() => {
+        const no = folios.filter((f) => !entraron.includes(f));
+        location.href = `grupo.html?folio=${encodeURIComponent(y.g.folio)}&hecho=agregadas&n=${entraron.length}${no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
+      }).catch((e) => {
+        libera();
+        APD.pintaAviso(cajaSuGrupo, 'error', `No se agregó a nadie a «${y.calculado}»`, e && e.motivo ? `${mayuscula(e.motivo)}. Vuelva a cargar la página para ver la espera de ahora.` : 'No se pudo guardar; intente de nuevo.', true);
+      });
+    }
+    function pintaSuGrupo() {
+      const y = suGrupo();
+      if (!y) { cajaSuGrupo.hidden = true; cajaSuGrupo.replaceChildren(); return; }
+      const nombre = (elegidas()[0] || {}).organizacion;
+      const falta = y.g.cupo_minimo - y.n;
+      APD.pintaAviso(cajaSuGrupo, 'info', `${nombre} ya tiene su grupo`,
+        `El grupo ${y.g.folio} tiene ${y.n} de ${y.g.cupo_maximo}${falta > 0 ? `, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : ''} y recibe personas. Conviene agregarlas ahí: con dos grupos de la misma organización, ninguno llega al mínimo.`);
+      const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Agregarlas a ${y.g.folio}` });
+      b.addEventListener('click', () => agregaASuGrupo(y, b));
+      $('.aviso-texto', cajaSuGrupo).append(el('p', {}, [b]));
+    }
 
     /* ----- Así quedaría ----- */
     function pintaResumen() {
@@ -348,6 +393,7 @@
       pintaCalendario(enfocar);
       pintaInstructores();
       pintaIntegracion();
+      pintaSuGrupo();
       pintaResumen();
     }
     if (gExistente) {
@@ -393,7 +439,14 @@
           return Promise.resolve({ rechazado: true });
         }
         const libera = APD.ocupa(botones.filter((b) => !b.matches('[data-accion="enviar"]')));
-        return guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, integracion: integracion() })
+        // Un segundo grupo de una organización que ya tiene el suyo: se pregunta antes (decisión 2, 2026-10-19)
+        const y = esp ? suGrupo() : null;
+        const sigue = !y ? Promise.resolve(true) : FormKit.confirma(botones.find((b) => b.dataset.programar === accion) || botones[0], {
+          titulo: `¿Crear otro grupo de ${(elegidas()[0] || {}).organizacion}?`,
+          consecuencias: [`Ya tiene el grupo ${y.g.folio}, con ${y.n} de ${y.g.cupo_maximo}, que recibe personas.`,
+            `Con dos grupos de la misma organización, ninguno llega al mínimo. Para agregarlas a ese grupo, elija «No» y use «Agregarlas a ${y.g.folio}».`],
+          si: 'Sí, crear otro grupo', no: 'No' });
+        return sigue.then((si) => (si ? guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, integracion: integracion() }) : { rechazado: true }))
           .finally(() => { if (libera) libera(); });
       },
       alEnviar(r) { if (r && r.rechazado) return; muestraResultado(r); },
