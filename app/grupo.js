@@ -189,7 +189,6 @@
       const iso = () => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(fi.value)) || '';
       // La propuesta de un grupo que regresó a integración se ofrece de nuevo
       if (g.fecha_inicio && g.fecha_inicio >= minimo && g.fecha_inicio <= maximo) fi.value = fecha(g.fecha_inicio);
-      P.pintaListasGrupo($('#instructor'), $('#hora_entrada'));
       if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
