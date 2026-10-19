@@ -183,23 +183,12 @@
         $('.aviso-texto', modo).append(el('p', {}, [volver]));
       }
       const filas = [];
-      const casilla = (x, etiqueta) => {
-        const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio, 'aria-label': etiqueta || null });
+      // La fila de cada persona y el bloque de su organización, los mismos de «Programar» (P.filaEspera, P.bloqueEspera)
+      const persona = (x, conAdscripcion) => {
+        const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio });
         filas.push({ x, k });
-        return k;
+        return P.filaEspera(x, k, conAdscripcion);
       };
-      const espera = (x) => {
-        const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
-        const partes = [x.prioritaria ? estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias })];
-        if (renov && x.vence) partes.push(x.vencida ? estado(`Vencida el ${fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `vence el ${fecha(x.vence)}` }));
-        return el('span', { class: 'plan-persona-espera' }, partes);
-      };
-      const persona = (x, conAdscripcion) => el('label', { class: 'plan-persona' }, [
-        casilla(x),
-        el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
-        espera(x),
-        conAdscripcion ? el('span', { class: 'plan-persona-org', texto: x.organizacion }) : null
-      ]);
       /* «Su grupo» de cada organización (decisión 2 de la auditoría del 2026-10-19, Liber; DECISIONES, 17/10): si ya tiene un
          grupo propio que recibe personas, se dice cuál y cuántas le faltan; si no, si alcanzan para uno propio */
       const suGrupo = (org) => (org ? delCursoRecibe.find((y) => y.g.integracion === 'especifico' && y.g.organizacion_id === org) : null);
@@ -222,16 +211,8 @@
           if (y) fila.append(el('span', { class: 'plan-persona-org' }, [estado(textoSuGrupo(y), y.n < y.g.cupo_minimo ? 'pend' : 'ok')]));
           return fila;
         }
-        const todas = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', 'aria-label': `Elegir a las ${b.xs.length} personas de ${b.nombre}` });
         const propias = b.xs.map((x) => persona(x, false));
-        const suyas = () => filas.filter((f) => b.xs.includes(f.x));
-        todas.addEventListener('change', () => { for (const f of suyas()) f.k.checked = todas.checked; pintaEleccion(); });
-        const refleja = () => { const m = suyas().filter((f) => f.k.checked).length; todas.checked = m === b.xs.length; todas.indeterminate = m > 0 && m < b.xs.length; };
-        const bloque = el('div', { class: 'plan-bloque', role: 'group', 'aria-labelledby': `bloque-${i}` }, [
-          el('label', { class: 'plan-bloque-cabeza' }, [todas, el('span', { class: 'plan-bloque-nombre', id: `bloque-${i}`, texto: `${b.nombre} · ${b.xs.length} personas, juntas` }), situacionBloque(b)]),
-          ...propias
-        ]);
-        bloque.addEventListener('change', (e) => { if (e.target !== todas) refleja(); });
+        const { bloque } = P.bloqueEspera(b, `bloque-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => pintaEleccion());
         return bloque;
       });
       $('[data-personas]').replaceChildren(...(bloques.length ? bloques : [el('p', { class: 'texto-gris', texto: soloOrg ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
