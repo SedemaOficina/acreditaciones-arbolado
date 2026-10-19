@@ -52,8 +52,9 @@
     const hoy = APD.hoy(datos);
     const abierto = ['en_integracion', 'confirmado'].includes(g.estado);
     const antesDeIniciar = g.estado === 'en_integracion' || (g.estado === 'confirmado' && hoy < g.fecha_inicio);
-    document.title = `Grupo ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
-    $('#t-grupo').replaceChildren(document.createTextNode('Grupo '), el('span', { class: 'mono', texto: g.folio }));
+    // Nombre calculado y, debajo, el folio en chico (propuesta D, 2026-10-18): el folio no cambia
+    document.title = `${x.calculado} · ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
+    $('#t-grupo').replaceChildren(APD.grupoTitulo(g, datos));
     $('[data-bajada]').replaceChildren(...APD.meta([x.nombre, g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado', `creado el ${fecha(g.creado_en)}`]));
     $('[data-situacion]').replaceChildren(estado(x.situacion.texto, x.situacion.tono));
 
@@ -134,7 +135,7 @@
       const propia = g.integracion === 'especifico';
       const org = propia ? x.integracion.replace('De una organización · ', '') : '';
       const espera = P.enEspera(datos, g.tipo_acreditacion, g.modalidad).filter((y) => !propia || y.s.organizacion_id === g.organizacion_id).length;
-      if (espera) acciones.push(el('a', { class: 'btn btn-secundario', href: `espera.html?curso=${P.claveCurso(g.tipo_acreditacion, g.modalidad)}&grupo=${encodeURIComponent(g.folio)}`,
+      if (espera) acciones.push(el('a', { class: 'btn btn-secundario', href: `grupos.html?curso=${P.claveCurso(g.tipo_acreditacion, g.modalidad)}&grupo=${encodeURIComponent(g.folio)}`,
         texto: propia ? `Agregar personas de ${org} (${espera} en espera)` : `Agregar personas de la espera (${espera} en espera)` }));
       else acciones.push(el('p', { class: 'texto-gris', texto: propia ? `Nadie de ${org} espera grupo en este curso por ahora.` : 'Nadie espera grupo en este curso por ahora.' }));
     } else if (abierto && x.n >= g.cupo_maximo) {
@@ -150,7 +151,7 @@
     if (antesDeIniciar) {
       cancelar = el('button', { type: 'button', class: 'btn btn-peligro-contorno', texto: 'Cancelar el grupo' });
       cancelar.addEventListener('click', () => {
-        $('[data-cancelar-titulo]').textContent = `¿Cancelar el grupo ${g.folio}?`;
+        $('[data-cancelar-titulo]').textContent = `¿Cancelar el grupo ${g.folio} (${x.calculado})?`;
         $('[data-cancelar-de]').replaceChildren(...[x.n ? `${x.n === 1 ? 'La persona regresa' : `Las ${x.n} personas regresan`} a la espera, con su antigüedad.` : 'El grupo no tiene personas.',
           x.n && g.estado === 'confirmado' ? 'Dejan de ver fechas y sede en «Mis trámites».' : ''].filter(Boolean).map((t) => el('li', { texto: t })));
         $('#dlg-cancelar').showModal();

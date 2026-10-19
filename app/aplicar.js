@@ -36,16 +36,27 @@
     const enCurso = G.grupos(datos);
     const hoy = APD.hoy(datos);
     const pedido = new URLSearchParams(location.search).get('folio');
-    const g = pedido ? enCurso.find((x) => x.folio === pedido) : enCurso.find((x) => G.fechaExamen(datos, x) === hoy) || enCurso[0];
+    // Sin enlace, «Mis grupos de hoy» del instructor (propuesta D, 2026-10-18): con uno solo hoy se entra directo; con
+    // varios (o ninguno), se eligen por su nombre calculado
+    const misDeHoy = APD_PERSONAL.gruposDeHoy(datos, INSTRUCTOR.usuario);
+    const g = pedido ? enCurso.find((x) => x.folio === pedido) : misDeHoy.length === 1 ? enCurso.find((x) => x.id === misDeHoy[0].id) : null;
     if (!g) {
       $('[data-sin-grupo]').hidden = false;
+      if (!pedido) {
+        $('#t-sin-grupo').textContent = 'Mis grupos de hoy';
+        $('[data-sin-grupo-texto]').textContent = misDeHoy.length ? `Hoy, ${APD.fechaConDia(hoy)}, tiene ${misDeHoy.length} grupos. El examen se aplica el último día del curso; elija el grupo:`
+          : `Hoy, ${APD.fechaConDia(hoy)}, no tiene grupos con clase ni examen.`;
+        const caja = $('[data-mis-grupos-hoy]');
+        caja.hidden = false;
+        APD_PERSONAL.pintaMisGrupos(caja, datos, INSTRUCTOR.usuario);
+      }
       if (pedido) {
         const existe = datos.grupo.some((x) => x.folio === pedido);
         $('[data-sin-grupo-texto]').textContent = existe
           ? `El grupo ${pedido} no está en curso: el examen se aplica el último día de un curso en marcha.`
           : `No hay un grupo con el folio ${pedido}.`;
         $('[data-mis-grupos]').replaceChildren(...enCurso.map((x) => el('li', {}, [el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`,
-          texto: `${x.folio} · ${APD_PERSONAL.nombreCurso(x.tipo_acreditacion, x.modalidad)} · examen el ${APD.fecha(G.fechaExamen(datos, x))}` })])));
+          texto: `${APD.nombreGrupo(x, datos)} · ${x.folio} · examen el ${APD.fecha(G.fechaExamen(datos, x))}` })])));
         $('[data-mis-grupos-titulo]').hidden = !enCurso.length;
       }
       return;
@@ -58,7 +69,7 @@
     if (otros.length) {
       avisosGrupo.push(el('p', { class: 'otros-grupos' }, [document.createTextNode('Otros grupos en curso: ')].concat(otros.flatMap((x, i) => [
         i ? document.createTextNode(' · ') : null,
-        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${x.folio} (examen el ${APD.fecha(G.fechaExamen(datos, x))})` })
+        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${APD.nombreGrupo(x, datos)} (examen el ${APD.fecha(G.fechaExamen(datos, x))})` })
       ]).filter(Boolean))));
     }
     // El examen es el último día del curso: otro día no se generan códigos (en la prueba se permite, para probar)
@@ -78,7 +89,8 @@
     const c = G.curso(datos, g);
     const ex = APD_EXAMEN_BANCO.examenDe(g.tipo_acreditacion, g.modalidad);
     $('[data-grupo]').replaceChildren(datosLista([
-      ['Grupo', g.folio],
+      // El grupo por su nombre calculado; el folio, que no cambia, debajo en chico (propuesta D, 2026-10-18)
+      ['Grupo', APD.grupoTitulo(g, datos)],
       ['Curso', `${APD.TIPOS[g.tipo_acreditacion]} · ${APD.MODALIDADES[g.modalidad].toLowerCase()}`],
       ['Fecha del examen', `${APD.fecha(G.fechaExamen(datos, g))} · último día del curso (inició el ${APD.fecha(g.fecha_inicio)})`],
       ['Lugar', G.LUGAR],
@@ -200,7 +212,7 @@
       $('[data-papeletas]').replaceChildren(...lista.map((f) => [f, vigente(f)]).filter(([, r]) => r && ['sin_empezar', 'contestando'].includes(r.situacion)).map(([f, r]) =>
         el('div', { class: 'papeleta' }, [
           el('p', { class: 'papeleta-nombre', texto: APD.nombreCompleto(f.persona) }),
-          el('p', { class: 'papeleta-dato', texto: `Examen ${APD.TIPOS[g.tipo_acreditacion].toLowerCase()} · grupo ${g.folio} · ${APD.fecha(G.fechaExamen(datos, g))}` }),
+          el('p', { class: 'papeleta-dato', texto: `Examen ${APD.TIPOS[g.tipo_acreditacion].toLowerCase()} · ${APD.nombreGrupo(g, datos)} · grupo ${g.folio} · ${APD.fecha(G.fechaExamen(datos, g))}` }),
           el('p', { class: 'papeleta-codigo mono', texto: r.codigo }),
           el('p', { class: 'papeleta-dato', texto: 'Escribe este código en la computadora, en «Entra a tu examen». Sólo sirve para tu examen.' })
         ])));

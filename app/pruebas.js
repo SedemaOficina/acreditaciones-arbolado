@@ -188,18 +188,18 @@
   const PANTALLAS = [
     ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación'], ['material.html', 'Material de estudio']]],
     ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
-    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['grupos.html', 'Grupos'], ['material-personal.html', 'Material de estudio (personal)']]],
+    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['grupos.html', 'Grupos'], ['programar.html?curso=poda-nueva', 'Programar un curso'], ['material-personal.html', 'Material de estudio (personal)']]],
     ['Instructor', [['asistencia.html', 'Asistencia'], ['aplicar.html', 'Aplicar el examen']]],
     ['Salón de cómputo', [['examen.html', 'Examen en línea']]]
   ];
-  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'espera.html': 'En espera de un curso', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
-  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'espera.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html'];
+  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'programar.html': 'Programar un curso', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
+  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'programar.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html'];
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
   /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
   const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
   const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
-  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'espera.html': 4, 'grupo.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7 };
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7 };
   const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
@@ -242,11 +242,11 @@
     const sesion = APD.leeSesion();
     const enPersonal = DEL_PERSONAL.includes(pagina);
     const persona = sesion && sesion.id ? datos.solicitante.find((p) => p.id === sesion.id) : null;
-    const actual = enPersonal ? (casos.find((c) => c.pantalla === pagina) || casos.find((c) => c.clave === 'personal'))
+    const actual = enPersonal ? (casos.find((c) => c.pantalla && c.pantalla.split('?')[0] === pagina) || casos.find((c) => c.clave === 'personal'))
       : persona ? casos.find((c) => c.persona && !c.migrada && c.persona.id === persona.id) : null;
     const quien = ['aplicar.html', 'asistencia.html'].includes(pagina) ? `Laura Ejemplo Instructora · personal, instructor (${pagina === 'aplicar.html' ? 'aplica el examen' : 'captura la asistencia'})`
       : pagina === 'examen.html' ? 'persona en el salón de cómputo (entra con su código, sin cuenta)'
-      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'espera.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : pagina === 'material-personal.html' ? 'material de estudio' : 'revisión documental'}`
+      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'programar.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : pagina === 'material-personal.html' ? 'material de estudio' : 'revisión documental'}`
       : persona ? `${APD.nombreCompleto(persona)} · persona solicitante${persona.de_prueba ? ' (cuenta creada en la prueba)' : ''}` : 'nadie (sin sesión)';
     const ahora = el('div', { class: 'menu-pruebas-ahora' }, [
       el('div', { class: 'menu-pruebas-fila' }, [
@@ -402,7 +402,7 @@
       ]),
       seccion('Ir a otra pantalla', [el('div', { class: 'menu-pruebas-grupos' }, PANTALLAS.map(([grupo, lista]) => el('div', {}, [
         el('h4', { class: 'menu-pruebas-grupo', texto: grupo }),
-        el('ul', { class: 'menu-pruebas-lista' }, lista.map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h === pagina ? 'page' : null })])))
+        el('ul', { class: 'menu-pruebas-lista' }, lista.map(([h, t]) => el('li', {}, [el('a', { href: h, texto: t, 'aria-current': h.split('?')[0] === pagina ? 'page' : null })])))
       ])))]),
       seccion('Ajustes de la prueba', [
         ayuda('Lo guardado (cuentas, «Mi perfil», solicitudes, documentos, fotografías, revisiones, citas de cotejo, grupos, asistencia, pase de lista, exámenes y material de estudio) queda en este navegador aunque lo cierres; las preguntas obligatorias, sólo en esta pestaña.'),

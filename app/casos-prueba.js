@@ -117,7 +117,8 @@
       ['Su papel', [
         ['personal', 'Revisión documental', 'Revisar las solicitudes enviadas: validar, observar o rechazar.', null, 'revision.html'],
         ['personal-citas', 'Citas de cotejo', 'Atender las citas del día: cotejo, pago, factura, pausa.', null, 'citas.html'],
-        ['personal-grupos', 'Grupos del curso', 'Ver la espera de cada curso, formar grupos y confirmarlos.', null, 'grupos.html'],
+        ['personal-grupos', 'Grupos del curso', 'Planear cada curso: quién espera, sus próximas semanas, completar y confirmar grupos.', null, 'grupos.html?curso=poda-nueva'],
+        ['personal-programar', 'Programar un curso', 'Elegir la semana en el calendario, el instructor y la hora, y quiénes van; crear y confirmar el grupo.', null, 'programar.html?curso=poda-nueva'],
         ['personal-material', 'Material de estudio', 'Subir, reemplazar, publicar u ocultar los documentos para el examen.', null, 'material-personal.html'],
         ['personal-asistencia', 'Instructor: asistencia', 'Capturar la asistencia de cada día del curso.', null, 'asistencia.html'],
         ['personal-examen', 'Instructor: aplicar el examen', 'Pasar lista el último día (cuenta como asistencia) y seguir el examen.', null, 'aplicar.html']

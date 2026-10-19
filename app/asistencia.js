@@ -27,26 +27,30 @@
     const hoy = APD.hoy(datos);
     const enCurso = datos.grupo.filter((g) => g.estado === 'en_curso');
     const pedido = params.get('folio');
-    // El personal de grupos llega con ?folio; el instructor, a sus grupos en curso
-    const mios = enCurso.filter((g) => g.instructor === P.INSTRUCTORA.usuario);
-    const g0 = pedido ? enCurso.find((g) => g.folio === pedido) : mios.length === 1 ? mios[0] : null;
+    // El personal de grupos llega con ?folio; el instructor, a «Mis grupos de hoy» (propuesta D, 2026-10-18): con un solo
+    // grupo con clase o examen hoy entra directo; con varios, los elige por su nombre calculado
+    const misDeHoy = P.gruposDeHoy(datos, P.INSTRUCTORA.usuario);
+    const g0 = pedido ? enCurso.find((g) => g.folio === pedido) : misDeHoy.length === 1 ? misDeHoy[0] : null;
     if (!g0) {
       $('[data-sin-grupo]').hidden = false;
-      if (pedido) $('[data-sin-grupo-texto]').textContent = `El grupo ${pedido} no está en curso: la asistencia se captura sólo mientras el curso está en marcha.`;
-      else if (mios.length > 1) {
-        $('[data-sin-grupo-texto]').textContent = 'Elija el grupo:';
-        $('[data-mis-grupos]').replaceChildren(...mios.map((g) => el('li', {}, [el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}`, texto: `${g.folio} · ${P.nombreCurso(g.tipo_acreditacion, g.modalidad)}` })])));
+      if (pedido) {
+        $('#t-mis-grupos').textContent = 'Asistencia';
+        $('[data-sin-grupo-texto]').textContent = `El grupo ${pedido} no está en curso: la asistencia se captura sólo mientras el curso está en marcha.`;
+        return;
       }
+      $('[data-sin-grupo-texto]').textContent = misDeHoy.length ? `Hoy, ${APD.fechaConDia(hoy)}, tiene ${plural(misDeHoy.length, 'grupo', 'grupos')}. Elija el grupo:` : `Hoy, ${APD.fechaConDia(hoy)}, no tiene grupos con clase ni examen.`;
+      P.pintaMisGrupos($('[data-mis-grupos]'), datos, P.INSTRUCTORA.usuario);
       return;
     }
     const x = P.grupo(datos, g0);
     const { g, c } = x;
     $('[data-con-grupo]').hidden = false;
-    document.title = `Asistencia · grupo ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
+    document.title = `Asistencia · ${x.calculado} · ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
     const permitidas = c.dias_duracion - c.dias_minimos_asistencia;
     const ultimoDia = c.dias_duracion;
-    $('[data-bajada]').replaceChildren(...APD.meta([[document.createTextNode('Grupo '), el('span', { class: 'mono', texto: g.folio })], x.nombre,
-      `del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)}`, plural(x.n, 'persona', 'personas')]));
+    // El grupo por su nombre calculado y su folio en chico (propuesta D, 2026-10-18)
+    $('[data-bajada]').replaceChildren(APD.grupoTitulo(g, datos), el('span', { class: 'grupo-bajada-datos' }, APD.meta([x.nombre,
+      `del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)}`, plural(x.n, 'persona', 'personas')])));
     $('[data-regla]').textContent = permitidas > 0
       ? `Para el examen se necesitan ${c.dias_minimos_asistencia} de ${c.dias_duracion} días: cada persona puede faltar ${permitidas === 1 ? '1' : permitidas}.`
       : `Para el examen se necesita asistir ${c.dias_duracion === 1 ? 'al día del curso' : `los ${c.dias_duracion} días`}.`;

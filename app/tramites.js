@@ -131,7 +131,9 @@
             c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}`] : ['El curso termina el', ultimo && fecha(ultimo)]]
           : [['Preséntate el', `${fecha(g.grupo.fecha_inicio)}${entrada}`, sinHora], ['El curso termina el', ultimo && fecha(ultimo)]]),
         ['Examen', examen], ['Lugar del curso', ...sedeTexto(g.grupo.sede)]);
-        pares.push(['Grupo', g.grupo.folio]);
+        // Confirmado: el grupo por su nombre (curso y fechas) con el folio en chico (propuesta D, 2026-10-18). Por confirmar,
+        // sólo el folio: la fecha propuesta todavía no es segura
+        pares.push(['Grupo', APD.grupoTitulo(g.grupo, datos)]);
         // Lo que necesita para no perder el examen: asistencia, identificación, cuándo es y la calificación (alta 11)
         if (c) {
           const unDia = c.dias_duracion === 1;

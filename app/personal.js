@@ -21,7 +21,7 @@
    ========================================================= */
 (function (global) {
   'use strict';
-  const { el } = APD;
+  const { el, estado } = APD;
   const A = global.APD_ARCHIVOS_PRUEBA;
   const CLAVE = A.CLAVES.revisiones;
   const COTEJOS = A.CLAVES.cotejos;
@@ -240,7 +240,7 @@
     const org = g.organizacion_id ? datos.organizacion.find((o) => o.id === g.organizacion_id) : null;
     return { g, c, inscritas, n: inscritas.length, ultimo, dia, situacion: { texto, tono: sit.tono }, recibe, lugar: g.cupo_maximo - inscritas.length,
       integracion: g.integracion === 'especifico' ? `${INTEGRACION.especifico} · ${org ? org.nombre : ''}` : INTEGRACION.combinado,
-      nombre: nombreCurso(g.tipo_acreditacion, g.modalidad) };
+      nombre: nombreCurso(g.tipo_acreditacion, g.modalidad), calculado: APD.nombreGrupo(g, datos) };
   }
   const ORDEN_GRUPO = { en_curso: 0, confirmado: 1, en_integracion: 2, concluido: 3, cancelado: 4 };
   function grupos(datos) {
@@ -257,6 +257,127 @@
   function cupoTexto(x) {
     const falta = x.g.cupo_minimo - x.n;
     return falta > 0 ? `${x.n} de ${x.g.cupo_maximo} · ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${x.g.cupo_minimo}` : `${x.n} de ${x.g.cupo_maximo}`;
+  }
+
+  /* ----- Planear los cursos (propuestas A, B y D aprobadas por Liber el 2026-10-18) -----
+     Lo que comparten «Grupos» (planeador por curso), «Programar un curso» y «Mis grupos de hoy». */
+  /* Horas de entrada: la misma lista cerrada de 24 horas que la ficha del grupo (grupo.html). Horarios de prueba: los
+     define el área (P91). */
+  const HORAS = ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00'];
+  /* Lunes de la semana de una fecha (las semanas van de lunes a domingo) */
+  function lunesDe(iso) {
+    const d = new Date(`${String(iso).slice(0, 10)}T12:00:00-06:00`);
+    return APD.sumaDias(String(iso).slice(0, 10), -((d.getUTCDay() + 6) % 7));
+  }
+  /* Primer día en que puede empezar un curso que se confirma hoy: dias_anticipacion_grupo días después (R25) */
+  const primerDiaPosible = (datos) => APD.sumaDias(APD.hoy(datos), APD.parametro(datos, 'dias_anticipacion_grupo') || 7);
+  /* Días inhábiles del calendario oficial: [por confirmar]. Mientras la Secretaría no los publique no se inventan; el
+     lugar queda listo (parámetro dias_inhabiles de la base, AAAA-MM-DD separados por coma, cuando exista). */
+  function diasInhabiles(datos) {
+    const p = (datos.parametro || []).find((x) => x.clave === 'dias_inhabiles');
+    return p ? String(p.valor || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s)) : [];
+  }
+  /* Los grupos de un curso que ocupan alguna de esas fechas (sin los cancelados ni los concluidos) */
+  const ACTIVOS = ['en_integracion', 'confirmado', 'en_curso'];
+  const traslapa = (a1, a2, b1, b2) => a1 <= b2 && b1 <= a2;
+  function choques(datos, tipo, modalidad, desde, hasta, exceptoId) {
+    return datos.grupo.filter((g) => g.id !== exceptoId && g.tipo_acreditacion === tipo && g.modalidad === modalidad && ACTIVOS.includes(g.estado)
+      && g.fecha_inicio && traslapa(desde, hasta, g.fecha_inicio, APD.ultimoDia(datos, g)));
+  }
+  /* Los grupos que ese instructor da en esas fechas, de cualquier curso */
+  function ocupado(datos, usuario, desde, hasta, exceptoId) {
+    return datos.grupo.filter((g) => g.id !== exceptoId && g.instructor === usuario && ACTIVOS.includes(g.estado)
+      && g.fecha_inicio && traslapa(desde, hasta, g.fecha_inicio, APD.ultimoDia(datos, g)));
+  }
+  /* ¿Puede empezar ahí un curso? → null o la razón (para el calendario y para el error del formulario) */
+  function razonNoInicio(datos, tipo, modalidad, inicio, exceptoId) {
+    const c = APD.curso(datos, tipo, modalidad);
+    const fin = APD.sumaDias(inicio, c.dias_duracion - 1);
+    const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
+    if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días: el curso empieza al menos ${anticipacion} días después de confirmarlo` };
+    const otro = choques(datos, tipo, modalidad, inicio, fin, exceptoId)[0];
+    if (otro) return { clave: 'otro_curso', texto: `ya hay un curso de ${APD.cursoCorto(tipo, modalidad).toLowerCase()} esas fechas (${APD.nombreGrupo(otro, datos, { sinCurso: true }).toLowerCase()}, ${otro.folio})`, grupo: otro };
+    const inhabiles = diasInhabiles(datos);
+    const dia = inhabiles.find((d) => d >= inicio && d <= fin);
+    if (dia) return { clave: 'inhabil', texto: `el ${APD.diaMes(dia)} es día inhábil [por confirmar con el calendario oficial]` };
+    return null;
+  }
+  /* Bloques de la espera (propuesta A): las personas de una misma organización van juntas, en un bloque que ocupa el
+     lugar de quien más espera de ellas; las demás (independientes o solas de su organización), una por una, en su orden. */
+  function bloquesEspera(lista) {
+    const cuenta = {};
+    for (const x of lista) if (x.s.organizacion_id) cuenta[x.s.organizacion_id] = (cuenta[x.s.organizacion_id] || 0) + 1;
+    const bloques = [];
+    for (const x of lista) {
+      const org = x.s.organizacion_id;
+      if (org && cuenta[org] > 1) {
+        let b = bloques.find((y) => y.clave === org);
+        if (!b) { b = { clave: org, nombre: x.organizacion, junta: true, xs: [] }; bloques.push(b); }
+        b.xs.push(x);
+      } else bloques.push({ clave: `sola:${x.s.folio}`, nombre: x.organizacion, junta: false, xs: [x] });
+    }
+    return bloques;
+  }
+  /* Las que más esperan, hasta n lugares: por bloques completos, para que una organización no se separe; un bloque que no
+     cabe se salta y sigue el siguiente. filtro (opcional) deja sólo a quien puede ir (un grupo de una organización). */
+  function lasQueMasEsperan(lista, n, filtro) {
+    const elegidas = [];
+    for (const b of bloquesEspera(filtro ? lista.filter(filtro) : lista)) {
+      if (elegidas.length >= n) break;
+      if (elegidas.length + b.xs.length <= n) elegidas.push(...b.xs);
+    }
+    return elegidas;
+  }
+  /* Situación de un grupo en una fecha: «Día 2 de 5», «Examen hoy» (en curso), o null */
+  function diaDelCurso(datos, g) {
+    if (g.estado !== 'en_curso' || !g.fecha_inicio) return null;
+    const c = APD.curso(datos, g.tipo_acreditacion, g.modalidad);
+    const n = dias(g.fecha_inicio, APD.hoy(datos)) + 1;
+    if (n < 1 || n > c.dias_duracion) return null;
+    return { n, de: c.dias_duracion, examen: n === c.dias_duracion, texto: n === c.dias_duracion ? (c.dias_duracion > 1 ? `Día ${n} de ${n} · examen hoy` : 'Curso y examen hoy') : `Día ${n} de ${c.dias_duracion}` };
+  }
+  /* «Mis grupos de hoy» del instructor: sus grupos en curso con clase o examen hoy; y los próximos (confirmados o por
+     confirmar con fecha) */
+  function gruposDeHoy(datos, usuario) {
+    return datos.grupo.filter((g) => g.instructor === usuario && diaDelCurso(datos, g))
+      .sort((a, b) => String(a.fecha_inicio).localeCompare(String(b.fecha_inicio)) || String(a.folio).localeCompare(String(b.folio)));
+  }
+  function proximosDe(datos, usuario) {
+    const hoy = APD.hoy(datos);
+    return datos.grupo.filter((g) => g.instructor === usuario && ['confirmado', 'en_integracion'].includes(g.estado) && g.fecha_inicio && g.fecha_inicio > hoy)
+      .sort((a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio));
+  }
+  /* Pinta «Mis grupos de hoy» y «Próximos» (asistencia.html y aplicar.html sin ?folio=): una tarjeta por grupo con su
+     nombre calculado, folio, lugar, hora, personas y la acción del día: «Pasar asistencia» un día de curso, «Pasar lista y
+     aplicar» el día del examen. */
+  function pintaMisGrupos(contenedor, datos, usuario) {
+    const sede = APD.sede(datos).nombre;
+    const tarjeta = (g, i) => {
+      const x = grupo(datos, g);
+      const d = diaDelCurso(datos, g);
+      const idN = `mio-${i}`;
+      const lugar = d.examen ? 'Salón de cómputo del PILARES' : `Aula de capacitación del ${sede}`;
+      const href = d.examen ? `aplicar.html?folio=${encodeURIComponent(g.folio)}` : `asistencia.html?folio=${encodeURIComponent(g.folio)}`;
+      return el('li', { class: 'hoy-grupo' }, [
+        el('div', { class: 'hoy-grupo-cabeza' }, [
+          el('h3', { class: 'hoy-grupo-nombre', id: idN }, [APD.grupoTitulo(g, datos)]),
+          estado(d.examen ? 'Examen hoy' : d.texto, d.examen ? 'pend' : 'marcha')
+        ]),
+        el('p', { class: 'hoy-grupo-datos' }, APD.meta([lugar, APD.hhmm(g.hora_entrada), APD.plural(x.n, 'persona', 'personas')])),
+        el('a', { class: 'btn btn-primario hoy-grupo-accion', href, 'aria-describedby': idN }, [
+          document.createTextNode(d.examen ? 'Pasar lista y aplicar' : 'Pasar asistencia'), APD.icono('flecha-der')])
+      ]);
+    };
+    const hoyL = gruposDeHoy(datos, usuario);
+    const prox = proximosDe(datos, usuario);
+    const partes = [];
+    partes.push(hoyL.length ? el('ul', { class: 'hoy-grupos' }, hoyL.map(tarjeta)) : el('p', { texto: 'Hoy no tiene grupos con clase ni examen.' }));
+    partes.push(el('h3', { class: 'titulo-bloque', texto: 'Próximos' }));
+    partes.push(prox.length ? el('ul', { class: 'hoy-proximos' }, prox.map((g) => el('li', {}, [APD.grupoTitulo(g, datos),
+      el('span', { class: 'hoy-proximo-estado', texto: g.estado === 'confirmado' ? `Confirmado · entrada ${APD.hhmm(g.hora_entrada)}` : 'Por confirmar' })])))
+      : el('p', { class: 'texto-gris', texto: 'No tiene otros grupos programados.' }));
+    contenedor.replaceChildren(...partes);
+    return hoyL;
   }
 
   /* Cabecera de sesión del personal. El perfil «instructor» sólo ve sus grupos (asistencia y examen). */
@@ -330,6 +451,7 @@
     marco.dispatchEvent(new CustomEvent('formkit:tabla'));
   }
 
-  global.APD_PERSONAL = { porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+  global.APD_PERSONAL = { HORAS, lunesDe, primerDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado };
 }(window));
