@@ -1,7 +1,51 @@
 {
-  "formulario": "espera.html",
-  "generado": "2026-10-18T06:59:39.285Z",
+  "formulario": "grupo-crear.html",
+  "generado": "2026-10-19T00:22:20.320Z",
   "campos": {
+    "fecha_inicio": {
+      "etiqueta": "Primer día del curso",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha-dma",
+      "sensible": false,
+      "uso": "Fijar el primer día del curso (apd.grupo.fecha_inicio).",
+      "atributos": {
+        "maxlength": "10"
+      },
+      "autocomplete": "off"
+    },
+    "instructor": {
+      "etiqueta": "Instructor",
+      "tipo": "select",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).",
+      "atributos": {},
+      "opciones": [
+        "instructor.ficticio",
+        "instructor2.ficticio"
+      ],
+      "autocomplete": "off"
+    },
+    "hora_entrada": {
+      "etiqueta": "Hora de entrada",
+      "tipo": "select",
+      "requerido": false,
+      "formato": "hora",
+      "sensible": false,
+      "uso": "Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).",
+      "atributos": {},
+      "opciones": [
+        "07:00",
+        "07:30",
+        "08:00",
+        "08:30",
+        "09:00",
+        "09:30",
+        "10:00"
+      ],
+      "autocomplete": "off"
+    },
     "integracion": {
       "etiqueta": "¿De quiénes es el grupo?",
       "tipo": "opcion",
@@ -10,8 +54,8 @@
       "uso": "Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).",
       "atributos": {},
       "opciones": [
-        "especifico",
-        "combinado"
+        "combinado",
+        "especifico"
       ],
       "autocomplete": "off"
     }

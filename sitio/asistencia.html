@@ -64,10 +64,12 @@
     <p class="ayuda">Queda registrado en el sistema quién capturó cada día y cuándo. Mientras el curso siga, la asistencia de un día ya guardado se puede corregir. La vista de todos los días está en la ficha del grupo.</p>
   </section>
 
+  <!-- Sin ?folio=: «Mis grupos de hoy» (propuesta D, 2026-10-18). Con un solo grupo hoy se entra directo; con varios, una
+       tarjeta por grupo con su nombre calculado y la acción del día; debajo, «Próximos» (P.pintaMisGrupos). -->
   <section class="tarjeta" aria-labelledby="t-mis-grupos" data-sin-grupo hidden>
-    <h2 class="titulo-paso" id="t-mis-grupos">Asistencia</h2>
+    <h2 class="titulo-paso" id="t-mis-grupos">Mis grupos de hoy</h2>
     <p data-sin-grupo-texto>No tiene grupos en curso. Cuando empiece el curso de un grupo suyo, aparecerá aquí.</p>
-    <ul data-mis-grupos></ul>
+    <div data-mis-grupos></div>
   </section>
 </main>
 

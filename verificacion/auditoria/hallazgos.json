@@ -38,8 +38,16 @@
       "grupos.html"
     ],
     [
-      "espera-grupo",
-      "espera.html?curso=poda-nueva"
+      "grupos-renovacion",
+      "grupos.html?curso=poda-renovacion"
+    ],
+    [
+      "programar",
+      "programar.html?curso=poda-nueva"
+    ],
+    [
+      "programar-sin-curso",
+      "programar.html"
     ],
     [
       "grupo-integracion",
@@ -114,8 +122,8 @@
       "corregir.html"
     ]
   ],
-  "paginas": 56,
-  "presionados": 153,
+  "paginas": 60,
+  "presionados": 201,
   "porTipo": {
     "encimado": 2,
     "botón sin efecto visible": 1

@@ -746,6 +746,23 @@
       "desde": "2026-10-18",
       "titulo": "Hallazgo del estándar: el borrador automático (data-borrador) guarda lo que llena la página y no admite archivos",
       "recomendacion": "El borrador del núcleo escucha también los eventos que lanza la página al precargar datos (por ejemplo, al continuar una solicitud), así que guarda como «capturado por la persona» lo que no tocó; y no conserva los archivos cargados. Solución provisional: la solicitud escribe su propio borrador sólo con cambios de la persona (event.isTrusted) y guarda los documentos en el almacén de la prueba; usa del núcleo la restauración (ctx.restauraBorrador) y la franja (data-franja-borrador). Propuesta: ignorar eventos no confiables y permitir que el proyecto registre un proveedor para los archivos."
+    },
+    {
+      "id": "P149",
+      "grupo": "direccion",
+      "bloquea": "no",
+      "desde": "2026-10-18",
+      "titulo": "¿Puede haber dos grupos del mismo curso en las mismas fechas?",
+      "recomendacion": "Hoy «Programar un curso» no lo permite (cuenta el traslape de fechas de grupos del mismo curso), pero la ficha del grupo y la base sí lo aceptan. Depende de cuántas aulas e instructores hay en el Vivero. Recomendación: no permitirlo mientras haya un aula de capacitación; si se permite, la base debe revisar el aula y el instructor, y el planeador mostrar los dos grupos en la misma semana."
+    },
+    {
+      "id": "P150",
+      "grupo": "direccion",
+      "bloquea": "datos reales",
+      "desde": "2026-10-18",
+      "titulo": "Días inhábiles de la Secretaría para programar cursos",
+      "recomendacion": "«Programar un curso» ya marca los días inhábiles en el calendario (parámetro dias_inhabiles), pero hoy no tiene ninguna fecha: no se inventan. Pedir el calendario oficial de días inhábiles publicado en la Gaceta y capturarlo como parámetro; también sirve para el cómputo de plazos en días hábiles de los lineamientos.",
+      "lineamientos": "Anteproyecto 0.4: Cómputo de plazos (Cap. I). Los inhábiles los fija la Secretaría por acuerdo en la Gaceta."
     }
   ],
   "resueltos": [

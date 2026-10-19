@@ -408,14 +408,15 @@
   /* Hora de la base (time: «09:00:00») como se escribe y se elige: «09:00» (auditoría de tareas, A5) */
   const hhmm = (t) => (t ? String(t).slice(0, 5) : '');
   /* Pares [etiqueta, valor, porConfirmar]: con el tercero, el valor se marca en amarillo (.pendiente del estándar)
-     con lo que falta confirmar; así se ve en cualquier versión hasta que la Secretaría lo confirme. */
+     con lo que falta confirmar; así se ve en cualquier versión hasta que la Secretaría lo confirme. El valor es un texto o
+     un nodo (el nombre del grupo con su folio, APD.grupoTitulo). */
   function datosLista(pares) {
     return el('dl', { class: 'datos' }, pares.filter((p) => p[1]).map(([etq, valor, porConfirmar]) =>
       el('div', { class: 'datos-par' }, [
         el('dt', { class: 'datos-etq', texto: etq }),
         porConfirmar
           ? el('dd', { class: 'datos-valor datos-por-confirmar pendiente' }, [valor, el('span', { class: 'datos-nota', texto: `Por confirmar: ${porConfirmar}` })])
-          : el('dd', { class: 'datos-valor', texto: valor })
+          : typeof valor === 'string' ? el('dd', { class: 'datos-valor', texto: valor }) : el('dd', { class: 'datos-valor' }, [valor])
       ])));
   }
 
@@ -528,8 +529,70 @@
     txt.focus();
   });
 
+  /* ----- Nombre de un grupo (propuesta D, aprobada por Liber el 2026-10-18) -----
+     Quien da el curso piensa en «el de Iztapalapa del 13 al 17», no en «APD-G-2026-003». El nombre se calcula con el
+     curso, las fechas y, si el grupo es de una organización, cuál: «Poda nueva · del 13 al 17 de octubre · Iztapalapa»;
+     un curso de un día, «Poda renovación · 3 de noviembre»; sin fecha, «Poda nueva · sin fecha». Cambia solo si cambia la
+     fecha. El folio (APD-G-AAAA-NNN) no cambia: queda en expedientes, constancias y bitácora, y se muestra en chico
+     debajo del nombre (APD.grupoTitulo).
+     Convención de los nombres de curso:
+       · completo, donde hay espacio (títulos, selector de cursos, resúmenes): «Poda y derribo · nueva», «Poda y derribo ·
+         renovación», «Dictaminador técnico · nueva», «Dictaminador técnico · renovación» (cursoLargo);
+       · corto, en el nombre del grupo y en las tarjetas: «Poda nueva», «Poda renovación», «Dictaminación nueva»,
+         «Dictaminación renovación» (cursoCorto): la actividad, como en «Acreditaciones de Poda y Dictaminación», con su
+         adjetivo en femenino. */
+  const CURSO_CORTO = { poda: 'Poda', dictaminador: 'Dictaminación' };
+  const cursoCorto = (t, m) => `${CURSO_CORTO[t] || TIPOS[t] || t} ${m === 'renovacion' ? 'renovación' : 'nueva'}`;
+  const cursoLargo = (t, m) => `${TIPOS[t] || t} · ${m === 'renovacion' ? 'renovación' : 'nueva'}`;
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const piezas = (iso) => { const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number); return { a, m, d }; };
+  /* Día de la semana de una fecha AAAA-MM-DD («lunes») */
+  const diaSemana = (iso) => DIAS[aFecha(String(iso).slice(0, 10)).getUTCDay()];
+  /* «13 de octubre» (con el año si se pide: «13 de octubre de 2026») */
+  function diaMes(iso, conAnio) { const p = piezas(iso); return `${p.d} de ${MESES[p.m - 1]}${conAnio ? ` de ${p.a}` : ''}`; }
+  /* «del 13 al 17 de octubre», «del 29 de octubre al 2 de noviembre»; el año sólo si no es el de anioRef */
+  function rangoFechas(desde, hasta, anioRef) {
+    const a = piezas(desde);
+    const b = piezas(hasta || desde);
+    const otroAnio = String(a.a) !== String(anioRef) || a.a !== b.a;
+    if (!hasta || hasta === desde) return diaMes(desde, otroAnio);
+    if (a.a === b.a && a.m === b.m) return `del ${a.d} al ${b.d} de ${MESES[a.m - 1]}${otroAnio ? ` de ${a.a}` : ''}`;
+    if (a.a === b.a) return `del ${diaMes(desde)} al ${diaMes(hasta)}${otroAnio ? ` de ${a.a}` : ''}`;
+    return `del ${diaMes(desde, true)} al ${diaMes(hasta, true)}`;
+  }
+  /* «miércoles 14/10/2026» */
+  const fechaConDia = (iso) => `${diaSemana(iso)} ${fecha(iso)}`;
+  /* Último día de un grupo (el del examen), según la duración de su curso */
+  function ultimoDia(datos, g) {
+    const c = datos ? curso(datos, g.tipo_acreditacion, g.modalidad) : null;
+    const dur = c ? c.dias_duracion : (g.modalidad === 'renovacion' ? 1 : 5);
+    return g.fecha_inicio ? sumaDias(g.fecha_inicio, dur - 1) : null;
+  }
+  /* El nombre calculado. opciones.sinCurso: sin el curso, donde ya se sabe cuál es (la columna de un curso) */
+  function nombreGrupo(g, datos, opciones = {}) {
+    const anio = String(hoy(datos)).slice(0, 4);
+    const fin = ultimoDia(datos, g);
+    const cuando = g.fecha_inicio ? rangoFechas(g.fecha_inicio, fin, anio) : 'sin fecha';
+    const org = g.integracion === 'especifico' && g.organizacion_id && datos
+      ? ((datos.organizacion || []).find((o) => o.id === g.organizacion_id) || {}).nombre || '' : '';
+    if (opciones.sinCurso) {
+      const t = [cuando, org].filter(Boolean).join(' · ');
+      return t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1);
+    }
+    return [cursoCorto(g.tipo_acreditacion, g.modalidad), cuando, org].filter(Boolean).join(' · ');
+  }
+  /* Nombre del grupo y, debajo, su folio en chico (mono): en Grupos, la ficha del grupo, Asistencia y Aplicar el examen */
+  function grupoTitulo(g, datos, opciones = {}) {
+    return el('span', { class: 'grupo-titulo' }, [
+      el('span', { class: 'grupo-nombre', texto: nombreGrupo(g, datos, opciones) }),
+      el('span', { class: 'grupo-folio mono', texto: g.folio })
+    ]);
+  }
+
   global.APD = {
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
+    cursoCorto, cursoLargo, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,

@@ -456,3 +456,185 @@ tr.fila-adscripcion { margin: var(--e-5) 0 var(--e-2); padding: 0; background: n
 .control-calendario:hover { background: var(--guinda-cl); border-color: var(--guinda); }
 .control-calendario-nativo { position: absolute; inset-inline-end: 0; inset-block-end: 0; width: var(--b-1); height: var(--b-1); padding: 0; border: 0; opacity: 0; pointer-events: none; }
 
+
+/* ───── Grupos como planeador por curso, «Programar un curso» y «Mis grupos de hoy» (propuestas A, B y D, aprobadas por
+   Liber el 2026-10-18) ───── */
+/* Nombre calculado del grupo y, debajo, su folio en chico (APD.grupoTitulo): el folio no cambia */
+.grupo-titulo { display: inline-grid; gap: var(--b-2); min-width: 0; }
+.grupo-nombre { overflow-wrap: anywhere; }
+.grupo-folio { font-size: var(--t-xs); font-weight: var(--peso-normal); color: var(--gris); letter-spacing: 0; }
+.grupo-bajada-datos { display: block; margin-block-start: var(--e-1); }
+.titulo-paso .grupo-folio { font-size: var(--t-sm); }
+
+/* Planeador: cabeza con la fecha de hoy y «Programar un curso»; los cuatro cursos como botones con aria-pressed */
+.plan-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-3); margin-block-end: var(--e-4); }
+.plan-cabeza-texto { display: grid; gap: var(--e-1); min-width: 0; }
+.plan-titulo { margin: 0; }
+.plan-hoy { margin: 0; color: var(--gris); }
+.plan-cursos { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-4); }
+.plan-curso {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); min-height: var(--objetivo-min);
+  padding: var(--e-1) var(--e-4); border: var(--b-1) solid var(--borde); border-radius: var(--r-pill); background: var(--blanco);
+  color: var(--texto); font: var(--peso-semi) var(--t-md)/var(--interlineado-compacto) var(--fuente-titulo); text-align: start; cursor: pointer;
+}
+.plan-curso[aria-pressed="true"] { border-color: var(--guinda); background: var(--guinda); color: var(--blanco); }
+.plan-curso[aria-pressed="true"] .plan-curso-cifra { background: var(--blanco); color: var(--guinda); }
+.plan-curso[aria-pressed="true"] .plan-curso-vencidas { color: var(--blanco); }
+.plan-curso:not([aria-pressed="true"]):hover { border-color: var(--guinda); }
+.plan-curso-cifra { padding: 0 var(--e-2); border-radius: var(--r-pill); background: var(--fondo); font: var(--peso-fuerte) var(--t-sm)/var(--interlineado-cuerpo) var(--fuente-cuerpo); }
+.plan-curso-vencidas { font: var(--peso-medio) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--pend-txt); }
+.plan-hecho { margin-block-end: var(--e-4); }
+.plan { display: grid; gap: var(--e-5); align-items: start; }
+.plan-col-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-1) var(--e-3); }
+.plan-col-titulo { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); }
+.plan-col-nota { font-size: var(--t-sm); color: var(--gris); }
+/* En espera: una tarjeta con la lista y, fija al pie mientras se recorre, la cuenta de elegidas y los botones */
+.plan-espera { display: grid; gap: var(--e-3); padding: var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); min-width: 0; }
+.plan-personas { display: grid; gap: var(--e-2); }
+.plan-persona {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--e-3); row-gap: var(--e-1); align-items: center;
+  min-height: var(--objetivo-min); padding: var(--e-2) var(--e-3); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl);
+  background: var(--blanco); cursor: pointer;
+}
+.plan-persona > .casilla-input { grid-row: 1 / span 3; align-self: start; }
+.plan-persona-nombre { grid-column: 2; font-weight: var(--peso-medio); overflow-wrap: anywhere; }
+.plan-persona-espera { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); }
+.plan-persona-org { grid-column: 2; font-size: var(--t-sm); color: var(--gris); overflow-wrap: anywhere; }
+.plan-dias { font-size: var(--t-sm); color: var(--gris); white-space: nowrap; }
+.plan-persona:has(.casilla-input:checked) { border-color: var(--guinda); background: var(--guinda-cl); }
+/* Las de una misma organización, juntas en un bloque */
+.plan-bloque { display: grid; gap: var(--e-2); padding: var(--e-3); border: var(--b-1) dashed var(--dorado); border-radius: var(--r-ctrl); background: var(--beige); }
+.plan-bloque-cabeza { display: flex; align-items: center; gap: var(--e-3); min-height: var(--objetivo-min); cursor: pointer; }
+.plan-bloque-cabeza > .casilla-input { margin: 0; }
+.plan-bloque-nombre { font: var(--peso-semi) var(--t-sm)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--dorado-txt); overflow-wrap: anywhere; }
+/* En teléfono la barra va al final de la lista (las pantallas del personal son para computadora; en teléfono sólo se
+   cuida que funcionen); desde 760 px queda fija al pie de la columna mientras se recorre la lista */
+.plan-barra { display: grid; gap: var(--e-2); padding-block: var(--e-3) var(--e-2); border-block-start: var(--b-1) solid var(--linea); background: var(--blanco); }
+.plan-barra[hidden] { display: none; }
+.plan-barra-cuenta { margin: 0; font-weight: var(--peso-semi); }
+.plan-barra-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.plan-barra-acciones .btn { width: auto; }
+/* El núcleo empuja el botón primario a la derecha en computadora; aquí van en orden, a la izquierda */
+.plan-barra-acciones .btn-primario, .plan-grupo-acciones .btn-primario { margin-inline-start: 0; }
+.plan-destino-cupo { font-weight: var(--peso-normal); }
+/* Próximas semanas: una fila por semana (rótulo y su contenido) */
+.plan-semanas { display: grid; gap: var(--e-3); min-width: 0; }
+.plan-semanas-lista { display: grid; gap: var(--e-4); }
+.plan-semana { display: grid; gap: var(--e-2); }
+.plan-semana-titulo { display: grid; margin: 0; font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); }
+.plan-semana-fechas { font: var(--peso-normal) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--gris); }
+.plan-semana-cuerpo { display: grid; gap: var(--e-2); min-width: 0; }
+.plan-grupo { display: grid; gap: var(--e-3); padding: var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); min-width: 0; }
+.plan-grupo[data-situacion="en_integracion"] { border-color: var(--dorado); box-shadow: inset var(--b-4) 0 0 var(--dorado); }
+.plan-grupo-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--e-2) var(--e-3); }
+.plan-grupo-nombre { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); min-width: 0; }
+.plan-grupo-datos { margin: 0; font-size: var(--t-sm); color: var(--gris); }
+.plan-grupo-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
+.plan-grupo-acciones .btn { width: auto; }
+/* Cupo: un lugar por persona (25), lo ocupado, lo que falta para el mínimo (punteado) y lo libre */
+.plan-cupo { display: grid; gap: var(--e-2); }
+.plan-cupo-barra { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--b-2); }
+.plan-cupo-lugar { height: var(--e-3); border-radius: var(--b-2); background: var(--linea); }
+.plan-cupo-lugar[data-lugar="ocupado"] { background: var(--guinda); }
+.plan-cupo-lugar[data-lugar="minimo"] { background: var(--guinda-cl); outline: var(--b-1) dashed var(--guinda); outline-offset: calc(var(--b-1) * -1); }
+.plan-cupo-texto { margin: 0; font-size: var(--t-sm); }
+/* Semana libre: el enlace para programarla, o en una línea por qué no se puede */
+.plan-programar-semana {
+  display: flex; align-items: center; gap: var(--e-2); min-height: calc(var(--objetivo-min) + var(--e-2)); padding: 0 var(--e-4);
+  border: var(--b-1) dashed var(--guinda); border-radius: var(--r-caja); background: var(--blanco); color: var(--guinda);
+  font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); text-decoration: none;
+}
+.plan-programar-semana:hover { background: var(--guinda-cl); }
+.plan-semana-libre { display: grid; gap: var(--e-2); }
+.plan-semana-no { margin: 0; padding: var(--e-3) var(--e-4); border: var(--b-1) dashed var(--borde); border-radius: var(--r-caja); font-size: var(--t-sm); color: var(--gris); }
+.plan-terminados { padding: var(--e-2) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+.plan-terminados-titulo { display: flex; align-items: center; min-height: var(--objetivo-min); font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); cursor: pointer; }
+.plan-terminados-lista { display: grid; margin: 0; padding: 0; list-style: none; }
+.plan-terminado { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); padding-block: var(--e-2); border-block-start: var(--b-1) solid var(--linea); }
+.plan-pie { margin-block-start: var(--e-5); }
+
+/* Programar un curso: los tres pasos y, al lado, «Así quedaría» */
+.prog { display: grid; gap: var(--e-5); align-items: start; }
+.prog[hidden] { display: none; }
+.prog-pasos { display: grid; min-width: 0; }
+.prog-paso-titulo { margin-block: 0 var(--e-2); padding-block-start: 0; border-block-start: 0; }
+.prog-paso-num { color: var(--dorado-txt); }
+.prog-paso-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-1) var(--e-3); }
+.prog-propuesta { margin: 0 0 var(--e-3); font-size: var(--t-sm); color: var(--gris); }
+.prog-fecha { margin-block-start: var(--e-4); }
+.prog-personas { display: grid; gap: var(--e-2); margin: 0 0 var(--e-3); padding: 0; list-style: none; }
+.prog-ya-titulo { margin: 0 0 var(--e-1); font-weight: var(--peso-semi); }
+.prog-ya { margin: 0 0 var(--e-4); padding-inline-start: var(--e-5); list-style: disc; font-size: var(--t-sm); }
+.prog-cursos { display: grid; gap: var(--e-2); margin: 0; padding: 0; list-style: none; }
+.prog-resumen { display: grid; gap: var(--e-3); padding: var(--e-seccion); background: var(--blanco); border: var(--b-2) solid var(--guinda); border-radius: var(--r-caja); min-width: 0; }
+.prog-resumen > * { margin: 0; }
+.prog-resumen-titulo { font: var(--peso-fuerte) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+.prog-resumen-nombre { font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); }
+.prog-resumen-acciones { display: grid; gap: var(--e-2); }
+.prog-resumen-acciones .btn-primario { margin-inline-start: 0; }
+.prog-resumen-nota { font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--gris-cl); }
+/* Calendario del mes: un botón por día; el curso elegido resaltado con «inicia» y «examen» */
+.cal { display: grid; gap: var(--e-3); max-width: var(--ancho-dialogo); margin-block: var(--e-3) 0; }
+.cal-cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.cal-mes { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); text-align: center; }
+.cal-mes-boton:disabled { opacity: var(--op-inactivo); cursor: not-allowed; }
+.cal-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: var(--e-1); }
+.cal-tabla th { padding-block: var(--e-1); font-size: var(--t-xs); font-weight: var(--peso-semi); color: var(--gris); text-align: center; }
+.cal-tabla abbr { text-decoration: none; }
+.cal-tabla td { padding: 0; text-align: center; }
+.cal-dia {
+  display: grid; justify-items: center; align-content: center; gap: var(--b-2); width: 100%; min-height: calc(var(--objetivo-min) + var(--e-3));
+  padding: var(--e-1) 0; border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto);
+  font-family: var(--fuente-cuerpo); cursor: pointer;
+}
+.cal-num { font-size: var(--t-base); font-weight: var(--peso-medio); line-height: 1; }
+/* En teléfono la celda mide unos 44 px: la nota («inicia», «examen») un poco menor, para que no se parta */
+.cal-nota { min-height: var(--t-xs); max-width: 100%; font-size: calc(var(--t-xs) * .85); line-height: 1; color: var(--gris); white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.cal-dia:not([aria-disabled="true"]):hover { border-color: var(--guinda); }
+.cal-dia[aria-disabled="true"] { border-style: dashed; border-color: var(--borde); background: var(--fondo); color: var(--gris); cursor: not-allowed; }
+.cal-dia[data-inhabil="si"] { border-color: var(--pend); background: var(--pend-bg); }
+.cal-dia[data-rango] { border-color: var(--guinda); background: var(--guinda-cl); }
+.cal-dia[data-rango="inicio"], .cal-dia[data-rango="fin"] { background: var(--guinda); color: var(--blanco); }
+.cal-dia[data-rango="inicio"] .cal-nota, .cal-dia[data-rango="fin"] .cal-nota { color: var(--blanco); }
+.cal-estado { margin: 0; padding: var(--e-2) var(--e-3); border-radius: var(--r-ctrl); background: var(--fondo); font-size: var(--t-sm); }
+.cal-leyenda { display: grid; gap: var(--e-1); margin: 0; padding: 0; list-style: none; font-size: var(--t-sm); color: var(--gris); }
+.cal-leyenda li { display: flex; align-items: center; gap: var(--e-2); }
+.cal-muestra { flex: none; width: var(--e-4); height: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--b-2); }
+.cal-muestra[data-muestra="rango"] { border-color: var(--guinda); background: var(--guinda-cl); }
+.cal-muestra[data-muestra="no"] { border-style: dashed; border-color: var(--borde); background: var(--fondo); }
+.cal-muestra[data-muestra="inhabil"] { border-color: var(--pend); background: var(--pend-bg); }
+
+/* Mis grupos de hoy (asistencia y aplicar el examen): una tarjeta por grupo con la acción del día */
+.hoy-grupos { display: grid; gap: var(--e-3); margin: var(--e-3) 0 var(--e-2); padding: 0; list-style: none; }
+.hoy-grupo { display: grid; gap: var(--e-2); padding: var(--e-4); border: var(--b-1) solid var(--linea); border-inline-start: var(--b-4) solid var(--guinda); border-radius: var(--r-caja); background: var(--blanco); }
+.hoy-grupo-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--e-2) var(--e-3); }
+.hoy-grupo-nombre { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); min-width: 0; }
+.hoy-grupo-datos { margin: 0; font-size: var(--t-sm); color: var(--gris); }
+.hoy-grupo .btn-primario { margin-inline-start: 0; }
+.hoy-proximos { display: grid; gap: var(--e-2); margin: 0; padding-inline-start: var(--e-5); list-style: disc; }
+.hoy-proximo-estado { display: block; font-size: var(--t-sm); color: var(--gris); }
+
+@media (min-width: 560px) {
+  .plan-persona { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .plan-persona-espera { grid-column: 3; grid-row: 1; justify-content: flex-end; }
+  .plan-persona-org { grid-column: 2 / 4; }
+  .plan-programar { width: auto; }
+  .prog-cursos { display: flex; flex-wrap: wrap; }
+  .cal-nota { font-size: var(--t-xs); }
+  .prog-cursos .btn { width: auto; }
+  .prog-resumen .datos-par { grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); }
+  .hoy-grupo-accion { width: auto; justify-self: start; }
+}
+@media (min-width: 760px) {
+  .plan-barra { position: sticky; bottom: 0; z-index: var(--z-lista); padding-block-end: calc(var(--e-2) + var(--safe-inf)); }
+  .plan-semana { grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
+  .plan-semana-titulo { padding-block-start: var(--e-3); }
+  .hoy-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .plan { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .prog { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .prog-resumen { position: sticky; top: var(--e-4); }
+  /* Versión de prueba: «Así quedaría» va a la derecha, donde está fijo el botón «Menú de pruebas»; se le deja su lugar */
+  .modo-pruebas .prog { padding-inline-end: calc(var(--ancho-boton-min) + var(--e-4)); }
+}

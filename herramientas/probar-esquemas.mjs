@@ -47,17 +47,20 @@ for (const parte of ['contacto', 'adscripcion', 'foto']) {
   esquema[`perfil-${parte}`] = JSON.parse(readFileSync(join(salida, `perfil-${parte}.json`), 'utf8'));
 }
 rmSync(join(salida, 'datos.json'), { force: true });
-// Examen en línea (entrar con su código; suspender un examen) y crear un grupo: páginas de un solo formulario, que la
-// herramienta del estándar lee completas (desde la 1.3.3 sólo cuenta lo que está dentro del <form>, P90).
-for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.html', 'examen-suspender'], ['espera.html', 'grupo-crear']]) {
+// Examen en línea (entrar con su código; suspender un examen): páginas de un solo formulario, que la herramienta del
+// estándar lee completas (desde la 1.3.3 sólo cuenta lo que está dentro del <form>, P90).
+for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.html', 'examen-suspender']]) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', archivo), join(salida, `${nombre}.json`)]);
   esquema[nombre] = JSON.parse(readFileSync(join(salida, `${nombre}.json`), 'utf8'));
 }
 // Un grupo (bloque 53): confirmar, dar de baja y cancelar están en la misma página; se toma cada formulario por su id. La
 // base revisa además cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
+// Crear un grupo (bloque 74): «Programar un curso» (programar.html, formulario «programar»): tipo de grupo y primer día;
+// hora e instructor son obligatorios sólo para confirmar (la API y la base lo exigen: datos_para_confirmar). Elegir a las
+// personas es una acción sobre una lista (apd.inscripcion_alta). Programar un grupo que ya existe usa grupo-confirmar.
 // Material de estudio del personal (auditoría 2026-10-18, A 8.7): un solo formulario para agregar, editar y reemplazar;
 // «modo» lo calcula la API por la ruta (alta o cambio), como aquí el caso con `_modo`.
-for (const [archivo, id, nombre] of [['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar'],
+for (const [archivo, id, nombre] of [['programar.html', 'programar', 'grupo-crear'], ['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar'],
   ['material-personal.html', 'form-material', 'material']]) {
   const m = readFileSync(join(raiz, 'sitio', archivo), 'utf8').match(new RegExp(`<form id="${id}"[\\s\\S]*?</form>`));
   const html = join(temporal, `${nombre}.html`);
@@ -309,9 +312,11 @@ caso('Examen: un código con letras que se confunden (O, I, 0, 1) se rechaza', '
 caso('Examen: sin código se rechaza', 'examen-entrar', {}, ['codigo']);
 caso('Examen: suspender sin motivo se rechaza', 'examen-suspender', {}, ['motivo']);
 caso('Examen: suspender con su motivo se acepta', 'examen-suspender', { motivo: 'Consultó su teléfono durante el examen.' }, true);
-caso('Grupo: crear sin decir si es específico o combinado se rechaza', 'grupo-crear', {}, ['integracion']);
-caso('Grupo: crear un grupo combinado se acepta', 'grupo-crear', { integracion: 'combinado' }, true);
-caso('Grupo: otra integración se rechaza', 'grupo-crear', { integracion: 'mixto' }, ['integracion']);
+caso('Grupo: programar sin tipo de grupo ni primer día se rechaza', 'grupo-crear', {}, ['integracion', 'fecha_inicio']);
+caso('Grupo: programar un grupo combinado con su primer día se acepta (guardar sin confirmar)', 'grupo-crear', { integracion: 'combinado', fecha_inicio: '02/11/2026' }, true);
+caso('Grupo: otra integración se rechaza', 'grupo-crear', { integracion: 'mixto', fecha_inicio: '02/11/2026' }, ['integracion']);
+caso('Grupo: programar con hora e instructor de la lista se acepta (crear y confirmar)', 'grupo-crear', { integracion: 'especifico', fecha_inicio: '02/11/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' }, true);
+caso('Grupo: programar con una hora fuera de la lista se rechaza', 'grupo-crear', { integracion: 'combinado', fecha_inicio: '02/11/2026', hora_entrada: '09:15' }, ['hora_entrada']);
 const confirma = { fecha_inicio: '26/10/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' };
 caso('Grupo: confirmar con primer día, hora e instructor se acepta', 'grupo-confirmar', confirma, true);
 caso('Grupo: confirmar sin hora de entrada ni instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '26/10/2026' }, ['hora_entrada', 'instructor']);

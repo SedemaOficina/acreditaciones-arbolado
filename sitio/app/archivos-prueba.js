@@ -301,7 +301,7 @@
   const EN_LA_BASE = { terminado: 'atendida', pausa: 'en_pausa', con_observaciones: 'con_observaciones', otra_cita: 'sin_pago',
     no_se_presento: 'no_se_presento', cerrar: 'no_se_presento', no_es_la_persona: 'no_es_la_persona' };
 
-  /* Grupos, asistencia y examen de la prueba (grupos.html, grupo.html, espera.html, asistencia.html, aplicar.html,
+  /* Grupos, asistencia y examen de la prueba (grupos.html, programar.html, grupo.html, asistencia.html, aplicar.html,
      examen.html): una lista de lo que pasó, en orden. Cada evento se aplica como lo dejaría la base (apd.grupo_cambio,
      apd.inscripcion_alta, apd.asistencia_captura, apd.examen_captura y apd.examen_aplicar): lo que la base rechazaría,
      aquí no cambia nada. */
@@ -395,6 +395,12 @@
         if (g.estado !== 'en_integracion' || activas(g.id).length < g.cupo_minimo || !e.fecha_inicio || !e.hora_entrada || !e.instructor) continue;
         if (e.fecha_inicio < global.APD.sumaDias(hoy, anticipacion) || !c) continue;
         g = ponGrupo(g, { estado: 'confirmado', estado_desde: en, fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada, instructor: e.instructor });
+      } else if (e.tipo === 'proponer') {
+        // Fecha propuesta de un grupo por confirmar («Programar un curso», «Guardar sin confirmar»; 2026-10-18): la base
+        // admite primer día, hora de entrada e instructor en un grupo en integración (apd.grupo_cambio sólo los fija al
+        // confirmar); el curso no cambia. Lo que no se eligió queda vacío.
+        if (g.estado !== 'en_integracion' || !e.fecha_inicio) continue;
+        g = ponGrupo(g, { fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada || null, instructor: e.instructor || null });
       } else if (e.tipo === 'iniciar') {
         // Sólo en la versión de prueba (auditoría 2026-10-18, B5): la fecha simulada no avanza, así que un grupo
         // confirmado nunca llegaría a su primer día. «Iniciar el curso hoy» (menú de pruebas, en la ficha del grupo)

@@ -1074,3 +1074,37 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Fecha de la cita (revisión y cotejo) y primer día del curso: además de escribirla, se elige en el calendario del
   navegador, que la escribe en dd/mm/aaaa (app/apd.js). La fecha de nacimiento sigue sin calendario.
 - Pruebas: `probar-sitio` 660 (con axe; incluye el calendario de la cita), `probar-examen` 74, `probar-esquemas`.
+
+## 2026-10-18 · Bloque 74 · Grupos como planeador por curso, «Programar un curso» y nombre calculado del grupo
+
+- Liber aprobó tres propuestas del lienzo «Grupos» (A, B y D); la C (calendario del Vivero con todos los cursos) queda
+  para después.
+- **A · Planeador por curso** (`grupos.html?curso=…`, `app/grupos.js`): fecha de hoy, «Programar un curso» y los cuatro
+  cursos con `aria-pressed` (cuántas esperan, cuántas vencidas; el curso en la dirección). «En espera · N» con las de una
+  misma organización juntas y la barra de elegidas (fija en computadora) con un botón por grupo que recibe y «A un curso
+  nuevo…». «Próximas semanas»: esta semana y siete más, cada grupo con su cupo de 25 lugares, «Completar con las N que
+  más esperan» (por bloques completos de organización), «Confirmar el grupo» (con `FormKit.confirma` si ya tiene fecha
+  a tiempo, hora e instructor; si no, en la ficha), «Elegir semana» / «Cambiar la semana» y «Ver a las personas»; la
+  semana libre lleva «Programar un curso esta semana» y la que no se puede lo explica en una línea. «Sin fecha» y
+  «Grupos que ya terminaron». `espera.html` ya sólo redirige a Grupos con el mismo curso (y `?grupo=`, que sigue
+  sirviendo para «Agregar personas de la espera» desde la ficha).
+- **B · Programar un curso** (`programar.html`, `app/programar.js`, nueva): calendario accesible del mes (botones con
+  `aria-pressed`, razón en el nombre de los días que no se pueden, flechas/Inicio/Fin/RePág/AvPág), el campo «Primer día
+  del curso» sincronizado, instructor (libre u ocupado esas fechas) y hora, personas propuestas y tipo de grupo; «Así
+  quedaría»; «Crear y confirmar el grupo» dice qué falta y «Guardar sin confirmar» deja la fecha como propuesta. También
+  programa un grupo por confirmar que ya existe (`?grupo=`). Evento nuevo de la prueba `proponer` (fecha, hora e
+  instructor de un grupo en integración; la base ya lo admite). Días inhábiles: lugar listo (`dias_inhabiles`), sin
+  fechas inventadas.
+- **D · Nombre calculado** (`APD.nombreGrupo`, `APD.grupoTitulo`, `APD.cursoCorto`, `APD.cursoLargo`): «Poda nueva · del
+  13 al 17 de octubre · Iztapalapa», con el folio en chico debajo, en Grupos, la ficha, «Asistencia», «Aplicar el
+  examen» (y papeletas) y «Mis trámites» (grupo confirmado). «Asistencia» y «Aplicar el examen» sin `?folio=` abren en
+  «Mis grupos de hoy» (`APD_PERSONAL.pintaMisGrupos`) con «Próximos».
+- Menú de pruebas: «Programar un curso» en «Ir a otra pantalla» y caso «Personal · Programar un curso»; `auditar-sitio`,
+  `capturas-volumen` y `probar-volumen` al día; esquema `grupo-crear.json` ahora del formulario «programar».
+- Pruebas: `SOLO=grupos probar-sitio` 172 correctas; `probar-sitio` completo 744 (con axe, incluidas Grupos, Programar,
+  Programar con error y «Mis grupos de hoy»); `probar-examen` 74; `probar-esquemas` 120; `probar-volumen` 52; auditor de
+  CSS del estándar sin hallazgos en `apd.css` y `examen.css`; `auditar-sitio` 60 pantallas y 201 botones, con los mismos
+  3 hallazgos que ya tenía (visor junto al menú de pruebas en revisar y cotejo; «Ir al contenido» en corregir), ninguno
+  de las pantallas nuevas.
+- Queda por decidir: si dos grupos del mismo curso pueden coincidir en fechas (el calendario no lo deja; la ficha del
+  grupo y la base sí).

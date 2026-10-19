@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Grupos · Personal · Acreditaciones de arbolado urbano</title>
-<meta name="description" content="Espera de grupo por curso y grupos del curso de acreditación, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
+<meta name="description" content="Planeador de los grupos de cada curso: quién espera y las próximas semanas, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="formkit/css/tokens.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/css/base.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/css/nucleo.css?v=1.4.1">
-<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.4.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.4.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.4.1">
 <link rel="stylesheet" href="app/apd.css?v=0.54">
@@ -29,24 +29,51 @@
 <main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
 
-  <section class="tarjeta" aria-labelledby="t-grupos">
-    <h2 class="titulo-paso" id="t-grupos">Grupos</h2>
-    <p class="bajada">Las personas con el cotejo terminado esperan grupo en su curso. Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas y recibe hasta <span data-cupo-max>25</span>.</p>
-
-    <h3 class="titulo-bloque" id="t-espera">Personas en espera de grupo</h3>
-    <ul class="cursos" data-cursos aria-labelledby="t-espera"></ul>
-
-    <h3 class="titulo-bloque" id="t-lista">Grupos de los cuatro cursos</h3>
-    <p class="resumen-filtro" role="status" data-cuenta>Cargando los grupos…</p>
-    <div class="tabla-marco" data-tabla data-clave="grupo">
-      <table class="tabla tabla-bandeja">
-        <caption class="solo-lector">Grupos de los cuatro cursos</caption>
-        <thead><tr><th scope="col">Grupo</th><th scope="col">Curso</th><th scope="col">Tipo de grupo</th><th scope="col">Personas</th><th scope="col">Inicia</th><th scope="col">Instructor</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
-        <tbody data-filas></tbody>
-      </table>
+  <!-- Planeador por curso (propuesta A, aprobada por Liber el 2026-10-18): elegir el curso; a un lado, quién espera; al
+       otro, sus próximas semanas con sus grupos. En teléfono, primero la espera. -->
+  <div class="plan-cabeza">
+    <div class="plan-cabeza-texto">
+      <h2 class="titulo-paso plan-titulo" id="t-grupos">Grupos</h2>
+      <p class="plan-hoy" data-hoy>Cargando los grupos…</p>
     </div>
-    <p class="ayuda">Para armar un grupo nuevo, abra «Ver la espera» del curso y elija a las personas. <span class="pendiente">Pendiente (P92): quién arma los grupos; hoy, el perfil de revisión y cotejo.</span></p>
-  </section>
+    <a class="btn btn-primario plan-programar" href="programar.html" data-programar>Programar un curso</a>
+  </div>
+  <div class="plan-cursos" role="group" aria-label="Curso" data-cursos></div>
+  <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
+  <div class="plan-hecho" data-hecho hidden></div>
+  <p class="resumen-filtro" role="status" data-cuenta></p>
+
+  <div class="plan">
+    <section class="plan-espera" aria-labelledby="t-espera">
+      <div class="plan-col-cabeza">
+        <h3 class="plan-col-titulo" id="t-espera">En espera</h3>
+        <span class="plan-col-nota" data-orden></span>
+      </div>
+      <!-- Si se llega desde un grupo («Agregar personas de la espera»), sólo ese grupo recibe -->
+      <div data-modo-grupo hidden></div>
+      <div class="plan-personas" data-personas></div>
+      <!-- Cuenta de elegidas y botones, fijos al pie de la columna mientras se recorre la lista -->
+      <div class="plan-barra" data-barra hidden>
+        <p class="plan-barra-cuenta" id="plan-elegidas" role="status" data-elegidas>Ninguna elegida</p>
+        <!-- Lo que impidió agregar, junto a los botones (APD.pintaAviso) -->
+        <div data-error-eleccion hidden></div>
+        <div class="plan-barra-acciones" data-destinos></div>
+      </div>
+    </section>
+
+    <section class="plan-semanas" aria-labelledby="t-semanas">
+      <div class="plan-col-cabeza">
+        <h3 class="plan-col-titulo" id="t-semanas">Próximas semanas</h3>
+        <span class="plan-col-nota" data-semanas-nota></span>
+      </div>
+      <div class="plan-semanas-lista" data-semanas></div>
+      <details class="plan-terminados" data-terminados hidden>
+        <summary class="plan-terminados-titulo" data-terminados-titulo>Grupos que ya terminaron</summary>
+        <ul class="plan-terminados-lista" data-terminados-lista></ul>
+      </details>
+    </section>
+  </div>
+  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas, hora de entrada e instructor, y recibe hasta <span data-cupo-max>25</span>. <span class="pendiente">Pendiente (P92): quién arma los grupos; hoy, el perfil de revisión y cotejo.</span></p>
 </main>
 
 <footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
@@ -63,7 +90,7 @@
 <script src="app/mensajes-usted.js?v=0.54"></script>
 <script src="formkit/js/iconos.js?v=1.4.1"></script>
 <script src="formkit/js/formkit.core.js?v=1.4.1"></script>
-<script src="formkit/modulos/tabla/tabla.js?v=1.4.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.4.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.4.1"></script>
 <script src="app/grupos.js?v=0.54"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->

@@ -37,9 +37,15 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   const texto = (sel) => pg.textContent(sel);
   const sinDesborde = async (donde) => comprueba(await pg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), t(`${donde}: sin desborde horizontal`));
 
-  // A2: «Aplicar el examen» abre el grupo que presenta hoy y deja cambiar
-  await ir('aplicar.html', '[data-grupo] .datos-valor');
-  comprueba((await texto('[data-grupo]')).includes('APD-G-2026-020') && /Otros grupos en curso/.test(await texto('[data-grupo]')), t('aplicar: abre el grupo cuyo examen es hoy y ofrece los otros'));
+  // A2 y propuesta D (2026-10-18): sin ?folio=, «Mis grupos de hoy»: una tarjeta por grupo del instructor con clase o
+  // examen hoy; los que presentan examen llevan a «Aplicar el examen», que deja cambiar a los otros grupos en curso
+  await ir('aplicar.html', '.hoy-grupo');
+  const tarjetas = await pg.$$eval('.hoy-grupo', (l) => l.map((x) => [x.querySelector('.grupo-folio').textContent, x.querySelector('a.btn').getAttribute('href')]));
+  comprueba(tarjetas.length === 4 && tarjetas.some(([f, h]) => f === 'APD-G-2026-020' && /aplicar\.html\?folio=APD-G-2026-020/.test(h))
+    && tarjetas.some(([f, h]) => f === 'APD-G-2026-024' && /asistencia\.html/.test(h)), t('aplicar sin folio: «Mis grupos de hoy» con los 4 grupos del instructor y la acción de cada uno'));
+  await sinDesborde('aplicar (mis grupos de hoy)');
+  await ir('aplicar.html?folio=APD-G-2026-020', '[data-grupo] .datos-valor');
+  comprueba(/Otros grupos en curso/.test(await texto('[data-grupo]')), t('aplicar: el grupo con examen hoy ofrece los otros grupos en curso'));
   await sinDesborde('aplicar');
   await ir('aplicar.html?folio=APD-G-2026-024', '[data-grupo] .datos-valor');
   const ap = await texto('[data-grupo]');
@@ -72,32 +78,23 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   comprueba((await texto('[data-acciones]')).includes(`Agregar personas de Iztapalapa (${enEsperaIzta} en espera)`), t(`grupo de Iztapalapa: cuenta sólo a su gente en espera (${enEsperaIzta})`));
   comprueba(/Recibe personas hasta el/.test(await texto('[data-cupo-texto]')), t('grupo confirmado: dice hasta cuándo recibe y cuántos lugares quedan'));
   comprueba(/09:00/.test(await texto('[data-datos]')) && !/09:00:00/.test(await texto('[data-datos]')), t('grupo: la hora de entrada sin segundos'));
-  await ir('espera.html?curso=poda-nueva&grupo=APD-G-2026-023', '.bloque-adscripcion');
-  const nombres = await pg.$$eval('.adscripcion-nombre', (l) => l.map((x) => x.textContent));
-  comprueba(nombres.length === 1 && nombres[0] === 'Iztapalapa', t('espera desde el grupo de Iztapalapa: sólo su bloque'));
+  // Desde la ficha (la dirección vieja espera.html lleva a Grupos con el grupo): sólo su gente
+  await ir('espera.html?curso=poda-nueva&grupo=APD-G-2026-023', '.plan-persona input');
+  const orgs = await pg.$$eval('.plan-persona-org, .plan-bloque-nombre', (l) => l.map((x) => x.textContent));
+  comprueba(/grupos\.html\?curso=poda-nueva&grupo=APD-G-2026-023/.test(pg.url()) && (await pg.$$('.plan-persona input')).length === enEsperaIzta && orgs.every((x) => /^Iztapalapa/.test(x)),
+    t('espera desde el grupo de Iztapalapa: lleva a Grupos y sólo muestra a su gente'));
 
-  // M2, M3 y M4: espera completa
-  await ir('espera.html?curso=poda-nueva', '.bloque-adscripcion');
-  const jardines = pg.locator('.bloque-adscripcion', { hasText: 'Jardines Ejemplo del Norte' });
-  comprueba(/Su grupo APD-G-2026-021/.test(await jardines.locator('.fila-adscripcion').textContent()), t('espera: el bloque de Jardines dice su grupo por confirmar, no «alcanza para un grupo propio»'));
-  comprueba((await pg.$$eval('[data-destinos] button', (l) => l.map((b) => b.textContent))).some((x) => /sólo Iztapalapa/.test(x)), t('espera: cada botón dice de quién es el grupo'));
-  await pg.check('.bloque-adscripcion tr[data-folio] input');
-  comprueba(/1 elegida/.test(await texto('[data-barra-cuenta]')) && /un grupo recibe hasta 25/.test(await texto('[data-elegidas]')), t('espera: la barra lleva la cuenta y se dice cuántas caben'));
-  await sinDesborde('espera');
-  // Las confirmaciones no escriben «null» (auditoría integral: un hueco en la lista se veía como texto)
-  const indep = pg.locator('.bloque-adscripcion', { hasText: 'Independiente' }).locator('tr[data-folio] input');
-  await indep.nth(0).check(); await indep.nth(1).check();
-  await pg.click('[data-destinos] button:has-text("Crear un grupo")');
-  await pg.waitForSelector('dialog[open]');
-  comprueba(!/\bnull\b|\bundefined\b/.test(await pg.textContent('dialog[open]')), t('confirmación de crear un grupo: sin «null» ni «undefined»'));
-  await pg.click('dialog[open] [data-r="no"]');
-  comprueba(await pg.evaluate(() => { const m = document.querySelector('[data-tabla]'); return m.scrollWidth <= m.clientWidth + 1; }), t('espera: la tabla no se ensancha (no hay que desplazarla de lado)'));
-
-  // M7: «Grupos» lista todos los grupos que reciben
-  await ir('grupos.html', '.curso');
-  const poda = await pg.locator('.curso', { hasText: 'Poda y derribo · nueva' }).textContent();
-  comprueba(['APD-G-2026-004', 'APD-G-2026-021', 'APD-G-2026-022', 'APD-G-2026-023'].every((f) => poda.includes(f)) && /grupos nuevos/.test(poda), t('grupos: la tarjeta lista todos los grupos que reciben y cuántos grupos nuevos alcanzan'));
-  await sinDesborde('grupos');
+  // M2, M3, M4 y M7 con el planeador (propuesta A): toda la espera, todos los grupos que reciben y cada botón dice cuál
+  await ir('grupos.html?curso=poda-nueva', '.plan-grupo');
+  const destinos = await pg.$$eval('[data-destinos] button', (l) => l.map((b) => b.textContent));
+  comprueba(destinos.length === 5 && destinos.some((x) => /Iztapalapa/.test(x)) && destinos.some((x) => /Jardines Ejemplo del Norte/.test(x) && /APD-G-2026-021/.test(x)),
+    t('planeador: un botón por grupo que recibe, con su nombre (de quién es y sus fechas)'));
+  comprueba((await Promise.all(['APD-G-2026-004', 'APD-G-2026-005', 'APD-G-2026-021', 'APD-G-2026-022', 'APD-G-2026-023'].map((f) => pg.locator(`.plan-grupo[data-grupo="${f}"]`).count()))).every((n) => n === 1), t('planeador: todos los grupos que reciben están en su semana o en «Sin fecha»'));
+  comprueba((await pg.$$('.plan-semana[data-semana="2026-10-26"] .plan-grupo')).length === 2, t('planeador: una semana con dos grupos los muestra a los dos'));
+  comprueba(/falta 1 para confirmarlo|faltan 2 para confirmarlo/.test(await texto('.plan-grupo[data-grupo="APD-G-2026-021"]')), t('planeador: el grupo de Jardines dice cuántas le faltan'));
+  await pg.check('.plan-persona input');
+  comprueba(/1 elegida/.test(await texto('[data-elegidas]')), t('planeador: la barra lleva la cuenta de elegidas'));
+  await sinDesborde('planeador con 112 en espera');
 
   // M8: la bandeja resume cuántas llevan más tiempo
   await ir('revision.html', '[data-filas] tr');
