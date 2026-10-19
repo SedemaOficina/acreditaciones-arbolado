@@ -393,13 +393,14 @@
         const c = curso(g.tipo_acreditacion, g.modalidad);
         const anticipacion = Number(global.APD.parametro(d, 'dias_anticipacion_grupo') || 7);
         if (g.estado !== 'en_integracion' || activas(g.id).length < g.cupo_minimo || !e.fecha_inicio || !e.hora_entrada || !e.instructor) continue;
-        if (e.fecha_inicio < global.APD.sumaDias(hoy, anticipacion) || !c) continue;
+        // Como la base: ni antes de la anticipación ni más de un año después de hoy (decisión 3, auditoría 2026-10-19)
+        if (e.fecha_inicio < global.APD.sumaDias(hoy, anticipacion) || e.fecha_inicio > global.APD.sumaMeses(hoy, 12) || !c) continue;
         g = ponGrupo(g, { estado: 'confirmado', estado_desde: en, fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada, instructor: e.instructor });
       } else if (e.tipo === 'proponer') {
         // Fecha propuesta de un grupo por confirmar («Programar un curso», «Guardar sin confirmar»; 2026-10-18): la base
         // admite primer día, hora de entrada e instructor en un grupo en integración (apd.grupo_cambio sólo los fija al
         // confirmar); el curso no cambia. Lo que no se eligió queda vacío.
-        if (g.estado !== 'en_integracion' || !e.fecha_inicio) continue;
+        if (g.estado !== 'en_integracion' || !e.fecha_inicio || e.fecha_inicio > global.APD.sumaMeses(hoy, 12)) continue;
         g = ponGrupo(g, { fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada || null, instructor: e.instructor || null });
       } else if (e.tipo === 'iniciar') {
         // Sólo en la versión de prueba (auditoría 2026-10-18, B5): la fecha simulada no avanza, así que un grupo

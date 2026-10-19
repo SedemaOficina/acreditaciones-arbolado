@@ -116,10 +116,21 @@
     return d ? d.toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }) : '';
   }
   function sumaDias(iso, dias) { const d = aFecha(iso); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); }
-  function sumaMeses(iso, meses) { const d = aFecha(iso); d.setMonth(d.getMonth() + meses); return d.toISOString().slice(0, 10); }
+  /* N meses después de una fecha AAAA-MM-DD, como la base (date + interval 'N months'): si el día no existe en el mes de
+     llegada, el último del mes. 29/02/2028 + 12 meses = 28/02/2029 (auditoría 2026-10-19, B8-01; decisión 11). Sin el
+     reloj del navegador: el mismo resultado en cualquier zona horaria. */
+  function sumaMeses(iso, meses) {
+    const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number);
+    const t = a * 12 + (m - 1) + meses;
+    const a2 = Math.floor(t / 12);
+    const m2 = t - a2 * 12 + 1;
+    const ultimo = new Date(Date.UTC(a2, m2, 0)).getUTCDate();
+    const dd = (n) => String(n).padStart(2, '0');
+    return `${a2}-${dd(m2)}-${dd(Math.min(d, ultimo))}`;
+  }
 
-  /* El día (AAAA-MM-DD, Ciudad de México) de una fecha y hora */
-  const diaDe = (iso) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) : null);
+  /* El día (AAAA-MM-DD, Ciudad de México) de una fecha y hora; una fecha sola (AAAA-MM-DD) es ese mismo día */
+  const diaDe = (iso) => (iso ? aFecha(iso).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) : null);
   /* Una cita en pausa sólo dura su día: después ya no se retoma y la solicitud regresa con observaciones (P80) */
   function pausaVencida(datos, s) {
     return Boolean(s && s.cotejo_pausa) && diaDe(s.cotejo_pausa.cita_en || s.cita_en) < hoy(datos);
@@ -528,6 +539,39 @@
     txt.dispatchEvent(new Event('change', { bubbles: true }));
     txt.focus();
   });
+
+  /* ----- Fecha pegada en un campo día/mes/año (auditoría 2026-10-19, R4-01 y F2-A1; P152 del estándar) -----
+     La escritura guiada del estándar (formato «fecha-dma») acomoda cada dígito como si se escribiera día, mes y año, así
+     que «2026-11-02» pegado de una hoja de cálculo o de un autocompletado quedaba en 20/02/6110. Mientras el estándar no
+     lo resuelva, el proyecto lo intercepta ANTES de la escritura guiada: si lo pegado o insertado de golpe es una fecha
+     completa AAAA-MM-DD (también AAAA/MM/DD o AAAA.MM.DD) o dd-mm-aaaa, dd.mm.aaaa o dd/mm/aaaa, con o sin espacios
+     alrededor, el campo queda en dd/mm/aaaa y se avisa al estándar como si la persona lo hubiera escrito, para que la
+     valide (fecha real, mínimo y máximo). Lo demás sigue igual. Vale para todos los campos «fecha-dma» del sitio. */
+  const dd2 = (n) => String(n).padStart(2, '0');
+  function fechaPegada(texto) {
+    const t = String(texto || '').trim();
+    let m = t.match(/^(\d{4})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*(\d{1,2})$/);
+    if (m) return `${dd2(m[3])}/${dd2(m[2])}/${m[1]}`;
+    m = t.match(/^(\d{1,2})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*(\d{4})$/);
+    return m ? `${dd2(m[1])}/${dd2(m[2])}/${m[3]}` : '';
+  }
+  const campoFechaDma = (t) => (t && t.matches && t.matches('input') && t.closest('[data-campo][data-formato="fecha-dma"]') ? t : null);
+  function ponFechaPegada(e, texto) {
+    const c = campoFechaDma(e.target);
+    const v = c && fechaPegada(texto);
+    if (!v) return;
+    e.preventDefault();
+    c.value = v;
+    c.setSelectionRange(v.length, v.length);
+    avisa(c);
+  }
+  // En captura: corre antes que los manejadores del campo (la escritura guiada del estándar y los de la página)
+  document.addEventListener('paste', (e) => ponFechaPegada(e, e.clipboardData && e.clipboardData.getData('text')), true);
+  document.addEventListener('beforeinput', (e) => {
+    if (!['insertText', 'insertFromPaste', 'insertReplacementText', 'insertFromDrop'].includes(e.inputType)) return;
+    const texto = e.data !== null && e.data !== undefined ? e.data : e.dataTransfer && e.dataTransfer.getData('text/plain');
+    if (texto && texto.length > 1) ponFechaPegada(e, texto);
+  }, true);
 
   /* ----- Nombre de un grupo (propuesta D, aprobada por Liber el 2026-10-18) -----
      Quien da el curso piensa en «el de Iztapalapa del 13 al 17», no en «APD-G-2026-003». El nombre se calcula con el
