@@ -3538,6 +3538,27 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
   await page.close();
 }
 
+/* ── Licencias (auditoría 2026-10-19, F3-02; decisión 10) ──
+   El repositorio declara su licencia (P167: «Todos los derechos reservados» mientras decide la Secretaría) y cada archivo
+   de terceros copiado en sitio/vendor está en el manifiesto con su huella y su licencia, y en LICENCIA.md. */
+async function licencias() {
+  const t = (m) => `[licencias] ${m}`;
+  const { createHash } = await import('node:crypto');
+  const lic = readFileSync(join(raiz, 'LICENCIA.md'), 'utf8');
+  comprueba(/Todos los derechos reservados/.test(lic) && /P167/.test(lic), t('LICENCIA.md: «Todos los derechos reservados» y el pendiente P167'));
+  const m = JSON.parse(readFileSync(join(raiz, 'sitio/vendor/MANIFIESTO.json'), 'utf8'));
+  const enDisco = (d) => readdirSync(join(raiz, d), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? enDisco(`${d}/${e.name}`) : [`${d}/${e.name}`]));
+  const archivos = enDisco('sitio/vendor').filter((f) => !f.endsWith('/MANIFIESTO.json')).map((f) => f.slice('sitio/vendor/'.length));
+  const declarados = new Map(m.bibliotecas.flatMap((b) => b.archivos.map((a) => [a.ruta, a.sha256])));
+  const sin = archivos.filter((f) => !declarados.has(f));
+  const distintos = [...declarados].filter(([r, h]) => !archivos.includes(r) || createHash('sha256').update(readFileSync(join(raiz, 'sitio/vendor', r))).digest('hex') !== h).map(([r]) => r);
+  comprueba(!sin.length && !distintos.length, t(`sitio/vendor: los ${archivos.length} archivos están en el manifiesto con su huella${sin.length ? '; sin declarar: ' + sin.join(', ') : ''}${distintos.length ? '; huella distinta o falta: ' + distintos.join(', ') : ''}`));
+  const faltan = m.bibliotecas.filter((b) => !lic.includes(b.version) || !lic.includes(b.licencia)).map((b) => b.paquete);
+  comprueba(!faltan.length, t(`LICENCIA.md lista cada biblioteca copiada con su versión y licencia${faltan.length ? '; faltan: ' + faltan.join(', ') : ''}`));
+  const fuentes = readdirSync(join(raiz, 'sitio/formkit/fuentes'));
+  comprueba(['Roboto', 'Cabin'].every((f) => fuentes.includes(`${f}-OFL.txt`) && lic.includes(`${f}-OFL.txt`)), t('las fuentes llevan su licencia y LICENCIA.md las lista'));
+}
+
 /* ── Política de contenido y de referente (auditoría 2026-10-19, B7-01; decisión 9) ──
    Las 21 páginas declaran la misma CSP estricta (sin 'unsafe-inline' ni 'unsafe-eval') y el referente same-origin,
    antes de cualquier recurso; y en el navegador nada la viola: cada página, el visor de PDF, la foto de la cuenta
@@ -3869,6 +3890,7 @@ const solo = process.env.SOLO || '';
 const toca = (...nombres) => !solo || nombres.includes(solo);
 try {
   if (toca('limpieza')) await parte('limpieza', () => limpieza(navegador));
+  if (toca('limpieza', 'licencias')) await parte('licencias', () => licencias());
   if (toca('csp')) await parte('política de contenido', () => politicaContenido(navegador));
   if (!solo) {
     await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));

@@ -76,6 +76,13 @@ const pdfjs = join(estandar, 'vendor/pdfjs-dist');
 if (!existsSync(pdfjs)) { console.error('Falta vendor/pdfjs-dist en el estándar'); process.exit(1); }
 rmSync(join(sitio, 'vendor'), { recursive: true, force: true });
 cpSync(pdfjs, join(sitio, 'vendor/pdfjs-dist'), { recursive: true });
+// Licencias de terceros (auditoría 2026-10-19, F3-02): del manifiesto del estándar, sólo lo que se copia aquí, con su
+// versión, licencia y huella; LICENCIA.md lo resume
+const manifiesto = JSON.parse(readFileSync(join(estandar, 'vendor/MANIFIESTO.json'), 'utf8'));
+const copiadas = manifiesto.bibliotecas.filter((b) => b.paquete === 'pdfjs-dist');
+if (copiadas.length !== 1) { console.error('El manifiesto del estándar no trae pdfjs-dist'); process.exit(1); }
+writeFileSync(join(sitio, 'vendor/MANIFIESTO.json'), JSON.stringify({ origen: `Estándar de formularios del SIA, vendor/MANIFIESTO.json (${manifiesto.origen})`,
+  generado: manifiesto.generado, bibliotecas: copiadas }, null, 2) + '\n');
 
 // 3 · Datos ficticios y catálogos para el formulario
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
