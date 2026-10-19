@@ -161,13 +161,12 @@
       const lista = soloOrg ? espera.filter((x) => x.s.organizacion_id === soloOrg) : espera;
       const activos = delCurso.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado)).length;
       $('[data-cuenta]').textContent = `${largo}: ${plural(espera.length, 'persona en espera', 'personas en espera')} · ${plural(activos, 'grupo activo', 'grupos activos')} (por confirmar, confirmados o en curso).`;
-      pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg, delCursoRecibe: delCurso.filter((x) => x.recibe) });
+      pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe: delCurso.filter((x) => x.recibe) });
       pintaSemanas({ tipo, modalidad, c, largo, delCurso, espera });
     }
 
     /* ----- En espera ----- */
-    function pintaEspera({ tipo, modalidad, renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
-      const alerta = APD.parametro(datos, 'dias_alerta_espera') || 31;
+    function pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
       $('#t-espera').textContent = `En espera · ${lista.length}`;
       $('[data-orden]').textContent = renov ? 'primero quien vence antes' : 'primero quien más espera';
       const modo = $('[data-modo-grupo]');

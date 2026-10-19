@@ -194,12 +194,6 @@
   function diasParaVencer(datos, venceEn) {
     return Math.round((aFecha(venceEn) - aFecha(hoy(datos))) / 86400000);
   }
-  function textoVence(n) {
-    if (n > 1) return `Faltan ${n.toLocaleString('es-MX')} días`;
-    if (n === 1) return 'Falta 1 día';
-    if (n === 0) return 'Vence hoy';
-    return n === -1 ? 'Venció hace 1 día' : `Venció hace ${(-n).toLocaleString('es-MX')} días`;
-  }
   /* Las filas de vencimiento de una ficha, con el rótulo según el caso (auditoría 2026-10-18, D10: «Para vencer» con
      «Venció hace 523 días» se leía al revés): vigente, «Vence el» y «Vence en»; vencida, «Venció el» y «Vencida hace». */
   function vencimiento(datos, venceEn) {
@@ -851,7 +845,7 @@
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
-    cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, textoVence, vencimiento,
+    cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
