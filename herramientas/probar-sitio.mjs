@@ -1112,6 +1112,36 @@ async function caminosCotejo(navegador) {
   };
   const abre = (pg, folio) => abreCotejo(pg, folio);
   const registra = async (pg) => { await pg.click('[data-accion="enviar"]'); await pg.waitForSelector('[data-hecho]:not([hidden])'); };
+
+  // B2-01 (decisión 7 de la auditoría del 2026-10-19): el encabezado de cada día de la agenda desglosa por resultado de la
+  // cita (apd.cita.resultado), como lo contaría la base: «8 citas: 7 atendidas, 1 no se presentó»
+  {
+    const { c, pg } = await nuevo();
+    const diaMX = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: ZONA });
+    const porDia = {};
+    for (const x of datos.cita) {
+      const d = diaMX(x.programada_en);
+      const abierta = ['pendiente', 'en_pausa'].includes(x.resultado);
+      const k = x.resultado === 'en_pausa' && d < datos.fecha_corte ? 'pausa_vencida' : abierta ? 'pendiente' : x.resultado;
+      (porDia[d] ||= {})[k] = (porDia[d][k] || 0) + 1;
+    }
+    const ORDEN = [['atendida', 'atendida', 'atendidas'], ['no_se_presento', 'no se presentó', 'no se presentaron'], ['sin_pago', 'sin pago', 'sin pago'],
+      ['pausa_vencida', 'pausa vencida', 'pausas vencidas'], ['cancelada', 'cancelada', 'canceladas'], ['pendiente', 'por atender', 'por atender']];
+    let iguales = 0;
+    const distintos = [];
+    for (const [d, k] of Object.entries(porDia).sort()) {
+      const n = Object.values(k).reduce((a, b) => a + b, 0);
+      const esperado = `${n === 1 ? '1 cita' : `${n} citas`}: ${ORDEN.filter(([r]) => k[r]).map(([r, uno, varios]) => `${k[r]} ${k[r] === 1 ? uno : varios}`).join(', ')}.`;
+      await pg.goto(BASE + `citas.html?dia=${d}`);
+      await pg.waitForSelector('[data-filas] tr', { state: 'attached' });
+      const leido = ((await pg.textContent('[data-cuenta]')) || '').trim();
+      if (leido === esperado) iguales += 1; else distintos.push(`${d}: «${leido}» ≠ «${esperado}»`);
+    }
+    comprueba(!distintos.length && iguales > 10, t(`el encabezado de cada día (${iguales}) desglosa por resultado, como la base${distintos.length ? ': ' + distintos.join('; ') : ''}`));
+    comprueba(/8 citas: 7 atendidas, 1 no se presentó\./.test(((await (async () => { await pg.goto(BASE + 'citas.html?dia=2026-10-06'); await pg.waitForSelector('[data-filas] tr', { state: 'attached' }); return pg.textContent('[data-cuenta]'); })()) || '')),
+      t('el 06/10: «8 citas: 7 atendidas, 1 no se presentó» (no «8 atendidas»)'));
+    await c.close();
+  }
   // Día/mes/año: la fecha de la cita nueva usa el formato «fecha-dma» del estándar (D9)
   // La cita nueva no queda antes de la perdida (F2 A6): el día siguiente al de la cita (en la prueba se atiende «como si
   // fuera su día»)
