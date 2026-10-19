@@ -19,6 +19,8 @@ const { validaPayload } = await import(pathToFileURL(join(estandar, 'codigo/serv
 // 1.1.0–1.3.0: ya no se suman reglas propias. Sí se suman el formato del código de examen (examen en línea) y la
 // regla del perfil del dictaminador (mínimo de experiencia, limitesSegun).
 await import(pathToFileURL(join(raiz, 'sitio/app/codigo-examen.js')).href);
+// Formatos propios «carrera» y «numero-acreditacion» (auditoría «intentar romperlo» 2026-10-18, F1 10 y 12)
+await import(pathToFileURL(join(raiz, 'sitio/app/formatos-propios.js')).href);
 await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
 // Textos de usted de las pantallas del personal (desde la 1.3.2 todos viven en «mensajes», P95): el servidor los recibe
 // igual, con validaPayload(…, { mensajes })
@@ -284,6 +286,9 @@ caso('Cotejo: un folio fiscal mal escrito y un RFC que no existe se rechazan', '
   console.log(`${ok ? 'BIEN' : 'MAL '}  Cotejo: el servidor responde el folio fiscal mal escrito en usted${ok ? '' : ` → ${m}`}`);
   if (!ok) fallas++;
 }
+// RFC con espacios o guiones (F2 M2): el largo se mide ya normalizado
+caso('Cotejo: el RFC con espacios y guiones se acepta (se normaliza)', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'XAXX-010101 000' }, true, conFactura);
+caso('Cotejo: un RFC de 14 caracteres se rechaza', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_rfc: 'MUPA800101AB12' }, ['factura_rfc'], conFactura);
 caso('Cotejo: el folio fiscal en minúsculas y sin guiones se acepta (se normaliza)', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'si', ...factura, factura_folio_fiscal: '6f1c2d3e4a5b4c6d8e7f9a0b1c2d3e4f' }, true, conFactura);
 caso('Cotejo: un documento sin cotejar se rechaza', 'cotejo', { ...llega, ...coinciden(PODA.slice(1)), pago: 'si', ...factura }, ['coincide_identificacion_oficial'], conFactura);
 caso('Cotejo: sin pago no se pide factura, pero sí la cita nueva', 'cotejo', { ...llega, ...coinciden(PODA), pago: 'no' }, ['cita_fecha', 'cita_hora']);
@@ -304,6 +309,19 @@ caso('Corrección del mismo día: un documento que no quedó en pausa no se reci
 caso('Entrar con CURP y contraseña se acepta', 'entrar', { curp: curpNadia, contrasena: 'x' }, true);
 caso('Verificar con número válido se acepta', 'verificar', { numero: 'PD-2026-0001' }, true);
 caso('Verificar sin número se rechaza', 'verificar', {}, ['numero']);
+// Con o sin guiones, en minúsculas o con espacios (F1 10): se normaliza a PD-2026-0001
+caso('Verificar: el número sin guiones y en minúsculas se acepta (se normaliza)', 'verificar', { numero: 'dt2025k109' }, true);
+caso('Verificar: un número con un carácter que no va se rechaza, con el mensaje de la credencial', 'verificar', { numero: 'PD-2026-00$1' }, ['numero']);
+{
+  const m = (ultimo.errores.find((e) => e.campo === 'numero') || {}).mensaje || '';
+  const bien = /credencial/.test(m) && !/acuse|folio/.test(m);
+  console.log(`${bien ? 'BIEN' : 'MAL '}  Verificar: el mensaje habla de la credencial («${m}»)`);
+  if (!bien) fallas++;
+}
+// La carrera escrita lleva letras (F1 12): «🌳🌳🌳» o «...» no son una carrera
+caso('Solicitud: una carrera de sólo emojis se rechaza', 'solicitud', { ...base, tipo: 'poda', nivel_estudios: 'licenciatura', carrera: '🌳🌳🌳', estatus_estudios: 'titulado', ...docs('poda_nueva', podaNueva) }, ['carrera'], podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
+caso('Solicitud: una carrera técnica de sólo puntos se rechaza', 'solicitud', { ...base, tipo: 'poda', nivel_estudios: 'tecnica', carrera_tecnica: '...', ...docs('poda_nueva', podaNueva) }, ['carrera_tecnica'], podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
+caso('Solicitud: una carrera escrita que no está en el catálogo se acepta', 'solicitud', { ...base, tipo: 'poda', nivel_estudios: 'licenciatura', carrera: 'Ingeniería en Ciencias Ambientales (UAM)', estatus_estudios: 'titulado', ...docs('poda_nueva', podaNueva) }, true, podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
 
 // Examen en línea (decisiones 2026-10-17, P78): el código es de un solo uso; el servidor revisa además que exista
 caso('Examen: un código bien escrito se acepta', 'examen-entrar', { codigo: 'K7MP-3XQ9' }, true);

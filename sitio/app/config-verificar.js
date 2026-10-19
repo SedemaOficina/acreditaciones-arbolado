@@ -6,14 +6,28 @@
    persona se expone. En la etapa 3 la consulta la responde
    GET /apd/verificar/:numero, con límite de consultas por origen.
    ========================================================= */
-window.FORMKIT_CONFIG = {};
+/* El número se escribe con o sin guiones (formato propio «numero-acreditacion», app/formatos-propios.js) y se compara
+   ya normalizado, de los dos lados (auditoría «intentar romperlo», F1 10: sin guiones daba un «no acreditado» falso). */
+window.FORMKIT_CONFIG = { formatos: window.APD_FORMATOS };
+const numeroComparable = (n) => String(n || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+/* Un resultado anterior no se queda a la vista mientras se escribe otro número ni cuando el nuevo no es válido (F1 9):
+   quien verifica podría creer que el número nuevo está vigente. */
+document.addEventListener('DOMContentLoaded', () => {
+  const caja = document.querySelector('[data-verificacion]');
+  const numero = document.getElementById('numero');
+  const oculta = () => { if (caja && !caja.hidden) { caja.hidden = true; caja.replaceChildren(); } };
+  if (numero) numero.addEventListener('input', oculta);
+  const form = numero && numero.form;
+  if (form) form.addEventListener('submit', oculta, true);
+});
 
 window.FORMKIT_OPCIONES = {
   enviar(payload, { signal }) {
     return new Promise((ok, mal) => {
       const t = setTimeout(() => {
         APD.cargar().then((datos) => {
-          const fila = datos.verificacion_publica.find((v) => v.numero === payload.datos.numero);
+          const buscado = numeroComparable(payload.datos.numero);
+          const fila = datos.verificacion_publica.find((v) => numeroComparable(v.numero) === buscado);
           ok({ numero: payload.datos.numero, fila: fila || null, hoy: APD.hoy(datos) });
         }).catch(mal);
       }, 300);

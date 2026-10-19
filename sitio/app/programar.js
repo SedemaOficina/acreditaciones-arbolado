@@ -88,7 +88,10 @@
       for (let d = minimo, k = 0; k < 180; k++, d = APD.sumaDias(d, 1)) if (!razon(d)) return d;
       return null;
     };
-    const pedida = /^\d{4}-\d{2}-\d{2}$/.test(params.get('semana') || '') ? params.get('semana') : null;
+    // Una fecha imposible en la dirección (2026-13-45, 2026-11-31) se ignora: se propone la primera semana posible
+    // (auditoría «intentar romperlo», F3 B2)
+    const semana = params.get('semana') || '';
+    const pedida = /^\d{4}-\d{2}-\d{2}$/.test(semana) && V() && V().isoDeDma(V().dmaDeIso(semana)) === semana ? semana : null;
     const estadoCal = $('[data-cal-estado]');
     const diga = (texto) => FormKit.anuncia(texto, { visible: estadoCal });
     if (pedida && !razon(pedida)) inicio = pedida;
@@ -193,7 +196,17 @@
     // Lo escrito en el campo mueve el calendario (y si no se puede, lo dice)
     const deCampo = () => {
       const d = isoDe(fi.value);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { if (!fi.value.trim()) { inicio = null; pintaTodo(false); } return; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+        // Vacío, o completo (dd/mm/aaaa) pero no es una fecha real (29/02/2027): el resumen y el calendario quedan sin
+        // elegir y se dice al momento (F3 B3)
+        const completo = /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(fi.value.trim());
+        if (!fi.value.trim() || completo) {
+          inicio = null;
+          pintaTodo(false);
+          if (completo) diga(`${fi.value.trim()} no es una fecha real. Escriba otra o elija el día en el calendario.`);
+        }
+        return;
+      }
       if (d === inicio) return;
       if (!elige(d, true)) { inicio = null; mes = mesDe(d); foco = d; }
       pintaTodo(false);
@@ -225,8 +238,12 @@
       }
       const sel = selInstructor.value;
       const otros = sel && inicio ? P.ocupado(datos, sel, inicio, fin, excepto) : [];
+      // «ya da» sólo un grupo confirmado o en curso; uno por confirmar sólo lo tiene propuesto (F3 B9)
+      const seguros = otros.filter((g) => g.estado !== 'en_integracion');
+      const propuestos = otros.filter((g) => g.estado === 'en_integracion');
+      const nombres = (l) => l.map((g) => `«${APD.nombreGrupo(g, datos)}»`).join(' y ');
       $('[data-ayuda-instructor]').textContent = otros.length
-        ? `${P.nombreInstructor(sel)} ya da ${otros.map((g) => `«${APD.nombreGrupo(g, datos)}»`).join(' y ')} esas fechas. Puede elegirlo, pero no podría estar en los dos.`
+        ? `${P.nombreInstructor(sel)} ${[seguros.length ? `ya da ${nombres(seguros)}` : '', propuestos.length ? `tiene propuesto ${nombres(propuestos)}, todavía sin confirmar,` : ''].filter(Boolean).join(' y ')} esas fechas. Puede elegirlo, pero no podría estar en los dos.`
         : 'Se indica si ya tiene otro curso esas fechas. Puede cambiar durante el curso; cada día queda quién capturó la asistencia.';
     }
     selInstructor.addEventListener('change', () => pintaTodo(false));
@@ -237,10 +254,16 @@
     const espera = P.enEspera(datos, tipo, modalidad).filter((x) => !propia || x.s.organizacion_id === propia);
     const pedidas = (params.get('personas') || '').split(',').map((f) => f.trim()).filter(Boolean);
     const deUrl = espera.filter((x) => pedidas.includes(x.s.folio));
-    const propuestas = new Set((deUrl.length ? deUrl : gExistente ? [] : P.lasQueMasEsperan(espera, c.cupo_maximo)).map((x) => x.s.folio));
-    $('[data-propuesta]').textContent = deUrl.length ? `Las ${deUrl.length === 1 ? 'que eligió' : `${deUrl.length} que eligió`} en «Grupos»; puede agregar o quitar.`
-      : gExistente ? 'Marque a quien quiera agregar de la espera.'
-        : 'Propuesta: las que más esperan, hasta 25, primero las prioritarias y las de una misma organización juntas.';
+    // Si alguna de las elegidas en «Grupos» ya no espera (ya tiene grupo: se recargó la página o se volvió con «Atrás»),
+    // se dice y no se propone a nadie más (auditoría «intentar romperlo», F3 M5: se marcaban 18 que nadie eligió)
+    const yaNo = pedidas.length - deUrl.length;
+    const propuestas = new Set((pedidas.length || gExistente ? deUrl : P.lasQueMasEsperan(espera, c.cupo_maximo)).map((x) => x.s.folio));
+    $('[data-propuesta]').textContent = yaNo
+      ? `${yaNo === pedidas.length ? (yaNo === 1 ? 'La persona que eligió en «Grupos» ya no está en espera: ya tiene grupo.' : `Las ${yaNo} que eligió en «Grupos» ya no están en espera: ya tienen grupo.`)
+        : `${yaNo} de las ${pedidas.length} que eligió en «Grupos» ya no ${yaNo === 1 ? 'está' : 'están'} en espera: ya ${yaNo === 1 ? 'tiene' : 'tienen'} grupo. Quedan marcadas las demás.`} No se propone a nadie más: marque a quien quiera agregar.`
+      : deUrl.length ? `Las ${deUrl.length === 1 ? 'que eligió' : `${deUrl.length} que eligió`} en «Grupos»; puede agregar o quitar.`
+        : gExistente ? 'Marque a quien quiera agregar de la espera.'
+          : 'Propuesta: las que más esperan, hasta 25, primero las prioritarias y las de una misma organización juntas.';
     if (gExistente) {
       const ya = $('[data-ya-estan]');
       ya.hidden = false;
@@ -296,6 +319,8 @@
     /* ----- Así quedaría ----- */
     function pintaResumen() {
       const fin = inicio ? finDe(inicio) : null;
+      // Con el año cuando el curso no es de este año o cruza de año (F3 B4: «al viernes 1 de enero» sin año)
+      const conAnio = Boolean(inicio) && (inicio.slice(0, 4) !== hoy.slice(0, 4) || fin.slice(0, 4) !== inicio.slice(0, 4));
       const n = total();
       const borrador = { tipo_acreditacion: tipo, modalidad, fecha_inicio: inicio, integracion: integracion(), organizacion_id: integracion() === 'especifico' ? (gExistente ? gExistente.organizacion_id : orgDeElegidas()) : null };
       $('[data-resumen-nombre]').replaceChildren(el('span', { class: 'grupo-titulo' }, [el('span', { class: 'grupo-nombre', texto: APD.nombreGrupo(borrador, datos) }),
@@ -303,10 +328,10 @@
       const falta = c.cupo_minimo - n;
       $('[data-resumen]').replaceChildren(APD.datosLista([
         ['Curso', largo],
-        ['Fechas', inicio ? mayuscula(dur > 1 ? `${APD.diaSemana(inicio)} ${APD.diaMes(inicio)} al ${APD.diaSemana(fin)} ${APD.diaMes(fin)}` : `${APD.diaSemana(inicio)} ${APD.diaMes(inicio)}`) : 'Sin elegir'],
+        ['Fechas', inicio ? mayuscula(dur > 1 ? `${APD.diaSemana(inicio)} ${APD.diaMes(inicio, conAnio)} al ${APD.diaSemana(fin)} ${APD.diaMes(fin, conAnio)}` : `${APD.diaSemana(inicio)} ${APD.diaMes(inicio, conAnio)}`) : 'Sin elegir'],
         ['Horario', selHora.value ? `${selHora.value}, ${dur > 1 ? `los ${dur} días` : 'ese día'}` : 'Sin elegir'],
         ['Instructor', selInstructor.value ? P.nombreInstructor(selInstructor.value) : 'Sin elegir'],
-        ['Examen', inicio ? `${mayuscula(APD.diaSemana(fin))} ${APD.diaMes(fin)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
+        ['Examen', inicio ? `${mayuscula(APD.diaSemana(fin))} ${APD.diaMes(fin, conAnio)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
         ['Lugar del curso', `Aula de capacitación del ${sede}`],
         ['Personas', `${n} de ${c.cupo_maximo}${n > c.cupo_maximo ? ` · sobran ${n - c.cupo_maximo}` : falta > 0 ? ` · ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para confirmarlo` : ''}`]
       ]));
@@ -403,8 +428,13 @@
           texto: `${datosTxt} La fecha queda como propuesta: las personas todavía no la ven como segura.`, quien: P.REVISORA.nombre, oculta: form, pasos: sigue });
       }
       $('[data-bajada]').hidden = true;
+      // Recargar o volver con «Atrás» no reabre el formulario para un grupo nuevo: la dirección pasa a la ficha del grupo
+      // (F3 M5)
+      history.replaceState(null, '', `grupo.html?folio=${encodeURIComponent(g.folio)}`);
     }
   }).catch(() => {
     $('[data-bajada]').textContent = 'No se pudo cargar la información para programar. Intente de nuevo más tarde.';
+    // Sin datos, el formulario no se queda a medias con sus botones activos (F3 B2)
+    $('#programar').hidden = true;
   });
 }());

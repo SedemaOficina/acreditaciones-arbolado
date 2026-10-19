@@ -1,12 +1,12 @@
 {
   "formulario": "verificar.html",
-  "generado": "2026-10-17T19:04:45.965Z",
+  "generado": "2026-10-19T06:02:07.369Z",
   "campos": {
     "numero": {
       "etiqueta": "Número de acreditación",
       "tipo": "texto",
       "requerido": true,
-      "formato": "folio",
+      "formato": "numero-acreditacion",
       "sensible": false,
       "uso": "Buscar la acreditación que se quiere verificar.",
       "atributos": {

@@ -292,10 +292,14 @@
     // La cita es en la sede única; se elige el día, desde el siguiente al de hoy (fecha simulada del corte)
     for (const n of $$('[data-sede]')) n.textContent = APD.sede(datos).nombre;
     const manana = APD.sumaDias(datos.fecha_corte, 1);
-    // Límite mínimo del formato «fecha-dma»: el estándar lo lee de data-min del campo (AAAA-MM-DD) y avisa con la fecha
-    // en día/mes/año
+    // Límites del formato «fecha-dma»: el estándar los lee de data-min y data-max del campo (AAAA-MM-DD) y avisa con la
+    // fecha en día/mes/año. Hasta meses_adelanto_cita meses (auditoría «intentar romperlo», F2 M4: se aceptaba el
+    // 31/12/9999); sábados y domingos no se bloquean: los días de atención los define el área (P69, P151)
+    const hasta = APD.sumaMeses(APD.hoy(datos), APD.mesesCita(datos));
     $('[data-campo="cita_fecha"]').dataset.min = manana;
+    $('[data-campo="cita_fecha"]').dataset.max = hasta;
     $('[data-cita-desde]').textContent = fecha(manana);
+    $('[data-cita-hasta]').textContent = fecha(hasta);
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     form.hidden = false;

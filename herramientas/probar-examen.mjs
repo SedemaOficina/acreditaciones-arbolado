@@ -175,6 +175,20 @@ async function enviar(ex) {
   await ex.waitForSelector('[data-vista="resultado"]:not([hidden])');
   ok(true, 'un código ya enviado sólo muestra el resultado');
   await ex.click('[data-vista="resultado"] [data-salir]');
+  // En otra computadora, el código ya enviado no muestra el nombre ni la calificación a quien tenga el papel (código de
+  // un solo uso; auditoría «intentar romperlo», F3 B11)
+  const ajena = await c.newPage();
+  await ajena.goto(`${BASE}examen.html`);
+  await ajena.fill('#codigo', c1);
+  await ajena.click('#entrar [data-accion="enviar"]');
+  await ajena.waitForFunction(() => document.querySelector('[data-campo="codigo"]').textContent.includes('ya se envió'), null, { timeout: 5000 }).catch(() => {});
+  ok((await ajena.textContent('[data-campo="codigo"]')).includes('ya se envió') && await ajena.isHidden('[data-vista="resultado"]'),
+    'un código ya enviado, en otra computadora: «Este examen ya se envió», sin el resultado');
+  await ajena.close();
+  // La mezcla de la prueba ignora un examen de otro banco igual que el servidor simulado: su lista de preguntas es la
+  // del banco (F4 M5)
+  ok(await ap.evaluate(() => APD_ARCHIVOS_PRUEBA.PREGUNTAS_BANCO.join(',') === APD_EXAMEN_BANCO.reactivos.map((r) => r.clave).join(',')),
+    'la lista de preguntas del banco de la mezcla (archivos-prueba.js) es la del banco ficticio');
 
   // 2 · No aprueba
   const c2 = await generar(ap, 0);

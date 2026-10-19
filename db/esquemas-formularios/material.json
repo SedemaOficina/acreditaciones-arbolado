@@ -1,6 +1,6 @@
 {
   "formulario": "material.html",
-  "generado": "2026-10-18T20:07:21.388Z",
+  "generado": "2026-10-19T06:02:08.229Z",
   "campos": {
     "modo": {
       "etiqueta": "modo",
@@ -166,7 +166,8 @@
       "atributos": {
         "max": "1",
         "extensiones": "pdf",
-        "mb": "30"
+        "mb": "30",
+        "totalMb": "30"
       },
       "autocomplete": "off",
       "si": {

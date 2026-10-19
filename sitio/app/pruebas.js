@@ -204,7 +204,7 @@
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
   /* Lo guardado en este navegador (auditoría 2026-10-18, C 1.1): lo cuenta archivos-prueba.js, que también lo borra */
-  const VACIO = { cuentas: 0, envios: 0, fotos: 0, documentos: 0, perfiles: 0, material: 0, revisiones: 0, cotejos: 0, grupos: 0, lista: 0, examenes: 0, otras: 0 };
+  const VACIO = { cuentas: 0, envios: 0, fotos: 0, documentos: 0, borradores: 0, borradorArchivos: 0, perfiles: 0, material: 0, revisiones: 0, cotejos: 0, grupos: 0, lista: 0, examenes: 0, otras: 0 };
   function guardado() {
     if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve(VACIO);
     return APD_ARCHIVOS_PRUEBA.guardado().catch(() => VACIO);
@@ -214,16 +214,21 @@
     ['perfiles', '1 persona con cambios en «Mi perfil»', 'personas con cambios en «Mi perfil»'],
     ['envios', '1 envío de solicitud con sus documentos', 'envíos de solicitudes con sus documentos'],
     ['documentos', '1 documento cargado aparte', 'documentos cargados aparte'],
+    // El borrador con sus archivos, aparte de los envíos (auditoría «intentar romperlo», F4 M6)
+    ['borradores', '1 borrador de solicitud', 'borradores de solicitud'],
     ['revisiones', '1 revisión', 'revisiones'], ['cotejos', '1 cita de cotejo atendida', 'citas de cotejo atendidas'],
     ['grupos', '1 cambio en grupos o asistencia', 'cambios en grupos o asistencia'],
     ['lista', '1 pase de lista del examen', 'pases de lista del examen'], ['examenes', '1 código de examen', 'códigos de examen'],
     ['material', '1 cambio en el material de estudio', 'cambios en el material de estudio']
   ];
   function textoGuardado(g) {
-    const partes = TEXTOS_GUARDADO.filter(([k]) => g[k]).map(([k, uno, varios]) => (g[k] === 1 ? uno : `${g[k]} ${varios}`));
+    const partes = TEXTOS_GUARDADO.filter(([k]) => g[k]).map(([k, uno, varios]) => (g[k] === 1 ? uno : `${g[k]} ${varios}`)
+      + (k === 'borradores' && g.borradorArchivos ? ` con ${g.borradorArchivos === 1 ? '1 archivo' : `${g.borradorArchivos} archivos`}` : ''));
     if (!partes.length && g.otras) partes.push('otros datos de la prueba');
     return partes.length ? `${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : 'nada';
   }
+  /* El caso de «Entrar como» elegido en esta pestaña (sessionStorage; «Borrar lo guardado» lo quita con lo de la pestaña) */
+  const CASO = 'apd.prueba.caso';
   const hayGuardado = (g) => Object.values(g).some((n) => n > 0);
 
   function panel(datos) {
@@ -242,8 +247,15 @@
     const sesion = APD.leeSesion();
     const enPersonal = DEL_PERSONAL.includes(pagina);
     const persona = sesion && sesion.id ? datos.solicitante.find((p) => p.id === sesion.id) : null;
+    // El caso elegido en «Entrar como» se recuerda en esta pestaña: dos casos pueden usar a la misma persona y el menú
+    // decía el primero (auditoría «intentar romperlo», F4 B1); en «Crea tu cuenta» de una persona del registro anterior,
+    // el caso sale de ?migrada= (F4 B2)
+    const casoGuardado = (() => { try { return sessionStorage.getItem(CASO); } catch (e) { return null; } })();
+    const elegido = casos.find((c) => c.clave === casoGuardado);
+    const migrada = pagina === 'cuenta.html' ? new URLSearchParams(location.search).get('migrada') : null;
     const actual = enPersonal ? (casos.find((c) => c.pantalla && c.pantalla.split('?')[0] === pagina) || casos.find((c) => c.clave === 'personal'))
-      : persona ? casos.find((c) => c.persona && !c.migrada && c.persona.id === persona.id) : null;
+      : persona ? (elegido && elegido.persona && !elegido.migrada && elegido.persona.id === persona.id ? elegido : casos.find((c) => c.persona && !c.migrada && c.persona.id === persona.id))
+        : migrada ? casos.find((c) => c.migrada && c.persona && c.persona.id === migrada) || null : null;
     const quien = ['aplicar.html', 'asistencia.html'].includes(pagina) ? `Laura Ejemplo Instructora · personal, instructor (${pagina === 'aplicar.html' ? 'aplica el examen' : 'captura la asistencia'})`
       : pagina === 'examen.html' ? 'persona en el salón de cómputo (entra con su código, sin cuenta)'
       : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'programar.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : pagina === 'material-personal.html' ? 'material de estudio' : 'revisión documental'}`
@@ -385,6 +397,7 @@
         acciones(boton('Entrar', () => {
           const c = casos.find((x) => x.clave === elegir.value);
           if (!c) return di('Elige un caso.');
+          try { sessionStorage.setItem(CASO, c.clave); } catch (e) { /* sin almacenamiento: el menú dice el primer caso de la persona */ }
           if (c.pantalla) { location.href = c.pantalla; return; }
           // Del registro anterior, sin cuenta: «Crea tu cuenta» llenada con su CURP
           if (c.migrada) { APD.cierraSesion(); location.href = `cuenta.html?migrada=${encodeURIComponent(c.persona.id)}`; return; }

@@ -12777,6 +12777,11 @@
    "descripcion": "Inasistencias a la cita de cotejo con las que la solicitud se cierra como concluida sin atender: a la primera se da una cita nueva, una sola vez (decisión 2026-10-17, Liber)."
   },
   {
+   "clave": "meses_adelanto_cita",
+   "valor": "6",
+   "descripcion": "Meses hacia adelante en los que se puede asignar una cita de cotejo (auditoría «intentar romperlo» 2026-10-18, F2 M4; valor de prueba a confirmar con la Dirección)."
+  },
+  {
    "clave": "meses_despues_renovacion",
    "valor": "12",
    "descripcion": "Meses después del vencimiento durante los que todavía se renueva; pasado ese plazo se tramita como nueva (decisión 2026-10-14)."

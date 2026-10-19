@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-18T14:03:03.380Z",
+  "generado": "2026-10-19T06:27:56.369Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -50,7 +50,7 @@
       "uso": "Comprobar la CURP; no se guarda aparte porque ya está en ella.",
       "finalidad": "Comprobar que la CURP corresponde a quien crea la cuenta.",
       "atributos": {
-        "maxlength": "10",
+        "maxlength": "14",
         "max": "hoy",
         "noFutura": ""
       },
@@ -65,7 +65,7 @@
       "uso": "Identificador único de la cuenta y llave del historial de acreditaciones.",
       "finalidad": "Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona.",
       "atributos": {
-        "maxlength": "18",
+        "maxlength": "24",
         "deriva": "sexo=sexo"
       },
       "autocomplete": "off",

@@ -37,6 +37,7 @@
       const d = docs.find((x) => x.requisito === k);
       const ayuda = $(`[data-diferencia="${k}"]`, form);
       // De tú y con minúscula después de los dos puntos (auditoría 2026-10-18, D11)
+      if (ayuda) ayuda.classList.add('con-renglones');
       if (ayuda) ayuda.textContent = d && d.observacion ? APD.observacionDe('No coincidió', d.observacion) : 'No coincidió con el que llevaste.';
     }
     for (const input of form.querySelectorAll('input[data-auxiliar]')) {

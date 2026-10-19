@@ -147,7 +147,7 @@
       } else {
         pares.push(['Grupo', g.grupo.folio]);
         sigue = g.grupo.fecha_inicio
-          ? 'Tu grupo todavía no está confirmado: la fecha que tenía puede cambiar. La Secretaría te avisará el primer día y la hora cuando se confirme.'
+          ? 'Tu grupo todavía no está confirmado: la fecha propuesta puede cambiar. La Secretaría te avisará el primer día y la hora cuando se confirme.'
           : 'Ya tienes grupo, pero todavía no está confirmado. La Secretaría te avisará la fecha y la sede cuando se confirme.';
       }
     }
@@ -268,7 +268,7 @@
     // Cerrada sin atender (por inasistencia o por plazo), el motivo de la base ya lo dice el texto de arriba
     const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
       el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : s.estado === 'cancelada' ? 'Motivo de la cancelación' : 'Motivo' })]),
-      el('p', { texto: APD.paraTi(s.motivo_cierre) })])]) : null;
+      el('p', { class: 'con-renglones', texto: APD.paraTi(s.motivo_cierre) })])]) : null;
 
     const acciones = [];
     if (s.estado === 'validada_en_linea' && s.cotejo_pausa && !vencida) {

@@ -1,6 +1,6 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-18T20:07:20.553Z",
+  "generado": "2026-10-19T06:27:56.770Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
@@ -831,7 +831,7 @@
       "uso": "RFC de la factura (apd.solicitud.factura_rfc).",
       "finalidad": "Registrar a favor de quién se emitió la factura del pago.",
       "atributos": {
-        "maxlength": "13"
+        "maxlength": "20"
       },
       "autocomplete": "off",
       "si": {
@@ -883,7 +883,7 @@
       "sensible": false,
       "uso": "Folio fiscal de la factura, para su seguimiento; no se repite (apd.solicitud.factura_folio_fiscal).",
       "atributos": {
-        "maxlength": "36"
+        "maxlength": "45"
       },
       "autocomplete": "off",
       "si": {
@@ -909,7 +909,7 @@
       "sensible": false,
       "uso": "Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).",
       "atributos": {
-        "maxlength": "10"
+        "maxlength": "14"
       },
       "autocomplete": "off",
       "si": {

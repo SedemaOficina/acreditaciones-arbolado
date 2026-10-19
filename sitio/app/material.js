@@ -31,7 +31,8 @@
       $('[data-material]').replaceChildren(...docs
         .filter((m) => !m.tipo_acreditacion || m.tipo_acreditacion === c || c === 'dictaminador')
         .map((m) => {
-          const temas = (m.temas || []).filter((t) => !t.tipo_acreditacion || t.tipo_acreditacion === c || c === 'dictaminador');
+          // Un apartado en una página que el archivo no tiene no se ofrece (auditoría «intentar romperlo», F4 M4)
+          const temas = (m.temas || []).filter((t) => (!t.tipo_acreditacion || t.tipo_acreditacion === c || c === 'dictaminador') && (!(Number(m.paginas) > 0) || Number(t.pagina) <= Number(m.paginas)));
           apartados += temas.length;
           const grande = m.tamano_bytes > 5 * 1048576;
           const id = `doc-${m.clave}`;

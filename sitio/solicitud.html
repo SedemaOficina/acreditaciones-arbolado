@@ -138,14 +138,14 @@
       </div>
       <!-- Carrera técnica: sin catálogo, se escribe (decisión 2026-10-17). -->
       <div data-si="nivel_estudios=tecnica">
-        <div class="campo" data-campo="carrera_tecnica" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación técnica; en dictaminador, para que la Secretaría la revise con tu comprobante de estudios.">
+        <div class="campo" data-campo="carrera_tecnica" data-formato="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación técnica; en dictaminador, para que la Secretaría la revise con tu comprobante de estudios.">
           <label class="etiqueta" for="carrera_tecnica">¿Qué carrera técnica estudiaste?</label>
           <!-- autocomplete off: no hay un valor de autocompletado para la carrera técnica. -->
           <input class="control" id="carrera_tecnica" name="carrera_tecnica" type="text" maxlength="120" autocomplete="off">
         </div>
       </div>
       <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
-        <div class="campo" data-campo="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
+        <div class="campo" data-campo="carrera" data-formato="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
           <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
           <p class="ayuda">Al escribir aparecen las ya registradas.<span data-ayuda-posgrado hidden> Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.</span></p>
           <div class="combo" data-combo data-catalogo="carreras" data-libre>
@@ -659,6 +659,7 @@
 <script src="datos/catalogos.js?v=0.55"></script>
 <!-- Versión de prueba: guarda en este navegador los archivos enviados, para verlos en la revisión del personal. -->
 <script src="app/archivos-prueba.js?v=0.55"></script>
+<script src="app/formatos-propios.js?v=0.55"></script>
 <script src="app/config-solicitud.js?v=0.55"></script>
 <script src="formkit/js/validaciones.config.js?v=1.4.1"></script>
 <script src="formkit/js/iconos.js?v=1.4.1"></script>

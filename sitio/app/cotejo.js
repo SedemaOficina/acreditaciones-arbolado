@@ -65,7 +65,9 @@
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && req[d.requisito] && req[d.requisito].momento === 'en_linea');
     const pausa = s.cotejo_pausa || null;
     const retoma = Boolean(pausa);
-    const nuevos = new Set(P.cargadosEnPausa(datos, s).map((d) => d.requisito));
+    // Lo que la persona ya cargó de nuevo desde la pausa: se vuelve a leer al volver a la pestaña o cuando otra pestaña
+    // guarda algo, y otra vez al registrar (auditoría «intentar romperlo», F2 A7: la página se quedaba con lo del inicio)
+    let nuevos = new Set(P.cargadosEnPausa(datos, s).map((d) => d.requisito));
     // En el orden de la pantalla (el del catálogo de requisitos)
     const aCotejar = $$('[data-doc]', form).map((a) => a.dataset.doc).filter((k) => docs.some((d) => d.requisito === k) && (!retoma || pausa.docs.includes(k)));
     // Inasistencias de esta solicitud, como las cuenta la base: todas sus citas en que no se presentó, aunque la
@@ -113,16 +115,19 @@
         `Una cita en pausa sólo se retoma el mismo día. La solicitud regresa con observaciones para que ${nombre} cargue el documento correcto; no se retoma aquí.`));
       $('[data-estado]').replaceChildren(APD.estado('Pausa vencida', 'cerrado'));
     } else if (retoma) {
+      pintaRetoma();
+      $('[data-retoma]').hidden = false;
+    }
+    function pintaRetoma() {
       const nombres = pausa.docs.map((k) => (req[k] ? req[k].nombre : k));
       const faltan = pausa.docs.filter((k) => !nuevos.has(k)).map((k) => (req[k] ? req[k].nombre : k));
       $('[data-retoma-texto]').replaceChildren(
         el('p', { class: 'aviso-titulo', texto: `Cotejo en pausa desde el ${fecha(diaPausa)} a las ${P.horaDe(pausa.real)}` }),
         el('p', { texto: `No coincidió: ${lista(nombres)}. La identidad y los demás documentos ya se cotejaron.` }),
         el('p', { texto: faltan.length
-          ? `La persona todavía no carga: ${lista(faltan)}. Si no lo carga hoy, marque «No coincide» y «No: regresa con observaciones».`
+          ? `La persona todavía no carga: ${lista(faltan)}. Mientras no lo cargue, sólo puede marcar «No coincide»; si no lo carga hoy, marque «No: regresa con observaciones».`
           : 'La persona ya cargó el documento nuevo: compárelo con el que trae.' })
       );
-      $('[data-retoma]').hidden = false;
     }
     if (inasistencias || s.cita_motivo === 'sin_pago') {
       $('[data-antecedente-texto]').replaceChildren(...(s.cita_motivo === 'sin_pago'
@@ -134,10 +139,8 @@
 
     /* ----- Documentos: lo que cargó, para compararlo con lo que trae ----- */
     const archivos = {};
-    for (const art of $$('[data-doc]', form)) {
+    function pintaDoc(art, d) {
       const k = art.dataset.doc;
-      const d = docs.find((x) => x.requisito === k);
-      if (!d) continue;
       const nombreArchivo = d.nombre_archivo || APD.nombreDeArchivo((req[k] && req[k].nombre_archivo) || k.toUpperCase(), p, d.nombre_original);
       archivos[k] = d.blob
         ? { url: URL.createObjectURL(d.blob), tipo: d.blob.type, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
@@ -148,6 +151,43 @@
       if (retoma && pausa.docs.includes(k) && !nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Todavía no carga el nuevo', 'pend')]));
       $('[data-doc-archivo]', art).replaceChildren(...pie);
     }
+    for (const art of $$('[data-doc]', form)) {
+      const d = docs.find((x) => x.requisito === art.dataset.doc);
+      if (d) pintaDoc(art, d);
+    }
+    /* Al retomar, el documento que no coincidió sólo puede «coincidir» si la persona cargó otro (F2 A7): sin él, «Sí,
+       coincide» queda deshabilitado y lo dicen el aviso de arriba y la etiqueta del documento */
+    function bloqueaSinNuevo() {
+      if (!retoma) return;
+      for (const k of pausa.docs) {
+        const si = $(`input[name="coincide_${k}"][value="si"]`, form);
+        if (!si) continue;
+        const bloquea = !nuevos.has(k);
+        si.disabled = bloquea;
+        if (bloquea && si.checked) { si.checked = false; si.dispatchEvent(new Event('change', { bubbles: true })); }
+      }
+    }
+    /* Lee otra vez lo de la pausa: si la persona ya cargó el documento, se ve aquí sin recargar */
+    function releePausa() {
+      if (!retoma) return Promise.resolve();
+      return APD.cargar().then((d2) => {
+        const s2 = d2.solicitud.find((x) => x.folio === folio);
+        if (!s2 || !s2.cotejo_pausa) return;
+        const antes = [...nuevos].sort().join();
+        nuevos = new Set(P.cargadosEnPausa(d2, s2).map((d) => d.requisito));
+        if ([...nuevos].sort().join() === antes) return;
+        for (const k of pausa.docs) {
+          const art = $(`[data-doc="${k}"]`, form);
+          const d = d2.documento.find((x) => x.solicitud_id === s2.id && x.vigente && x.requisito === k);
+          if (art && d) pintaDoc(art, d);
+          if (art && art.hasAttribute('data-viendo') && hayVisor() && FormKit.visor.enComputadora()) ver(k, null);
+        }
+        pintaRetoma();
+        bloqueaSinNuevo();
+        FormKit.anuncia(nuevos.size ? 'La persona ya cargó el documento nuevo.' : 'Se actualizó lo que cargó la persona.');
+      });
+    }
+    if (retoma && !pausaVencida) APD.alCambiar(() => { releePausa(); });
     if (retoma) {
       const ya = docs.map((d) => d.requisito).filter((k) => !pausa.docs.includes(k)).map((k) => req[k].nombre);
       if (ya.length) { $('[data-ya-coincidieron]').textContent = `Ya coincidieron en la cita: ${lista(ya)}.`; $('[data-ya-coincidieron]').hidden = false; }
@@ -276,24 +316,68 @@
       FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
     });
 
-    // La cita nueva, desde el día siguiente al de hoy (fecha simulada del corte): el formato «fecha-dma» del estándar lee
-    // el mínimo de data-min del campo (AAAA-MM-DD) y lo dice en día/mes/año
-    const manana = APD.sumaDias(datos.fecha_corte, 1);
+    /* Una cita de un día que todavía no llega se atiende ese día (auditoría «intentar romperlo», F2 A6; la base:
+       cita_futura): sin formulario, con su fecha. En la versión de prueba la fecha simulada no avanza: se puede atender
+       «como si fuera su día», y queda marcada así (simulada); la prueba la fecha ese día. */
+    const hoy = APD.hoy(datos);
+    const diaCita = P.diaDe(s.cita_en);
+    const futura = diaCita > hoy;
+    let simulada = false;
+    const prueba = Boolean(datos.fecha_corte) && typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
+    if (futura && !pausaVencida) {
+      $('[data-futura-titulo]').textContent = `La cita es el ${APD.fechaConDia(diaCita)} a las ${P.horaDe(s.cita_en)}`;
+      $('[data-futura-texto]').textContent = `Se atiende ese día: hasta entonces no se registra si ${nombre} se presentó, el cotejo ni una inasistencia. Hoy es ${APD.fechaConDia(hoy)}.`;
+      const b = $('[data-atender-simulada]');
+      b.textContent = `Atenderla como si fuera el ${fecha(diaCita)}`;
+      $('[data-futura-prueba]').hidden = !prueba;
+      b.addEventListener('click', () => {
+        simulada = true;
+        $('[data-futura]').hidden = true;
+        form.hidden = false;
+        $('[data-estado]').replaceChildren(APD.estado('Cita simulada', 'pend'));
+        const primero = $('#formulario input:not([type="hidden"]):not([disabled])');
+        if (primero) primero.focus();
+      });
+      $('[data-futura]').hidden = false;
+    }
+    /* La cita nueva: desde el día siguiente al de hoy (fecha simulada del corte) y nunca antes de la que se perdió; hasta
+       meses_adelanto_cita meses (F2 A6 y M4). El formato «fecha-dma» del estándar lee data-min y data-max (AAAA-MM-DD) y
+       los dice en día/mes/año. Sábados y domingos no se bloquean: los días de atención los define el área (P69, P151). */
+    const base = diaCita > hoy ? diaCita : hoy;
+    const manana = APD.sumaDias(base, 1);
+    const hasta = APD.sumaMeses(hoy, APD.mesesCita(datos));
     $('[data-campo="cita_fecha"]').dataset.min = manana;
+    $('[data-campo="cita_fecha"]').dataset.max = hasta;
     $('[data-cita-desde]').textContent = fecha(manana);
+    $('[data-cita-hasta]').textContent = fecha(hasta);
     // Retomar una pausa empieza en los documentos: la nota de obligatorias va en esa tarjeta (D33)
     $('[data-leyenda-llegada]').hidden = retoma;
     $('[data-leyenda-docs]').hidden = !retoma;
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
-    form.hidden = pausaVencida;
+    form.hidden = pausaVencida || futura;
     $('[data-cargando]').hidden = true;
+    bloqueaSinNuevo();
     const instancia = FormKit.iniciar(form, {
       enviar(payload, { signal }) {
         return new Promise((ok, mal) => {
-          const t = setTimeout(() => {
+          const t = setTimeout(() => APD.cargar().then((ahora) => {
             const d = Object.assign({}, payload.datos, payload.datos.cita_fecha ? { cita_fecha: isoDe(payload.datos.cita_fecha) } : {});
             const resultado = document.getElementById('resultado').value;
+            // Como lo hará la API: una cita que todavía no llega no se registra (F2 A6), y al retomar una pausa sólo
+            // «coincide» el documento que la persona volvió a cargar, leído ahora, no al abrir la página (F2 A7)
+            if (futura && !simulada) return mal({ mensaje: `La cita es el ${fecha(diaCita)}: se registra ese día.` });
+            const s2 = ahora.solicitud.find((x) => x.folio === folio);
+            if (retoma && s2 && s2.cotejo_pausa) {
+              nuevos = new Set(P.cargadosEnPausa(ahora, s2).map((x) => x.requisito));
+              const sinNuevo = pausa.docs.filter((k) => d[`coincide_${k}`] === 'si' && !nuevos.has(k));
+              if (sinNuevo.length) {
+                pintaRetoma();
+                bloqueaSinNuevo();
+                const mensaje = 'La persona todavía no carga el documento nuevo: sólo puede marcar «No coincide».';
+                return mal({ mensaje, errores: sinNuevo.map((k) => ({ campo: `coincide_${k}`, mensaje })) });
+              }
+            }
             const en = new Date().toISOString();
             const archivo = (campo) => (payload.archivos || []).find((a) => a.campo === campo && a.blob);
             const guardados = [];
@@ -302,11 +386,12 @@
             if (A && resultado === 'terminado' && archivo('factura_pago')) {
               guardados.push(A.guardaDocumento(s.folio, 'factura_pago', archivo('factura_pago'), { en, estado: 'aceptado', cargado_por: P.REVISORA.usuario }).catch(() => {}));
             }
-            Promise.all(guardados).then(() => {
-              P.guardaCotejo(s.folio, { resultado, datos: d, en, cita_en: s.cita_en, expediente: resultado === 'terminado' ? expediente : null, atendio: P.REVISORA.usuario });
+            return Promise.all(guardados).then(() => {
+              P.guardaCotejo(s.folio, Object.assign({ resultado, datos: d, en, cita_en: s.cita_en, expediente: resultado === 'terminado' ? expediente : null, atendio: P.REVISORA.usuario },
+                simulada ? { simulada: true } : {}));
               ok({ resultado, d });
             });
-          }, 400);
+          }).catch(mal), 400);
           signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
         });
       },

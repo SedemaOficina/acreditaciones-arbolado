@@ -818,6 +818,12 @@ BEGIN
          SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.id AND c.resultado IN ('pendiente', 'en_pausa')) THEN
       PERFORM apd.error('cita_abierta', 'Registre primero lo que pasó en la cita actual');
     END IF;
+    -- Una cita hasta meses_adelanto_cita meses adelante (auditoría «intentar romperlo» 2026-10-18, F2 M4: se aceptaba el
+    -- 31/12/9999). Sábados y domingos no se bloquean: los días de atención los define el área (P69, P151).
+    IF NEW.cita_en IS NOT NULL AND (NEW.cita_en AT TIME ZONE 'America/Mexico_City')::date
+         > apd.hoy() + make_interval(months => apd.parametro_texto('meses_adelanto_cita')::integer) THEN
+      PERFORM apd.error('cita_lejana', format('La cita de cotejo se asigna como máximo %s meses adelante', apd.parametro_texto('meses_adelanto_cita')));
+    END IF;
   END IF;
 
   IF NEW.estado = OLD.estado THEN RETURN NEW; END IF;
@@ -1046,6 +1052,12 @@ BEGIN
     NEW.atendida_por := OLD.atendida_por;
     NEW.atendida_en := OLD.atendida_en;
     RETURN NEW;
+  END IF;
+  -- Lo que pasó en una cita se registra su día, no antes: ni la inasistencia ni el cotejo de una cita que todavía no
+  -- llega (auditoría «intentar romperlo» 2026-10-18, F2 A6: se cerraba una solicitud por no presentarse a una cita futura)
+  IF (OLD.programada_en AT TIME ZONE 'America/Mexico_City')::date > apd.hoy() THEN
+    PERFORM apd.error('cita_futura', format('La cita es el %s: lo que pasó en ella se registra ese día',
+      to_char((OLD.programada_en AT TIME ZONE 'America/Mexico_City')::date, 'DD/MM/YYYY')));
   END IF;
   IF NEW.resultado = 'pendiente'
      OR (OLD.resultado = 'en_pausa' AND NEW.resultado IN ('no_se_presento', 'no_es_la_persona')) THEN

@@ -259,6 +259,30 @@ P113 a P119 están resueltos en el estándar; en el proyecto sólo quedan las de
 | 2026-10-18 | «Asistencia» y «Aplicar el examen» sin enlace abren en «Mis grupos de hoy» del instructor: con un solo grupo con clase o examen hoy entran directo; con varios, una tarjeta por grupo (nombre, folio, lugar, hora, personas y «Pasar asistencia» o «Pasar lista y aplicar»); debajo, «Próximos». Con ?folio= siguen igual | Liber Saltijeral |
 | 2026-10-18 | La propuesta C (calendario del Vivero con todos los cursos) queda para después | Liber Saltijeral |
 
+## Decisiones del 2026-10-18 (auditoría «intentar romperlo», bloque 1)
+
+Liber aprobó corregir los errores de lógica del bloque 1 (`docs/AUDITORIA-2026-10-18-romper.md`). Las reglas que cambian:
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-18 | **Lo que pasó en una cita de cotejo se registra su día, no antes**: ni el cotejo ni la inasistencia de una cita que todavía no llega. En la agenda, una cita de un día futuro dice «Ver la cita», y el cotejo muestra su fecha sin formulario. La base lo exige (`cita_futura`) | Liber Saltijeral (aprobó la corrección F2 A6) |
+| 2026-10-18 | La cita nueva (no se presentó o no trajo el pago) **no puede quedar antes de la perdida ni antes de mañana**: desde el día siguiente al de la cita | Liber Saltijeral (F2 A6) |
+| 2026-10-18 | Una cita de cotejo se asigna **hasta 6 meses adelante** (parámetro `meses_adelanto_cita`, valor de prueba; la base: `cita_lejana`). Sábados y domingos no se bloquean: los días y horarios de atención los define el área (P69, P151) | Liber Saltijeral (F2 M4); el valor de 6 meses es propuesta de Claude, por confirmar |
+| 2026-10-18 | Versión de prueba: como la fecha simulada no avanza, una cita futura se atiende «como si fuera su día» (botón sólo en la prueba); queda registrada en ese día. En el SIA no existe | Propuesta de Claude, por confirmar |
+| 2026-10-18 | Al retomar una cita en pausa, **el documento que no coincidió sólo puede «coincidir» si la persona cargó otro** (sin él, «Sí, coincide» queda deshabilitado); el cotejo termina sólo con todos los documentos aceptados. La página vuelve a leer lo cargado al volver a ella y al registrar | Liber Saltijeral (F2 A7) |
+| 2026-10-18 | El reenvío de una solicitud guarda lo corregido (estudios, experiencia) y la adscripción que la persona tiene hoy en «Mi perfil», y recalcula el perfil y la experiencia mínima del dictaminador | Liber Saltijeral (F1 5; ya decidido el 2026-10-16, opción C) |
+| 2026-10-18 | La clasificación de una carrera en la revisión queda en el catálogo (`apd.carrera.grupo`) y recalcula el perfil de las solicitudes abiertas con esa carrera | Liber Saltijeral (F2 M3) |
+| 2026-10-18 | Un **PDF con contraseña o protección** (`/Encrypt`) se rechaza al cargarlo: «Tu PDF tiene contraseña o protección. Guárdalo sin protección y vuelve a cargarlo.» El envío lo vuelve a revisar; la API deberá repetirlo | Liber Saltijeral (F1 8) |
+| 2026-10-18 | La carrera escrita (licenciatura o técnica) lleva al menos dos letras: «🌳🌳🌳» o «...» no se aceptan (formato propio `carrera`, en la página y en el servidor) | Liber Saltijeral (F1 12) |
+| 2026-10-18 | «Verificar» acepta el número de la credencial con o sin guiones, en minúsculas o con espacios (formato propio `numero-acreditacion`), y su mensaje habla de la credencial; el resultado anterior se oculta al escribir otro número | Liber Saltijeral (F1 9 y 10) |
+| 2026-10-18 | Lo pegado en una fecha (AAAA-MM-DD, con espacios o con guiones), una CURP, un RFC o un folio fiscal se limpia antes de medir su largo; el largo lo revisa la validación del formato | Liber Saltijeral (F1 11, F2 A1, B2, M2) |
+| 2026-10-18 | La observación del personal se le muestra a la persona **de tú y con el nombre del documento al inicio** (conversión intencional, D11), conservando nombres propios y renglones; la ayuda ya no dice «tal como lo escriba» | Liber Saltijeral (F2 B3) |
+| 2026-10-18 | Un código de examen ya enviado sólo vuelve a mostrar el resultado en la pantalla en que se presentó; en otra computadora dice «Este examen ya se envió» y no muestra nombre ni calificación | Propuesta de Claude (F3 B11), por confirmar |
+| 2026-10-18 | Quien ya tiene su calificación registrada ya no cambia su asistencia: su fila queda cerrada («Ya presentó el examen») | Liber Saltijeral (F3 M8; la base ya lo exigía, `asistencia_cerrada`) |
+| 2026-10-18 | Un grupo por confirmar lleno se confirma y se le elige semana como cualquiera; «Completar» se ofrece sólo con lugar. En un grupo de una organización (o si todas las que esperan son de la misma) se completa con las que caben, una por una | Liber Saltijeral (F3 M3 y M4) |
+| 2026-10-18 | Material de estudio: el total del campo es el del parámetro `tamano_maximo_material_bytes` (30 MB); reemplazar el archivo no se acepta si los apartados de «Qué estudiar» citan páginas que el archivo nuevo no tiene; un apartado repetido se avisa | Liber Saltijeral (F4 A7, M4, B4, B5) |
+| 2026-10-18 | El acuse de la solicitud dice la fecha simulada de la prueba y la hora en 24 horas | Liber Saltijeral (F4 M7) |
+
 ## Lineamientos
 
 La Ley Ambiental de la Ciudad de México (art. 111, párrafo segundo) ordena a la Secretaría emitir los lineamientos para

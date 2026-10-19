@@ -13,7 +13,7 @@
    ========================================================= */
 (function () {
   'use strict';
-  const { el, estado, datosLista } = APD;
+  const { el, estado, datosLista, plural } = APD;
   const API = APD_EXAMEN_API;
   const G = APD_EXAMEN_GRUPO;
   const $ = (s, c = document) => c.querySelector(s);
@@ -195,9 +195,14 @@
       if (cuenta.terminaron) partes.push(`${cuenta.terminaron} ${cuenta.terminaron === 1 ? 'terminó' : 'terminaron'} (${cuenta.aprobadas} ${cuenta.aprobadas === 1 ? 'aprobada' : 'aprobadas'})`);
       if (cuenta.contestando) partes.push(`${cuenta.contestando} contestando`);
       if (cuenta.sinEmpezar) partes.push(`${cuenta.sinEmpezar} con código sin empezar`);
-      if (cuenta.registradas) partes.push(`${cuenta.registradas} con la calificación ya registrada`);
+      if (cuenta.registradas) partes.push(`${cuenta.registradas} ya ${cuenta.registradas === 1 ? 'lo presentó' : 'lo presentaron'}, con la calificación registrada`);
       if (cuenta.suspendidas) partes.push(`${cuenta.suspendidas} ${cuenta.suspendidas === 1 ? 'suspendida' : 'suspendidas'}`);
-      $('[data-cuenta]').textContent = `${n} personas inscritas, ${cuenta.derecho} con derecho a examen${partes.length ? `: ${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : ''}.`;
+      // Quien ya presentó también tenía derecho: se cuenta ahí (auditoría «intentar romperlo», F3 B8: «0 con derecho a
+      // examen: 5 con la calificación ya registrada» parecía que nadie tenía derecho)
+      const conDerecho = cuenta.derecho + cuenta.registradas;
+      $('[data-cuenta]').textContent = cuenta.registradas === n && n
+        ? `${plural(n, 'persona inscrita', 'personas inscritas')}: ${n === 1 ? 'ya presentó' : `las ${n} ya presentaron`} el examen.`
+        : `${plural(n, 'persona inscrita', 'personas inscritas')}, ${conDerecho} con derecho a examen${partes.length ? `: ${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : ''}.`;
       $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
 
       if (enfocado) {

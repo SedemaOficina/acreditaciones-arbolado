@@ -57,6 +57,17 @@
     <div data-persona></div>
   </section>
 
+  <!-- Una cita de un día que todavía no llega (auditoría «intentar romperlo», F2 A6): se atiende ese día; antes no se
+       registra si la persona se presentó ni su inasistencia (la base: cita_futura). Lo pinta app/cotejo.js. -->
+  <section class="tarjeta" data-futura hidden aria-labelledby="t-futura">
+    <h2 class="titulo-bloque" id="t-futura" tabindex="-1" data-futura-titulo></h2>
+    <p data-futura-texto></p>
+    <div class="nota-prueba" data-futura-prueba hidden>
+      <p>Versión de prueba: la fecha simulada no avanza. Para recorrer el cotejo puede atender la cita como si fuera su día; queda registrada en ese día.</p>
+      <button type="button" class="btn btn-secundario" data-atender-simulada></button>
+    </div>
+  </section>
+
   <!-- El cotejo (decisiones 2026-10-17): llegada, identidad, documentos, pago y factura. Una sola acción principal,
        cuyo texto cambia con el resultado. La página lo inicia con FormKit.iniciar cuando ya calculó los campos
        auxiliares (data-formkit="manual" puede quedarse: desde la 1.3.4 un formulario se inicia una sola vez, P111). -->
@@ -131,7 +142,7 @@
     <section class="tarjeta" aria-labelledby="t-documentos">
       <h3 class="titulo-paso" id="t-documentos" data-docs-titulo>2. Cotejo de documentos</h3>
       <p class="leyenda-oblig" data-leyenda-docs hidden>Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
-      <p class="ayuda ayuda-bloque" data-docs-ayuda>Compare cada documento que trae la persona con el que cargó en línea. Si alguno no coincide, escriba qué no coincide: la persona lo leerá tal como lo escriba.</p>
+      <p class="ayuda ayuda-bloque" data-docs-ayuda>Compare cada documento que trae la persona con el que cargó en línea. Si alguno no coincide, escriba qué no coincide: la persona lo lee con el nombre del documento al inicio y dirigido a ella, de tú.</p>
       <p class="texto-gris" data-ya-coincidieron hidden></p>
       <!-- cotejo-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
       <div data-si="cotejar_identificacion_oficial=si">
@@ -350,7 +361,7 @@
         <label class="etiqueta" for="factura_rfc">RFC a cuyo favor se emitió</label>
         <p class="ayuda">12 caracteres si es empresa; 13 si es persona.</p>
         <!-- autocomplete off: es el dato de la factura que tiene a la vista, no de quien llena. -->
-        <input class="control control-corto" id="factura_rfc" name="factura_rfc" type="text" maxlength="13" autocomplete="off" spellcheck="false">
+        <input class="control control-corto" id="factura_rfc" name="factura_rfc" type="text" maxlength="20" autocomplete="off" spellcheck="false">
       </div>
       <div class="campo" data-campo="factura_razon_social" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura del pago." data-uso="Nombre o razón social de la factura (apd.solicitud.factura_razon_social).">
         <label class="etiqueta" for="factura_razon_social">Nombre o razón social</label>
@@ -361,7 +372,7 @@
         <label class="etiqueta" for="factura_folio_fiscal">Folio fiscal</label>
         <p class="ayuda">También se llama UUID (Identificador Universalmente Único). Son los 36 caracteres que trae la factura, con sus guiones.</p>
         <!-- autocomplete off: es el dato de la factura. -->
-        <input class="control" id="factura_folio_fiscal" name="factura_folio_fiscal" type="text" maxlength="36" autocomplete="off" spellcheck="false">
+        <input class="control" id="factura_folio_fiscal" name="factura_folio_fiscal" type="text" maxlength="45" autocomplete="off" spellcheck="false">
       </div>
     </section>
     </div>
@@ -378,15 +389,15 @@
                mínimo (mañana) lo pone la página en data-min. -->
           <div class="campo" data-campo="cita_fecha" data-formato="fecha-dma" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_fecha">Fecha de la cita nueva</label>
-            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, desde el <span data-cita-desde></span>; las diagonales se ponen solas. También puede elegirla en el calendario.</p>
+            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, del <span data-cita-desde></span> al <span data-cita-hasta></span>; las diagonales se ponen solas. También puede elegirla en el calendario.</p>
             <!-- autocomplete off: la fecha la elige quien atiende. -->
             <!-- Calendario (Liber, 18/10/2026): se escribe día/mes/año o se elige en el calendario del navegador, que llena
                  el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
-            <div class="control-grupo control-corto control-con-calendario"><input class="control" id="cita_fecha" name="cita_fecha" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-cita_fecha"><button type="button" class="control-calendario" data-calendario="cita_fecha" aria-label="Elegir en el calendario: Fecha de la cita nueva"><svg class="icono" aria-hidden="true"><use href="#i-fecha"></use></svg></button><input class="control-calendario-nativo" type="date" tabindex="-1" aria-hidden="true"></div>
+            <div class="control-grupo control-corto control-con-calendario"><input class="control" id="cita_fecha" name="cita_fecha" type="text" inputmode="numeric" maxlength="14" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-cita_fecha"><button type="button" class="control-calendario" data-calendario="cita_fecha" aria-label="Elegir en el calendario: Fecha de la cita nueva"><svg class="icono" aria-hidden="true"><use href="#i-fecha"></use></svg></button><input class="control-calendario-nativo" type="date" tabindex="-1" aria-hidden="true"></div>
           </div>
           <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_hora">Hora</label>
-            <p class="ayuda" id="ay-cita-hora">De 24 horas. <span class="pendiente">Horarios de prueba: los define el área (P69).</span></p>
+            <p class="ayuda" id="ay-cita-hora">De 24 horas. <span class="pendiente">Horarios y días de prueba: los horarios y si hay citas en sábado y domingo los define el área (P69, P151).</span></p>
             <!-- Lista cerrada de horarios (Liber, 2026-10-17): sin texto libre. Se sustituye por los horarios de citas que
                  defina el área (P69). autocomplete off: la hora la elige quien atiende. -->
             <div class="select control-corto"><select class="control control-select" id="cita_hora" name="cita_hora" autocomplete="off" aria-describedby="ay-cita-hora">

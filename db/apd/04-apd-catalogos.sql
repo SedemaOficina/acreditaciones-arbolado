@@ -20,6 +20,8 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14).'),
   ('dias_anticipacion_grupo', '7',
    'Días mínimos entre confirmar un grupo y el primer día del curso, para que la persona se entere y se organice (decisión 2026-10-17, Liber).'),
+  ('meses_adelanto_cita', '6',
+   'Meses hacia adelante en los que se puede asignar una cita de cotejo (auditoría «intentar romperlo» 2026-10-18, F2 M4; valor de prueba a confirmar con la Dirección).'),
   ('inasistencias_cotejo_maximas', '2',
    'Inasistencias a la cita de cotejo con las que la solicitud se cierra como concluida sin atender: a la primera se da una cita nueva, una sola vez (decisión 2026-10-17, Liber).'),
   ('sede', 'Vivero Nezahualcóyotl',

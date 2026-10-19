@@ -47,6 +47,12 @@ const claveBorrador = (() => {
 window.APD_SOLICITUD = { usaCatalogo(datos) { catalogoCarreras = datos; }, borrador: { clave: claveBorrador, version: '1' } };
 window.FORMKIT_CONFIG = {
   archivos: { mb: 5, extensiones: ['pdf'], max: 1 },
+  // Formato propio «carrera» (app/formatos-propios.js): la carrera escrita lleva letras (auditoría «intentar romperlo», F1 12)
+  formatos: window.APD_FORMATOS,
+  // El acuse con la hora de 24 horas (decisión 2026-10-17; el módulo acuse 1.4.1 la daba en 12 horas: P128, F4 M7)
+  idioma: 'es-MX-u-hc-h23',
+  // «pesa 5.0 MB y el máximo es 5 MB» parecía que sí cabía (redondeo del estándar; F4 B6)
+  mensajes: { archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduce su tamaño o elige otro.' },
   limitesSegun: { experiencia: (r) => APD_PERFIL_ACADEMICO.minimoExperiencia(catalogoCarreras, r) }
 };
 
@@ -89,12 +95,24 @@ window.FORMKIT_OPCIONES = {
               correo: p.correo, telefono: p.telefono, adscripcion: p.adscripcion, organizacion_id: p.organizacion_id || null,
               organizacion_nombre: p.organizacion_nombre || '', numero_expediente: p.numero_expediente || null }
           };
-          const guarda = global_archivos() ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).catch(() => {}) : Promise.resolve();
-          guarda.then(() => {
-            // Enviada: el borrador de esta solicitud ya no sirve (sus archivos quedan en el almacén de la prueba hasta
-            // «Borrar lo guardado» o la caducidad)
-            try { localStorage.removeItem(claveBorrador); } catch (e) { /* sin almacenamiento */ }
-            ok({ folio, fecha: ahora });
+          // Un PDF con contraseña no se acepta (auditoría «intentar romperlo», F1 8): la página lo rechaza al cargarlo y aquí,
+          // como lo hará la API, se vuelve a revisar al enviar
+          Promise.all(archivos.map((a) => APD.pdfConContrasena(a.blob))).then((protegidos) => {
+            const i = protegidos.indexOf(true);
+            if (i >= 0) {
+              const mensaje = 'Tu PDF tiene contraseña o protección. Guárdalo sin protección y vuelve a cargarlo.';
+              return mal({ mensaje, errores: [{ campo: `${prefijo}${archivos[i].requisito}`, mensaje }] });
+            }
+            const guarda = global_archivos() ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).catch(() => {}) : Promise.resolve();
+            return guarda.then(() => {
+              // Enviada: el borrador de esta solicitud ya no sirve, con sus archivos (F1 7 y F4 M6: se quedaban en este
+              // navegador y el menú los contaba como «documentos cargados aparte»)
+              try { localStorage.removeItem(claveBorrador); } catch (e) { /* sin almacenamiento */ }
+              const borrados = global_archivos() && p.id ? APD_ARCHIVOS_PRUEBA.borraDocumentos(`borrador:${p.id}:${continua || 'nueva'}`).catch(() => {}) : null;
+              // El acuse dice el día simulado de la prueba, como el resto del trámite (F4 M7); con la API, la hora del servidor
+              const fecha = global_archivos() ? APD_ARCHIVOS_PRUEBA.alCorte(datos, ahora) : ahora;
+              return Promise.resolve(borrados).then(() => ok({ folio, fecha }));
+            });
           });
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);

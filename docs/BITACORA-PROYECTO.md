@@ -1108,3 +1108,50 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   de las pantallas nuevas.
 - Queda por decidir: si dos grupos del mismo curso pueden coincidir en fechas (el calendario no lo deja; la ficha del
   grupo y la base sí).
+
+## 2026-10-18 · Bloque 75 · Auditoría «intentar romperlo» · bloque 1
+
+- Liber aprobó corregir el bloque 1 de la auditoría «intentar romperlo» (`docs/AUDITORIA-2026-10-18-romper.md`): los
+  errores de lógica que pasarían al sistema real. Quedan para los bloques 2 (dos pestañas, dos personas, doble clic) y 3
+  (guardados que fallan sin avisar) los hallazgos que les tocan. El estándar sigue en la 1.4.1 (`sitio/formkit/` sin
+  cambios): lo que es suyo se rodea en `app/` y queda dicho en el código como hallazgo para el estándar.
+- **Persona (F1 5 a 13):** el reenvío guarda estudios, experiencia y adscripción corregidos y recalcula el perfil
+  (`archivos-prueba.js`, evento «envio»); «Mi perfil» propone lo último guardado; «Empezar de nuevo» y el envío borran los
+  documentos del borrador (`borraDocumentos`); un PDF con `/Encrypt` se rechaza al cargarlo y al enviar
+  (`APD.pdfConContrasena`); «Verificar» oculta el resultado anterior y acepta el número con o sin guiones (formato propio
+  `numero-acreditacion`, `app/formatos-propios.js`); la CURP pegada con espacio ya no se corta (`maxlength` 24 y limpieza
+  al pegar); la carrera lleva letras (formato propio `carrera`; el combo libre del estándar no aplicaba `data-formato`:
+  `APD.formatoEnCombos`); el foco vuelve al «Quitar» del archivo recién cargado.
+- **Revisión y cotejo (F2 A1, A6, A7, M2 a M4, B1 a B3):** lo pegado en una fecha (AAAA-MM-DD, con espacios o guiones),
+  una CURP, un RFC o un folio fiscal se limpia antes de la escritura guiada y del `maxlength` (`app/apd.js`, fase de
+  captura); la cita de un día que no llega no se atiende ni registra su inasistencia (en la prueba, «Atenderla como si
+  fuera su día»; en la agenda, «Ver la cita»); la cita nueva va desde el día siguiente a la perdida y hasta 6 meses
+  (parámetro nuevo `meses_adelanto_cita`); al retomar una pausa, «Sí, coincide» queda deshabilitado sin el documento nuevo
+  y la página vuelve a leer lo cargado (al volver a ella, por `storage` o por el canal `apd-prueba` de IndexedDB, y al
+  registrar); la mezcla no termina un cotejo con un documento que no coincidió; la clasificación de la carrera queda en
+  el catálogo y recalcula el perfil; la agenda se actualiza sola; las observaciones conservan nombres propios y
+  renglones, y la ayuda ya no promete «tal como lo escriba».
+- **Grupos y examen (F3 M3 a M5, M7 a M9, B1 a B9, B11):** el grupo por confirmar lleno se confirma y se le elige semana;
+  se completa una por una en un grupo de una organización; «Programar» no propone a otras si las elegidas ya tienen grupo
+  y al guardar la dirección pasa a la ficha; textos de fecha propuesta neutros; la asistencia de quien ya presentó el
+  examen queda cerrada; con un solo grupo de hoy con examen, «Mis grupos de hoy»; corregir un día anterior vuelve al de
+  hoy sin «(simulado)»; `?semana=` imposible se ignora; fecha imposible avisada al momento; el año en «Así quedaría»;
+  folio en el aviso de un grupo sin fecha; aviso de un grupo que ya no recibe; las elegidas se conservan por curso;
+  «las 5 ya presentaron»; «tiene propuesto»; un código de examen enviado no muestra el resultado en otra computadora; el
+  menú de pruebas pasa a la izquierda en «Asistencia».
+- **Datos y material (F4 A7, M4 a M7, B1, B2, B4 a B7):** el total del campo de material es el del parámetro (30 MB); un
+  reemplazo con menos páginas que los apartados se rechaza (y la página pública no ofrece páginas que no existen);
+  apartados repetidos y páginas de cinco cifras; «pasa del máximo de 30 MB»; un examen de otro banco se ignora en todas
+  las pantallas (`PREGUNTAS_BANCO`); los archivos del borrador se cuentan como borrador; el acuse con la fecha simulada y
+  24 horas (`idioma: 'es-MX-u-hc-h23'`); el menú recuerda el caso elegido y lee `?migrada=`; un material incompleto no se
+  muestra.
+- Base: reglas `cita_futura` (lo que pasó en una cita se registra su día) y `cita_lejana` (hasta `meses_adelanto_cita`
+  meses), parámetro nuevo en `04-apd-catalogos.sql` y en los ficticios exportados. Los casos de reglas que atienden la
+  cita del 20/10 ahora corren ese día (`DIA_CITA`); 5 casos nuevos.
+- Pruebas: `probar-sitio` 822 (antes 744; nueva sección `romper`, 75, al menos una comprobación por hallazgo); `probar-examen`
+  76; `probar-esquemas` 128; `probar-base` y `probar-reglas` 178; auditor de CSS sin hallazgos. Los guiones
+  de reproducción de los revisores se volvieron a correr: ya no ocurre ninguno de los hallazgos corregidos (los guiones que
+  atendían una cita futura o subían el PDF protegido ahora se detienen ahí, que es la corrección; con la cita «como si
+  fuera su día» se confirmaron los demás).
+- Decisiones nuevas en `docs/DECISIONES.md` («Decisiones del 2026-10-18 (auditoría «intentar romperlo», bloque 1)»).
+

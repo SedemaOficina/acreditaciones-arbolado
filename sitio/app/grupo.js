@@ -76,7 +76,9 @@
         ['Hora de entrada', APD.hhmm(g.hora_entrada)], ['Hora de salida', 'Por definir', 'el área la define (P91)'],
         ['Instructor', P.nombreInstructor(g.instructor)],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);
-      if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha, hora e instructor que tenía el grupo cuando dejó de estar confirmado; se confirman de nuevo abajo']);
+      // Texto neutro: la fecha puede venir de «Guardar sin confirmar» o de un grupo que dejó de estar confirmado
+      // (auditoría «intentar romperlo», F3 M7)
+      if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha, hora e instructor propuestos, todavía sin confirmar; se confirman abajo']);
     }
     if (g.estado === 'cancelado') pares.push(['Motivo de la cancelación', g.motivo_cancelacion || ''], ['Cancelado el', fecha(g.estado_desde)]);
     $('[data-datos]').replaceChildren(pares.length ? APD.datosLista(pares) : '');

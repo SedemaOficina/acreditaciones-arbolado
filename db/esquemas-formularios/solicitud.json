@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-18T07:58:10.085Z",
+  "generado": "2026-10-19T06:02:07.301Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -74,6 +74,7 @@
       "etiqueta": "¿Qué carrera técnica estudiaste?",
       "tipo": "texto",
       "requerido": true,
+      "formato": "carrera",
       "sensible": false,
       "uso": "Conocer tu formación técnica; en dictaminador, para que la Secretaría la revise con tu comprobante de estudios.",
       "finalidad": "Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos.",
@@ -100,6 +101,7 @@
       "etiqueta": "¿Qué carrera estudiaste?",
       "tipo": "combo",
       "requerido": true,
+      "formato": "carrera",
       "sensible": false,
       "uso": "Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.",
       "finalidad": "Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos.",

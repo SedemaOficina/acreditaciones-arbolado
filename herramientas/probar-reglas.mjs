@@ -59,6 +59,8 @@ const FOTO = (persona, mime = 'image/jpeg') =>
 // La solicitud con cita de los ficticios originales (enviada desde el 06/10); los casos del menú de pruebas, enviados
 // antes, ya traen otras citas. Fija: no depende de lo que el caso le haga a la cita.
 const CITA_SOL = `(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' AND enviada_en >= '2026-10-06' ORDER BY folio LIMIT 1)`;
+// Lo que pasó en una cita se registra su día (cita_futura): los casos que la atienden corren el día de la cita
+const DIA_CITA = '2026-10-20 10:30';
 const NO_SE_PRESENTO = `UPDATE apd.cita SET resultado = 'no_se_presento' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`;
 // La CURP no coincide y la persona la trae ese día: se marca el documento y la cita queda en pausa
 const PAUSA_CURP = `
@@ -218,7 +220,7 @@ const casos = [
                           WHERE solicitante_id = ${COTEJO_PERSONA} AND vigente); END $$;
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      ${FOTO(COTEJO_PERSONA)}`],
-  ['Con factura, sus datos y la foto tomada en el cotejo entra a la bandeja y la persona recibe su expediente consecutivo', 'ok', null, `
+  ['Con factura, sus datos y la foto tomada en el cotejo entra a la bandeja y la persona recibe su expediente consecutivo', 'ok', DIA_CITA, `
      ${DOC_PEQUENO("(SELECT id FROM apd.solicitud WHERE estado = 'validada_en_linea' ORDER BY folio LIMIT 1)", 'factura_pago')}
      ${FOTO(COTEJO_PERSONA)}
      DO $$ BEGIN ASSERT (SELECT origen = 'cotejo' AND estado = 'confirmada' FROM apd.fotografia
@@ -258,26 +260,27 @@ const casos = [
   ['Al validar, la base crea la cita pendiente en la fecha asignada', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT count(*) FROM apd.solicitud s WHERE s.estado = 'validada_en_linea'
               AND NOT EXISTS (SELECT 1 FROM apd.cita c WHERE c.solicitud_id = s.id AND c.resultado IN ('pendiente', 'en_pausa') AND c.programada_en = s.cita_en)) = 0; END $$;`],
-  ['Primera inasistencia: se le da una cita nueva', 'ok', null, `
+  ['Primera inasistencia: se le da una cita nueva', 'ok', DIA_CITA, `
      ${NO_SE_PRESENTO}
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = ${CITA_SOL};
      DO $$ BEGIN
        ASSERT (SELECT estado FROM apd.solicitud WHERE id = ${CITA_SOL}) = 'validada_en_linea';
        ASSERT (SELECT count(*) FROM apd.cita WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente' AND programada_en = '2026-10-28 10:00-06') = 1;
      END $$;`],
-  ['Segunda inasistencia: la solicitud se cierra como concluida sin atender', 'ok', null, `
+  ['Segunda inasistencia: la solicitud se cierra como concluida sin atender', 'ok', DIA_CITA, `
      CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;
      ${NO_SE_PRESENTO}
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = (SELECT id FROM s);
+     SELECT set_config('apd.ahora_simulado', '2026-10-28 18:00:00-06', true);
      UPDATE apd.cita SET resultado = 'no_se_presento' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
      DO $$ BEGIN ASSERT (SELECT estado = 'concluida_sin_atender' AND motivo_cierre LIKE 'No se presentó a su cita de cotejo 2 veces%' FROM apd.solicitud WHERE id = (SELECT id FROM s)); END $$;`],
   ['Con la cita abierta no se cambia la cita', { codigo: 'cita_abierta' }, null, `
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = ${CITA_SOL};`],
-  ['La persona no cambia su cita', { codigo: 'cita_de_personal' }, null, `
+  ['La persona no cambia su cita', { codigo: 'cita_de_personal' }, DIA_CITA, `
      ${NO_SE_PRESENTO}
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = ${CITA_SOL};`],
-  ['Sin pago: otra cita, con el mismo monto', 'ok', null, `
+  ['Sin pago: otra cita, con el mismo monto', 'ok', DIA_CITA, `
      CREATE TEMP TABLE s AS SELECT id, pago_monto, pago_referencia FROM apd.solicitud WHERE id = ${CITA_SOL};
      UPDATE apd.cita SET resultado = 'sin_pago' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = (SELECT id FROM s);
@@ -286,7 +289,7 @@ const casos = [
   ['La persona no registra lo que pasó en su cita', { codigo: 'cita_de_personal' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.cita SET resultado = 'atendida' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`],
-  ['Pausar sin marcar qué documento no coincide se rechaza', { codigo: 'cotejo_sin_documento' }, null, `
+  ['Pausar sin marcar qué documento no coincide se rechaza', { codigo: 'cotejo_sin_documento' }, DIA_CITA, `
      UPDATE apd.cita SET resultado = 'en_pausa', observacion = 'La CURP no coincide.' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`],
   ['En pausa, la persona carga el mismo día el documento que no coincidió y el cotejo se retoma', 'ok', '2026-10-20 10:30', `
      CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;
@@ -313,26 +316,26 @@ const casos = [
      -- también cierra la pausa vencida de los casos de prueba («pausa-vencida»)
      DO $$ BEGIN ASSERT apd.cerrar_pausas_vencidas() >= 1;
                   ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM s)) = 'con_observaciones'; END $$;`],
-  ['Un documento que no coincide y no se trae hoy regresa con observaciones', 'ok', null, `
+  ['Un documento que no coincide y no se trae hoy regresa con observaciones', 'ok', DIA_CITA, `
      CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id;
      UPDATE apd.documento SET estado = 'con_observacion', observacion = 'El original tiene otra fecha.', revisado_por = 'prueba.automatica'
       WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'curp' AND vigente;
      UPDATE apd.cita SET resultado = 'con_observaciones', observacion = 'CURP: el original tiene otra fecha.' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
      DO $$ BEGIN ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM s)) = 'con_observaciones'; END $$;`],
-  ['No era la persona: no se atiende y la cuenta queda bloqueada', 'ok', null, `
+  ['No era la persona: no se atiende y la cuenta queda bloqueada', 'ok', DIA_CITA, `
      CREATE TEMP TABLE s AS SELECT id, solicitante_id FROM apd.solicitud WHERE id = ${CITA_SOL};
      UPDATE apd.cita SET resultado = 'no_es_la_persona', observacion = 'La identificación es de otra persona.' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
      DO $$ BEGIN ASSERT (SELECT estado = 'bloqueada' AND bloqueo_motivo = 'identidad' FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM s)); END $$;`],
-  ['No era la persona: sin lo que observó se rechaza', { sqlstate: '23514' }, null, `
+  ['No era la persona: sin lo que observó se rechaza', { sqlstate: '23514' }, DIA_CITA, `
      UPDATE apd.cita SET resultado = 'no_es_la_persona' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`],
-  ['La persona no se desbloquea a sí misma', { codigo: 'bloqueo_de_personal' }, null, `
+  ['La persona no se desbloquea a sí misma', { codigo: 'bloqueo_de_personal' }, DIA_CITA, `
      UPDATE apd.cita SET resultado = 'no_es_la_persona', observacion = 'La identificación es de otra persona.' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.solicitante SET bloqueo_motivo = NULL, estado = 'activa' WHERE id = (SELECT solicitante_id FROM apd.solicitud WHERE id = ${CITA_SOL});`],
-  ['Bloqueada por identidad, la cuenta no se reactiva sin quitar el bloqueo', { codigo: 'bloqueo_por_identidad' }, null, `
+  ['Bloqueada por identidad, la cuenta no se reactiva sin quitar el bloqueo', { codigo: 'bloqueo_por_identidad' }, DIA_CITA, `
      UPDATE apd.cita SET resultado = 'no_es_la_persona', observacion = 'La identificación es de otra persona.' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';
      UPDATE apd.solicitante SET estado = 'activa' WHERE id = (SELECT solicitante_id FROM apd.solicitud WHERE id = ${CITA_SOL});`],
-  ['Una cita cerrada no se reabre', { codigo: 'cita_cerrada' }, null, `
+  ['Una cita cerrada no se reabre', { codigo: 'cita_cerrada' }, DIA_CITA, `
      ${NO_SE_PRESENTO}
      UPDATE apd.cita SET resultado = 'atendida' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'no_se_presento';`],
   ['Sin la cita atendida no se concluye el cotejo', { codigo: 'cotejo_sin_cita' }, null, `
@@ -796,6 +799,20 @@ const casos = [
               AND NOT EXISTS (SELECT 1 FROM apd.bitacora b WHERE b.entidad_id = s.id::text AND b.accion = 'estado')) = 0; END $$;`],
   ['Ni la administración edita la bitácora', { codigo: null, mensaje: 'no se edita ni se borra' }, null,
      `UPDATE apd.bitacora SET detalle = 'x';`, 'admin'],
+  // Auditoría «intentar romperlo» 2026-10-18, F2 A6 y M4
+  ['Una cita que todavía no llega no se registra: ni la inasistencia', { codigo: 'cita_futura' }, '2026-10-14 18:00', `
+     ${NO_SE_PRESENTO}`],
+  ['Una cita que todavía no llega no se atiende antes de su día', { codigo: 'cita_futura' }, '2026-10-19 09:00', `
+     UPDATE apd.cita SET resultado = 'no_es_la_persona', observacion = 'La identificación es de otra persona.' WHERE solicitud_id = ${CITA_SOL} AND resultado = 'pendiente';`],
+  ['El día de la cita sí se registra la inasistencia', 'ok', '2026-10-20 18:00', `
+     ${NO_SE_PRESENTO}
+     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.cita WHERE solicitud_id = ${CITA_SOL} AND resultado = 'no_se_presento'); END $$;`],
+  ['Una cita a más de meses_adelanto_cita meses se rechaza', { codigo: 'cita_lejana' }, DIA_CITA, `
+     ${NO_SE_PRESENTO}
+     UPDATE apd.solicitud SET cita_en = '2027-04-21 10:00-06' WHERE id = ${CITA_SOL};`],
+  ['Una cita hasta meses_adelanto_cita meses adelante se acepta', 'ok', DIA_CITA, `
+     ${NO_SE_PRESENTO}
+     UPDATE apd.solicitud SET cita_en = '2027-04-20 10:00-06' WHERE id = ${CITA_SOL};`],
   ['En una base de producción, simular la fecha es un error', { codigo: 'simulacion_prohibida' }, '2026-10-20 10:00', `
      CREATE OR REPLACE FUNCTION apd.entorno() RETURNS text LANGUAGE sql STABLE AS $$ SELECT 'produccion'::text $$;
      SELECT apd.hoy();`, 'admin']

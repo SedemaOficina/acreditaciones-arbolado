@@ -1,6 +1,6 @@
 {
   "formulario": "grupo-crear.html",
-  "generado": "2026-10-19T00:22:20.320Z",
+  "generado": "2026-10-19T06:27:57.254Z",
   "campos": {
     "fecha_inicio": {
       "etiqueta": "Primer día del curso",
@@ -10,7 +10,7 @@
       "sensible": false,
       "uso": "Fijar el primer día del curso (apd.grupo.fecha_inicio).",
       "atributos": {
-        "maxlength": "10"
+        "maxlength": "14"
       },
       "autocomplete": "off"
     },
