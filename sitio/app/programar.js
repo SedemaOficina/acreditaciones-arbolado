@@ -75,6 +75,8 @@
     const minimo = P.primerDiaPosible(datos);
     const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
+    // La leyenda dice los días de anticipación del parámetro, como la regla (auditoría 2026-10-19, R4-15)
+    $('[data-leyenda-no]').textContent = `No se puede: menos de ${anticipacion} días u otro curso igual esas fechas`;
     const inhabiles = new Set(P.diasInhabiles(datos));
     const excepto = gExistente ? gExistente.id : null;
     const razon = (d) => P.razonNoInicio(datos, tipo, modalidad, d, excepto);

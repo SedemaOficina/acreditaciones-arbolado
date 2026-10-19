@@ -53,7 +53,8 @@
       <section class="tarjeta prog-paso" aria-labelledby="t-paso-1">
         <h3 class="titulo-bloque prog-paso-titulo" id="t-paso-1"><span class="prog-paso-num">1.</span> ¿Qué semana?</h3>
         <p class="ayuda" data-ayuda-semana>Toque el día en que empieza el curso.</p>
-        <div class="cal" data-calendario>
+        <!-- data-calendario-curso: no es el botón de calendario de un campo de fecha ([data-calendario], app/apd.js) -->
+        <div class="cal" data-calendario-curso>
           <div class="cal-cabeza">
             <button type="button" class="btn-icono cal-mes-boton" data-mes="-1" aria-label="Mes anterior"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg></button>
             <p class="cal-mes" id="cal-mes" aria-live="polite" data-mes-nombre></p>
@@ -70,7 +71,7 @@
           <p class="cal-estado" data-cal-estado hidden></p>
           <ul class="cal-leyenda" aria-label="Qué significa cada día">
             <li><span class="cal-muestra" data-muestra="rango" aria-hidden="true"></span><span>El curso elegido</span></li>
-            <li><span class="cal-muestra" data-muestra="no" aria-hidden="true"></span><span>No se puede: menos de 7 días u otro curso igual esas fechas</span></li>
+            <li><span class="cal-muestra" data-muestra="no" aria-hidden="true"></span><span data-leyenda-no>No se puede: menos de 7 días u otro curso igual esas fechas</span></li>
             <li><span class="cal-muestra" data-muestra="inhabil" aria-hidden="true"></span><span>Día inhábil <span class="pendiente">[por confirmar con el calendario oficial de la Secretaría]</span></span></li>
           </ul>
         </div>
