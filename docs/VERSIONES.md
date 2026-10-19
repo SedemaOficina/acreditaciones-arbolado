@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.56 | 19/10/26, 10:38 a.m. | Bitácora: bloques 75 a 77 (auditoría del 19/10 y correcciones de fechas y base) |
 | 0.55 | 18/10/26, 7:05 p.m. | Grupos: planeador por curso, «Programar un curso» en 3 pasos, nombre calculado y «Mis grupos de hoy» |
 | 0.54 | 18/10/26, 5:36 p.m. | Bitácora: bloque 73 |
 | 0.53 | 18/10/26, 2:43 p.m. | Bloque 72: auditoría completa (código, botones, datos, interfaz) y sus correcciones |
