@@ -2334,6 +2334,13 @@ async function romper(navegador) {
   await pg.waitForSelector('[data-sin-grupo]:not([hidden]), [data-con-grupo]:not([hidden])');
   comprueba(await pg.isVisible('[data-sin-grupo]') && await pg.locator('[data-mis-grupos] a[href="aplicar.html?folio=APD-G-2026-006"]').count() === 1,
     t('F3 M9: con un solo grupo y su examen hoy, «Asistencia» muestra «Pasar lista y aplicar»'));
+  // E1-01 (decisión 12 de la auditoría del 2026-10-19): el instructor no abre ni opera, con ?folio=, el grupo de otra persona
+  for (const pagina of ['asistencia', 'aplicar']) {
+    await pg.goto(BASE + `${pagina}.html?folio=APD-G-2026-003`);
+    await pg.waitForSelector('[data-sin-grupo]:not([hidden]), [data-con-grupo]:not([hidden])');
+    comprueba(await pg.isVisible('[data-sin-grupo]') && await pg.isHidden('[data-con-grupo]') && /Este grupo lo da otra persona/.test(await pg.textContent('[data-sin-grupo-texto]'))
+      && !(await pg.$$eval('main a[href*="APD-G-2026-003"]', (l) => l.length)), t(`E1-01: «${pagina}.html?folio=» de un grupo de otro instructor dice «Este grupo lo da otra persona» y no lo abre ni lo ofrece`));
+  }
   await c.close();
 
   /* ── F4 · datos, material y menú de pruebas ── */
