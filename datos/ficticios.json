@@ -15849,7 +15849,7 @@
   {
    "clave": "tamano_maximo_material_bytes",
    "valor": "31457280",
-   "descripcion": "Tamaño máximo de cada PDF de material de estudio: 30 MB (el manual de poda pesa unos 18 MB; decisión 2026-10-18)."
+   "descripcion": "Tamaño máximo de cada PDF de material de estudio: 30 MB (el manual de poda publicado pesa 11.7 MB; decisión 2026-10-18)."
   }
  ],
  "requisito": [
@@ -22251,7 +22251,7 @@
  ],
  "material_estudio": [
   {
-   "id": "4045fda0-887c-4362-8f71-7ca51965d61c",
+   "id": "d051d59a-421a-4f07-a7fc-ca64eb5bb9f4",
    "clave": "norma_poda",
    "orden": 1,
    "temas": [
@@ -22326,7 +22326,7 @@
    "tipo_acreditacion": null
   },
   {
-   "id": "a25fc40f-b3cd-459c-90ba-8ad65f7b44f5",
+   "id": "2cf034ef-848b-479b-b3b0-88b9c3d4f85f",
    "clave": "manual_poda",
    "orden": 2,
    "temas": [
@@ -22385,7 +22385,7 @@
    "tipo_acreditacion": null
   },
   {
-   "id": "e8b56536-8a10-4d83-a3cb-28e498deb6c3",
+   "id": "68e58a95-c3be-406a-9b2c-576fcf5757c4",
    "clave": "ley_ambiental",
    "orden": 3,
    "temas": [
