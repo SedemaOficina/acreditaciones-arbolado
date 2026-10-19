@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.58 | 19/10/26, 11:43 a.m. | Merge pull request #1 from SedemaOficina/correcciones-auditoria-2026-10-19 |
 | 0.57 | 19/10/26, 11:10 a.m. | Pruebas de fechas al día con «intentar romperlo» (cita futura y confirmación comprobada); cifras finales |
 | 0.56 | 19/10/26, 3:37 a.m. | Auditoría «intentar romperlo» · bloque 3: guardados que fallan y registros dañados |
 | 0.55 | 18/10/26, 7:05 p.m. | Grupos: planeador por curso, «Programar un curso» en 3 pasos, nombre calculado y «Mis grupos de hoy» |
