@@ -26,7 +26,9 @@
     const textos = {
       creado: ['ok', `Grupo creado con ${plural(n, 'persona', 'personas')}`, { texto: 'Todavía no está confirmado.', pasos: [
         'Complete al menos el mínimo de personas.', 'Elija el primer día, la hora de entrada y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
-      agregadas: ['ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`, ''],
+      // Las que de verdad entraron; las que no, aparte (auditoría «intentar romperlo», F3 M1)
+      agregadas: [params.get('no') ? 'pend' : 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`,
+        params.get('no') ? `${params.get('no').split(',').length === 1 ? '1 de las que eligió no entró: ya tenía grupo o el grupo se llenó' : `${params.get('no').split(',').length} de las que eligió no entraron: ya tenían grupo o el grupo se llenó`}.` : ''],
       confirmado: ['ok', 'Grupo confirmado', 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.'],
       baja: ['ok', 'La persona salió del grupo', 'Regresó a la espera con su antigüedad.'],
       baja_integracion: ['pend', 'El grupo dejó de estar confirmado', { texto: 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta.', pasos: [
@@ -37,10 +39,13 @@
     const [tono, titulo, texto] = textos[hecho];
     APD.pintaAviso($('[data-hecho]'), tono, titulo, texto, true);
     // Que recargar la página no repita el aviso
-    params.delete('hecho'); params.delete('n');
+    params.delete('hecho'); params.delete('n'); params.delete('no');
     history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
   }
   const vuelve = (folio, hecho) => { location.href = `grupo.html?folio=${encodeURIComponent(folio)}&hecho=${hecho}`; };
+  /* Un cambio que la base no aplicó (bloque 2): el aviso del formulario lo dice, con el enlace para ver el grupo como está */
+  const noSeHizo = (titulo, motivo) => APD.rechazo(titulo, `${motivo.charAt(0).toLocaleUpperCase('es-MX')}${motivo.slice(1)}. Lo que escribió sigue aquí.`,
+    { href: location.pathname.split('/').pop() + location.search, texto: 'Ver el grupo como está ahora' }, 'conflicto');
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'grupos');
@@ -49,6 +54,7 @@
     avisoHecho();
     const x = P.grupo(datos, g0);
     const { g, c } = x;
+    const deAhora = (d) => d.grupo.find((y) => y.id === g.id);
     const hoy = APD.hoy(datos);
     const abierto = ['en_integracion', 'confirmado'].includes(g.estado);
     const antesDeIniciar = g.estado === 'en_integracion' || (g.estado === 'confirmado' && hoy < g.fecha_inicio);
@@ -196,10 +202,17 @@
         enviar(payload) {
           const d = Object.assign({}, payload.datos, { fecha_inicio: (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(payload.datos.fecha_inicio)) || payload.datos.fecha_inicio });
           if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fecha(minimo)}.` }] });
-          return P.guardaGrupo({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: d.fecha_inicio, hora_entrada: d.hora_entrada, instructor: d.instructor, por: P.REVISORA.usuario });
+          // Como la API: con lo guardado de ahora (otra pestaña pudo dar de baja a alguien) y comprobando después que quedó
+          // confirmado (auditoría «intentar romperlo», F3 M2: «Grupo confirmado» aunque seguía por confirmar). Lo escrito
+          // se conserva.
+          return P.guardaGrupoComprobado({
+            antes: (d1) => P.razonNoConfirma(d1, deAhora(d1), d.fecha_inicio),
+            eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: d.fecha_inicio, hora_entrada: d.hora_entrada, instructor: d.instructor, por: P.REVISORA.usuario }),
+            comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'confirmado' ? null : P.razonNoConfirma(d2, deAhora(d2), d.fecha_inicio) || 'la base no lo confirmó')
+          }).catch((e) => Promise.reject(e && e.motivo ? noSeHizo('No se confirmó el grupo', e.motivo) : e));
         },
         alEnviar() { vuelve(g.folio, 'confirmado'); },
-        alFallar(err) { const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
+        alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
       });
     }
 
@@ -209,16 +222,26 @@
       const dlg = $(`#dlg-${id}`);
       const inst = FormKit.iniciar(form, {
         enviar(payload) { return alGuardar(payload.datos.motivo); },
-        alFallar(err) { const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
+        alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
       });
       dlg.addEventListener('close', () => { form.reset(); inst.ctx.limpia('motivo'); });
       return dlg;
     }
-    dialogoConMotivo('baja', (motivo) => P.guardaGrupo({ tipo: 'baja', grupo_id: g.id, folio: bajaDe.folio, motivo, por: P.REVISORA.usuario })
-      .then(() => vuelve(g.folio, g.estado === 'confirmado' && x.n - 1 < g.cupo_minimo ? 'baja_integracion' : 'baja')))
+    // Lo mismo que confirmar: se comprueba después que la base lo aplicó (otra pestaña pudo haberla dado de baja o haber
+    // cancelado el grupo); si no, se dice y no se anuncia un éxito
+    const inscritaEn = (d, folio) => { const s = d.solicitud.find((y) => y.folio === folio); return Boolean(s) && d.inscripcion.some((i) => i.grupo_id === g.id && i.activa && i.solicitud_id === s.id); };
+    dialogoConMotivo('baja', (motivo) => P.guardaGrupoComprobado({
+      eventos: () => ({ tipo: 'baja', grupo_id: g.id, folio: bajaDe.folio, motivo, por: P.REVISORA.usuario }),
+      antes: (d1) => (inscritaEn(d1, bajaDe.folio) ? null : `${bajaDe.quien} ya no está en el grupo`),
+      comprueba: (d2) => (inscritaEn(d2, bajaDe.folio) ? `${bajaDe.quien} sigue en el grupo: ya presentó el examen o el grupo cambió` : null)
+    }).then(({ datos: d2 }) => vuelve(g.folio, deAhora(d2).estado === 'en_integracion' && g.estado === 'confirmado' ? 'baja_integracion' : 'baja'),
+      (e) => Promise.reject(e && e.motivo ? noSeHizo('No se dio de baja', e.motivo) : e)))
       .addEventListener('close', () => { if (bajaDe && bajaDe.boton.isConnected) bajaDe.boton.focus(); });
-    dialogoConMotivo('cancelar', (motivo) => P.guardaGrupo({ tipo: 'cancelar', grupo_id: g.id, motivo, por: P.REVISORA.usuario })
-      .then(() => vuelve(g.folio, 'cancelado')))
+    dialogoConMotivo('cancelar', (motivo) => P.guardaGrupoComprobado({
+      eventos: () => ({ tipo: 'cancelar', grupo_id: g.id, motivo, por: P.REVISORA.usuario }),
+      antes: (d1) => (deAhora(d1) && ['en_integracion', 'confirmado'].includes(deAhora(d1).estado) ? null : `el grupo ya está «${deAhora(d1) ? P.grupo(d1, deAhora(d1)).situacion.texto : 'sin datos'}»`),
+      comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'cancelado' ? null : 'el grupo no se canceló')
+    }).then(() => vuelve(g.folio, 'cancelado'), (e) => Promise.reject(e && e.motivo ? noSeHizo('No se canceló el grupo', e.motivo) : e)))
       .addEventListener('close', () => { if (cancelar && cancelar.isConnected) cancelar.focus(); });
   }).catch(() => {
     $('[data-bajada]').textContent = 'No se pudo cargar el grupo. Intente de nuevo más tarde.';

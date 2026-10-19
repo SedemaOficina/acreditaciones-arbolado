@@ -283,6 +283,21 @@ Liber aprobó corregir los errores de lógica del bloque 1 (`docs/AUDITORIA-2026
 | 2026-10-18 | Material de estudio: el total del campo es el del parámetro `tamano_maximo_material_bytes` (30 MB); reemplazar el archivo no se acepta si los apartados de «Qué estudiar» citan páginas que el archivo nuevo no tiene; un apartado repetido se avisa | Liber Saltijeral (F4 A7, M4, B4, B5) |
 | 2026-10-18 | El acuse de la solicitud dice la fecha simulada de la prueba y la hora en 24 horas | Liber Saltijeral (F4 M7) |
 
+## Decisiones del 2026-10-19 (auditoría «intentar romperlo», bloque 2)
+
+Liber aprobó corregir el bloque 2 (dos pestañas, dos personas a la vez y doble clic). Lo que la base y la API detienen en
+el sistema, la versión de prueba ahora lo detiene igual. Las reglas que cambian o se hacen explícitas:
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-19 | **Antes de guardar a nombre de la sesión, la página comprueba que siga siendo la persona con la que se abrió.** Si en otra pestaña se entró con otra cuenta o se salió, no guarda nada y lo dice: «Tu sesión cambió en otra pestaña» o «Tu sesión se cerró en otra pestaña», con «Vuelve a entrar con tu cuenta». Aplica a la solicitud (nueva, continuar y corregir y reenviar), «Mi perfil» y «Cargar el documento correcto». «Mis trámites» no guarda nada (no hay cancelar). En el personal no aplica en la prueba (perfil fijo, sin sesión que cambie); en la etapa 3 la API compara el usuario del SIA | Liber Saltijeral (aprobó la corrección F1 1 y 2) |
+| 2026-10-19 | **Lo que llega después sobre algo que ya cambió no se guarda** (gana lo que se registró primero): una revisión de una vuelta que ya se revisó o que la persona reenvió; el cotejo de una cita que ya se registró (otra cita, en pausa, cerrada); un reenvío de una solicitud que ya no está en borrador ni con observaciones; confirmar un grupo que ya no tiene el mínimo. La pantalla lo dice con el mensaje de la API y un enlace para abrirlo otra vez; lo capturado se conserva | Liber Saltijeral (F1 4, F2 A2, A3, M1, F3 M2) |
+| 2026-10-19 | La regla «una sola solicitud activa por persona y tipo» tiene su código y su mensaje en la base (`solicitud_activa`: «Ya tienes un trámite en curso de esta acreditación (folio …)»), después de la elegibilidad; el índice único queda como última defensa | Liber Saltijeral (F1 3) |
+| 2026-10-19 | **El número de expediente no se anticipa al abrir el cotejo**: lo asigna la base al terminarlo (consecutivo) y la pantalla muestra el que quedó. Antes de terminar dice «se abre su expediente físico (el sistema le da el número al terminar)» | Liber Saltijeral (F2 A4) |
+| 2026-10-19 | El folio de una solicitud nueva y el de un grupo nuevo se calculan al guardar, con lo guardado más reciente; en la etapa 3 los asigna la base y la pantalla sólo muestra el que devuelve la API | Liber Saltijeral (F3 A1) |
+| 2026-10-19 | Al agregar personas a un grupo, el aviso dice **cuántas entraron de verdad** y, de las que no, quién y por qué (ya está en otro grupo, el grupo se llenó, ya no está en espera). Si no entró nadie, no queda nada guardado. Las que sí caben se agregan aunque otras no (como la base, una inscripción por persona) | Liber Saltijeral (F3 M1); que se agreguen las que caben es propuesta de Claude, por confirmar |
+| 2026-10-19 | **Todo botón que guarda queda deshabilitado mientras guarda** (el estándar ya lo hace con el botón de envío de sus formularios; el proyecto, con los suyos: «Guardar sin confirmar», «Al curso…», «Completar…», «Confirmar el grupo», «Guardar la asistencia», «Publicar», «Ocultar», «Iniciar el curso hoy») | Liber Saltijeral (F3 M6, B10) |
+
 ## Lineamientos
 
 La Ley Ambiental de la Ciudad de México (art. 111, párrafo segundo) ordena a la Secretaría emitir los lineamientos para

@@ -1155,3 +1155,50 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   fuera su día» se confirmaron los demás).
 - Decisiones nuevas en `docs/DECISIONES.md` («Decisiones del 2026-10-18 (auditoría «intentar romperlo», bloque 1)»).
 
+
+## 2026-10-19 · Bloque 76 · Auditoría «intentar romperlo» · bloque 2 (dos pestañas, dos personas a la vez y doble clic)
+
+- Liber aprobó corregir el bloque 2 de `docs/AUDITORIA-2026-10-18-romper.md`. En el sistema la base y la API detienen
+  casi todo esto; la versión de prueba ahora se comporta igual: la mezcla aplica a cada evento las reglas de la base en
+  el momento en que pasó, cada pantalla vuelve a leer lo guardado justo antes de guardar y, si el cambio ya no procede,
+  no lo guarda y lo dice con el mensaje que daría la API; después de guardar comprueba que se aplicó y, si no, lo retira
+  y lo dice. Nunca un éxito falso. El estándar sigue en la 1.4.1 (`sitio/formkit/` sin cambios).
+- **Común (`app/apd.js`):** `APD.rechazo` (el rechazo de la API: título, texto, enlace, código y errores por campo),
+  `APD.muestraRechazo` (lo pinta en el aviso de envío en lugar del «No se pudo enviar» general), `APD.sesionCambio` (la
+  sesión con que se abrió la página contra la de ahora) y `APD.ocupa` (un botón propio deshabilitado mientras guarda).
+- **Persona (F1 1 a 4):** la solicitud, «Mi perfil» y «Cargar el documento correcto» no guardan si la sesión cambió o se
+  cerró en otra pestaña («Tu sesión cambió en otra pestaña…», con «Vuelve a entrar con tu cuenta»); el envío vuelve a
+  revisar la elegibilidad (una sola activa por tipo) y que una solicitud que se continúa siga en borrador o con
+  observaciones; el folio se calcula al guardar y nunca repite uno que exista. En la mezcla: sin persona no hay
+  solicitud; una solicitud nueva no se aplica si la persona tenía otra activa de ese tipo en ese momento o no es
+  elegible; un envío nuevo con un folio que ya existe no se toma como reenvío; un reenvío sólo desde borrador o con
+  observaciones, y sus archivos van con él (si se rechaza, tampoco quedan). «Mis trámites» no guarda nada.
+- **Revisión y cotejo (F2 A2 a A5, M1):** la revisión guarda la vuelta que se abrió (hora real del envío) y la pantalla
+  la compara con la de ahora: si la persona reenvió u otra pestaña ya revisó, no se guarda; la bandeja y «Ya registró la
+  revisión…» enseñan la revisión que se aplicó (`APD_PERSONAL.revisiones(datos)`). El cotejo guarda la cita y la
+  situación de partida (pendiente o en pausa, y la pausa): otra cita, una pausa o una cita cerrada lo detienen, en la
+  pantalla y en la mezcla; una cita en pausa no pasa a «no se presentó» ni a «no era la persona». El expediente lo asigna
+  la mezcla al terminar, consecutivo, y la pantalla muestra el que quedó (ya no lo anticipa al abrir). Un folio fiscal
+  repetido se rechaza junto al campo y en la mezcla.
+- **Grupos (F3 A1, M1, M2, M6, B10):** `APD_PERSONAL.guardaGrupoComprobado` (lee, guarda y comprueba; si no se aplicó,
+  retira los eventos y rechaza con el motivo). «Programar» calcula el folio al guardar y le da a cada creación un id
+  propio; la mezcla ignora un «crear» con un folio que ya existe y lo que lo acompaña. Agregar dice cuántas entraron de
+  verdad y quién no, por qué; confirmar, dar de baja y cancelar dicen por qué no se hizo («el grupo tiene 4 personas y
+  el mínimo es 5») y conservan lo escrito. Deshabilitados mientras guardan: «Guardar sin confirmar», «Al curso…»,
+  «Completar…», «Confirmar el grupo», «Guardar la asistencia», «Publicar», «Ocultar» e «Iniciar el curso hoy».
+- **Personal y sesión:** en la prueba no hay sesión del personal que cambie (perfil fijo); queda como contrato de la
+  etapa 3 (`docs/ETAPA-2-PANTALLAS.md`, sección 2e).
+- **Base:** regla `solicitud_activa` en `apd.solicitud_alta` (con el folio de la que está en curso, después de la
+  elegibilidad); el índice `solicitud_una_activa` queda como última defensa. `probar-reglas`: el caso de dos solicitudes
+  activas espera ahora ese código.
+- **Bloque 3 sin tocar:** con el almacenamiento bloqueado o lleno, el envío de la solicitud sigue como antes (si no se
+  pudo guardar, no se comprueba después); la comprobación posterior sólo corre cuando sí se guardó.
+- Pruebas: `probar-sitio` 860 (antes 822; sección nueva `romperDos`, 38, `SOLO=romper2`: dos páginas del mismo contexto
+  como dos pestañas, una comprobación por hallazgo; las 21 de hallazgos fallan con el código del commit c7281d3 y pasan
+  con éste); `probar-examen` 76; `probar-esquemas` 128; `probar-base` y `probar-reglas` 178; auditor de CSS sin hallazgos
+  (`apd.css`, `examen.css`). Cambió una comprobación existente: el cotejo ya no anuncia el número de expediente antes de
+  terminar. Los guiones de los revisores (f1 t3b, t3c, t10; f2 03, 06, 07, 14; f3 t04, t05, t06, t26) se volvieron a
+  correr en una copia (`scratchpad/auditoria-romper-bloque2/`, con `corre.sh`): ya no ocurre ninguno de los hallazgos.
+  Los de f2 se adaptaron a «Atenderla como si fuera su día» y a que la pestaña con lo no guardado advierte al salir.
+- Decisiones nuevas en `docs/DECISIONES.md` («Decisiones del 2026-10-19 (auditoría «intentar romperlo», bloque 2)»);
+  contrato de la API en `docs/ETAPA-2-PANTALLAS.md` (2e); `docs/REGLAS.md` nombra `solicitud_activa`.

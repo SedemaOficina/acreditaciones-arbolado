@@ -125,6 +125,37 @@ En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la
   examen aprobado; y en «Mis trámites», cita asignada, cita sin pago, cita en pausa, espera de grupo, aprobada y
   acreditación lista.
 
+## 2e. Dos pestañas, dos personas a la vez y doble clic: lo que la API de la etapa 3 debe garantizar (bloque 2, 2026-10-19)
+
+La versión de prueba ya se comporta así (`app/archivos-prueba.js` aplica las reglas de la base al mezclar; cada pantalla
+vuelve a leer antes de guardar y comprueba después). La API tiene que dar lo mismo, porque la pantalla ya no supone nada:
+
+- **Sesión.** Todo guardado a nombre de la persona lleva la persona que la página espera (`solicitante_id` con que se
+  cargó). La API la compara con la de la cookie: sin sesión, 401; otra persona, 409 `sesion_cambio`; en los dos casos no
+  guarda nada. Lo mismo el personal con su usuario del SIA (en la prueba no hay sesión del personal que cambie).
+- **Versión de lo que se decide.** Cada decisión del personal lleva sobre qué la tomó y la API la rechaza con 409 si ya
+  cambió, sin guardar nada:
+  - revisión: la solicitud (`estado` y `estado_desde`, o una versión) y los documentos vigentes que se vieron (id de cada
+    carga): si la persona reenvió o ya hay otra revisión, 409 `conflicto` («La solicitud cambió desde que la abrió»);
+  - cotejo: la cita (`id` o `programada_en`), su resultado de partida (pendiente o en pausa) y, al retomar, `pausada_en`:
+    409 `cita_cerrada` o `cita_transicion` (una cita en pausa no pasa a «no se presentó» ni a «no era la persona»);
+  - grupos: el grupo y su estado; confirmar vuelve a revisar cupo mínimo, anticipación y datos (`apd.grupo_cambio`).
+- **Transiciones.** Las de la base (`docs/REGLAS.md`): un reenvío sólo desde `borrador` o `con_observaciones`
+  (`transicion_invalida`); una carga sólo en su turno (`carga_fuera_de_turno`).
+- **Unicidad y números que asigna la base.** Una solicitud activa por persona y tipo (`solicitud_activa`; el 23505 del
+  índice `solicitud_una_activa`, si dos altas llegan a la vez, se responde con el mismo mensaje); folio de solicitud y de
+  grupo (`apd.siguiente_folio`) y número de expediente (`apd.asignar_expediente`, al terminar el cotejo): la API devuelve
+  el asignado y la pantalla sólo muestra ése, nunca uno calculado al abrir; folio fiscal único (`folio_fiscal_repetido`,
+  422 con `errores: [{ campo: 'factura_folio_fiscal', mensaje }]`, que el núcleo pinta junto al campo).
+- **La respuesta es lo que quedó.** La API responde con el estado resultante y la pantalla dice eso, no lo que pidió:
+  agregar a un grupo devuelve a quién inscribió y a quién no, con su razón (`solicitud_no_lista`, `cupo_maximo`,
+  `otra_organizacion`, `grupo_cerrado`); confirmar devuelve el estado del grupo; el cotejo, el expediente asignado.
+- **Doble clic e idempotencia.** Los formularios del estándar mandan `Idempotency-Key` (la misma mientras no se logre
+  enviar); los botones propios que guardan también deben mandarla, y la API responde a un repetido con la primera
+  respuesta. La pantalla, además, deshabilita el botón mientras guarda (`APD.ocupa`).
+- **Forma del rechazo.** `{ codigo, mensaje, errores?: [{ campo, mensaje }] }`; la pantalla lo pinta en su aviso de envío
+  con un enlace para volver a abrir lo que cambió (`APD.rechazo` y `APD.muestraRechazo` en la prueba).
+
 ## 2 bis. Visor de documentos
 
 El módulo `visor` del estándar (desde la 1.2.0, P67; antes `app/visor.js`, del que salió) muestra todas las hojas del PDF

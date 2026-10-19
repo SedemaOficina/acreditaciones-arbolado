@@ -53,16 +53,26 @@
     FormKit.iniciar(form, {
       enviar(payload, { signal }) {
         return new Promise((ok, mal) => {
-          const t = setTimeout(() => {
+          const t = setTimeout(() => APD.cargar().then((ahora) => {
+            // Justo antes de guardar (auditoría «intentar romperlo», bloque 2): la sesión sigue siendo la de quien abrió la
+            // página y la cita sigue en pausa ese día (la base: carga_fuera_de_turno)
+            const sesion = APD.sesionCambio();
+            if (sesion) return mal(sesion);
+            const s2 = ahora.solicitud.find((x) => x.folio === s.folio);
+            if (!s2 || s2.solicitante_id !== persona.id || s2.estado !== 'validada_en_linea' || !s2.cotejo_pausa || APD.pausaVencida(ahora, s2)) {
+              return mal(APD.rechazo('Ya no se puede cargar aquí', 'Tu cita ya no está en pausa: se registró en la Secretaría mientras tenías abierta esta página. No se guardó nada; revisa en «Mis trámites» lo que sigue.',
+                { href: 'tramites.html', texto: 'Ir a «Mis trámites»' }, 'carga_fuera_de_turno'));
+            }
             const A = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
             const archivos = (payload.archivos || []).filter((a) => a.campo.startsWith('doc_') && a.blob);
             const en = new Date().toISOString();
-            Promise.all(archivos.map((a) => (A ? A.guardaDocumento(s.folio, a.campo.slice(4), a, { en, motivo: 'cotejo', cargado_por: persona.correo || 'persona' }).catch(() => {}) : null)))
+            return Promise.all(archivos.map((a) => (A ? A.guardaDocumento(s.folio, a.campo.slice(4), a, { en, motivo: 'cotejo', cargado_por: persona.correo || 'persona' }).catch(() => {}) : null)))
               .then(() => ok({ n: archivos.length }));
-          }, 400);
+          }).catch(mal), 400);
           signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
         });
       },
+      alFallar(e) { APD.muestraRechazo(e, form); },
       alEnviar() {
         form.hidden = true;
         FormKit.resultado($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento',

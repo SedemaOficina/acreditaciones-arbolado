@@ -28,6 +28,9 @@
 
   /* Perfil ficticio de quien revisa y coteja (no es una persona real) */
   const REVISORA = { usuario: 'revision.prueba', nombre: 'María Ejemplo Revisora', perfil: 'Revisión y cotejo' };
+  /* La sesión del personal (auditoría «intentar romperlo», bloque 2, F1 1): en la prueba no hay cuentas del personal, el
+     perfil es fijo y no cambia en otra pestaña, así que no hay sesión que comprobar al guardar. En la etapa 3 cada
+     guardado del personal lleva el usuario del SIA con que se abrió la pantalla y la API lo compara con la sesión (409). */
 
   /* Plazos de la bandeja: días de espera desde que la solicitud llegó a revisión.
      Pendiente (P02): los fija la Dirección; mientras, estos valores de prueba. */
@@ -35,17 +38,35 @@
 
   /* Cada folio guarda su lista de revisiones (una solicitud puede revisarse varias veces: reenvíos, regreso del cotejo).
      Lo guardado antes de 0.27 era una sola revisión por folio: se lee como lista de una. */
-  function historial() { return A.listaPorFolio(CLAVE); }
-  /* La última revisión de cada folio */
-  function revisiones() { return Object.fromEntries(Object.entries(historial()).map(([f, l]) => [f, l[l.length - 1]])); }
+  /* La última revisión APLICADA de cada folio, de las registradas en esta prueba: { texto, resultado, en }. Lo guardado que
+     la base habría rechazado (dos pestañas: otra revisión ya se registró) no cuenta (auditoría «intentar romperlo», F2 M1:
+     la bandeja y «Ya registró la revisión…» enseñaban una revisión que no se aplicó). */
+  function revisiones(datos) {
+    const folioDe = Object.fromEntries(datos.solicitud.map((s) => [s.id, s.folio]));
+    const r = {};
+    for (const x of datos.revision.filter((y) => y.de_prueba && y.registrada_en).sort((a, b) => String(a.registrada_en).localeCompare(String(b.registrada_en)))) {
+      if (folioDe[x.solicitud_id]) r[folioDe[x.solicitud_id]] = { texto: x.texto, resultado: x.resultado, en: x.registrada_en };
+    }
+    return r;
+  }
   function agrega(clave, folio, registro) {
     const t = A.listaPorFolio(clave);
     t[folio] = (t[folio] || []).concat([registro]);
     try { global.localStorage.setItem(clave, JSON.stringify(t)); return true; } catch (e) { return false; }
   }
+  /* Retira un registro que la base no habría aplicado (se reconoce por su hora real «en») */
+  function retira(clave, folio, en) {
+    const t = A.listaPorFolio(clave);
+    if (!t[folio]) return;
+    t[folio] = t[folio].filter((x) => x.en !== en);
+    if (!t[folio].length) delete t[folio];
+    try { global.localStorage.setItem(clave, JSON.stringify(t)); } catch (e) { /* sin almacenamiento: la mezcla lo ignora */ }
+  }
   function guardaRevision(folio, registro) { return agrega(CLAVE, folio, registro); }
-  /* Citas de cotejo atendidas en la prueba: { resultado, datos, en, cita_en, expediente, atendio } por folio */
+  /* Citas de cotejo atendidas en la prueba: { resultado, datos, en, cita_en, desde, pausa_real, atendio } por folio */
   function guardaCotejo(folio, registro) { return agrega(COTEJOS, folio, registro); }
+  const retiraRevision = (folio, en) => retira(CLAVE, folio, en);
+  const retiraCotejo = (folio, en) => retira(COTEJOS, folio, en);
 
   /* Días naturales entre dos fechas ISO, en hora de la Ciudad de México */
   function dias(desde, hasta) {
@@ -183,9 +204,45 @@
   ];
   const INSTRUCTORA = Object.assign({ perfil: 'Instructor' }, INSTRUCTORES[0]);
   const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
+  /* Cada evento lleva su uid, para retirarlo si la base no lo habría aplicado */
+  const uid = () => (global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
   function guardaGrupo(evento) {
-    const lista = A.eventosGrupos().concat([Object.assign({ en: new Date().toISOString() }, evento)]);
-    try { global.localStorage.setItem(GRUPOS, JSON.stringify(lista)); return Promise.resolve(true); } catch (e) { return Promise.reject(new Error('almacenamiento')); }
+    const lista = A.eventosGrupos().concat([Object.assign({ en: new Date().toISOString(), uid: uid() }, evento)]);
+    try { global.localStorage.setItem(GRUPOS, JSON.stringify(lista)); return Promise.resolve(lista[lista.length - 1]); } catch (e) { return Promise.reject(new Error('almacenamiento')); }
+  }
+  function retiraGrupo(uids) {
+    const quita = new Set(uids);
+    try { global.localStorage.setItem(GRUPOS, JSON.stringify(A.eventosGrupos().filter((e) => !quita.has(e.uid)))); } catch (e) { /* sin almacenamiento: la mezcla lo ignora */ }
+  }
+  /* Guarda eventos de grupos como lo haría la API, en una sola operación (auditoría «intentar romperlo», bloque 2):
+       1. vuelve a leer lo guardado más reciente y, si el cambio ya no procede, no guarda (antes(datos) → motivo o null);
+       2. guarda los eventos, con lo que se calcule en ese momento (eventos(datos) → lista; el folio de un grupo nuevo, por
+          ejemplo, con lo guardado de ahora y no con lo de cuando se abrió la página);
+       3. vuelve a leer y comprueba que se aplicó (comprueba(despues, antes) → motivo o null); si no, retira los eventos
+          (la base no habría guardado nada) y rechaza con el motivo.
+     Resuelve con { datos: despues, antes, eventos }. Los motivos van de usted y sin punto final: «el grupo tiene 4
+     personas y el mínimo es 5». */
+  function guardaGrupoComprobado({ antes, eventos, comprueba }) {
+    return APD.cargar().then((d1) => {
+      const motivo = antes ? antes(d1) : null;
+      if (motivo) return Promise.reject(Object.assign(new Error(motivo), { motivo }));
+      const lista = [].concat(eventos(d1)).filter(Boolean);
+      return lista.reduce((p, e) => p.then((hechos) => guardaGrupo(e).then((x) => hechos.concat([x]))), Promise.resolve([]))
+        .then((hechos) => APD.cargar().then((d2) => {
+          const falla = comprueba ? comprueba(d2, d1, hechos) : null;
+          if (falla) { retiraGrupo(hechos.map((x) => x.uid)); return Promise.reject(Object.assign(new Error(falla), { motivo: falla })); }
+          return { datos: d2, antes: d1, eventos: hechos };
+        }));
+    });
+  }
+  /* Por qué la base no confirmaría el grupo ahora (apd.grupo_cambio: estado, cupo_minimo, anticipacion, datos), o null */
+  function razonNoConfirma(datos, g, fechaInicio) {
+    if (!g) return 'el grupo ya no existe';
+    const x = grupo(datos, g);
+    if (g.estado !== 'en_integracion') return `el grupo ya está «${x.situacion.texto}»`;
+    if (x.n < g.cupo_minimo) return `el grupo tiene ${APD.plural(x.n, 'persona', 'personas')} y el mínimo es ${g.cupo_minimo}`;
+    if (fechaInicio && fechaInicio < primerDiaPosible(datos)) return `el curso debe empezar al menos ${APD.parametro(datos, 'dias_anticipacion_grupo') || 7} días después de confirmarlo`;
+    return null;
   }
 
   const CURSOS = [['poda', 'nueva'], ['poda', 'renovacion'], ['dictaminador', 'nueva'], ['dictaminador', 'renovacion']];
@@ -459,5 +516,6 @@
 
   global.APD_PERSONAL = { HORAS, lunesDe, primerDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
-    nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado };
+    nombreCurso, organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, cupoTexto, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
+    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };
 }(window));

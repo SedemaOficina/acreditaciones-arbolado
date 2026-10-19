@@ -259,6 +259,9 @@
           `Falta marcar a ${sinMarcar.length === 1 ? sinMarcar[0].quien : `${sinMarcar.length} personas, señaladas en rojo`}. Marque «Asistió» o «Faltó» a cada una.`, true);
         return;
       }
+      // Deshabilitado mientras guarda: un doble clic no guarda dos veces (auditoría «intentar romperlo», bloque 2)
+      const libera = APD.ocupa($('[data-guardar]'));
+      if (!libera) return;
       // Un día que aún no llega sólo se captura en la prueba: va marcado «simulada» (C 3.4)
       P.guardaGrupo(Object.assign({ tipo: 'asistencia', grupo_id: g.id, dia, lista, por: P.INSTRUCTORA.usuario }, futuro ? { simulada: true, fecha_dia: diaDe(dia) } : {})).then(() => {
         sinGuardar = false;
@@ -270,6 +273,7 @@
         const siguiente = prueba && dia + 1 < ultimoDia ? dia + 1 : dia;
         location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${siguiente}&hecho=asistencia&guardado=${dia}${extra}`;
       }).catch(() => {
+        libera();
         APD.pintaAviso(aviso, 'error', 'No se pudo guardar la asistencia', 'Lo marcado sigue aquí; intente de nuevo.', true);
       });
     });

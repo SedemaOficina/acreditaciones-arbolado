@@ -629,12 +629,25 @@ CREATE TRIGGER acreditacion_cambio BEFORE UPDATE ON apd.acreditacion
 -- ───────────────────────────── Solicitudes ─────────────────────────────
 
 CREATE FUNCTION apd.solicitud_alta() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE anio smallint := extract(year FROM apd.hoy())::smallint;
+DECLARE
+  anio smallint := extract(year FROM apd.hoy())::smallint;
+  en_curso text;
 BEGIN
   IF NEW.estado <> 'borrador' THEN
     PERFORM apd.error('alta_fuera_de_borrador', 'Una solicitud nace como borrador');
   END IF;
   PERFORM apd.comprobar_elegibilidad(NEW);
+  -- Una sola solicitud activa por persona y tipo de acreditación, con su código y su mensaje (auditoría «intentar
+  -- romperlo» 2026-10-18, bloque 2, F1 3: dos pestañas enviaban dos solicitudes de poda). El índice único
+  -- solicitud_una_activa sigue como última defensa si dos altas llegan al mismo tiempo (23505); la API responde a los dos
+  -- con este mismo mensaje. Va después de la elegibilidad: quien no puede tramitar esa acreditación lo sabe primero.
+  SELECT s.folio INTO en_curso FROM apd.solicitud s
+   WHERE s.solicitante_id = NEW.solicitante_id AND s.tipo_acreditacion = NEW.tipo_acreditacion
+     AND s.estado NOT IN ('acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada')
+   LIMIT 1;
+  IF en_curso IS NOT NULL THEN
+    PERFORM apd.error('solicitud_activa', format('Ya tienes un trámite en curso de esta acreditación (folio %s)', en_curso));
+  END IF;
   -- Copia de la adscripción de la persona (se vuelve a copiar al enviar)
   SELECT p.adscripcion, p.organizacion_id INTO NEW.adscripcion, NEW.organizacion_id
     FROM apd.solicitante p WHERE p.id = NEW.solicitante_id;

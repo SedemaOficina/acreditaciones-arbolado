@@ -21,7 +21,13 @@ window.APD_PERFIL = {
         if (modo === 'error') return mal(new Error('simulado'));
         APD.cargar().then((datos) => {
           const d = payload.datos;
-          const p = APD.personaDeSesion(datos) || {};
+          // La sesión sigue siendo la de quien abrió la página (auditoría «intentar romperlo», F1 1 y 2: «Mi perfil» de una
+          // persona se guardaba en la cuenta de quien entró en otra pestaña, o sin cuenta). La API comparará la sesión con la
+          // persona que la página espera (409).
+          const sesion = APD.sesionCambio();
+          if (sesion) return mal(sesion);
+          const p = APD.personaDeSesion(datos);
+          if (!p) return mal(APD.rechazo('Tu cuenta no está activa', 'No se guardó nada. Vuelve a entrar; si no puedes, pide ayuda a la Secretaría.', { href: 'entrar.html', texto: 'Entrar' }, 'sesion_cambio'));
           const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
           if (!P) return mal(new Error('sin almacenamiento'));
           // Se guarda en este navegador, por persona: lo ven «Mi perfil», las solicitudes nuevas y el personal

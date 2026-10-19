@@ -131,7 +131,8 @@ const casos = [
   ['Dictaminador sin poda vigente se rechaza', { codigo: 'sin_poda_vigente' }, null, `
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
      VALUES (${PERSONA_NO_RENOVABLE}, 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);`],
-  ['Una persona no tiene dos solicitudes activas del mismo tipo', { sqlstate: '23505' }, null, `
+  // Con su código y su mensaje (bloque 2 de la auditoría «intentar romperlo», F1 3); el índice único queda como última defensa
+  ['Una persona no tiene dos solicitudes activas del mismo tipo', { codigo: 'solicitud_activa' }, null, `
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad)
      SELECT solicitante_id, 'poda', 'nueva' FROM apd.solicitud WHERE id = ${BORRADOR};`],
   ['No se envía con documentos faltantes', { codigo: 'faltan_documentos' }, null, `

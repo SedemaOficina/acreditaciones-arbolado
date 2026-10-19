@@ -812,6 +812,22 @@
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: el combo libre ignora data-formato",
       "recomendacion": "Un campo combo con texto libre no valida su formato (por ejemplo, la carrera acepta sólo emojis o puntos). Solución provisional: APD.formatoEnCombos aplica el formato del proyecto. Propuesta: que el combo libre valide data-formato como cualquier campo de texto."
+    },
+    {
+      "id": "P157",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: botonEnviar() sólo bloquea el primer botón de envío",
+      "recomendacion": "En un formulario con dos botones de envío (por ejemplo «Crear y confirmar» y «Guardar sin confirmar» en «Programar un curso»), el segundo queda activo mientras se guarda y un doble clic manda dos envíos. Solución provisional: APD.ocupa en el proyecto. Propuesta: bloquear todos los botones de envío del formulario mientras se guarda."
+    },
+    {
+      "id": "P158",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Hallazgo del estándar: un rechazo del servidor con mensaje y sin errores por campo se muestra como «No se pudo enviar»",
+      "recomendacion": "Cuando la API rechaza algo que no es de un campo (por ejemplo, la sesión cambió o la solicitud ya cambió de estado), el estándar pinta el mensaje genérico y se pierde la razón. Solución provisional: APD.muestraRechazo. Propuesta: mostrar el mensaje del rechazo y, si trae, un enlace."
     }
   ],
   "resueltos": [

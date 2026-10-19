@@ -180,6 +180,8 @@
           });
         },
         alFallar(error) {
+          // La sesión cambió en otra pestaña: su mensaje con el enlace para volver a entrar (bloque 2)
+          if (APD.muestraRechazo(error, f)) return;
           const aviso = $('[data-estado-envio] .aviso-texto', f);
           if (error && error.mensaje && aviso) aviso.textContent = error.mensaje;
         }

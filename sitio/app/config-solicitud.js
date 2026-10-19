@@ -59,31 +59,58 @@ window.FORMKIT_CONFIG = {
 const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
 
 window.FORMKIT_OPCIONES = {
+  // Un rechazo como el de la API (la sesión cambió, la solicitud ya no se puede enviar): su mensaje y su enlace, en lugar
+  // del «No se pudo enviar» general (bloque 2)
+  alFallar(e, form) { APD.muestraRechazo(e, form); },
   enviar(payload, { signal }) {
     const modo = new URLSearchParams(location.search).get('simular');
     return new Promise((ok, mal) => {
       const t = setTimeout(() => {
         if (modo === 'limite') return mal({ limite: true });
         if (modo === 'error') return mal(new Error('simulado'));
-        APD.cargar().then((datos) => {
+        /* Lo guardado más reciente, justo antes de guardar (auditoría «intentar romperlo», bloque 2): la sesión sigue siendo
+           la de quien abrió la página (F1 1 y 2), la persona todavía puede enviar esta solicitud (una sola activa por tipo,
+           F1 3) y, si continúa una, ésta sigue en borrador o con observaciones (F1 4: una pestaña vieja deshacía una
+           validación). Son las reglas de la base (apd.solicitud_alta, apd.solicitud_cambio); la API responderá lo mismo. */
+        const enviaCon = (datos, intento) => {
           const d = payload.datos;
           // El curso no viaja (campo auxiliar): el servidor lo determina del tipo y del historial
           const [tipo, modalidad] = document.getElementById('tramite').value.split('_');
           const continua = new URLSearchParams(location.search).get('folio');
           const ahora = new Date().toISOString();
+          const sesion = APD.sesionCambio();
+          if (sesion) return Promise.reject(sesion);
+          const p = APD.personaDeSesion(datos);
+          if (!p) return Promise.reject(APD.rechazo('Tu cuenta no está activa', 'No se envió tu solicitud. Vuelve a entrar; si no puedes, pide ayuda a la Secretaría.', { href: 'entrar.html', texto: 'Entrar' }, 'sesion_cambio'));
+          const previa = continua ? datos.solicitud.find((x) => x.folio === continua) : null;
+          const aTramites = { href: 'tramites.html', texto: 'Ir a «Mis trámites»' };
+          if (continua && (!previa || previa.solicitante_id !== p.id)) {
+            return Promise.reject(APD.rechazo('No se envió tu solicitud', `La solicitud ${continua} no es de tu cuenta.`, aTramites, 'solicitud_ajena'));
+          }
+          if (previa && !['borrador', 'con_observaciones'].includes(previa.estado)) {
+            const ahoraEs = (APD.ESTADOS[previa.estado] || {}).texto || previa.estado;
+            return Promise.reject(APD.rechazo('Tu solicitud ya no se puede enviar', `Su situación cambió a «${ahoraEs}» (en otra pestaña o en la Secretaría). No se envió nada: revisa en «Mis trámites» lo que sigue.`, aTramites, 'transicion_invalida'));
+          }
+          if (!continua) {
+            const op = APD.opciones(datos, p)[tipo];
+            if (!op || !op.disponible || op.modalidad !== modalidad) {
+              return Promise.reject(APD.rechazo('No se envió tu solicitud', op && op.motivo ? op.motivo : 'Tu situación cambió desde que abriste esta página.', aTramites, op && /trámite en curso/.test(op.motivo || '') ? 'solicitud_activa' : 'no_elegible'));
+            }
+          }
           let folio = continua;
           if (!continua) {
-            // datos ya trae lo enviado antes en este navegador (APD.cargar): el folio no se repite
-            const n = datos.solicitud.length + 1;
-            folio = `APD-S-${datos.fecha_corte.slice(0, 4)}-${String(n).padStart(5, '0')}`;
+            // El folio se calcula al guardar, con lo guardado más reciente (datos ya trae lo enviado en este navegador), y
+            // nunca repite uno que ya existe; en la etapa 3 lo asigna la base
+            const anio = datos.fecha_corte.slice(0, 4);
+            const usados = datos.solicitud.map((x) => String(x.folio).match(new RegExp(`^APD-S-${anio}-(\\d+)$`))).filter(Boolean).map((m) => Number(m[1]));
+            const n = Math.max(datos.solicitud.length, ...usados) + 1;
+            folio = `APD-S-${anio}-${String(n).padStart(5, '0')}`;
           }
           // Versión de prueba: los archivos reales y un resumen de la solicitud se guardan sólo en este navegador, para
           // verlos en la revisión del personal (app/archivos-prueba.js). Si el navegador no lo permite, el envío sigue igual.
           const prefijo = `doc_${tipo}_${modalidad}_`;
           const archivos = (payload.archivos || []).filter((a) => a.campo.startsWith(prefijo) && a.blob)
             .map((a) => ({ requisito: a.campo.slice(prefijo.length), blob: a.blob, nombre: a.nombre, tipo: a.tipo, size: a.size }));
-          const previa = continua ? datos.solicitud.find((x) => x.folio === continua) : null;
-          const p = APD.personaDeSesion(datos) || {};
           const ant = d.anterior ? datos.acreditacion.find((a) => a.numero === d.anterior) : null;
           const registro = {
             folio, existente: Boolean(previa), tipo_acreditacion: tipo, modalidad,
@@ -97,24 +124,41 @@ window.FORMKIT_OPCIONES = {
           };
           // Un PDF con contraseña no se acepta (auditoría «intentar romperlo», F1 8): la página lo rechaza al cargarlo y aquí,
           // como lo hará la API, se vuelve a revisar al enviar
-          Promise.all(archivos.map((a) => APD.pdfConContrasena(a.blob))).then((protegidos) => {
+          return Promise.all(archivos.map((a) => APD.pdfConContrasena(a.blob))).then((protegidos) => {
             const i = protegidos.indexOf(true);
             if (i >= 0) {
               const mensaje = 'Tu PDF tiene contraseña o protección. Guárdalo sin protección y vuelve a cargarlo.';
-              return mal({ mensaje, errores: [{ campo: `${prefijo}${archivos[i].requisito}`, mensaje }] });
+              return Promise.reject({ mensaje, errores: [{ campo: `${prefijo}${archivos[i].requisito}`, mensaje }] });
             }
-            const guarda = global_archivos() ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).catch(() => {}) : Promise.resolve();
-            return guarda.then(() => {
+            // guardado: la hora con que quedó en este navegador (false si no quedó). Un almacenamiento bloqueado o lleno sigue
+            // como antes (bloque 3 de la auditoría); si otra pestaña tomó el mismo folio en ese instante, se calcula otro con
+            // lo de ahora
+            const guarda = global_archivos()
+              ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).then((hora) => hora || true, (e) => { if (e && e.codigo === 'folio_ocupado') throw e; return false; })
+              : Promise.resolve(false);
+            return guarda.then((guardado) => Promise.resolve(guardado ? APD.cargar() : null).then((despues) => {
+              // Después de guardar, lo que quedó (como la respuesta de la API): si la base no lo habría aplicado (otra pestaña
+              // envió primero), se retira y se dice, sin acuse
+              const s = despues && despues.solicitud.find((x) => x.folio === folio);
+              if (despues && !(s && s.solicitante_id === p.id && s.estado === 'enviada')) {
+                const op = APD.opciones(despues, p)[tipo];
+                return APD_ARCHIVOS_PRUEBA.retiraEnvio(folio, guardado).catch(() => {}).then(() => Promise.reject(APD.rechazo('No se envió tu solicitud',
+                  op && op.motivo ? op.motivo : 'Tu solicitud cambió en otra pestaña mientras la enviabas.', aTramites, 'conflicto')));
+              }
               // Enviada: el borrador de esta solicitud ya no sirve, con sus archivos (F1 7 y F4 M6: se quedaban en este
               // navegador y el menú los contaba como «documentos cargados aparte»)
               try { localStorage.removeItem(claveBorrador); } catch (e) { /* sin almacenamiento */ }
               const borrados = global_archivos() && p.id ? APD_ARCHIVOS_PRUEBA.borraDocumentos(`borrador:${p.id}:${continua || 'nueva'}`).catch(() => {}) : null;
               // El acuse dice el día simulado de la prueba, como el resto del trámite (F4 M7); con la API, la hora del servidor
               const fecha = global_archivos() ? APD_ARCHIVOS_PRUEBA.alCorte(datos, ahora) : ahora;
-              return Promise.resolve(borrados).then(() => ok({ folio, fecha }));
+              return Promise.resolve(borrados).then(() => ({ folio, fecha }));
+            }), (e) => {
+              if (e && e.codigo === 'folio_ocupado' && intento < 3) return APD.cargar().then((d2) => enviaCon(d2, intento + 1));
+              throw e;
             });
           });
-        }).catch(mal);
+        };
+        APD.cargar().then((datos) => enviaCon(datos, 1)).then(ok, mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
     });
