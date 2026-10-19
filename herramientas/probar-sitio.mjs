@@ -3605,7 +3605,8 @@ async function estandarAlDia() {
 }
 
 /* Una foto JPG como la de un teléfono, con su ubicación en el EXIF (GPS: 19° 25′ N, 99° 8′ W). El navegador hace el JPG
-   (canvas) y aquí se le agrega el segmento APP1 «Exif» con un IFD GPS (TIFF big-endian). */
+   (canvas) y aquí se le agrega el segmento APP1 «Exif» con un IFD GPS (TIFF big-endian). Es ruido muy comprimido: al
+   recodificarla pesa más que la original, el caso en que la 1.4.1 guardaba la original con su ubicación (P127). */
 function exifConGps() {
   const b = [];
   const u16 = (n) => b.push((n >> 8) & 255, n & 255);
@@ -3628,8 +3629,11 @@ function exifConGps() {
 async function jpgConGps(page) {
   const datosUrl = await page.evaluate(() => {
     const c = document.createElement('canvas'); c.width = 400; c.height = 500;
-    const x = c.getContext('2d'); x.fillStyle = '#7a9a7a'; x.fillRect(0, 0, 400, 500); x.fillStyle = '#d9c9a9'; x.fillRect(120, 90, 160, 200);
-    return c.toDataURL('image/jpeg', 0.92);
+    const x = c.getContext('2d'); const img = x.createImageData(400, 500);
+    let semilla = 7; const azar = () => { semilla = (semilla * 1103515245 + 12345) % 2147483648; return semilla % 256; };
+    for (let i = 0; i < img.data.length; i += 4) { img.data[i] = azar(); img.data[i + 1] = azar(); img.data[i + 2] = azar(); img.data[i + 3] = 255; }
+    x.putImageData(img, 0, 0);
+    return c.toDataURL('image/jpeg', 0.08);
   });
   const jpg = Buffer.from(datosUrl.split(',')[1], 'base64');
   return { name: 'foto-telefono.jpg', mimeType: 'image/jpeg', buffer: Buffer.concat([jpg.subarray(0, 2), exifConGps(), jpg.subarray(2)]) };
