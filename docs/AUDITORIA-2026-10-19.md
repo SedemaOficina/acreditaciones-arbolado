@@ -292,6 +292,17 @@ G1-05 (el Manual técnico de poda tiene cuota de $299 por ejemplar y el sistema 
 
 Aprobado: corregir los bloques 1 (fechas) y 2 (base) del plan.
 
+### Estado de los hallazgos al 19/10/2026 (versión de prueba 0.56, bloques 1 y 2)
+
+| Estado | Hallazgos |
+|---|---|
+| **Corregidos** (con la prueba que los encontró: fallaba antes, pasa después) | Altos: R4-01, E2-01, E2-02, E2-03. Medios: R4-02, A1-01, A1-03 (de 49 códigos sin caso queda 1, inalcanzable), A2-01, E2-04, B8-01, G1-02 (P16 y P140), R4-05 (P153 a P156). Bajos: E2-07, D2-01, B8-02, B8-03. Registrados antes: D-01, D-07, D-10 (el permiso de `public` en PostgreSQL 13-14 queda como paso de instalación), D-13 (= E2-06), F2-A1 |
+| **Corregido en parte** | E2-05: huella del respaldo y restauración de prueba en `probar-base`; el sello en cadena de la bitácora queda para antes de datos reales (P162). D-06: asistencia y examen exigen sesión de personal; la pertenencia de la fila a la persona queda para la etapa 3 (P163). G1-01: los documentos ya citan la fuente real; el fondo se consulta con Jurídico (P03) |
+| **Abiertos** (bloques 3 a 7) | Los demás de la sección 5. Nota: con la cita «cancelada», el encabezado de «Citas de cotejo» la cuenta como atendida hasta corregir B2-01 (bloque 3) |
+
+Pruebas al cierre: base 298 de 298, concurrencia 20 de 20, restauración 298 de 298, esquemas 120, sitio 772, examen 77,
+volumen 52, barrido de 60 pantallas con los mismos 3 avisos aceptados. Sin fallas nuevas contra la línea base.
+
 ## 9. Fallas de componentes compartidos (estándar de formularios)
 
 | Pendiente | Resuelto en | Qué hace el proyecto al actualizar |
