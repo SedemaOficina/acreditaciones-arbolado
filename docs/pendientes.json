@@ -803,7 +803,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Licencia del repositorio público",
-      "recomendacion": "Decisión de Liber (19/10/2026): preguntar a la Secretaría bajo qué licencia se publica el código; mientras, «Todos los derechos reservados, Secretaría del Medio Ambiente» (auditoría 19/10, F3-02)."
+      "recomendacion": "Decisión de Liber (19/10/2026): preguntar a la Secretaría bajo qué licencia se publica el código; mientras, «Todos los derechos reservados, Secretaría del Medio Ambiente» (auditoría 19/10, F3-02). Desde la 0.61 el aviso provisional está en LICENCIA.md, con las licencias de terceros (pdf.js, sus fuentes, Roboto y Cabin) y su manifiesto en sitio/vendor/MANIFIESTO.json. Falta la respuesta de la Secretaría: con una licencia abierta, se cambia LICENCIA.md (el escudo y el logotipo quedan fuera)."
     },
     {
       "id": "P168",
