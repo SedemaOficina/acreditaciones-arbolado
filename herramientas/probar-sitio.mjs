@@ -10,7 +10,7 @@
 // Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
 
 import { chromium } from 'playwright';
-import { readFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
@@ -1830,6 +1830,11 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
 // Material de estudio (decisión 2026-10-18): la página pública sin cuenta y la del personal (agregar, ocultar)
 async function materialEstudio(navegador, ancho, alto, sufijo) {
   const t = (m) => `[material ${sufijo}] ${m}`;
+  // F3-01 (auditoría 2026-10-19): cada PDF que el proyecto abre con pdf.js por su cuenta lleva isEvalSupported: false,
+  // como el visor del estándar
+  const llamadas = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js'))
+    .flatMap((f) => readFileSync(join(raiz, 'sitio/app', f), 'utf8').split('\n').filter((l) => /getDocument\(/.test(l)).map((l) => [f, l]));
+  comprueba(llamadas.length > 0 && llamadas.every(([, l]) => /isEvalSupported: false/.test(l)), t(`F3-01: cada llamada a getDocument( de sitio/app (${llamadas.length}) lleva isEvalSupported: false`));
   const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   const pg = await c.newPage();
   const errores = [];

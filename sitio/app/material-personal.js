@@ -50,7 +50,7 @@
   function cuentaPaginas(buffer) {
     return import(new URL('vendor/pdfjs-dist/pdf.min.mjs', document.baseURI).href).then((pdfjs) => {
       pdfjs.GlobalWorkerOptions.workerSrc = new URL('vendor/pdfjs-dist/pdf.worker.min.mjs', document.baseURI).href;
-      return pdfjs.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise.then((doc) => { const n = doc.numPages; doc.destroy(); return n; });
+      return pdfjs.getDocument({ data: new Uint8Array(buffer.slice(0)), isEvalSupported: false }).promise.then((doc) => { const n = doc.numPages; doc.destroy(); return n; });
     });
   }
 
