@@ -33,9 +33,19 @@
     // Si el único grupo de hoy tiene hoy su examen, no se entra directo a corregir un día anterior: se muestra «Mis grupos
     // de hoy», con «Pasar lista y aplicar» (auditoría «intentar romperlo», F3 M9)
     const unico = misDeHoy.length === 1 && !(P.diaDelCurso(datos, misDeHoy[0]) || {}).examen ? misDeHoy[0] : null;
-    const g0 = pedido ? enCurso.find((g) => g.folio === pedido) : unico;
+    // El instructor sólo abre y opera sus propios grupos, también con ?folio= (decisión 12 de la auditoría del 2026-10-19,
+    // Liber; E1-01). En el SIA, la API lo vuelve a comparar con la cuenta de la sesión.
+    const gPedido = pedido ? enCurso.find((g) => g.folio === pedido) : null;
+    const ajeno = Boolean(gPedido) && gPedido.instructor !== P.INSTRUCTORA.usuario;
+    const g0 = pedido ? (ajeno ? null : gPedido) : unico;
     if (!g0) {
       $('[data-sin-grupo]').hidden = false;
+      if (ajeno) {
+        $('#t-mis-grupos').textContent = 'Asistencia';
+        $('[data-sin-grupo-texto]').textContent = `Este grupo lo da otra persona: sólo puede pasar asistencia en sus grupos. Hoy, ${APD.fechaConDia(hoy)}, ${misDeHoy.length ? `tiene ${plural(misDeHoy.length, 'grupo', 'grupos')}:` : 'no tiene grupos con clase ni examen.'}`;
+        P.pintaMisGrupos($('[data-mis-grupos]'), datos, P.INSTRUCTORA.usuario);
+        return;
+      }
       if (pedido) {
         $('#t-mis-grupos').textContent = 'Asistencia';
         $('[data-sin-grupo-texto]').textContent = `El grupo ${pedido} no está en curso: la asistencia se captura sólo mientras el curso está en marcha.`;

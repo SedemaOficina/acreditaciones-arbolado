@@ -33,7 +33,10 @@
     /* El grupo: el del enlace o, sin enlace, el que presenta examen hoy (último día de su curso); si no, el primero en
        curso (auditoría de tareas, A2). Un enlace a un grupo que no está en curso o no existe no abre otro: se dice y se
        ofrecen los grupos en curso, como en «Asistencia» (auditoría 2026-10-18, B4). */
-    const enCurso = G.grupos(datos);
+    // El instructor sólo abre y opera sus propios grupos, también con ?folio= (decisión 12 de la auditoría del 2026-10-19,
+    // Liber; E1-01): los de otra persona no se abren ni se ofrecen. En el SIA, la API lo compara con la sesión.
+    const todosEnCurso = G.grupos(datos);
+    const enCurso = todosEnCurso.filter((x) => x.instructor === INSTRUCTOR.usuario);
     const hoy = APD.hoy(datos);
     const pedido = new URLSearchParams(location.search).get('folio');
     // Sin enlace, «Mis grupos de hoy» del instructor (propuesta D, 2026-10-18): con uno solo hoy se entra directo; con
@@ -52,12 +55,14 @@
       }
       if (pedido) {
         const existe = datos.grupo.some((x) => x.folio === pedido);
-        $('[data-sin-grupo-texto]').textContent = existe
-          ? `El grupo ${pedido} no está en curso: el examen se aplica el último día de un curso en marcha.`
-          : `No hay un grupo con el folio ${pedido}.`;
+        const ajeno = todosEnCurso.some((x) => x.folio === pedido);
+        $('[data-sin-grupo-texto]').textContent = ajeno ? 'Este grupo lo da otra persona: sólo puede aplicar el examen en sus grupos.'
+          : existe ? `El grupo ${pedido} no está en curso: el examen se aplica el último día de un curso en marcha.`
+            : `No hay un grupo con el folio ${pedido}.`;
         $('[data-mis-grupos]').replaceChildren(...enCurso.map((x) => el('li', {}, [el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`,
           texto: `${APD.nombreGrupo(x, datos)} · ${x.folio} · examen el ${APD.fecha(G.fechaExamen(datos, x))}` })])));
         $('[data-mis-grupos-titulo]').hidden = !enCurso.length;
+        if (enCurso.length) $('[data-mis-grupos-titulo]').textContent = 'Sus grupos en curso:';
       }
       return;
     }
