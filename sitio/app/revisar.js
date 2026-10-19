@@ -90,7 +90,7 @@
 
     /* ----- Cabeza: la solicitud y la persona ----- */
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
-    $('[data-bajada]').replaceChildren(...APD.meta([
+    $('[data-bajada]').replaceChildren(APD.lineaDatos([
       [document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio })],
       `enviada el ${fecha(s.enviada_en)}`,
       v.n > 1 ? `reenviada con correcciones el ${fecha(s.estado_desde)}` : null,

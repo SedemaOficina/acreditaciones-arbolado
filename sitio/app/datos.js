@@ -147,8 +147,8 @@
   function guardado(k, [titulo, texto]) {
     const caja = $(`[data-guardado="${k}"]`);
     const extra = volverA ? [el('p', {}, [el('a', { href: volverA, texto: textoVolver })])] : [];
-    const a = APD.aviso('ok', titulo, texto, extra);
-    caja.replaceChildren(...a.childNodes);
+    // La caja ya es el aviso (div.aviso-ok con role=status): FormKit.aviso lo pinta ahí, con su icono, y lo muestra
+    FormKit.aviso(caja, { tono: 'ok', titulo, texto: [texto].concat(extra) });
     caja.hidden = false;
   }
 

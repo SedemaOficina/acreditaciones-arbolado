@@ -83,8 +83,8 @@
           b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta(); $('[data-dia]').scrollIntoView({ block: 'start' }); });
           return b;
         });
-        caja.append(APD.aviso('error', `${sinRegistrar.length === 1 ? '1 cita de un día anterior está' : `${sinRegistrar.length} citas de días anteriores están`} sin registrar`,
-          'Registre si cada persona se presentó: sin eso no recibe cita nueva y su inasistencia no cuenta.', [el('div', { class: 'acciones-grupo' }, ir)]));
+        caja.append(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `${sinRegistrar.length === 1 ? '1 cita de un día anterior está' : `${sinRegistrar.length} citas de días anteriores están`} sin registrar`,
+          texto: [el('p', { texto: 'Registre si cada persona se presentó: sin eso no recibe cita nueva y su inasistencia no cuenta.' }), el('div', { class: 'acciones-grupo' }, ir)] }));
       }
       // El módulo tabla copia el encabezado a cada celda para leerla como ficha en teléfono
       $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));

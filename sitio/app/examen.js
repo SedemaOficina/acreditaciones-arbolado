@@ -264,8 +264,8 @@
       ['Enviado', `${APD.fecha(ex.grupo.examen_en)}, ${hora}`]
     ]));
     $('[data-resultado-sigue]').replaceChildren(ex.aprobado
-      ? APD.aviso('ok', 'Recoge hoy tu credencial', { texto: 'Se entrega hoy mismo, en la oficina del Vivero Nezahualcóyotl.', pasos: ['Avisa a quien aplica el examen que aprobaste.', 'Ve a la oficina del Vivero: ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] })
-      : APD.aviso('info', 'Tu calificación quedó registrada', { texto: 'No se puede cambiar.', titulo: 'Para intentarlo de nuevo', pasos: ['Entra a tu cuenta e inicia una solicitud nueva.', 'Paga los derechos de la solicitud nueva.', 'Cuando la Secretaría te asigne un grupo, asiste al curso y presenta el examen.'] }));
+      ? FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'ok', titulo: 'Recoge hoy tu credencial', texto: ['Se entrega hoy mismo, en la oficina del Vivero Nezahualcóyotl.', APD.tituloPasos()], pasos: ['Avisa a quien aplica el examen que aprobaste.', 'Ve a la oficina del Vivero: ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] })
+      : FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'neutro', titulo: 'Tu calificación quedó registrada', texto: ['No se puede cambiar.', APD.tituloPasos('Para intentarlo de nuevo')], pasos: ['Entra a tu cuenta e inicia una solicitud nueva.', 'Paga los derechos de la solicitud nueva.', 'Cuando la Secretaría te asigne un grupo, asiste al curso y presenta el examen.'] }));
     muestra('resultado');
   }
   function pintaSuspendido() {
