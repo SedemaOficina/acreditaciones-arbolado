@@ -98,7 +98,9 @@
     cerrada: { texto: 'No se presentó · solicitud cerrada', tono: 'error' },
     sin_pago: { texto: 'Sin pago · cita nueva', tono: 'pend' },
     con_observaciones: { texto: 'Regresó con observaciones', tono: 'marcha' },
-    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error' }
+    no_es_la_persona: { texto: 'No era la persona · cuenta bloqueada', tono: 'error' },
+    // La solicitud se canceló con la cita abierta: la base la cierra así (decisión 8, 2026-10-19)
+    cancelada: { texto: 'Cancelada', tono: 'error' }
   };
   /* Documentos que la persona cargó después de que su cita quedó en pausa */
   function cargadosEnPausa(datos, s) {
