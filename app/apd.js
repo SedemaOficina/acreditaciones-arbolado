@@ -448,10 +448,12 @@
     for (const h of [].concat(hijos || [])) if (h) e.append(h);
     return e;
   }
-  /* ----- Avisos, etiquetas de estado y «qué sigue»: del estándar desde la 1.4.0 y la 1.4.1 (P115, P118, P119) -----
-     El proyecto sólo traduce sus tonos a las familias del estándar y arma el marcado del contrato cuando la página no
-     carga el núcleo («Mis trámites», el inicio) o cuando un aviso lleva pasos. La confirmación es FormKit.confirma
-     (módulo modal, P113) y el desenlace de una decisión, FormKit.resultado (módulo resultado, P113). */
+  /* ----- Avisos, etiquetas de estado y «qué sigue»: del estándar desde la 1.4.0, la 1.4.1 y la 1.4.2 (P115, P118, P119,
+     P131) -----
+     El proyecto sólo traduce sus tonos a las familias del estándar. Los avisos, también los que llevan pasos o un enlace,
+     son FormKit.aviso (las páginas sin formulario cargan el núcleo para eso). La etiqueta de estado arma el marcado del
+     contrato si la página no carga el módulo «estado». La confirmación es FormKit.confirma (módulo modal, P113) y el
+     desenlace de una decisión, FormKit.resultado (módulo resultado, P113). */
   // Tono del proyecto → familia del estándar: hecho, te toca actuar, en marcha, cerrado sin éxito, terminado
   const FAMILIA = { ok: 'ok', pend: 'atencion', marcha: 'proceso', error: 'rechazo', cerrado: 'terminado' };
   const ICONO_FAMILIA = { ok: 'ok', atencion: 'alerta', proceso: 'reloj', rechazo: 'error', terminado: 'archivo' };
@@ -492,33 +494,17 @@
       pasos.length ? el('ol', { class: 'secuencia' }, pasos.map((t) => el('li', { class: 'secuencia-item', texto: t }))) : null
     ].filter(Boolean);
   }
-  /* Aviso del núcleo (P115): tono del proyecto → tono del estándar, título en <strong class="aviso-titulo">, icono del
-     tono. Devuelve el elemento, con el marcado del contrato, para las páginas sin núcleo y los avisos con pasos. */
+  /* Los avisos son FormKit.aviso(lugar, { tono, titulo, texto, pasos, foco }) del núcleo (1.4.2, P131): texto puede ser
+     un nodo y pasos, la secuencia «qué sigue». pintaAviso sólo vacía y muestra el contenedor de una respuesta a una
+     acción y traduce el tono del proyecto al del estándar. */
   const TONO_AVISO = { ok: 'ok', error: 'bloqueo', pend: 'advertencia', info: 'neutro', marcha: 'neutro' };
-  const CLASE_AVISO = { ok: 'aviso-ok', bloqueo: 'aviso-bloqueo', advertencia: 'aviso-advertencia', neutro: '' };
-  const ICONO_AVISO = { ok: 'ok', bloqueo: 'error', advertencia: 'alerta', neutro: 'info' };
-  function aviso(tono, titulo, texto, extra) {
-    const t = TONO_AVISO[tono] || tono;
-    return el('div', { class: `aviso ${CLASE_AVISO[t] || ''}`.trim() }, [
-      icono(ICONO_AVISO[t] || 'info'),
-      el('div', { class: 'aviso-texto' }, [titulo ? el('strong', { class: 'aviso-titulo', texto: titulo }) : null].concat(sigueEn(texto), extra || []))
-    ]);
-  }
-  /* Pinta un aviso en un contenedor: FormKit.aviso cuando es sólo texto; con pasos, el marcado del contrato */
   function pintaAviso(contenedor, tono, titulo, texto, enfoca) {
-    const t = TONO_AVISO[tono] || tono;
     contenedor.hidden = false;
-    if (global.FormKit && global.FormKit.aviso && (typeof texto === 'string' || !texto)) {
-      contenedor.replaceChildren();
-      return global.FormKit.aviso(contenedor, { tono: t, titulo, texto: texto || '', foco: Boolean(enfoca) });
-    }
-    const a = aviso(tono, titulo, texto);
-    if (t === 'bloqueo') a.setAttribute('role', 'alert'); else if (t === 'ok') a.setAttribute('role', 'status');
-    a.tabIndex = -1;
-    contenedor.replaceChildren(a);
-    if (enfoca) a.focus();
-    return a;
+    contenedor.replaceChildren();
+    return global.FormKit.aviso(contenedor, { tono: TONO_AVISO[tono] || tono, titulo, texto: texto || '', foco: Boolean(enfoca) });
   }
+  /* Título de una secuencia «qué sigue» dentro de un aviso (FormKit.aviso no lo pone): va en su texto, antes de los pasos */
+  const tituloPasos = (t) => el('p', { class: 'secuencia-titulo', texto: t || 'Qué sigue' });
   /* Hora de la base (time: «09:00:00») como se escribe y se elige: «09:00» (auditoría de tareas, A5) */
   const hhmm = (t) => (t ? String(t).slice(0, 5) : '');
   /* Pares [etiqueta, valor, porConfirmar]: con el tercero, el valor se marca en amarillo (.pendiente del estándar)
@@ -534,15 +520,17 @@
       ])));
   }
 
-  /* Línea de datos de una cabecera («Folio … · enviada el … · 2.ª revisión»): cada parte se queda entera en su renglón;
-     si no cabe, pasa completa al siguiente (2026-10-18). Una parte es texto o una lista de nodos. */
-  function meta(partes) {
-    const out = [];
+  /* Línea de datos («Folio … · enviada el … · 2.ª revisión»), con el marcado del estándar (1.4.4, P134):
+     <p class="linea-datos"> con cada dato en <span class="linea-datos-item">, que no se parte (si no cabe, pasa completo al
+     renglón siguiente), y los puntos medios en el texto. Una parte es texto o una lista de nodos; clase, la propia de la
+     pantalla, si la lleva. */
+  function lineaDatos(partes, clase) {
+    const hijos = [];
     partes.filter(Boolean).forEach((p, i) => {
-      if (i) out.push(document.createTextNode(' · '));
-      out.push(el('span', { class: 'sin-corte' }, typeof p === 'string' ? [document.createTextNode(p)] : p));
+      if (i) hijos.push(document.createTextNode(' · '));
+      hijos.push(el('span', { class: 'linea-datos-item' }, typeof p === 'string' ? [document.createTextNode(p)] : p));
     });
-    return out;
+    return el('p', { class: clase ? `linea-datos ${clase}` : 'linea-datos' }, hijos);
   }
 
   /* Cabecera de sesión en las pantallas con cuenta */
@@ -849,7 +837,7 @@
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
-    el, meta, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, aviso, pintaAviso, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
+    el, lineaDatos, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, pintaAviso, tituloPasos, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano
   };
 }(window));

@@ -89,7 +89,7 @@
 
     /* ----- Cabeza: la cita, la solicitud y la persona ----- */
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
-    $('[data-bajada]').replaceChildren(...APD.meta([
+    $('[data-bajada]').replaceChildren(APD.lineaDatos([
       [document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio })],
       `cita del ${fechaHora(s.cita_en)}`,
       `documentos validados en línea el ${fecha(s.estado_desde)}`
@@ -120,8 +120,8 @@
     const diaPausa = retoma ? P.diaDe(pausa.cita_en || s.cita_en) : null;
     const pausaVencida = retoma && diaPausa < APD.hoy(datos);
     if (pausaVencida) {
-      $('[data-retoma]').replaceWith(APD.aviso('error', `La pausa venció el ${fecha(diaPausa)}`,
-        `Una cita en pausa sólo se retoma el mismo día. La solicitud regresa con observaciones para que ${nombre} cargue el documento correcto; no se retoma aquí.`));
+      FormKit.aviso($('[data-retoma]'), { tono: 'bloqueo', titulo: `La pausa venció el ${fecha(diaPausa)}`,
+        texto: `Una cita en pausa sólo se retoma el mismo día. La solicitud regresa con observaciones para que ${nombre} cargue el documento correcto; no se retoma aquí.` });
       $('[data-estado]').replaceChildren(APD.estado('Pausa vencida', 'cerrado'));
     } else if (retoma) {
       pintaRetoma();

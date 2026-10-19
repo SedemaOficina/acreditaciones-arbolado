@@ -80,16 +80,16 @@
     // El examen es el último día del curso: otro día no se generan códigos (en la prueba se permite, para probar)
     const fueraDeDia = G.fechaExamen(datos, g) !== hoy;
     if (fueraDeDia) {
-      avisosGrupo.push(APD.aviso('pend', `El examen de este grupo es el ${APD.fecha(G.fechaExamen(datos, g))}, no hoy`,
-        prueba ? 'Versión de prueba: se puede pasar lista para probar. En el sistema, los códigos sólo se generan el día del examen.'
-          : 'Los códigos se generan el día del examen. Si hoy presenta otro grupo, elíjalo arriba.'));
+      avisosGrupo.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `El examen de este grupo es el ${APD.fecha(G.fechaExamen(datos, g))}, no hoy`,
+        texto: prueba ? 'Versión de prueba: se puede pasar lista para probar. En el sistema, los códigos sólo se generan el día del examen.'
+          : 'Los códigos se generan el día del examen. Si hoy presenta otro grupo, elíjalo arriba.' }));
     }
     // Días del curso sin capturar: la base los cuenta como falta (auditoría de tareas, A1)
     const conHuecos = G.personas(datos, g).filter((f) => f.simulada).length;
     if (conHuecos) {
-      avisosGrupo.push(APD.aviso('error', 'Faltan días del curso por capturar en «Asistencia»',
-        prueba ? 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Versión de prueba: aquí se cuentan como asistidos para poder probar el examen.'
-          : 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Captúrelos antes de pasar lista.'));
+      avisosGrupo.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: 'Faltan días del curso por capturar en «Asistencia»',
+        texto: prueba ? 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Versión de prueba: aquí se cuentan como asistidos para poder probar el examen.'
+          : 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Captúrelos antes de pasar lista.' }));
     }
     const c = G.curso(datos, g);
     const ex = APD_EXAMEN_BANCO.examenDe(g.tipo_acreditacion, g.modalidad);

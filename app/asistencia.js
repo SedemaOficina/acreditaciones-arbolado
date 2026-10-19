@@ -62,8 +62,8 @@
     const permitidas = c.dias_duracion - c.dias_minimos_asistencia;
     const ultimoDia = c.dias_duracion;
     // El grupo por su nombre calculado y su folio en chico (propuesta D, 2026-10-18)
-    $('[data-bajada]').replaceChildren(APD.grupoTitulo(g, datos), el('span', { class: 'grupo-bajada-datos' }, APD.meta([x.nombre,
-      `del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)}`, plural(x.n, 'persona', 'personas')])));
+    $('[data-bajada]').replaceChildren(APD.grupoTitulo(g, datos), APD.lineaDatos([x.nombre,
+      `del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)}`, plural(x.n, 'persona', 'personas')], 'grupo-bajada-datos'));
     $('[data-regla]').textContent = permitidas > 0
       ? `Para el examen se necesitan ${c.dias_minimos_asistencia} de ${c.dias_duracion} días: cada persona puede faltar ${permitidas === 1 ? '1' : permitidas}.`
       : `Para el examen se necesita asistir ${c.dias_duracion === 1 ? 'al día del curso' : `los ${c.dias_duracion} días`}.`;
@@ -100,8 +100,8 @@
     if (sinCapturar.length) {
       const dias = sinCapturar.map((n) => `${n} (${corta(diaDe(n))})`);
       const lista = dias.length > 1 ? `los días ${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}` : `el día ${dias[0]}`;
-      avisos.push(APD.aviso('error', `Falta capturar ${lista}`,
-        'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Ábralo en «Corregir otro día» y guárdelo.'));
+      avisos.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `Falta capturar ${lista}`,
+        texto: 'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Ábralo en «Corregir otro día» y guárdelo.' }));
     }
     $('[data-avisos]').replaceChildren(...avisos);
     if (examenHoy) {
