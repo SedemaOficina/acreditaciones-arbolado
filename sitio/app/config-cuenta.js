@@ -24,8 +24,8 @@
    ========================================================= */
 /* Las cruzadas CURP ↔ nombre, apellidos y fecha (curp-nombre, curp-segundo-apellido, curp-fecha-dma) y el formato
    fecha-dma son del estándar desde la 1.1.0 y la 1.2.0: no hay nada que configurar. */
-// El acuse con la hora de 24 horas, como en todo el sistema (decisión 2026-10-17; el módulo acuse 1.4.1 la da en 12)
-window.FORMKIT_CONFIG = { idioma: 'es-MX-u-hc-h23' };
+// El acuse ya escribe la hora en 24 horas y en la zona de la Ciudad (estándar 1.4.2, P128): no hay nada que configurar.
+window.FORMKIT_CONFIG = {};
 /* Nombre comparable con el registro anterior: mayúsculas, sin acentos ni signos. */
 const limpiaNombre = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z ]/g, ' ').replace(/\s+/g, ' ').trim();
 /* Letras distintas entre dos textos (distancia de edición: cambiar, sobrar o faltar una letra cuenta 1) */
