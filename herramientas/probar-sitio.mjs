@@ -1709,6 +1709,35 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   comprueba(!/Llame al|0000000000/.test(reflejo) && /No se encontró ese grupo/.test(reflejo) && /No se encontró el grupo APD-G-2026-999\./.test(await texto('[data-bajada]')),
     t('E1-02: el texto libre de ?grupo= no se repite en pantalla; un folio válido que no existe, sí'));
 
+  // B5-02 (auditoría 2026-10-19): salir con cambios lo advierte el navegador; recargar, «Atrás» y «Adelante» conservan la
+  // semana elegida (va en la dirección)
+  {
+    const c2 = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+    const p2 = await c2.newPage();
+    const dialogos = [];
+    p2.on('dialog', (d) => { dialogos.push(d.type()); d.accept(); });
+    await p2.goto(BASE + 'programar.html?curso=poda-nueva');
+    await p2.waitForSelector('.cal-dia');
+    const sinCambios = await p2.evaluate(() => { const ev = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(ev); return ev.defaultPrevented; });
+    await p2.click('.cal-dia[data-fecha="2026-11-16"]');
+    await p2.selectOption('#hora_entrada', '07:00');
+    await p2.reload();
+    await p2.waitForSelector('.cal-dia');
+    comprueba(!sinCambios && dialogos.includes('beforeunload') && (await p2.inputValue('#fecha_inicio')) === '16/11/2026' && /semana=2026-11-16/.test(p2.url()),
+      t('B5-02: recargar con cambios lo advierte y conserva la semana elegida; sin cambios no advierte'));
+    await p2.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await p2.waitForSelector('.plan-persona input');
+    await p2.goto(BASE + 'programar.html?curso=poda-nueva');
+    await p2.waitForSelector('.cal-dia');
+    await p2.click('.cal-dia[data-fecha="2026-11-23"]');
+    await p2.goBack();
+    await p2.waitForURL(/grupos\.html/);
+    await p2.goForward();
+    await p2.waitForSelector('.cal-dia');
+    comprueba((await p2.inputValue('#fecha_inicio')) === '23/11/2026', t('B5-02: «Atrás» y «Adelante» conservan la semana elegida'));
+    await c2.close();
+  }
+
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
   await pg.waitForSelector('.plan-persona input');
   const cinco = (await pg.$$eval('.plan-persona input', (l) => l.map((i) => i.value))).slice(0, 5);

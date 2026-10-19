@@ -65,6 +65,13 @@
       : 'Tres decisiones, en el orden en que se piensan: qué semana, quién lo da y a qué hora, y quiénes van. El sistema propone; usted ajusta.';
     const form = $('#programar');
     form.hidden = false;
+    /* Salir a mitad pierde lo elegido: el navegador lo advierte mientras haya algo sin guardar, como en las otras pantallas
+       del personal (auditoría 2026-10-19, B5-02). Sólo cuenta lo que hace quien programa, no lo que propone la página. */
+    let sinGuardar = false;
+    const marcaCambio = (e) => { if (e.isTrusted && !form.hidden) sinGuardar = true; };
+    form.addEventListener('input', marcaCambio);
+    form.addEventListener('change', marcaCambio);
+    window.addEventListener('beforeunload', (e) => { if (sinGuardar && !form.hidden) { e.preventDefault(); e.returnValue = ''; } });
     const minimo = P.primerDiaPosible(datos);
     const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
@@ -160,13 +167,22 @@
       inicio = d;
       mes = mesDe(d);
       foco = d;
+      recuerdaSemana(d);
       if (!desdeCampo) { fi.value = V().dmaDeIso(d); APD.avisa(fi); }
       diga(dur > 1 ? `Elegido: ${APD.rangoFechas(d, finDe(d), hoy.slice(0, 4))}; el examen, el ${APD.diaSemana(finDe(d))} ${APD.diaMes(finDe(d))}.` : `Elegido: ${APD.diaSemana(d)} ${APD.diaMes(d)}, con su examen.`);
       return true;
     }
+    /* La semana elegida queda en la dirección (&semana=): recargar, «Atrás» y «Adelante» la conservan (auditoría 2026-10-19,
+       B5-02). Lo demás (instructor, hora, personas) no: salir con cambios lo advierte el navegador (abajo). */
+    function recuerdaSemana(d) {
+      const url = new URL(location.href);
+      if (d) url.searchParams.set('semana', d); else url.searchParams.delete('semana');
+      if (url.href !== location.href) history.replaceState(history.state, '', url);
+    }
     $('[data-dias]').addEventListener('click', (e) => {
       const b = e.target.closest('.cal-dia');
       if (!b) return;
+      if (e.isTrusted) sinGuardar = true;
       elige(b.dataset.fecha);
       foco = b.dataset.fecha;
       pintaTodo(true);
@@ -211,13 +227,14 @@
         const completo = /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(fi.value.trim());
         if (!fi.value.trim() || completo) {
           inicio = null;
+          recuerdaSemana(null);
           pintaTodo(false);
           if (completo) diga(`${fi.value.trim()} no es una fecha real. Escriba otra o elija el día en el calendario.`);
         }
         return;
       }
       if (d === inicio) return;
-      if (!elige(d, true)) { inicio = null; if (mesValido(d)) { mes = mesDe(d); foco = d; } }
+      if (!elige(d, true)) { inicio = null; recuerdaSemana(null); if (mesValido(d)) { mes = mesDe(d); foco = d; } }
       pintaTodo(false);
     };
     fi.addEventListener('input', deCampo);
@@ -351,6 +368,7 @@
           return entraron.length ? null : 'no se agregó a nadie: el grupo ya no recibe personas o ya tienen grupo';
         }
       }).then(() => {
+        sinGuardar = false;
         const no = folios.filter((f) => !entraron.includes(f));
         location.href = `grupo.html?folio=${encodeURIComponent(y.g.folio)}&hecho=agregadas&n=${entraron.length}${no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
       }).catch((e) => {
@@ -497,6 +515,7 @@
     }
 
     function muestraResultado({ datos: d2, g, confirmar, fuera }) {
+      sinGuardar = false;
       const x = P.grupo(d2, g);
       const nombre = APD.nombreGrupo(g, d2);
       const quedo = g.estado === 'confirmado';
