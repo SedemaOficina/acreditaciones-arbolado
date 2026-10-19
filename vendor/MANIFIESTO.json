@@ -1,0 +1,90 @@
+{
+  "origen": "Estándar de formularios del SIA, vendor/MANIFIESTO.json (registro de npm (tarball oficial))",
+  "generado": "2026-10-17T14:26:15.410Z",
+  "bibliotecas": [
+    {
+      "paquete": "pdfjs-dist",
+      "version": "4.10.38",
+      "licencia": "Apache-2.0",
+      "uso": "Visor de documentos (módulo «visor»): pinta las hojas de un PDF en el navegador. Se carga sólo al abrir el primer documento. Versión 4.2.67 o posterior: corrige la ejecución de código desde un PDF malicioso.",
+      "archivos": [
+        {
+          "ruta": "pdfjs-dist/pdf.min.mjs",
+          "sha256": "27fc2a057a00f92a4334ad06e17dbd7259912954e9fb7f76400bcca5fd190a9c"
+        },
+        {
+          "ruta": "pdfjs-dist/pdf.worker.min.mjs",
+          "sha256": "1baa1844c89c80a5b2797c916e75ab29254be46d8e9cb53cb6364d7aad84be36"
+        },
+        {
+          "ruta": "pdfjs-dist/LICENSE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitDingbats.pfb",
+          "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitFixed.pfb",
+          "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitFixedBold.pfb",
+          "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitFixedBoldItalic.pfb",
+          "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitFixedItalic.pfb",
+          "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitSerif.pfb",
+          "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitSerifBold.pfb",
+          "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitSerifBoldItalic.pfb",
+          "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitSerifItalic.pfb",
+          "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/FoxitSymbol.pfb",
+          "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/LICENSE_FOXIT",
+          "sha256": "b578cdd2345840ada550bd12519533812320d5f1d21cf4c1c7e1b1b0a31c98b7"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/LICENSE_LIBERATION",
+          "sha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf",
+          "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/LiberationSans-BoldItalic.ttf",
+          "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/LiberationSans-Italic.ttf",
+          "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+        },
+        {
+          "ruta": "pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf",
+          "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+        }
+      ]
+    }
+  ]
+}
