@@ -49,7 +49,7 @@ formulario del material.
 3. Números de regla R01–R57: viven en el mapa del trámite (artefacto privado); propuesta: pasar al repositorio la tabla de
    equivalencias.
 4. Quién pasa un grupo a «en curso» en el sistema (la base no lo hace por fecha; en la prueba hay un botón «Iniciar el
-   curso hoy (simulado)») — P92.
+   curso hoy (simulado)») — P124.
 5. Plazo para corregir observaciones (P02): mientras, «Mis trámites» dice «Fecha por definir».
 6. Contacto de la Secretaría para aclaraciones (P132): «Mi perfil» remite a la cita de cotejo.
 7. Con la poda por vencer, «Mis trámites» muestra dos botones principales («Iniciar una solicitud» y «Renovar»).

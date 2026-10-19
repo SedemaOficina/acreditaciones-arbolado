@@ -23,8 +23,8 @@
   const plural = APD.plural;
   const mayus = (t) => t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1);
   const params = new URLSearchParams(location.search);
-  /* Esta semana y las siguientes que se muestran siempre (al menos 6 después de la actual); las que tienen un grupo más
-     adelante se agregan */
+  /* Las semanas que se muestran siempre: esta semana y siete más (8 en total); las que tienen un grupo más adelante se
+     agregan */
   const SEMANAS = 8;
   const NOMBRE_SEMANA = ['Esta semana', 'La siguiente'];
 

@@ -328,7 +328,8 @@
      2026-10-19, Liber: en la pantalla y en la base). En la prueba, «hoy» es la fecha simulada, como en el mínimo. */
   const ultimoDiaPosible = (datos) => APD.sumaMeses(APD.hoy(datos), 12);
   /* Días inhábiles del calendario oficial: [por confirmar]. Mientras la Secretaría no los publique no se inventan; el
-     lugar queda listo (parámetro dias_inhabiles de la base, AAAA-MM-DD separados por coma, cuando exista). */
+     lugar queda listo. Es un parámetro previsto (P150), todavía no existe en la base: cuando exista, dias_inhabiles,
+     AAAA-MM-DD separados por coma. */
   function diasInhabiles(datos) {
     const p = (datos.parametro || []).find((x) => x.clave === 'dias_inhabiles');
     return p ? String(p.valor || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s)) : [];
