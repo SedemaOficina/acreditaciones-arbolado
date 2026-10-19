@@ -106,8 +106,18 @@
       muestra('instrucciones');
     }
   });
+  /* Lo que el navegador no guardó (auditoría «intentar romperlo», F4 A5): el aviso en la vista que se ve, con el
+     mensaje del servidor («levanta la mano»); null lo quita */
+  function avisoNoGuardo(vista, e) {
+    const c = $(`[data-vista="${vista}"] [data-aviso-falla]`);
+    if (!c) return;
+    if (!e) { c.hidden = true; c.replaceChildren(); return; }
+    APD.pintaAviso(c, 'error', 'No se guardó', e.mensaje || 'Levanta la mano: quien aplica el examen te ayuda.', true);
+  }
+  const deAlmacenamiento = (e) => Boolean(e && e.motivo === 'almacenamiento');
   $('[data-empezar]').addEventListener('click', () => {
-    API.iniciar(ex.codigo).then((v) => { ex = v; arrancaReloj(); pintaPregunta(0); });
+    avisoNoGuardo('instrucciones', null);
+    API.iniciar(ex.codigo).then((v) => { ex = v; arrancaReloj(); pintaPregunta(0); }, (e) => avisoNoGuardo('instrucciones', e));
   });
 
   /* ----- 4 · Preguntas ----- */
@@ -126,6 +136,7 @@
     }));
     $('[data-marcar]').checked = ex.marcadas.includes(p.clave);
     $('[data-guardado]').textContent = '';
+    avisoNoGuardo('pregunta', null);
     $('[data-anterior]').hidden = actual === 0;
     $('[data-siguiente]').textContent = actual === n - 1 ? 'Revisar y enviar' : 'Siguiente';
     pintaNumeros();
@@ -160,15 +171,29 @@
     API.responder(ex.codigo, p.clave, valor).then(() => {
       ex.respuestas[p.clave] = valor;
       guardado.textContent = 'Respuesta guardada.';
+      avisoNoGuardo('pregunta', null);
       pintaAvance();
       pintaNumeros();
-    }, () => refresca());
+    }, (err) => {
+      if (!deAlmacenamiento(err)) { refresca(); return; }
+      // No quedó: la opción vuelve a la que estaba guardada y se dice, para que levante la mano
+      guardado.textContent = '';
+      for (const r of $$('[data-opciones] input[name="respuesta"]')) r.checked = ex.respuestas[p.clave] === r.value;
+      avisoNoGuardo('pregunta', err);
+    });
   });
   $('[data-marcar]').addEventListener('change', (e) => {
     const p = ex.preguntas[actual];
     const si = e.target.checked;
+    const antes = ex.marcadas.slice();
     ex.marcadas = ex.marcadas.filter((k) => k !== p.clave).concat(si ? [p.clave] : []);
-    API.marcar(ex.codigo, p.clave, si);
+    API.marcar(ex.codigo, p.clave, si).then(null, (err) => {
+      if (!deAlmacenamiento(err)) return;
+      ex.marcadas = antes;
+      e.target.checked = antes.includes(p.clave);
+      pintaNumeros();
+      avisoNoGuardo('pregunta', err);
+    });
     pintaNumeros();
   });
   $('[data-siguiente]').addEventListener('click', () => { if (actual === ex.preguntas.length - 1) pintaRevision(); else pintaPregunta(actual + 1); });
@@ -207,7 +232,15 @@
   function termina(motivo) {
     if (enviando) return;
     enviando = true;
-    API.terminar(ex.codigo, motivo).then((v) => { ex = v; enviando = false; pintaResultado(); }, () => { enviando = false; refresca(); });
+    // Si no quedó registrado, no hay resultado: se dice en la revisión, con lo contestado (F4 A5)
+    API.terminar(ex.codigo, motivo).then((v) => { ex = v; enviando = false; pintaResultado(); }, (err) => {
+      enviando = false;
+      if (!deAlmacenamiento(err)) { refresca(); return; }
+      // Al acabarse el tiempo, el reloj se detiene (no reintenta cada segundo); «Enviar mis respuestas» lo vuelve a intentar
+      if (motivo === 'tiempo') paraReloj();
+      if ($('[data-vista="revision"]').hidden) pintaRevision();
+      avisoNoGuardo('revision', err);
+    });
   }
 
   /* ----- 6 · Resultado ----- */

@@ -107,7 +107,9 @@ window.FORMKIT_OPCIONES = {
             folio = `APD-S-${anio}-${String(n).padStart(5, '0')}`;
           }
           // Versión de prueba: los archivos reales y un resumen de la solicitud se guardan sólo en este navegador, para
-          // verlos en la revisión del personal (app/archivos-prueba.js). Si el navegador no lo permite, el envío sigue igual.
+          // verlos en «Mis trámites» y en la revisión del personal (app/archivos-prueba.js). Si el navegador no lo permite
+          // (modo privado, almacenamiento bloqueado o lleno), no se envía: se dice y no se da folio (auditoría «intentar
+          // romperlo», F4 A1: el acuse salía con un folio que no existía en ninguna parte).
           const prefijo = `doc_${tipo}_${modalidad}_`;
           const archivos = (payload.archivos || []).filter((a) => a.campo.startsWith(prefijo) && a.blob)
             .map((a) => ({ requisito: a.campo.slice(prefijo.length), blob: a.blob, nombre: a.nombre, tipo: a.tipo, size: a.size }));
@@ -130,17 +132,19 @@ window.FORMKIT_OPCIONES = {
               const mensaje = 'Tu PDF tiene contraseña o protección. Guárdalo sin protección y vuelve a cargarlo.';
               return Promise.reject({ mensaje, errores: [{ campo: `${prefijo}${archivos[i].requisito}`, mensaje }] });
             }
-            // guardado: la hora con que quedó en este navegador (false si no quedó). Un almacenamiento bloqueado o lleno sigue
-            // como antes (bloque 3 de la auditoría); si otra pestaña tomó el mismo folio en ese instante, se calcula otro con
-            // lo de ahora
+            // guardado: la hora con que quedó en este navegador. Si no quedó, se rechaza sin acuse (F4 A1); si otra pestaña
+            // tomó el mismo folio en ese instante, se calcula otro con lo de ahora
             const guarda = global_archivos()
               ? APD_ARCHIVOS_PRUEBA.guardaEnvio(registro, archivos).then((hora) => hora || true, (e) => { if (e && e.codigo === 'folio_ocupado') throw e; return false; })
               : Promise.resolve(false);
-            return guarda.then((guardado) => Promise.resolve(guardado ? APD.cargar() : null).then((despues) => {
+            return guarda.then((guardado) => {
+              if (!guardado) throw APD.noGuardo('No se envió tu solicitud', 'tu solicitud de prueba');
+              return guardado;
+            }).then((guardado) => APD.cargar().then((despues) => {
               // Después de guardar, lo que quedó (como la respuesta de la API): si la base no lo habría aplicado (otra pestaña
               // envió primero), se retira y se dice, sin acuse
-              const s = despues && despues.solicitud.find((x) => x.folio === folio);
-              if (despues && !(s && s.solicitante_id === p.id && s.estado === 'enviada')) {
+              const s = despues.solicitud.find((x) => x.folio === folio);
+              if (!(s && s.solicitante_id === p.id && s.estado === 'enviada')) {
                 const op = APD.opciones(despues, p)[tipo];
                 return APD_ARCHIVOS_PRUEBA.retiraEnvio(folio, guardado).catch(() => {}).then(() => Promise.reject(APD.rechazo('No se envió tu solicitud',
                   op && op.motivo ? op.motivo : 'Tu solicitud cambió en otra pestaña mientras la enviabas.', aTramites, 'conflicto')));

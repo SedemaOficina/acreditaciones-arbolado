@@ -82,6 +82,19 @@
   const ahora = () => new Date().toISOString();
   const responde = (valor) => new Promise((ok) => setTimeout(() => ok(valor), RETARDO));
   const falla = (campo, mensaje, motivo) => new Promise((ok, mal) => setTimeout(() => mal({ campo, mensaje, motivo }), RETARDO));
+  /* El navegador no guardó (almacenamiento bloqueado o lleno; auditoría «intentar romperlo», F4 A5 y M3): la API
+     respondería un error y nada quedaría hecho. Nunca «Respuesta guardada.» ni un resultado que no quedó registrado. A la
+     persona, de tú y con qué hacer; a quien aplica, de usted. */
+  const NO_GUARDA = {
+    respuesta: 'No se pudo guardar tu respuesta: levanta la mano. Quien aplica el examen te ayuda.',
+    inicio: 'No se pudo empezar tu examen: levanta la mano. Quien aplica el examen te ayuda.',
+    marca: 'No se pudo guardar la marca: levanta la mano. Quien aplica el examen te ayuda.',
+    envio: 'No se pudo enviar tu examen: levanta la mano. Quien aplica el examen te ayuda; tus respuestas guardadas no se pierden.',
+    lista: 'No se registró el pase de lista: este navegador no permitió guardarlo (puede estar en modo privado o con el almacenamiento bloqueado o lleno). Pruebe en una ventana normal o en otro navegador.',
+    codigo: 'No se generó el código: este navegador no permitió guardarlo (puede estar en modo privado o con el almacenamiento bloqueado o lleno). Pruebe en una ventana normal o en otro navegador.',
+    cambio: 'No se guardó el cambio: este navegador no permitió guardarlo (puede estar en modo privado o con el almacenamiento bloqueado o lleno). Pruebe en una ventana normal o en otro navegador.'
+  };
+  const noGuarda = (que) => falla(null, NO_GUARDA[que], 'almacenamiento');
 
   /* ----- Azar con semilla: el mismo código da siempre el mismo orden ----- */
   function semilla(texto) { let h = 2166136261; for (const c of texto) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -129,11 +142,15 @@
     reg.motivo_fin = motivo;
     return reg;
   }
-  /* Si el tiempo ya se agotó, el examen se cierra con lo contestado */
+  /* Si el tiempo ya se agotó, el examen se cierra con lo contestado. Si el navegador no guarda el cierre, sigue como
+     estaba (sin tiempo, sin aceptar respuestas): no se informa un resultado que no quedó registrado (F4 A5) */
   function alDia(t, codigo) {
     const reg = t[codigo];
-    if (reg && reg.iniciado_en && !reg.terminado_en && !reg.suspendido && !reg.reemplazado_por && restanteMs(reg) === 0) { cierra(reg, 'tiempo'); escribe(t); }
-    return reg;
+    if (reg && reg.iniciado_en && !reg.terminado_en && !reg.suspendido && !reg.reemplazado_por && restanteMs(reg) === 0) {
+      t[codigo] = cierra(JSON.parse(JSON.stringify(reg)), 'tiempo');
+      if (!escribe(t)) t[codigo] = reg;
+    }
+    return t[codigo];
   }
 
   /* Lo que ve la persona: sin la clave de respuestas */
@@ -180,7 +197,7 @@
         otro_equipo: 0,
         terminado_en: null, suspendido: null, reemplazado_por: null
       };
-      escribe(t);
+      if (!escribe(t)) return noGuarda('codigo');
       return responde(t[codigo]);
     },
     /* Repone un código perdido: el examen sigue igual (mismas preguntas, respuestas y tiempo) con otro código */
@@ -192,7 +209,7 @@
       const nuevo = nuevoCodigo(t);
       t[nuevo] = Object.assign({}, reg, { codigo: nuevo, generado_en: ahora(), generado_por: por, repone_a: codigo, otro_equipo: 0 });
       reg.reemplazado_por = nuevo;
-      escribe(t);
+      if (!escribe(t)) return noGuarda('codigo');
       return responde(t[nuevo]);
     },
     /* Pase de lista del día del examen: { inscripcion_id: { presente, en, por } } */
@@ -200,7 +217,7 @@
     pasarLista(inscripcion_id, presente, por) {
       const l = leeDe(LISTA);
       l[inscripcion_id] = { presente: Boolean(presente), en: ahora(), por };
-      escribeEn(LISTA, l);
+      if (!escribeEn(LISTA, l)) return noGuarda('lista');
       return responde(l[inscripcion_id]);
     },
     suspender(codigo, motivo, por) {
@@ -209,7 +226,7 @@
       if (!reg || reg.reemplazado_por) return falla(null, 'Ese código ya no está vigente.');
       if (reg.terminado_en) return falla(null, 'Ese examen ya se envió y ya está calificado: no se puede suspender.');
       reg.suspendido = { motivo: String(motivo || '').trim(), en: ahora(), por };
-      escribe(t);
+      if (!escribe(t)) return noGuarda('cambio');
       return responde(reg);
     },
 
@@ -257,7 +274,7 @@
       const reg = alDia(t, codigo);
       if (!reg || situacion(reg) !== 'sin_empezar') return responde(reg ? vista(reg) : null);
       reg.iniciado_en = ahora();
-      escribe(t);
+      if (!escribe(t)) return noGuarda('inicio');
       return responde(vista(reg));
     },
     /* Guarda una respuesta. Se rechaza si el examen ya se cerró, se suspendió o se acabó el tiempo. */
@@ -265,9 +282,10 @@
       const t = lee();
       const reg = alDia(t, codigo);
       if (!reg || situacion(reg) !== 'contestando') return falla(null, 'Tu examen ya no acepta respuestas.', reg ? situacion(reg) : 'no_existe');
+      if (restanteMs(reg) === 0) return falla(null, 'Se acabó el tiempo: tu examen ya no acepta respuestas.', 'tiempo');
       if (!reg.preguntas.includes(clave) || !reg.orden_opciones[clave].includes(valor)) return falla(null, 'Esa respuesta no corresponde a tu examen.');
       reg.respuestas[clave] = valor;
-      escribe(t);
+      if (!escribe(t)) return noGuarda('respuesta');
       return responde({ guardada: true, restante_ms: restanteMs(reg) });
     },
     marcar(codigo, clave, si) {
@@ -275,7 +293,7 @@
       const reg = alDia(t, codigo);
       if (!reg || situacion(reg) !== 'contestando') return responde(null);
       reg.marcadas = reg.marcadas.filter((k) => k !== clave).concat(si ? [clave] : []);
-      escribe(t);
+      if (!escribe(t)) return noGuarda('marca');
       return responde({ ok: true });
     },
     /* La persona salió de la ventana del examen (otra pestaña o programa): se le cuenta a quien aplica */
@@ -285,11 +303,16 @@
       if (reg && situacion(reg) === 'contestando') { reg.salidas += 1; escribe(t); }
       return responde({ ok: true });
     },
+    /* Califica y cierra. Si no quedó registrado, no hay resultado (F4 A5: «No aprobaste · 0.0 · Tu calificación quedó
+       registrada» sin nada guardado); también al agotarse el tiempo */
     terminar(codigo, motivo) {
       const t = lee();
-      const reg = alDia(t, codigo);
+      const reg = t[codigo];
       if (!reg) return falla(null, 'Ese código no existe.');
-      if (situacion(reg) === 'contestando') { cierra(reg, motivo === 'tiempo' ? 'tiempo' : 'enviado'); escribe(t); }
+      if (situacion(reg) === 'contestando') {
+        cierra(reg, motivo === 'tiempo' || restanteMs(reg) === 0 ? 'tiempo' : 'enviado');
+        if (!escribe(t)) return noGuarda('envio');
+      }
       return responde(vista(reg));
     },
     estado(codigo) {

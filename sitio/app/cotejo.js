@@ -409,12 +409,20 @@
             const guardados = [];
             const A = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
             // La factura queda en el expediente. En la cita no se toma otra fotografía (decisión 2026-10-17, Liber)
-            if (A && resultado === 'terminado' && archivo('factura_pago')) {
-              guardados.push(A.guardaDocumento(s.folio, 'factura_pago', archivo('factura_pago'), { en, estado: 'aceptado', cargado_por: P.REVISORA.usuario }).catch(() => {}));
+            // Si el navegador no guarda la factura o lo que pasó en la cita (almacenamiento bloqueado o lleno), no se registra
+            // nada y se dice (auditoría «intentar romperlo», F4 A3: decía «Quedó guardado» y la cita seguía por atender)
+            const conFactura = Boolean(A && resultado === 'terminado' && archivo('factura_pago'));
+            const noGuardo = () => APD.noGuardo('No se guardó lo que pasó en la cita', 'el registro de la cita', 'usted');
+            if (conFactura) {
+              guardados.push(A.guardaDocumento(s.folio, 'factura_pago', archivo('factura_pago'), { en, estado: 'aceptado', cargado_por: P.REVISORA.usuario }));
             }
-            return Promise.all(guardados).then(() => {
-              P.guardaCotejo(s.folio, Object.assign({ resultado, datos: d, en, cita_en: s.cita_en, desde, atendio: P.REVISORA.usuario },
+            return Promise.all(guardados).catch(() => Promise.reject(noGuardo())).then(() => {
+              const registrado = P.guardaCotejo(s.folio, Object.assign({ resultado, datos: d, en, cita_en: s.cita_en, desde, atendio: P.REVISORA.usuario },
                 retoma ? { pausa_real: pausa.real } : {}, simulada ? { simulada: true } : {}));
+              if (!registrado) {
+                const quita = conFactura ? A.quitaDocumento(s.folio, 'factura_pago', en).catch(() => {}) : null;
+                return Promise.resolve(quita).then(() => mal(noGuardo()));
+              }
               // Después: lo que quedó, como la respuesta de la API (el expediente que asignó, por ejemplo). Si la base no lo
               // habría aplicado (otra pestaña registró la cita al mismo tiempo), se retira y se dice: nunca un éxito falso
               return APD.cargar().then((despues) => {

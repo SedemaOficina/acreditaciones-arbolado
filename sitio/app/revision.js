@@ -110,6 +110,11 @@
       $('[data-revisadas]').hidden = false;
     }
   }).catch(() => {
+    // El error, sin la lista a medias: la bandeja mostraba el mensaje y además las solicitudes (auditoría «intentar
+    // romperlo», F4 A6)
+    $('[data-filas]').replaceChildren();
+    $('[data-tabla-vacia]').hidden = true;
+    $('[data-revisadas]').hidden = true;
     $('[data-cuenta]').textContent = 'No se pudieron cargar las solicitudes. Intente de nuevo más tarde.';
   });
 }());

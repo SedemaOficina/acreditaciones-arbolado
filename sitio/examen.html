@@ -82,6 +82,8 @@
       <li>Para aprobar necesitas <strong data-minima></strong> o más. Verás tu calificación al terminar.</li>
       <li>No se permite consultar libros, apuntes ni el teléfono, que debe estar apagado. Si quien aplica el examen ve una conducta indebida, puede suspenderlo.</li>
     </ul>
+    <!-- Lo que el navegador no guardó (versión de prueba, auditoría «intentar romperlo», F4 A5) -->
+    <div data-aviso-falla hidden></div>
     <div class="acciones">
       <button type="button" class="btn btn-primario" data-empezar>Empezar el examen</button>
     </div>
@@ -104,6 +106,7 @@
         <div class="opciones-lista" data-opciones></div>
       </fieldset>
       <p class="examen-guardado texto-gris" role="status" data-guardado></p>
+      <div data-aviso-falla hidden></div>
       <label class="casilla examen-marca"><input type="checkbox" class="casilla-input" data-marcar autocomplete="off"><span>Marcarla para revisarla antes de enviar</span></label>
       <div class="acciones">
         <button type="button" class="btn btn-primario" data-siguiente>Siguiente</button>
@@ -124,6 +127,7 @@
     <p class="bajada" data-resumen></p>
     <p class="examen-reloj examen-reloj-linea"><svg class="icono" aria-hidden="true"><use href="#i-reloj"></use></svg><span>Tiempo restante: <span data-reloj-texto></span></span></p>
     <ol class="examen-repaso" data-repaso></ol>
+    <div data-aviso-falla hidden></div>
     <div class="acciones">
       <button type="button" class="btn btn-primario" data-enviar>Enviar mis respuestas</button>
       <button type="button" class="btn-atras" data-volver-preguntas><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Volver a las preguntas</button>

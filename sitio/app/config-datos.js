@@ -36,14 +36,19 @@ window.APD_PERFIL = {
           if (parte === 'contacto' && APD.correoEnUso(datos, d.correo, p)) {
             return mal({ mensaje: APD.CORREO_EN_USO, errores: [{ campo: 'correo', mensaje: APD.CORREO_EN_USO }] });
           }
-          if (parte === 'contacto') P.guardaPerfil(p.id, { correo: d.correo, telefono: d.telefono });
-          if (parte === 'adscripcion') P.guardaPerfil(p.id, APD.adscripcionDe(datos, d));
-          if (parte === 'foto') {
-            P.guardaPerfil(p.id, { foto_nueva: true });
-            const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
-            if (foto) guarda = P.guardaFoto(p.curp, foto).catch(() => {});
-          }
-          guarda.then(() => ok({ parte, fecha: new Date().toISOString() }));
+          // Si el navegador no lo guarda (modo privado, almacenamiento bloqueado o lleno), se dice y no se da por guardado
+          // (auditoría «intentar romperlo», F4 A8: «Se guardó tu contacto» con el teléfono anterior debajo)
+          const QUE = { contacto: 'tu contacto', adscripcion: 'tu adscripción', foto: 'tu fotografía' };
+          const noGuardo = () => mal(APD.noGuardo('No se guardó', QUE[parte] || 'tus cambios'));
+          const foto = parte === 'foto' ? (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob) : null;
+          if (parte === 'contacto' && !P.guardaPerfil(p.id, { correo: d.correo, telefono: d.telefono })) return noGuardo();
+          if (parte === 'adscripcion' && !P.guardaPerfil(p.id, APD.adscripcionDe(datos, d))) return noGuardo();
+          // La fotografía primero y después la marca de «fotografía nueva»: sin la fotografía guardada, no queda la marca
+          if (foto) guarda = P.guardaFoto(p.curp, foto);
+          return guarda.then(() => {
+            if (parte === 'foto' && !P.guardaPerfil(p.id, { foto_nueva: true })) return noGuardo();
+            return ok({ parte, fecha: new Date().toISOString() });
+          }, noGuardo);
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
       signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });

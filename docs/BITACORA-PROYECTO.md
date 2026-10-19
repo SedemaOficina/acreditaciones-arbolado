@@ -1202,3 +1202,58 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   Los de f2 se adaptaron a «Atenderla como si fuera su día» y a que la pestaña con lo no guardado advierte al salir.
 - Decisiones nuevas en `docs/DECISIONES.md` («Decisiones del 2026-10-19 (auditoría «intentar romperlo», bloque 2)»);
   contrato de la API en `docs/ETAPA-2-PANTALLAS.md` (2e); `docs/REGLAS.md` nombra `solicitud_activa`.
+
+
+## 2026-10-19 · Bloque 77 · Auditoría «intentar romperlo» · bloque 3 (guardados que fallan y registros dañados)
+
+- Liber aprobó corregir el bloque 3 de `docs/AUDITORIA-2026-10-18-romper.md` (F4 A1 a A6, A8, M1 a M3 y B3). Sólo afecta
+  a la versión de prueba, que guarda todo en el navegador: con el almacenamiento bloqueado, lleno o en modo privado, las
+  pantallas decían «Quedó guardado» o daban acuse y nada quedaba; un solo registro dañado hacía que todas vieran sólo los
+  ficticios. Ahora nunca se da por guardado lo que no se guardó, y un registro dañado se salta sin llevarse lo demás. El
+  estándar sigue en la 1.4.1 (`sitio/formkit/` sin cambios). Nada de lo hecho en los bloques 1 y 2 se repitió: el bloque
+  2 ya evitaba el éxito falso de la revisión y del cotejo, pero con un mensaje equivocado («Otra revisión… al mismo
+  tiempo»); ahora dicen que fue el navegador.
+- **Común (`app/apd.js`):** `APD.textoNoGuardo(qué, trato)` y `APD.noGuardo(título, qué, trato)` (rechazo con código
+  `almacenamiento` para `APD.muestraRechazo`): «Este navegador no permitió guardar … (puede estar en modo privado o con el
+  almacenamiento bloqueado o lleno). Prueba / Pruebe en una ventana normal o en otro navegador.», el texto de «Crea tu
+  cuenta», que ahora lo usa también. `APD.caducada()`: la marca de que lo guardado caducó (B3).
+- **Persona:** la solicitud no da acuse ni folio si no se guardó (A1, `config-solicitud.js`); «Mi perfil» rechaza si no
+  guardó el contacto, la adscripción o la fotografía, y la marca de fotografía nueva va después de la fotografía (A8,
+  `config-datos.js`); «Cargar el documento correcto» guarda todos los documentos o ninguno (A4, `corregir.js`); «Entrar» y
+  «Crea tu cuenta» dicen cuando no se pudo guardar la sesión (M1, `config-entrar.js`, `config-cuenta.js`).
+- **Personal:** la revisión (A2, `revisar.js`) y el cotejo (A3, `cotejo.js`: la factura y la cita, o nada) dicen «No se
+  guardó…» con el texto del navegador; el material de estudio avisa al ocultar o publicar y el formulario rechaza con
+  mensaje, sin promesas sin atender (M2, `material-personal.js` y un aviso nuevo en `material-personal.html`).
+- **Examen (A5, M3):** el servidor simulado (`examen-servidor.js`) rechaza con motivo `almacenamiento` si no escribió:
+  responder, marcar, empezar, enviar, generar y reponer el código, suspender, pasar lista y el cierre por tiempo (si no se
+  guarda, el examen sigue sin tiempo y sin aceptar respuestas). `examen.js` regresa la opción a la guardada y dice «No se
+  pudo guardar tu respuesta: levanta la mano…»; si el envío no se guardó, no muestra resultado y se queda en la revisión
+  (con el tiempo agotado, el reloj se detiene y «Enviar mis respuestas» lo vuelve a intentar). Avisos nuevos en
+  `examen.html` (`data-aviso-falla`). `aplicar.js` muestra el rechazo de «Presente», «No llegó» y «Reponer código».
+- **Registros dañados (A6, `archivos-prueba.js`):** la mezcla salta lo que no tiene forma de registro (vacío, sin persona
+  en una solicitud de la prueba, sin hora, sin CURP) y aplica cada folio y cada evento de grupos por su cuenta: si uno
+  falla, queda como estaba antes de él y siguen los demás. Cuenta los ignorados en `prueba_ignorados` (también en el
+  material); el conteo del menú ya no falla con un registro vacío. `pruebas.js` pone bajo la franja un solo aviso («N
+  registros guardados no se pudieron leer… «Borrar lo guardado»… los quita») y lo repite en «Guardado en este navegador»;
+  «Borrar lo guardado» lo quita. `revision.js` ya no muestra el error junto con la lista.
+- **Caducidad (B3):** `APD.cargar` ya no descarta `vencida`: marca la pestaña (sessionStorage, y en memoria si está
+  bloqueado) y la primera pantalla a la que se llega dice una vez «Lo guardado en esta prueba se borró. Pasaron más de 7
+  días sin usarla…». Estilo nuevo `.aviso-prueba` en `apd.css`.
+- **Menú de pruebas:** «Entrar como», la persona nueva y el ajuste de preguntas obligatorias dicen cuando el navegador no
+  guardó la sesión o el ajuste.
+- Pruebas: `probar-sitio` 899 (antes 860; sección nueva `romperTres`, 39, `SOLO=romper3`: el navegador hostil con los
+  scripts de inicio del frente 4 —localStorage que lanza o con cuota llena, sin IndexedDB o lleno, registros vacíos—; las
+  22 de hallazgos fallan con el código del commit 2bd8fd9, servido desde una copia con `git archive`, y pasan con éste;
+  las otras 17 comprueban que no queden errores ni promesas sin atender); `probar-examen` 76; `probar-esquemas` 128; auditor
+  de CSS sin hallazgos (`apd.css`, `examen.css`). La base no cambió (`probar-base` y `probar-reglas` no aplican). Los
+  guiones del frente 4 que reproducían estos hallazgos (02, 03, 04, 05, 06, 07, 12 y 13) se volvieron a correr en una copia
+  (`scratchpad/auditoria-romper-bloque3/f4/`, con `corre.sh`): ya no ocurre ninguno. La solicitud, la revisión, el cotejo,
+  la carga del documento correcto, «Mi perfil», «Entrar», «Crea tu cuenta», el material, el examen y el pase de lista dicen
+  que el navegador no lo guardó, también con la cuota llena de verdad; con un registro dañado se siguen viendo la solicitud
+  enviada y la revisión válidas; al caducar se dice una vez. Se adaptaron: 04 y la parte de caducidad de 07 (`07b-caduca.mjs`)
+  a «Atenderla como si fuera su día» y a que el aviso va fuera de `<main>`, 03 a que la opción vuelve a la guardada y a que
+  no hay resultado, y 02 y 12 para leer los avisos nuevos. La parte A de 07 no se volvió a correr (depende del cotejo de una
+  cita futura, bloque 1).
+- Decisiones nuevas en `docs/DECISIONES.md` («Decisiones del 2026-10-19 (auditoría «intentar romperlo», bloque 3)»);
+  hallazgos marcados en `docs/AUDITORIA-2026-10-18-romper.md` («Estado de las correcciones») y en
+  `docs/auditoria-romper/F4-datos-navegador.md` («Estado»).

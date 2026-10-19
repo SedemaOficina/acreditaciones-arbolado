@@ -25,3 +25,12 @@ Cada hallazgo se reprodujo dos veces. Informes completos, con pasos, evidencia, 
    dos personas; grupo sobrescrito desde otra pestaña.
 3. **Guardados que fallan sin avisar** (sólo en la versión de prueba): con el almacenamiento del navegador bloqueado o
    lleno, casi todas las pantallas dicen «Quedó guardado»; un registro dañado hace que se vean sólo los ficticios.
+
+## Estado de las correcciones
+
+| Bloque | Qué | Dónde se registró |
+|---|---|---|
+| 1 | Errores de lógica (F1 5 a 13; F2 A1, A6, A7, M2 a M4, B1 a B3; F3 M3 a M5, M7 a M9, B1 a B9, B11; F4 A7, M4 a M7, B1, B2, B4 a B7) | `BITACORA-PROYECTO.md`, bloque 75; `DECISIONES.md` |
+| 2 | Dos pestañas, dos personas y doble clic (F1 1 a 4; F2 A2 a A5, M1; F3 A1, M1, M2, M6, B10) | `BITACORA-PROYECTO.md`, bloque 76; `DECISIONES.md` |
+| 3 | Guardados que fallan sin avisar y registros dañados: **resueltos F4 A1 a A6, A8, M1 a M3 y B3** (2026-10-19) | `BITACORA-PROYECTO.md`, bloque 77; `DECISIONES.md`; detalle en `auditoria-romper/F4-datos-navegador.md`, «Estado» |
+

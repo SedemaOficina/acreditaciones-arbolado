@@ -43,6 +43,27 @@ Patrón de fondo: en la versión de prueba, **casi todos los guardados ignoran s
 | B6 | Baja | Material del personal | Agregar un PDF de 30 MB + 1 byte. | **Pasó:** «pesa 30.0 MB y el máximo es 30 MB» (parece que sí cabe). **Debía:** decir que pasa de 30 MB. | `08-material-r1/r2.json` (cargas pesa-30mb-mas-1.pdf). | Redondeo de `pesoTxt` en `formkit/modulos/archivos/archivos.js:201` (estándar). | En el estándar: «pesa más de {mb} MB» cuando el redondeo iguala el máximo. |
 | B7 | Baja | Material público y del personal | Un registro de material de una versión anterior de la prueba, con archivo pero sin `paginas`, `cargado_en`, `edicion` ni `descripcion`. | **Pasó:** «PDF · undefined páginas · 1 KB» en la página pública y «PDF · undefined págs.», «Cargado el» vacío en la del personal. **Debía:** omitir lo que falta o ignorar el registro incompleto. | `06-detalle.json` material-viejo-r1/r2. | `app/material.js:47`, `app/material-personal.js:95-96`; `mezclaMaterial` (`app/archivos-prueba.js:167`) sólo exige `blob` y `clave`. | En `mezclaMaterial`, exigir también `paginas` y `nombre_archivo`. |
 
+## Estado (2026-10-19)
+
+| N.º | Estado | Corrección |
+|---|---|---|
+| A1 | Resuelto (bloque 3) | `app/config-solicitud.js`: si `guardaEnvio` no guarda, «No se envió tu solicitud. Este navegador no permitió guardar tu solicitud de prueba…», sin acuse ni folio |
+| A2 | Resuelto (bloque 3) | `app/revisar.js`: el `false` de `P.guardaRevision` rechaza con «No se guardó su revisión…» |
+| A3 | Resuelto (bloque 3) | `app/cotejo.js`: la factura y la cita se guardan o no se registra nada (si la cita no se guarda, se quita la factura) |
+| A4 | Resuelto (bloque 3) | `app/corregir.js`: todos los documentos o ninguno, con «No se cargó tu documento…» |
+| A5 | Resuelto (bloque 3) | `app/examen-servidor.js` (`responder`, `terminar`, `iniciar`, `marcar`, `generar`, `reponer`, `suspender` y el cierre por tiempo) rechaza si no escribió; `app/examen.js` lo muestra («levanta la mano») y no da resultado |
+| A6 | Resuelto (bloque 3) | `app/archivos-prueba.js`: la mezcla salta lo que no tiene forma de registro y aplica cada folio y cada evento de grupos por su cuenta; `prueba_ignorados` y el aviso bajo la franja y en el menú (`app/pruebas.js`); `app/revision.js` no muestra el error junto con la lista |
+| A7 | Resuelto (bloque 1) | Bitácora, bloque 75 |
+| A8 | Resuelto (bloque 3) | `app/config-datos.js`: `guardaPerfil` falso o `guardaFoto` fallida rechazan con «No se guardó…» |
+| M1 | Resuelto (bloque 3) | `app/config-entrar.js`, `app/config-cuenta.js` y `app/pruebas.js` revisan `APD.guardaSesion` |
+| M2 | Resuelto (bloque 3) | `app/material-personal.js`: «Ocultar» y «Publicar» con aviso; el formulario rechaza con mensaje |
+| M3 | Resuelto (bloque 3) | `pasarLista` y `generar` rechazan; `app/aplicar.js` lo muestra en su aviso |
+| M4 a M7 | Resueltos (bloque 1) | Bitácora, bloque 75 |
+| B1, B2, B4 a B7 | Resueltos (bloque 1) | Bitácora, bloque 75 (B6, con el texto propio del proyecto; el redondeo del estándar es P154) |
+| B3 | Resuelto (bloque 3) | `app/apd.js` guarda la marca de `vencida` y `app/pruebas.js` muestra una vez el aviso |
+
+Comprobaciones de regresión: `herramientas/probar-sitio.mjs`, sección `romperTres` (`SOLO=romper3`).
+
 ## Lo que salió bien
 
 - **Carga limpia (7):** las 21 páginas, y las que llevan `?folio=` o `?curso=`, en teléfono (390 × 844) y escritorio (1280 × 720): sin errores de consola, sin excepciones y sin promesas sin atender. Sin sesión, las pantallas de la persona mandan a «Entrar» con `?volver=` (`01-carga.json`).

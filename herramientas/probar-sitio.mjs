@@ -2772,6 +2772,345 @@ async function romperDos(navegador) {
   });
 }
 
+/* ───── Auditoría «intentar romperlo», bloque 3: guardados que fallan y registros dañados (F4 A1 a A6, A8, M1 a M3, B3) ─────
+   El navegador hostil se simula con scripts de inicio (los del frente 4 de la auditoría): localStorage que lanza al leerse
+   o en cada método, sin IndexedDB, cuota llena en IndexedDB o en localStorage. Cada comprobación falla con el código del
+   bloque 2 (commit 2bd8fd9) y pasa con el del bloque 3. */
+const HOSTIL = {
+  lsLanza: `(() => { const e = () => { throw new DOMException('The operation is insecure.', 'SecurityError'); };
+    Object.defineProperty(window, 'localStorage', { get: e, configurable: true }); })();`,
+  lsMetodos: `(() => { const e = () => { throw new DOMException('denied', 'SecurityError'); };
+    const falso = { getItem: e, setItem: e, removeItem: e, clear: e, key: e, get length() { e(); } };
+    Object.defineProperty(window, 'localStorage', { get: () => falso, configurable: true }); })();`,
+  idbNo: `(() => { try { delete window.indexedDB; } catch (e) {} Object.defineProperty(window, 'indexedDB', { value: undefined, configurable: true, writable: true }); })();`,
+  cuotaIdb: `(() => { const q = () => new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+    const put = IDBObjectStore.prototype.put; const add = IDBObjectStore.prototype.add;
+    IDBObjectStore.prototype.put = function () { if (window.__cuota) throw q(); return put.apply(this, arguments); };
+    IDBObjectStore.prototype.add = function () { if (window.__cuota) throw q(); return add.apply(this, arguments); };
+    window.__cuota = true; })();`,
+  // Toda escritura nueva en localStorage falla, salvo la sesión y las marcas de la prueba; __cuotaLs la apaga o la prende
+  cuotaLs: (prendida = true) => `(() => { const q = () => new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+    const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (window.__cuotaLs && this === window.localStorage && !/^apd\\.sesion$|^apd\\.prueba\\./.test(k)) throw q(); return set.call(this, k, v); };
+    window.__cuotaLs = ${prendida}; })();`,
+  sesion: (id) => `try { localStorage.setItem('apd.sesion', JSON.stringify({ id: ${JSON.stringify(id)} })); } catch (e) {}`
+};
+
+async function romperTres(navegador) {
+  const t = (m) => `[romper 3] ${m}`;
+  const libres = datos.solicitante.filter((p) => p.estado === 'activa' && !datos.acreditacion.some((a) => a.solicitante_id === p.id)
+    && !datos.solicitud.some((s) => s.solicitante_id === p.id && !FINALES.includes(s.estado)));
+  const texto = async (pg, sel) => (await pg.isVisible(sel) ? (await pg.textContent(sel)).replace(/\s+/g, ' ').trim() : '');
+  /* Cada parte en su contexto, con sus scripts de inicio; si una se detiene, cuenta como fallida y siguen las demás */
+  const parte = async (nombre, inicio, fn) => {
+    const c = await navegador.newContext({ viewport: { width: 1280, height: 900 } });
+    for (const s of inicio) await c.addInitScript(s);
+    const errores = [];
+    const pagina = async (url) => {
+      const pg = await c.newPage();
+      pg.on('pageerror', (e) => errores.push(`${pg.url()} · ${e.message}`));
+      pg.on('console', (m) => { if (m.type() === 'error') errores.push(`${pg.url()} · ${m.text()}`); });
+      if (url) await pg.goto(BASE + url);
+      return pg;
+    };
+    try { await fn({ c, pagina }); } catch (e) { mal(t(`${nombre}: se detuvo: ${e.message.split('\n')[0]}`)); }
+    comprueba(errores.length === 0, t(`${nombre}: sin errores ni promesas sin atender${errores.length ? ': ' + errores.join(' | ') : ''}`));
+    await c.close();
+  };
+  const hastaRevision = async (pg) => {
+    await pg.goto(BASE + 'solicitud.html');
+    await pg.waitForSelector(`${pasoVisible} #nivel_estudios`);
+    await pg.selectOption('#nivel_estudios', 'licenciatura');
+    await pg.fill('#carrera', 'Biología');
+    await pg.keyboard.press('Escape');
+    await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+    await siguiente(pg);
+    await pg.waitForSelector(`${pasoVisible} [data-campo^="doc_"]`);
+    await cargaObligatorios(pg);
+    await siguiente(pg);
+    await marcaCasillas(pg);
+  };
+  const envia = async (pg, listo = '[data-acuse]:not([hidden])') => {
+    await pg.click('[data-accion="enviar"]');
+    await pg.waitForSelector(`${listo}, [data-estado-envio]:not([hidden])`, { timeout: 8000 }).catch(() => null);
+    return { listo: await pg.isVisible(listo), aviso: await texto(pg, '[data-estado-envio]') };
+  };
+
+  /* ── A1 · la solicitud no se guarda: no hay acuse ni folio ── */
+  for (const [nombre, hostil, p] of [['sin IndexedDB', HOSTIL.idbNo, libres[0]], ['IndexedDB lleno', HOSTIL.cuotaIdb, libres[1]]]) {
+    await parte(`A1 ${nombre}`, [HOSTIL.sesion(p.id), hostil], async ({ pagina }) => {
+      const pg = await pagina('index.html');
+      await hastaRevision(pg);
+      const r = await envia(pg);
+      const deP = await pg.evaluate((id) => APD.cargar().then((d) => d.solicitud.filter((s) => s.de_prueba && s.solicitante_id === id).length), p.id);
+      comprueba(!r.listo && /No se envió tu solicitud\. Este navegador no permitió guardar tu solicitud de prueba/.test(r.aviso) && deP === 0,
+        t(`A1 (${nombre}): la solicitud que no se guardó no da acuse ni folio («${r.aviso.slice(0, 90)}»)`));
+    });
+  }
+
+  /* ── A2 · la revisión no se guarda (localStorage lleno) ── */
+  const podaEnviada = enviadas.find((x) => x.tipo_acreditacion === 'poda' && !datos.revision.some((rv) => rv.solicitud_id === x.id));
+  await parte('A2', [HOSTIL.cuotaLs()], async ({ pagina }) => {
+    const pg = await pagina(`revisar.html?folio=${podaEnviada.folio}`);
+    await pg.waitForSelector('#formulario:not([hidden])');
+    for (const k of await pg.$$eval('article.doc-revision[data-doc]', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) {
+      await pg.check(`input[name="decision_${k}"][value="aceptado"]`, { force: true });
+    }
+    await pg.waitForSelector('#cita_fecha', { state: 'visible' });
+    await pg.fill('#cita_fecha', dma(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-min')));
+    await pg.selectOption('#cita_hora', '10:00');
+    const r = await envia(pg, '#formulario[hidden]');
+    const estado = await pg.evaluate((F) => APD.cargar().then((d) => d.solicitud.find((s) => s.folio === F).estado), podaEnviada.folio);
+    comprueba(!r.listo && /No se guardó su revisión\. Este navegador no permitió guardar su revisión de prueba/.test(r.aviso) && estado === 'enviada',
+      t(`A2: la revisión que no se guardó no dice «Quedó guardado» («${r.aviso.slice(0, 90)}», ${estado})`));
+  });
+
+  /* ── A3 · el cotejo no se guarda: localStorage lleno (no se presentó) e IndexedDB lleno (la factura) ── */
+  const registraCita = async (pg) => {
+    await pg.click('[data-accion="enviar"]');
+    await pg.waitForSelector('#formulario[hidden], [data-estado-envio]:not([hidden]), .resumen-errores', { timeout: 8000 }).catch(() => null);
+    return { hecho: await pg.isHidden('#formulario'), aviso: await texto(pg, '[data-estado-envio]') };
+  };
+  await parte('A3 localStorage lleno', [HOSTIL.cuotaLs()], async ({ pagina }) => {
+    const pg = await pagina();
+    await abreCotejo(pg, conCita.folio);
+    await pg.check('input[name="se_presento"][value="no"]');
+    await pg.fill('#cita_fecha', dma(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-min')));
+    await pg.selectOption('#cita_hora', '09:30');
+    const r = await registraCita(pg);
+    const citas = await pg.evaluate((F) => APD.cargar().then((d) => { const s = d.solicitud.find((x) => x.folio === F); return d.cita.filter((x) => x.solicitud_id === s.id && x.resultado === 'pendiente').length; }), conCita.folio);
+    comprueba(!r.hecho && /Este navegador no permitió guardar el registro de la cita/.test(r.aviso) && citas === 1,
+      t(`A3: «No se presentó» que no se guardó no dice «Quedó guardado» («${r.aviso.slice(0, 90)}»)`));
+  });
+  await parte('A3 IndexedDB lleno', [HOSTIL.cuotaIdb], async ({ pagina }) => {
+    const pg = await pagina();
+    await abreCotejo(pg, conCita.folio);
+    await pg.check('input[name="se_presento"][value="si"]');
+    await pg.check('input[name="identidad"][value="misma"]');
+    for (const k of await pg.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await pg.check(`input[name="coincide_${k}"][value="si"]`);
+    await pg.check('input[name="pago"][value="si"]');
+    await pg.setInputFiles('[data-campo="factura_pago"] [data-archivos] > input[type="file"]', PDF);
+    await pg.waitForSelector('[data-campo="factura_pago"] .lista-arch li[data-estado="listo"]');
+    await pg.fill('#factura_rfc', 'XAXX010101000');
+    await pg.fill('#factura_razon_social', 'Prueba Ejemplo');
+    await pg.fill('#factura_folio_fiscal', crypto.randomUUID().toUpperCase());
+    const r = await registraCita(pg);
+    const estado = await pg.evaluate((F) => APD.cargar().then((d) => d.solicitud.find((x) => x.folio === F).estado), conCita.folio);
+    comprueba(!r.hecho && /Este navegador no permitió guardar el registro de la cita/.test(r.aviso) && estado === 'validada_en_linea',
+      t(`A3: el cotejo terminado sin la factura guardada no se registra («${r.aviso.slice(0, 90)}», ${estado})`));
+  });
+
+  /* ── A4 · el documento correcto de una cita en pausa no se guarda (IndexedDB lleno) ── */
+  const pausaCita = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sPausa = datos.solicitud.find((x) => x.id === pausaCita.solicitud_id);
+  await parte('A4', [HOSTIL.sesion(sPausa.solicitante_id), HOSTIL.cuotaIdb], async ({ pagina }) => {
+    const pg = await pagina(`corregir.html?folio=${sPausa.folio}`);
+    await pg.waitForSelector('#formulario:not([hidden])');
+    for (const campo of await pg.$$('#formulario [data-campo^="doc_"]')) if (await campo.isVisible()) await (await campo.$('input[type="file"]')).setInputFiles(PDF);
+    const r = await envia(pg, '[data-hecho]:not([hidden])');
+    comprueba(!r.listo && /Este navegador no permitió guardar tu documento de prueba/.test(r.aviso),
+      t(`A4: el documento que no se guardó no dice «Listo: ya cargaste el documento» («${r.aviso.slice(0, 90)}»)`));
+  });
+
+  /* ── A5 · examen: la respuesta y el envío no se guardan (localStorage se llena a medio examen) ── */
+  await parte('A5', [HOSTIL.cuotaLs(false)], async ({ pagina }) => {
+    const ap = await pagina('aplicar.html?folio=APD-G-2026-003');
+    const boton = ap.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).first();
+    const ins = await boton.getAttribute('data-ins');
+    await boton.click();
+    await ap.waitForSelector(`tr[data-ins="${ins}"] .examen-codigo`);
+    const codigo = (await ap.textContent(`tr[data-ins="${ins}"] .examen-codigo`)).trim();
+    const ex = await pagina('examen.html');
+    await ex.fill('#codigo', codigo);
+    await ex.click('#entrar [data-accion="enviar"]');
+    await ex.waitForSelector('[data-vista="confirmar"]:not([hidden])');
+    await ex.click('[data-ir-vista="instrucciones"]');
+    await ex.click('[data-empezar]');
+    await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+    await ex.evaluate(() => { window.__cuotaLs = true; });
+    await ex.check('[data-opciones] input[name="respuesta"] >> nth=0', { force: true });
+    await ex.waitForSelector('[data-vista="pregunta"] [data-aviso-falla]:not([hidden]), [data-guardado]:text("Respuesta guardada.")', { timeout: 5000 }).catch(() => null);
+    const avisoResp = await texto(ex, '[data-vista="pregunta"] [data-aviso-falla]');
+    const guardada = (await ex.textContent('[data-guardado]')).trim();
+    const marcada = await ex.isChecked('[data-opciones] input[name="respuesta"] >> nth=0');
+    comprueba(/No se pudo guardar tu respuesta: levanta la mano/.test(avisoResp) && guardada !== 'Respuesta guardada.' && !marcada,
+      t(`A5: la respuesta que no se guardó no dice «Respuesta guardada.» («${avisoResp.slice(0, 70)}», «${guardada}»)`));
+    for (let i = 0; i < 12 && await ex.isHidden('[data-vista="revision"]'); i++) await ex.click('[data-siguiente]');
+    await ex.click('[data-enviar]');
+    await ex.click('.dialogo-confirma [data-r="si"]');
+    await ex.waitForSelector('[data-vista="revision"] [data-aviso-falla]:not([hidden]), [data-vista="resultado"]:not([hidden])', { timeout: 5000 }).catch(() => null);
+    const avisoEnvio = await texto(ex, '[data-vista="revision"] [data-aviso-falla]');
+    const terminado = await ex.evaluate((cod) => JSON.parse(localStorage.getItem(`apd.examen.c.${cod}`)).terminado_en, codigo);
+    comprueba(await ex.isHidden('[data-vista="resultado"]') && /No se pudo enviar tu examen: levanta la mano/.test(avisoEnvio) && terminado === null,
+      t(`A5: el examen que no se guardó no muestra un resultado («${avisoEnvio.slice(0, 70)}», terminado_en ${terminado})`));
+  });
+
+  /* ── M3 · aplicar el examen con localStorage bloqueado: el pase de lista no se registra y se dice ── */
+  await parte('M3', [HOSTIL.lsLanza], async ({ pagina }) => {
+    const ap = await pagina('aplicar.html?folio=APD-G-2026-003');
+    await ap.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).first().click();
+    await ap.waitForSelector('[data-aviso-accion]:not([hidden])', { timeout: 5000 }).catch(() => null);
+    const a = await texto(ap, '[data-aviso-accion]');
+    comprueba(/No se registró a .+No se registró el pase de lista: este navegador no permitió guardarlo/.test(a), t(`M3: «Presente» que no se guardó lo dice («${a.slice(0, 90)}»)`));
+  });
+
+  /* ── A6 · registros dañados: se saltan, lo demás se ve y el aviso lo dice una vez ── */
+  const [nuevaA6] = libres.slice(2);
+  const otraEnviada = enviadas.find((x) => x.id !== podaEnviada.id);
+  const gIntegracion = datos.grupo.find((g) => g.estado === 'en_integracion');
+  const FOLIO_A6 = 'APD-S-2026-09990';
+  await parte('A6', [], async ({ pagina }) => {
+    const pg = await pagina('revision.html');
+    await pg.waitForSelector('[data-cuenta]');
+    await pg.evaluate(async ([F, p, P2, F3, g]) => {
+      const ahora = () => new Date().toISOString();
+      const espera = () => new Promise((r) => setTimeout(r, 20));
+      // Lo válido: una solicitud enviada en la prueba, una revisión y una fecha propuesta de un grupo
+      await APD_ARCHIVOS_PRUEBA.guardaEnvio({ folio: F, existente: false, tipo_acreditacion: 'poda', modalidad: 'nueva', enviada_en: ahora(), estado_desde: ahora(),
+        nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: null,
+        persona: { id: p.id, nombre: p.nombre, primer_apellido: p.primer_apellido, segundo_apellido: p.segundo_apellido || null, curp: p.curp, correo: p.correo, telefono: p.telefono, adscripcion: 'independiente', organizacion_id: null, organizacion_nombre: '' } }, []);
+      APD_PERSONAL.guardaRevision(P2, { resultado: 'con_observaciones', texto: 'Con observaciones', datos: {}, revisor: 'revision.prueba', en: ahora() });
+      // Lo dañado: una revisión null, un evento null y otro que no se puede aplicar, un pase de lista null y una solicitud sin persona
+      const rev = JSON.parse(localStorage.getItem('apd.personal.revisiones'));
+      rev[F3] = null;
+      localStorage.setItem('apd.personal.revisiones', JSON.stringify(rev));
+      await espera();
+      localStorage.setItem('apd.personal.grupos', JSON.stringify([null, { tipo: 'agregar', grupo_id: g, folios: 5, en: ahora() }]));
+      await espera();
+      APD_PERSONAL.guardaGrupo({ tipo: 'proponer', grupo_id: g, fecha_inicio: '2026-11-30', hora_entrada: '09:00' });
+      localStorage.setItem('apd.examen.lista', JSON.stringify({ 'inscripcion-que-no-existe': null }));
+      await APD_ARCHIVOS_PRUEBA.guardaEnvio({ folio: 'APD-S-2026-09991', existente: false, tipo_acreditacion: 'poda', modalidad: 'nueva' }, []);
+    }, [FOLIO_A6, nuevaA6, podaEnviada.folio, otraEnviada.folio, gIntegracion.id]);
+    const r = await pg.evaluate(([F, P2, g]) => APD.cargar().then((d) => ({
+      nueva: (d.solicitud.find((s) => s.folio === F) || {}).estado || null,
+      revisada: d.solicitud.find((s) => s.folio === P2).estado,
+      propuesta: d.grupo.find((x) => x.id === g).fecha_inicio,
+      ignorados: d.prueba_ignorados
+    })), [FOLIO_A6, podaEnviada.folio, gIntegracion.id]);
+    comprueba(r.nueva === 'enviada' && r.revisada === 'con_observaciones' && r.propuesta === '2026-11-30' && r.ignorados === 5,
+      t(`A6: con registros dañados, lo demás guardado se sigue viendo y se cuentan los ignorados (${JSON.stringify(r)})`));
+    await pg.goto(BASE + 'revision.html');
+    await pg.waitForSelector('[data-aviso-prueba="ignorados"]', { timeout: 6000 }).catch(() => null);
+    const franja = await texto(pg, '[data-aviso-prueba="ignorados"]');
+    const cuenta = await texto(pg, '[data-cuenta]');
+    comprueba(/5 registros guardados no se pudieron leer/.test(franja) && /Borrar lo guardado/.test(franja) && await pg.locator('[data-aviso-prueba]').count() === 1,
+      t(`A6: bajo la franja, un solo aviso dice cuántos registros no se pudieron leer («${franja.slice(0, 90)}»)`));
+    comprueba(!/No se pudieron cargar/.test(cuenta) && await pg.locator(`[data-filas] tr[data-folio="${FOLIO_A6}"]`).count() === 1,
+      t(`A6: la bandeja muestra la solicitud enviada en la prueba, sin el mensaje de error («${cuenta.slice(0, 60)}»)`));
+    await pg.click('.menu-pruebas-boton');
+    const menu = await texto(pg, 'dialog.menu-pruebas [data-guardado]');
+    await pg.click('dialog.menu-pruebas >> button:text-is("Borrar lo guardado")');
+    await pg.waitForFunction(() => /Se borró/.test(document.querySelector('.menu-pruebas-estado').textContent));
+    comprueba(/5 registros guardados no se pudieron leer/.test(menu) && await pg.locator('[data-aviso-prueba="ignorados"]').count() === 0,
+      t(`A6: el menú de pruebas también lo dice y «Borrar lo guardado» quita el aviso («${menu.slice(-60)}»)`));
+  });
+  // La bandeja nunca muestra a la vez el error y la lista
+  await parte('A6 bandeja', [], async ({ pagina }) => {
+    const pg = await pagina();
+    // Una revisión aplicada sin forma: la bandeja ya pintó la lista cuando falla al listar «Revisadas en esta prueba»
+    await pg.route('**/app/personal.js*', async (r) => { const res = await r.fetch(); const js = (await res.text()).replace('function revisiones(datos) {', 'function revisiones(datos) { if (window.__rompe) return { "APD-S-2026-00000": null }; '); await r.fulfill({ response: res, body: js }); });
+    await pg.addInitScript(() => { window.__rompe = true; });
+    await pg.goto(BASE + 'revision.html');
+    await pg.waitForFunction(() => /No se pudieron cargar/.test(document.querySelector('[data-cuenta]').textContent), null, { timeout: 6000 }).catch(() => null);
+    const filas = await pg.locator('[data-filas] tr').count();
+    comprueba(/No se pudieron cargar/.test(await pg.textContent('[data-cuenta]')) && filas === 0 && await pg.isHidden('[data-revisadas]'),
+      t(`A6: si la bandeja no se puede cargar, dice el error sin la lista (${filas} filas)`));
+  });
+
+  /* ── A8 · «Mi perfil»: el contacto (localStorage lleno) y la fotografía (IndexedDB lleno) no se guardan ── */
+  await parte('A8 contacto', [HOSTIL.sesion(CON_ORG.id), HOSTIL.cuotaLs()], async ({ pagina }) => {
+    const pg = await pagina('datos.html');
+    await pg.waitForSelector('[data-editar="contacto"]');
+    await pg.click('[data-editar="contacto"]');
+    await pg.waitForSelector('#form-contacto:not([hidden])');
+    await pg.fill('#form-contacto #telefono', '5512345678');
+    await pg.click('#form-contacto [data-accion="enviar"]');
+    await pg.waitForSelector('#form-contacto [data-estado-envio]:not([hidden]), [data-guardado="contacto"]:not([hidden])', { timeout: 8000 }).catch(() => null);
+    const a = await texto(pg, '#form-contacto [data-estado-envio]');
+    comprueba(/No se guardó\. Este navegador no permitió guardar tu contacto/.test(a) && await pg.isHidden('[data-guardado="contacto"]'),
+      t(`A8: el contacto que no se guardó no dice «Se guardó tu contacto» («${a.slice(0, 80)}»)`));
+  });
+  await parte('A8 fotografía', [HOSTIL.sesion(CON_ORG.id), HOSTIL.cuotaIdb], async ({ pagina }) => {
+    const pg = await pagina('datos.html');
+    await pg.waitForSelector('[data-editar="contacto"]');
+    const r = await pg.evaluate(() => APD_PERFIL.guarda('foto', { datos: {}, archivos: [{ campo: 'foto', blob: new Blob(['x'], { type: 'image/png' }), nombre: 'f.png', tipo: 'image/png', size: 1 }] },
+      { signal: new AbortController().signal }).then(() => 'guardada', (e) => (e && e.codigo) || 'error'));
+    const marca = await pg.evaluate((id) => (JSON.parse(localStorage.getItem('apd.perfiles') || '{}')[id] || {}).foto_nueva || false, CON_ORG.id);
+    comprueba(r === 'almacenamiento' && !marca, t(`A8: la fotografía que no se guardó se rechaza y no queda marcada como nueva (${r}, ${marca})`));
+  });
+
+  /* ── M1 · la sesión no se guarda: Entrar, «Entrar como» y Crear cuenta lo dicen ── */
+  await parte('M1 Entrar', [HOSTIL.lsMetodos], async ({ pagina }) => {
+    const pg = await pagina('entrar.html');
+    await pg.fill('#curp', CON_ORG.curp);
+    await pg.fill('#contrasena', CONTRASENA);
+    const r = await envia(pg, 'body.nunca');
+    comprueba(/entrar\.html/.test(pg.url()) && /Este navegador no permitió guardar tu sesión de prueba/.test(r.aviso), t(`M1: «Entrar» sin poder guardar la sesión lo dice («${r.aviso.slice(0, 90)}»)`));
+  });
+  await parte('M1 Entrar como', [HOSTIL.lsMetodos], async ({ pagina }) => {
+    const pg = await pagina('index.html');
+    await pg.click('.menu-pruebas-boton');
+    await pg.selectOption('#menu-pruebas-perfil', 'poda');
+    const caso = await pg.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean)[0]);
+    await pg.selectOption('#menu-pruebas-persona', caso);
+    await pg.click('dialog.menu-pruebas >> button:text-is("Entrar")');
+    await pg.waitForTimeout(400);
+    const e = await texto(pg, '.menu-pruebas-estado');
+    comprueba(/index\.html/.test(pg.url()) && /Este navegador no permitió guardar la sesión de prueba/.test(e), t(`M1: «Entrar como» sin poder guardar la sesión lo dice («${e.slice(0, 80)}»)`));
+  });
+  await parte('M1 Crear cuenta', [HOSTIL.lsMetodos], async ({ pagina }) => {
+    const pg = await pagina('cuenta.html');
+    await pg.waitForSelector('#curp');
+    await llenaCuenta(pg, NUEVA);
+    const r = await envia(pg);
+    comprueba(!r.listo && /Tu cuenta de prueba quedó guardada, pero este navegador no permitió guardar tu sesión/.test(r.aviso),
+      t(`M1: «Crea tu cuenta» sin poder guardar la sesión no da el acuse («${r.aviso.slice(0, 90)}»)`));
+  });
+
+  /* ── M2 · material de estudio sin IndexedDB: ocultar y agregar lo dicen ── */
+  await parte('M2', [HOSTIL.idbNo], async ({ pagina }) => {
+    const pg = await pagina('material-personal.html');
+    await pg.waitForSelector('[data-filas] tr [data-accion-material="ocultar"]');
+    await pg.locator('[data-filas] tr [data-accion-material="ocultar"]').first().click();
+    await pg.click('dialog [data-r="si"]');
+    await pg.waitForSelector('[data-aviso-material]:not([hidden])', { timeout: 5000 }).catch(() => null);
+    const a = await texto(pg, '[data-aviso-material]');
+    comprueba(/No se guardó.*Este navegador no permitió guardar el cambio de «/.test(a), t(`M2: «Ocultar» sin IndexedDB lo dice («${a.slice(0, 90)}»)`));
+    await pg.click('[data-agregar]');
+    await pg.fill('#titulo', 'Guía de prueba');
+    await pg.fill('#edicion', 'Edición de prueba');
+    await pg.fill('#descripcion', 'Un documento para probar la carga del material.');
+    await pg.check('input[name="para"][value="ambas"]');
+    await pg.fill('#temas', '2 - Introducción');
+    await pg.setInputFiles('[data-campo="archivo"] input[type="file"]', join(raiz, 'sitio/material/NADF-001-RNAT-2015.pdf'));
+    await pg.click('[data-guardar]');
+    await pg.waitForSelector('#form-material [data-estado-envio]:not([hidden])', { timeout: 15000 }).catch(() => null);
+    const f = await texto(pg, '#form-material [data-estado-envio]');
+    comprueba(/No se guardó\. Este navegador no permitió guardar el documento/.test(f), t(`M2: «Agregar un documento» sin IndexedDB dice que es el navegador («${f.slice(0, 90)}»)`));
+  });
+
+  /* ── B3 · lo guardado caducó: se dice una vez ── */
+  await parte('B3', [], async ({ pagina }) => {
+    const pg = await pagina('revision.html');
+    await pg.waitForSelector('[data-cuenta]');
+    await pg.evaluate(([id, F]) => {
+      localStorage.setItem('apd.sesion', JSON.stringify({ id }));
+      APD_PERSONAL.guardaRevision(F, { resultado: 'con_observaciones', texto: 'Con observaciones', datos: {}, revisor: 'revision.prueba', en: new Date().toISOString() });
+      localStorage.setItem('apd.prueba.ultimo_uso', String(Date.now() - 8 * 864e5));
+    }, [CON_ORG.id, podaEnviada.folio]);
+    await pg.goto(BASE + 'tramites.html');
+    await pg.waitForURL(/entrar\.html/);
+    await pg.waitForSelector('[data-aviso-prueba="caducada"]', { timeout: 6000 }).catch(() => null);
+    const a = await texto(pg, '[data-aviso-prueba="caducada"]');
+    const queda = await pg.evaluate(() => localStorage.getItem('apd.personal.revisiones'));
+    await pg.waitForTimeout(1700);
+    await pg.goto(BASE + 'index.html');
+    await pg.waitForSelector('.menu-pruebas-boton');
+    const otraVez = await pg.locator('[data-aviso-prueba="caducada"]').count();
+    comprueba(/Lo guardado en esta prueba se borró/.test(a) && /más de 7 días sin usarla/.test(a) && queda === null && otraVez === 0,
+      t(`B3: al caducar lo guardado se dice una vez, en la pantalla a la que se llega («${a.slice(0, 80)}», después ${otraVez})`));
+  });
+}
+
 async function accesibilidad(navegador) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
@@ -2844,6 +3183,7 @@ try {
   if (!solo || solo === 'persistencia') await persistenciaPrueba(navegador);
   if (!solo || solo === 'romper') await romper(navegador);
   if (!solo || solo === 'romper' || solo === 'romper2') await romperDos(navegador);
+  if (!solo || solo === 'romper' || solo === 'romper3') await romperTres(navegador);
   if (!solo) await accesibilidad(navegador);
 } catch (e) {
   mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);

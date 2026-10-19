@@ -66,8 +66,15 @@
             const A = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
             const archivos = (payload.archivos || []).filter((a) => a.campo.startsWith('doc_') && a.blob);
             const en = new Date().toISOString();
-            return Promise.all(archivos.map((a) => (A ? A.guardaDocumento(s.folio, a.campo.slice(4), a, { en, motivo: 'cotejo', cargado_por: persona.correo || 'persona' }).catch(() => {}) : null)))
-              .then(() => ok({ n: archivos.length }));
+            // Si el navegador no guarda el documento (almacenamiento bloqueado o lleno), se dice: decía «Listo» y el personal
+            // no tenía nada que retomar (auditoría «intentar romperlo», F4 A4). Lo que sí quedó se quita: o todos o ninguno.
+            if (!A) return mal(APD.noGuardo('No se cargó tu documento', 'tu documento de prueba'));
+            return Promise.allSettled(archivos.map((a) => A.guardaDocumento(s.folio, a.campo.slice(4), a, { en, motivo: 'cotejo', cargado_por: persona.correo || 'persona' })))
+              .then((r) => {
+                if (r.every((x) => x.status === 'fulfilled')) return ok({ n: archivos.length });
+                const quita = archivos.filter((a, i) => r[i].status === 'fulfilled').map((a) => A.quitaDocumento(s.folio, a.campo.slice(4), en).catch(() => {}));
+                return Promise.all(quita).then(() => mal(APD.noGuardo(archivos.length === 1 ? 'No se cargó tu documento' : 'No se cargaron tus documentos', archivos.length === 1 ? 'tu documento de prueba' : 'tus documentos de prueba')));
+              });
           }).catch(mal), 400);
           signal.addEventListener('abort', () => { clearTimeout(t); mal(new Error('plazo')); });
         });

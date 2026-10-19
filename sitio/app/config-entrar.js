@@ -43,8 +43,9 @@ window.FORMKIT_OPCIONES = {
                 return mal({ titulo: 'Tu cuenta está bloqueada', pendiente: 'Pendiente (P79): a quién acudir para aclararlo.',
                   mensaje: 'En tu cita de cotejo no se pudo confirmar tu identidad. La Secretaría lo está aclarando; mientras, no puedes entrar.' });
               }
-              APD.guardaSesion({ id: p.id });
-              ok({ ok: true });
+              // Si el navegador no deja guardar la sesión, se dice: volvía a «Entrar» sin ningún mensaje (F4 M1)
+              if (!APD.guardaSesion({ id: p.id })) return mal({ titulo: 'No pudiste entrar', mensaje: APD.textoNoGuardo('tu sesión de prueba') });
+              return ok({ ok: true });
             });
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);

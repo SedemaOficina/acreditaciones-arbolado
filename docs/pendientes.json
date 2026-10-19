@@ -844,6 +844,14 @@
       "desde": "2026-10-19",
       "titulo": "Dos pestañas de «Cargar el documento correcto» guardan dos cargas",
       "recomendacion": "La base deja vigente la última carga. Decidir si se avisa a la persona que ya había otra carga en curso o si basta con conservar la última."
+    },
+    {
+      "id": "P161",
+      "grupo": "sia",
+      "bloquea": "no",
+      "desde": "2026-10-19",
+      "titulo": "Examen en línea: qué hace la pantalla si una respuesta o el envío no llegan al servidor",
+      "recomendacion": "Mismo trato que la versión de prueba: la opción no queda marcada, se pide levantar la mano y nunca se muestra un resultado sin confirmar. Va en el contrato de la API (con P29 y P159)."
     }
   ],
   "resueltos": [

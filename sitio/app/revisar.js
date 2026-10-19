@@ -333,7 +333,11 @@
               rechazada: 'Rechazada'
             };
             const en = new Date().toISOString();
-            P.guardaRevision(folio, { resultado, texto: textos[resultado], datos: d, revisor: P.REVISORA.usuario, en, desde: s.envio_real || s.estado_desde });
+            // Si el navegador no la guardó (almacenamiento bloqueado o lleno), se dice: decía «Quedó guardado» y la solicitud
+            // seguía en la bandeja (auditoría «intentar romperlo», F4 A2)
+            if (!P.guardaRevision(folio, { resultado, texto: textos[resultado], datos: d, revisor: P.REVISORA.usuario, en, desde: s.envio_real || s.estado_desde })) {
+              return mal(APD.noGuardo('No se guardó su revisión', 'su revisión de prueba', 'usted'));
+            }
             // Y después: la revisión se aplicó (como la respuesta de la API); si no, se retira y se dice, nunca un éxito falso
             return APD.cargar().then((despues) => {
               if (despues.revision.some((r) => r.solicitud_id === s.id && r.registrada_en === en)) return ok({ resultado, d });

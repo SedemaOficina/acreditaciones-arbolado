@@ -298,6 +298,20 @@ el sistema, la versión de prueba ahora lo detiene igual. Las reglas que cambian
 | 2026-10-19 | Al agregar personas a un grupo, el aviso dice **cuántas entraron de verdad** y, de las que no, quién y por qué (ya está en otro grupo, el grupo se llenó, ya no está en espera). Si no entró nadie, no queda nada guardado. Las que sí caben se agregan aunque otras no (como la base, una inscripción por persona) | Liber Saltijeral (F3 M1); que se agreguen las que caben es propuesta de Claude, por confirmar |
 | 2026-10-19 | **Todo botón que guarda queda deshabilitado mientras guarda** (el estándar ya lo hace con el botón de envío de sus formularios; el proyecto, con los suyos: «Guardar sin confirmar», «Al curso…», «Completar…», «Confirmar el grupo», «Guardar la asistencia», «Publicar», «Ocultar», «Iniciar el curso hoy») | Liber Saltijeral (F3 M6, B10) |
 
+## Decisiones del 2026-10-19 (auditoría «intentar romperlo», bloque 3)
+
+Liber aprobó corregir el bloque 3 (guardados que fallan sin avisar y un registro dañado que borraba de la vista todo lo
+guardado). Sólo afecta a la versión de prueba: en el SIA todo lo guarda la API. Lo que se fijó:
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-19 | **Nada se da por guardado si el navegador no lo guardó.** Si el almacenamiento está bloqueado, lleno o en modo privado, la pantalla lo dice con un mismo texto para todo («Este navegador no permitió guardar … (puede estar en modo privado o con el almacenamiento bloqueado o lleno). Prueba en una ventana normal o en otro navegador.»), de tú para la persona y de usted para el personal, y no da acuse, folio, «Quedó guardado» ni resultado. Aplica a la solicitud, «Mi perfil», «Cargar el documento correcto», la revisión, el cotejo (también la factura), el examen en línea, el pase de lista, el material de estudio, «Entrar», «Crea tu cuenta» y «Entrar como» del menú de pruebas. Es el texto que ya daba «Crea tu cuenta», con «o lleno» | Liber Saltijeral (aprobó la corrección F4 A1 a A5, A8, M1 a M3) |
+| 2026-10-19 | **Examen en línea:** si una respuesta no se guarda, la opción vuelve a la que estaba guardada y la pantalla dice «No se pudo guardar tu respuesta: levanta la mano. Quien aplica el examen te ayuda.»; si el envío no se guarda, no hay resultado («No se pudo enviar tu examen: levanta la mano…»). Si se acaba el tiempo y el cierre no se puede guardar, el reloj se detiene, el examen no acepta más respuestas y «Enviar mis respuestas» lo vuelve a intentar | Liber Saltijeral (F4 A5); el reloj detenido es propuesta de Claude, por confirmar |
+| 2026-10-19 | **Un registro guardado dañado no borra de la vista lo demás:** la versión de prueba salta lo que no tiene forma de registro (vacío, sin persona, sin hora) y aplica cada solicitud y cada evento de grupos por su cuenta; si uno no se puede aplicar, queda como estaba antes de él. Bajo la franja de la versión de prueba, en cada pantalla mientras existan, un solo aviso dice cuántos registros no se pudieron leer y que «Borrar lo guardado» los quita; el menú de pruebas lo repite en «Guardado en este navegador» | Liber Saltijeral (F4 A6); que el aviso salga en cada pantalla y no sólo en la primera es propuesta de Claude, por confirmar |
+| 2026-10-19 | **Al caducar lo guardado (7 días sin usar la prueba) se dice una vez**, en la primera pantalla a la que se llega después de borrarse: «Lo guardado en esta prueba se borró. Pasaron más de 7 días sin usarla en este navegador…» | Liber Saltijeral (F4 B3) |
+| 2026-10-19 | «Crea tu cuenta» con la cuenta guardada pero sin poder guardar la sesión: no da el acuse y dice «Tu cuenta de prueba quedó guardada, pero este navegador no permitió guardar tu sesión…». La cuenta se conserva | Propuesta de Claude, por confirmar (F4 M1) |
+| 2026-10-19 | «Cargar el documento correcto» con varios documentos guarda todos o ninguno: si uno no se guarda, se quitan los que sí y se dice | Propuesta de Claude, por confirmar (F4 A4) |
+
 ## Lineamientos
 
 La Ley Ambiental de la Ciudad de México (art. 111, párrafo segundo) ordena a la Secretaría emitir los lineamientos para
