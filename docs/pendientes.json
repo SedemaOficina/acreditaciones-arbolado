@@ -1319,7 +1319,7 @@
     {
       "id": "P127",
       "titulo": "Estándar: la fotografía puede conservar su EXIF, ubicación GPS incluida (P127)",
-      "como": "Lo resolvió la versión 1.4.2 (con el ajuste de la 1.4.3) del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y no tenía solución provisional que quitar: sin conservarExif, la foto de «Crea tu cuenta» y de «Mi perfil» se guarda recodificada y sin EXIF ni ubicación (comprobado con una foto con GPS, bitácora bloque 82).",
+      "como": "Lo resolvió la versión 1.4.2 (con el ajuste de la 1.4.3) del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y no tenía solución provisional que quitar: ninguna pantalla pide conservarExif, así que la foto de «Crea tu cuenta» y la de «Mi perfil» (el mismo módulo) se guardan recodificadas y sin EXIF ni ubicación. Comprobado en «Crea tu cuenta» con una foto con GPS que en la 0.59 se guardaba con su ubicación (bitácora, bloque 82).",
       "fecha": "2026-10-19"
     },
     {

@@ -1326,3 +1326,39 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   personas de la espera» ya pulsa el botón real de la ficha (R4-14).
 - Pruebas: `probar-base` 303 de 303, concurrencia 20 de 20, restauración correcta; `probar-esquemas` 128;
   `probar-sitio` 960 (con axe; 33 nuevas); `probar-examen` 79; `probar-volumen` 64 (12 nuevas).
+
+## 2026-10-19 · Bloque 82 · Estándar de formularios 1.5.1 y documentos (bloques 4 y 5 de la auditoría)
+
+- El sitio pasa del Estándar de formularios 1.4.1 al **1.5.1** (decisión de Liber; incluye la 1.4.4 que pedía la
+  instrucción del proyecto). Copia regenerada con `construir-sitio`; logotipo de 477 × 96 (27 KB) y el `<img>` de las 21
+  páginas con su tamaño real (P130).
+- Se quitan las soluciones provisionales que el estándar ya resolvió: en `apd.css`, las reglas de `.estado`,
+  `.tabla-bandeja` (`.estado`, `.tabla-valor`, `.mono`, `.btn`, `.btn-enlace`), el `max-width: none` de `.bajada` y
+  `.ayuda-bloque` y las de `.chip-fijo` (P126, P134, P135, P145); `APD.aviso`, sustituido por `FormKit.aviso` con pasos
+  y enlaces (P131; «Mis trámites», el inicio y «Material de estudio» cargan el núcleo para sus avisos); `APD.meta`,
+  sustituido por `.linea-datos` (`APD.lineaDatos`, P134); el idioma `es-MX-u-hc-h23` que forzaba las 24 horas del
+  acuse (P128); y el borrador propio de la solicitud: ahora es el del núcleo, que empieza con el primer gesto de la
+  persona, con el almacén de la prueba como proveedor de archivos (P148). Lo propio del trámite se queda en
+  `solicitud.js`: la franja se ofrece cuando la solicitud está lista, las declaraciones se vuelven a marcar, y al llegar
+  los documentos se recalculan el curso, la experiencia y la revisión. Hallazgo de paso: en la 0.59, los documentos
+  cargados después de recuperar un borrador no entraban en él (se recuperaban 2 de 4); con el del núcleo, los 4.
+- Franja del borrador con los textos de la 1.5.1: «Recuperar borrador» (secundario), «Empezar de nuevo» con el foco en
+  «Conservar» y «Descartar borrador». `mensajes-usted.js` ya no define `sesionExpira` (retirado) y pone en usted
+  `archRechazoProceso`; los demás textos nuevos que se ven en el personal no se dirigen a nadie.
+- Comprobado con la 1.5.1: una foto JPG con GPS en «Crea tu cuenta» se agrega y se guarda recodificada y sin EXIF (en
+  la 0.59, una muy comprimida se guardaba con su ubicación) (P127); el RFC con Ñ se conserva en el cotejo y en el
+  servidor (con la 1.4.1 se guardaba con N) (P129); el visor y los rótulos de la tabla, sin cambios que hacer (P146,
+  P147). P152 sigue sin resolverse en la 1.5.1: la solución de `app/apd.js` se queda y sus pruebas (fechas y
+  «romperlo») pasan. Auditor de CSS del estándar sobre `apd.css` y `examen.css`: 0 hallazgos.
+- Documentos (bloque 5): P126 a P131, P134, P135 y P145 a P148 resueltos en `pendientes.json`; versión 1.5.1 en LEEME,
+  ETAPA-1, ETAPA-2 y DECISIONES (fila nueva; la de la 1.4.1, sustituida); filas del calendario del personal y del
+  examen de prueba de 10 preguntas (R4-06); P124 en lugar de P92 (R4-09); «esta semana y siete más» (R4-10);
+  `dias_inhabiles`, parámetro previsto que no existe (R4-11); ETAPA-2 al día con el planeador y con los hallazgos del
+  estándar abiertos, P152 a P158 y P166 (R4-12); el manual publicado pesa 11.7 MB (D3-01); «por vencer» son 31 días,
+  como la base (REGLAS); cada «Anexo 1» dice de qué documento es (G1-03).
+- `auditar-sitio` acepta el aviso «¿salir sin guardar?» al recargar una pantalla: desde la 0.59 se detenía en
+  «Programar un curso» (ERR_ABORTED).
+- Pruebas: `probar-base` 303 de 303, concurrencia 20 de 20, restauración correcta; `probar-esquemas` 131 (3 nuevas);
+  `probar-sitio` 1029 (con axe; 69 nuevas, `SOLO=estandar` entre ellas); `probar-examen` 79; `probar-volumen` 64;
+  `auditar-sitio` 60 pantallas y 201 botones, con los mismos 2 hallazgos que la 0.59 (un enlace del visor bajo el botón
+  del menú de pruebas y «Ir al contenido» en «Corregir»).
