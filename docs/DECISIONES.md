@@ -73,7 +73,7 @@ el borrador debe actualizarse** (sección «Lo que hay que corregir en los linea
 | 2026-10-16 | En la revisión, al aceptar un documento se pasa al siguiente sin decidir: en computadora el visor lo muestra y la lista lo trae a la vista; con todo decidido, la página baja al resultado. Al observar no avanza, porque hay que escribir qué corregir | Liber Saltijeral |
 | 2026-10-16 | Versión de prueba sin servidor: los archivos que se cargan al enviar o reenviar una solicitud se guardan sólo en ese navegador (IndexedDB) y la revisión del personal los muestra en el visor; la solicitud llega a la bandeja señalada «Archivos cargados en este navegador». El menú de pruebas los borra. Se quita al pasar al SIA | Liber Saltijeral |
 | 2026-10-16 | Fecha de nacimiento: se escribe como día/mes/año (23/07/1985), sin calendario. Acepta también guiones, puntos o los ocho dígitos juntos y la deja como 23/07/1985; debe ser una fecha real, no posterior a hoy, y coincidir con la CURP | Liber Saltijeral |
-| 2026-10-16 | Comprobante de domicilio: al emitir los lineamientos no se pide, porque no se utiliza. Mientras la norma vigente lo exija, el sistema lo sigue pidiendo (P03) | Liber Saltijeral |
+| 2026-10-16 | Comprobante de domicilio: al emitir los lineamientos no se pide, porque no se utiliza. ~~Mientras la norma vigente lo exija, el sistema lo sigue pidiendo (P03)~~ Corregido el 2026-10-19: ninguna norma publicada lo exige (lo pide el borrador del área); mientras se consulta a la Dirección Jurídica, el sistema lo sigue pidiendo (P03) | Liber Saltijeral |
 | 2026-10-16 | Fecha de nacimiento: escritura guiada como la del campo de fecha del navegador, pero sin calendario: al completar el día pasa al mes y al completar el mes pasa al año, con las diagonales solas; muestra «dd/mm/aaaa» en el campo | Liber Saltijeral |
 | 2026-10-16 | Menú de pruebas en cinco bloques, siempre en el mismo orden: estás como, en esta pantalla (sólo lo que aplica), ~~entrar como (casos de prueba con nombre, agrupados por etapa, con el personal incluido)~~, ir a otra pantalla (agrupadas por quién la usa) y ajustes de la prueba (obligatorias, lo guardado, empezar de cero). La caja de personas de ejemplo de «Entrar» se quita: todo lo de prueba queda en el menú. Bloque «Entrar como» sustituido (2026-10-18) por los dos pasos «¿Quién?» / «¿En qué momento?» (ver «Decisiones del 2026-10-18») | Liber Saltijeral, en la maqueta aprobada |
 | 2026-10-17 | Direcciones Generales de la SEDEMA, en este orden: DGSANPAVA, DGCORENADR, DGEIRA, DGIVA, DGCPCA, DGZCFS | Liber Saltijeral |
@@ -259,6 +259,26 @@ P113 a P119 están resueltos en el estándar; en el proyecto sólo quedan las de
 | 2026-10-18 | «Asistencia» y «Aplicar el examen» sin enlace abren en «Mis grupos de hoy» del instructor: con un solo grupo con clase o examen hoy entran directo; con varios, una tarjeta por grupo (nombre, folio, lugar, hora, personas y «Pasar asistencia» o «Pasar lista y aplicar»); debajo, «Próximos». Con ?folio= siguen igual | Liber Saltijeral |
 | 2026-10-18 | La propuesta C (calendario del Vivero con todos los cursos) queda para después | Liber Saltijeral |
 
+## Decisiones del 2026-10-19 (preguntas de la auditoría del 19/10)
+
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 2026-10-19 | Comprobante de domicilio: se consulta a la Dirección Jurídica; mientras, se sigue pidiendo y los documentos citan la fuente real (el borrador del área), no «la norma lo exige» (P03) | Liber Saltijeral |
+| 2026-10-19 | El planeador de Grupos vuelve a decir «su grupo» de cada organización (cuántas le faltan) y «Programar un curso» avisa antes de crearle un segundo grupo | Liber Saltijeral |
+| 2026-10-19 | El primer día de un curso es, a más tardar, un año después de hoy (hoy + 12 meses, ese día incluido), en la pantalla y en la base (`inicio_muy_lejano`) | Liber Saltijeral |
+| 2026-10-19 | Dos personas a la vez: la base bloquea la fila que cada regla consulta (`FOR UPDATE`); en la etapa 3, la pantalla avisa «la solicitud cambió» | Liber Saltijeral |
+| 2026-10-19 | Respaldos: la huella de cada respaldo se guarda aparte y se prueba la restauración (mensual en operación; `probar-base`, paso 7). Antes de datos reales, la bitácora se sella en cadena (P162) | Liber Saltijeral |
+| 2026-10-19 | La cuenta del servicio ya no pide folios ni abre expedientes directamente: sólo las reglas de la base lo hacen | Liber Saltijeral |
+| 2026-10-19 | «Citas de cotejo» desglosa su encabezado: atendidas, no se presentaron, sin pago y pausa vencida (y canceladas) | Liber Saltijeral |
+| 2026-10-19 | Al cancelar una solicitud, su cita abierta se cierra con un resultado nuevo, «cancelada», con su motivo | Liber Saltijeral |
+| 2026-10-19 | Política de contenido (CSP) en las 21 páginas desde la versión de prueba | Liber Saltijeral |
+| 2026-10-19 | Licencia del repositorio: se pregunta a la Secretaría; mientras, «Todos los derechos reservados» (P160) | Liber Saltijeral |
+| 2026-10-19 | Una acreditación emitida un 29 de febrero vence el 28 de febrero del año siguiente, como lo calcula la base; la pantalla calcula igual | Liber Saltijeral |
+| 2026-10-19 | El instructor sólo abre y opera sus propios grupos; uno ajeno dice «Este grupo lo da otra persona» | Liber Saltijeral |
+| 2026-10-19 | Las pruebas corren solas en cada subida a GitHub | Liber Saltijeral |
+| 2026-10-19 | Manual técnico de poda con cuota: se confirma con el área; mientras, se queda publicado (P161) | Liber Saltijeral |
+| 2026-10-19 | Los cuatro puntos abiertos del 18/10 sin número pasan a P153 a P156 | Liber Saltijeral |
+
 ## Lineamientos
 
 La Ley Ambiental de la Ciudad de México (art. 111, párrafo segundo) ordena a la Secretaría emitir los lineamientos para
@@ -299,7 +319,7 @@ el mismo bloque el artículo del anteproyecto, su versión de trabajo y el campo
 | 10 | La consecuencia de no renovar a tiempo está truncada | Pasado un año del vencimiento se tramita como nueva |
 | 11 | «El resultado de la evaluación será inapelable» | Liber lo mantiene (mapa, R37). Recomendación: que la Dirección Jurídica revise la redacción antes de publicar |
 | 12 | Faltan el check list (anexo), el concepto y monto del derecho, y las secciones «Del pago» y «Del curso» | Pedirlos a la Dirección (P04). El Anexo 1 de carreras afines ya no hace falta: la carrera la valida el personal en la revisión (P59) |
-| 13 | El comprobante de domicilio no tiene uso declarado en el procedimiento | **No pedirlo** (decisión de Liber): no se utiliza. Hoy la norma lo exige y el sistema lo sigue pidiendo hasta que se publiquen los lineamientos (P03) |
+| 13 | El comprobante de domicilio no tiene uso declarado en el procedimiento | **No pedirlo** (decisión de Liber): no se utiliza. Hoy lo pide el procedimiento del área (este borrador), no una norma publicada; el sistema lo sigue pidiendo mientras se consulta a la Dirección Jurídica (P03; auditoría del 2026-10-19) |
 | 14 | Calificación mínima de dictaminador: 9.0 | 8.0 (poda se queda en 7.0) |
 | 15 | Renovación de dictaminador pide comprobante de estudios y currículum | Sólo si se actualizaron |
 | 16 | Expediente por solicitud o sin regla | Un expediente por persona (CURP) para todos sus trámites, abierto en su primer cotejo |
