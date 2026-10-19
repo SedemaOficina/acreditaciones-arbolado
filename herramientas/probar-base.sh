@@ -82,4 +82,10 @@ dropdb "$restaurada"
 
 echo "8/8 Exportación de datos/ficticios.json"
 node "$raiz/herramientas/exportar-ficticios.mjs" "$base"
+# Regenerar no debe cambiar el archivo sin motivo (auditoría 2026-10-19, A3-01): se compara con el guardado en Git.
+# Aquí sólo se informa (quien cambió los ficticios debe guardar el archivo nuevo); la verificación de GitHub falla.
+if git -C "$raiz" rev-parse --verify -q HEAD >/dev/null 2>&1; then
+  if git -C "$raiz" diff --quiet -- datos/ficticios.json; then echo "datos/ficticios.json: igual al guardado en Git."
+  else echo "datos/ficticios.json: cambió respecto al guardado en Git (git diff datos/ficticios.json)."; fi
+fi
 echo "Listo."

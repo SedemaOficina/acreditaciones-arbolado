@@ -22251,7 +22251,7 @@
  ],
  "material_estudio": [
   {
-   "id": "d051d59a-421a-4f07-a7fc-ca64eb5bb9f4",
+   "id": "b68f16c8-45bb-44ed-8eb9-cff6c7746560",
    "clave": "norma_poda",
    "orden": 1,
    "temas": [
@@ -22326,7 +22326,7 @@
    "tipo_acreditacion": null
   },
   {
-   "id": "2cf034ef-848b-479b-b3b0-88b9c3d4f85f",
+   "id": "6f981d2b-818b-4e63-8d36-bfea5ad678a0",
    "clave": "manual_poda",
    "orden": 2,
    "temas": [
@@ -22385,7 +22385,7 @@
    "tipo_acreditacion": null
   },
   {
-   "id": "68e58a95-c3be-406a-9b2c-576fcf5757c4",
+   "id": "9b76fe05-c4b4-4021-8fb6-e8f47f9282a8",
    "clave": "ley_ambiental",
    "orden": 3,
    "temas": [
