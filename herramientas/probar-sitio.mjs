@@ -3538,6 +3538,49 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
   await page.close();
 }
 
+/* ── Política de contenido y de referente (auditoría 2026-10-19, B7-01; decisión 9) ──
+   Las 21 páginas declaran la misma CSP estricta (sin 'unsafe-inline' ni 'unsafe-eval') y el referente same-origin,
+   antes de cualquier recurso; y en el navegador nada la viola: cada página, el visor de PDF, la foto de la cuenta
+   (vista previa y recodificación) y el examen. La genera herramientas/construir-sitio.mjs. */
+async function politicaContenido(navegador) {
+  const t = (m) => `[csp] ${m}`;
+  const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html')).sort();
+  const politicas = new Set();
+  const malas = [];
+  for (const p of paginas) {
+    const h = readFileSync(join(raiz, 'sitio', p), 'utf8');
+    const m = h.match(/^<!DOCTYPE html>\n<html[^>]*>\n<head>\n<meta charset="utf-8">\n<meta http-equiv="Content-Security-Policy" content="([^"]+)">\n<meta name="referrer" content="same-origin">\n/);
+    if (!m || (h.match(/Content-Security-Policy/g) || []).length !== 1) { malas.push(p); continue; }
+    politicas.add(m[1]);
+  }
+  comprueba(paginas.length === 21 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
+  const csp = [...politicas][0] || '';
+  comprueba(politicas.size === 1 && /script-src 'self';/.test(csp) && /style-src 'self';/.test(csp) && /object-src 'none'/.test(csp) && /base-uri 'none'/.test(csp) && !/unsafe/.test(csp),
+    t(`una sola política, estricta, en todas: «${csp}»`));
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
+  await c.addInitScript(() => { window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())); });
+  const pg = await c.newPage();
+  const enConsola = [];
+  pg.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) enConsola.push(m.text().slice(0, 140)); });
+  const violaciones = async () => (await pg.evaluate(() => window.__csp || [])).concat(enConsola.splice(0));
+  const revisa = async (donde) => { const v = await violaciones(); comprueba(!v.length, t(`${donde}: sin violaciones${v.length ? ': ' + [...new Set(v)].slice(0, 3).join(' | ') : ''}`)); };
+  await pg.goto(BASE + 'index.html');
+  await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
+  for (const p of paginas) { await pg.goto(BASE + p); await pg.waitForLoadState('networkidle'); await revisa(p); }
+  // El visor de PDF (pdf.js y su worker)
+  await pg.goto(BASE + `revisar.html?folio=${porClasificar.folio}`);
+  await pg.click('[data-ver="curriculum_vitae"]');
+  await pg.waitForSelector('.visor-lienzo');
+  await pg.waitForTimeout(500);
+  await revisa('revisar con el visor de PDF abierto');
+  // La foto de la cuenta: vista previa (blob:) y recodificación en lienzo
+  await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
+  await pg.goto(BASE + 'cuenta.html');
+  await cargaFoto(pg);
+  await revisa('cuenta con la fotografía cargada');
+  await c.close();
+}
+
 /* ── Limpieza del código (auditoría 2026-10-19, R4-07, A4-01 y R4-08) ──
    Sin clases de apd.css que nada usa, sin nombres exportados por APD y APD_PERSONAL que nadie usa fuera de su archivo
    (salvo los que se usan dentro), y las horas y los instructores de grupo.html y programar.html iguales. */
@@ -3826,6 +3869,7 @@ const solo = process.env.SOLO || '';
 const toca = (...nombres) => !solo || nombres.includes(solo);
 try {
   if (toca('limpieza')) await parte('limpieza', () => limpieza(navegador));
+  if (toca('csp')) await parte('política de contenido', () => politicaContenido(navegador));
   if (!solo) {
     await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));
     await parte('recorrido en escritorio', () => recorrido(navegador, 1280, 900, 'escritorio'));
