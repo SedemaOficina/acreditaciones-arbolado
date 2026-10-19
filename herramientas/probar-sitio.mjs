@@ -81,8 +81,9 @@ async function cargaFoto(page) {
 }
 
 let fallas = 0;
-const bien = (m) => console.log(`BIEN  ${m}`);
-const mal = (m) => { fallas++; console.log(`MAL   ${m}`); };
+let total = 0;
+const bien = (m) => { total++; console.log(`BIEN  ${m}`); };
+const mal = (m) => { total++; fallas++; console.log(`MAL   ${m}`); };
 const comprueba = (cond, m) => (cond ? bien(m) : mal(m));
 
 async function captura(page, nombre) {
@@ -3489,10 +3490,11 @@ async function fechas(navegador) {
   comprueba(distintas.length === 0, t(`UTC: «Mis trámites» de ${personas.length} personas y «Verificar» de 2 números dicen lo mismo que en la Ciudad de México${distintas.length ? ` (distintas: ${distintas.join(', ')})` : ''}`));
 }
 
-async function accesibilidad(navegador) {
+// En teléfono y en escritorio (auditoría 2026-10-19, A1-04: antes sólo a 390 px y sin «Corregir un documento»)
+async function accesibilidad(navegador, ancho = 390, alto = 844) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
-  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
+  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
@@ -3501,8 +3503,14 @@ async function accesibilidad(navegador) {
     [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`], [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`, 'sin marcar'],
     ['material.html'], ['material-personal.html'], ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'cita futura'], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
+  // «Cargar el documento correcto» de una cita en pausa, con la sesión de su persona (al final: cambia la sesión)
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sCorregir = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+  pantallas.push([`corregir.html?folio=${sCorregir.folio}`], [`corregir.html?folio=${sCorregir.folio}`, 'con errores']);
   for (const [url, estado] of pantallas) {
+    if (url.startsWith('corregir.html')) await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sCorregir.solicitante_id);
     await page.goto(BASE + url);
+    if (url.startsWith('corregir.html')) await page.waitForSelector('#formulario:not([hidden])');
     await page.waitForLoadState('networkidle');
     // La cita futura se atiende «como si fuera su día» (F2 A6), salvo cuando se revisa su aviso
     if (url.startsWith('cotejo.html') && estado !== 'cita futura' && await page.isVisible('[data-atender-simulada]')) await page.click('[data-atender-simulada]');
@@ -3525,7 +3533,7 @@ async function accesibilidad(navegador) {
     await page.addScriptTag({ content: axe });
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
       .violations.map((x) => `${x.id} (${x.nodes.length})`));
-    comprueba(v.length === 0, `[accesibilidad] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
+    comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
   }
   await page.close();
 }
@@ -3803,49 +3811,61 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+// Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
+// terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
+const detenidas = [];
+async function parte(nombre, fn) {
+  try { await fn(); } catch (e) {
+    detenidas.push(nombre);
+    mal(`[${nombre}] la parte se detuvo: ${String(e.message || e).split('\n')[0]}`);
+    if (process.env.PILA) console.error(e.stack);
+  }
+}
+// SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
+const solo = process.env.SOLO || '';
+const toca = (...nombres) => !solo || nombres.includes(solo);
 try {
-  if (!process.env.SOLO || process.env.SOLO === 'limpieza') await limpieza(navegador);
-  // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
-  const solo = process.env.SOLO || '';
+  if (toca('limpieza')) await parte('limpieza', () => limpieza(navegador));
   if (!solo) {
-    await recorrido(navegador, 390, 844, 'telefono');
-    await recorrido(navegador, 1280, 900, 'escritorio');
-    await personal(navegador, 390, 844, 'telefono');
-    await personal(navegador, 1440, 900, 'escritorio');
+    await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));
+    await parte('recorrido en escritorio', () => recorrido(navegador, 1280, 900, 'escritorio'));
+    await parte('personal en teléfono', () => personal(navegador, 390, 844, 'telefono'));
+    await parte('personal en escritorio', () => personal(navegador, 1440, 900, 'escritorio'));
   }
-  if (!solo || solo === 'solicitud') {
-    await solicitudRegresos(navegador, 390, 844, 'telefono');
-    await solicitudRegresos(navegador, 1280, 900, 'escritorio');
+  if (toca('solicitud')) {
+    await parte('solicitud: regresos en teléfono', () => solicitudRegresos(navegador, 390, 844, 'telefono'));
+    await parte('solicitud: regresos en escritorio', () => solicitudRegresos(navegador, 1280, 900, 'escritorio'));
   }
-  if (!solo || solo === 'guardado') {
-    await recorridoGuardado(navegador);
-    await caminosCotejo(navegador);
+  if (toca('guardado')) {
+    await parte('recorrido guardado', () => recorridoGuardado(navegador));
+    await parte('caminos del cotejo', () => caminosCotejo(navegador));
   }
-  if (!solo || solo === 'grupos') {
-    await caminosGrupos(navegador, 390, 844, 'telefono');
-    await caminosGrupos(navegador, 1280, 900, 'escritorio');
-    await caminosProgramar(navegador, 390, 844, 'telefono');
-    await caminosProgramar(navegador, 1440, 900, 'escritorio');
+  if (toca('grupos')) {
+    await parte('grupos en teléfono', () => caminosGrupos(navegador, 390, 844, 'telefono'));
+    await parte('grupos en escritorio', () => caminosGrupos(navegador, 1280, 900, 'escritorio'));
+    await parte('programar en teléfono', () => caminosProgramar(navegador, 390, 844, 'telefono'));
+    await parte('programar en escritorio', () => caminosProgramar(navegador, 1440, 900, 'escritorio'));
   }
-  if (!solo || solo === 'material') {
-    await materialEstudio(navegador, 390, 844, 'telefono');
-    await materialEstudio(navegador, 1280, 900, 'escritorio');
+  if (toca('material')) {
+    await parte('material en teléfono', () => materialEstudio(navegador, 390, 844, 'telefono'));
+    await parte('material en escritorio', () => materialEstudio(navegador, 1280, 900, 'escritorio'));
   }
-  if (!solo || solo === 'persistencia') await persistenciaPrueba(navegador);
-  if (!solo || solo === 'romper') await romper(navegador);
-  if (!solo || solo === 'romper' || solo === 'romper2') await romperDos(navegador);
-  if (!solo || solo === 'romper' || solo === 'romper3') await romperTres(navegador);
-  if (!solo || solo === 'fechas') await fechas(navegador);
-  if (!solo || solo === 'estandar') {
-    await estandarPantallas(navegador, 390, 844, 'telefono');
-    await estandarPantallas(navegador, 1280, 900, 'escritorio');
+  if (toca('persistencia')) await parte('persistencia', () => persistenciaPrueba(navegador));
+  if (toca('romper')) await parte('romper', () => romper(navegador));
+  if (toca('romper', 'romper2')) await parte('romper 2', () => romperDos(navegador));
+  if (toca('romper', 'romper3')) await parte('romper 3', () => romperTres(navegador));
+  if (toca('fechas')) await parte('fechas', () => fechas(navegador));
+  if (toca('estandar')) {
+    await parte('estándar en teléfono', () => estandarPantallas(navegador, 390, 844, 'telefono'));
+    await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
   }
-  if (!solo) await accesibilidad(navegador);
-} catch (e) {
-  mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
-  if (process.env.PILA) console.error(e.stack);
+  if (toca('accesibilidad')) {
+    await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
+    await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));
+  }
 } finally {
   await navegador.close();
 }
-console.log(fallas ? `\n${fallas} comprobación(es) fallida(s).` : '\nTodas las comprobaciones correctas.');
+console.log(`\n${total} comprobaciones${detenidas.length ? `; partes detenidas: ${detenidas.join(', ')}` : ''}.`);
+console.log(fallas ? `${fallas} comprobación(es) fallida(s).` : 'Todas las comprobaciones correctas.');
 process.exit(fallas ? 1 : 0);
