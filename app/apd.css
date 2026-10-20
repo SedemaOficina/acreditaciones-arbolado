@@ -577,6 +577,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 }
 @media (min-width: 760px) {
   .plan-barra { position: sticky; bottom: 0; z-index: var(--z-lista); padding-block-end: calc(var(--e-2) + var(--safe-inf)); }
+  /* Si la barra mide más de un cuarto de la ventana deja de ser fija (B4-01, decisión 1c del 20/10; app/grupos.js) */
+  .plan-barra[data-suelta] { position: static; }
   .plan-semana { grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
   .plan-semana-titulo { padding-block-start: var(--e-3); }
   .hoy-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
