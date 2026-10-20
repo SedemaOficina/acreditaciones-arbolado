@@ -308,6 +308,17 @@
       const b = e.target.closest('[data-ver]');
       if (b) ver(b.dataset.ver, b);
     });
+    /* Al cerrar el visor (en teléfono es un diálogo; en computadora, con «Cerrar»), ningún botón sigue diciendo «En el
+       visor» (auditoría 2026-10-20, RI-08). Si se cerró para volver a abrirse (cambio de tamaño), no se toca. */
+    const visorDialogo = $('[data-visor]');
+    if (visorDialogo) visorDialogo.addEventListener('close', () => {
+      if (visorDialogo.open) return;
+      for (const a of $$('[data-doc]', form)) {
+        a.removeAttribute('data-viendo');
+        const b = $('[data-ver]', a);
+        if (b) { b.removeAttribute('aria-current'); b.firstChild.textContent = 'Ver documento'; }
+      }
+    });
 
     /* Motivos frecuentes: data-chips-fijos en cada observación (módulo chips del estándar, P65); el motivo se agrega
        al texto, que quien revisa completa. */

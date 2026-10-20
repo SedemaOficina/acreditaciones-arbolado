@@ -4154,6 +4154,28 @@ async function focoAccesibilidad(navegador) {
     comprueba(lista.length === 1 && /1 elegida/.test(lista[0].texto), `RI-04: marcar a una persona anuncia «1 elegida» una vez (${textosDe(lista)})`);
     await c.close();
   }
+
+  // RI-08: en teléfono, al cerrar el visor con Escape el foco vuelve al botón y éste ya no dice «En el visor»
+  for (const [pagina, listo, normal] of [[`revisar.html?folio=${enviadaPoda.folio}`, '#formulario [data-ver]', 'Ver documento'], [`cotejo.html?folio=${conCita.folio}`, null, 'Ver lo que cargó']]) {
+    const { c, page } = await nuevo(390, 844);
+    if (listo) { await page.goto(BASE + pagina); await page.waitForSelector(listo); } else {
+      await abreCotejo(page, conCita.folio);
+      await page.check('input[name="se_presento"][value="si"]');
+      await page.check('input[name="identidad"][value="misma"]');
+    }
+    const boton = page.locator('#formulario [data-ver]:visible').first();
+    await boton.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('dialog[data-visor][open]');
+    const abierto = (await boton.textContent()).trim();
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('dialog[data-visor]:not([open])', { state: 'attached' });
+    await page.waitForFunction(() => document.activeElement && document.activeElement.matches('[data-ver]'));
+    const r = await page.evaluate(() => ({ texto: document.activeElement.textContent.trim(), actual: document.activeElement.hasAttribute('aria-current') }));
+    comprueba(/^En el visor/.test(abierto) && r.texto.startsWith(normal) && !r.actual,
+      `RI-08: en ${pagina.split('.')[0]}, al cerrar el visor en teléfono el botón enfocado vuelve a decir «${normal}» («${r.texto.slice(0, 40)}»${r.actual ? ', con aria-current' : ''})`);
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
