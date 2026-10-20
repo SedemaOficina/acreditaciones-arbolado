@@ -421,10 +421,10 @@ body > main { flex: 1 0 auto; width: 100%; }
 .grupo-titulo { display: inline-grid; gap: var(--b-2); min-width: 0; }
 .grupo-nombre { overflow-wrap: anywhere; }
 /* Falla del estándar, pendiente por registrar (B4-06; auditoría 2026-10-20): .linea-datos-item lleva white-space: nowrap y,
-   con el espaciado de texto de WCAG 1.4.12 a 320 px, un dato más ancho que su caja desborda la página (revisar, cotejo y
-   grupos, de 21 a 55 px). Como caja en línea, cada dato sigue pasando completo al renglón siguiente cuando no cabe, y sólo
-   se parte por dentro si es más ancho que su caja. */
-.linea-datos-item { display: inline-block; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+   con el espaciado de texto de WCAG 1.4.12 a 320 px, un dato más ancho que toda su línea desborda la página (revisar,
+   cotejo y grupos, de 21 a 55 px). Sólo ese dato se parte (app/apd.js lo marca con [data-ancho]); los demás siguen
+   enteros y pasan completos al renglón siguiente (P134). */
+.linea-datos-item[data-ancho] { white-space: normal; overflow-wrap: anywhere; }
 .grupo-folio { font-size: var(--t-xs); font-weight: var(--peso-normal); color: var(--gris); letter-spacing: 0; }
 /* La línea de datos (.linea-datos del estándar) bajo el nombre del grupo, en Asistencia */
 .grupo-bajada-datos { margin-block-start: var(--e-1); }
