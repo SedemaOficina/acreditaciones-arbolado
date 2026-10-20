@@ -3496,7 +3496,9 @@ async function fechas(navegador) {
 async function accesibilidad(navegador, ancho = 390, alto = 844) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
-  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+  // Con movimiento reducido (el estándar anula sus transiciones) y esperando a que terminen las animaciones: axe medía el
+  // contraste de una opción recién marcada a media transición de color (falla intermitente en GitHub, 20/10/2026)
+  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: ancho, height: alto }, reducedMotion: 'reduce' });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
@@ -3532,6 +3534,7 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado === 'cita futura') await page.waitForSelector('[data-futura]:not([hidden])');
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
       .violations.map((x) => `${x.id} (${x.nodes.length})`));

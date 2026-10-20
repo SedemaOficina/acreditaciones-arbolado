@@ -475,6 +475,8 @@ if (process.env.AXE) {
   const c = await contexto(390);
   const p = await c.newPage();
   const revisa = async (que) => {
+    await p.emulateMedia({ reducedMotion: 'reduce' }); // sin transiciones a medias al medir el contraste
+    await p.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await p.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
     const r = await p.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] })).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`));
     ok(r.length === 0, `axe ${que}:\n  ${r.join('\n  ')}`);
