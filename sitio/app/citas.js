@@ -80,7 +80,7 @@
         const ir = porDia.map((d) => {
           const n = sinRegistrar.filter((c) => P.diaDe(c.en) === d).length;
           const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fecha(d)} (${n})` });
-          b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta(); $('[data-dia]').scrollIntoView({ block: 'start' }); });
+          b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta('dia'); $('[data-dia]').scrollIntoView({ block: 'start' }); });
           return b;
         });
         caja.append(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `${sinRegistrar.length === 1 ? '1 cita de un día anterior está' : `${sinRegistrar.length} citas de días anteriores están`} sin registrar`,
@@ -108,7 +108,12 @@
   const desglose = (cuenta) => DESGLOSE.filter(([k]) => cuenta[k]).map(([k, uno, varios]) => (cuenta[k] === 1 ? uno : varios(cuenta[k])))
     .concat(Object.keys(cuenta).filter((k) => !DESGLOSE.some(([x]) => x === k)).map((k) => `${cuenta[k]} ${(P.SITUACION[k] || { texto: k }).texto.toLowerCase()}`))
     .join(', ');
-  function pinta() {
+  /* Un anuncio por acción (auditoría 2026-10-20, B4-03 y RI-04): el título del día y la cuenta se ven, pero no son
+     regiones vivas; al cambiar de día se anuncia una sola vez el día con su cuenta y, al buscar, la cuenta cuando se deja
+     de escribir (una pausa, no en cada tecla). Al cargar no se anuncia nada. */
+  const PAUSA_BUSQUEDA = 700;
+  let esperaBusqueda = null;
+  function pinta(origen) {
     const q = norm(document.getElementById('buscar').value);
     // El día elegido queda en la dirección (?dia=): al volver del cotejo, con «Atrás» o al recargar, la agenda sigue en
     // ese día (auditoría 2026-10-18, B8)
@@ -135,10 +140,14 @@
     // El módulo tabla vuelve a leer los encabezados (la columna de la hora cambia de nombre)
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
     $('[data-tabla-vacia]').hidden = !(q && n === 0);
-    $('[data-cuenta]').textContent = q
+    const textoCuenta = q
       ? (n ? `${n === 1 ? 'Una cita coincide' : `${n} citas coinciden`} con la búsqueda.` : 'Ninguna cita coincide con la búsqueda.')
       : !n ? 'No hay citas este día.'
         : `${n === 1 ? '1 cita' : `${n} citas`}: ${desglose(cuenta)}.`;
+    $('[data-cuenta]').textContent = textoCuenta;
+    clearTimeout(esperaBusqueda);
+    if (origen === 'dia') FormKit.anuncia(`${diaLargo(dia)}: ${textoCuenta}`);
+    else if (origen === 'busqueda') esperaBusqueda = setTimeout(() => FormKit.anuncia(q ? textoCuenta : `${diaLargo(dia)}: ${textoCuenta}`), PAUSA_BUSQUEDA);
   }
   function inactivo(b, si) { if (si) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled'); }
   for (const b of botones) {
@@ -147,13 +156,13 @@
       const i = dias.indexOf(dia) + Number(b.dataset.ir);
       if (i < 0 || i >= dias.length) return;
       dia = dias[i];
-      pinta();
+      pinta('dia');
     });
   }
-  form.addEventListener('input', pinta);
+  form.addEventListener('input', () => pinta('busqueda'));
   APD.alCambiar(() => { carga().catch(() => {}); });
 
   carga().catch(() => {
-    $('[data-cuenta]').textContent = 'No se pudieron cargar las citas. Intente de nuevo más tarde.';
+    FormKit.anuncia('No se pudieron cargar las citas. Intente de nuevo más tarde.', { visible: $('[data-cuenta]') });
   });
 }());

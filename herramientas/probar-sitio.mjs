@@ -3927,8 +3927,18 @@ function observadorVivas() {
     }
   };
   let pend = false;
-  new MutationObserver(() => { if (pend) return; pend = true; queueMicrotask(() => { pend = false; revisa(); }); })
-    .observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live', 'open', 'class'] });
+  // Además, cada vez que se escribe en una región viva aunque sea el mismo texto (el registro de anuncios de r3,
+  // guiones/r3/teclado-lib.mjs): volver a escribir el mismo texto también lo vuelve a anunciar
+  const escritos = (window.__vivasEscritos = []);
+  new MutationObserver((registros) => {
+    for (const r of registros) {
+      if (r.type === 'attributes') continue;
+      const n = r.target.nodeType === 1 ? r.target : r.target.parentElement;
+      const region = n && n.closest(SEL);
+      if (region && !region.closest('[hidden]')) escritos.push({ marca: window.__vivasMarca, region: region.getAttribute('data-mes-nombre') !== null ? 'cal-mes' : [...region.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name).join(' '), texto: region.textContent.replace(/\s+/g, ' ').trim() });
+    }
+    if (pend) return; pend = true; queueMicrotask(() => { pend = false; revisa(); });
+  }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live', 'open', 'class'] });
 }
 let marcaVivas = 0;
 const nuevaMarca = (page) => page.evaluate((k) => { window.__vivasMarca = k; return k; }, ++marcaVivas);
@@ -3940,6 +3950,7 @@ async function anunciosTras(page, k, { minimo = 1, plazo = 4000 } = {}) {
   return anunciosDe(page, k);
 }
 const textosDe = (l) => l.map((e) => `${e.region}: «${e.texto.slice(0, 60)}»`).join(' | ');
+const escritosDe = (page, k) => page.evaluate((m) => window.__vivasEscritos.filter((e) => e.marca === m), k);
 async function focoAccesibilidad(navegador) {
   const nuevo = async (ancho, alto, sesion) => {
     const movil = ancho < 600;
@@ -4029,6 +4040,119 @@ async function focoAccesibilidad(navegador) {
       comprueba(!errores.length, `[${w}×${h}] borrador (${accion}): sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`);
       await c.close();
     }
+  }
+
+  // B4-03: «Borrador guardado en este dispositivo.» (núcleo; rodeado en app/solicitud.js) se anuncia sólo la primera vez
+  {
+    const { c, page } = await nuevo(390, 844, sinTramite.id);
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector('#nivel_estudios');
+    const k = await nuevaMarca(page);
+    for (const tecla of ['ArrowDown', 'ArrowDown', 'ArrowUp']) {
+      const antes = await page.evaluate(() => localStorage.getItem(Object.keys(localStorage).find((x) => /borrador/i.test(x)) || '') || '');
+      await page.focus('#nivel_estudios');
+      await page.keyboard.press(tecla);
+      // Cada cambio escribe el borrador (con su retardo): se espera a que cambie lo guardado
+      await page.waitForFunction((a) => (localStorage.getItem(Object.keys(localStorage).find((x) => /borrador/i.test(x)) || '') || '') !== a, antes);
+      await page.waitForSelector('[data-guardado][data-visible]');
+    }
+    const lista = await anunciosTras(page, k);
+    const veces = lista.filter((e) => /Borrador guardado/.test(e.texto)).length + (await escritosDe(page, k)).filter((e) => /Borrador guardado/.test(e.texto) && !/anuncios/.test(e.region)).length;
+    comprueba(veces === 1, `B4-03: con tres cambios seguidos, «Borrador guardado» se anuncia una vez (${veces})`);
+    await c.close();
+  }
+
+  // B4-03: en «Programar», las flechas dentro del mismo mes no vuelven a escribir (ni a anunciar) el nombre del mes
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia[tabindex="0"]');
+    await page.focus('.cal-dia[tabindex="0"]');
+    const k = await nuevaMarca(page);
+    for (const tecla of ['ArrowRight', 'ArrowRight', 'ArrowDown']) { await page.keyboard.press(tecla); await dosCuadros(page); }
+    const mismoMes = await page.evaluate(() => document.activeElement.dataset.fecha.slice(0, 7) === '2026-11');
+    const mes = (await escritosDe(page, k)).filter((e) => e.region === 'cal-mes').length;
+    comprueba(mismoMes && mes === 0, `B4-03: tres flechas dentro de noviembre no vuelven a anunciar «Noviembre de 2026» (${mes})`);
+    await page.click('[data-mes="1"]');
+    comprueba(/Diciembre de 2026/.test(await page.textContent('[data-mes-nombre]')), 'B4-03: «Mes siguiente» sí cambia y anuncia el mes');
+    await c.close();
+  }
+
+  // B4-03: el resumen del cotejo no se vuelve a escribir si no cambió
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await abreCotejo(page, conCita.folio);
+    await page.check('input[name="se_presento"][value="si"]');
+    await page.check('input[name="identidad"][value="misma"]');
+    await page.waitForFunction(() => document.querySelector('[data-resumen]').textContent.trim() !== '');
+    const k = await nuevaMarca(page);
+    for (let i = 0; i < 3; i++) await page.evaluate(() => document.querySelector('input[name="identidad"]:checked').dispatchEvent(new Event('change', { bubbles: true })));
+    await dosCuadros(page);
+    const veces = (await escritosDe(page, k)).filter((e) => e.region.includes('data-resumen')).length;
+    comprueba(veces === 0, `B4-03: en el cotejo, recalcular sin cambios no vuelve a escribir el resumen (${veces} veces)`);
+    await c.close();
+  }
+
+  // RI-03, RI-04 y RI-06: en la revisión documental, cada decisión «aceptado» da un anuncio (el avance y el siguiente
+  // documento), el foco va al título de lo que se muestra y nunca queda fuera de la ventana
+  const enviadaPoda = datos.solicitud.find((s) => s.estado === 'enviada' && s.tipo_acreditacion === 'poda');
+  for (const [w, h] of [[1280, 720], [390, 844]]) {
+    const { c, page, errores } = await nuevo(w, h);
+    await page.goto(BASE + `revisar.html?folio=${enviadaPoda.folio}`);
+    await page.waitForSelector('#formulario input[name^="decision_"]');
+    const nombres = await page.$$eval('#formulario input[name^="decision_"][value="aceptado"]', (l) => [...new Set(l.filter((x) => !x.disabled && x.checkVisibility()).map((x) => x.name))]);
+    const malos = [];
+    for (const [i, n] of nombres.entries()) {
+      const k = await nuevaMarca(page);
+      await page.focus(`#formulario input[name="${n}"][value="aceptado"]`);
+      await page.keyboard.press('Space');
+      const lista = await anunciosTras(page, k);
+      const ultimo = i === nombres.length - 1;
+      await page.waitForFunction(() => { const r = document.activeElement.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }, null, { timeout: 4000 }).catch(() => {});
+      const foco = await page.evaluate(() => { const a = document.activeElement; const r = a.getBoundingClientRect(); return { titulo: a.matches('.doc-titulo, #t-resultado'), dentro: r.bottom > 0 && r.top < innerHeight, texto: a.textContent.trim().slice(0, 40) }; });
+      const ok = lista.length === 1 && (ultimo ? /Los \d+ documentos están revisados/.test(lista[0].texto) : /documentos revisados\. Siguiente documento/.test(lista[0].texto)) && foco.titulo && foco.dentro;
+      if (!ok) malos.push(`${n}: ${lista.length} anuncios (${textosDe(lista)}), foco en «${foco.texto}»${foco.dentro ? '' : ' fuera de la ventana'}`);
+    }
+    comprueba(nombres.length >= 3 && !malos.length, `[${w}×${h}] RI-03, RI-04 y RI-06: ${nombres.length} decisiones, un anuncio cada una y el foco en el título que se muestra${malos.length ? ': ' + malos.join(' | ') : ''}`);
+    comprueba(!errores.length, `[${w}×${h}] revisión con el teclado: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`);
+    await c.close();
+  }
+
+  // RI-04: en Citas, un anuncio por cambio de día (el día con su cuenta) y uno al terminar de escribir la búsqueda
+  {
+    const { c, page } = await nuevo(1280, 720);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cuenta]').textContent));
+    let k = await nuevaMarca(page);
+    await page.focus('[data-ir="1"]');
+    await page.keyboard.press('Enter');
+    let lista = await anunciosTras(page, k);
+    comprueba(lista.length === 1 && /^[A-ZÁÉÍÓÚ][a-záéíóú]+, \d+ de [a-z]+ de \d{4}: /.test(lista[0].texto), `RI-04: en Citas, «Día siguiente» da un anuncio con el día y su cuenta (${textosDe(lista)})`);
+    k = await nuevaMarca(page);
+    await page.focus('#buscar');
+    await page.keyboard.type('ana', { delay: 120 });
+    lista = await anunciosTras(page, k, { plazo: 5000 });
+    await page.waitForTimeout(800);
+    lista = await anunciosDe(page, k);
+    comprueba(lista.length === 1 && /coincide/.test(lista[0].texto), `RI-04: en Citas, escribir «ana» da un solo anuncio, al terminar (${lista.length}: ${textosDe(lista)})`);
+    await c.close();
+  }
+
+  // RI-04: en «Grupos», al cargar no se anuncian la cuenta del curso ni «Ninguna elegida»; marcar a alguien da un anuncio
+  {
+    const { c, page } = await nuevo(1280, 720);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-persona input');
+    await dosCuadros(page);
+    const alCargar = (await anunciosDe(page, 0)).filter((e) => !/interno|pruebas/.test(e.region));
+    comprueba(!alCargar.some((e) => /en espera|elegida/.test(e.texto)), `RI-04: «Grupos» no anuncia al cargar la cuenta del curso ni «Ninguna elegida» (${textosDe(alCargar) || 'nada'})`);
+    const k = await nuevaMarca(page);
+    await page.focus('.plan-persona input');
+    await page.keyboard.press('Space');
+    const lista = await anunciosTras(page, k);
+    comprueba(lista.length === 1 && /1 elegida/.test(lista[0].texto), `RI-04: marcar a una persona anuncia «1 elegida» una vez (${textosDe(lista)})`);
+    await c.close();
   }
 }
 

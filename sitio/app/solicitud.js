@@ -378,6 +378,17 @@
   function borrador(alRecuperar) {
     const { ctx } = FormKit.iniciar(form);
     esperaFranja();
+    /* Falla del estándar, pendiente por registrar (auditoría 2026-10-20, B4-03): el núcleo vuelve a escribir «Borrador
+       guardado en este dispositivo.» en su indicador (aria-live) con cada cambio, y se anunciaba cada vez (5 veces en el
+       paso de documentos). El indicador de la página ya no es región viva: se ve como siempre y se anuncia una sola vez,
+       la primera que se guarda. */
+    const indicador = document.querySelector('[data-guardado]');
+    let guardadoDicho = false;
+    if (indicador && ctx.alBorrador) ctx.alBorrador({ escribe() {
+      if (guardadoDicho) return;
+      // El núcleo avisa antes de pintar el indicador, y lo pinta sólo si de verdad se guardó
+      queueMicrotask(() => { if (!guardadoDicho && indicador.hasAttribute('data-visible')) { guardadoDicho = true; FormKit.anuncia(indicador.textContent); } });
+    } });
     // La carrera escrita (combo libre) también revisa su formato (auditoría «intentar romperlo», F1 12)
     APD.formatoEnCombos(ctx);
     const anterior = FormKit.ganchos.restauraBorrador;

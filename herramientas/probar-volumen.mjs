@@ -217,6 +217,42 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
   } catch (e) { comprueba(false, `[${tam}] grupos con volumen, foco no oculto: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
   await ctx.close();
 }
+
+// RI-09 y B4-03 (auditoría 2026-10-20): en «Asistencia» del grupo de 25 con el día 2 sin capturar, «Falta capturar el día
+// 2» se ve pero no es una alerta que suene en cada carga, y los totales se anuncian sólo al marcar a alguien. Se observa
+// cada cambio de texto de las regiones vivas (como guiones/ri/gestion-foco.mjs).
+{
+  const ctx = await navegador.newContext({ viewport: { width: 1280, height: 720 }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+  await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
+  await ctx.addInitScript(() => {
+    const SEL = '[aria-live]:not([aria-live="off"]),[role="status"],[role="alert"],output';
+    const ev = (window.__vivas = []); const ult = new WeakMap(); window.__marca = 0;
+    const revisa = () => { for (const r of document.querySelectorAll(SEL)) { const t = r.checkVisibility() || r.closest('.solo-lector') ? r.textContent.replace(/\s+/g, ' ').trim() : ''; const a = ult.get(r); ult.set(r, t); if (t && t !== a) ev.push({ marca: window.__marca, rol: r.getAttribute('role') || '', texto: t }); } };
+    let pend = false;
+    new MutationObserver(() => { if (pend) return; pend = true; queueMicrotask(() => { pend = false; revisa(); }); }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live'] });
+  });
+  const pg = await ctx.newPage();
+  const de = (k) => pg.evaluate((m) => window.__vivas.filter((e) => e.marca === m && !/^\(vacío\)$|_/.test(e.texto)), k);
+  try {
+    await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-024');
+    await pg.waitForSelector('.asistencia-fila');
+    await pg.waitForFunction(() => /asisti/.test(document.querySelector('[data-totales]').textContent));
+    await pg.evaluate(() => new Promise((listo) => setTimeout(listo, 300)));
+    const alCargar = await de(0);
+    comprueba(/Falta capturar el día 2/.test(await texto('[data-avisos]')) && !(await pg.$('[data-avisos] [role="alert"]')) && !alCargar.some((e) => e.rol === 'alert'),
+      'asistencia (RI-09): «Falta capturar el día 2» se ve, pero no es una alerta que suene al cargar');
+    comprueba(!alCargar.some((e) => /sin marcar|asisti/.test(e.texto)), `asistencia (B4-03): al cargar no se anuncian los totales (${alCargar.map((e) => e.texto.slice(0, 40)).join(' | ') || 'nada'})`);
+    await pg.evaluate(() => { window.__marca = 1; });
+    await pg.focus('.asistencia-fila .asis-opcion-input:not([disabled])');
+    await pg.keyboard.press('Space');
+    await pg.waitForFunction(() => window.__vivas.some((e) => e.marca === 1), null, { timeout: 4000 }).catch(() => {});
+    await pg.evaluate(() => new Promise((listo) => setTimeout(listo, 300)));
+    const marcar = await de(1);
+    comprueba(marcar.length === 1 && /1 asistió/.test(marcar[0].texto), `asistencia (B4-03): marcar a una persona anuncia los totales una vez (${marcar.map((e) => e.texto).join(' | ')})`);
+  } catch (e) { comprueba(false, `asistencia, anuncios: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+  await ctx.close();
+  async function texto(sel) { return pg.textContent(sel); }
+}
 await navegador.close();
 console.log(fallas ? `\n${fallas} de ${total} comprobación(es) fallida(s).` : `\nLas ${total} comprobaciones, correctas.`);
 process.exit(fallas ? 1 : 0);

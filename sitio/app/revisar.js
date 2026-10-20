@@ -192,6 +192,7 @@
 
     /* ----- Lo que calcula la página: qué se revisa y el resultado ----- */
     let calculando = false;
+    let iniciada = false; // el resumen se anuncia sólo después de pintar la página
     function recalcula() {
       if (calculando) return; // los auxiliares que se ajustan aquí disparan «change»: no se recalcula dentro
       calculando = true;
@@ -255,11 +256,17 @@
         const c = elegido('clasificacion');
         dd.textContent = c === 'afin' ? '2 años (carrera afín)' : c === 'disciplina_afin' ? '5 años (disciplina afín)' : c === 'no_afin' ? 'No cumple el perfil: se rechaza' : `${Number(s.experiencia_minima)} años, mientras la carrera no se clasifique`;
       }
-      // Lo que antes sólo se anunciaba al lector de pantalla también se ve (hallazgo P117): con todo decidido, lo dice
-      $('[data-resumen]').textContent = rechazo ? 'La solicitud se rechaza por el perfil.'
+      // Lo que antes sólo se anunciaba al lector de pantalla también se ve (hallazgo P117): con todo decidido, lo dice.
+      // Un anuncio por acción (auditoría 2026-10-20, RI-03 y RI-04): el resumen no es región viva; cuando cambia por algo
+      // que hizo quien revisa se anuncia una vez (al aceptar, junto con el siguiente documento, en avanza)
+      const resumen = rechazo ? 'La solicitud se rechaza por el perfil.'
         : hechos === cargados.length && cargados.length
           ? `Los ${cargados.length} documentos están revisados${observados ? `: ${observados} con observación` : ''}. Elija abajo cómo termina la revisión.`
           : `${hechos} de ${cargados.length} documentos revisados${observados ? ` · ${observados} con observación` : ''}.`;
+      if ($('[data-resumen]').textContent !== resumen) {
+        $('[data-resumen]').textContent = resumen;
+        if (iniciada) FormKit.anuncia(resumen);
+      }
       const r = RESULTADOS[resultado];
       const boton = $('[data-accion="enviar"]', form);
       if (boton.getAttribute('aria-busy') !== 'true') boton.textContent = r.boton;
@@ -272,6 +279,7 @@
        nada visible (auditoría 2026-10-18, B16). */
     function ver(k, boton) {
       if (!archivos[k] || !global_visor()) return;
+      callaVisor(!boton);
       const yaAbierto = boton && $(`[data-doc="${k}"]`, form).hasAttribute('data-viendo') && FormKit.visor.enComputadora() && $('[data-visor]').open;
       for (const a of $$('[data-doc]', form)) {
         const viendo = a.dataset.doc === k;
@@ -287,6 +295,14 @@
       }
     }
     const global_visor = () => Boolean(window.FormKit && FormKit.visor);
+    /* Falla del estándar, pendiente por registrar (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» (aria-live)
+       cada vez que carga un documento. Cuando lo abre la página sola (el primero al entrar o el siguiente al aceptar), se
+       callan: ya se anuncia «Siguiente documento: …» (RI-04, un anuncio por decisión). Vuelven a anunciarse en cuanto quien
+       revisa usa el visor o pide un documento con su botón. */
+    const vivasVisor = $$('[data-visor-pagina], [data-visor-zoom]');
+    function callaVisor(si) { for (const n of vivasVisor) n.setAttribute('aria-live', si ? 'off' : 'polite'); }
+    const visorNodo = $('[data-visor]');
+    if (visorNodo) for (const ev of ['pointerdown', 'keydown', 'wheel', 'focusin']) visorNodo.addEventListener(ev, () => callaVisor(false));
     const global_matchMedia = (q) => window.matchMedia(q).matches;
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-ver]');
@@ -453,16 +469,17 @@
       const pendiente = (k) => !elegido(`decision_${k}`);
       const i = orden.indexOf(actual);
       const siguiente = orden.slice(i + 1).find(pendiente) || orden.slice(0, i).find(pendiente);
-      if (!siguiente) {
-        $('#t-resultado').scrollIntoView({ behavior: suave, block: 'start' });
-        FormKit.anuncia($('[data-resumen]').textContent);
-        return;
-      }
+      // El foco va con lo que se muestra: el título del siguiente documento o el del resultado (auditoría 2026-10-20,
+      // RI-06: la página se desplazaba y el foco se quedaba en la opción ya contestada, fuera de la ventana). Con todo
+      // decidido, «Los N documentos están revisados» ya lo anunció el resumen (RI-03).
+      const lleva = (titulo, bloque) => { titulo.tabIndex = -1; titulo.focus({ preventScroll: true }); bloque.scrollIntoView({ behavior: suave, block: 'start' }); };
+      if (!siguiente) { lleva($('#t-resultado'), $('#t-resultado')); return; }
       const art = $(`[data-doc="${siguiente}"]`, form);
       if (global_visor() && FormKit.visor.enComputadora()) ver(siguiente, null);
-      art.scrollIntoView({ behavior: suave, block: 'start' });
-      FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
+      lleva($('.doc-titulo', art), art);
+      FormKit.anuncia(`${$('[data-resumen]').textContent} Siguiente documento: ${archivos[siguiente].titulo}.`);
     }
     recalcula();
+    iniciada = true;
   }).catch(() => falla('No se pudo cargar la solicitud. Intente de nuevo más tarde.'));
 }());

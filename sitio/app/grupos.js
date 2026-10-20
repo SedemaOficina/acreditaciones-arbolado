@@ -54,7 +54,10 @@
     const ajustaBarra = () => {
       const alto = barraPie.hidden ? 0 : barraPie.getBoundingClientRect().height;
       const suelta = anchoFija.matches && alto > innerHeight / 4;
+      const cambia = suelta !== barraPie.hasAttribute('data-suelta');
       barraPie.toggleAttribute('data-suelta', suelta);
+      // Si la barra cambia de lugar con el foco dentro (p. ej., al aparecer «No se agregó a nadie»), el foco sigue a la vista
+      if (cambia && barraPie.contains(document.activeElement)) document.activeElement.scrollIntoView({ block: 'nearest' });
       const raiz = document.documentElement.style;
       if (anchoFija.matches && alto && !suelta) raiz.scrollPaddingBottom = `calc(${Math.ceil(alto)}px + var(--e-2))`;
       else raiz.removeProperty('scroll-padding-bottom');
@@ -78,6 +81,8 @@
         modoGrupo = null;
         noRecibe = null;
         pinta();
+        // La cuenta del curso se ve siempre y se anuncia sólo al cambiar de curso (auditoría 2026-10-20, RI-04)
+        FormKit.anuncia($('[data-cuenta]').textContent);
       });
       return b;
     });
@@ -229,7 +234,7 @@
           return fila;
         }
         const propias = b.xs.map((x) => persona(x, false));
-        const { bloque } = P.bloqueEspera(b, `bloque-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => pintaEleccion());
+        const { bloque } = P.bloqueEspera(b, `bloque-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => pintaEleccion(true));
         return bloque;
       });
       $('[data-personas]').replaceChildren(...(bloques.length ? bloques : [el('p', { class: 'texto-gris', texto: soloOrg ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
@@ -242,10 +247,13 @@
       const error = $('[data-error-eleccion]');
       error.hidden = true;
       const elegidas = () => filas.filter((f) => f.k.checked);
-      function pintaEleccion() {
+      /* Cuántas van elegidas: se ve siempre en la barra y se anuncia sólo cuando quien arma el grupo marca o desmarca (una
+         casilla o un bloque), no al pintar la pantalla (auditoría 2026-10-20, RI-04) */
+      function pintaEleccion(porPersona) {
         elegidasDe.set(clave, new Set(elegidas().map((f) => f.x.s.folio)));
         const n = elegidas().length;
         $('[data-elegidas]').textContent = n ? plural(n, 'elegida', 'elegidas') : 'Ninguna elegida';
+        if (porPersona === true || (porPersona && porPersona.isTrusted)) FormKit.anuncia($('[data-elegidas]').textContent);
         if (n) { error.hidden = true; for (const x of document.querySelectorAll('.falta-marcar')) x.classList.remove('falta-marcar'); }
       }
       /* Lo que impide agregar a ese grupo → [título, texto] o null (como en la espera; la base lo vuelve a revisar) */

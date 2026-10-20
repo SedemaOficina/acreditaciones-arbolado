@@ -126,7 +126,8 @@
     }
     function pintaCalendario(enfocar) {
       const [a, m] = mes.split('-').map(Number);
-      $('[data-mes-nombre]').textContent = `${mayuscula(MESES[m - 1])} de ${a}`;
+      // El mes se anuncia sólo cuando cambia, no con cada flecha dentro del mismo mes (B4-03)
+      APD.escribe($('[data-mes-nombre]'), `${mayuscula(MESES[m - 1])} de ${a}`);
       const primero = `${mes}-01`;
       const siguiente = m === 12 ? `${a + 1}-01-01` : `${a}-${String(m + 1).padStart(2, '0')}-01`;
       const ultimo = APD.sumaDias(siguiente, -1);
