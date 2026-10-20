@@ -4344,6 +4344,58 @@ async function continuidad(navegador) {
       t(`B6-01: «Cargar el documento correcto» sin sesión dice que la sesión terminó y que no se cargó nada («${texto.slice(0, 100)}»)`));
     await c.close();
   }
+
+  // B6-02 (decisión 6, «avisar y recuperar»): «Crea tu cuenta» escrita a mano avisa al recargar y al salir, ofrece
+  // recuperar lo escrito sin la contraseña ni la fotografía (que nunca se guardan) y, al crear la cuenta, borra el borrador
+  {
+    const { c, page, errores } = await nuevo(390, 844);
+    const dialogos = [];
+    page.on('dialog', (d) => { dialogos.push(d.type()); d.accept().catch(() => {}); });
+    await page.goto(BASE + 'index.html');
+    await page.goto(BASE + 'cuenta.html');
+    await page.waitForSelector('#formulario[data-formkit="listo"]');
+    const fecha = dma(NUEVA.nacimiento);
+    const correo = `prueba.${NUEVA.curp.toLowerCase()}@ejemplo.local`;
+    for (const [id, v] of [['nombre', NUEVA.nombre], ['primer_apellido', NUEVA.primer_apellido], ['segundo_apellido', NUEVA.segundo_apellido], ['fecha_nacimiento', fecha], ['curp', NUEVA.curp],
+      ['correo', correo], ['correo2', correo], ['telefono', '5512345678'], ['contrasena', CONTRASENA], ['contrasena2', CONTRASENA]]) await page.fill(`#${id}`, v);
+    await cargaFoto(page);
+    await marcar(page, 'input[name="adscrito"][value="no"]');
+    await marcar(page, 'input[name="aviso"]');
+    await page.waitForFunction((curp) => (localStorage.getItem('apd.borrador.cuenta') || '').includes(curp), NUEVA.curp);
+    const guardado = await page.evaluate(() => localStorage.getItem('apd.borrador.cuenta'));
+    comprueba(!guardado.includes(CONTRASENA) && !/"foto"|data:image/.test(guardado), t('B6-02: el borrador de «Crea tu cuenta» no guarda la contraseña ni la fotografía'));
+    await page.reload();
+    await page.waitForSelector('[data-franja-borrador]:not([hidden])');
+    comprueba(dialogos.includes('beforeunload') && await page.inputValue('#curp') === '', t(`B6-02: recargar con la cuenta escrita avisa antes de salir y ofrece recuperarla (${dialogos.join(', ') || 'sin aviso'})`));
+    await page.click('[data-borrador="recuperar"]');
+    await page.waitForSelector('[data-borrador-recuperado]:not([hidden])');
+    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'nombre');
+    const r = await page.evaluate(() => ({ curp: document.getElementById('curp').value, correo: document.getElementById('correo2').value, telefono: document.getElementById('telefono').value, fecha: document.getElementById('fecha_nacimiento').value,
+      sexo: document.getElementById('sexo').value, adscrito: (document.querySelector('input[name="adscrito"]:checked') || {}).value, contrasena: document.getElementById('contrasena').value + document.getElementById('contrasena2').value,
+      foto: document.querySelectorAll('[data-campo="foto"] .lista-arch li').length, aviso: document.querySelector('input[name="aviso"]').checked, nota: document.querySelector('[data-borrador-recuperado]').textContent }));
+    comprueba(r.curp === NUEVA.curp && r.correo === correo && r.telefono === '5512345678' && r.fecha === fecha && r.sexo && r.adscrito === 'no' && !r.contrasena && !r.foto && !r.aviso && /fotografía y tu contraseña/.test(r.nota),
+      t(`B6-02: «Recuperar lo que escribiste» trae los datos y la adscripción, sin contraseña, fotografía ni casillas, y lo dice (${JSON.stringify(r).slice(0, 160)})`));
+    dialogos.length = 0;
+    await page.click('a.btn-atras');
+    await page.waitForURL(/index\.html/);
+    comprueba(dialogos.includes('beforeunload'), t('B6-02: salir de «Crea tu cuenta» con algo escrito avisa antes de salir'));
+    await page.goto(BASE + 'cuenta.html');
+    await page.click('[data-borrador="recuperar"]');
+    await page.waitForFunction((curp) => document.getElementById('curp').value === curp, NUEVA.curp);
+    await page.fill('#contrasena', CONTRASENA);
+    await page.fill('#contrasena2', CONTRASENA);
+    await cargaFoto(page);
+    await marcar(page, 'input[name="aviso"]');
+    await marcar(page, 'input[name="humano"]');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-acuse]:not([hidden])');
+    dialogos.length = 0;
+    await page.reload();
+    await page.waitForSelector('#formulario[data-formkit="listo"]', { state: 'attached' });
+    comprueba(await page.evaluate(() => localStorage.getItem('apd.borrador.cuenta')) === null && await page.isHidden('[data-franja-borrador]') && !dialogos.length && !errores.length,
+      t('B6-02: al crear la cuenta se borra el borrador; recargar ya no avisa ni ofrece recuperar'));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
