@@ -367,7 +367,8 @@
     function libre(tipo, modalidad, lunes, domingo) {
       const programar = (desde, texto) => el('a', { class: 'plan-programar-semana', href: `programar.html?curso=${clave}&semana=${desde}` }, [APD.icono('mas'), el('span', { texto })]);
       const razon = P.razonNoInicio(datos, tipo, modalidad, lunes);
-      if (!razon) return programar(lunes, 'Programar un curso esta semana');
+      // Cada enlace dice también su semana (auditoría 2026-10-20, B4-07: eran 5 enlaces con el mismo nombre)
+      if (!razon) { const a = programar(lunes, 'Programar un curso esta semana'); a.append(el('span', { class: 'solo-lector', texto: ` (${APD.rangoFechas(lunes, domingo, hoy.slice(0, 4))})` })); return a; }
       let primero = null;
       for (let d = APD.sumaDias(lunes, 1); d <= domingo; d = APD.sumaDias(d, 1)) if (!P.razonNoInicio(datos, tipo, modalidad, d)) { primero = d; break; }
       const linea = el('p', { class: 'plan-semana-no', texto: `El lunes ya no se puede: ${razon.texto}.${primero ? ` Desde el ${APD.diaSemana(primero)} ${fecha(primero).slice(0, 5)} sí, a media semana.` : ''}` });
@@ -425,10 +426,11 @@
       }
       if (integra && falta <= 0) acciones.push(botonConfirmar(x));
       if (integra) {
+        const texto = pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana';
         acciones.push(el('a', { class: `btn ${pasada ? 'btn-primario' : 'btn-secundario'} btn-chico`, href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
-          texto: pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana' }));
+          'aria-label': `${texto} de ${x.calculado} · ${g.folio}`, texto }));
       }
-      acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado}`, texto: 'Ver a las personas' }));
+      acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado} · ${g.folio}`, texto: 'Ver a las personas' }));
       partes.push(el('div', { class: 'plan-grupo-acciones' }, acciones));
       return el('article', { class: 'plan-grupo', 'data-grupo': g.folio, 'data-situacion': g.estado }, partes);
     }
