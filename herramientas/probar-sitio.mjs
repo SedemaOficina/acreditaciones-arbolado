@@ -4396,6 +4396,46 @@ async function continuidad(navegador) {
       t('B6-02: al crear la cuenta se borra el borrador; recargar ya no avisa ni ofrece recuperar'));
     await c.close();
   }
+
+  // B6-03: después de recargar en «Documentos», cada «Atrás» cambia de paso o de página, tanto al recuperar el borrador
+  // como al descartarlo (antes, el primero o el segundo no hacían nada)
+  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+  for (const accion of ['recuperar', 'descartar']) {
+    const { c, page, errores } = await nuevo(390, 844, sinTramite.id);
+    const paso = () => page.evaluate(() => { const x = [...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden); return x ? x.dataset.titulo : location.pathname.split('/').pop(); });
+    await page.goto(BASE + 'tramites.html');
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector(`${pasoVisible} #nivel_estudios`);
+    await page.selectOption('#nivel_estudios', 'licenciatura');
+    await page.fill('#carrera', 'Biología');
+    await page.keyboard.press('Escape');
+    await marcar(page, 'input[name="estatus_estudios"][value="titulado"]');
+    await siguiente(page);
+    const enDocumentos = () => page.waitForFunction(() => { const x = [...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden); return x && x.dataset.titulo === 'Documentos'; });
+    await enDocumentos();
+    await page.waitForFunction(() => Object.keys(localStorage).some((k) => k.startsWith('apd.borrador.solicitud.') && /"paso":1/.test(localStorage.getItem(k))));
+    await page.reload();
+    await page.waitForSelector('[data-franja-borrador]:not([hidden])');
+    if (accion === 'recuperar') {
+      await page.click('[data-borrador="recuperar"]');
+      await enDocumentos();
+    } else {
+      await page.click('[data-borrador="descartar"]');
+      await page.click('[data-borrador="descartar-si"]');
+      await page.waitForSelector('[data-franja-borrador]', { state: 'hidden' });
+    }
+    const vistos = [await paso()];
+    for (let k = 0; k < (accion === 'recuperar' ? 2 : 1); k++) {
+      const antes = page.url() + vistos[vistos.length - 1];
+      await page.goBack();
+      await page.waitForFunction((a) => location.href + ([...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden) || { dataset: { titulo: location.pathname.split('/').pop() } }).dataset.titulo !== a, antes, { timeout: 5000 }).catch(() => {});
+      vistos.push(await paso());
+    }
+    const esperado = accion === 'recuperar' ? ['Documentos', 'Trámite', 'tramites.html'] : ['Trámite', 'tramites.html'];
+    comprueba(JSON.stringify(vistos) === JSON.stringify(esperado) && !errores.length,
+      t(`B6-03: al ${accion} el borrador después de recargar, cada «Atrás» cambia de paso o de página (${vistos.join(' → ')})`));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
