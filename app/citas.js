@@ -128,8 +128,10 @@
     $('[data-leyenda]').textContent = q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${diaLargo(dia).toLowerCase()}`;
     $('[data-flechas]').hidden = Boolean(q);
     const i = dias.indexOf(dia);
-    botones[0].disabled = i <= 0;
-    botones[1].disabled = i < 0 || i >= dias.length - 1;
+    // En el primer o el último día con citas el botón queda inactivo con aria-disabled, no con disabled: conserva el foco
+    // y el lector lo dice «no disponible» (auditoría 2026-10-20, RI-02; como programar.js con sus botones de envío)
+    inactivo(botones[0], i <= 0);
+    inactivo(botones[1], i < 0 || i >= dias.length - 1);
     // El módulo tabla vuelve a leer los encabezados (la columna de la hora cambia de nombre)
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
     $('[data-tabla-vacia]').hidden = !(q && n === 0);
@@ -138,8 +140,10 @@
       : !n ? 'No hay citas este día.'
         : `${n === 1 ? '1 cita' : `${n} citas`}: ${desglose(cuenta)}.`;
   }
+  function inactivo(b, si) { if (si) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled'); }
   for (const b of botones) {
     b.addEventListener('click', () => {
+      if (b.getAttribute('aria-disabled') === 'true') return;
       const i = dias.indexOf(dia) + Number(b.dataset.ir);
       if (i < 0 || i >= dias.length) return;
       dia = dias[i];
