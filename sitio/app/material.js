@@ -42,9 +42,10 @@
             el('p', { class: 'material-edicion', texto: String(m.edicion || '').replace(/(^|[^\d/])(\d)\/(\d{2})\/(\d{4})/g, '$10$2/$3/$4') }),
             el('p', { texto: m.descripcion }),
             el('div', { class: 'material-archivo' }, [
+              // Cada enlace dice de qué documento es (auditoría 2026-10-20, B4-07: eran 3 «Abrir el documento» y 3 «Descargar»)
               el('a', { class: 'btn btn-secundario', href: m.url, target: '_blank', rel: 'noopener' }, [
-                document.createTextNode('Abrir el documento'), nuevaPestana.cloneNode(true)]),
-              el('a', { class: 'btn-enlace', href: m.url, download: m.nombre_archivo, texto: 'Descargar' }),
+                document.createTextNode('Abrir el documento'), el('span', { class: 'solo-lector', texto: ` ${m.titulo}` }), nuevaPestana.cloneNode(true)]),
+              el('a', { class: 'btn-enlace', href: m.url, download: m.nombre_archivo }, [document.createTextNode('Descargar'), el('span', { class: 'solo-lector', texto: ` ${m.titulo}` })]),
               el('span', { class: 'material-peso', texto: `PDF · ${m.paginas} páginas · ${APD.tamano(m.tamano_bytes)}${grande ? ' · conviene descargarlo con wifi' : ''}` })
             ]),
             temas.length ? el('details', { class: 'material-temas' }, [
