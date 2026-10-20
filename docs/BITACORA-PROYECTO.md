@@ -1420,3 +1420,13 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   máximo de tres días hábiles, y si no, estrado electrónico; art. 82 de la Ley de Procedimiento Administrativo) y, en
   P137, el consentimiento para la huella digital, que es dato sensible. P31, P50 y P139 citan las leyes vigentes. El
   campo `lineamientos` de los pendientes pasa a la versión 0.5 (los números de artículo no cambian).
+
+## 2026-10-20 · Bloque 86 · Auditoría de seguimiento: pantallas, accesibilidad, textos y peso
+
+- Última parte de la auditoría del 19/10 (lo que se pospuso hasta tener el estándar 1.5.1): A6, B1, B4 completa, B6,
+  C1 a C6 y D4, sobre `d58c611`. Cinco revisores en paralelo y uno independiente, en solo lectura (huellas sin cambios).
+- Resultado (`docs/AUDITORIA-2026-10-20.md`): 0 críticos, 1 alto (B4-01: en «Grupos», la barra fija tapa la casilla
+  enfocada), 16 medios, 45 bajos, 5 informativos y 13 fallas del estándar sin clave. axe sin violaciones en más de 1,000
+  corridas; todo se puede hacer con teclado; 0 enlaces rotos; un solo trato por público.
+- Informes de cada revisor y guiones para repetirla en `docs/auditoria-2026-10-20/`. Nada se corrigió: el plan va en
+  bloques y espera las decisiones del dueño.

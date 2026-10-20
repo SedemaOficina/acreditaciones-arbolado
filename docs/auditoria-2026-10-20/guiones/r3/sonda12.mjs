@@ -1,0 +1,10 @@
+import { navegador, contexto, BASE } from './lib.mjs';
+const nav = await navegador();
+const { c } = await contexto(nav, { ancho: 1440 }); const p = await c.newPage();
+await p.goto(BASE + 'programar.html?curso=poda-nueva', { waitUntil: 'networkidle' }); await p.waitForTimeout(400);
+await p.click('[data-mes="-1"]'); await p.waitForTimeout(300);
+console.log(await p.evaluate(() => [...document.querySelectorAll('button.cal-dia')].slice(0, 40).map(b => { const cs = getComputedStyle(b); return `${b.textContent.trim().padEnd(10)} bg=${cs.backgroundColor} borde=${cs.borderStyle} ${cs.borderColor} color=${cs.color} dis=${b.getAttribute('aria-disabled')} | ${b.getAttribute('aria-label')}`; }).filter((x, i, a) => a.findIndex(y => y.split('|')[0].replace(/^\S+\s+/, '') === x.split('|')[0].replace(/^\S+\s+/, '')) === i).join('\n')));
+await p.locator('.cal').first().screenshot({ path: '../capturas/calendario-octubre-1440.png' }).catch(()=>{});
+const s = await c.newCDPSession(p); await s.send('Emulation.setEmulatedVisionDeficiency', { type: 'achromatopsia' });
+await p.screenshot({ path: '../capturas/calendario-octubre-gris-1440.png', clip: { x: 0, y: 300, width: 900, height: 600 } });
+await nav.close();
