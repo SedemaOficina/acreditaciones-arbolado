@@ -1395,3 +1395,13 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-base` 303 de 303, concurrencia 20 de 20, restauración correcta, dos instalaciones con el mismo
   archivo; `probar-esquemas` 131; `probar-sitio` 1096 (con axe; 67 nuevas); `probar-examen` 79; `probar-volumen` 68;
   `auditar-sitio` con los mismos 2 hallazgos que la 0.59.
+
+## 2026-10-20 · Bloque 84 · Revisión de accesibilidad estable y visor (P171)
+
+- Publicada la 0.61 (bloque 6). En GitHub, la corrida del commit de fusión del PR #4 falló una vez en axe: contraste de
+  una opción recién marcada en «Revisar» (rechazo), medido a media transición de color; la del commit de la 0.61 y las
+  anteriores pasaron. axe corre ahora con movimiento reducido (el estándar anula sus transiciones) y después de que
+  terminan las animaciones, en `probar-sitio` y en `probar-examen`; cada violación sale con el marcado del elemento.
+- Con la pantalla ya asentada, axe vio un hallazgo real del estándar: el visor 1.5.1 arma `div.visor-hojas` con
+  `aria-label` y sin rol (aria-prohibited-attr, cotejo con la factura en escritorio). Solución provisional en
+  `app/apd.js`: `role="region"` en las páginas con visor. Registrado para el estándar como P171.

@@ -7,7 +7,7 @@ pendiente tiene un número fijo que no se reutiliza; al resolverse pasa a «Resu
 La columna **Lineamientos** dice qué artículo del anteproyecto de lineamientos toca el pendiente
 (el texto vive fuera de este repositorio público; ver «Lineamientos» en `docs/DECISIONES.md`).
 
-Actualizado: 19/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
+Actualizado: 20/10/2026. **Bloquea** dice desde cuándo hace falta: *datos reales* = antes del
 primer dato real; *lanzamiento* = antes de abrir el sistema al público; *SIA* = antes de pasar al SIA; *etapa N* =
 antes de cerrar esa etapa; *no* = se puede avanzar.
 
@@ -147,6 +147,7 @@ antes de cerrar esa etapa; *no* = se puede avanzar.
 | P157 | Hallazgo del estándar: botonEnviar() sólo bloquea el primer botón de envío | En un formulario con dos botones de envío (por ejemplo «Crear y confirmar» y «Guardar sin confirmar» en «Programar un curso»), el segundo queda activo mientras se guarda y un doble clic manda dos envíos. Solución provisional: APD.ocupa en el proyecto. Propuesta: bloquear todos los botones de envío del formulario mientras se guarda. Sigue igual en la 1.5.1. | — | no |
 | P158 | Hallazgo del estándar: un rechazo del servidor con mensaje y sin errores por campo se muestra como «No se pudo enviar» | Cuando la API rechaza algo que no es de un campo (por ejemplo, la sesión cambió o la solicitud ya cambió de estado), el estándar pinta el mensaje genérico y se pierde la razón. Solución provisional: APD.muestraRechazo. Propuesta: mostrar el mensaje del rechazo y, si trae, un enlace. Sigue igual en la 1.5.1. | — | no |
 | P166 | Hallazgo del estándar: una fotografía enorme se lee completa antes de revisar su peso | El módulo archivos revisa el peso previo sólo para lo que no es foto (seguridad 17/10, D-20). Sigue igual en la 1.5.1. Propuesta: tope previo para fotos (p. ej. 4 veces el máximo) antes de leer el archivo. | — | no |
+| P171 | Hallazgo del estándar: la caja de hojas del visor tiene nombre (aria-label) y no tiene rol | El módulo visor 1.5.1 arma div.visor-hojas con tabindex="0" y aria-label="Hojas del documento" pero sin role; en un div genérico aria-label no está permitido y axe lo marca (aria-prohibited-attr). Lo vio la revisión de accesibilidad del cotejo con la factura, en escritorio, al esperar a que la pantalla terminara de pintarse (20/10/2026). Solución provisional: app/apd.js le pone role="region" en las páginas con visor. Propuesta para el estándar: role="region" en la plantilla del visor (codigo/modulos/visor/visor.js). | — | no |
 
 ## Resueltos
 

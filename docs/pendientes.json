@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-19",
+  "actualizado": "2026-10-20",
   "grupos": [
     {
       "id": "direccion",
@@ -828,6 +828,14 @@
       "desde": "2026-10-19",
       "titulo": "Que una persona sólo pueda tocar sus propias filas (pertenencia en la base)",
       "recomendacion": "Seguridad 17/10, D-06, parcial desde la 0.57: la asistencia y el examen ya exigen sesión de personal y su propio nombre, pero la base no compara solicitud.solicitante_id con la persona de la sesión. En la etapa 3: contexto apd.solicitante_id y regla de pertenencia; pruebas de la API con dos personas (ver P159)."
+    },
+    {
+      "id": "P171",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: la caja de hojas del visor tiene nombre (aria-label) y no tiene rol",
+      "recomendacion": "El módulo visor 1.5.1 arma div.visor-hojas con tabindex=\"0\" y aria-label=\"Hojas del documento\" pero sin role; en un div genérico aria-label no está permitido y axe lo marca (aria-prohibited-attr). Lo vio la revisión de accesibilidad del cotejo con la factura, en escritorio, al esperar a que la pantalla terminara de pintarse (20/10/2026). Solución provisional: app/apd.js le pone role=\"region\" en las páginas con visor. Propuesta para el estándar: role=\"region\" en la plantilla del visor (codigo/modulos/visor/visor.js)."
     }
   ],
   "resueltos": [
