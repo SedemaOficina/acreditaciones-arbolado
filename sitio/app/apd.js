@@ -812,6 +812,17 @@
     for (const zona of document.querySelectorAll('[data-archivos]')) { vigilaFocoArchivos(zona); vigilaContrasena(zona); }
   });
 
+  /* ----- Visor: la caja de las hojas tiene nombre y no tiene rol (P171) -----
+     El módulo «visor» 1.5.1 arma div.visor-hojas con tabindex y aria-label pero sin role: en un div genérico aria-label
+     no está permitido (axe, aria-prohibited-attr; lo vio la revisión de accesibilidad del cotejo en escritorio). Es la
+     zona desplazable de las hojas: se le da role="region", que sí admite el nombre. Se quita al resolverse en el estándar. */
+  function rolHojas() { for (const h of document.querySelectorAll('[data-visor-hojas]:not([role])')) h.setAttribute('role', 'region'); }
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.querySelector('script[src*="modulos/visor/"]')) return;
+    rolHojas();
+    new MutationObserver(rolHojas).observe(document.body, { childList: true, subtree: true });
+  });
+
   /* ----- Formato de un combo libre (F1 12) -----
      El tipo «combo» del estándar no aplica data-formato: con data-libre acepta cualquier texto («🌳🌳🌳»). Después de
      FormKit.iniciar, la página pasa su contexto y el combo también revisa su formato, como un campo de texto. */

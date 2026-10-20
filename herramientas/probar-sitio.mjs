@@ -3536,8 +3536,9 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
+    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
-      .violations.map((x) => `${x.id} (${x.nodes.length})`));
+      .violations.map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`));
     comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
   }
   await page.close();
