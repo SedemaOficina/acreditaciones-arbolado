@@ -365,6 +365,16 @@
   let franjaEnEspera = false;
   const esperaFranja = () => { if (franja && !franja.hidden && !solicitudLista) { franja.hidden = true; franjaEnEspera = true; } };
   document.addEventListener('DOMContentLoaded', esperaFranja);
+  /* Falla del estándar, pendiente por registrar (RS-01; auditoría 2026-10-20, también B4-02): al recuperar o descartar el
+     borrador, el núcleo (formkit.core.js, iniciaFranja) oculta la franja con el botón enfocado y el foco cae en <body>.
+     Mientras el estándar lo corrige, el foco va al primer campo del paso que queda a la vista (el recuperado, o el primero
+     al descartar); lo recuperado se anuncia una vez en la región de anuncios del estándar. */
+  function alPrimerCampo() {
+    const paso = (FormKit.pasos && FormKit.pasos.elementos && FormKit.pasos.elementos[FormKit.pasos.actual()]) || form;
+    const campos = [...paso.querySelectorAll('input:not([type="hidden"]), select, textarea')].filter((c) => !c.disabled && c.checkVisibility());
+    const c = campos[0] && campos[0].type === 'radio' ? (campos.find((x) => x.name === campos[0].name && x.checked) || campos[0]) : campos[0];
+    if (c) c.focus();
+  }
   function borrador(alRecuperar) {
     const { ctx } = FormKit.iniciar(form);
     esperaFranja();
@@ -385,8 +395,10 @@
     };
     if (franja) {
       franja.addEventListener('click', (e) => {
-        const a = e.target.closest('[data-borrador="descartar-si"]');
-        if (a) FormKit.anuncia('Se descartó el borrador.', { visible: notaBorrador });
+        const a = e.target.closest('[data-borrador="recuperar"], [data-borrador="descartar-si"]');
+        if (!a) return;
+        if (a.dataset.borrador === 'descartar-si') FormKit.anuncia('Se descartó el borrador.', { visible: notaBorrador });
+        alPrimerCampo();
       });
     }
     solicitudLista = true;
@@ -421,6 +433,8 @@
       const actual = FormKit.pasos.elementos[FormKit.pasos.actual()];
       if (actual && actual.hasAttribute('data-revision') && FormKit.revision) { FormKit.revision.pinta(); revisionConNombres(persona); }
       history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+      // Si al repintar el paso el campo enfocado desapareció, el foco vuelve al primero del paso (RS-01)
+      if (document.activeElement === document.body) alPrimerCampo();
     });
   }).catch((e) => {
     if (window.console) console.error(e);
