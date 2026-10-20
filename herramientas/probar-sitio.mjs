@@ -3935,6 +3935,34 @@ async function focoAccesibilidad(navegador) {
     comprueba(casillas >= 5 && !ocultas.length, `[${w}×${h}] B4-01: ninguna de las ${casillas} casillas de «En espera» queda debajo de la barra al enfocarla con Tab${ocultas.length ? ` (ocultas en las paradas ${ocultas.join(', ')})` : ''}`);
     await c.close();
   }
+
+  // RI-02: «Día siguiente» de Citas y «Mes anterior/siguiente» de Programar, al llegar a su límite, quedan inactivos sin
+  // perder el foco (aria-disabled), y en el límite no hacen nada
+  {
+    const { c, page } = await nuevo(1280, 720);
+    const enfocado = (sel) => page.evaluate((s) => document.activeElement === document.querySelector(s), sel);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.focus('[data-ir="1"]');
+    let pulsaciones = 0;
+    while (pulsaciones < 30 && (await page.getAttribute('[data-ir="1"]', 'aria-disabled')) !== 'true') { await page.keyboard.press('Enter'); pulsaciones += 1; }
+    const diaFinal = await page.textContent('[data-dia]');
+    await page.keyboard.press('Enter');
+    comprueba(pulsaciones > 0 && pulsaciones < 30 && await enfocado('[data-ir="1"]') && (await page.textContent('[data-dia]')) === diaFinal && !(await page.$('[data-ir="1"]:disabled')),
+      `RI-02: en Citas, «Día siguiente» en el último día queda inactivo con aria-disabled, conserva el foco y no cambia de día (${pulsaciones} pulsaciones)`);
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia');
+    for (const [sel, max] of [['[data-mes="-1"]', 3], ['[data-mes="1"]', 15]]) {
+      await page.focus(sel);
+      let n = 0;
+      while (n < max && (await page.getAttribute(sel, 'aria-disabled')) !== 'true') { await page.keyboard.press('Enter'); n += 1; }
+      const mes = await page.textContent('[data-mes-nombre]');
+      await page.keyboard.press('Enter');
+      comprueba((await page.getAttribute(sel, 'aria-disabled')) === 'true' && await enfocado(sel) && (await page.textContent('[data-mes-nombre]')) === mes,
+        `RI-02: en Programar, «${sel.includes('-1') ? 'Mes anterior' : 'Mes siguiente'}» en su límite (${mes}) queda inactivo, conserva el foco y no cambia de mes`);
+    }
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});

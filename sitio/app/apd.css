@@ -528,7 +528,7 @@ body > main { flex: 1 0 auto; width: 100%; }
 .cal { display: grid; gap: var(--e-3); max-width: var(--ancho-dialogo); margin-block: var(--e-3) 0; }
 .cal-cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
 .cal-mes { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); text-align: center; }
-.cal-mes-boton:disabled { opacity: var(--op-inactivo); cursor: not-allowed; }
+.cal-mes-boton[aria-disabled="true"] { opacity: var(--op-inactivo); cursor: not-allowed; }
 .cal-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: var(--e-1); }
 .cal-tabla th { padding-block: var(--e-1); font-size: var(--t-xs); font-weight: var(--peso-semi); color: var(--gris); text-align: center; }
 .cal-tabla abbr { text-decoration: none; }
