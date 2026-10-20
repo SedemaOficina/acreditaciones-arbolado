@@ -268,16 +268,26 @@
      página recuerda con quién se abrió y, antes de guardar a nombre de la sesión, comprueba que siga siendo la misma
      persona. En la etapa 3 la página manda la persona que espera (solicitante_id) y la API la compara con la de la
      cookie: si no coincide, 409 y no guarda. */
+  /* Sin sesión (auditoría 2026-10-20, B6-01; decisión 8): la sesión terminó (caducó o se salió en otra pestaña: la página
+     no lo distingue y la persona no necesita saberlo). «Otra pestaña» sólo cuando hay otra cuenta. Cada pantalla dice qué
+     pasó con lo capturado (sinSesion), porque no todas lo conservan: la solicitud tiene borrador; «Mi perfil» y «Cargar el
+     documento correcto», no. En la etapa 3, la respuesta 401 de la API usa el mismo texto. Las pantallas del personal (las
+     que cargan mensajes-usted.js) lo leen de usted. */
   const SESION_AL_ABRIR = (() => { const s = leeSesion(); return s && s.id ? String(s.id) : null; })();
-  function sesionCambio() {
+  function sesionCambio(sinSesion) {
     const s = leeSesion();
     const ahora = s && s.id ? String(s.id) : null;
     if (SESION_AL_ABRIR && ahora === SESION_AL_ABRIR) return null;
-    const volver = encodeURIComponent(global.location.pathname.split('/').pop() + global.location.search);
-    return rechazo(ahora ? 'Tu sesión cambió en otra pestaña' : 'Tu sesión se cerró en otra pestaña',
-      ahora ? 'En otra pestaña se entró con otra cuenta. No se guardó nada, para no mezclar tus datos con los de otra persona.'
-        : 'En otra pestaña se salió de tu cuenta. No se guardó nada.',
-      { href: `entrar.html?volver=${volver}`, texto: 'Vuelve a entrar con tu cuenta' }, 'sesion_cambio');
+    const volver = { href: `entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop() + global.location.search)}` };
+    const usted = Boolean(global.APD_MENSAJES_USTED);
+    if (ahora) {
+      return rechazo(usted ? 'Su sesión cambió en otra pestaña' : 'Tu sesión cambió en otra pestaña',
+        `En otra pestaña se entró con otra cuenta. No se guardó nada, para no mezclar ${usted ? 'sus' : 'tus'} datos con los de otra persona.`,
+        { ...volver, texto: usted ? 'Vuelva a entrar con su cuenta' : 'Vuelve a entrar con tu cuenta' }, 'sesion_cambio');
+    }
+    return rechazo(usted ? 'Su sesión terminó' : 'Tu sesión terminó',
+      sinSesion || (usted ? 'No se guardó nada: vuelva a entrar y haga otra vez el cambio.' : 'No se guardó nada: vuelve a entrar y haz otra vez el cambio.'),
+      { ...volver, texto: 'Entrar' }, 'sesion_cambio');
   }
 
   /* ----- Doble clic: un botón propio que guarda queda deshabilitado mientras guarda -----

@@ -2639,7 +2639,16 @@ async function romperDos(navegador) {
     await sesion(p2, null);
     const r = await envia(p1);
     const sinPersona = await p1.evaluate(() => APD.cargar().then((d) => d.solicitud.filter((s) => s.de_prueba).length));
-    comprueba(!r.acuse && /Tu sesión se cerró en otra pestaña/.test(r.aviso) && sinPersona === 0, t(`F1 2: sin sesión no se envía la solicitud («${r.aviso.slice(0, 80)}», ${sinPersona} creadas)`));
+    // B6-01 (auditoría 2026-10-20): sin sesión dice que terminó y que lo capturado sigue; «otra pestaña», sólo con otra cuenta
+    comprueba(!r.acuse && /Tu sesión terminó\. No se envió nada, pero lo que capturaste sigue en este dispositivo/.test(r.aviso) && !/otra pestaña|No se guardó nada/.test(r.aviso) && sinPersona === 0,
+      t(`F1 2 y B6-01: sin sesión no se envía la solicitud y el aviso dice que la sesión terminó («${r.aviso.slice(0, 110)}», ${sinPersona} creadas)`));
+    // Lo que dice es cierto: por su enlace se vuelve a entrar y la solicitud ofrece recuperar lo capturado
+    const entrar = await p1.getAttribute('[data-estado-envio] a[href^="entrar.html?volver="]', 'href');
+    await p1.goto(BASE + entrar);
+    await sesion(p1, A.id);
+    await p1.goto(BASE + decodeURIComponent(entrar.split('volver=')[1]));
+    const franja = await p1.waitForSelector('[data-franja-borrador]:not([hidden])', { timeout: 8000 }).then(() => true, () => false);
+    comprueba(franja, t('B6-01: al volver a entrar por el enlace del aviso, la solicitud ofrece recuperar lo capturado'));
   });
   // «Mi perfil»: A edita su contacto, B entra en otra pestaña, A guarda → no se guarda en ninguna de las dos cuentas
   await parte('F1 1 Mi perfil', async ({ pagina }) => {
@@ -4286,6 +4295,57 @@ async function focoAccesibilidad(navegador) {
   }
 }
 
+/* ── Mensajes y continuidad (auditoría de seguimiento 2026-10-20, bloque 2; SOLO=continuidad) ──
+   B6-01 (la sesión que terminó), B6-02 («Crea tu cuenta» avisa y recupera), B6-03 («Atrás» tras recuperar el borrador),
+   B6-04/D4-03 (la versión escrita en la página), B1-02, B1-04, B1-05, C5-02 a C5-04 y el aviso de Citas (como RI-09). */
+async function continuidad(navegador) {
+  const t = (m) => `[continuidad] ${m}`;
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  const aviso = (pg) => pg.evaluate(() => { const a = document.querySelector('[data-estado-envio]:not([hidden])'); return a ? a.textContent.replace(/\s+/g, ' ').trim() : ''; });
+
+  // B6-01: sin sesión, «Mi perfil» y «Cargar el documento correcto» dicen que la sesión terminó (no «otra pestaña») y, como
+  // no tienen borrador, no prometen que lo capturado sigue (la solicitud, que sí lo tiene, se prueba en «romper 2», F1 2)
+  {
+    const { c, page, errores } = await nuevo(390, 844, CON_ORG.id);
+    await page.goto(BASE + 'datos.html');
+    await page.waitForSelector('[data-editar="contacto"]');
+    await page.click('[data-editar="contacto"]');
+    await page.waitForSelector('#form-contacto:not([hidden])');
+    await page.fill('#form-contacto #telefono', '5512340000');
+    await page.evaluate(() => localStorage.removeItem('apd.sesion'));
+    await page.click('#form-contacto [data-accion="enviar"]');
+    await page.waitForSelector('#form-contacto [data-estado-envio]:not([hidden]) a[href^="entrar.html?volver="]');
+    const texto = await aviso(page);
+    comprueba(/Tu sesión terminó\. No se guardó tu cambio: vuelve a entrar y hazlo otra vez/.test(texto) && !/otra pestaña|sigue en este dispositivo/.test(texto) && !errores.length,
+      t(`B6-01: «Mi perfil» sin sesión dice que la sesión terminó y que el cambio no se guardó («${texto.slice(0, 100)}»)`));
+    await c.close();
+  }
+  {
+    const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+    const sp = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+    const { c, page, errores } = await nuevo(390, 844, sp.solicitante_id);
+    await page.goto(BASE + `corregir.html?folio=${sp.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    for (const campo of await page.$$('#formulario [data-campo^="doc_"]')) if (await campo.isVisible()) await (await campo.$('input[type="file"]')).setInputFiles(PDF);
+    await page.evaluate(() => localStorage.removeItem('apd.sesion'));
+    await page.click('#formulario [data-accion="enviar"]');
+    await page.waitForSelector('#formulario [data-estado-envio]:not([hidden]) a[href^="entrar.html?volver="]');
+    const texto = await aviso(page);
+    comprueba(/Tu sesión terminó\. No se cargó nada: vuelve a entrar y carga otra vez/.test(texto) && !/otra pestaña|sigue en este dispositivo/.test(texto) && !errores.length,
+      t(`B6-01: «Cargar el documento correcto» sin sesión dice que la sesión terminó y que no se cargó nada («${texto.slice(0, 100)}»)`));
+    await c.close();
+  }
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -4338,6 +4398,7 @@ try {
     await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
   }
   if (toca('foco')) await parte('foco y accesibilidad', () => focoAccesibilidad(navegador));
+  if (toca('continuidad')) await parte('mensajes y continuidad', () => continuidad(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

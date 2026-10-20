@@ -24,7 +24,8 @@ window.APD_PERFIL = {
           // La sesión sigue siendo la de quien abrió la página (auditoría «intentar romperlo», F1 1 y 2: «Mi perfil» de una
           // persona se guardaba en la cuenta de quien entró en otra pestaña, o sin cuenta). La API comparará la sesión con la
           // persona que la página espera (409).
-          const sesion = APD.sesionCambio();
+          // «Mi perfil» no tiene borrador: al volver a entrar, el cambio se escribe otra vez (B6-01)
+          const sesion = APD.sesionCambio('No se guardó tu cambio: vuelve a entrar y hazlo otra vez.');
           if (sesion) return mal(sesion);
           const p = APD.personaDeSesion(datos);
           if (!p) return mal(APD.rechazo('Tu cuenta no está activa', 'No se guardó nada. Vuelve a entrar; si no puedes, pide ayuda a la Secretaría.', { href: 'entrar.html', texto: 'Entrar' }, 'sesion_cambio'));
