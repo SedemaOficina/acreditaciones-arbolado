@@ -3903,11 +3903,49 @@ const ocultoPorFijo = () => {
   return { total: dentro.length > 0 && tapados.length === dentro.length, tapados: tapados.length, puntos: dentro.length, casilla: a.matches('.plan-casilla') };
 };
 const dosCuadros = (page) => page.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
+/* Observador de regiones vivas (el de guiones/ri/gestion-foco.mjs): cada vez que el texto propio de una región viva
+   (aria-live, role status/alert/log, <output>) cambia a algo no vacío, se anota con la marca de la acción en curso. Se
+   inyecta antes de cargar la página; window.__vivasMarca = n marca la acción n. */
+function observadorVivas() {
+  const SEL = '[aria-live]:not([aria-live="off"]),[role="status"],[role="alert"],[role="log"],output';
+  const ev = (window.__vivas = []);
+  window.__vivasMarca = 0;
+  const ult = new WeakMap();
+  const propio = (r) => {
+    let t = '';
+    const w = document.createTreeWalker(r, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, { acceptNode: (n) => (n !== r && n.nodeType === 1 && (n.matches(SEL) || n.hidden || n.getAttribute('aria-hidden') === 'true') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeType === 3) t += n.textContent;
+    return t.replace(/\s+/g, ' ').trim();
+  };
+  const revisa = () => {
+    for (const r of document.querySelectorAll(SEL)) {
+      const vis = r.checkVisibility() || r.closest('.solo-lector');
+      const t = vis && !r.closest('[hidden],[aria-hidden="true"]') ? propio(r) : '';
+      const antes = ult.get(r);
+      ult.set(r, t);
+      if (t && t !== antes) ev.push({ marca: window.__vivasMarca, region: `${r.tagName.toLowerCase()}${[...r.attributes].filter((a) => a.name.startsWith('data-')).slice(0, 1).map((a) => `[${a.name}]`).join('')}${r.getAttribute('role') ? `[role=${r.getAttribute('role')}]` : ''}`, rol: r.getAttribute('role') || '', texto: t });
+    }
+  };
+  let pend = false;
+  new MutationObserver(() => { if (pend) return; pend = true; queueMicrotask(() => { pend = false; revisa(); }); })
+    .observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live', 'open', 'class'] });
+}
+let marcaVivas = 0;
+const nuevaMarca = (page) => page.evaluate((k) => { window.__vivasMarca = k; return k; }, ++marcaVivas);
+const anunciosDe = (page, k) => page.evaluate((m) => window.__vivas.filter((e) => e.marca === m), k);
+// Espera a que la acción k haya anunciado algo (o a que pase su plazo) y deja correr los retardos de los anuncios
+async function anunciosTras(page, k, { minimo = 1, plazo = 4000 } = {}) {
+  await page.waitForFunction(([m, n]) => window.__vivas.filter((e) => e.marca === m).length >= n, [k, minimo], { timeout: plazo }).catch(() => {});
+  await page.waitForTimeout(400);
+  return anunciosDe(page, k);
+}
+const textosDe = (l) => l.map((e) => `${e.region}: «${e.texto.slice(0, 60)}»`).join(' | ');
 async function focoAccesibilidad(navegador) {
-  const nuevo = async (ancho, alto, inicio) => {
+  const nuevo = async (ancho, alto, sesion) => {
     const movil = ancho < 600;
     const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
-    if (inicio) await c.addInitScript(inicio[0], inicio[1]);
+    if (sesion) await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
+    await c.addInitScript(observadorVivas);
     const page = await c.newPage();
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
@@ -3962,6 +4000,35 @@ async function focoAccesibilidad(navegador) {
         `RI-02: en Programar, «${sel.includes('-1') ? 'Mes anterior' : 'Mes siguiente'}» en su límite (${mes}) queda inactivo, conserva el foco y no cambia de mes`);
     }
     await c.close();
+  }
+
+  // RS-01 (falla del estándar, rodeada en app/solicitud.js) y RI-03: al recuperar o descartar el borrador con el teclado
+  // el foco no cae en <body> (va al primer campo del paso) y el mensaje se anuncia una sola vez
+  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+  for (const [w, h] of [[390, 844], [1280, 720]]) {
+    for (const accion of ['recuperar', 'descartar']) {
+      const { c, page, errores } = await nuevo(w, h, sinTramite.id);
+      await page.goto(BASE + 'solicitud.html');
+      await page.waitForSelector('#nivel_estudios');
+      await page.focus('#nivel_estudios');
+      await page.keyboard.press('ArrowDown');
+      await page.waitForFunction(() => Object.keys(localStorage).some((k) => /borrador/i.test(k)));
+      await page.reload();
+      await page.waitForSelector('[data-borrador="recuperar"]', { state: 'visible' });
+      if (accion === 'descartar') { await page.focus('[data-borrador="descartar"]'); await page.keyboard.press('Enter'); await page.waitForSelector('[data-borrador="descartar-si"]', { state: 'visible' }); }
+      const k = await nuevaMarca(page);
+      await page.focus(accion === 'recuperar' ? '[data-borrador="recuperar"]' : '[data-borrador="descartar-si"]');
+      await page.keyboard.press('Enter');
+      await page.waitForSelector('[data-borrador-recuperado]', { state: 'visible' });
+      const lista = await anunciosTras(page, k);
+      const foco = await page.evaluate(() => { const a = document.activeElement; return a && a !== document.body && a.closest('#formulario') && a.checkVisibility() ? (a.id || a.name) : null; });
+      const texto = accion === 'recuperar' ? /Borrador recuperado/ : /Se descartó el borrador/;
+      const veces = lista.filter((e) => texto.test(e.texto)).length;
+      comprueba(Boolean(foco), `[${w}×${h}] RS-01: al ${accion === 'recuperar' ? 'recuperar' : 'descartar'} el borrador con Intro el foco va al primer campo del paso (${foco || 'quedó en <body>'})`);
+      comprueba(veces === 1, `[${w}×${h}] RI-03: «${accion === 'recuperar' ? 'Borrador recuperado' : 'Se descartó el borrador'}» se anuncia una sola vez (${veces}: ${textosDe(lista)})`);
+      comprueba(!errores.length, `[${w}×${h}] borrador (${accion}): sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`);
+      await c.close();
+    }
   }
 }
 
