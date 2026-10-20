@@ -538,13 +538,34 @@
      <p class="linea-datos"> con cada dato en <span class="linea-datos-item">, que no se parte (si no cabe, pasa completo al
      renglón siguiente), y los puntos medios en el texto. Una parte es texto o una lista de nodos; clase, la propia de la
      pantalla, si la lleva. */
+  /* B4-06 (auditoría 2026-10-20; falla del estándar, pendiente por registrar): un dato que no cabe ni en una línea entera
+     (con el espaciado de texto de WCAG 1.4.12 en 320 px) se marca [data-ancho] y se parte por dentro (app/apd.css); los
+     demás siguen enteros. Se revisa cada vez que la línea cambia de tamaño. Se recuerda el ancho que pedía el dato entero
+     para no marcarlo y desmarcarlo sin fin. */
+  const anchoEntero = new WeakMap();
+  const vigilaLinea = typeof ResizeObserver === 'function' ? new ResizeObserver((entradas) => {
+    for (const { target: linea } of entradas) {
+      // La línea puede ensancharse con su contenido (una rejilla que crece con lo que no se parte): se mide también contra
+      // la ventana, con el mismo margen a los dos lados
+      const izq = linea.getBoundingClientRect().left;
+      const caja = Math.min(linea.clientWidth, document.documentElement.clientWidth - 2 * Math.max(0, izq));
+      if (!linea.clientWidth || caja <= 0) continue;
+      for (const i of linea.querySelectorAll('.linea-datos-item')) {
+        const pide = i.hasAttribute('data-ancho') ? anchoEntero.get(i) || 0 : i.getBoundingClientRect().width;
+        if (!i.hasAttribute('data-ancho') && pide > caja + 0.5) { anchoEntero.set(i, pide); i.setAttribute('data-ancho', ''); }
+        else if (i.hasAttribute('data-ancho') && pide <= caja) i.removeAttribute('data-ancho');
+      }
+    }
+  }) : null;
   function lineaDatos(partes, clase) {
     const hijos = [];
     partes.filter(Boolean).forEach((p, i) => {
       if (i) hijos.push(document.createTextNode(' · '));
       hijos.push(el('span', { class: 'linea-datos-item' }, typeof p === 'string' ? [document.createTextNode(p)] : p));
     });
-    return el('p', { class: clase ? `linea-datos ${clase}` : 'linea-datos' }, hijos);
+    const linea = el('p', { class: clase ? `linea-datos ${clase}` : 'linea-datos' }, hijos);
+    if (vigilaLinea) vigilaLinea.observe(linea);
+    return linea;
   }
 
   /* Cabecera de sesión en las pantallas con cuenta */
