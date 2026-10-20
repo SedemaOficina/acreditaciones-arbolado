@@ -293,6 +293,11 @@
     return () => { for (const b of bs) { OCUPADOS.delete(b); b.removeAttribute('aria-disabled'); b.removeAttribute('aria-busy'); } };
   }
 
+  /* ----- Regiones vivas: un anuncio por acción (auditoría 2026-10-20, B4-03) -----
+     escribe(nodo, texto) cambia el texto de una región viva sólo si es otro: volver a escribir el mismo texto lo vuelve a
+     anunciar (el nombre del mes en cada flecha del calendario, el resumen del cotejo en cada respuesta). */
+  function escribe(nodo, texto) { if (nodo && nodo.textContent !== texto) nodo.textContent = texto; }
+
   /* ----- Adscripción (decisiones 2026-10-15): es de la persona; cada solicitud copia la que tenga al enviarse ----- */
   const ADSCRIPCIONES = {
     independiente: 'Independiente', privada: 'Empresa, consultoría o particular',
@@ -849,7 +854,7 @@
   const mesesCita = (datos) => parametro(datos, 'meses_adelanto_cita') || 6;
 
   global.APD = {
-    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa,
+    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, MESES, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,

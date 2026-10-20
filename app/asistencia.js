@@ -100,8 +100,13 @@
     if (sinCapturar.length) {
       const dias = sinCapturar.map((n) => `${n} (${corta(diaDe(n))})`);
       const lista = dias.length > 1 ? `los días ${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}` : `el día ${dias[0]}`;
-      avisos.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `Falta capturar ${lista}`,
-        texto: 'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Ábralo en «Corregir otro día» y guárdelo.' }));
+      // Es un estado de la página, no una alerta (auditoría 2026-10-20, RI-09): se ve igual, pero sin role="alert", que lo
+      // hacía sonar en cada carga y cortaba la confirmación «Asistencia del día N guardada». FormKit.aviso da el rol por el
+      // tono y no tiene uno de bloqueo sin anuncio (nota del revisor independiente sobre el estándar, informe-ri, sección 4).
+      const falta = FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `Falta capturar ${lista}`,
+        texto: 'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Ábralo en «Corregir otro día» y guárdelo.' });
+      falta.removeAttribute('role');
+      avisos.push(falta);
     }
     $('[data-avisos]').replaceChildren(...avisos);
     if (examenHoy) {
@@ -208,6 +213,7 @@
       const partes = [`${si} ${si === 1 ? 'asistió' : 'asistieron'}`, `${no} ${no === 1 ? 'faltó' : 'faltaron'}`];
       if (personas.length - si - no) partes.push(`${personas.length - si - no} sin marcar`);
       $('[data-totales]').textContent = partes.join(' · ');
+      return partes.join(' · ');
     }
 
     $('[data-personas]').replaceChildren(...personas.map((f) => {
@@ -234,7 +240,9 @@
       ]);
       pintaFila(fila, f);
       // Lo que se marca cambia la tira y la etiqueta al momento
-      fila.addEventListener('change', (e) => { pintaFila(fila, f); if (e.isTrusted) sinGuardar = true; });
+      // Los totales se ven siempre, pero se anuncian sólo cuando la persona marca a alguien (B4-03): al cargar un día nuevo
+      // no suenan «0 asistieron…» encima de la confirmación de lo guardado; «Marcar a todas» dice lo suyo
+      fila.addEventListener('change', (e) => { pintaFila(fila, f); if (e.isTrusted) { sinGuardar = true; FormKit.anuncia(pintaTotales()); } });
       return fila;
     }));
     pintaTotales();

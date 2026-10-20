@@ -46,13 +46,14 @@
     </form>
 
     <div class="agenda-dia">
-      <h3 class="agenda-fecha" data-dia aria-live="polite"></h3>
+      <h3 class="agenda-fecha" data-dia></h3>
       <div class="agenda-flechas" data-flechas>
         <button type="button" class="btn btn-secundario btn-chico" data-ir="-1"><svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Día anterior</button>
         <button type="button" class="btn btn-secundario btn-chico" data-ir="1">Día siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button>
       </div>
     </div>
-    <p class="resumen-filtro" role="status" data-cuenta>Cargando las citas…</p>
+    <!-- El día y su cuenta se anuncian una vez por acción desde app/citas.js (auditoría 2026-10-20, RI-04): no son regiones vivas -->
+    <p class="resumen-filtro" data-cuenta>Cargando las citas…</p>
 
     <div class="tabla-marco" data-tabla data-clave="folio">
       <table class="tabla tabla-bandeja">

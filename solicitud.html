@@ -68,7 +68,8 @@
     <p class="recordatorio" data-recordatorio="tipo" hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="recordatorio-texto">Estás solicitando: <strong data-recordatorio-texto></strong></span></p>
   </div>
 
-  <p class="guardado" data-guardado aria-live="polite"></p>
+  <!-- Sin aria-live: app/solicitud.js lo anuncia sólo la primera vez que se guarda (auditoría 2026-10-20, B4-03; falla del estándar) -->
+  <p class="guardado" data-guardado></p>
 
   <form id="formulario" data-formkit action="#" method="post">
 

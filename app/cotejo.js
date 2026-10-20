@@ -269,8 +269,9 @@
         cerrar: 'Es su segunda inasistencia: la solicitud se cierra y el trámite termina sin acreditación. La persona puede iniciar una solicitud nueva.',
         no_es_la_persona: 'No se atiende la cita. La cuenta queda bloqueada y se avisa a la Dirección para aclararlo.'
       };
-      $('[data-resumen]').textContent = faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado)
-        ? `Falta indicar ${lista(faltan)}.` : TEXTOS[resultado] || '';
+      // Se anuncia sólo cuando cambia, no con cada respuesta (B4-03)
+      APD.escribe($('[data-resumen]'), faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado)
+        ? `Falta indicar ${lista(faltan)}.` : TEXTOS[resultado] || '');
       // Sin nada que cotejar (no se presentó o no es la persona), el visor no sigue mostrando un documento (D32)
       if ((presente === 'no' || ident === 'no_es') && hayVisor()) {
         const visor = $('[data-visor]');

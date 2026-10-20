@@ -346,7 +346,8 @@
 
     <section class="tarjeta" aria-labelledby="t-resultado">
       <h3 class="titulo-paso" id="t-resultado">Resultado de la revisión</h3>
-      <p class="resumen-revision" data-resumen role="status"></p>
+      <!-- Se anuncia una vez por acción desde app/revisar.js (auditoría 2026-10-20, RI-03 y RI-04): no es región viva -->
+      <p class="resumen-revision" data-resumen></p>
 
       <div data-si="resultado=validada">
         <p class="ayuda ayuda-bloque">Todo está en orden. Al validar, la persona recibe su cita de cotejo y los datos para pagar.</p>
