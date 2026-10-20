@@ -382,7 +382,8 @@
     <!-- Resultado -->
     <section class="tarjeta" aria-labelledby="t-resultado">
       <h3 class="titulo-paso" id="t-resultado">Resultado de la cita</h3>
-      <p class="resumen-revision" data-resumen role="status"></p>
+      <!-- Se anuncia una vez por acción desde app/cotejo.js (auditoría 2026-10-20, B4-03): no es región viva -->
+      <p class="resumen-revision" data-resumen></p>
 
       <div data-si="resultado=no_se_presento|otra_cita">
         <p class="ayuda ayuda-bloque" data-cita-ayuda>Asígnele una cita nueva. Conserva el monto de pago que se le indicó.</p>
