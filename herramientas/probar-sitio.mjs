@@ -4090,6 +4090,20 @@ async function focoAccesibilidad(navegador) {
     await dosCuadros(page);
     const veces = (await escritosDe(page, k)).filter((e) => e.region.includes('data-resumen')).length;
     comprueba(veces === 0, `B4-03: en el cotejo, recalcular sin cambios no vuelve a escribir el resumen (${veces} veces)`);
+    // Cada «coincide: sí» da un anuncio (lo que falta y el siguiente documento) y el foco va con lo que se muestra
+    const docs = await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.checkVisibility()).map((x) => x.dataset.doc));
+    // Lo que anunció la respuesta anterior ya salió (el estándar anuncia con un pequeño retardo)
+    await page.waitForFunction(() => { const r = document.querySelector('[data-anuncios]'); return !r || r.textContent === document.querySelector('[data-resumen]').textContent; }, null, { timeout: 3000 }).catch(() => {});
+    const malos = [];
+    for (const doc of docs) {
+      const m = await nuevaMarca(page);
+      await page.focus(`input[name="coincide_${doc}"][value="si"]`);
+      await page.keyboard.press('Space');
+      const lista = await anunciosTras(page, m);
+      const dentro = await page.evaluate(() => { const r = document.activeElement.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; });
+      if (lista.length !== 1 || !dentro) malos.push(`${doc}: ${lista.length} (${textosDe(lista)})${dentro ? '' : ', foco fuera de la ventana'}`);
+    }
+    comprueba(docs.length >= 3 && !malos.length, `B4-03: en el cotejo, cada «coincide» de ${docs.length} documentos da un anuncio${malos.length ? ': ' + malos.join(' | ') : ''}`);
     await c.close();
   }
 
