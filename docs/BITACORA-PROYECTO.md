@@ -1395,3 +1395,28 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-base` 303 de 303, concurrencia 20 de 20, restauración correcta, dos instalaciones con el mismo
   archivo; `probar-esquemas` 131; `probar-sitio` 1096 (con axe; 67 nuevas); `probar-examen` 79; `probar-volumen` 68;
   `auditar-sitio` con los mismos 2 hallazgos que la 0.59.
+
+## 2026-10-20 · Bloque 84 · Revisión de accesibilidad estable y visor (P171)
+
+- Publicada la 0.61 (bloque 6). En GitHub, la corrida del commit de fusión del PR #4 falló una vez en axe: contraste de
+  una opción recién marcada en «Revisar» (rechazo), medido a media transición de color; la del commit de la 0.61 y las
+  anteriores pasaron. axe corre ahora con movimiento reducido (el estándar anula sus transiciones) y después de que
+  terminan las animaciones, en `probar-sitio` y en `probar-examen`; cada violación sale con el marcado del elemento.
+- Con la pantalla ya asentada, axe vio un hallazgo real del estándar: el visor 1.5.1 arma `div.visor-hojas` con
+  `aria-label` y sin rol (aria-prohibited-attr, cotejo con la factura en escritorio). Solución provisional en
+  `app/apd.js`: `role="region"` en las páginas con visor. Registrado para el estándar como P171.
+
+## 2026-10-20 · Bloque 85 · Anteproyecto de lineamientos 0.5 (bloque 7 de la auditoría)
+
+- El anteproyecto pasa a la versión de trabajo 0.5. Su texto no está en este repositorio, que es público: vive en el
+  Proyecto de Claude (`claude/ANTEPROYECTO-LINEAMIENTOS-v0.5.md` y `claude/lineamientos/`).
+- Liber aportó los textos vigentes que faltaban (Ley Orgánica del Poder Ejecutivo, Reglamento Interior, Código Fiscal,
+  Código Penal para el Distrito Federal, Ley de Procedimiento Administrativo y la Ley de Protección de Datos Personales
+  en Posesión de Sujetos Obligados publicada el 13/07/2026, que abrogó la de 2018). Todas las citas se cotejaron contra
+  ellos, con una revisión independiente; ya no quedan huecos «[Art. __]».
+- Corregidos G1-06, G1-07 y G1-09 de la auditoría del 19/10. Decisiones de Liber (DECISIONES, Lineamientos): se ratifica
+  P133 y se cita sólo el art. 190 del Reglamento Interior.
+- Impacto en el sistema: P172 (la notificación electrónica surte efectos cuando la persona confirma su recepción, con un
+  máximo de tres días hábiles, y si no, estrado electrónico; art. 82 de la Ley de Procedimiento Administrativo) y, en
+  P137, el consentimiento para la huella digital, que es dato sensible. P31, P50 y P139 citan las leyes vigentes. El
+  campo `lineamientos` de los pendientes pasa a la versión 0.5 (los números de artículo no cambian).

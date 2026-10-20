@@ -86,6 +86,15 @@ const bien = (m) => { total++; console.log(`BIEN  ${m}`); };
 const mal = (m) => { total++; fallas++; console.log(`MAL   ${m}`); };
 const comprueba = (cond, m) => (cond ? bien(m) : mal(m));
 
+// Marca una casilla u opción y comprueba que quedó marcada; si el clic llegó antes de que la pregunta estuviera lista (una
+// condición que todavía se está mostrando, en una máquina lenta como la de GitHub), espera y lo intenta otra vez
+async function marcar(page, sel, intentos = 4) {
+  for (let i = 1; ; i++) {
+    try { await page.check(sel, { force: true }); if (await page.isChecked(sel)) return; } catch (e) { if (i >= intentos) throw e; }
+    if (i >= intentos) throw new Error(`no quedó marcada: ${sel}`);
+    await page.waitForTimeout(250 * i);
+  }
+}
 async function captura(page, nombre) {
   if (CAPTURAS) await page.screenshot({ path: join(CAPTURAS, `${nombre}.png`), fullPage: true });
   await conAire(page, nombre);
@@ -3496,7 +3505,9 @@ async function fechas(navegador) {
 async function accesibilidad(navegador, ancho = 390, alto = 844) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
-  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+  // Con movimiento reducido (el estándar anula sus transiciones) y esperando a que terminen las animaciones: axe medía el
+  // contraste de una opción recién marcada a media transición de color (falla intermitente en GitHub, 20/10/2026)
+  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: ancho, height: alto }, reducedMotion: 'reduce' });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
@@ -3532,9 +3543,11 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado === 'cita futura') await page.waitForSelector('[data-futura]:not([hidden])');
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
+    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
-      .violations.map((x) => `${x.id} (${x.nodes.length})`));
+      .violations.map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`));
     comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
   }
   await page.close();
@@ -3784,7 +3797,7 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await lineas('la revisión documental');
   // P135: motivos frecuentes completos (un renglón cada uno, sin encogerse) y al pasar el cursor sólo cambia el borde
   const doc = await pg.$eval('[data-doc]:not([hidden]) input[value="con_observacion"]', (i) => i.name);
-  await pg.check(`input[name="${doc}"][value="con_observacion"]`, { force: true });
+  await marcar(pg, `input[name="${doc}"][value="con_observacion"]`);
   const chip = `[data-campo="${doc.replace('decision_', 'observacion_')}"] .chip-fijo`;
   await pg.waitForSelector(chip);
   const chips = await pg.$$eval(chip, (l) => l.map((b) => { const r = document.createRange(); r.selectNodeContents(b); return { texto: b.textContent.trim(), renglones: new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size, encoge: getComputedStyle(b).flexShrink }; }));
@@ -3799,10 +3812,10 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await abreCotejo(pg, conCita.folio);
   await lineas('el cotejo');
   // P129: el RFC conserva la Ñ (en la página y en lo que se envía)
-  await pg.check('input[name="se_presento"][value="si"]', { force: true });
-  await pg.check('input[name="identidad"][value="misma"]', { force: true });
-  for (const k of await pg.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await pg.check(`input[name="coincide_${k}"][value="si"]`, { force: true });
-  await pg.check('input[name="pago"][value="si"]', { force: true });
+  await marcar(pg, 'input[name="se_presento"][value="si"]');
+  await marcar(pg, 'input[name="identidad"][value="misma"]');
+  for (const k of await pg.$$eval('article.doc-revision', (a) => a.filter((x) => x.offsetParent !== null).map((x) => x.dataset.doc))) await marcar(pg, `input[name="coincide_${k}"][value="si"]`);
+  await marcar(pg, 'input[name="pago"][value="si"]');
   await pg.fill('#factura_rfc', 'muño800101ab1');
   await pg.press('#factura_rfc', 'Tab');
   const rfc = await pg.evaluate(() => ({ valor: document.getElementById('factura_rfc').value, error: (document.querySelector('[data-campo="factura_rfc"] .err') || {}).textContent || '',
@@ -3856,7 +3869,7 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await pg.fill('#telefono', '0000000077');
   await pg.fill('#contrasena', 'una frase larga de prueba');
   await pg.fill('#contrasena2', 'una frase larga de prueba');
-  await pg.check('input[name="adscrito"][value="no"]', { force: true });
+  await marcar(pg, 'input[name="adscrito"][value="no"]');
   await pg.setInputFiles('[data-campo="foto"] [data-archivos] > input[type="file"]:not([data-entrada-camara])', foto);
   const agregada = await pg.waitForSelector('[data-campo="foto"] .lista-arch li[data-estado="listo"]', { timeout: 8000 }).then(() => true, () => false);
   await captura(pg, `151-cuenta-foto-con-gps-${sufijo}`);
