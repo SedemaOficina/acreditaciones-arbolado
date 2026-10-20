@@ -4176,6 +4176,100 @@ async function focoAccesibilidad(navegador) {
       `RI-08: en ${pagina.split('.')[0]}, al cerrar el visor en teléfono el botón enfocado vuelve a decir «${normal}» («${r.texto.slice(0, 40)}»${r.actual ? ', con aria-current' : ''})`);
     await c.close();
   }
+
+  // B1-03 (también RI-05 y B4-09): en la versión de prueba la página reserva al pie el lugar del botón «Menú de pruebas»;
+  // al recorrer la bandeja con Tab ningún control queda tapado por él en más de un cuarto
+  for (const [w, h] of [[1280, 720], [390, 844]]) {
+    const { c, page } = await nuevo(w, h);
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector('[data-filas] tr');
+    await page.waitForSelector('.menu-pruebas-boton');
+    const reserva = await page.evaluate(() => { const b = document.querySelector('.menu-pruebas-boton').getBoundingClientRect(); return { necesita: Math.ceil(innerHeight - b.top), tiene: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0 }; });
+    let paradas = 0; const tapadas = [];
+    for (let k = 0; k < 120; k++) {
+      await page.keyboard.press('Tab');
+      await dosCuadros(page);
+      const m = await page.evaluate(() => {
+        const a = document.activeElement;
+        if (!a || a === document.body || a.closest('.menu-pruebas-boton, dialog')) return null;
+        const r = a.getBoundingClientRect(); const b = document.querySelector('.menu-pruebas-boton').getBoundingClientRect();
+        const area = Math.max(0, Math.min(r.right, b.right) - Math.max(r.left, b.left)) * Math.max(0, Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top));
+        return { fraccion: r.width * r.height ? area / (r.width * r.height) : 0, texto: (a.getAttribute('aria-label') || a.textContent || '').trim().slice(0, 40), primero: window.__b103 === a, marca: (window.__b103 = window.__b103 || a) };
+      });
+      if (!m) continue;
+      if (m.primero && paradas) break;
+      paradas += 1;
+      if (m.fraccion > 0.25) tapadas.push(`«${m.texto}» ${Math.round(m.fraccion * 100)} %`);
+    }
+    comprueba(reserva.tiene >= reserva.necesita && paradas > 10 && !tapadas.length,
+      `[${w}×${h}] B1-03: la página reserva ${reserva.tiene} px al pie para el «Menú de pruebas» (ocupa ${reserva.necesita}) y ninguna de ${paradas} paradas queda tapada más de un cuarto${tapadas.length ? ': ' + tapadas.slice(0, 3).join(', ') : ''}`);
+    await c.close();
+  }
+
+  // B4-05: la sección actual de la cabecera del personal se distingue también sin color (subrayado más grueso)
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('.sesion-enlaces a[aria-current="page"]');
+    const r = await page.evaluate(() => {
+      const rasgo = (a) => { const cs = getComputedStyle(a); return `${cs.textDecorationLine} ${cs.textDecorationThickness} ${cs.borderBottomWidth} ${cs.borderBottomStyle}`; };
+      const actual = document.querySelector('.sesion-enlaces a[aria-current="page"]');
+      const otros = [...document.querySelectorAll('.sesion-enlaces a:not([aria-current])')];
+      return { actual: actual.textContent, rasgo: rasgo(actual), otros: [...new Set(otros.map(rasgo))] };
+    });
+    comprueba(r.actual === 'Citas de cotejo' && r.otros.length > 0 && !r.otros.includes(r.rasgo), `B4-05: «${r.actual}» lleva aria-current y un rasgo que no es color (${r.rasgo} frente a ${r.otros.join(' | ')})`);
+    await c.close();
+  }
+
+  // B4-06: con el espaciado de texto de WCAG 1.4.12 a 320 px, revisar, cotejo y grupos no se desbordan a lo ancho
+  {
+    const espaciado = () => { const h = new CSSStyleSheet(); h.replaceSync('*{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}p{margin-bottom:2em!important}'); document.adoptedStyleSheets = [...document.adoptedStyleSheets, h]; };
+    const paginas = [...datos.solicitud.filter((x) => x.estado === 'enviada').map((x) => `revisar.html?folio=${x.folio}`), `cotejo.html?folio=${conCita.folio}`, 'grupos.html?curso=poda-nueva', 'grupos.html?curso=poda-renovacion', 'grupos.html?curso=dictaminador-nueva'];
+    const anchas = [];
+    for (const u of paginas) {
+      const { c, page } = await nuevo(320, 700);
+      if (u.startsWith('cotejo')) await abreCotejo(page, conCita.folio); else { await page.goto(BASE + u); await page.waitForSelector(u.startsWith('grupos') ? '.plan-semana' : '#formulario input[name^="decision_"]', { state: 'attached' }); }
+      await page.evaluate(espaciado);
+      await dosCuadros(page);
+      const ancho = await page.evaluate(() => document.documentElement.scrollWidth);
+      if (ancho > 321) anchas.push(`${u.split('?')[0]}${u.includes('folio') ? ' ' + u.split('=')[1] : u.includes('curso') ? ' ' + u.split('=')[1] : ''}: ${ancho} px`);
+      await c.close();
+    }
+    comprueba(!anchas.length, `B4-06: con el espaciado de texto aumentado a 320 px, ${paginas.length} pantallas de revisar, cotejo y grupos sin desborde${anchas.length ? ': ' + anchas.join('; ') : ''}`);
+  }
+
+  // B4-07: en «Grupos» y en «Material de estudio» no hay dos enlaces con el mismo nombre que lleven a lugares distintos
+  for (const [u, sel, sesion] of [['grupos.html?curso=poda-nueva', '.plan-grupo', null], ['material.html', '.material-doc', null]]) {
+    const { c, page } = await nuevo(1440, 900, sesion);
+    await page.goto(BASE + u);
+    await page.waitForSelector(sel);
+    const repetidos = await page.evaluate(() => {
+      const nombre = (a) => (a.getAttribute('aria-label') || a.textContent).replace(/\s+/g, ' ').trim();
+      const por = new Map();
+      for (const a of document.querySelectorAll('main a[href]')) { if (!a.checkVisibility()) continue; const n = nombre(a); if (!por.has(n)) por.set(n, new Set()); por.get(n).add(a.getAttribute('href') + (a.hasAttribute('download') ? ' (descarga)' : '')); }
+      return [...por].filter(([, h]) => h.size > 1).map(([n, h]) => `«${n}» ×${h.size}`);
+    });
+    comprueba(!repetidos.length, `B4-07: en ${u.split('?')[0]} cada nombre de enlace lleva a un solo lugar${repetidos.length ? ': ' + repetidos.join(', ') : ''}`);
+    await c.close();
+  }
+
+  // A6-01 (rodeo de FC-1): el marcador de posición de «Crea tu cuenta» llega a 4.5:1 sobre el fondo de solo lectura y el
+  // de error
+  {
+    const { c, page } = await nuevo(390, 844);
+    await page.goto(BASE + 'cuenta.html');
+    await page.waitForSelector('#sexo');
+    // El fondo de error es el de un campo con aria-invalid (lo pone el estándar al validar); aquí se mide sólo el color
+    await page.evaluate(() => document.getElementById('fecha_nacimiento').setAttribute('aria-invalid', 'true'));
+    const r = await page.evaluate(() => {
+      const rgb = (t) => t.match(/[\d.]+/g).slice(0, 3).map(Number);
+      const lum = ([R, G, B]) => [R, G, B].map((x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((s, x, i) => s + x * [0.2126, 0.7152, 0.0722][i], 0);
+      const razon = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+      return ['sexo', 'fecha_nacimiento'].map((id) => { const e = document.getElementById(id); const ph = getComputedStyle(e, '::placeholder'); return [id, e.getAttribute('aria-invalid') === 'true' ? 'error' : e.readOnly ? 'solo lectura' : 'campo', +razon(rgb(ph.color), rgb(getComputedStyle(e).backgroundColor)).toFixed(2)]; });
+    });
+    comprueba(r.every(([, , x]) => x >= 4.5), `A6-01: marcador de posición a 4.5:1 o más (${r.map(([id, f, x]) => `${id}, ${f}: ${x}:1`).join('; ')})`);
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
