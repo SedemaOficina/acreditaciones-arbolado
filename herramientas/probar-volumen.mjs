@@ -172,6 +172,51 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
   await ctx.close();
 }
+
+// B4-01, B1-01 y RI-01 (auditoría 2026-10-20; decisión 1 a y c): en «Grupos», con la espera de 66 personas, la barra de
+// elegidas no tapa la casilla enfocada en las tres computadoras. Se recorre con Tab (y con Mayúsculas+Tab) toda la
+// pantalla y se cuenta cada parada que queda oculta por completo por algo fijo o pegajoso (cinco puntos: el centro y las
+// cuatro esquinas, como foco-recorrido.mjs del revisor independiente). La barra, que aquí mide más de un cuarto de la
+// ventana, deja de ser fija.
+for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
+  const tam = `${w}×${h}`;
+  const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+  await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
+  const pg = await ctx.newPage();
+  try {
+    await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await pg.waitForSelector('.plan-persona input');
+    // La barra ya se ve y pasaron dos cuadros (su ResizeObserver ya la midió)
+    await pg.waitForSelector('.plan-barra:not([hidden])');
+    await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
+    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height }; });
+    comprueba(barra.alto <= h / 4 || barra.pos === 'static', `[${tam}] grupos con volumen: la barra de elegidas (${Math.round(barra.alto)} px, ${Math.round(barra.alto / h * 100)} % de la ventana) deja de ser fija si mide más de un cuarto`);
+    for (const tecla of ['Tab', 'Shift+Tab']) {
+      await pg.evaluate(() => { window.scrollTo(0, 0); document.activeElement && document.activeElement.blur(); });
+      let paradas = 0; let casillas = 0; const ocultas = [];
+      for (let k = 0; k < 400; k++) {
+        await pg.keyboard.press(tecla);
+        const m = await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(() => {
+          const a = document.activeElement;
+          if (!a || a === document.body) return listo(null);
+          const fijos = [...document.querySelectorAll('body *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && !x.contains(a) && x.checkVisibility());
+          const r = a.getBoundingClientRect();
+          const puntos = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 1, r.top + 1], [r.right - 1, r.top + 1], [r.left + 1, r.bottom - 1], [r.right - 1, r.bottom - 1]]
+            .filter(([x, y]) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+          const tapado = puntos.length > 0 && puntos.every(([x, y]) => { const e = document.elementFromPoint(x, y); return e && fijos.some((f) => f.contains(e)); });
+          listo({ casilla: a.matches('.plan-casilla, .plan-bloque input'), tapado, nombre: (a.getAttribute('aria-label') || a.closest('label, .plan-persona')?.textContent || a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40), primero: window.__primero === a, marca: (window.__primero = window.__primero || a) });
+        }))));
+        if (!m) continue;
+        if (m.primero && paradas > 0) break;
+        paradas += 1; if (m.casilla) casillas += 1;
+        if (m.tapado) ocultas.push(m.nombre);
+      }
+      await pg.evaluate(() => { window.__primero = null; });
+      comprueba(casillas >= 66 && ocultas.length === 0, `[${tam}] grupos con volumen, ${tecla}: ninguna de las ${paradas} paradas (${casillas} casillas) queda oculta por completo por la barra${ocultas.length ? `: ${ocultas.length}, p. ej. «${ocultas[0]}»` : ''}`);
+    }
+  } catch (e) { comprueba(false, `[${tam}] grupos con volumen, foco no oculto: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+  await ctx.close();
+}
 await navegador.close();
 console.log(fallas ? `\n${fallas} de ${total} comprobación(es) fallida(s).` : `\nLas ${total} comprobaciones, correctas.`);
 process.exit(fallas ? 1 : 0);

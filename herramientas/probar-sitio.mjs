@@ -3889,6 +3889,54 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await c.close();
 }
 
+/* ── Foco y accesibilidad (auditoría de seguimiento del 2026-10-20, bloque 1 de su plan de corrección) ──
+   Cada prueba repite, en pequeño, el guion del revisor que encontró la falla (docs/auditoria-2026-10-20/guiones/ri y r3).
+   Elemento oculto por completo: los cinco puntos (centro y esquinas) caen en algo fijo o pegajoso que no lo contiene. */
+const ocultoPorFijo = () => {
+  const a = document.activeElement;
+  if (!a || a === document.body) return null;
+  const fijos = [...document.querySelectorAll('body *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && !x.contains(a) && x.checkVisibility());
+  const r = a.getBoundingClientRect();
+  const puntos = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 1, r.top + 1], [r.right - 1, r.top + 1], [r.left + 1, r.bottom - 1], [r.right - 1, r.bottom - 1]];
+  const dentro = puntos.filter(([x, y]) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+  const tapados = dentro.filter(([x, y]) => { const e = document.elementFromPoint(x, y); return e && fijos.some((f) => f.contains(e)); });
+  return { total: dentro.length > 0 && tapados.length === dentro.length, tapados: tapados.length, puntos: dentro.length, casilla: a.matches('.plan-casilla') };
+};
+const dosCuadros = (page) => page.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
+async function focoAccesibilidad(navegador) {
+  const nuevo = async (ancho, alto, inicio) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (inicio) await c.addInitScript(inicio[0], inicio[1]);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+
+  // B4-01 (decisión 1a): con los ficticios la barra de elegidas cabe (menos de un cuarto de la ventana) y sigue fija; la
+  // página reserva su alto y ninguna casilla enfocada queda debajo de ella
+  for (const [w, h] of [[1440, 900], [1280, 720]]) {
+    const { c, page } = await nuevo(w, h);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-barra:not([hidden])');
+    await dosCuadros(page);
+    const barra = await page.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height, reserva: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0 }; });
+    comprueba(barra.pos === 'sticky' && barra.reserva >= barra.alto, `[${w}×${h}] B4-01: la barra de elegidas sigue fija (${Math.round(barra.alto)} px) y la página reserva su alto al desplazarse (${barra.reserva} px)`);
+    let casillas = 0; const ocultas = [];
+    for (let k = 0; k < 80; k++) {
+      await page.keyboard.press('Tab');
+      await dosCuadros(page);
+      const m = await page.evaluate(ocultoPorFijo);
+      if (await page.evaluate(() => !!document.activeElement.closest('.plan-barra'))) break;
+      if (m && m.casilla) { casillas += 1; if (m.total) ocultas.push(k + 1); }
+    }
+    comprueba(casillas >= 5 && !ocultas.length, `[${w}×${h}] B4-01: ninguna de las ${casillas} casillas de «En espera» queda debajo de la barra al enfocarla con Tab${ocultas.length ? ` (ocultas en las paradas ${ocultas.join(', ')})` : ''}`);
+    await c.close();
+  }
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -3940,6 +3988,7 @@ try {
     await parte('estándar en teléfono', () => estandarPantallas(navegador, 390, 844, 'telefono'));
     await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
   }
+  if (toca('foco')) await parte('foco y accesibilidad', () => focoAccesibilidad(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

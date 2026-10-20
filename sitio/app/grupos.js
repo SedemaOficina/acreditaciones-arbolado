@@ -44,6 +44,23 @@
 
     /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) */
     const elegidasDe = new Map();
+    /* Barra de elegidas (auditoría 2026-10-20, B4-01; decisión 1 a y c de Liber): desde 760 px va fija al pie de «En
+       espera». Para que el foco del teclado no quede debajo de ella, la página reserva su alto real al desplazarse
+       (scroll-padding-bottom, medido con un ResizeObserver y al cambiar la ventana); si la barra mide más de un cuarto de
+       la ventana, deja de ser fija ([data-suelta] en app/apd.css) y no se reserva nada. Lo que se ve no cambia cuando la
+       barra cabe. */
+    const barraPie = $('[data-barra]');
+    const anchoFija = matchMedia('(min-width: 760px)');
+    const ajustaBarra = () => {
+      const alto = barraPie.hidden ? 0 : barraPie.getBoundingClientRect().height;
+      const suelta = anchoFija.matches && alto > innerHeight / 4;
+      barraPie.toggleAttribute('data-suelta', suelta);
+      const raiz = document.documentElement.style;
+      if (anchoFija.matches && alto && !suelta) raiz.scrollPaddingBottom = `calc(${Math.ceil(alto)}px + var(--e-2))`;
+      else raiz.removeProperty('scroll-padding-bottom');
+    };
+    new ResizeObserver(ajustaBarra).observe(barraPie);
+    addEventListener('resize', ajustaBarra);
     /* ----- Selector de cursos ----- */
     const botones = P.CURSOS.map(([t, m]) => {
       const lista = P.enEspera(datos, t, m);
