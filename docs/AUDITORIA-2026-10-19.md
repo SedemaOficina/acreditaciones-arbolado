@@ -292,7 +292,7 @@ G1-05 (el Manual técnico de poda tiene cuota de $299 por ejemplar y el sistema 
 
 Aprobado: corregir los bloques 1 (fechas) y 2 (base) del plan.
 
-### Estado de los hallazgos al 19/10/2026 (versión de prueba 0.61, bloques 1 a 6)
+### Estado de los hallazgos al 20/10/2026 (versión de prueba 0.61, bloques 1 a 7)
 
 | Estado | Hallazgos |
 |---|---|
@@ -301,7 +301,8 @@ Aprobado: corregir los bloques 1 (fechas) y 2 (base) del plan.
 | **Corregidos en el bloque 3** (PR #2, versión 0.59) | R4-03, R4-04 (y RI-07), B2-01, E1-01, E1-02, B5-02, B5-03, B5-04, F3-01, R4-07 / A4-01 (en el sitio; quedan variables sin uso en tres herramientas), R4-14, R4-15. B5-01 ya estaba corregido en 0.58. R4-08 en parte: las listas de horas e instructores se quedan en el HTML porque de ahí sale el esquema del servidor |
 | **Corregidos en los bloques 4 y 5** (PR #3, versión 0.60) | Estándar de formularios 1.5.1: P126 a P131 (1.4.2), P134 y P135 (1.4.4), P145 a P148 (1.5.0 y 1.5.1), con sus soluciones provisionales quitadas (sección 9). P148 corrigió además una falla de la 0.59: tras recuperar un borrador, los documentos cargados después no entraban en él. Documentos: R4-06, R4-09, R4-10, R4-11, R4-12, D3-01, G1-03 y «por vencer» en REGLAS. P152 sigue sin resolverse en la 1.5.1: se queda la solución del proyecto |
 | **Corregidos en el bloque 6** (PR #4, versión 0.61) | A1-02 (las baterías anotan cada falla y siguen: con una parte detenida, 1043 comprobaciones en lugar de 667, y volumen 60 en lugar de 0), A1-04 (axe a 390 y 1280 px, con «Corregir»; volumen de «Programar» con toda la espera), A1-05 (verificación en GitHub en cada push y PR), A3-01 (id estable del material; dos instalaciones dan el mismo archivo), B7-01 (CSP y referente en las 21 páginas, sin violaciones) y F3-02 (`LICENCIA.md`: «Todos los derechos reservados» mientras decide la Secretaría, P167; licencias de terceros con su manifiesto). La CSP sacó a la luz una carrera real: los datos podían llegar antes de que el estándar iniciara el formulario (la solicitud en una segunda pestaña se detenía); `APD.cargar` ya espera a que la página termine de cargar |
-| **Abiertos** (bloque 7 y la auditoría de pantallas sobre la 1.5.1) | Los demás de la sección 5. |
+| **Corregidos en el bloque 7** (anteproyecto de lineamientos, versión de trabajo 0.5, 20/10/2026; el texto vive en el Proyecto, no en este repositorio) | G1-06, G1-07 y G1-09; G1-08 (N06) decidido por Liber, con el riesgo anotado para Jurídico. Todas las citas cotejadas contra el texto vigente de la Constitución, la Ley Ambiental, la Ley Orgánica, el Reglamento Interior, los códigos Fiscal y Penal, la Ley de datos personales de 2026 y la Ley de Procedimiento Administrativo, con una revisión independiente. Del cotejo salen P172 (notificación electrónica: confirmar la recepción y estrado) y el consentimiento de la huella en P137 |
+| **Abiertos** (auditoría de pantallas, accesibilidad y textos sobre la 1.5.1) | Los demás de la sección 5. |
 
 **Trabajo en paralelo.** Mientras se corregían los bloques 1 y 2, otra sesión subió a `main` las correcciones de «intentar romperlo», bloques 1 a 3 (versión 0.56; estado en `docs/AUDITORIA-2026-10-18-romper.md`). Con ellas cambian el estado de F2-A1, F1-8 y de los altos de «romperlo» que este informe daba como abiertos. Las dos líneas se integraron en la 0.57: la fecha pegada quedó con la solución de esa sesión (`app/apd.js`, más completa) y esta agrega el tope de un año, la base y lo demás.
 

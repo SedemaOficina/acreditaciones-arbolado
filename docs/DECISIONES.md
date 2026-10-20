@@ -344,7 +344,7 @@ obtener la acreditación como dictaminador técnico de arbolado y para la superv
 derribo, trasplante y restitución de árboles; el Octavo Transitorio fija el plazo de los del dictaminador (180 días hábiles). La
 NADF-001-RNAT-2015 (5.1) prevé los lineamientos de las acreditaciones correspondientes. El
 anteproyecto («Lineamientos para tramitar y obtener las acreditaciones de poda y derribo y de dictaminador técnico de
-arbolado en la Ciudad de México», versión de trabajo 0.4, 72 artículos, 11 capítulos, 8 transitorios y 4 anexos) **no
+arbolado en la Ciudad de México», versión de trabajo 0.5, 72 artículos, 11 capítulos, 8 transitorios y 4 anexos) **no
 se guarda en este repositorio porque es público**: vive en el Proyecto de Claude del sistema, en
 `claude/LINEAMIENTOS-acreditaciones.md` (cruce y regla) y `claude/lineamientos/` (fuente para regenerar el Word).
 
@@ -358,6 +358,8 @@ el mismo bloque el artículo del anteproyecto, su versión de trabajo y el campo
 | 2026-10-18 | Alcance: sólo hay dos acreditaciones, poda y derribo y dictaminador técnico. No habrá perfil ni acreditación de supervisor, ni en el sistema ni en los lineamientos (decisión definitiva) | Liber Saltijeral |
 | 2026-10-18 | Dictaminar con la de poda vencida (P133): la de dictaminador conserva su vigencia y la persona debe renovar la de poda; para renovar la de dictaminador necesita la de poda vigente | Liber Saltijeral |
 | 2026-10-18 | El anteproyecto incluye un capítulo completo de suspensión y revocación (P120), con valores propuestos para revisión jurídica | Liber Saltijeral |
+| 2026-10-20 | Se ratifica P133: la de dictaminador conserva su vigencia aunque venza la de poda; para renovarla, la de poda debe estar vigente (si venció, se renueva antes o se tramita de nuevo). La diferencia con la NADF 5.4 queda anotada para la Dirección Jurídica | Liber Saltijeral |
+| 2026-10-20 | Fundamento de la unidad que opera el trámite: sólo el art. 190 del Reglamento Interior (fracc. I, III, VI y VII); el art. 184 queda como nota para la Dirección Jurídica | Liber Saltijeral |
 | 2026-10-18 | El anteproyecto se trabaja en Word con la identidad de la Secretaría; en el repositorio sólo van el cruce (campo `lineamientos`) y los pendientes que abre (P137 a P144) | Liber Saltijeral |
 | 2026-10-18 | El documento previo del equipo (fundamentos, obligaciones, prohibiciones, causas de suspensión y cancelación) se incorporó al anteproyecto; no se tomaron el comprobante de domicilio, el escrito libre, los 15 días, el 80 % ni el 9.0 | Liber Saltijeral |
 
