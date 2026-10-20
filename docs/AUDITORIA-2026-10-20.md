@@ -161,27 +161,29 @@ guarda sin ubicación (P127 sigue resuelto); con red caída y con versión nueva
 
 ## 8. Para decidir (dueño)
 
-| # | Pregunta | Opciones (costo) | Recomendación |
-|---|---|---|---|
-| 1 | Barra de «Grupos» (B4-01, C2-01) | (a) Reservar su alto, sin cambio visible (S); (b) barra compacta de un renglón con «Agregar a… ▾» (M); (c) que deje de ser fija si mide más de ¼ de la ventana (S) | (a) y (c) ahora; (b) con el área |
-| 2 | Botones principales en «Grupos», «Programar» y «Mis grupos de hoy» (C6-02) | Un principal por pantalla y los demás secundarios (M), decidido junto con P164 | Con P164 |
-| 3 | Espera de 10 días o más en la bandeja (C6-04) | (a) Rojo con la familia «te toca actuar» y el texto «18 días · atrasada» (S); (b) dejarlo y registrar la excepción | (a) |
-| 4 | Botones de «Asistencia» (C6-09, C6-03) | (a) Opción corta Sí/No del estándar (S); (b) verde y rojo con ✓ y ✗ y contorno en alto contraste (S) | (a) |
-| 5 | Opción deshabilitada con su motivo dentro (r1, informativo) | (a) Dejarla (el motivo se lee a 2.08:1); (b) motivo como ayuda fuera de la opción, a contraste normal (S) | (b) |
-| 6 | «Crea tu cuenta» al recargar o salir (B6-02) | (a) Avisar antes de salir (S); (b) borrador sin contraseña ni foto (M); (c) las dos (M) | (c) |
-| 7 | Versión en pantalla (B6-04) | (a) Escribirla en el HTML al construir (S); (b) además avisar «hay una versión nueva» (M, etapa 3) | (a) ahora, (b) en la etapa 3 |
-| 8 | Texto de la sesión que terminó (B6-01) | El propuesto en 5.2 u otro | El propuesto |
-| 9 | Letra mínima en teléfono (B4-04) | (a) Subir en el estándar ayudas a 14 px y bajadas a 16 px (S, Pnn); (b) sólo en el proyecto; (c) dejarlo | (a) |
-| 10 | Fallas del núcleo del estándar (foco del borrador) | (a) Registrar el Pnn y rodear en `apd.js` (S); (b) sólo registrar | (a) para el foco |
-| 11 | Orden de la espera de renovación (C1-03) | (a) Sin bloques, por vencimiento; (b) bloques ordenados por su vencimiento más antiguo y, dentro, primero las vencidas (S); (c) cambiar el encabezado | (b) |
-| 12 | Cierre del día de citas (C1-07) | (a) Filtro «Por atender» (S); (b) «Registrar inasistencias del día» en lote (M) | (a) ahora, (b) con P69 |
-| 13 | «No soy un programa automático» en la solicitud (C3-03) | (a) Quitarla de la solicitud y dejarla en la cuenta (S); (b) quitarla de las dos; (c) dejarla | (a) |
-| 14 | Foto en el pase de lista (C1-02) | (a) Miniatura de 96 px que se amplía a unos 320 px (S); (b) columna más ancha en escritorio (S) | (a) |
-| 15 | Presupuesto de peso y velocidad (D4) | (a) Estricto: ≤ 200 KB y ≤ 20 peticiones, usable ≤ 5 s en 4G lento (L); (b) intermedio: persona ≤ 300 KB comprimidos y ≤ 40 peticiones, usable ≤ 8 s en 4G lento con procesador 4× y ≤ 20 s en 3G lento con 6×; personal ≤ 3 s con volumen y respuesta ≤ 200 ms | (b) |
-| 16 | Formato de fechas y horas (C5-01) | (a) dd/mm/aaaa y «a las HH:MM» en todo (M); (b) fecha larga para lo que hay que recordar y dd/mm/aaaa en tablas (M) | (a) |
-| 17 | Fecha del acuse (estándar) | (a) Pedir al estándar el estilo de fecha y, mientras, escribirla con `APD.fechaHora` (S); (b) aceptar la fecha larga en los acuses | (a) |
-| 18 | Scripts al final del cuerpo (D4-02) | (a) `defer` en `<head>` en las 21 páginas (S); (b) un paquete por pantalla al entregar (M); (c) medir antes en teléfono real (P33) | (c) y luego (a) |
-| 19 | Foco inicial de los diálogos con motivo (RI-11) | (a) Dejarlo en el motivo y registrar la excepción; (b) cumplir la decisión del 17/10 | (a) |
+Liber decidió los 19 puntos el 20/10/2026 (última columna). Difieren de la recomendación el 16 y el 17 (fechas).
+
+| # | Pregunta | Opciones (costo) | Recomendación | Decisión de Liber (20/10/2026) |
+|---|---|---|---|---|
+| 1 | Barra de «Grupos» (B4-01, C2-01) | (a) Reservar su alto, sin cambio visible (S); (b) barra compacta de un renglón con «Agregar a… ▾» (M); (c) que deje de ser fija si mide más de ¼ de la ventana (S) | (a) y (c) ahora; (b) con el área | (a) y (c): arreglo sin cambio visible |
+| 2 | Botones principales en «Grupos», «Programar» y «Mis grupos de hoy» (C6-02) | Un principal por pantalla y los demás secundarios (M), decidido junto con P164 | Con P164 | Uno principal por pantalla, junto con P164 |
+| 3 | Espera de 10 días o más en la bandeja (C6-04) | (a) Rojo con la familia «te toca actuar» y el texto «18 días · atrasada» (S); (b) dejarlo y registrar la excepción | (a) | (a) rojo de «atender» con «N días · atrasada» |
+| 4 | Botones de «Asistencia» (C6-09, C6-03) | (a) Opción corta Sí/No del estándar (S); (b) verde y rojo con ✓ y ✗ y contorno en alto contraste (S) | (a) | (a) Sí/No del estándar |
+| 5 | Opción deshabilitada con su motivo dentro (r1, informativo) | (a) Dejarla (el motivo se lee a 2.08:1); (b) motivo como ayuda fuera de la opción, a contraste normal (S) | (b) | (b) motivo fuera de la opción |
+| 6 | «Crea tu cuenta» al recargar o salir (B6-02) | (a) Avisar antes de salir (S); (b) borrador sin contraseña ni foto (M); (c) las dos (M) | (c) | (c) avisar y recuperar (sin contraseña ni foto) |
+| 7 | Versión en pantalla (B6-04) | (a) Escribirla en el HTML al construir (S); (b) además avisar «hay una versión nueva» (M, etapa 3) | (a) ahora, (b) en la etapa 3 | (a) versión escrita en la página; el aviso, en la etapa 3 |
+| 8 | Texto de la sesión que terminó (B6-01) | El propuesto en 5.2 u otro | El propuesto | El propuesto |
+| 9 | Letra mínima en teléfono (B4-04) | (a) Subir en el estándar ayudas a 14 px y bajadas a 16 px (S, Pnn); (b) sólo en el proyecto; (c) dejarlo | (a) | (a) pedirlo al estándar (Pnn) |
+| 10 | Fallas del núcleo del estándar (foco del borrador) | (a) Registrar el Pnn y rodear en `apd.js` (S); (b) sólo registrar | (a) para el foco | (a) rodear y reportar las que afectan a la persona |
+| 11 | Orden de la espera de renovación (C1-03) | (a) Sin bloques, por vencimiento; (b) bloques ordenados por su vencimiento más antiguo y, dentro, primero las vencidas (S); (c) cambiar el encabezado | (b) | (b) bloques por vencimiento, primero las vencidas |
+| 12 | Cierre del día de citas (C1-07) | (a) Filtro «Por atender» (S); (b) «Registrar inasistencias del día» en lote (M) | (a) ahora, (b) con P69 | (a) filtro «Por atender» ahora; el lote, con P69 |
+| 13 | «No soy un programa automático» en la solicitud (C3-03) | (a) Quitarla de la solicitud y dejarla en la cuenta (S); (b) quitarla de las dos; (c) dejarla | (a) | (a) quitarla de la solicitud |
+| 14 | Foto en el pase de lista (C1-02) | (a) Miniatura de 96 px que se amplía a unos 320 px (S); (b) columna más ancha en escritorio (S) | (a) | (a) miniatura que se amplía |
+| 15 | Presupuesto de peso y velocidad (D4) | (a) Estricto: ≤ 200 KB y ≤ 20 peticiones, usable ≤ 5 s en 4G lento (L); (b) intermedio: persona ≤ 300 KB comprimidos y ≤ 40 peticiones, usable ≤ 8 s en 4G lento con procesador 4× y ≤ 20 s en 3G lento con 6×; personal ≤ 3 s con volumen y respuesta ≤ 200 ms | (b) | (b) intermedio |
+| 16 | Formato de fechas y horas (C5-01) | (a) dd/mm/aaaa y «a las HH:MM» en todo (M); (b) fecha larga para lo que hay que recordar y dd/mm/aaaa en tablas (M) | (a) | **(b) fecha larga para lo que se recuerda (cita, curso, examen) y 20/10/2026 en tablas y datos** |
+| 17 | Fecha del acuse (estándar) | (a) Pedir al estándar el estilo de fecha y, mientras, escribirla con `APD.fechaHora` (S); (b) aceptar la fecha larga en los acuses | (a) | **(b) se queda la fecha larga en el acuse**; se pide al estándar «a las» en lugar de la coma |
+| 18 | Scripts al final del cuerpo (D4-02) | (a) `defer` en `<head>` en las 21 páginas (S); (b) un paquete por pantalla al entregar (M); (c) medir antes en teléfono real (P33) | (c) y luego (a) | (c) medir en teléfono real (P33) y luego (a) |
+| 19 | Foco inicial de los diálogos con motivo (RI-11) | (a) Dejarlo en el motivo y registrar la excepción; (b) cumplir la decisión del 17/10 | (a) | (a) foco en el motivo; se registra la excepción a la decisión del 17/10 |
 
 ## 9. Fallas del componente compartido (estándar 1.5.1), sin clave todavía
 
