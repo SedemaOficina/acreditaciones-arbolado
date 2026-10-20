@@ -1362,3 +1362,36 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   `probar-sitio` 1029 (con axe; 69 nuevas, `SOLO=estandar` entre ellas); `probar-examen` 79; `probar-volumen` 64;
   `auditar-sitio` 60 pantallas y 201 botones, con los mismos 2 hallazgos que la 0.59 (un enlace del visor bajo el botón
   del menú de pruebas y «Ir al contenido» en «Corregir»).
+
+## 2026-10-19 · Bloque 83 · Pruebas y repositorio (bloque 6 de la auditoría)
+
+- **Las baterías siguen después de una falla (A1-02).** `probar-sitio` corre cada parte en `parte()` y `probar-volumen`
+  en `paso()`: una parte que se detiene cuenta como falla y las demás corren; al final se dice cuántas comprobaciones
+  hubo y qué partes se detuvieron. Con una falla provocada al principio de «Programar», la 0.60 corría 667
+  comprobaciones del sitio y 0 de volumen; ahora, 1043 y 60.
+- **Más cobertura (A1-04).** axe revisa las 36 pantallas a 390 y a 1280 px, con «Cargar el documento correcto» y su
+  versión con errores; volumen revisa «Programar» con toda la espera (66 personas, propone 25).
+- **Verificación en GitHub (A1-05, decisión 13).** `.github/workflows/pruebas.yml`, en cada push y PR: la base en un
+  PostgreSQL 16 desechable (`probar-base` y que los ficticios regenerados sean los guardados) y el sitio con el estándar
+  1.5.1 del repositorio público (`sitio/` igual a lo que construye el generador, pendientes y esquemas al día,
+  `probar-sitio` con axe, `probar-examen` y `probar-volumen`). Las fallas salen como anotaciones del commit
+  (`herramientas/en-github.sh`). No publica.
+- **Ficticios estables (A3-01).** El `id` del material de estudio se deriva de su clave y su archivo, como el de los
+  catálogos: dos instalaciones dan el mismo `datos/ficticios.json`, y un «Ocultar» hecho en el navegador de prueba ya
+  no se pierde al republicar. `probar-base` dice si el archivo cambió respecto al guardado.
+- **Política de contenido (B7-01, decisión 9).** `construir-sitio` pone en las 21 páginas, justo después de `charset`,
+  la misma CSP estricta (`default-src 'self'`, sin `unsafe-inline` ni `unsafe-eval`; `blob:` para vistas previas y el
+  visor; `object-src 'none'`, `base-uri 'none'`) y `referrer` `same-origin`. Prueba nueva `SOLO=csp`: la política en
+  las 21, y ninguna violación en las 21 pantallas, el visor de PDF y la foto de la cuenta; en «romperlo 2» una
+  violación cuenta como error de consola. En el SIA va como encabezado, con `frame-ancestors 'none'`.
+- **Hallazgo de paso, corregido.** Con la CSP, la solicitud abierta en una segunda pestaña se detenía: los datos
+  llegaban antes de que el estándar iniciara el formulario y `FormKit.pasos` no existía todavía. Era una carrera real
+  (con la API pasaría igual con una respuesta rápida): `APD.cargar` ya no entrega los datos antes de que la página
+  termine de cargar. axe se inyecta por el protocolo del navegador, porque la CSP no deja scripts en línea.
+- **Licencia (F3-02, decisión 10).** `LICENCIA.md`: «Todos los derechos reservados» mientras la Secretaría decide la
+  licencia (P167), con los datos ficticios, la identidad institucional y las licencias de terceros (pdf.js y sus fuentes,
+  Roboto, Cabin; Playwright y axe-core sólo en pruebas). `construir-sitio` copia del estándar el manifiesto de lo que
+  está en `sitio/vendor` (`MANIFIESTO.json`, con huella sha256); prueba nueva `SOLO=licencias`.
+- Pruebas: `probar-base` 303 de 303, concurrencia 20 de 20, restauración correcta, dos instalaciones con el mismo
+  archivo; `probar-esquemas` 131; `probar-sitio` 1096 (con axe; 67 nuevas); `probar-examen` 79; `probar-volumen` 68;
+  `auditar-sitio` con los mismos 2 hallazgos que la 0.59.

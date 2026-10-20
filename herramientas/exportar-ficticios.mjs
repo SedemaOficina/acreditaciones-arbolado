@@ -69,12 +69,19 @@ if (r.status !== 0) {
 }
 const salida = r.stdout.split('\n');
 let json = JSON.parse(salida.slice(salida.findIndex((l) => l.startsWith('{'))).join('\n'));
-// Los catálogos (organizaciones y carreras) toman un id aleatorio al instalarse: se sustituye, en todo el archivo, por uno
-// derivado de su nombre, para que regenerar no cambie el archivo sin motivo (auditoría 2026-10-17)
+// Los catálogos (organizaciones y carreras) y el material de estudio toman un id aleatorio al instalarse: se sustituye,
+// en todo el archivo, por uno derivado de lo que los distingue, para que regenerar no cambie el archivo sin motivo
+// (auditoría 2026-10-17; el material, auditoría 2026-10-19, A3-01: si su id cambia, un «Ocultar» hecho en el navegador
+// de prueba se pierde al republicar)
 const uuidDe = (texto) => { const h = createHash('md5').update(texto).digest('hex'); return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`; };
+const LLAVE = {
+  organizacion: (f) => f.nombre_normalizado || f.nombre,
+  carrera: (f) => f.nombre_normalizado || f.nombre,
+  material_estudio: (f) => `${f.clave}:${f.archivo_clave}` // archivo_clave es único (material_estudio_archivo_uk)
+};
 let texto = JSON.stringify(json);
-for (const [tabla, campo] of [['organizacion', 'nombre_normalizado'], ['carrera', 'nombre_normalizado']]) {
-  for (const fila of json[tabla]) texto = texto.split(`"${fila.id}"`).join(`"${uuidDe(`${tabla}:${fila[campo] || fila.nombre}`)}"`);
+for (const [tabla, llave] of Object.entries(LLAVE)) {
+  for (const fila of json[tabla]) texto = texto.split(`"${fila.id}"`).join(`"${uuidDe(`${tabla}:${llave(fila)}`)}"`);
 }
 json = JSON.parse(texto);
 const archivo = {

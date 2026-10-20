@@ -1,0 +1,107 @@
+# Verificación en cada push y en cada PR (auditoría 2026-10-19, A1-05; decisión 13 de Liber).
+# Corre las mismas baterías que se corren a mano antes de publicar. Si algo falla, el commit o el PR queda en rojo.
+# No publica nada: la publicación sigue siendo herramientas/publicar-sitio.sh, a mano.
+name: Pruebas
+
+on:
+  push:
+    branches-ignore: [gh-pages]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  base:
+    name: Base de datos (PostgreSQL 16)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: prueba
+          # Sólo para esta base desechable del contenedor: probar-base entra también como apd_api, sin contraseña
+          POSTGRES_HOST_AUTH_METHOD: trust
+          # Mismo orden de texto que las bases donde se generaron los ficticios (C.UTF-8)
+          POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Herramientas de PostgreSQL 16
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16
+          echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
+      - name: Esquema generado al día
+        run: node herramientas/generar-esquema.mjs --verificar
+      - name: probar-base (reglas, permisos, concurrencia, respaldo y restauración)
+        run: bash herramientas/en-github.sh probar-base bash herramientas/probar-base.sh
+      - name: Los ficticios regenerados son los guardados (A3-01)
+        run: git diff --exit-code -- datos/ficticios.json
+
+  sitio:
+    name: Sitio, esquemas y examen (Chromium)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      # El estándar de formularios que usa el proyecto (repositorio público), para construir, validar y axe
+      ESTANDAR: .estandares/formularios
+      AXE: .estandares/formularios/vendor/axe-core/axe.min.js
+    steps:
+      - uses: actions/checkout@v4
+      - name: Estándar de formularios 1.5.1
+        uses: actions/checkout@v4
+        with:
+          repository: SedemaOficina/estandares-sia
+          ref: formularios-v1.5.1
+          path: .estandares
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Chromium de Playwright
+        run: npx playwright install --with-deps chromium
+      - name: sitio/ es lo que construye el generador (copia del estándar, política de contenido, textos)
+        run: |
+          git config core.fileMode false
+          node herramientas/construir-sitio.mjs "$ESTANDAR"
+          git diff --exit-code -- sitio
+      - name: Pendientes generados al día
+        run: |
+          node herramientas/generar-pendientes.mjs
+          git diff --exit-code -- docs/PENDIENTES.md docs/tablero-pendientes.html
+      - name: probar-esquemas (validación del servidor desde el HTML)
+        run: |
+          bash herramientas/en-github.sh probar-esquemas node herramientas/probar-esquemas.mjs "$ESTANDAR"
+          git diff --exit-code -- db/esquemas-formularios
+      - name: probar-sitio (teléfono y escritorio, con axe)
+        run: bash herramientas/en-github.sh probar-sitio npm run probar-sitio
+      - name: probar-examen
+        if: ${{ !cancelled() }}
+        run: bash herramientas/en-github.sh probar-examen npm run probar-examen
+      - name: probar-volumen
+        if: ${{ !cancelled() }}
+        run: bash herramientas/en-github.sh probar-volumen npm run volumen
+      - name: Capturas, si algo falló
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: verificacion/capturas/
+          retention-days: 7

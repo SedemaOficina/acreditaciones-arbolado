@@ -88,6 +88,12 @@ bash herramientas/publicar-sitio.sh                 # gh-pages = sitio/ (despué
 node herramientas/construir-artefacto.mjs <carpeta> # la misma versión de prueba como artefacto de Claude
 ```
 
+Cada push y cada PR corren solos en GitHub (`.github/workflows/pruebas.yml`, pestaña «Actions»): la base en un
+PostgreSQL 16 desechable (`probar-base`, y que los ficticios regenerados sean los guardados), y el sitio con el
+estándar 1.5.1 (que `sitio/` sea lo que construye el generador, pendientes y esquemas al día, `probar-sitio` con axe,
+`probar-examen` y `probar-volumen`). Si algo falla, el commit o el PR queda en rojo. No publica: la publicación sigue
+siendo `publicar-sitio.sh`, a mano. Las baterías anotan cada falla y siguen; una parte que se detiene cuenta como falla.
+
 ## Lo que este proyecto toca del SIA
 
 - Un esquema propio, `apd`, con su cuenta de servicio `apd_api`. No lee ni copia `territorio`; no usa PostGIS.
@@ -103,3 +109,8 @@ Nombres con apellidos de prueba («Ejemplo», «Muestra», «Prueba», «Fictici
 correos `@ejemplo.local`; teléfonos de ceros; CURP formadas de su nombre y fecha ficticios con entidad `NE` (pasan las mismas comprobaciones que una real). La contraseña de las
 cuentas ficticias es `Prueba-ficticia-2026`. Se generan pasando por todas las reglas de la base: si un dato ficticio
 viola una regla, la carga falla.
+
+## Licencia
+
+Todos los derechos reservados, Secretaría del Medio Ambiente, mientras la Secretaría decide la licencia (P167). Los
+componentes de terceros conservan la suya: ver `LICENCIA.md`.

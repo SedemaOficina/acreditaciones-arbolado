@@ -81,8 +81,9 @@ async function cargaFoto(page) {
 }
 
 let fallas = 0;
-const bien = (m) => console.log(`BIEN  ${m}`);
-const mal = (m) => { fallas++; console.log(`MAL   ${m}`); };
+let total = 0;
+const bien = (m) => { total++; console.log(`BIEN  ${m}`); };
+const mal = (m) => { total++; fallas++; console.log(`MAL   ${m}`); };
 const comprueba = (cond, m) => (cond ? bien(m) : mal(m));
 
 async function captura(page, nombre) {
@@ -2563,6 +2564,8 @@ async function romperDos(navegador) {
   const t = (m) => `[romper 2] ${m}`;
   const contexto = async (ancho = 1280, alto = 900) => {
     const c = await navegador.newContext({ viewport: { width: ancho, height: alto } });
+    // Una violación de la política de contenido cuenta como error de consola (B7-01)
+    await c.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => console.error(`CSP: ${e.violatedDirective} ${e.blockedURI} ${e.sourceFile}:${e.lineNumber}`)));
     const errores = [];
     const pagina = async (url) => {
       const pg = await c.newPage();
@@ -3489,10 +3492,11 @@ async function fechas(navegador) {
   comprueba(distintas.length === 0, t(`UTC: «Mis trámites» de ${personas.length} personas y «Verificar» de 2 números dicen lo mismo que en la Ciudad de México${distintas.length ? ` (distintas: ${distintas.join(', ')})` : ''}`));
 }
 
-async function accesibilidad(navegador) {
+// En teléfono y en escritorio (auditoría 2026-10-19, A1-04: antes sólo a 390 px y sin «Corregir un documento»)
+async function accesibilidad(navegador, ancho = 390, alto = 844) {
   if (!process.env.AXE) { console.log('OMITIDO  accesibilidad: falta AXE=<ruta a axe.min.js del estándar>'); return; }
   const axe = readFileSync(process.env.AXE, 'utf8');
-  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
+  const page = await navegador.newPage({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
   await page.goto(BASE + 'index.html');
   await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
@@ -3501,8 +3505,14 @@ async function accesibilidad(navegador) {
     [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`], [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`, 'sin marcar'],
     ['material.html'], ['material-personal.html'], ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'cita futura'], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
+  // «Cargar el documento correcto» de una cita en pausa, con la sesión de su persona (al final: cambia la sesión)
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sCorregir = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+  pantallas.push([`corregir.html?folio=${sCorregir.folio}`], [`corregir.html?folio=${sCorregir.folio}`, 'con errores']);
   for (const [url, estado] of pantallas) {
+    if (url.startsWith('corregir.html')) await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sCorregir.solicitante_id);
     await page.goto(BASE + url);
+    if (url.startsWith('corregir.html')) await page.waitForSelector('#formulario:not([hidden])');
     await page.waitForLoadState('networkidle');
     // La cita futura se atiende «como si fuera su día» (F2 A6), salvo cuando se revisa su aviso
     if (url.startsWith('cotejo.html') && estado !== 'cita futura' && await page.isVisible('[data-atender-simulada]')) await page.click('[data-atender-simulada]');
@@ -3522,12 +3532,76 @@ async function accesibilidad(navegador) {
     else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado === 'cita futura') await page.waitForSelector('[data-futura]:not([hidden])');
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
-    await page.addScriptTag({ content: axe });
+    await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
       .violations.map((x) => `${x.id} (${x.nodes.length})`));
-    comprueba(v.length === 0, `[accesibilidad] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
+    comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
   }
   await page.close();
+}
+
+/* ── Licencias (auditoría 2026-10-19, F3-02; decisión 10) ──
+   El repositorio declara su licencia (P167: «Todos los derechos reservados» mientras decide la Secretaría) y cada archivo
+   de terceros copiado en sitio/vendor está en el manifiesto con su huella y su licencia, y en LICENCIA.md. */
+async function licencias() {
+  const t = (m) => `[licencias] ${m}`;
+  const { createHash } = await import('node:crypto');
+  const lic = readFileSync(join(raiz, 'LICENCIA.md'), 'utf8');
+  comprueba(/Todos los derechos reservados/.test(lic) && /P167/.test(lic), t('LICENCIA.md: «Todos los derechos reservados» y el pendiente P167'));
+  const m = JSON.parse(readFileSync(join(raiz, 'sitio/vendor/MANIFIESTO.json'), 'utf8'));
+  const enDisco = (d) => readdirSync(join(raiz, d), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? enDisco(`${d}/${e.name}`) : [`${d}/${e.name}`]));
+  const archivos = enDisco('sitio/vendor').filter((f) => !f.endsWith('/MANIFIESTO.json')).map((f) => f.slice('sitio/vendor/'.length));
+  const declarados = new Map(m.bibliotecas.flatMap((b) => b.archivos.map((a) => [a.ruta, a.sha256])));
+  const sin = archivos.filter((f) => !declarados.has(f));
+  const distintos = [...declarados].filter(([r, h]) => !archivos.includes(r) || createHash('sha256').update(readFileSync(join(raiz, 'sitio/vendor', r))).digest('hex') !== h).map(([r]) => r);
+  comprueba(!sin.length && !distintos.length, t(`sitio/vendor: los ${archivos.length} archivos están en el manifiesto con su huella${sin.length ? '; sin declarar: ' + sin.join(', ') : ''}${distintos.length ? '; huella distinta o falta: ' + distintos.join(', ') : ''}`));
+  const faltan = m.bibliotecas.filter((b) => !lic.includes(b.version) || !lic.includes(b.licencia)).map((b) => b.paquete);
+  comprueba(!faltan.length, t(`LICENCIA.md lista cada biblioteca copiada con su versión y licencia${faltan.length ? '; faltan: ' + faltan.join(', ') : ''}`));
+  const fuentes = readdirSync(join(raiz, 'sitio/formkit/fuentes'));
+  comprueba(['Roboto', 'Cabin'].every((f) => fuentes.includes(`${f}-OFL.txt`) && lic.includes(`${f}-OFL.txt`)), t('las fuentes llevan su licencia y LICENCIA.md las lista'));
+}
+
+/* ── Política de contenido y de referente (auditoría 2026-10-19, B7-01; decisión 9) ──
+   Las 21 páginas declaran la misma CSP estricta (sin 'unsafe-inline' ni 'unsafe-eval') y el referente same-origin,
+   antes de cualquier recurso; y en el navegador nada la viola: cada página, el visor de PDF, la foto de la cuenta
+   (vista previa y recodificación) y el examen. La genera herramientas/construir-sitio.mjs. */
+async function politicaContenido(navegador) {
+  const t = (m) => `[csp] ${m}`;
+  const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html')).sort();
+  const politicas = new Set();
+  const malas = [];
+  for (const p of paginas) {
+    const h = readFileSync(join(raiz, 'sitio', p), 'utf8');
+    const m = h.match(/^<!DOCTYPE html>\n<html[^>]*>\n<head>\n<meta charset="utf-8">\n<meta http-equiv="Content-Security-Policy" content="([^"]+)">\n<meta name="referrer" content="same-origin">\n/);
+    if (!m || (h.match(/Content-Security-Policy/g) || []).length !== 1) { malas.push(p); continue; }
+    politicas.add(m[1]);
+  }
+  comprueba(paginas.length === 21 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
+  const csp = [...politicas][0] || '';
+  comprueba(politicas.size === 1 && /script-src 'self';/.test(csp) && /style-src 'self';/.test(csp) && /object-src 'none'/.test(csp) && /base-uri 'none'/.test(csp) && !/unsafe/.test(csp),
+    t(`una sola política, estricta, en todas: «${csp}»`));
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
+  await c.addInitScript(() => { window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())); });
+  const pg = await c.newPage();
+  const enConsola = [];
+  pg.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) enConsola.push(m.text().slice(0, 140)); });
+  const violaciones = async () => (await pg.evaluate(() => window.__csp || [])).concat(enConsola.splice(0));
+  const revisa = async (donde) => { const v = await violaciones(); comprueba(!v.length, t(`${donde}: sin violaciones${v.length ? ': ' + [...new Set(v)].slice(0, 3).join(' | ') : ''}`)); };
+  await pg.goto(BASE + 'index.html');
+  await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), paraDictaminador.id);
+  for (const p of paginas) { await pg.goto(BASE + p); await pg.waitForLoadState('networkidle'); await revisa(p); }
+  // El visor de PDF (pdf.js y su worker)
+  await pg.goto(BASE + `revisar.html?folio=${porClasificar.folio}`);
+  await pg.click('[data-ver="curriculum_vitae"]');
+  await pg.waitForSelector('.visor-lienzo');
+  await pg.waitForTimeout(500);
+  await revisa('revisar con el visor de PDF abierto');
+  // La foto de la cuenta: vista previa (blob:) y recodificación en lienzo
+  await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
+  await pg.goto(BASE + 'cuenta.html');
+  await cargaFoto(pg);
+  await revisa('cuenta con la fotografía cargada');
+  await c.close();
 }
 
 /* ── Limpieza del código (auditoría 2026-10-19, R4-07, A4-01 y R4-08) ──
@@ -3803,49 +3877,63 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+// Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
+// terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
+const detenidas = [];
+async function parte(nombre, fn) {
+  try { await fn(); } catch (e) {
+    detenidas.push(nombre);
+    mal(`[${nombre}] la parte se detuvo: ${String(e.message || e).split('\n')[0]}`);
+    if (process.env.PILA) console.error(e.stack);
+  }
+}
+// SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
+const solo = process.env.SOLO || '';
+const toca = (...nombres) => !solo || nombres.includes(solo);
 try {
-  if (!process.env.SOLO || process.env.SOLO === 'limpieza') await limpieza(navegador);
-  // SOLO=guardado corre sólo el recorrido guardado y los caminos del cotejo; SOLO=grupos, sólo grupos y asistencia (para depurar)
-  const solo = process.env.SOLO || '';
+  if (toca('limpieza')) await parte('limpieza', () => limpieza(navegador));
+  if (toca('limpieza', 'licencias')) await parte('licencias', () => licencias());
+  if (toca('csp')) await parte('política de contenido', () => politicaContenido(navegador));
   if (!solo) {
-    await recorrido(navegador, 390, 844, 'telefono');
-    await recorrido(navegador, 1280, 900, 'escritorio');
-    await personal(navegador, 390, 844, 'telefono');
-    await personal(navegador, 1440, 900, 'escritorio');
+    await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));
+    await parte('recorrido en escritorio', () => recorrido(navegador, 1280, 900, 'escritorio'));
+    await parte('personal en teléfono', () => personal(navegador, 390, 844, 'telefono'));
+    await parte('personal en escritorio', () => personal(navegador, 1440, 900, 'escritorio'));
   }
-  if (!solo || solo === 'solicitud') {
-    await solicitudRegresos(navegador, 390, 844, 'telefono');
-    await solicitudRegresos(navegador, 1280, 900, 'escritorio');
+  if (toca('solicitud')) {
+    await parte('solicitud: regresos en teléfono', () => solicitudRegresos(navegador, 390, 844, 'telefono'));
+    await parte('solicitud: regresos en escritorio', () => solicitudRegresos(navegador, 1280, 900, 'escritorio'));
   }
-  if (!solo || solo === 'guardado') {
-    await recorridoGuardado(navegador);
-    await caminosCotejo(navegador);
+  if (toca('guardado')) {
+    await parte('recorrido guardado', () => recorridoGuardado(navegador));
+    await parte('caminos del cotejo', () => caminosCotejo(navegador));
   }
-  if (!solo || solo === 'grupos') {
-    await caminosGrupos(navegador, 390, 844, 'telefono');
-    await caminosGrupos(navegador, 1280, 900, 'escritorio');
-    await caminosProgramar(navegador, 390, 844, 'telefono');
-    await caminosProgramar(navegador, 1440, 900, 'escritorio');
+  if (toca('grupos')) {
+    await parte('grupos en teléfono', () => caminosGrupos(navegador, 390, 844, 'telefono'));
+    await parte('grupos en escritorio', () => caminosGrupos(navegador, 1280, 900, 'escritorio'));
+    await parte('programar en teléfono', () => caminosProgramar(navegador, 390, 844, 'telefono'));
+    await parte('programar en escritorio', () => caminosProgramar(navegador, 1440, 900, 'escritorio'));
   }
-  if (!solo || solo === 'material') {
-    await materialEstudio(navegador, 390, 844, 'telefono');
-    await materialEstudio(navegador, 1280, 900, 'escritorio');
+  if (toca('material')) {
+    await parte('material en teléfono', () => materialEstudio(navegador, 390, 844, 'telefono'));
+    await parte('material en escritorio', () => materialEstudio(navegador, 1280, 900, 'escritorio'));
   }
-  if (!solo || solo === 'persistencia') await persistenciaPrueba(navegador);
-  if (!solo || solo === 'romper') await romper(navegador);
-  if (!solo || solo === 'romper' || solo === 'romper2') await romperDos(navegador);
-  if (!solo || solo === 'romper' || solo === 'romper3') await romperTres(navegador);
-  if (!solo || solo === 'fechas') await fechas(navegador);
-  if (!solo || solo === 'estandar') {
-    await estandarPantallas(navegador, 390, 844, 'telefono');
-    await estandarPantallas(navegador, 1280, 900, 'escritorio');
+  if (toca('persistencia')) await parte('persistencia', () => persistenciaPrueba(navegador));
+  if (toca('romper')) await parte('romper', () => romper(navegador));
+  if (toca('romper', 'romper2')) await parte('romper 2', () => romperDos(navegador));
+  if (toca('romper', 'romper3')) await parte('romper 3', () => romperTres(navegador));
+  if (toca('fechas')) await parte('fechas', () => fechas(navegador));
+  if (toca('estandar')) {
+    await parte('estándar en teléfono', () => estandarPantallas(navegador, 390, 844, 'telefono'));
+    await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
   }
-  if (!solo) await accesibilidad(navegador);
-} catch (e) {
-  mal(`El recorrido se detuvo: ${e.message.split('\n')[0]}`);
-  if (process.env.PILA) console.error(e.stack);
+  if (toca('accesibilidad')) {
+    await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
+    await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));
+  }
 } finally {
   await navegador.close();
 }
-console.log(fallas ? `\n${fallas} comprobación(es) fallida(s).` : '\nTodas las comprobaciones correctas.');
+console.log(`\n${total} comprobaciones${detenidas.length ? `; partes detenidas: ${detenidas.join(', ')}` : ''}.`);
+console.log(fallas ? `${fallas} comprobación(es) fallida(s).` : 'Todas las comprobaciones correctas.');
 process.exit(fallas ? 1 : 0);

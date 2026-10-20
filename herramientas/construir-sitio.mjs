@@ -50,12 +50,23 @@ cpSync(join(plantillaVersion, 'version-visible.js'), join(sitio, 'app/version-vi
 // para que el navegador no use una copia vieja después de cambiar de estándar (auditoría 2026-10-18, A 8.14). Se
 // reescribe en TODAS las páginas de sitio/ (A 8.1: la lista escrita a mano había dejado fuera las de material).
 const versionEstandar = cambios ? cambios[1] : '0';
+// Política de contenido y de referente, la misma en todas las páginas (auditoría 2026-10-19, B7-01; decisión 9 de Liber).
+// GitHub Pages no deja poner encabezados: va como etiqueta meta, justo después de charset, antes de cualquier recurso.
+// En el SIA se manda como encabezado del servidor web (con frame-ancestors 'none', que en meta no aplica).
+//   blob: en img-src, worker-src y connect-src: vistas previas de fotos y documentos, y el visor de PDF.
+//   data: en img-src: el icono vacío (href="data:,") y las imágenes que arma el navegador al recodificar fotos.
+const CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; "
+  + "connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'";
+const META_CSP = `<meta http-equiv="Content-Security-Policy" content="${CSP}">\n<meta name="referrer" content="same-origin">`;
 const paginas = readdirSync(sitio).filter((f) => f.endsWith('.html'));
 for (const p of paginas) {
   const ruta = join(sitio, p);
   const html = readFileSync(ruta, 'utf8')
     .replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${version}"`)
-    .replace(/((?:href|src)="formkit\/[^"?]+\.(?:css|js))(?:\?v=[0-9.]+)?"/g, `$1?v=${versionEstandar}"`);
+    .replace(/((?:href|src)="formkit\/[^"?]+\.(?:css|js))(?:\?v=[0-9.]+)?"/g, `$1?v=${versionEstandar}"`)
+    .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n?/g, '').replace(/<meta name="referrer"[^>]*>\n?/g, '')
+    .replace(/<meta charset="utf-8">\n/, `<meta charset="utf-8">\n${META_CSP}\n`);
+  if (!html.includes(META_CSP)) throw new Error(`${p}: no se pudo poner la política de contenido (falta <meta charset="utf-8">)`);
   writeFileSync(ruta, html);
 }
 
@@ -65,6 +76,13 @@ const pdfjs = join(estandar, 'vendor/pdfjs-dist');
 if (!existsSync(pdfjs)) { console.error('Falta vendor/pdfjs-dist en el estándar'); process.exit(1); }
 rmSync(join(sitio, 'vendor'), { recursive: true, force: true });
 cpSync(pdfjs, join(sitio, 'vendor/pdfjs-dist'), { recursive: true });
+// Licencias de terceros (auditoría 2026-10-19, F3-02): del manifiesto del estándar, sólo lo que se copia aquí, con su
+// versión, licencia y huella; LICENCIA.md lo resume
+const manifiesto = JSON.parse(readFileSync(join(estandar, 'vendor/MANIFIESTO.json'), 'utf8'));
+const copiadas = manifiesto.bibliotecas.filter((b) => b.paquete === 'pdfjs-dist');
+if (copiadas.length !== 1) { console.error('El manifiesto del estándar no trae pdfjs-dist'); process.exit(1); }
+writeFileSync(join(sitio, 'vendor/MANIFIESTO.json'), JSON.stringify({ origen: `Estándar de formularios del SIA, vendor/MANIFIESTO.json (${manifiesto.origen})`,
+  generado: manifiesto.generado, bibliotecas: copiadas }, null, 2) + '\n');
 
 // 3 · Datos ficticios y catálogos para el formulario
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
