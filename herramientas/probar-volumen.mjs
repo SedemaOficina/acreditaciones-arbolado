@@ -125,6 +125,26 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
       t(`C1-01: arriba de la lista, «${cuenta}»`));
   });
 
+  // C1-03 (auditoría 2026-10-20; decisión 11 b de Liber): en renovación, el planeador y «Programar» muestran los bloques
+  // por su vencimiento más antiguo y, dentro, primero las vencidas; la propuesta toma primero a las vencidas (aunque
+  // parta un bloque) y el encabezado dice ese orden
+  await paso('espera de renovación', async () => {
+    for (const pantalla of ['grupos', 'programar']) {
+      await ir(`${pantalla}.html?curso=poda-renovacion`, '.plan-persona');
+      const r = await pg.evaluate(() => {
+        const unidades = [...document.querySelector('[data-personas]').children].map((n) => (n.matches('li') ? n.firstElementChild : n)).map((n) =>
+          [...(n.matches('.plan-bloque') ? n.querySelectorAll('.plan-persona') : [n])].map((f) => { const m = f.textContent.match(/(Vencida|Vence) el (\d{2})\/(\d{2})\/(\d{4})/); return { vencida: m[1] === 'Vencida', iso: `${m[4]}-${m[3]}-${m[2]}` }; }));
+        return { unidades, nota: (document.querySelector('[data-orden]') || document.querySelector('[data-propuesta]')).textContent };
+      });
+      const antigua = r.unidades.map((u) => u.map((p) => p.iso).sort()[0]);
+      const enOrden = antigua.every((f, i) => !i || antigua[i - 1] <= f);
+      const dentro = r.unidades.every((u) => u.every((p, i) => !i || !p.vencida || u[i - 1].vencida));
+      const cinco = await pg.evaluate(() => APD.cargar().then((x) => APD_PERSONAL.lasQueMasEsperan(APD_PERSONAL.enEspera(x, 'poda', 'renovacion'), 5).map((y) => y.vencida)));
+      comprueba(enOrden && dentro && cinco.length === 5 && cinco.every(Boolean) && /vencid|vencieron/.test(r.nota),
+        t(`C1-03: ${pantalla} de renovación, bloques por su vencimiento más antiguo, dentro primero las vencidas y la propuesta de 5 con ${cinco.filter(Boolean).length} vencidas («${r.nota.slice(0, 60)}…»)`));
+    }
+  });
+
   await paso('planeador y programar', async () => {
     // M2, M3, M4 y M7 con el planeador (propuesta A): toda la espera, todos los grupos que reciben y cada botón dice cuál
     await ir('grupos.html?curso=poda-nueva', '.plan-grupo');

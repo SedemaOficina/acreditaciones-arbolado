@@ -363,7 +363,10 @@
     return null;
   }
   /* Bloques de la espera (propuesta A): las personas de una misma organización van juntas, en un bloque que ocupa el
-     lugar de quien más espera de ellas; las demás (independientes o solas de su organización), una por una, en su orden. */
+     lugar de quien más espera de ellas; las demás (independientes o solas de su organización), una por una, en su orden.
+     En renovación (decisión 11 b de Liber, auditoría 2026-10-20, C1-03) la lista ya va por vencimiento: cada bloque
+     ocupa el lugar de la primera de su gente en vencer (su vencimiento más antiguo) y, dentro, van primero las que ya
+     vencieron. Así conviven «por vencimiento» (DECISIONES, 14/10) y «agrupada por adscripción» (DECISIONES, 17/10). */
   function bloquesEspera(lista) {
     const cuenta = {};
     for (const x of lista) if (x.s.organizacion_id) cuenta[x.s.organizacion_id] = (cuenta[x.s.organizacion_id] || 0) + 1;
@@ -376,12 +379,23 @@
         b.xs.push(x);
       } else bloques.push({ clave: `sola:${x.s.folio}`, nombre: x.organizacion, junta: false, xs: [x] });
     }
+    // Dentro de cada bloque, primero las vencidas (sort estable: lo demás conserva su orden)
+    for (const b of bloques) b.xs.sort((a, c) => Number(Boolean(c.vencida)) - Number(Boolean(a.vencida)));
     return bloques;
   }
   /* Las que más esperan, hasta n lugares: por bloques completos, para que una organización no se separe; un bloque que no
-     cabe se salta y sigue el siguiente. filtro (opcional) deja sólo a quien puede ir (un grupo de una organización). */
+     cabe se salta y sigue el siguiente. filtro (opcional) deja sólo a quien puede ir (un grupo de una organización).
+     En renovación, primero todas las que ya vencieron (no pueden trabajar mientras esperan), aunque eso parta el bloque
+     de su organización; después, las demás por bloques (decisión 11 b, auditoría 2026-10-20, C1-03). */
   function lasQueMasEsperan(lista, n, filtro) {
-    const candidatas = filtro ? lista.filter(filtro) : lista;
+    const todas = filtro ? lista.filter(filtro) : lista;
+    const vencidas = todas.filter((x) => x.vencida).slice(0, Math.max(0, n));
+    if (vencidas.length) {
+      const resto = todas.filter((x) => !x.vencida);
+      // (con filtro, el resto también una por una: ya está filtrado)
+      return vencidas.concat(vencidas.length < n ? lasQueMasEsperan(resto, n - vencidas.length, filtro ? () => true : undefined) : []);
+    }
+    const candidatas = todas;
     // En un grupo de una organización, o si todas las que esperan son de la misma, no hay a quién no separar: se toman
     // una por una, en su orden (auditoría «intentar romperlo», F3 M4: un bloque de 13 no cabía en 2 lugares y no se
     // proponía a nadie)
