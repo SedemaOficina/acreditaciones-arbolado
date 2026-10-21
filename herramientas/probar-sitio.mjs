@@ -1152,11 +1152,12 @@ async function caminosCotejo(navegador) {
     for (const x of datos.cita) {
       const d = diaMX(x.programada_en);
       const abierta = ['pendiente', 'en_pausa'].includes(x.resultado);
-      const k = x.resultado === 'en_pausa' && d < datos.fecha_corte ? 'pausa_vencida' : abierta ? 'pendiente' : x.resultado;
+      // La pausa del día va aparte de «por atender» (auditoría 2026-10-20, C4-08)
+      const k = x.resultado === 'en_pausa' && d < datos.fecha_corte ? 'pausa_vencida' : x.resultado === 'en_pausa' ? 'en_pausa' : abierta ? 'pendiente' : x.resultado;
       (porDia[d] ||= {})[k] = (porDia[d][k] || 0) + 1;
     }
     const ORDEN = [['atendida', 'atendida', 'atendidas'], ['no_se_presento', 'no se presentó', 'no se presentaron'], ['sin_pago', 'sin pago', 'sin pago'],
-      ['pausa_vencida', 'pausa vencida', 'pausas vencidas'], ['cancelada', 'cancelada', 'canceladas'], ['pendiente', 'por atender', 'por atender']];
+      ['pausa_vencida', 'pausa vencida', 'pausas vencidas'], ['cancelada', 'cancelada', 'canceladas'], ['pendiente', 'por atender', 'por atender'], ['en_pausa', 'en pausa', 'en pausa']];
     let iguales = 0;
     const distintos = [];
     for (const [d, k] of Object.entries(porDia).sort()) {
