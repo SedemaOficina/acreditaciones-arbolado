@@ -42,8 +42,18 @@
     const minimo = P.primerDiaPosible(datos);
     const todos = P.grupos(datos);
 
-    /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) */
+    /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) y, en
+       esta pestaña (sessionStorage), al recargar o al volver con «Atrás» aunque el navegador vuelva a cargar la página
+       (auditoría 2026-10-20, C4-04). Al llegar de nuevo (desde el menú o tras agregar) se empieza sin elegidas; las que ya
+       no esperan no se marcan porque ya no tienen casilla. */
     const elegidasDe = new Map();
+    const CLAVE_ELEGIDAS = 'apd.grupos.elegidas';
+    try {
+      if (['reload', 'back_forward'].includes((performance.getEntriesByType('navigation')[0] || {}).type)) {
+        for (const [k, v] of Object.entries(JSON.parse(sessionStorage.getItem(CLAVE_ELEGIDAS) || '{}'))) if (Array.isArray(v)) elegidasDe.set(k, new Set(v));
+      } else sessionStorage.removeItem(CLAVE_ELEGIDAS);
+    } catch (e) { /* sin almacenamiento: sólo en memoria */ }
+    const guardaElegidas = () => { try { sessionStorage.setItem(CLAVE_ELEGIDAS, JSON.stringify(Object.fromEntries([...elegidasDe].map(([k, v]) => [k, [...v]])))); } catch (e) { /* sin almacenamiento */ } };
     /* Barra de elegidas (auditoría 2026-10-20, B4-01; decisión 1 a y c de Liber): desde 760 px va fija al pie de «En
        espera». Para que el foco del teclado no quede debajo de ella, la página reserva su alto real al desplazarse
        (scroll-padding-bottom, medido con un ResizeObserver y al cambiar la ventana); si la barra mide más de un cuarto de
@@ -263,6 +273,7 @@
          casilla o un bloque), no al pintar la pantalla (auditoría 2026-10-20, RI-04) */
       function pintaEleccion(porPersona) {
         elegidasDe.set(clave, new Set(elegidas().map((f) => f.x.s.folio)));
+        guardaElegidas();
         const n = elegidas().length;
         $('[data-elegidas]').textContent = n ? plural(n, 'elegida', 'elegidas') : 'Ninguna elegida';
         if (porPersona === true || (porPersona && porPersona.isTrusted)) FormKit.anuncia($('[data-elegidas]').textContent);

@@ -4672,6 +4672,28 @@ async function tareasPersonal(navegador) {
     await c.close();
   }
 
+  // C4-04: las personas elegidas en el planeador de «Grupos» siguen marcadas al recargar; al llegar de nuevo, ninguna
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-persona input');
+    const cajas = page.locator('.plan-persona input');
+    await cajas.nth(0).check();
+    await cajas.nth(1).check();
+    const marcadas = () => page.$$eval('.plan-persona input:checked', (l) => l.map((k) => k.value).sort().join());
+    const antes = await marcadas();
+    await page.reload();
+    await page.waitForSelector('.plan-persona input');
+    await page.waitForFunction(() => /elegida/.test(document.querySelector('[data-elegidas]').textContent));
+    const recarga = await marcadas();
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-persona input');
+    const nueva = await marcadas();
+    comprueba(antes.split(',').length === 2 && recarga === antes && nueva === '' && !errores.length,
+      t(`C4-04: las 2 elegidas siguen al recargar (${recarga}) y al llegar de nuevo no hay ninguna`));
+    await c.close();
+  }
+
   // C4-06: «Mis trámites» abierta y, en otra pestaña, se entra con otra cuenta (o se sale): la pestaña vieja lo dice y deja
   // de mostrar los trámites de la persona anterior
   for (const salir of [false, true]) {
