@@ -112,6 +112,19 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await sinDesborde(`programar con ${espera} en espera`);
   });
 
+  // C1-01 (auditoría 2026-10-20): arriba de la lista, cuántas son prioritarias («31 días o más», auditoría de tareas del
+  // 17/10) y cuántos grupos nuevos alcanzan (M7). Antes del paso que agrega personas a un grupo.
+  await paso('planeador: cifras de la espera', async () => {
+    await ir('grupos.html?curso=poda-nueva', '.plan-persona');
+    const n = (await pg.$$('.plan-persona')).length;
+    const prio = await pg.$$eval('.plan-persona', (l) => l.filter((x) => /prioritaria/.test(x.textContent)).length);
+    const nuevos = Math.floor(n / 25) + (n % 25 >= 5 ? 1 : 0);
+    const cuenta = (await texto('[data-cuenta]')).trim();
+    comprueba(n === 66 && prio === 38 && cuenta.includes(`${n} personas en espera (${prio} esperan 31 días o más)`) && cuenta.includes(`Alcanza para ${nuevos} grupos nuevos de hasta 25.`)
+      && (await pg.evaluate(() => document.querySelector('[data-cuenta]').compareDocumentPosition(document.querySelector('[data-personas]')) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      t(`C1-01: arriba de la lista, «${cuenta}»`));
+  });
+
   await paso('planeador y programar', async () => {
     // M2, M3, M4 y M7 con el planeador (propuesta A): toda la espera, todos los grupos que reciben y cada botón dice cuál
     await ir('grupos.html?curso=poda-nueva', '.plan-grupo');
