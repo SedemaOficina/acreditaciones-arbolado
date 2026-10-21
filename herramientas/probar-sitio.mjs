@@ -2412,17 +2412,17 @@ async function romper(navegador) {
   await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-006&dia=1');
   await pg.waitForSelector('[data-personas] .asistencia-fila');
   const filas6 = await pg.locator('[data-personas] .asistencia-fila').count();
-  comprueba(filas6 > 0 && await pg.locator('[data-personas] .asis-opcion-input:disabled').count() === filas6 * 2 && await pg.locator('.asis-cerrada').count() === filas6,
+  comprueba(filas6 > 0 && await pg.locator('[data-personas] .asistencia-fila .opcion-input:disabled').count() === filas6 * 2 && await pg.locator('.asis-cerrada').count() === filas6,
     t('F3 M8: con la calificación registrada, la asistencia no se puede cambiar y la fila lo dice'));
   // B1 · al corregir un día anterior se vuelve al de hoy, sin «(simulado)»
   await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-003&dia=1');
   await pg.waitForSelector('[data-todas]');
-  // B11 · el botón del menú de pruebas no tapa «Asistió» ni «Faltó»
+  // B11 · el botón del menú de pruebas no tapa «Sí» ni «No» (opción corta del estándar desde el bloque 4, C6-09)
   const tapa = await pg.evaluate(() => {
     const b = document.querySelector('.menu-pruebas-boton').getBoundingClientRect();
-    return Array.from(document.querySelectorAll('.asis-opcion')).some((o) => { const r = o.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && !(r.right < b.left || r.left > b.right || r.bottom < b.top || r.top > b.bottom); });
+    return Array.from(document.querySelectorAll('.asistencia-fila .opcion-corta')).some((o) => { const r = o.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && !(r.right < b.left || r.left > b.right || r.bottom < b.top || r.top > b.bottom); });
   });
-  comprueba(!tapa, t('F3 B11: en teléfono, el botón del menú de pruebas no tapa «Asistió» ni «Faltó»'));
+  comprueba(!tapa, t('F3 B11: en teléfono, el botón del menú de pruebas no tapa «Sí» ni «No» de «¿Asistió?»'));
   await pg.click('[data-todas]');
   await Promise.all([pg.waitForNavigation(), pg.click('[data-guardar]')]);
   await pg.waitForSelector('[data-hecho] .aviso');
@@ -3648,10 +3648,9 @@ async function limpieza(navegador) {
   // Las pantallas, el código del proyecto y el del estándar (que arma parte del marcado), sin vendor
   const estandar = (d) => readdirSync(join(raiz, d), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (e.name === 'vendor' ? [] : estandar(`${d}/${e.name}`)) : e.name.endsWith('.js') ? [`${d}/${e.name}`] : []));
   const fuentes = [...app, ...paginas, ...estandar('sitio/formkit')].map(leer).join('\n');
-  // Clases: las que se arman con una plantilla (asis-opcion-${v}) se buscan por su prefijo
   const css = leer('sitio/app/apd.css').replace(/\/\*[\s\S]*?\*\//g, '');
   const clases = [...new Set([...css.matchAll(/\.(-?[a-zA-Z_][\w-]*)/g)].map((m) => m[1]))];
-  const usada = (c) => new RegExp(`(?<![\\w-])${c}(?![\\w-])`).test(fuentes) || /^asis-opcion-(si|no)$/.test(c) && fuentes.includes('asis-opcion-${');
+  const usada = (c) => new RegExp(`(?<![\\w-])${c}(?![\\w-])`).test(fuentes);
   const sinUso = clases.filter((c) => !usada(c));
   comprueba(!sinUso.length, t(`apd.css sin clases que nada usa${sinUso.length ? ': ' + sinUso.join(', ') : ''}`));
   // Exportados: se usan fuera de su archivo, o están en la lista de los que se usan sólo dentro

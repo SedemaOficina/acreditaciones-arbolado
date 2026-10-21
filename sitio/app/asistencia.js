@@ -1,6 +1,6 @@
 /* asistencia.js · «Asistencia» (instructor, etapa 2). ?folio=APD-G-… opcional; ?dia=N para corregir un día anterior.
    Propuesta A, elegida por Liber el 2026-10-18: una sola lista, la del día. Por persona: su fotografía, su nombre, una
-   tira de marcas hasta el día en pantalla (asistió, faltó, sin marcar, sin capturar) y sus dos botones «Asistió» y «Faltó».
+   tira de marcas hasta el día en pantalla (asistió, faltó, sin marcar, sin capturar) y «¿Asistió?» Sí/No (opción corta del estándar, decisión 4 a del 20/10).
    La etiqueta sólo aparece cuando hay riesgo («Ya no puede faltar», «Sin derecho a examen»); abajo, una línea con lo
    marcado y «Guardar». Corregir otro día es la excepción: va en «Corregir otro día». La vista de todos los días está en la
    ficha del grupo (P.pintaConcentrado).
@@ -222,9 +222,10 @@
       const valor = capturada(f.i.id, dia);
       const nombre = `a-${f.i.id}`;
       const fija = cerrada(f);
-      const opcion = (v, etq) => el('label', { class: `asis-opcion asis-opcion-${v}` }, [
-        el('input', { class: 'asis-opcion-input', type: 'radio', name: nombre, value: v, autocomplete: 'off', checked: valor === (v === 'si'), disabled: fija }),
-        el('span', { texto: etq })]);
+      // «¿Asistió?» Sí/No: la opción corta del estándar (módulo opciones), con su palomita (decisión 4 a, C6-09)
+      const opcion = (v, etq) => el('label', { class: 'opcion opcion-corta' }, [
+        el('input', { class: 'opcion-input', type: 'radio', name: nombre, value: v, autocomplete: 'off', checked: valor === (v === 'si'), disabled: fija }),
+        el('span', { class: 'opcion-nombre' }, [APD.icono('palomita', 'icono opcion-marca'), document.createTextNode(etq)])]);
       const foto = el('img', { class: 'asistencia-foto', alt: `Fotografía de ${f.quien}`, src: 'data:,' });
       G.fotoDe(f.p.curp, f.quien).then((url) => { foto.src = url; });
       const fila = el('div', { class: 'asistencia-fila', 'data-ins': f.i.id }, [
@@ -236,8 +237,8 @@
           fija ? el('p', { class: 'asis-cerrada', texto: 'Ya presentó el examen: su asistencia ya no cambia.' }) : null
         ]),
         el('fieldset', { class: 'asis-opciones' }, [
-          el('legend', { class: 'solo-lector', texto: `¿${f.quien} asistió el día ${dia}?` }),
-          opcion('si', 'Asistió'), opcion('no', 'Faltó')
+          el('legend', { class: 'asis-pregunta' }, [el('span', { class: 'solo-lector', texto: `${f.quien}, día ${dia}: ` }), document.createTextNode('¿Asistió?')]),
+          el('div', { class: 'opciones-cortas' }, [opcion('si', 'Sí'), opcion('no', 'No')])
         ])
       ]);
       pintaFila(fila, f);
@@ -258,7 +259,7 @@
       for (const r of document.querySelectorAll('[data-personas] input[value="si"]:not(:disabled)')) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
       for (const f of document.querySelectorAll('.falta-marcar')) f.classList.remove('falta-marcar');
       // Lo que antes sólo oía el lector de pantalla también se ve (hallazgo P117)
-      APD.pintaAviso($('[data-falta-marcar]'), 'info', `${plural(personas.length, 'persona marcada', 'personas marcadas')} «Asistió»`, 'Cambie a «Faltó» a quien no vino y guarde.');
+      APD.pintaAviso($('[data-falta-marcar]'), 'info', `${plural(personas.length, 'persona marcada', 'personas marcadas')} con «Sí»`, 'Cambie a «No» a quien no vino y guarde.');
     });
     $('[data-guardar]').addEventListener('click', () => {
       const lista = {};
@@ -276,7 +277,7 @@
         // El error queda junto al botón, con el foco ahí, y cada persona sin marcar se señala en su fila
         for (const f of sinMarcar) { const fila = document.querySelector(`[data-ins="${CSS.escape(f.i.id)}"]`); if (fila) fila.classList.add('falta-marcar'); }
         APD.pintaAviso(aviso, 'error', 'No se guardó la asistencia',
-          `Falta marcar a ${sinMarcar.length === 1 ? sinMarcar[0].quien : `${sinMarcar.length} personas, señaladas en rojo`}. Marque «Asistió» o «Faltó» a cada una.`, true);
+          `Falta marcar a ${sinMarcar.length === 1 ? sinMarcar[0].quien : `${sinMarcar.length} personas, señaladas en rojo`}. Marque «Sí» o «No» a cada una.`, true);
         return;
       }
       // Deshabilitado mientras guarda: un doble clic no guarda dos veces (auditoría «intentar romperlo», bloque 2)

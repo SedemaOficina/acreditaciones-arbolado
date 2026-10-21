@@ -70,7 +70,7 @@
    teléfono; el pie le reserva su alto para que al final de la página no tape nada (D5, B15). */
 .menu-pruebas-boton { width: auto; min-height: var(--objetivo-min); padding: var(--e-1) var(--e-3); font-size: var(--t-sm); position: fixed; right: max(var(--e-3), env(safe-area-inset-right)); bottom: max(var(--e-3), env(safe-area-inset-bottom)); z-index: var(--z-barra); border-style: dashed; border-color: var(--pend); background: var(--pend-bg); color: var(--pend-txt); box-shadow: var(--sombra-lista); }
 .menu-pruebas { width: min(100% - var(--e-6), var(--ancho-dialogo)); max-height: 90vh; padding: var(--e-seccion); border: var(--b-2) dashed var(--pend); border-radius: var(--r-caja); background: var(--blanco); color: var(--texto); }
-/* En «Asistencia» los botones «Asistió» y «Faltó» van a la derecha de cada fila: el botón del menú pasa a la izquierda,
+/* En «Asistencia» las opciones «Sí» y «No» van a la derecha de cada fila: el botón del menú pasa a la izquierda,
    sobre las fotografías, para no tapar ninguno (auditoría «intentar romperlo», F3 B11) */
 body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-3), env(safe-area-inset-left)); }
 /* Al avanzar con el teclado, el control enfocado no queda debajo del botón fijo: la página reserva su lugar al pie mientras
@@ -307,11 +307,12 @@ body > main { flex: 1 0 auto; width: 100%; }
 .acciones-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-block-start: var(--e-4); }
 .acciones-grupo .btn { width: auto; }
 /* Asistencia: una fila por persona */
-/* En un teléfono angosto (menos de 400 px) «Asistió» y «Faltó» van en el renglón de abajo, bajo el nombre y a la derecha,
+/* En un teléfono angosto (menos de 400 px) «Sí» y «No» van en el renglón de abajo, bajo el nombre y a la derecha,
    como en la fila ancha (el botón del menú de pruebas va a la izquierda, F3 B11): en la misma fila el nombre y «Ya no puede
    faltar» se encimaban 33 px con «Asistió» a 360 px y 3 px a 390 (auditoría 2026-10-20, B1-05) */
 .asistencia-fila { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-3); align-items: center; padding-block: var(--e-3); border-bottom: var(--b-1) solid var(--linea); }
-.asistencia-fila > .asis-opciones { grid-column: 2; justify-self: end; }
+/* La opción corta del estándar crece a lo ancho de su lugar: así Sí y No caben en un renglón (C6-09) */
+.asistencia-fila > .asis-opciones { grid-column: 2; justify-self: stretch; }
 @media (min-width: 400px) {
   .asistencia-fila { grid-template-columns: auto minmax(0, 1fr) auto; }
   .asistencia-fila > .asis-opciones { grid-column: auto; justify-self: auto; }
@@ -389,27 +390,25 @@ body > main { flex: 1 0 auto; width: 100%; }
 .asis-sin { color: var(--pend); }
 .asis-quien { display: grid; gap: var(--e-1); min-width: 0; }
 .asis-quien p { margin: 0; }
-.asis-nombre { font-weight: var(--peso-semi); font-size: var(--t-md); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
+.asis-nombre { font-weight: var(--peso-fuerte); font-size: var(--t-md); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
 .asis-marcas { display: flex; align-items: center; gap: var(--e-2); }
 .asis-historia { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); }
 .asis-riesgo:empty { display: none; }
-/* La etiqueta de riesgo no se parte en dos renglones; en teléfono, si no cabe junto a la tira, baja completa */
-.asis-riesgo .estado { white-space: nowrap; font-size: var(--t-xs); }
 .asis-recorrido { margin-block-start: var(--e-4); }
-.asis-opciones { display: flex; gap: var(--e-2); margin: 0; padding: 0; border: 0; min-width: 0; }
-.asis-opcion { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: var(--objetivo-min); min-height: var(--objetivo-min); padding-inline: var(--e-3); border: var(--b-1) solid var(--gris-cl); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto); font-weight: var(--peso-semi); font-size: var(--t-md); cursor: pointer; }
-.asis-opcion-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.asis-opcion:has(.asis-opcion-input:focus-visible) { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
-.asis-opcion-si:has(.asis-opcion-input:checked) { background: var(--ok); border-color: var(--ok); color: var(--blanco); }
-.asis-opcion-no:has(.asis-opcion-input:checked) { background: var(--error); border-color: var(--error); color: var(--blanco); }
-/* Quien ya presentó el examen: su asistencia ya no cambia (auditoría «intentar romperlo», F3 M8) */
-.asis-opcion:has(.asis-opcion-input:disabled) { opacity: var(--op-inactivo); cursor: not-allowed; }
+/* «¿Asistió?» con la opción corta Sí/No del estándar (módulo opciones: .opciones-cortas > .opcion.opcion-corta), que
+   marca lo elegido en azul con palomita y lleva su contorno en colores forzados; el verde y el rojo quedan sólo en la tira
+   (auditoría 2026-10-20, C6-09 y C6-03; decisión 4 a de Liber). Quien ya presentó el examen tiene las dos deshabilitadas
+   (F3 M8): el estándar las atenúa. Aquí sólo el lugar en la fila. */
+.asis-opciones { margin: 0; padding: 0; border: 0; min-width: 0; }
+.asis-pregunta { margin-block-end: var(--e-1); padding: 0; font-size: var(--t-sm); color: var(--gris); }
 .asis-cerrada { font-size: var(--t-sm); color: var(--gris); }
 .asis-pie { display: grid; gap: var(--e-3); margin-block-start: var(--e-4); }
 .asis-totales { margin: 0; font-weight: var(--peso-medio); }
 .asis-otro-dia { margin-block: var(--e-4) var(--e-2); }
-/* Objetivo de 44 px, como el resumen del material de estudio (medía 40.8; auditoría 2026-10-20, B1-04) */
-.asis-otro-dia > summary { cursor: pointer; color: var(--azul); text-decoration: underline; padding-block: var(--e-2); width: fit-content; min-height: var(--objetivo-min); box-sizing: border-box; }
+/* Lo que se despliega como enlace («Corregir otro día», «Qué estudiar», «Cambiar este archivo»): un solo aspecto, azul y
+   subrayado como .btn-enlace, con objetivo de 44 px (auditoría 2026-10-20, C6-06 y B1-04). Las secciones plegables usan
+   el módulo acordeon tal cual (details.plegable > summary.plegable-titulo), sin redefinirlo. */
+.asis-otro-dia > summary, .material-temas > summary, .doc-reemplazo-titulo { display: flex; align-items: center; width: fit-content; min-height: var(--objetivo-min); padding-block: var(--e-2); box-sizing: border-box; color: var(--azul); text-decoration: underline; cursor: pointer; }
 
 /* Campo de fecha con calendario (revisión, cotejo y grupo; Liber, 18/10/2026): el texto dd/mm/aaaa y, pegado a su
    derecha, el botón que abre el calendario del navegador. El <input type="date"> queda invisible bajo el botón, para que

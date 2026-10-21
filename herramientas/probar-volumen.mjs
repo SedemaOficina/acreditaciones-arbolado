@@ -352,7 +352,7 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
       'asistencia (RI-09): «Falta capturar el día 2» se ve, pero no es una alerta que suene al cargar');
     comprueba(!alCargar.some((e) => /sin marcar|asisti/.test(e.texto)), `asistencia (B4-03): al cargar no se anuncian los totales (${alCargar.map((e) => e.texto.slice(0, 40)).join(' | ') || 'nada'})`);
     await pg.evaluate(() => { window.__marca = 1; });
-    await pg.focus('.asistencia-fila .asis-opcion-input:not([disabled])');
+    await pg.focus('.asistencia-fila .opcion-input:not([disabled])');
     await pg.keyboard.press('Space');
     await pg.waitForFunction(() => window.__vivas.some((e) => e.marca === 1), null, { timeout: 4000 }).catch(() => {});
     await pg.evaluate(() => new Promise((listo) => setTimeout(listo, 300)));
