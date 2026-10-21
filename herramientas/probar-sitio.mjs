@@ -764,7 +764,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     const g = datos.grupo.find((x) => datos.inscripcion.some((i) => i.grupo_id === x.id && i.activa && datos.solicitud.some((s) => s.id === i.solicitud_id && s.solicitante_id === conGrupo.id)));
     const empezo = g && g.fecha_inicio <= datos.fecha_corte;
     comprueba((empezo ? /Tu curso empezó el/.test(f) && /Hoy es el día\s*\d+ de \d+/.test(f) && !/Preséntate el/.test(f) : /Preséntate el/.test(f) && /El curso termina el/.test(f))
-      && /Examen\s*\d{2}\/\d{2}\/\d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
+      && /Examen\s*(lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
       t(`mis solicitudes: con grupo, dice ${empezo ? 'en qué día del curso va' : 'cuándo presentarse'}, la fecha del examen y dónde`));
     comprueba(/identificación oficial/.test(f) && /examen/.test(f) && /al menos \d\.\d/.test(f) && await ficha.locator('ol.secuencia > li').count() >= 4,
       t('mis solicitudes: con grupo, «Qué sigue» dice que lleve la identificación, cuándo es el examen y la calificación mínima'));
@@ -4646,6 +4646,29 @@ async function tareasPersonal(navegador) {
     const despues = (await page.$$('[data-filas] tr')).length;
     comprueba(despues === total - 1 && new RegExp(`^${total - 1} solicitud`).test((await page.textContent('[data-cuenta]')).trim()) && !errores.length,
       t(`C4-05: revisada en otra pestaña, ${folio} sale de la bandeja (${total} → ${despues}) y la cuenta baja`));
+    await c.close();
+  }
+
+  // C2-02: «Mis trámites» con grupo confirmado, en 390 × 844: cuándo, a qué hora y dónde, arriba en un recuadro como el de
+  // la cita, con la fecha larga, y en la primera pantalla
+  {
+    const ins = datos.inscripcion.find((i) => i.activa && ['confirmado', 'en_curso'].includes((datos.grupo.find((g) => g.id === i.grupo_id) || {}).estado)
+      && (datos.solicitud.find((s) => s.id === i.solicitud_id) || {}).estado === 'inscrita');
+    const quien = datos.solicitud.find((s) => s.id === ins.solicitud_id).solicitante_id;
+    const { c, page, errores } = await nuevo(390, 844, quien);
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-solicitudes] .ficha-cita');
+    const r = await page.evaluate(() => {
+      const caja = document.querySelector('[data-solicitudes] .ficha-cita');
+      const dt = (re) => [...caja.querySelectorAll('dt, .datos-etiqueta')].find((x) => re.test(x.textContent));
+      const inicio = dt(/Preséntate el|Tu curso empezó el/);
+      const lugar = dt(/Lugar del curso/);
+      const sigue = caja.closest('.ficha').querySelector('.ficha-sigue');
+      return { valor: inicio ? inicio.nextElementSibling.textContent.trim() : '', lugarY: lugar ? lugar.getBoundingClientRect().bottom + scrollY : 1e9,
+        antes: Boolean(sigue) && Boolean(caja.compareDocumentPosition(sigue) & Node.DOCUMENT_POSITION_FOLLOWING), ventana: innerHeight };
+    });
+    comprueba(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4}( a las \d{2}:\d{2})?$/.test(r.valor) && r.lugarY < r.ventana && r.antes && !errores.length,
+      t(`C2-02: con grupo, «${r.valor}» y el lugar en un recuadro antes de «Qué sigue», en la primera pantalla (hasta ${Math.round(r.lugarY)} de ${r.ventana} px)`));
     await c.close();
   }
 

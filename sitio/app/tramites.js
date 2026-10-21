@@ -112,25 +112,31 @@
     // Los días del curso son consecutivos, como los cuenta la base al capturar asistencia (fecha_inicio + día - 1).
     // Terminado el curso (aprobada, acreditada…), la sede y las fechas del curso ya no se muestran.
     const g = grupoDe(datos, s);
+    let cursoCaja = null;
     // La fecha sólo se da con el grupo confirmado: uno que regresó a «por confirmar» (una baja lo dejó bajo el mínimo)
     // conserva su fecha como propuesta, pero ya no es segura (auditoría integral, alta 2)
     if (g && g.grupo && s.estado === 'inscrita') {
       if (g.grupo.fecha_inicio && ['confirmado', 'en_curso'].includes(g.grupo.estado)) {
         const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
         // Hora de entrada del grupo (la misma todos los días); la de salida la define el área (P91)
-        const entrada = g.grupo.hora_entrada ? `, a las ${APD.hhmm(g.grupo.hora_entrada)}` : '';
         const sinHora = g.grupo.hora_entrada ? null : 'hora de entrada.';
         // Con el curso ya empezado no se dice «Preséntate el …» (día pasado): en qué día va y cuándo es el examen
         // (auditoría 2026-10-18, D13). Los días son consecutivos, como los cuenta la base.
         const hoy = APD.hoy(datos);
         const dia = Math.round((new Date(`${hoy}T12:00:00-06:00`) - new Date(`${g.grupo.fecha_inicio}T12:00:00-06:00`)) / 86400000) + 1;
         const empezo = dia >= 1;
-        const examen = ultimo ? `${fecha(ultimo)}, en el salón de cómputo del PILARES Vivero Nezahualcóyotl` : '';
-        pares.unshift(...(empezo
-          ? [['Tu curso empezó el', `${fecha(g.grupo.fecha_inicio)}${entrada}`, sinHora],
-            c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}`] : ['El curso termina el', ultimo && fecha(ultimo)]]
-          : [['Preséntate el', `${fecha(g.grupo.fecha_inicio)}${entrada}`, sinHora], ['El curso termina el', ultimo && fecha(ultimo)]]),
-        ['Examen', examen], ['Lugar del curso', ...sedeTexto(g.grupo.sede)]);
+        /* Cuándo, a qué hora y dónde, en un recuadro al principio de la tarjeta, como la cita de cotejo (auditoría
+           2026-10-20, C2-02: quedaba debajo de «Qué sigue», fuera de la primera pantalla del teléfono). La fecha larga,
+           como lo que se recuerda (decisión 16 b): «martes 13 de octubre de 2026 a las 09:00». */
+        const larga = (iso) => `${APD.diaSemana(iso)} ${APD.diaMes(iso, true)}`;
+        const aLas = g.grupo.hora_entrada ? ` a las ${APD.hhmm(g.grupo.hora_entrada)}` : '';
+        const examen = ultimo ? `${larga(ultimo)}, en el salón de cómputo del PILARES Vivero Nezahualcóyotl` : '';
+        // Primero cuándo y dónde; después en qué día va (o cuándo termina) y el examen
+        cursoCaja = el('div', { class: 'ficha-cita' }, [datosLista([
+          [empezo ? 'Tu curso empezó el' : 'Preséntate el', `${larga(g.grupo.fecha_inicio)}${aLas}`, sinHora],
+          ['Lugar del curso', ...sedeTexto(g.grupo.sede)],
+          empezo && c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}`] : ['El curso termina el', ultimo && larga(ultimo)],
+          ['Examen', examen]])]);
         // Confirmado: el grupo por su nombre (curso y fechas) con el folio en chico (propuesta D, 2026-10-18). Por confirmar,
         // sólo el folio: la fecha propuesta todavía no es segura
         pares.push(['Grupo', APD.grupoTitulo(g.grupo, datos)]);
@@ -300,6 +306,7 @@
         etiqueta
       ]),
       cita,
+      cursoCaja,
       ...cambio,
       sigue ? (typeof sigue === 'string' ? el('p', { class: 'ficha-sigue', texto: sigue }) : el('div', { class: 'ficha-sigue' }, APD.sigueEn(sigue))) : null,
       ...extra,
