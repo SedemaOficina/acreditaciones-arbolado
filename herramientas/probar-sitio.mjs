@@ -4598,6 +4598,56 @@ async function tareasPersonal(navegador) {
     comprueba((await page.inputValue('#buscar')) === '' && !errores.length, t(`C4-03: al llegar de nuevo, la agenda empieza sin búsqueda${errores.length ? `; errores: ${errores[0]}` : ''}`));
     await c.close();
   }
+
+  // C4-01: los filtros de la bandeja quedan en la dirección y sobreviven a «Atrás» y a recargar; «Revisar una solicitud»
+  // regresa a la bandeja con ellos. C4-02: la cuenta filtrada dice con qué filtros. En teléfono (filtros plegados) y en
+  // escritorio.
+  for (const [ancho, alto] of [[390, 844], [1280, 900]]) {
+    const { c, page, errores } = await nuevo(ancho, alto);
+    const tam = ancho < 600 ? 'teléfono' : 'escritorio';
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    if (await page.isVisible('[data-filtrar]')) await page.click('[data-filtrar]');
+    await page.selectOption('#f_tipo', 'poda');
+    await page.selectOption('#f_vuelta', 'primera');
+    await page.waitForFunction(() => /Se muestran/.test(document.querySelector('[data-cuenta]').textContent));
+    const cuenta = (await page.textContent('[data-cuenta]')).trim();
+    const n = (await page.$$('[data-filas] tr:not([hidden])')).length;
+    comprueba(/[?&]tipo=poda/.test(page.url()) && /[?&]vuelta=primera/.test(page.url()) && /\(Poda y derribo · Primera vez\)/.test(cuenta),
+      t(`C4-01 y C4-02 (${tam}): los filtros van en la dirección y la cuenta los nombra («${cuenta}»)`));
+    await Promise.all([page.waitForURL(/revisar\.html/), page.locator('[data-filas] tr:not([hidden]) a').first().click()]);
+    await page.waitForLoadState('load');
+    const vuelta = await page.getAttribute('a.btn-atras', 'href');
+    await page.goBack();
+    await page.waitForFunction((x) => document.querySelector('[data-cuenta]').textContent.trim() === x, cuenta);
+    const atras = [await page.inputValue('#f_tipo'), await page.inputValue('#f_vuelta'), (await page.$$('[data-filas] tr:not([hidden])')).length];
+    await page.reload();
+    await page.waitForFunction((x) => document.querySelector('[data-cuenta]').textContent.trim() === x, cuenta);
+    const recarga = [await page.inputValue('#f_tipo'), await page.inputValue('#f_vuelta'), (await page.$$('[data-filas] tr:not([hidden])')).length];
+    comprueba(atras.join() === `poda,primera,${n}` && recarga.join() === `poda,primera,${n}` && /^revision\.html\?(?=.*tipo=poda)(?=.*vuelta=primera)/.test(vuelta || '') && !errores.length,
+      t(`C4-01 (${tam}): con «Atrás» y al recargar siguen los filtros y las ${n} solicitudes; «Solicitudes por revisar» regresa con ellos (${vuelta})`));
+    await c.close();
+  }
+
+  // C4-05: la bandeja se entera de una revisión registrada en otra pestaña (la fila sale y la cuenta baja)
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    const total = (await page.$$('[data-filas] tr')).length;
+    const folio = await page.getAttribute('[data-filas] tr', 'data-folio');
+    const otra = await c.newPage();
+    await otra.goto(BASE + `revisar.html?folio=${folio}`);
+    await otra.waitForSelector('#formulario', { state: 'attached' });
+    await otra.evaluate((F) => APD_PERSONAL.guardaRevision(F, { resultado: 'con_observaciones', texto: 'Con observaciones', datos: {}, revisor: 'revision.prueba', en: new Date().toISOString() }), folio);
+    await page.bringToFront();
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.waitForFunction((F) => !document.querySelector(`[data-filas] tr[data-folio="${F}"]`), folio, { timeout: 8000 }).catch(() => {});
+    const despues = (await page.$$('[data-filas] tr')).length;
+    comprueba(despues === total - 1 && new RegExp(`^${total - 1} solicitud`).test((await page.textContent('[data-cuenta]')).trim()) && !errores.length,
+      t(`C4-05: revisada en otra pestaña, ${folio} sale de la bandeja (${total} → ${despues}) y la cuenta baja`));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
