@@ -103,8 +103,11 @@
       // Es un estado de la página, no una alerta (auditoría 2026-10-20, RI-09): se ve igual, pero sin role="alert", que lo
       // hacía sonar en cada carga y cortaba la confirmación «Asistencia del día N guardada». FormKit.aviso da el rol por el
       // tono y no tiene uno de bloqueo sin anuncio (nota del revisor independiente sobre el estándar, informe-ri, sección 4).
+      // Con un enlace a cada día que falta (auditoría 2026-10-20, C1-05): «Corregir otro día» queda plegado y abajo
+      const enlaces = sinCapturar.flatMap((n, i) => [i ? document.createTextNode(' · ') : null,
+        el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`, texto: `Capturar el día ${n} (${corta(diaDe(n))})` })]).filter(Boolean);
       const falta = FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `Falta capturar ${lista}`,
-        texto: 'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Ábralo en «Corregir otro día» y guárdelo.' });
+        texto: el('p', {}, [document.createTextNode('Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. '), ...enlaces]) });
       falta.removeAttribute('role');
       avisos.push(falta);
     }
