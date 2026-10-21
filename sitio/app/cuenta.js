@@ -65,7 +65,7 @@
     // Después del anuncio del núcleo, que así queda sustituido: se dice una vez, con lo que falta poner otra vez
     setTimeout(() => FormKit.anuncia(`${FormKit.config.mensajes.borradorRecuperado} Pon otra vez tu fotografía y tu contraseña.`, { visible: notaBorrador }), 0);
   };
-  /* Falla del estándar, pendiente por registrar (RS-01, como en la solicitud): al recuperar o descartar, el núcleo oculta
+  /* Falla del estándar, registrada como P179 (RS-01, como en la solicitud): al recuperar o descartar, el núcleo oculta
      la franja con el botón enfocado y el foco cae en <body>. Mientras, el foco va al primer campo. */
   const franja = document.querySelector('[data-franja-borrador]');
   if (franja) {

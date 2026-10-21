@@ -845,6 +845,142 @@
       "titulo": "Notificaciones electrónicas: confirmar la recepción y estrado electrónico",
       "recomendacion": "La Ley de Procedimiento Administrativo de la Ciudad de México (art. 82, fracc. III) dice que la notificación electrónica surte efectos a partir de que la persona contesta su recepción, con un plazo máximo de tres días hábiles; si no contesta, se notifica por estrado electrónico (art. 78), que surte efectos al decimosexto día. Hoy el sistema sólo muestra el aviso en «Mis trámites». Hace falta: (1) que cada notificación pida a la persona confirmar que la recibió y guarde la fecha y hora en la base; (2) contar los tres días hábiles (con los inhábiles del art. 71 y los de P150); (3) una página de estrado electrónico para las no confirmadas, con su fecha de publicación. Cambia los plazos que corren desde la notificación (observaciones, cita, audiencia).",
       "lineamientos": "Anteproyecto 0.5: art. 69 (notificaciones electrónicas), corregido el 20/10/2026 con el art. 82 de la Ley de Procedimiento Administrativo."
+    },
+    {
+      "id": "P173",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: el marcador de posición (placeholder) no tiene color y queda bajo 4.5:1",
+      "recomendacion": "nucleo.css no le da color: queda el del navegador, 4.41:1 y 4.23:1 sobre los fondos de campo de solo lectura y de error (FC-1, auditoría del 20/10/2026, A6-01). Solución provisional: app/apd.css le da --gris-cl (4.91 y 4.71:1). Propuesta: color del marcador en nucleo.css y el par en pares-contraste.json."
+    },
+    {
+      "id": "P174",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: usa Roboto 600, un peso que la fuente no trae",
+      "recomendacion": "nucleo.css:204-216 y 341, estado.css:23 y tabla.css:27 piden font-weight 600; el estándar sólo incluye Roboto 400 y 700, y el navegador sintetiza o redondea (FC-2, auditoría del 20/10/2026). Propuesta: usar 700 o incluir el 600."
+    },
+    {
+      "id": "P175",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: auditor-css.mjs se salta 4 reglas cuando recibe rutas",
+      "recomendacion": "Con rutas como argumento no aplica A09, A13, A15 ni A16 (FC-3, auditoría del 20/10/2026). Propuesta: aplicar todas las reglas en los dos modos."
+    },
+    {
+      "id": "P176",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar (informativo): con movimiento reducido las transiciones siguen activas a 0.01 ms",
+      "recomendacion": "nucleo.css:439-443 (FC-4, auditoría del 20/10/2026). No se ve, pero los eventos de transición siguen ocurriendo. Propuesta: transition: none."
+    },
+    {
+      "id": "P177",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: la barra de pasos pegajosa ocupa del 31 al 34 % del alto en teléfono horizontal y con zoom",
+      "recomendacion": "Módulo pasos (C-01, auditoría del 20/10/2026). Propuesta: que deje de ser pegajosa cuando su alto pase de un cuarto de la ventana, como se hizo en «Grupos» (B4-01)."
+    },
+    {
+      "id": "P178",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: en la bandeja, un .solo-lector absoluto se sale de .tabla-marco y desborda la página",
+      "recomendacion": "Módulo tabla: 891 px de ancho en una ventana de 768 (C-02, auditoría del 20/10/2026). Propuesta: position: relative en .tabla-marco."
+    },
+    {
+      "id": "P179",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: recuperar o descartar el borrador deja el foco en <body>",
+      "recomendacion": "formkit.core.js:754 y 756 (RS-01 y B4-02, auditoría del 20/10/2026). Solución provisional: app/solicitud.js y app/cuenta.js llevan el foco al primer campo del paso. Propuesta: el núcleo mueve el foco al terminar."
+    },
+    {
+      "id": "P180",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: a 390 px la barra de pasos mide 141 px y scroll-padding-top reserva 112",
+      "recomendacion": "Módulo pasos (RS-02, auditoría del 20/10/2026): el campo enfocado puede quedar debajo de la barra. Propuesta: medir la barra y reservar su alto real."
+    },
+    {
+      "id": "P181",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: el visor anuncia el zoom y «Hoja 1 de N» cada vez que carga",
+      "recomendacion": "Módulo visor (RS-03, auditoría del 20/10/2026). Solución provisional en app/ cuando lo abre la página; queda sin rodear al abrirlo en teléfono. Propuesta: anunciar sólo lo que cambia por una acción de la persona."
+    },
+    {
+      "id": "P182",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: ayudas a 13 px y bajadas a 14 px en teléfono",
+      "recomendacion": "tokens.css (B4-04, auditoría del 20/10/2026). Decisión de Liber del 20/10: pedirlo al estándar. Propuesta: mínimo 14 px para ayudas y 16 px para texto corrido."
+    },
+    {
+      "id": "P183",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: el módulo de revisión pinta los bloques abiertos y la plantilla dice «Abre cada bloque»",
+      "recomendacion": "revision.js:39 y plantillas/por-pasos.html:294 (FC-01, auditoría del 20/10/2026). Propuesta: ajustar el texto de la plantilla o el estado inicial."
+    },
+    {
+      "id": "P184",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: fechaHora sólo escribe la fecha larga y sin «a las»",
+      "recomendacion": "formkit.core.js (F-fecha, auditoría del 20/10/2026): el CHANGELOG promete «17 de octubre de 2026 a las 23:27» y Chromium escribe coma. Se atiende con el bloque 6 (fechas). Propuesta: armar la cadena con formatToParts."
+    },
+    {
+      "id": "P185",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: el mensaje envioLimite habla en primera persona del plural",
+      "recomendacion": "validaciones.config.js (F-envio, auditoría del 20/10/2026). El trato con la persona es de tú, sin «nosotros». Propuesta: redacción impersonal."
+    },
+    {
+      "id": "P186",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: «Borrador guardado» se anuncia en cada cambio",
+      "recomendacion": "Núcleo, borrador (B4-03, auditoría del 20/10/2026): con lector de pantalla suena en cada tecla o casilla. Solución provisional en app/: se anuncia la primera vez que se guarda. Propuesta: anunciarlo sólo la primera vez o al pedirlo."
+    },
+    {
+      "id": "P187",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: .linea-datos-item con white-space: nowrap se desborda con el espaciado de texto de WCAG 1.4.12",
+      "recomendacion": "A 320 px, revisar, cotejo y grupos se desbordaban de 21 a 55 px (B4-06, auditoría del 20/10/2026). Solución provisional en app/apd.css: sólo el dato que no cabe en su línea se parte. Propuesta: el mismo criterio en el estándar."
+    },
+    {
+      "id": "P188",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Hallazgo del estándar: el resumen de errores de «Entrar» se anuncia dos veces",
+      "recomendacion": "Núcleo, resumen de errores (auditoría del 20/10/2026, bloque 1 de correcciones). No se rodeó. Propuesta: una sola región viva para el resumen."
+    },
+    {
+      "id": "P189",
+      "grupo": "transparencia",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "Borrador local de «Crea tu cuenta» con datos de identidad y contacto",
+      "recomendacion": "Por decisión de Liber del 20/10 (decisión 6 de la auditoría del 20/10/2026), «Crea tu cuenta» guarda en el navegador lo escrito (nombre, apellidos, fecha de nacimiento, CURP, correos, teléfono, empresa) para recuperarlo al volver; nunca la contraseña, la fotografía ni archivos. Dura 14 días o hasta crear la cuenta. Es una excepción a FRM-43 del estándar, que deja fuera del borrador los campos data-sensible. Antes de la etapa 3, confirmar con la Unidad de Transparencia si se mantiene, se acorta o se limita en computadoras compartidas, y mencionarlo en el aviso de privacidad."
     }
   ],
   "resueltos": [

@@ -280,3 +280,20 @@ decidido; B4 con lector de pantalla y B8 en Firefox y Safari en la sesión de P3
 Decidir los puntos de la sección 8 y corregir el bloque 1, que cierra el único alto con esfuerzo S y deja la versión
 lista para mostrar al área; después, los bloques 2 y 3. Antes de cerrar la etapa: fijar el presupuesto de peso y hacer
 la sesión con teléfonos, Firefox, Safari y lector de pantalla (P33 a P36).
+
+## 17. Estado de las correcciones
+
+| Bloque | Estado | Hallazgos | Prueba que lo cierra |
+|---|---|---|---|
+| 1. Foco y accesibilidad | **Corregido** (20/10/2026, bitácora 87) | B4-01 (con B1-01, RI-01 y lo de C2-01 que toca al foco), RI-02, RS-01 rodeado, B4-03, RI-03, RI-04, RI-06, RI-08, RI-09, B1-03, B4-05, B4-06, B4-07, A6-01 | `probar-volumen`: 0 casillas tapadas en «Grupos» con volumen a 1440, 1280 y 1024; `probar-sitio` `SOLO=foco` (41 comprobaciones) |
+| 2. Mensajes y continuidad | **Corregido** (20/10/2026, bitácora 87) | B6-01 (texto adaptado en «Mi perfil» y «Cargar el documento correcto»), B6-02 (decisión 6; excepción a FRM-43, P189), B6-03, B6-04, D4-03, B1-02, B1-04, B1-05, C5-02 a C5-04; aviso de Citas como RI-09 | `probar-sitio` `SOLO=continuidad` y «romper 2» F1 2; `auditar-sitio` con el grupo cancelado y la asistencia a 360 px |
+| 3. Tareas y estados del personal | Abierto | — | — |
+| 4. Sistema visual | Abierto | — | — |
+| 5. Peso | Abierto (D4-02 espera P33) | — | — |
+| 6. Fechas | Abierto | — | — |
+| 7. Estándar | **Registrado** | Las 13 fallas de la sección 9 y tres más vistas al corregir: P173 a P188 | `docs/PENDIENTES.md`, grupo «Estándar» |
+
+Con B4-01 corregido, el veredicto «Antes de mostrar al área» pasa a **Lista con reservas** (los medios abiertos de los
+bloques 3, 4 y 6). C2-01 sigue abierto en lo que no es foco: el botón principal con «Ninguna elegida» (bloque 4).
+Pruebas al cerrar los bloques 1 y 2: `probar-sitio` 1154 (antes 1096), `probar-examen` 79, `probar-volumen` 82 (antes
+68), `auditar-sitio` con los mismos 2 avisos, `probar-esquemas` 131; nada falla.

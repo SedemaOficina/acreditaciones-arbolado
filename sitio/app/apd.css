@@ -137,7 +137,7 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
    respuestas cortas en línea (.opciones-lista.opciones-en-linea) son del estándar desde la 1.1.0; aquí, los anchos. */
 .titulo-primero { margin-top: var(--e-6); }
 .control-medio { max-width: var(--ancho-acuse); } /* en el envoltorio .select, para que la flecha quede dentro (auditoría 2026-10-17) */
-/* Falla del estándar, pendiente por registrar (FC-1; auditoría 2026-10-20, A6-01): el estándar no da color al marcador de
+/* Falla del estándar, registrada como P173 (FC-1; auditoría 2026-10-20, A6-01): el estándar no da color al marcador de
    posición y queda el del navegador, a 4.41:1 sobre el fondo de solo lectura y 4.23:1 sobre el de error. --gris-cl da
    5.14:1 sobre blanco, 4.91:1 sobre --solo-lectura-bg y 4.71:1 sobre --error-bg; opacity 1, porque algún navegador lo
    aclara. */
@@ -432,7 +432,7 @@ body > main { flex: 1 0 auto; width: 100%; }
 /* Nombre calculado del grupo y, debajo, su folio en chico (APD.grupoTitulo): el folio no cambia */
 .grupo-titulo { display: inline-grid; gap: var(--b-2); min-width: 0; }
 .grupo-nombre { overflow-wrap: anywhere; }
-/* Falla del estándar, pendiente por registrar (B4-06; auditoría 2026-10-20): .linea-datos-item lleva white-space: nowrap y,
+/* Falla del estándar, registrada como P187 (B4-06; auditoría 2026-10-20): .linea-datos-item lleva white-space: nowrap y,
    con el espaciado de texto de WCAG 1.4.12 a 320 px, un dato más ancho que toda su línea desborda la página (revisar,
    cotejo y grupos, de 21 a 55 px). Sólo ese dato se parte (app/apd.js lo marca con [data-ancho]); los demás siguen
    enteros y pasan completos al renglón siguiente (P134). */

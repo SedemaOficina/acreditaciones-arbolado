@@ -381,7 +381,7 @@
   let franjaEnEspera = false;
   const esperaFranja = () => { if (franja && !franja.hidden && !solicitudLista) { franja.hidden = true; franjaEnEspera = true; } };
   document.addEventListener('DOMContentLoaded', esperaFranja);
-  /* Falla del estándar, pendiente por registrar (RS-01; auditoría 2026-10-20, también B4-02): al recuperar o descartar el
+  /* Falla del estándar, registrada como P179 (RS-01; auditoría 2026-10-20, también B4-02): al recuperar o descartar el
      borrador, el núcleo (formkit.core.js, iniciaFranja) oculta la franja con el botón enfocado y el foco cae en <body>.
      Mientras el estándar lo corrige, el foco va al primer campo del paso que queda a la vista (el recuperado, o el primero
      al descartar); lo recuperado se anuncia una vez en la región de anuncios del estándar. */
@@ -394,7 +394,7 @@
   function borrador(alRecuperar) {
     const { ctx } = FormKit.iniciar(form);
     esperaFranja();
-    /* Falla del estándar, pendiente por registrar (auditoría 2026-10-20, B4-03): el núcleo vuelve a escribir «Borrador
+    /* Falla del estándar, registrada como P186 (auditoría 2026-10-20, B4-03): el núcleo vuelve a escribir «Borrador
        guardado en este dispositivo.» en su indicador (aria-live) con cada cambio, y se anunciaba cada vez (5 veces en el
        paso de documentos). El indicador de la página ya no es región viva: se ve como siempre y se anuncia una sola vez,
        la primera que se guarda. */
