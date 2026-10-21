@@ -4436,6 +4436,36 @@ async function continuidad(navegador) {
       t(`B6-03: al ${accion} el borrador después de recargar, cada «Atrás» cambia de paso o de página (${vistos.join(' → ')})`));
     await c.close();
   }
+
+  // B6-04 y D4-03 (decisión 7a): la versión va escrita en cada página; el distintivo y el menú de pruebas la leen de ahí,
+  // ninguna pantalla pide VERSION y, sin red o con VERSION nuevo y la página de antes, se ve la versión de la página
+  {
+    const version = readFileSync(join(raiz, 'VERSION'), 'utf8').trim();
+    const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html') && f !== 'espera.html');
+    for (const modo of ['sin red', 'VERSION nuevo']) {
+      const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: 390, height: 844 } });
+      let pedidos = 0;
+      await c.route('**/VERSION*', (r) => { pedidos += 1; return modo === 'sin red' ? r.abort('internetdisconnected') : r.fulfill({ body: '0.999\n', contentType: 'text/plain' }); });
+      const page = await c.newPage();
+      const distintos = [];
+      for (const pg of paginas) {
+        // Sin sesión, algunas pantallas llevan a «Entrar»: se mira la página en la que se queda
+        await page.goto(BASE + pg, { waitUntil: 'networkidle' });
+        let r = null;
+        for (let i = 0; !r && i < 4; i++) {
+          r = await page.waitForFunction(() => /Versión/.test((document.getElementById('version-sia') || {}).textContent || ''))
+            .then(() => page.evaluate(() => ({ meta: (document.querySelector('meta[name="sia-version"]') || {}).content, distintivo: document.getElementById('version-sia').textContent })))
+            .catch(() => page.waitForLoadState('networkidle').then(() => null));
+        }
+        r = r || { meta: null, distintivo: 'sin leer' };
+        if (r.meta !== version || r.distintivo !== `Versión de prueba ${version}`) distintos.push(`${pg}: ${r.meta} · ${r.distintivo}`);
+      }
+      await page.goto(BASE + 'index.html');
+      const menu = await page.waitForSelector('.menu-pruebas-boton', { timeout: 8000 }).then(() => true, () => false);
+      comprueba(!distintos.length && !pedidos && menu, t(`B6-04 y D4-03 (${modo}): las ${paginas.length} pantallas llevan escrita la versión ${version}, la muestran sin pedir VERSION (${pedidos} pedidos) y el menú de pruebas aparece${distintos.length ? `; distintas: ${distintos.join(' | ')}` : ''}`));
+      await c.close();
+    }
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});

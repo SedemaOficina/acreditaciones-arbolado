@@ -2,7 +2,8 @@
 // en pantalla si se está viendo la última. Lo llama herramientas/publicar-sitio.sh antes de publicar:
 //   · VERSION (raíz) y sitio/VERSION: el número nuevo (lo pinta version-visible.js: «Versión de prueba 0.N»);
 //   · el ?v= de los archivos propios en cada página (no el de formkit/, que lleva la versión del estándar), para que el
-//     navegador no use una copia vieja;
+//     navegador no use una copia vieja, y la versión escrita en cada página (<meta name="sia-version">), que es la que
+//     muestra el distintivo;
 //   · docs/VERSIONES.md: número, fecha y hora (Ciudad de México) y qué cambió (el último commit).
 // Al pasar al SIA la versión es 1 y deja de usarse este guion.
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
@@ -21,7 +22,9 @@ writeFileSync(join(raiz, 'sitio/VERSION'), nueva + '\n');
 for (const p of readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html'))) {
   const ruta = join(raiz, 'sitio', p);
   // Sólo los archivos propios: los del estándar (formkit/…) llevan la versión del estándar (construir-sitio.mjs)
-  writeFileSync(ruta, readFileSync(ruta, 'utf8').replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${nueva}"`));
+  // y la versión escrita en la página (<meta name="sia-version">, la que muestra el distintivo; auditoría 2026-10-20, B6-04)
+  writeFileSync(ruta, readFileSync(ruta, 'utf8').replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${nueva}"`)
+    .replace(/<meta name="sia-version" content="[^"]*">/, `<meta name="sia-version" content="${nueva}">`));
 }
 
 const cuando = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City', dateStyle: 'short', timeStyle: 'short' });

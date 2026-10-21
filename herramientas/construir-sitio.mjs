@@ -58,6 +58,10 @@ const versionEstandar = cambios ? cambios[1] : '0';
 const CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; "
   + "connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'";
 const META_CSP = `<meta http-equiv="Content-Security-Policy" content="${CSP}">\n<meta name="referrer" content="same-origin">`;
+// La versión, escrita en cada página (auditoría 2026-10-20, B6-04 y D4-03; decisión 7a de Liber): el distintivo y el
+// menú de pruebas la leen de aquí, así que dicen la versión del código que corre, también sin red o con una copia vieja
+// en caché, y la página ya no pide VERSION (lo pedía dos veces). herramientas/nueva-version.mjs la sube al publicar.
+const META_VERSION = `<meta name="sia-version" content="${version}">`;
 const paginas = readdirSync(sitio).filter((f) => f.endsWith('.html'));
 for (const p of paginas) {
   const ruta = join(sitio, p);
@@ -65,7 +69,8 @@ for (const p of paginas) {
     .replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${version}"`)
     .replace(/((?:href|src)="formkit\/[^"?]+\.(?:css|js))(?:\?v=[0-9.]+)?"/g, `$1?v=${versionEstandar}"`)
     .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n?/g, '').replace(/<meta name="referrer"[^>]*>\n?/g, '')
-    .replace(/<meta charset="utf-8">\n/, `<meta charset="utf-8">\n${META_CSP}\n`);
+    .replace(/<meta name="sia-version"[^>]*>\n?/g, '')
+    .replace(/<meta charset="utf-8">\n/, `<meta charset="utf-8">\n${META_CSP}\n${META_VERSION}\n`);
   if (!html.includes(META_CSP)) throw new Error(`${p}: no se pudo poner la política de contenido (falta <meta charset="utf-8">)`);
   writeFileSync(ruta, html);
 }
