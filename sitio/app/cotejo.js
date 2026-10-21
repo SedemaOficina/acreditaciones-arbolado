@@ -216,6 +216,7 @@
 
     /* ----- Lo que calcula la página ----- */
     let calculando = false;
+    let iniciada = false; // el resumen se anuncia sólo después de pintar la página
     function recalcula() {
       if (calculando) return; // los auxiliares que se ajustan aquí disparan «change»: no se recalcula dentro
       calculando = true;
@@ -269,8 +270,13 @@
         cerrar: 'Es su segunda inasistencia: la solicitud se cierra y el trámite termina sin acreditación. La persona puede iniciar una solicitud nueva.',
         no_es_la_persona: 'No se atiende la cita. La cuenta queda bloqueada y se avisa a la Dirección para aclararlo.'
       };
-      $('[data-resumen]').textContent = faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado)
-        ? `Falta indicar ${lista(faltan)}.` : TEXTOS[resultado] || '';
+      // Un anuncio por acción (auditoría 2026-10-20, B4-03): el resumen no es región viva; se escribe y se anuncia sólo
+      // cuando cambia por algo que hizo quien atiende (al marcar que un documento coincide, junto con el siguiente)
+      const resumen = faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado) ? `Falta indicar ${lista(faltan)}.` : TEXTOS[resultado] || '';
+      if ($('[data-resumen]').textContent !== resumen) {
+        $('[data-resumen]').textContent = resumen;
+        if (iniciada && resumen) FormKit.anuncia(resumen);
+      }
       // Sin nada que cotejar (no se presentó o no es la persona), el visor no sigue mostrando un documento (D32)
       if ((presente === 'no' || ident === 'no_es') && hayVisor()) {
         const visor = $('[data-visor]');
@@ -289,8 +295,15 @@
 
     /* Ver documento: en el visor, con todas sus hojas; el que se ve queda señalado en la lista y su botón dice «En el
        visor». En computadora, pedir otra vez el que ya está abierto lleva el foco a sus hojas (auditoría 2026-10-18, B16). */
+    /* Falla del estándar, registrada como P181 (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» cada vez que
+       carga un documento. Cuando lo abre la página sola, se callan; vuelven en cuanto quien atiende usa el visor o pide un
+       documento con su botón (como en revisar.js). */
+    function callaVisor(si) { for (const n of document.querySelectorAll('[data-visor-pagina], [data-visor-zoom]')) n.setAttribute('aria-live', si ? 'off' : 'polite'); }
+    const visorNodo = $('[data-visor]');
+    if (visorNodo) for (const ev of ['pointerdown', 'keydown', 'wheel', 'focusin']) visorNodo.addEventListener(ev, () => callaVisor(false));
     function ver(k, boton) {
       if (!archivos[k] || !hayVisor()) return;
+      callaVisor(!boton);
       const yaAbierto = boton && $(`[data-doc="${k}"]`, form).hasAttribute('data-viendo') && FormKit.visor.enComputadora() && $('[data-visor]').open;
       for (const a of $$('[data-doc]', form)) {
         const viendo = a.dataset.doc === k;
@@ -309,6 +322,17 @@
       const b = e.target.closest('[data-ver]');
       if (b) ver(b.dataset.ver, b);
     });
+    /* Al cerrar el visor (en teléfono es un diálogo; en computadora, con «Cerrar»), ningún botón sigue diciendo «En el
+       visor» (auditoría 2026-10-20, RI-08). Si se cerró para volver a abrirse (cambio de tamaño), no se toca. */
+    const visorDialogo = $('[data-visor]');
+    if (visorDialogo) visorDialogo.addEventListener('close', () => {
+      if (visorDialogo.open) return;
+      for (const a of $$('[data-doc]', form)) {
+        a.removeAttribute('data-viendo');
+        const b = $('[data-ver]', a);
+        if (b) { b.removeAttribute('aria-current'); b.firstChild.textContent = 'Ver lo que cargó'; }
+      }
+    });
 
     /* Al marcar que un documento coincide, se pasa al siguiente sin cotejar (como en la revisión documental) */
     const suave = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -321,8 +345,13 @@
       const siguiente = orden.slice(i + 1).find((k) => !elegido(`coincide_${k}`)) || orden.slice(0, i).find((k) => !elegido(`coincide_${k}`));
       if (!siguiente) return;
       if (hayVisor() && FormKit.visor.enComputadora()) ver(siguiente, null);
-      $(`[data-doc="${siguiente}"]`, form).scrollIntoView({ behavior: suave, block: 'start' });
-      FormKit.anuncia(`Siguiente documento: ${archivos[siguiente].titulo}.`);
+      // El foco va al título del documento que se muestra (como en la revisión documental, RI-06) y se anuncia una vez el
+      // avance con el siguiente documento (B4-03)
+      const art = $(`[data-doc="${siguiente}"]`, form);
+      const titulo = $('.doc-titulo', art);
+      if (titulo) { titulo.tabIndex = -1; titulo.focus({ preventScroll: true }); }
+      art.scrollIntoView({ behavior: suave, block: 'start' });
+      FormKit.anuncia(`${$('[data-resumen]').textContent} Siguiente documento: ${archivos[siguiente].titulo}.`);
     });
 
     /* Una cita de un día que todavía no llega se atiende ese día (auditoría «intentar romperlo», F2 A6; la base:
@@ -519,5 +548,6 @@
     form.addEventListener('change', marcaCambio);
     window.addEventListener('beforeunload', (e) => { if (sinGuardar) { e.preventDefault(); e.returnValue = ''; } });
     recalcula();
+    iniciada = true;
   }).catch(() => falla('No se pudo cargar la cita. Intente de nuevo más tarde.'));
 }());

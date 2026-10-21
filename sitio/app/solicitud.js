@@ -306,24 +306,40 @@
     if (interno) interno.dataset.internoTexto = p ? `${p.perfil} (${TEXTO_PERFIL[p.perfil]}) · experiencia mínima: ${p.minimo ? `${p.minimo} años` : '—'}` : '';
   }
 
-  /* ----- Pasos en el historial del navegador (B2): «Atrás» regresa al paso anterior, no saca de la solicitud ----- */
+  /* ----- Pasos en el historial del navegador (B2): «Atrás» regresa al paso anterior, no saca de la solicitud -----
+     Cada entrada lleva su paso (apdPaso) y su lugar en la página (apdN). Al recargar en un paso posterior la página empieza
+     en el primero, y la entrada de antes ya era de ese paso: el primer «Atrás» no hacía nada (auditoría 2026-10-20,
+     B6-03). Ahora el paso recuperado del borrador ocupa la misma entrada (no agrega otra) y, si la entrada de antes
+     muestra el mismo paso que ya se ve, «Atrás» la pasa de largo. */
+  const ESTADO_AL_CARGAR = history.state;
+  let entrada = ESTADO_AL_CARGAR;
+  let restaurando = false;
   let desdeHistorial = false;
+  const ponEntrada = (estado, agrega) => { entrada = estado; history[agrega ? 'pushState' : 'replaceState'](estado, ''); };
   function irSinHistorial(i) {
     desdeHistorial = true;
     try { FormKit.pasos.ir(i); } finally { desdeHistorial = false; }
-    history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+    ponEntrada({ ...(entrada || {}), apdPaso: FormKit.pasos.actual() }, false);
   }
   function historial() {
-    history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+    const previo = ESTADO_AL_CARGAR;
+    const n = previo && Number.isInteger(previo.apdN) ? previo.apdN : 0;
+    const repite = Boolean(previo && Number.isInteger(previo.apdPaso) && n > 0 && previo.apdPaso !== FormKit.pasos.actual());
+    ponEntrada({ apdPaso: FormKit.pasos.actual(), apdN: n, ...(repite ? { apdRepite: true } : {}) }, false);
     form.addEventListener('formkit:paso', (e) => {
       if (desdeHistorial || (history.state && history.state.apdPaso === e.detail.indice)) return;
-      history.pushState({ apdPaso: e.detail.indice }, '');
+      if (restaurando) { ponEntrada({ ...(entrada || {}), apdPaso: e.detail.indice }, false); return; }
+      ponEntrada({ apdPaso: e.detail.indice, apdN: (entrada && Number.isInteger(entrada.apdN) ? entrada.apdN : 0) + 1 }, true);
     });
     window.addEventListener('popstate', (e) => {
       // Enviada (acuse a la vista): «Atrás» lleva a «Mis trámites», no a un formulario que ya no se puede enviar
       if (form.hidden) { location.replace('tramites.html'); return; }
+      const venia = entrada;
+      entrada = e.state;
       // Un salto dentro de la página («Ir al contenido», enlaces #…) también dispara popstate, sin paso: se ignora
       if (!e.state || !Number.isInteger(e.state.apdPaso)) return;
+      // La entrada de antes de recargar muestra el mismo paso que ya se ve: «Atrás» sigue a la anterior (B6-03)
+      if (venia && venia.apdRepite && e.state.apdN === venia.apdN - 1 && e.state.apdPaso === FormKit.pasos.actual()) { history.back(); return; }
       irSinHistorial(e.state.apdPaso);
     });
   }
@@ -365,14 +381,37 @@
   let franjaEnEspera = false;
   const esperaFranja = () => { if (franja && !franja.hidden && !solicitudLista) { franja.hidden = true; franjaEnEspera = true; } };
   document.addEventListener('DOMContentLoaded', esperaFranja);
+  /* Falla del estándar, registrada como P179 (RS-01; auditoría 2026-10-20, también B4-02): al recuperar o descartar el
+     borrador, el núcleo (formkit.core.js, iniciaFranja) oculta la franja con el botón enfocado y el foco cae en <body>.
+     Mientras el estándar lo corrige, el foco va al primer campo del paso que queda a la vista (el recuperado, o el primero
+     al descartar); lo recuperado se anuncia una vez en la región de anuncios del estándar. */
+  function alPrimerCampo() {
+    const paso = (FormKit.pasos && FormKit.pasos.elementos && FormKit.pasos.elementos[FormKit.pasos.actual()]) || form;
+    const campos = [...paso.querySelectorAll('input:not([type="hidden"]), select, textarea')].filter((c) => !c.disabled && c.checkVisibility());
+    const c = campos[0] && campos[0].type === 'radio' ? (campos.find((x) => x.name === campos[0].name && x.checked) || campos[0]) : campos[0];
+    if (c) c.focus();
+  }
   function borrador(alRecuperar) {
     const { ctx } = FormKit.iniciar(form);
     esperaFranja();
+    /* Falla del estándar, registrada como P186 (auditoría 2026-10-20, B4-03): el núcleo vuelve a escribir «Borrador
+       guardado en este dispositivo.» en su indicador (aria-live) con cada cambio, y se anunciaba cada vez (5 veces en el
+       paso de documentos). El indicador de la página ya no es región viva: se ve como siempre y se anuncia una sola vez,
+       la primera que se guarda. */
+    const indicador = document.querySelector('[data-guardado]');
+    let guardadoDicho = false;
+    if (indicador && ctx.alBorrador) ctx.alBorrador({ escribe() {
+      if (guardadoDicho) return;
+      // El núcleo avisa antes de pintar el indicador, y lo pinta sólo si de verdad se guardó
+      queueMicrotask(() => { if (!guardadoDicho && indicador.hasAttribute('data-visible')) { guardadoDicho = true; FormKit.anuncia(indicador.textContent); } });
+    } });
     // La carrera escrita (combo libre) también revisa su formato (auditoría «intentar romperlo», F1 12)
     APD.formatoEnCombos(ctx);
     const anterior = FormKit.ganchos.restauraBorrador;
     FormKit.ganchos.restauraBorrador = (f, b) => {
-      if (anterior) anterior(f, b);
+      // El paso recuperado ocupa la entrada del historial en la que se está (B6-03)
+      restaurando = f === form;
+      try { if (anterior) anterior(f, b); } finally { restaurando = false; }
       if (f !== form) return;
       for (const n of DECLARACIONES) for (const c of form.querySelectorAll(`input[name="${n}"]`)) c.checked = false;
       // El tipo restaurado vuelve a calcular el curso y sus documentos; uno que ya no se puede pedir no queda elegido
@@ -385,8 +424,10 @@
     };
     if (franja) {
       franja.addEventListener('click', (e) => {
-        const a = e.target.closest('[data-borrador="descartar-si"]');
-        if (a) FormKit.anuncia('Se descartó el borrador.', { visible: notaBorrador });
+        const a = e.target.closest('[data-borrador="recuperar"], [data-borrador="descartar-si"]');
+        if (!a) return;
+        if (a.dataset.borrador === 'descartar-si') FormKit.anuncia('Se descartó el borrador.', { visible: notaBorrador });
+        alPrimerCampo();
       });
     }
     solicitudLista = true;
@@ -420,7 +461,9 @@
       // Si lo recuperado deja a la persona en la revisión, se vuelve a pintar con lo de ahora
       const actual = FormKit.pasos.elementos[FormKit.pasos.actual()];
       if (actual && actual.hasAttribute('data-revision') && FormKit.revision) { FormKit.revision.pinta(); revisionConNombres(persona); }
-      history.replaceState({ apdPaso: FormKit.pasos.actual() }, '');
+      ponEntrada({ ...(entrada || {}), apdPaso: FormKit.pasos.actual() }, false);
+      // Si al repintar el paso el campo enfocado desapareció, el foco vuelve al primero del paso (RS-01)
+      if (document.activeElement === document.body) alPrimerCampo();
     });
   }).catch((e) => {
     if (window.console) console.error(e);

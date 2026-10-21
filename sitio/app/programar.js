@@ -126,7 +126,8 @@
     }
     function pintaCalendario(enfocar) {
       const [a, m] = mes.split('-').map(Number);
-      $('[data-mes-nombre]').textContent = `${mayuscula(MESES[m - 1])} de ${a}`;
+      // El mes se anuncia sólo cuando cambia, no con cada flecha dentro del mismo mes (B4-03)
+      APD.escribe($('[data-mes-nombre]'), `${mayuscula(MESES[m - 1])} de ${a}`);
       const primero = `${mes}-01`;
       const siguiente = m === 12 ? `${a + 1}-01-01` : `${a}-${String(m + 1).padStart(2, '0')}-01`;
       const ultimo = APD.sumaDias(siguiente, -1);
@@ -155,8 +156,11 @@
         filas.push(el('tr', {}, celdas));
       }
       $('[data-dias]').replaceChildren(...filas);
-      $('[data-mes="-1"]').disabled = mes <= mesDe(hoy);
-      $('[data-mes="1"]').disabled = mes >= mesDe(maximo);
+      // En el mes actual y en el último permitido el botón queda inactivo con aria-disabled, no con disabled: conserva el
+      // foco (auditoría 2026-10-20, RI-02; como los botones de envío, abajo)
+      for (const [b, si] of [[$('[data-mes="-1"]'), mes <= mesDe(hoy)], [$('[data-mes="1"]'), mes >= mesDe(maximo)]]) {
+        if (si) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
+      }
       if (enfocar) { const b = $(`.cal-dia[data-fecha="${foco}"]`); if (b) b.focus(); }
     }
     /* Elegir un día (calendario o campo): el campo se llena en día/mes/año y el estándar lo valida */
@@ -213,6 +217,7 @@
     });
     for (const b of $$('[data-mes]')) {
       b.addEventListener('click', () => {
+        if (b.getAttribute('aria-disabled') === 'true') return;
         const [a, m] = mes.split('-').map(Number);
         const dt = new Date(Date.UTC(a, m - 1 + Number(b.dataset.mes), 1, 18));
         mes = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}`;

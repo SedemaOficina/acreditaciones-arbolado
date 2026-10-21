@@ -73,6 +73,10 @@
 /* En «Asistencia» los botones «Asistió» y «Faltó» van a la derecha de cada fila: el botón del menú pasa a la izquierda,
    sobre las fotografías, para no tapar ninguno (auditoría «intentar romperlo», F3 B11) */
 body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-3), env(safe-area-inset-left)); }
+/* Al avanzar con el teclado, el control enfocado no queda debajo del botón fijo: la página reserva su lugar al pie mientras
+   el menú exista (auditoría 2026-10-20, B1-03, RI-05 y B4-09). En «Grupos», app/grupos.js reserva más cuando la barra de
+   elegidas va fija. */
+html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) + 2 * var(--e-3) + var(--safe-inf)); }
 .menu-pruebas::backdrop { background: var(--velo); }
 .menu-pruebas-cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
 .menu-pruebas-seccion { display: grid; gap: var(--e-2); padding-block: var(--e-4); border-top: var(--b-1) solid var(--linea); }
@@ -133,6 +137,11 @@ body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-
    respuestas cortas en línea (.opciones-lista.opciones-en-linea) son del estándar desde la 1.1.0; aquí, los anchos. */
 .titulo-primero { margin-top: var(--e-6); }
 .control-medio { max-width: var(--ancho-acuse); } /* en el envoltorio .select, para que la flecha quede dentro (auditoría 2026-10-17) */
+/* Falla del estándar, registrada como P173 (FC-1; auditoría 2026-10-20, A6-01): el estándar no da color al marcador de
+   posición y queda el del navegador, a 4.41:1 sobre el fondo de solo lectura y 4.23:1 sobre el de error. --gris-cl da
+   5.14:1 sobre blanco, 4.91:1 sobre --solo-lectura-bg y 4.71:1 sobre --error-bg; opacity 1, porque algún navegador lo
+   aclara. */
+.control::placeholder { color: var(--gris-cl); opacity: 1; }
 .tarjeta-angosta { max-width: var(--ancho-dialogo); margin-inline: auto; }
 /* Datos internos (decisión 2026-10-15): los que calcula el sistema y SE GUARDAN en la base, como el sexo tomado de
    la CURP, no los ve la persona; los que sólo usa la página (data-auxiliar) no se marcan. En la versión de prueba (app/pruebas.js pone .modo-pruebas) se muestran en amarillo con su
@@ -151,7 +160,8 @@ body:has(.asistencia-fila) .menu-pruebas-boton { right: auto; left: max(var(--e-
 
 /* ───── Pantallas del personal (etapa 2): bandeja y revisión documental (decisiones 2026-10-16) ───── */
 .personal-sesion { padding-block-end: var(--e-3); border-block-end: var(--b-1) solid var(--linea); }
-.sesion-enlaces a[aria-current="page"] { font-weight: var(--peso-fuerte); color: var(--guinda); }
+/* La sección actual se distingue también sin color: subrayado más grueso (auditoría 2026-10-20, B4-05; WCAG 1.4.1) */
+.sesion-enlaces a[aria-current="page"] { font-weight: var(--peso-fuerte); color: var(--guinda); text-decoration-thickness: var(--b-3); text-underline-offset: var(--e-1); }
 /* Bandeja: búsqueda siempre a la vista; en teléfono los filtros se pliegan bajo «Filtrar» */
 .filtros-bandeja { display: grid; gap: 0 var(--e-4); margin-block-start: var(--e-4); }
 .btn-filtrar { justify-self: start; margin-block-end: var(--e-4); }
@@ -287,14 +297,25 @@ body > main { flex: 1 0 auto; width: 100%; }
 /* Un grupo: encabezado con su situación, cupo y acciones */
 .grupo-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); }
 .grupo-cabeza .bajada { margin-block-end: 0; }
-.cupo { display: grid; gap: var(--e-1); margin-block: var(--e-4); }
+/* Con :not([hidden]): con la misma especificidad, display: grid le ganaba al [hidden] del estándar (nucleo.css, que se carga
+   antes) y en un grupo cancelado se veía la barra vacía (auditoría 2026-10-20, B1-02) */
+.cupo:not([hidden]) { display: grid; }
+.cupo { gap: var(--e-1); margin-block: var(--e-4); }
 .cupo-barra { height: var(--e-2); border-radius: var(--r-pill); background: var(--linea); overflow: hidden; }
 .cupo-lleno { display: block; height: 100%; background: var(--dorado); }
 .cupo > p { margin: 0; }
 .acciones-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-block-start: var(--e-4); }
 .acciones-grupo .btn { width: auto; }
 /* Asistencia: una fila por persona */
-.asistencia-fila { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--e-3); align-items: center; padding-block: var(--e-3); border-bottom: var(--b-1) solid var(--linea); }
+/* En un teléfono angosto (menos de 400 px) «Asistió» y «Faltó» van en el renglón de abajo, bajo el nombre y a la derecha,
+   como en la fila ancha (el botón del menú de pruebas va a la izquierda, F3 B11): en la misma fila el nombre y «Ya no puede
+   faltar» se encimaban 33 px con «Asistió» a 360 px y 3 px a 390 (auditoría 2026-10-20, B1-05) */
+.asistencia-fila { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-3); align-items: center; padding-block: var(--e-3); border-bottom: var(--b-1) solid var(--linea); }
+.asistencia-fila > .asis-opciones { grid-column: 2; justify-self: end; }
+@media (min-width: 400px) {
+  .asistencia-fila { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .asistencia-fila > .asis-opciones { grid-column: auto; justify-self: auto; }
+}
 .asistencia-foto { width: var(--objetivo-min); height: calc(var(--objetivo-min) * 1.25); object-fit: cover; border-radius: var(--r-ctrl); border: var(--b-1) solid var(--linea); }
 .acciones-grupo + .ayuda { margin-block-start: var(--e-4); }
 
@@ -387,7 +408,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 .asis-pie { display: grid; gap: var(--e-3); margin-block-start: var(--e-4); }
 .asis-totales { margin: 0; font-weight: var(--peso-medio); }
 .asis-otro-dia { margin-block: var(--e-4) var(--e-2); }
-.asis-otro-dia > summary { cursor: pointer; color: var(--azul); text-decoration: underline; padding-block: var(--e-2); width: fit-content; }
+/* Objetivo de 44 px, como el resumen del material de estudio (medía 40.8; auditoría 2026-10-20, B1-04) */
+.asis-otro-dia > summary { cursor: pointer; color: var(--azul); text-decoration: underline; padding-block: var(--e-2); width: fit-content; min-height: var(--objetivo-min); box-sizing: border-box; }
 
 /* Campo de fecha con calendario (revisión, cotejo y grupo; Liber, 18/10/2026): el texto dd/mm/aaaa y, pegado a su
    derecha, el botón que abre el calendario del navegador. El <input type="date"> queda invisible bajo el botón, para que
@@ -410,6 +432,11 @@ body > main { flex: 1 0 auto; width: 100%; }
 /* Nombre calculado del grupo y, debajo, su folio en chico (APD.grupoTitulo): el folio no cambia */
 .grupo-titulo { display: inline-grid; gap: var(--b-2); min-width: 0; }
 .grupo-nombre { overflow-wrap: anywhere; }
+/* Falla del estándar, registrada como P187 (B4-06; auditoría 2026-10-20): .linea-datos-item lleva white-space: nowrap y,
+   con el espaciado de texto de WCAG 1.4.12 a 320 px, un dato más ancho que toda su línea desborda la página (revisar,
+   cotejo y grupos, de 21 a 55 px). Sólo ese dato se parte (app/apd.js lo marca con [data-ancho]); los demás siguen
+   enteros y pasan completos al renglón siguiente (P134). */
+.linea-datos-item[data-ancho] { white-space: normal; overflow-wrap: anywhere; }
 .grupo-folio { font-size: var(--t-xs); font-weight: var(--peso-normal); color: var(--gris); letter-spacing: 0; }
 /* La línea de datos (.linea-datos del estándar) bajo el nombre del grupo, en Asistencia */
 .grupo-bajada-datos { margin-block-start: var(--e-1); }
@@ -528,7 +555,7 @@ body > main { flex: 1 0 auto; width: 100%; }
 .cal { display: grid; gap: var(--e-3); max-width: var(--ancho-dialogo); margin-block: var(--e-3) 0; }
 .cal-cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
 .cal-mes { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); text-align: center; }
-.cal-mes-boton:disabled { opacity: var(--op-inactivo); cursor: not-allowed; }
+.cal-mes-boton[aria-disabled="true"] { opacity: var(--op-inactivo); cursor: not-allowed; }
 .cal-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: var(--e-1); }
 .cal-tabla th { padding-block: var(--e-1); font-size: var(--t-xs); font-weight: var(--peso-semi); color: var(--gris); text-align: center; }
 .cal-tabla abbr { text-decoration: none; }
@@ -577,6 +604,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 }
 @media (min-width: 760px) {
   .plan-barra { position: sticky; bottom: 0; z-index: var(--z-lista); padding-block-end: calc(var(--e-2) + var(--safe-inf)); }
+  /* Si la barra mide más de un cuarto de la ventana deja de ser fija (B4-01, decisión 1c del 20/10; app/grupos.js) */
+  .plan-barra[data-suelta] { position: static; }
   .plan-semana { grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
   .plan-semana-titulo { padding-block-start: var(--e-3); }
   .hoy-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }

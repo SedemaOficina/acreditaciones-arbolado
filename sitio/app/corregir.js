@@ -56,7 +56,8 @@
           const t = setTimeout(() => APD.cargar().then((ahora) => {
             // Justo antes de guardar (auditoría «intentar romperlo», bloque 2): la sesión sigue siendo la de quien abrió la
             // página y la cita sigue en pausa ese día (la base: carga_fuera_de_turno)
-            const sesion = APD.sesionCambio();
+            // Esta página no tiene borrador: al volver a entrar, el documento se carga otra vez (B6-01)
+            const sesion = APD.sesionCambio(`No se cargó nada: vuelve a entrar y carga otra vez ${pausa.docs.length === 1 ? 'tu documento' : 'tus documentos'}.`);
             if (sesion) return mal(sesion);
             const s2 = ahora.solicitud.find((x) => x.folio === s.folio);
             if (!s2 || s2.solicitante_id !== persona.id || s2.estado !== 'validada_en_linea' || !s2.cotejo_pausa || APD.pausaVencida(ahora, s2)) {

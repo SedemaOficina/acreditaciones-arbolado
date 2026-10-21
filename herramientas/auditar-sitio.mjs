@@ -22,6 +22,9 @@ mkdirSync(join(SALIDA, 'capturas'), { recursive: true });
 const datos = JSON.parse(readFileSync(join(raiz, 'datos/ficticios.json'), 'utf8'));
 
 const VISTAS = { telefono: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true }, escritorio: { viewport: { width: 1366, height: 900 } } };
+// Tamaños que sólo se revisan en los estados que los piden (cuarto elemento del estado): el teléfono chico de 360 px
+// (auditoría 2026-10-20, B1-05: la fila de asistencia se encimaba ahí)
+const VISTAS_EXTRA = { telefono360: { viewport: { width: 360, height: 780 }, hasTouch: true, isMobile: true } };
 
 // Estados a recorrer: [nombre, página, sesión (id de solicitante) o null]
 const sol = (estado, f = () => true) => datos.solicitud.find((s) => s.estado === estado && f(s));
@@ -52,6 +55,10 @@ const ESTADOS = [
   ['grupo-integracion', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`, null],
   ['grupo-en-curso', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`, null],
   ['asistencia', 'asistencia.html', null],
+  // Un grupo cancelado (B1-02: su barra de cupo, marcada hidden, se veía) y la asistencia de un grupo en curso, también a
+  // 360 px (B1-04: «Corregir otro día» de 40.8 px; B1-05: encimado de la fila) (auditoría 2026-10-20)
+  ['grupo-cancelado', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'cancelado').folio}`, null],
+  ['asistencia-grupo', `asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio <= datos.fecha_corte).folio}`, null, ['telefono360']],
   // Material de estudio, público y del personal (auditoría 2026-10-18, A 8.4)
   ['material', 'material.html', null],
   ['material-personal', 'material-personal.html', null],
@@ -191,8 +198,9 @@ const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath:
 const recursosRevisados = new Map();
 let paginas = 0;
 let presionados = 0;
-for (const [vistaNombre, vista] of Object.entries(VISTAS)) {
-  for (const [nombre, ruta, sesion] of ESTADOS) {
+for (const [vistaNombre, vista] of Object.entries({ ...VISTAS, ...VISTAS_EXTRA })) {
+  for (const [nombre, ruta, sesion, extra] of ESTADOS) {
+    if (VISTAS_EXTRA[vistaNombre] && !(extra || []).includes(vistaNombre)) continue;
     const contexto = await navegador.newContext(vista);
     if (sesion) await contexto.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
     const page = await contexto.newPage();
@@ -269,6 +277,6 @@ await navegador.close();
 const porTipo = {};
 for (const h of hallazgos) porTipo[h.tipo] = (porTipo[h.tipo] || 0) + 1;
 writeFileSync(join(SALIDA, 'hallazgos.json'), JSON.stringify({ base: BASE, estados: ESTADOS.map(([n, r]) => [n, r]), paginas, presionados, porTipo, hallazgos }, null, 2));
-console.log(`\n${paginas} pantallas revisadas (${ESTADOS.length} estados × 2 tamaños); ${presionados} botones presionados`);
+console.log(`\n${paginas} pantallas revisadas (${ESTADOS.length} estados × 2 tamaños, y algunos a 360 px); ${presionados} botones presionados`);
 for (const [t, n] of Object.entries(porTipo)) console.log(`  ${t}: ${n}`);
 if (!hallazgos.length) console.log('Sin hallazgos.');

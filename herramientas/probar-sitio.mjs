@@ -2639,7 +2639,16 @@ async function romperDos(navegador) {
     await sesion(p2, null);
     const r = await envia(p1);
     const sinPersona = await p1.evaluate(() => APD.cargar().then((d) => d.solicitud.filter((s) => s.de_prueba).length));
-    comprueba(!r.acuse && /Tu sesión se cerró en otra pestaña/.test(r.aviso) && sinPersona === 0, t(`F1 2: sin sesión no se envía la solicitud («${r.aviso.slice(0, 80)}», ${sinPersona} creadas)`));
+    // B6-01 (auditoría 2026-10-20): sin sesión dice que terminó y que lo capturado sigue; «otra pestaña», sólo con otra cuenta
+    comprueba(!r.acuse && /Tu sesión terminó\. No se envió nada, pero lo que capturaste sigue en este dispositivo/.test(r.aviso) && !/otra pestaña|No se guardó nada/.test(r.aviso) && sinPersona === 0,
+      t(`F1 2 y B6-01: sin sesión no se envía la solicitud y el aviso dice que la sesión terminó («${r.aviso.slice(0, 110)}», ${sinPersona} creadas)`));
+    // Lo que dice es cierto: por su enlace se vuelve a entrar y la solicitud ofrece recuperar lo capturado
+    const entrar = await p1.getAttribute('[data-estado-envio] a[href^="entrar.html?volver="]', 'href');
+    await p1.goto(BASE + entrar);
+    await sesion(p1, A.id);
+    await p1.goto(BASE + decodeURIComponent(entrar.split('volver=')[1]));
+    const franja = await p1.waitForSelector('[data-franja-borrador]:not([hidden])', { timeout: 8000 }).then(() => true, () => false);
+    comprueba(franja, t('B6-01: al volver a entrar por el enlace del aviso, la solicitud ofrece recuperar lo capturado'));
   });
   // «Mi perfil»: A edita su contacto, B entra en otra pestaña, A guarda → no se guarda en ninguna de las dos cuentas
   await parte('F1 1 Mi perfil', async ({ pagina }) => {
@@ -3889,6 +3898,627 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await c.close();
 }
 
+/* ── Foco y accesibilidad (auditoría de seguimiento del 2026-10-20, bloque 1 de su plan de corrección) ──
+   Cada prueba repite, en pequeño, el guion del revisor que encontró la falla (docs/auditoria-2026-10-20/guiones/ri y r3).
+   Elemento oculto por completo: los cinco puntos (centro y esquinas) caen en algo fijo o pegajoso que no lo contiene. */
+const ocultoPorFijo = () => {
+  const a = document.activeElement;
+  if (!a || a === document.body) return null;
+  const fijos = [...document.querySelectorAll('body *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && !x.contains(a) && x.checkVisibility());
+  const r = a.getBoundingClientRect();
+  const puntos = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 1, r.top + 1], [r.right - 1, r.top + 1], [r.left + 1, r.bottom - 1], [r.right - 1, r.bottom - 1]];
+  const dentro = puntos.filter(([x, y]) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+  const tapados = dentro.filter(([x, y]) => { const e = document.elementFromPoint(x, y); return e && fijos.some((f) => f.contains(e)); });
+  return { total: dentro.length > 0 && tapados.length === dentro.length, tapados: tapados.length, puntos: dentro.length, casilla: a.matches('.plan-casilla') };
+};
+const dosCuadros = (page) => page.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
+/* Observador de regiones vivas (el de guiones/ri/gestion-foco.mjs): cada vez que el texto propio de una región viva
+   (aria-live, role status/alert/log, <output>) cambia a algo no vacío, se anota con la marca de la acción en curso. Se
+   inyecta antes de cargar la página; window.__vivasMarca = n marca la acción n. */
+function observadorVivas() {
+  const SEL = '[aria-live]:not([aria-live="off"]),[role="status"],[role="alert"],[role="log"],output';
+  const ev = (window.__vivas = []);
+  window.__vivasMarca = 0;
+  const ult = new WeakMap();
+  const propio = (r) => {
+    let t = '';
+    const w = document.createTreeWalker(r, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, { acceptNode: (n) => (n !== r && n.nodeType === 1 && (n.matches(SEL) || n.hidden || n.getAttribute('aria-hidden') === 'true') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeType === 3) t += n.textContent;
+    return t.replace(/\s+/g, ' ').trim();
+  };
+  const revisa = () => {
+    for (const r of document.querySelectorAll(SEL)) {
+      const vis = r.checkVisibility() || r.closest('.solo-lector');
+      const t = vis && !r.closest('[hidden],[aria-hidden="true"]') ? propio(r) : '';
+      const antes = ult.get(r);
+      ult.set(r, t);
+      if (t && t !== antes) ev.push({ marca: window.__vivasMarca, region: `${r.tagName.toLowerCase()}${[...r.attributes].filter((a) => a.name.startsWith('data-')).slice(0, 1).map((a) => `[${a.name}]`).join('')}${r.getAttribute('role') ? `[role=${r.getAttribute('role')}]` : ''}`, rol: r.getAttribute('role') || '', texto: t });
+    }
+  };
+  let pend = false;
+  // Además, cada vez que se escribe en una región viva aunque sea el mismo texto (el registro de anuncios de r3,
+  // guiones/r3/teclado-lib.mjs): volver a escribir el mismo texto también lo vuelve a anunciar
+  const escritos = (window.__vivasEscritos = []);
+  new MutationObserver((registros) => {
+    for (const r of registros) {
+      if (r.type === 'attributes') continue;
+      const n = r.target.nodeType === 1 ? r.target : r.target.parentElement;
+      const region = n && n.closest(SEL);
+      if (region && !region.closest('[hidden]')) escritos.push({ marca: window.__vivasMarca, region: region.getAttribute('data-mes-nombre') !== null ? 'cal-mes' : [...region.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name).join(' '), texto: region.textContent.replace(/\s+/g, ' ').trim() });
+    }
+    if (pend) return; pend = true; queueMicrotask(() => { pend = false; revisa(); });
+  }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live', 'open', 'class'] });
+}
+let marcaVivas = 0;
+const nuevaMarca = (page) => page.evaluate((k) => { window.__vivasMarca = k; return k; }, ++marcaVivas);
+const anunciosDe = (page, k) => page.evaluate((m) => window.__vivas.filter((e) => e.marca === m), k);
+// Espera a que la acción k haya anunciado algo (o a que pase su plazo) y deja correr los retardos de los anuncios
+async function anunciosTras(page, k, { minimo = 1, plazo = 4000 } = {}) {
+  await page.waitForFunction(([m, n]) => window.__vivas.filter((e) => e.marca === m).length >= n, [k, minimo], { timeout: plazo }).catch(() => {});
+  await page.waitForTimeout(400);
+  return anunciosDe(page, k);
+}
+const textosDe = (l) => l.map((e) => `${e.region}: «${e.texto.slice(0, 60)}»`).join(' | ');
+const escritosDe = (page, k) => page.evaluate((m) => window.__vivasEscritos.filter((e) => e.marca === m), k);
+async function focoAccesibilidad(navegador) {
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
+    await c.addInitScript(observadorVivas);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+
+  // B4-01 (decisión 1a): con los ficticios la barra de elegidas cabe (menos de un cuarto de la ventana) y sigue fija; la
+  // página reserva su alto y ninguna casilla enfocada queda debajo de ella
+  for (const [w, h] of [[1440, 900], [1280, 720]]) {
+    const { c, page } = await nuevo(w, h);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-barra:not([hidden])');
+    await dosCuadros(page);
+    const barra = await page.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height, reserva: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0 }; });
+    comprueba(barra.pos === 'sticky' && barra.reserva >= barra.alto, `[${w}×${h}] B4-01: la barra de elegidas sigue fija (${Math.round(barra.alto)} px) y la página reserva su alto al desplazarse (${barra.reserva} px)`);
+    let casillas = 0; const ocultas = [];
+    for (let k = 0; k < 80; k++) {
+      await page.keyboard.press('Tab');
+      await dosCuadros(page);
+      const m = await page.evaluate(ocultoPorFijo);
+      if (await page.evaluate(() => !!document.activeElement.closest('.plan-barra'))) break;
+      if (m && m.casilla) { casillas += 1; if (m.total) ocultas.push(k + 1); }
+    }
+    comprueba(casillas >= 5 && !ocultas.length, `[${w}×${h}] B4-01: ninguna de las ${casillas} casillas de «En espera» queda debajo de la barra al enfocarla con Tab${ocultas.length ? ` (ocultas en las paradas ${ocultas.join(', ')})` : ''}`);
+    await c.close();
+  }
+
+  // RI-02: «Día siguiente» de Citas y «Mes anterior/siguiente» de Programar, al llegar a su límite, quedan inactivos sin
+  // perder el foco (aria-disabled), y en el límite no hacen nada
+  {
+    const { c, page } = await nuevo(1280, 720);
+    const enfocado = (sel) => page.evaluate((s) => document.activeElement === document.querySelector(s), sel);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.focus('[data-ir="1"]');
+    let pulsaciones = 0;
+    while (pulsaciones < 30 && (await page.getAttribute('[data-ir="1"]', 'aria-disabled')) !== 'true') { await page.keyboard.press('Enter'); pulsaciones += 1; }
+    const diaFinal = await page.textContent('[data-dia]');
+    await page.keyboard.press('Enter');
+    comprueba(pulsaciones > 0 && pulsaciones < 30 && await enfocado('[data-ir="1"]') && (await page.textContent('[data-dia]')) === diaFinal && !(await page.$('[data-ir="1"]:disabled')),
+      `RI-02: en Citas, «Día siguiente» en el último día queda inactivo con aria-disabled, conserva el foco y no cambia de día (${pulsaciones} pulsaciones)`);
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia');
+    for (const [sel, max] of [['[data-mes="-1"]', 3], ['[data-mes="1"]', 15]]) {
+      await page.focus(sel);
+      let n = 0;
+      while (n < max && (await page.getAttribute(sel, 'aria-disabled')) !== 'true') { await page.keyboard.press('Enter'); n += 1; }
+      const mes = await page.textContent('[data-mes-nombre]');
+      await page.keyboard.press('Enter');
+      comprueba((await page.getAttribute(sel, 'aria-disabled')) === 'true' && await enfocado(sel) && (await page.textContent('[data-mes-nombre]')) === mes,
+        `RI-02: en Programar, «${sel.includes('-1') ? 'Mes anterior' : 'Mes siguiente'}» en su límite (${mes}) queda inactivo, conserva el foco y no cambia de mes`);
+    }
+    await c.close();
+  }
+
+  // RS-01 (falla del estándar, rodeada en app/solicitud.js) y RI-03: al recuperar o descartar el borrador con el teclado
+  // el foco no cae en <body> (va al primer campo del paso) y el mensaje se anuncia una sola vez
+  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+  for (const [w, h] of [[390, 844], [1280, 720]]) {
+    for (const accion of ['recuperar', 'descartar']) {
+      const { c, page, errores } = await nuevo(w, h, sinTramite.id);
+      await page.goto(BASE + 'solicitud.html');
+      await page.waitForSelector('#nivel_estudios');
+      await page.focus('#nivel_estudios');
+      await page.keyboard.press('ArrowDown');
+      await page.waitForFunction(() => Object.keys(localStorage).some((k) => /borrador/i.test(k)));
+      await page.reload();
+      await page.waitForSelector('[data-borrador="recuperar"]', { state: 'visible' });
+      if (accion === 'descartar') { await page.focus('[data-borrador="descartar"]'); await page.keyboard.press('Enter'); await page.waitForSelector('[data-borrador="descartar-si"]', { state: 'visible' }); }
+      const k = await nuevaMarca(page);
+      await page.focus(accion === 'recuperar' ? '[data-borrador="recuperar"]' : '[data-borrador="descartar-si"]');
+      await page.keyboard.press('Enter');
+      await page.waitForSelector('[data-borrador-recuperado]', { state: 'visible' });
+      const lista = await anunciosTras(page, k);
+      const foco = await page.evaluate(() => { const a = document.activeElement; return a && a !== document.body && a.closest('#formulario') && a.checkVisibility() ? (a.id || a.name) : null; });
+      const texto = accion === 'recuperar' ? /Borrador recuperado/ : /Se descartó el borrador/;
+      const veces = lista.filter((e) => texto.test(e.texto)).length;
+      comprueba(Boolean(foco), `[${w}×${h}] RS-01: al ${accion === 'recuperar' ? 'recuperar' : 'descartar'} el borrador con Intro el foco va al primer campo del paso (${foco || 'quedó en <body>'})`);
+      comprueba(veces === 1, `[${w}×${h}] RI-03: «${accion === 'recuperar' ? 'Borrador recuperado' : 'Se descartó el borrador'}» se anuncia una sola vez (${veces}: ${textosDe(lista)})`);
+      comprueba(!errores.length, `[${w}×${h}] borrador (${accion}): sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`);
+      await c.close();
+    }
+  }
+
+  // B4-03: «Borrador guardado en este dispositivo.» (núcleo; rodeado en app/solicitud.js) se anuncia sólo la primera vez
+  {
+    const { c, page } = await nuevo(390, 844, sinTramite.id);
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector('#nivel_estudios');
+    const k = await nuevaMarca(page);
+    for (const tecla of ['ArrowDown', 'ArrowDown', 'ArrowUp']) {
+      const antes = await page.evaluate(() => localStorage.getItem(Object.keys(localStorage).find((x) => /borrador/i.test(x)) || '') || '');
+      await page.focus('#nivel_estudios');
+      await page.keyboard.press(tecla);
+      // Cada cambio escribe el borrador (con su retardo): se espera a que cambie lo guardado
+      await page.waitForFunction((a) => (localStorage.getItem(Object.keys(localStorage).find((x) => /borrador/i.test(x)) || '') || '') !== a, antes);
+      await page.waitForSelector('[data-guardado][data-visible]');
+    }
+    const lista = await anunciosTras(page, k);
+    const veces = lista.filter((e) => /Borrador guardado/.test(e.texto)).length + (await escritosDe(page, k)).filter((e) => /Borrador guardado/.test(e.texto) && !/anuncios/.test(e.region)).length;
+    comprueba(veces === 1, `B4-03: con tres cambios seguidos, «Borrador guardado» se anuncia una vez (${veces})`);
+    await c.close();
+  }
+
+  // B4-03: en «Programar», las flechas dentro del mismo mes no vuelven a escribir (ni a anunciar) el nombre del mes
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia[tabindex="0"]');
+    await page.focus('.cal-dia[tabindex="0"]');
+    const k = await nuevaMarca(page);
+    for (const tecla of ['ArrowRight', 'ArrowRight', 'ArrowDown']) { await page.keyboard.press(tecla); await dosCuadros(page); }
+    const mismoMes = await page.evaluate(() => document.activeElement.dataset.fecha.slice(0, 7) === '2026-11');
+    const mes = (await escritosDe(page, k)).filter((e) => e.region === 'cal-mes').length;
+    comprueba(mismoMes && mes === 0, `B4-03: tres flechas dentro de noviembre no vuelven a anunciar «Noviembre de 2026» (${mes})`);
+    await page.click('[data-mes="1"]');
+    comprueba(/Diciembre de 2026/.test(await page.textContent('[data-mes-nombre]')), 'B4-03: «Mes siguiente» sí cambia y anuncia el mes');
+    await c.close();
+  }
+
+  // B4-03: el resumen del cotejo no se vuelve a escribir si no cambió
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await abreCotejo(page, conCita.folio);
+    await page.check('input[name="se_presento"][value="si"]');
+    await page.check('input[name="identidad"][value="misma"]');
+    await page.waitForFunction(() => document.querySelector('[data-resumen]').textContent.trim() !== '');
+    const k = await nuevaMarca(page);
+    for (let i = 0; i < 3; i++) await page.evaluate(() => document.querySelector('input[name="identidad"]:checked').dispatchEvent(new Event('change', { bubbles: true })));
+    await dosCuadros(page);
+    const veces = (await escritosDe(page, k)).filter((e) => e.region.includes('data-resumen')).length;
+    comprueba(veces === 0, `B4-03: en el cotejo, recalcular sin cambios no vuelve a escribir el resumen (${veces} veces)`);
+    // Cada «coincide: sí» da un anuncio (lo que falta y el siguiente documento) y el foco va con lo que se muestra
+    const docs = await page.$$eval('article.doc-revision', (a) => a.filter((x) => x.checkVisibility()).map((x) => x.dataset.doc));
+    // Lo que anunció la respuesta anterior ya salió (el estándar anuncia con un pequeño retardo)
+    await page.waitForFunction(() => { const r = document.querySelector('[data-anuncios]'); return !r || r.textContent === document.querySelector('[data-resumen]').textContent; }, null, { timeout: 3000 }).catch(() => {});
+    const malos = [];
+    for (const doc of docs) {
+      const m = await nuevaMarca(page);
+      await page.focus(`input[name="coincide_${doc}"][value="si"]`);
+      await page.keyboard.press('Space');
+      const lista = await anunciosTras(page, m);
+      const dentro = await page.evaluate(() => { const r = document.activeElement.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; });
+      if (lista.length !== 1 || !dentro) malos.push(`${doc}: ${lista.length} (${textosDe(lista)})${dentro ? '' : ', foco fuera de la ventana'}`);
+    }
+    comprueba(docs.length >= 3 && !malos.length, `B4-03: en el cotejo, cada «coincide» de ${docs.length} documentos da un anuncio${malos.length ? ': ' + malos.join(' | ') : ''}`);
+    await c.close();
+  }
+
+  // RI-03, RI-04 y RI-06: en la revisión documental, cada decisión «aceptado» da un anuncio (el avance y el siguiente
+  // documento), el foco va al título de lo que se muestra y nunca queda fuera de la ventana
+  const enviadaPoda = datos.solicitud.find((s) => s.estado === 'enviada' && s.tipo_acreditacion === 'poda');
+  for (const [w, h] of [[1280, 720], [390, 844]]) {
+    const { c, page, errores } = await nuevo(w, h);
+    await page.goto(BASE + `revisar.html?folio=${enviadaPoda.folio}`);
+    await page.waitForSelector('#formulario input[name^="decision_"]');
+    const nombres = await page.$$eval('#formulario input[name^="decision_"][value="aceptado"]', (l) => [...new Set(l.filter((x) => !x.disabled && x.checkVisibility()).map((x) => x.name))]);
+    const malos = [];
+    for (const [i, n] of nombres.entries()) {
+      const k = await nuevaMarca(page);
+      await page.focus(`#formulario input[name="${n}"][value="aceptado"]`);
+      await page.keyboard.press('Space');
+      const lista = await anunciosTras(page, k);
+      const ultimo = i === nombres.length - 1;
+      await page.waitForFunction(() => { const r = document.activeElement.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }, null, { timeout: 4000 }).catch(() => {});
+      const foco = await page.evaluate(() => { const a = document.activeElement; const r = a.getBoundingClientRect(); return { titulo: a.matches('.doc-titulo, #t-resultado'), dentro: r.bottom > 0 && r.top < innerHeight, texto: a.textContent.trim().slice(0, 40) }; });
+      const ok = lista.length === 1 && (ultimo ? /Los \d+ documentos están revisados/.test(lista[0].texto) : /documentos revisados\. Siguiente documento/.test(lista[0].texto)) && foco.titulo && foco.dentro;
+      if (!ok) malos.push(`${n}: ${lista.length} anuncios (${textosDe(lista)}), foco en «${foco.texto}»${foco.dentro ? '' : ' fuera de la ventana'}`);
+    }
+    comprueba(nombres.length >= 3 && !malos.length, `[${w}×${h}] RI-03, RI-04 y RI-06: ${nombres.length} decisiones, un anuncio cada una y el foco en el título que se muestra${malos.length ? ': ' + malos.join(' | ') : ''}`);
+    comprueba(!errores.length, `[${w}×${h}] revisión con el teclado: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`);
+    await c.close();
+  }
+
+  // RI-04: en Citas, un anuncio por cambio de día (el día con su cuenta) y uno al terminar de escribir la búsqueda
+  {
+    const { c, page } = await nuevo(1280, 720);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cuenta]').textContent));
+    let k = await nuevaMarca(page);
+    await page.focus('[data-ir="1"]');
+    await page.keyboard.press('Enter');
+    let lista = await anunciosTras(page, k);
+    comprueba(lista.length === 1 && /^[A-ZÁÉÍÓÚ][a-záéíóú]+, \d+ de [a-z]+ de \d{4}: /.test(lista[0].texto), `RI-04: en Citas, «Día siguiente» da un anuncio con el día y su cuenta (${textosDe(lista)})`);
+    k = await nuevaMarca(page);
+    await page.focus('#buscar');
+    await page.keyboard.type('ana', { delay: 120 });
+    lista = await anunciosTras(page, k, { plazo: 5000 });
+    await page.waitForTimeout(800);
+    lista = await anunciosDe(page, k);
+    comprueba(lista.length === 1 && /coincide/.test(lista[0].texto), `RI-04: en Citas, escribir «ana» da un solo anuncio, al terminar (${lista.length}: ${textosDe(lista)})`);
+    await c.close();
+  }
+
+  // RI-04: en «Grupos», al cargar no se anuncian la cuenta del curso ni «Ninguna elegida»; marcar a alguien da un anuncio
+  {
+    const { c, page } = await nuevo(1280, 720);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-persona input');
+    await dosCuadros(page);
+    const alCargar = (await anunciosDe(page, 0)).filter((e) => !/interno|pruebas/.test(e.region));
+    comprueba(!alCargar.some((e) => /en espera|elegida/.test(e.texto)), `RI-04: «Grupos» no anuncia al cargar la cuenta del curso ni «Ninguna elegida» (${textosDe(alCargar) || 'nada'})`);
+    const k = await nuevaMarca(page);
+    await page.focus('.plan-persona input');
+    await page.keyboard.press('Space');
+    const lista = await anunciosTras(page, k);
+    comprueba(lista.length === 1 && /1 elegida/.test(lista[0].texto), `RI-04: marcar a una persona anuncia «1 elegida» una vez (${textosDe(lista)})`);
+    await c.close();
+  }
+
+  // RI-08: en teléfono, al cerrar el visor con Escape el foco vuelve al botón y éste ya no dice «En el visor»
+  for (const [pagina, listo, normal] of [[`revisar.html?folio=${enviadaPoda.folio}`, '#formulario [data-ver]', 'Ver documento'], [`cotejo.html?folio=${conCita.folio}`, null, 'Ver lo que cargó']]) {
+    const { c, page } = await nuevo(390, 844);
+    if (listo) { await page.goto(BASE + pagina); await page.waitForSelector(listo); } else {
+      await abreCotejo(page, conCita.folio);
+      await page.check('input[name="se_presento"][value="si"]');
+      await page.check('input[name="identidad"][value="misma"]');
+    }
+    const boton = page.locator('#formulario [data-ver]:visible').first();
+    await boton.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('dialog[data-visor][open]');
+    const abierto = (await boton.textContent()).trim();
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('dialog[data-visor]:not([open])', { state: 'attached' });
+    await page.waitForFunction(() => document.activeElement && document.activeElement.matches('[data-ver]'));
+    // El texto del botón cambia al cerrarse el visor, que puede llegar después del foco: se espera la condición (si no
+    // llega en 5 s, la comprobación falla con lo que haya) (intermitente en la batería completa, bloque 2)
+    await page.waitForFunction(() => !/^En el visor/.test(document.activeElement.textContent.trim()) && !document.activeElement.hasAttribute('aria-current'), null, { timeout: 5000 }).catch(() => {});
+    const r = await page.evaluate(() => ({ texto: document.activeElement.textContent.trim(), actual: document.activeElement.hasAttribute('aria-current') }));
+    comprueba(/^En el visor/.test(abierto) && r.texto.startsWith(normal) && !r.actual,
+      `RI-08: en ${pagina.split('.')[0]}, al cerrar el visor en teléfono el botón enfocado vuelve a decir «${normal}» («${r.texto.slice(0, 40)}»${r.actual ? ', con aria-current' : ''})`);
+    await c.close();
+  }
+
+  // B1-03 (también RI-05 y B4-09): en la versión de prueba la página reserva al pie el lugar del botón «Menú de pruebas»;
+  // al recorrer la bandeja con Tab ningún control queda tapado por él en más de un cuarto
+  for (const [w, h] of [[1280, 720], [390, 844]]) {
+    const { c, page } = await nuevo(w, h);
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector('[data-filas] tr');
+    await page.waitForSelector('.menu-pruebas-boton');
+    const reserva = await page.evaluate(() => { const b = document.querySelector('.menu-pruebas-boton').getBoundingClientRect(); return { necesita: Math.ceil(innerHeight - b.top), tiene: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0 }; });
+    let paradas = 0; const tapadas = [];
+    for (let k = 0; k < 120; k++) {
+      await page.keyboard.press('Tab');
+      await dosCuadros(page);
+      const m = await page.evaluate(() => {
+        const a = document.activeElement;
+        if (!a || a === document.body || a.closest('.menu-pruebas-boton, dialog')) return null;
+        const r = a.getBoundingClientRect(); const b = document.querySelector('.menu-pruebas-boton').getBoundingClientRect();
+        const area = Math.max(0, Math.min(r.right, b.right) - Math.max(r.left, b.left)) * Math.max(0, Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top));
+        return { fraccion: r.width * r.height ? area / (r.width * r.height) : 0, texto: (a.getAttribute('aria-label') || a.textContent || '').trim().slice(0, 40), primero: window.__b103 === a, marca: (window.__b103 = window.__b103 || a) };
+      });
+      if (!m) continue;
+      if (m.primero && paradas) break;
+      paradas += 1;
+      if (m.fraccion > 0.25) tapadas.push(`«${m.texto}» ${Math.round(m.fraccion * 100)} %`);
+    }
+    comprueba(reserva.tiene >= reserva.necesita && paradas > 10 && !tapadas.length,
+      `[${w}×${h}] B1-03: la página reserva ${reserva.tiene} px al pie para el «Menú de pruebas» (ocupa ${reserva.necesita}) y ninguna de ${paradas} paradas queda tapada más de un cuarto${tapadas.length ? ': ' + tapadas.slice(0, 3).join(', ') : ''}`);
+    await c.close();
+  }
+
+  // B4-05: la sección actual de la cabecera del personal se distingue también sin color (subrayado más grueso)
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('.sesion-enlaces a[aria-current="page"]');
+    const r = await page.evaluate(() => {
+      const rasgo = (a) => { const cs = getComputedStyle(a); return `${cs.textDecorationLine} ${cs.textDecorationThickness} ${cs.borderBottomWidth} ${cs.borderBottomStyle}`; };
+      const actual = document.querySelector('.sesion-enlaces a[aria-current="page"]');
+      const otros = [...document.querySelectorAll('.sesion-enlaces a:not([aria-current])')];
+      return { actual: actual.textContent, rasgo: rasgo(actual), otros: [...new Set(otros.map(rasgo))] };
+    });
+    comprueba(r.actual === 'Citas de cotejo' && r.otros.length > 0 && !r.otros.includes(r.rasgo), `B4-05: «${r.actual}» lleva aria-current y un rasgo que no es color (${r.rasgo} frente a ${r.otros.join(' | ')})`);
+    await c.close();
+  }
+
+  // B4-06: con el espaciado de texto de WCAG 1.4.12 a 320 px, revisar, cotejo y grupos no se desbordan a lo ancho
+  {
+    const espaciado = () => { const h = new CSSStyleSheet(); h.replaceSync('*{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}p{margin-bottom:2em!important}'); document.adoptedStyleSheets = [...document.adoptedStyleSheets, h]; };
+    const paginas = [...datos.solicitud.filter((x) => x.estado === 'enviada').map((x) => `revisar.html?folio=${x.folio}`), `cotejo.html?folio=${conCita.folio}`, 'grupos.html?curso=poda-nueva', 'grupos.html?curso=poda-renovacion', 'grupos.html?curso=dictaminador-nueva'];
+    const anchas = [];
+    for (const u of paginas) {
+      const { c, page } = await nuevo(320, 700);
+      if (u.startsWith('cotejo')) await abreCotejo(page, conCita.folio); else { await page.goto(BASE + u); await page.waitForSelector(u.startsWith('grupos') ? '.plan-semana' : '#formulario input[name^="decision_"]', { state: 'attached' }); }
+      await page.evaluate(espaciado);
+      await dosCuadros(page);
+      const ancho = await page.evaluate(() => document.documentElement.scrollWidth);
+      if (ancho > 321) anchas.push(`${u.split('?')[0]}${u.includes('folio') ? ' ' + u.split('=')[1] : u.includes('curso') ? ' ' + u.split('=')[1] : ''}: ${ancho} px`);
+      await c.close();
+    }
+    comprueba(!anchas.length, `B4-06: con el espaciado de texto aumentado a 320 px, ${paginas.length} pantallas de revisar, cotejo y grupos sin desborde${anchas.length ? ': ' + anchas.join('; ') : ''}`);
+  }
+
+  // B4-07: en «Grupos» y en «Material de estudio» no hay dos enlaces con el mismo nombre que lleven a lugares distintos
+  for (const [u, sel, sesion] of [['grupos.html?curso=poda-nueva', '.plan-grupo', null], ['material.html', '.material-doc', null]]) {
+    const { c, page } = await nuevo(1440, 900, sesion);
+    await page.goto(BASE + u);
+    await page.waitForSelector(sel);
+    const repetidos = await page.evaluate(() => {
+      const nombre = (a) => (a.getAttribute('aria-label') || a.textContent).replace(/\s+/g, ' ').trim();
+      const por = new Map();
+      for (const a of document.querySelectorAll('main a[href]')) { if (!a.checkVisibility()) continue; const n = nombre(a); if (!por.has(n)) por.set(n, new Set()); por.get(n).add(a.getAttribute('href') + (a.hasAttribute('download') ? ' (descarga)' : '')); }
+      return [...por].filter(([, h]) => h.size > 1).map(([n, h]) => `«${n}» ×${h.size}`);
+    });
+    comprueba(!repetidos.length, `B4-07: en ${u.split('?')[0]} cada nombre de enlace lleva a un solo lugar${repetidos.length ? ': ' + repetidos.join(', ') : ''}`);
+    await c.close();
+  }
+
+  // A6-01 (rodeo de FC-1): el marcador de posición de «Crea tu cuenta» llega a 4.5:1 sobre el fondo de solo lectura y el
+  // de error
+  {
+    const { c, page } = await nuevo(390, 844);
+    await page.goto(BASE + 'cuenta.html');
+    await page.waitForSelector('#sexo');
+    // El fondo de error es el de un campo con aria-invalid (lo pone el estándar al validar); aquí se mide sólo el color
+    await page.evaluate(() => document.getElementById('fecha_nacimiento').setAttribute('aria-invalid', 'true'));
+    const r = await page.evaluate(() => {
+      const rgb = (t) => t.match(/[\d.]+/g).slice(0, 3).map(Number);
+      const lum = ([R, G, B]) => [R, G, B].map((x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((s, x, i) => s + x * [0.2126, 0.7152, 0.0722][i], 0);
+      const razon = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+      return ['sexo', 'fecha_nacimiento'].map((id) => { const e = document.getElementById(id); const ph = getComputedStyle(e, '::placeholder'); return [id, e.getAttribute('aria-invalid') === 'true' ? 'error' : e.readOnly ? 'solo lectura' : 'campo', +razon(rgb(ph.color), rgb(getComputedStyle(e).backgroundColor)).toFixed(2)]; });
+    });
+    comprueba(r.every(([, , x]) => x >= 4.5), `A6-01: marcador de posición a 4.5:1 o más (${r.map(([id, f, x]) => `${id}, ${f}: ${x}:1`).join('; ')})`);
+    await c.close();
+  }
+}
+
+/* ── Mensajes y continuidad (auditoría de seguimiento 2026-10-20, bloque 2; SOLO=continuidad) ──
+   B6-01 (la sesión que terminó), B6-02 («Crea tu cuenta» avisa y recupera), B6-03 («Atrás» tras recuperar el borrador),
+   B6-04/D4-03 (la versión escrita en la página), B1-02, B1-04, B1-05, C5-02 a C5-04 y el aviso de Citas (como RI-09). */
+async function continuidad(navegador) {
+  const t = (m) => `[continuidad] ${m}`;
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  const aviso = (pg) => pg.evaluate(() => { const a = document.querySelector('[data-estado-envio]:not([hidden])'); return a ? a.textContent.replace(/\s+/g, ' ').trim() : ''; });
+
+  // B6-01: sin sesión, «Mi perfil» y «Cargar el documento correcto» dicen que la sesión terminó (no «otra pestaña») y, como
+  // no tienen borrador, no prometen que lo capturado sigue (la solicitud, que sí lo tiene, se prueba en «romper 2», F1 2)
+  {
+    const { c, page, errores } = await nuevo(390, 844, CON_ORG.id);
+    await page.goto(BASE + 'datos.html');
+    await page.waitForSelector('[data-editar="contacto"]');
+    await page.click('[data-editar="contacto"]');
+    await page.waitForSelector('#form-contacto:not([hidden])');
+    await page.fill('#form-contacto #telefono', '5512340000');
+    await page.evaluate(() => localStorage.removeItem('apd.sesion'));
+    await page.click('#form-contacto [data-accion="enviar"]');
+    await page.waitForSelector('#form-contacto [data-estado-envio]:not([hidden]) a[href^="entrar.html?volver="]');
+    const texto = await aviso(page);
+    comprueba(/Tu sesión terminó\. No se guardó tu cambio: vuelve a entrar y hazlo otra vez/.test(texto) && !/otra pestaña|sigue en este dispositivo/.test(texto) && !errores.length,
+      t(`B6-01: «Mi perfil» sin sesión dice que la sesión terminó y que el cambio no se guardó («${texto.slice(0, 100)}»)`));
+    await c.close();
+  }
+  {
+    const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+    const sp = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+    const { c, page, errores } = await nuevo(390, 844, sp.solicitante_id);
+    await page.goto(BASE + `corregir.html?folio=${sp.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    for (const campo of await page.$$('#formulario [data-campo^="doc_"]')) if (await campo.isVisible()) await (await campo.$('input[type="file"]')).setInputFiles(PDF);
+    await page.evaluate(() => localStorage.removeItem('apd.sesion'));
+    await page.click('#formulario [data-accion="enviar"]');
+    await page.waitForSelector('#formulario [data-estado-envio]:not([hidden]) a[href^="entrar.html?volver="]');
+    const texto = await aviso(page);
+    comprueba(/Tu sesión terminó\. No se cargó nada: vuelve a entrar y carga otra vez/.test(texto) && !/otra pestaña|sigue en este dispositivo/.test(texto) && !errores.length,
+      t(`B6-01: «Cargar el documento correcto» sin sesión dice que la sesión terminó y que no se cargó nada («${texto.slice(0, 100)}»)`));
+    await c.close();
+  }
+
+  // B6-02 (decisión 6, «avisar y recuperar»): «Crea tu cuenta» escrita a mano avisa al recargar y al salir, ofrece
+  // recuperar lo escrito sin la contraseña ni la fotografía (que nunca se guardan) y, al crear la cuenta, borra el borrador
+  {
+    const { c, page, errores } = await nuevo(390, 844);
+    const dialogos = [];
+    page.on('dialog', (d) => { dialogos.push(d.type()); d.accept().catch(() => {}); });
+    await page.goto(BASE + 'index.html');
+    await page.goto(BASE + 'cuenta.html');
+    await page.waitForSelector('#formulario[data-formkit="listo"]');
+    const fecha = dma(NUEVA.nacimiento);
+    const correo = `prueba.${NUEVA.curp.toLowerCase()}@ejemplo.local`;
+    for (const [id, v] of [['nombre', NUEVA.nombre], ['primer_apellido', NUEVA.primer_apellido], ['segundo_apellido', NUEVA.segundo_apellido], ['fecha_nacimiento', fecha], ['curp', NUEVA.curp],
+      ['correo', correo], ['correo2', correo], ['telefono', '5512345678'], ['contrasena', CONTRASENA], ['contrasena2', CONTRASENA]]) await page.fill(`#${id}`, v);
+    await cargaFoto(page);
+    await marcar(page, 'input[name="adscrito"][value="no"]');
+    await marcar(page, 'input[name="aviso"]');
+    await page.waitForFunction((curp) => (localStorage.getItem('apd.borrador.cuenta') || '').includes(curp), NUEVA.curp);
+    const guardado = await page.evaluate(() => localStorage.getItem('apd.borrador.cuenta'));
+    comprueba(!guardado.includes(CONTRASENA) && !/"foto"|data:image/.test(guardado), t('B6-02: el borrador de «Crea tu cuenta» no guarda la contraseña ni la fotografía'));
+    await page.reload();
+    await page.waitForSelector('[data-franja-borrador]:not([hidden])');
+    comprueba(dialogos.includes('beforeunload') && await page.inputValue('#curp') === '', t(`B6-02: recargar con la cuenta escrita avisa antes de salir y ofrece recuperarla (${dialogos.join(', ') || 'sin aviso'})`));
+    await page.click('[data-borrador="recuperar"]');
+    await page.waitForSelector('[data-borrador-recuperado]:not([hidden])');
+    await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'nombre');
+    const r = await page.evaluate(() => ({ curp: document.getElementById('curp').value, correo: document.getElementById('correo2').value, telefono: document.getElementById('telefono').value, fecha: document.getElementById('fecha_nacimiento').value,
+      sexo: document.getElementById('sexo').value, adscrito: (document.querySelector('input[name="adscrito"]:checked') || {}).value, contrasena: document.getElementById('contrasena').value + document.getElementById('contrasena2').value,
+      foto: document.querySelectorAll('[data-campo="foto"] .lista-arch li').length, aviso: document.querySelector('input[name="aviso"]').checked, nota: document.querySelector('[data-borrador-recuperado]').textContent }));
+    comprueba(r.curp === NUEVA.curp && r.correo === correo && r.telefono === '5512345678' && r.fecha === fecha && r.sexo && r.adscrito === 'no' && !r.contrasena && !r.foto && !r.aviso && /fotografía y tu contraseña/.test(r.nota),
+      t(`B6-02: «Recuperar lo que escribiste» trae los datos y la adscripción, sin contraseña, fotografía ni casillas, y lo dice (${JSON.stringify(r).slice(0, 160)})`));
+    dialogos.length = 0;
+    await page.click('a.btn-atras');
+    await page.waitForURL(/index\.html/);
+    comprueba(dialogos.includes('beforeunload'), t('B6-02: salir de «Crea tu cuenta» con algo escrito avisa antes de salir'));
+    await page.goto(BASE + 'cuenta.html');
+    await page.click('[data-borrador="recuperar"]');
+    await page.waitForFunction((curp) => document.getElementById('curp').value === curp, NUEVA.curp);
+    await page.fill('#contrasena', CONTRASENA);
+    await page.fill('#contrasena2', CONTRASENA);
+    await cargaFoto(page);
+    await marcar(page, 'input[name="aviso"]');
+    await marcar(page, 'input[name="humano"]');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-acuse]:not([hidden])');
+    dialogos.length = 0;
+    await page.reload();
+    await page.waitForSelector('#formulario[data-formkit="listo"]', { state: 'attached' });
+    comprueba(await page.evaluate(() => localStorage.getItem('apd.borrador.cuenta')) === null && await page.isHidden('[data-franja-borrador]') && !dialogos.length && !errores.length,
+      t('B6-02: al crear la cuenta se borra el borrador; recargar ya no avisa ni ofrece recuperar'));
+    await c.close();
+  }
+
+  // B6-03: después de recargar en «Documentos», cada «Atrás» cambia de paso o de página, tanto al recuperar el borrador
+  // como al descartarlo (antes, el primero o el segundo no hacían nada)
+  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+  for (const accion of ['recuperar', 'descartar']) {
+    const { c, page, errores } = await nuevo(390, 844, sinTramite.id);
+    const paso = () => page.evaluate(() => { const x = [...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden); return x ? x.dataset.titulo : location.pathname.split('/').pop(); });
+    await page.goto(BASE + 'tramites.html');
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector(`${pasoVisible} #nivel_estudios`);
+    await page.selectOption('#nivel_estudios', 'licenciatura');
+    await page.fill('#carrera', 'Biología');
+    await page.keyboard.press('Escape');
+    await marcar(page, 'input[name="estatus_estudios"][value="titulado"]');
+    await siguiente(page);
+    const enDocumentos = () => page.waitForFunction(() => { const x = [...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden); return x && x.dataset.titulo === 'Documentos'; });
+    await enDocumentos();
+    await page.waitForFunction(() => Object.keys(localStorage).some((k) => k.startsWith('apd.borrador.solicitud.') && /"paso":1/.test(localStorage.getItem(k))));
+    await page.reload();
+    await page.waitForSelector('[data-franja-borrador]:not([hidden])');
+    if (accion === 'recuperar') {
+      await page.click('[data-borrador="recuperar"]');
+      await enDocumentos();
+    } else {
+      await page.click('[data-borrador="descartar"]');
+      await page.click('[data-borrador="descartar-si"]');
+      await page.waitForSelector('[data-franja-borrador]', { state: 'hidden' });
+    }
+    const vistos = [await paso()];
+    for (let k = 0; k < (accion === 'recuperar' ? 2 : 1); k++) {
+      const antes = page.url() + vistos[vistos.length - 1];
+      await page.goBack();
+      await page.waitForFunction((a) => location.href + ([...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden) || { dataset: { titulo: location.pathname.split('/').pop() } }).dataset.titulo !== a, antes, { timeout: 5000 }).catch(() => {});
+      vistos.push(await paso());
+    }
+    const esperado = accion === 'recuperar' ? ['Documentos', 'Trámite', 'tramites.html'] : ['Trámite', 'tramites.html'];
+    comprueba(JSON.stringify(vistos) === JSON.stringify(esperado) && !errores.length,
+      t(`B6-03: al ${accion} el borrador después de recargar, cada «Atrás» cambia de paso o de página (${vistos.join(' → ')})`));
+    await c.close();
+  }
+
+  // B6-04 y D4-03 (decisión 7a): la versión va escrita en cada página; el distintivo y el menú de pruebas la leen de ahí,
+  // ninguna pantalla pide VERSION y, sin red o con VERSION nuevo y la página de antes, se ve la versión de la página
+  {
+    const version = readFileSync(join(raiz, 'VERSION'), 'utf8').trim();
+    const paginas = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html') && f !== 'espera.html');
+    for (const modo of ['sin red', 'VERSION nuevo']) {
+      const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: 390, height: 844 } });
+      let pedidos = 0;
+      await c.route('**/VERSION*', (r) => { pedidos += 1; return modo === 'sin red' ? r.abort('internetdisconnected') : r.fulfill({ body: '0.999\n', contentType: 'text/plain' }); });
+      const page = await c.newPage();
+      const distintos = [];
+      for (const pg of paginas) {
+        // Sin sesión, algunas pantallas llevan a «Entrar»: se mira la página en la que se queda
+        await page.goto(BASE + pg, { waitUntil: 'networkidle' });
+        let r = null;
+        for (let i = 0; !r && i < 4; i++) {
+          r = await page.waitForFunction(() => /Versión/.test((document.getElementById('version-sia') || {}).textContent || ''))
+            .then(() => page.evaluate(() => ({ meta: (document.querySelector('meta[name="sia-version"]') || {}).content, distintivo: document.getElementById('version-sia').textContent })))
+            .catch(() => page.waitForLoadState('networkidle').then(() => null));
+        }
+        r = r || { meta: null, distintivo: 'sin leer' };
+        if (r.meta !== version || r.distintivo !== `Versión de prueba ${version}`) distintos.push(`${pg}: ${r.meta} · ${r.distintivo}`);
+      }
+      await page.goto(BASE + 'index.html');
+      const menu = await page.waitForSelector('.menu-pruebas-boton', { timeout: 8000 }).then(() => true, () => false);
+      comprueba(!distintos.length && !pedidos && menu, t(`B6-04 y D4-03 (${modo}): las ${paginas.length} pantallas llevan escrita la versión ${version}, la muestran sin pedir VERSION (${pedidos} pedidos) y el menú de pruebas aparece${distintos.length ? `; distintas: ${distintos.join(' | ')}` : ''}`));
+      await c.close();
+    }
+  }
+  // C5-02: la persona espera el curso (el personal arma los grupos): en «Mis trámites» no lee «espera de grupo»
+  {
+    const ins = datos.inscripcion.find((x) => !x.activa && /^Grupo cancelado/.test(x.motivo_baja || '')
+      && datos.solicitud.some((s) => s.id === x.solicitud_id && s.estado === 'lista_para_curso' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa')));
+    const s = datos.solicitud.find((x) => x.id === ins.solicitud_id);
+    const { c, page, errores } = await nuevo(390, 844, s.solicitante_id);
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('text=Tu grupo se canceló');
+    const texto = await page.textContent('main');
+    comprueba(/Sigues en espera de un curso/.test(texto) && !/espera de grupo/i.test(texto) && !errores.length, t('C5-02: con su grupo cancelado, «Mis trámites» dice «en espera de un curso» y no «espera de grupo»'));
+    await c.close();
+  }
+  // C5-03 y C5-04: en las pantallas del personal la franja de ubicación no habla de tú; «Vence el» con la misma mayúscula
+  // que «Vencida el»; ninguna oración con dos «:» (la razón de un día que no se puede va entre paréntesis)
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    const dosPuntos = () => page.evaluate(() => {
+      const fuera = (n) => n.closest('.ubicacion-prueba, .entorno-pruebas, dialog, script, style, .solo-lector');
+      const textos = [...document.querySelectorAll('main p, main li, main span, main [role="alert"], main .aviso-texto')].filter((n) => !fuera(n) && n.childElementCount === 0).map((n) => n.textContent.replace(/\s+/g, ' ').trim());
+      return textos.flatMap((x) => x.split(/(?<=[.!?])\s+/)).filter((o) => (o.match(/: /g) || []).length > 1);
+    });
+    await page.goto(BASE + 'grupos.html?curso=poda-renovacion');
+    await page.waitForSelector('.plan-semana-no');
+    const ubic = await page.waitForSelector('nav.ubicacion-prueba').then((n) => n.getAttribute('aria-label'));
+    const espera = await page.$$eval('.plan-persona-espera > *', (xs) => xs.map((x) => x.textContent.trim()));
+    const conVence = espera.filter((x) => /^vence el/i.test(x));
+    const dobles = await dosPuntos();
+    comprueba(ubic === 'Ubicación en el trámite (versión de prueba)', t(`C5-03: la franja de ubicación del personal se llama «${ubic}»`));
+    comprueba(conVence.length > 0 && conVence.every((x) => x.startsWith('Vence el')) && espera.some((x) => /^Vencida el/.test(x)),
+      t(`C5-04: en la espera de renovación «Vencida el» y «Vence el» llevan la misma mayúscula (${conVence.length} con «Vence el»)`));
+    comprueba(!dobles.length && /El lunes ya no se puede: faltan menos de \d+ días \(el curso empieza/.test(await page.textContent('.plan-semana-no')),
+      t(`C5-04: «Grupos» no tiene oraciones con dos «:»${dobles.length ? `: ${dobles.slice(0, 3).join(' | ')}` : ''}`));
+    // Programar: un día que no se puede, elegido en el calendario, se dice con un solo «:»
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia');
+    // El calendario abre en el mes del primer día posible: el mes anterior tiene los días que ya no se pueden
+    while (!(await page.$('.cal-dia[data-no="anticipacion"]')) && (await page.getAttribute('[data-mes="-1"]', 'aria-disabled')) !== 'true') {
+      const mes = await page.textContent('[data-mes-nombre]');
+      await page.click('[data-mes="-1"]');
+      await page.waitForFunction((m) => document.querySelector('[data-mes-nombre]').textContent !== m, mes);
+    }
+    await page.click('.cal-dia[data-no="anticipacion"]', { force: true }); // aria-disabled: se elige igual y dice por qué no
+    await page.waitForFunction(() => /no se puede/.test(document.querySelector('main').textContent));
+    const doblesP = await dosPuntos();
+    comprueba(!doblesP.length && !errores.length, t(`C5-04: «Programar» dice por qué un día no se puede sin dos «:» seguidos${doblesP.length ? `: ${doblesP.slice(0, 3).join(' | ')}` : ''}`));
+    await c.close();
+  }
+
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -3940,6 +4570,8 @@ try {
     await parte('estándar en teléfono', () => estandarPantallas(navegador, 390, 844, 'telefono'));
     await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
   }
+  if (toca('foco')) await parte('foco y accesibilidad', () => focoAccesibilidad(navegador));
+  if (toca('continuidad')) await parte('mensajes y continuidad', () => continuidad(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

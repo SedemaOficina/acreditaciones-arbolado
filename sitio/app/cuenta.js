@@ -1,4 +1,4 @@
-/* cuenta.js · Dos ayudas del formulario «Crea tu cuenta»:
+/* cuenta.js · Ayudas del formulario «Crea tu cuenta»:
 
    Con la sesión abierta (al recargar el acuse o al volver a esta pantalla), arriba se dice con quién se entró y se lleva
    a «Mis trámites»; quien va a crear la cuenta de otra persona puede salir antes (auditoría 2026-10-18, B12).
@@ -6,6 +6,9 @@
    Nombre, apellidos y CURP se escriben en mayúsculas al momento (decisión 2026-10-15), conservando la posición del
    cursor. Correo y contraseña no se tocan: el correo se guarda en minúsculas y la contraseña distingue mayúsculas.
    La base vuelve a ponerlos en mayúsculas al guardar (apd.mayusculas).
+
+   Lo escrito se guarda en este dispositivo y se ofrece al volver; salir o recargar con algo escrito se advierte
+   (auditoría 2026-10-20, B6-02).
 
    Desde el estándar 1.1.0 ya no hace falta: el campo auxiliar sin_segundo_apellido (curp-segundo-apellido acepta el
    segundo apellido vacío, P43) ni volver a comprobar la CURP cuando cambia el nombre o la fecha (P44). */
@@ -31,6 +34,57 @@
       h.focus();
     });
   }
+
+  /* ----- Lo escrito en este dispositivo (auditoría 2026-10-20, B6-02; decisión 6 de Liber: «avisar y recuperar») -----
+     Es el borrador del núcleo (data-borrador en cuenta.html) con su franja, como la solicitud. El núcleo deja fuera los
+     campos con data-sensible (FRM-43), que aquí son casi todos: Liber decidió recuperar lo escrito salvo la contraseña y
+     la fotografía, así que los de identidad y contacto van aparte, con los ganchos del estándar (estadoBorrador y
+     restauraBorrador). Excepción a FRM-43 por registrar. La contraseña, su confirmación y la fotografía (y cualquier
+     archivo: no hay proveedor de archivos) nunca se guardan. El borrador empieza con el primer gesto de la persona, se
+     borra al crear la cuenta (el núcleo) y con «Empezar de nuevo». Las casillas del final se vuelven a marcar. */
+  const RECUPERABLES = ['nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento', 'curp', 'correo', 'correo2', 'telefono', 'empresa_nombre'];
+  const control = (n) => form.querySelector(`[data-campo="${n}"] input`);
+  const estadoAnterior = FormKit.ganchos.estadoBorrador;
+  FormKit.ganchos.estadoBorrador = (f) => {
+    const previo = estadoAnterior ? estadoAnterior(f) : {};
+    if (f !== form) return previo;
+    const escrito = {};
+    for (const n of RECUPERABLES) { const c = control(n); if (c && c.value) escrito[n] = c.value; }
+    return { ...previo, cuenta: escrito };
+  };
+  const notaBorrador = document.querySelector('[data-borrador-recuperado]');
+  const restauraAnterior = FormKit.ganchos.restauraBorrador;
+  FormKit.ganchos.restauraBorrador = (f, b) => {
+    if (restauraAnterior) restauraAnterior(f, b);
+    if (f !== form) return;
+    for (const [n, v] of Object.entries((b && b.cuenta) || {})) { const c = RECUPERABLES.includes(n) && control(n); if (c) c.value = v; }
+    // El sexo se vuelve a tomar de la CURP (módulo identificadores)
+    const curp = control('curp');
+    if (curp && curp.value) curp.dispatchEvent(new Event('input', { bubbles: true }));
+    for (const n of ['aviso', 'humano']) for (const c of form.querySelectorAll(`input[name="${n}"]`)) c.checked = false;
+    // Después del anuncio del núcleo, que así queda sustituido: se dice una vez, con lo que falta poner otra vez
+    setTimeout(() => FormKit.anuncia(`${FormKit.config.mensajes.borradorRecuperado} Pon otra vez tu fotografía y tu contraseña.`, { visible: notaBorrador }), 0);
+  };
+  /* Falla del estándar, registrada como P179 (RS-01, como en la solicitud): al recuperar o descartar, el núcleo oculta
+     la franja con el botón enfocado y el foco cae en <body>. Mientras, el foco va al primer campo. */
+  const franja = document.querySelector('[data-franja-borrador]');
+  if (franja) {
+    franja.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-borrador="recuperar"], [data-borrador="descartar-si"]');
+      if (!a) return;
+      if (a.dataset.borrador === 'descartar-si') FormKit.anuncia('Se descartó lo que habías escrito.', { visible: notaBorrador });
+      setTimeout(() => { const c = control('nombre'); if (c) c.focus(); }, 0);
+    });
+  }
+  /* Recargar o salir con algo escrito (sin crear la cuenta) lo advierte el navegador, como la solicitud y la asistencia.
+     Se mira lo que hay en el formulario (también lo que llenó el «Menú de pruebas»); con la cuenta creada, ya no. */
+  const hayCaptura = () => [...form.querySelectorAll('input, select, textarea')].some((c) => {
+    if (c.closest('[data-trampa]') || c.readOnly || c.type === 'hidden') return false;
+    if (c.type === 'radio' || c.type === 'checkbox') return c.checked;
+    if (c.type === 'file') return false;
+    return Boolean(c.value);
+  }) || Boolean(form.querySelector('[data-campo="foto"] .lista-arch li'));
+  window.addEventListener('beforeunload', (e) => { if (!form.hidden && hayCaptura()) { e.preventDefault(); e.returnValue = ''; } });
 
   const MAYUSCULAS = ['nombre', 'primer_apellido', 'segundo_apellido', 'curp'];
   form.addEventListener('input', (e) => {

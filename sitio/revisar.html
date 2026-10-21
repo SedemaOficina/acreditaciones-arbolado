@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.61">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Revisar una solicitud · Personal · Acreditaciones de arbolado urbano</title>
@@ -346,7 +347,8 @@
 
     <section class="tarjeta" aria-labelledby="t-resultado">
       <h3 class="titulo-paso" id="t-resultado">Resultado de la revisión</h3>
-      <p class="resumen-revision" data-resumen role="status"></p>
+      <!-- Se anuncia una vez por acción desde app/revisar.js (auditoría 2026-10-20, RI-03 y RI-04): no es región viva -->
+      <p class="resumen-revision" data-resumen></p>
 
       <div data-si="resultado=validada">
         <p class="ayuda ayuda-bloque">Todo está en orden. Al validar, la persona recibe su cita de cotejo y los datos para pagar.</p>

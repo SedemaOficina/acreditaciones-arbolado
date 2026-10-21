@@ -1,0 +1,13 @@
+import { navegador, contexto, BASE, espera, COPIA } from './comun.mjs';
+import { readFileSync } from 'node:fs';
+const est = JSON.parse(readFileSync('../b1/estados-ficticios.json', 'utf8'));
+const nav = await navegador(); const c = await contexto(nav, 'telH', { sesion: est.find((s) => s.caso === 'nueva').sesion }); const p = await c.newPage();
+await p.goto(BASE + 'solicitud.html', { waitUntil: 'networkidle' });
+await p.waitForSelector('input[name="tipo"][value="poda"]:visible:enabled');
+await p.locator('input[name="tipo"][value="poda"]').check({ force: true }); await espera(400);
+await p.locator('[data-accion="siguiente"]:visible').first().click(); await espera(600);
+console.log(await p.evaluate(() => [...document.querySelectorAll('section[data-paso]')].map((s) => s.dataset.titulo + ':' + s.hidden).join(' ')));
+await p.locator('[data-campo="doc_poda_nueva_curp"] input[type=file]').setInputFiles(COPIA + '/sitio/datos/documentos/curp.pdf'); await espera(1500);
+console.log(await p.evaluate(() => document.querySelector('[data-campo="doc_poda_nueva_curp"]').innerText));
+console.log(await p.evaluate(() => (document.querySelector('.resumen-errores, [role=alert]:not([hidden])') || {}).innerText));
+await p.screenshot({ path: '/tmp/claude-0/dbg.png', fullPage: true }); await nav.close();

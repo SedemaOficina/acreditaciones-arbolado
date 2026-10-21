@@ -195,8 +195,9 @@
         : FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `No te presentaste a tu cita del ${fecha(s.cita_anterior)}`, texto: `Tu cita nueva es el ${fechaHora(s.cita_en)}. Si tampoco te presentas, tu solicitud se cierra.` }));
     }
     const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
+    // La persona espera el curso; el personal arma los grupos (decisión 2026-10-18; auditoría 2026-10-20, C5-02)
     if (s.estado === 'lista_para_curso' && ultimaIns && !ultimaIns.activa && /^Grupo cancelado/.test(ultimaIns.motivo_baja || '')) {
-      cambio.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: 'Tu grupo se canceló', texto: 'Sigues en espera de grupo con tu misma antigüedad. La Secretaría te asignará otro y te avisará las fechas.' }));
+      cambio.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: 'Tu grupo se canceló', texto: 'Sigues en espera de un curso con tu misma antigüedad. La Secretaría te asignará otro grupo y te avisará las fechas.' }));
     }
     const porInasistencia = APD.cerradaPorInasistencia(s);
     if (porInasistencia) {

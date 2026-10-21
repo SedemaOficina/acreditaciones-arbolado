@@ -268,16 +268,26 @@
      página recuerda con quién se abrió y, antes de guardar a nombre de la sesión, comprueba que siga siendo la misma
      persona. En la etapa 3 la página manda la persona que espera (solicitante_id) y la API la compara con la de la
      cookie: si no coincide, 409 y no guarda. */
+  /* Sin sesión (auditoría 2026-10-20, B6-01; decisión 8): la sesión terminó (caducó o se salió en otra pestaña: la página
+     no lo distingue y la persona no necesita saberlo). «Otra pestaña» sólo cuando hay otra cuenta. Cada pantalla dice qué
+     pasó con lo capturado (sinSesion), porque no todas lo conservan: la solicitud tiene borrador; «Mi perfil» y «Cargar el
+     documento correcto», no. En la etapa 3, la respuesta 401 de la API usa el mismo texto. Las pantallas del personal (las
+     que cargan mensajes-usted.js) lo leen de usted. */
   const SESION_AL_ABRIR = (() => { const s = leeSesion(); return s && s.id ? String(s.id) : null; })();
-  function sesionCambio() {
+  function sesionCambio(sinSesion) {
     const s = leeSesion();
     const ahora = s && s.id ? String(s.id) : null;
     if (SESION_AL_ABRIR && ahora === SESION_AL_ABRIR) return null;
-    const volver = encodeURIComponent(global.location.pathname.split('/').pop() + global.location.search);
-    return rechazo(ahora ? 'Tu sesión cambió en otra pestaña' : 'Tu sesión se cerró en otra pestaña',
-      ahora ? 'En otra pestaña se entró con otra cuenta. No se guardó nada, para no mezclar tus datos con los de otra persona.'
-        : 'En otra pestaña se salió de tu cuenta. No se guardó nada.',
-      { href: `entrar.html?volver=${volver}`, texto: 'Vuelve a entrar con tu cuenta' }, 'sesion_cambio');
+    const volver = { href: `entrar.html?volver=${encodeURIComponent(global.location.pathname.split('/').pop() + global.location.search)}` };
+    const usted = Boolean(global.APD_MENSAJES_USTED);
+    if (ahora) {
+      return rechazo(usted ? 'Su sesión cambió en otra pestaña' : 'Tu sesión cambió en otra pestaña',
+        `En otra pestaña se entró con otra cuenta. No se guardó nada, para no mezclar ${usted ? 'sus' : 'tus'} datos con los de otra persona.`,
+        { ...volver, texto: usted ? 'Vuelva a entrar con su cuenta' : 'Vuelve a entrar con tu cuenta' }, 'sesion_cambio');
+    }
+    return rechazo(usted ? 'Su sesión terminó' : 'Tu sesión terminó',
+      sinSesion || (usted ? 'No se guardó nada: vuelva a entrar y haga otra vez el cambio.' : 'No se guardó nada: vuelve a entrar y haz otra vez el cambio.'),
+      { ...volver, texto: 'Entrar' }, 'sesion_cambio');
   }
 
   /* ----- Doble clic: un botón propio que guarda queda deshabilitado mientras guarda -----
@@ -292,6 +302,11 @@
     for (const b of bs) { OCUPADOS.add(b); b.setAttribute('aria-disabled', 'true'); b.setAttribute('aria-busy', 'true'); }
     return () => { for (const b of bs) { OCUPADOS.delete(b); b.removeAttribute('aria-disabled'); b.removeAttribute('aria-busy'); } };
   }
+
+  /* ----- Regiones vivas: un anuncio por acción (auditoría 2026-10-20, B4-03) -----
+     escribe(nodo, texto) cambia el texto de una región viva sólo si es otro: volver a escribir el mismo texto lo vuelve a
+     anunciar (el nombre del mes en cada flecha del calendario, el resumen del cotejo en cada respuesta). */
+  function escribe(nodo, texto) { if (nodo && nodo.textContent !== texto) nodo.textContent = texto; }
 
   /* ----- Adscripción (decisiones 2026-10-15): es de la persona; cada solicitud copia la que tenga al enviarse ----- */
   const ADSCRIPCIONES = {
@@ -533,13 +548,34 @@
      <p class="linea-datos"> con cada dato en <span class="linea-datos-item">, que no se parte (si no cabe, pasa completo al
      renglón siguiente), y los puntos medios en el texto. Una parte es texto o una lista de nodos; clase, la propia de la
      pantalla, si la lleva. */
+  /* B4-06 (auditoría 2026-10-20; falla del estándar, P187): un dato que no cabe ni en una línea entera
+     (con el espaciado de texto de WCAG 1.4.12 en 320 px) se marca [data-ancho] y se parte por dentro (app/apd.css); los
+     demás siguen enteros. Se revisa cada vez que la línea cambia de tamaño. Se recuerda el ancho que pedía el dato entero
+     para no marcarlo y desmarcarlo sin fin. */
+  const anchoEntero = new WeakMap();
+  const vigilaLinea = typeof ResizeObserver === 'function' ? new ResizeObserver((entradas) => {
+    for (const { target: linea } of entradas) {
+      // La línea puede ensancharse con su contenido (una rejilla que crece con lo que no se parte): se mide también contra
+      // la ventana, con el mismo margen a los dos lados
+      const izq = linea.getBoundingClientRect().left;
+      const caja = Math.min(linea.clientWidth, document.documentElement.clientWidth - 2 * Math.max(0, izq));
+      if (!linea.clientWidth || caja <= 0) continue;
+      for (const i of linea.querySelectorAll('.linea-datos-item')) {
+        const pide = i.hasAttribute('data-ancho') ? anchoEntero.get(i) || 0 : i.getBoundingClientRect().width;
+        if (!i.hasAttribute('data-ancho') && pide > caja + 0.5) { anchoEntero.set(i, pide); i.setAttribute('data-ancho', ''); }
+        else if (i.hasAttribute('data-ancho') && pide <= caja) i.removeAttribute('data-ancho');
+      }
+    }
+  }) : null;
   function lineaDatos(partes, clase) {
     const hijos = [];
     partes.filter(Boolean).forEach((p, i) => {
       if (i) hijos.push(document.createTextNode(' · '));
       hijos.push(el('span', { class: 'linea-datos-item' }, typeof p === 'string' ? [document.createTextNode(p)] : p));
     });
-    return el('p', { class: clase ? `linea-datos ${clase}` : 'linea-datos' }, hijos);
+    const linea = el('p', { class: clase ? `linea-datos ${clase}` : 'linea-datos' }, hijos);
+    if (vigilaLinea) vigilaLinea.observe(linea);
+    return linea;
   }
 
   /* Cabecera de sesión en las pantallas con cuenta */
@@ -849,7 +885,7 @@
   const mesesCita = (datos) => parametro(datos, 'meses_adelanto_cita') || 6;
 
   global.APD = {
-    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa,
+    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, MESES, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,

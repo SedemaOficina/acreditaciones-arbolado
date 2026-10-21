@@ -44,6 +44,26 @@
 
     /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) */
     const elegidasDe = new Map();
+    /* Barra de elegidas (auditoría 2026-10-20, B4-01; decisión 1 a y c de Liber): desde 760 px va fija al pie de «En
+       espera». Para que el foco del teclado no quede debajo de ella, la página reserva su alto real al desplazarse
+       (scroll-padding-bottom, medido con un ResizeObserver y al cambiar la ventana); si la barra mide más de un cuarto de
+       la ventana, deja de ser fija ([data-suelta] en app/apd.css) y no se reserva nada. Lo que se ve no cambia cuando la
+       barra cabe. */
+    const barraPie = $('[data-barra]');
+    const anchoFija = matchMedia('(min-width: 760px)');
+    const ajustaBarra = () => {
+      const alto = barraPie.hidden ? 0 : barraPie.getBoundingClientRect().height;
+      const suelta = anchoFija.matches && alto > innerHeight / 4;
+      const cambia = suelta !== barraPie.hasAttribute('data-suelta');
+      barraPie.toggleAttribute('data-suelta', suelta);
+      // Si la barra cambia de lugar con el foco dentro (p. ej., al aparecer «No se agregó a nadie»), el foco sigue a la vista
+      if (cambia && barraPie.contains(document.activeElement)) document.activeElement.scrollIntoView({ block: 'nearest' });
+      const raiz = document.documentElement.style;
+      if (anchoFija.matches && alto && !suelta) raiz.scrollPaddingBottom = `calc(${Math.ceil(alto)}px + var(--e-2))`;
+      else raiz.removeProperty('scroll-padding-bottom');
+    };
+    new ResizeObserver(ajustaBarra).observe(barraPie);
+    addEventListener('resize', ajustaBarra);
     /* ----- Selector de cursos ----- */
     const botones = P.CURSOS.map(([t, m]) => {
       const lista = P.enEspera(datos, t, m);
@@ -61,6 +81,8 @@
         modoGrupo = null;
         noRecibe = null;
         pinta();
+        // La cuenta del curso se ve siempre y se anuncia sólo al cambiar de curso (auditoría 2026-10-20, RI-04)
+        FormKit.anuncia($('[data-cuenta]').textContent);
       });
       return b;
     });
@@ -212,7 +234,7 @@
           return fila;
         }
         const propias = b.xs.map((x) => persona(x, false));
-        const { bloque } = P.bloqueEspera(b, `bloque-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => pintaEleccion());
+        const { bloque } = P.bloqueEspera(b, `bloque-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => pintaEleccion(true));
         return bloque;
       });
       $('[data-personas]').replaceChildren(...(bloques.length ? bloques : [el('p', { class: 'texto-gris', texto: soloOrg ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
@@ -225,10 +247,13 @@
       const error = $('[data-error-eleccion]');
       error.hidden = true;
       const elegidas = () => filas.filter((f) => f.k.checked);
-      function pintaEleccion() {
+      /* Cuántas van elegidas: se ve siempre en la barra y se anuncia sólo cuando quien arma el grupo marca o desmarca (una
+         casilla o un bloque), no al pintar la pantalla (auditoría 2026-10-20, RI-04) */
+      function pintaEleccion(porPersona) {
         elegidasDe.set(clave, new Set(elegidas().map((f) => f.x.s.folio)));
         const n = elegidas().length;
         $('[data-elegidas]').textContent = n ? plural(n, 'elegida', 'elegidas') : 'Ninguna elegida';
+        if (porPersona === true || (porPersona && porPersona.isTrusted)) FormKit.anuncia($('[data-elegidas]').textContent);
         if (n) { error.hidden = true; for (const x of document.querySelectorAll('.falta-marcar')) x.classList.remove('falta-marcar'); }
       }
       /* Lo que impide agregar a ese grupo → [título, texto] o null (como en la espera; la base lo vuelve a revisar) */
@@ -342,7 +367,8 @@
     function libre(tipo, modalidad, lunes, domingo) {
       const programar = (desde, texto) => el('a', { class: 'plan-programar-semana', href: `programar.html?curso=${clave}&semana=${desde}` }, [APD.icono('mas'), el('span', { texto })]);
       const razon = P.razonNoInicio(datos, tipo, modalidad, lunes);
-      if (!razon) return programar(lunes, 'Programar un curso esta semana');
+      // Cada enlace dice también su semana (auditoría 2026-10-20, B4-07: eran 5 enlaces con el mismo nombre)
+      if (!razon) { const a = programar(lunes, 'Programar un curso esta semana'); a.append(el('span', { class: 'solo-lector', texto: ` (${APD.rangoFechas(lunes, domingo, hoy.slice(0, 4))})` })); return a; }
       let primero = null;
       for (let d = APD.sumaDias(lunes, 1); d <= domingo; d = APD.sumaDias(d, 1)) if (!P.razonNoInicio(datos, tipo, modalidad, d)) { primero = d; break; }
       const linea = el('p', { class: 'plan-semana-no', texto: `El lunes ya no se puede: ${razon.texto}.${primero ? ` Desde el ${APD.diaSemana(primero)} ${fecha(primero).slice(0, 5)} sí, a media semana.` : ''}` });
@@ -400,10 +426,11 @@
       }
       if (integra && falta <= 0) acciones.push(botonConfirmar(x));
       if (integra) {
+        const texto = pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana';
         acciones.push(el('a', { class: `btn ${pasada ? 'btn-primario' : 'btn-secundario'} btn-chico`, href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
-          texto: pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana' }));
+          'aria-label': `${texto} de ${x.calculado} · ${g.folio}`, texto }));
       }
-      acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado}`, texto: 'Ver a las personas' }));
+      acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado} · ${g.folio}`, texto: 'Ver a las personas' }));
       partes.push(el('div', { class: 'plan-grupo-acciones' }, acciones));
       return el('article', { class: 'plan-grupo', 'data-grupo': g.folio, 'data-situacion': g.estado }, partes);
     }

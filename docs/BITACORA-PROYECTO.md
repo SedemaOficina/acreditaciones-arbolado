@@ -1420,3 +1420,35 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   máximo de tres días hábiles, y si no, estrado electrónico; art. 82 de la Ley de Procedimiento Administrativo) y, en
   P137, el consentimiento para la huella digital, que es dato sensible. P31, P50 y P139 citan las leyes vigentes. El
   campo `lineamientos` de los pendientes pasa a la versión 0.5 (los números de artículo no cambian).
+
+## 2026-10-20 · Bloque 86 · Auditoría de seguimiento: pantallas, accesibilidad, textos y peso
+
+- Última parte de la auditoría del 19/10 (lo que se pospuso hasta tener el estándar 1.5.1): A6, B1, B4 completa, B6,
+  C1 a C6 y D4, sobre `d58c611`. Cinco revisores en paralelo y uno independiente, en solo lectura (huellas sin cambios).
+- Resultado (`docs/AUDITORIA-2026-10-20.md`): 0 críticos, 1 alto (B4-01: en «Grupos», la barra fija tapa la casilla
+  enfocada), 16 medios, 45 bajos, 5 informativos y 13 fallas del estándar sin clave. axe sin violaciones en más de 1,000
+  corridas; todo se puede hacer con teclado; 0 enlaces rotos; un solo trato por público.
+- Informes de cada revisor y guiones para repetirla en `docs/auditoria-2026-10-20/`. Nada se corrigió: el plan va en
+  bloques y espera las decisiones del dueño.
+
+## 2026-10-20 · Bloque 87 · Correcciones de la auditoría de seguimiento: foco, accesibilidad, mensajes y continuidad
+
+- Bloques 1 y 2 del plan de `docs/AUDITORIA-2026-10-20.md` (sección 11), aprobados por Liber. Cada hallazgo con la
+  misma prueba antes (falla) y después (pasa), y una prueba permanente.
+- **Foco y accesibilidad.** B4-01 (el único alto): en «Grupos», la barra de elegidas reserva su alto
+  (`scroll-padding-bottom` medido con `ResizeObserver`) y deja de ser fija si pasa de un cuarto de la ventana; con
+  volumen, las casillas tapadas al recorrer con Tab bajan de 56, 75 y 75 a 0 en 1440, 1280 y 1024. RI-02 (los botones de
+  día y mes conservan el foco en su límite), RI-06 y RI-08 (foco y texto del visor en Revisar y el cotejo), RI-09 y
+  Citas (avisos que ya no son alerta en cada carga), B4-03, RI-03 y RI-04 (un anuncio por acción: de 31 pasos con más
+  de uno a 3, que son del estándar), B1-03 (reserva del menú de pruebas), B4-05 (sección actual subrayada), B4-06
+  (espaciado de texto de 1.4.12 sin desborde a 320 px), B4-07 (enlaces con nombres distintos) y A6-01 (marcador de
+  posición a 4.71:1 o más).
+- **Mensajes y continuidad.** B6-01 («Tu sesión terminó…», con el texto adaptado en las dos pantallas sin borrador),
+  B6-02 («Crea tu cuenta» avisa antes de salir y recupera lo escrito, sin contraseña ni fotografía; excepción a FRM-43,
+  P189), B6-03 («Atrás» después de recargar), B6-04 y D4-03 (la versión va escrita en cada página como
+  `<meta name="sia-version">`: 0 descargas de `VERSION`, antes 48), B1-02, B1-04, B1-05 y C5-02 a C5-04.
+- **Estándar.** Las 13 fallas sin clave de la sección 9 y tres más que salieron al corregir quedan como P173 a P188;
+  los rodeos en `sitio/app/` citan su número.
+- Pruebas: `probar-sitio` 1154 (con axe; 58 nuevas, partes `SOLO=foco` y `SOLO=continuidad`), `probar-examen` 79,
+  `probar-volumen` 82 (14 nuevas), `auditar-sitio` con los mismos 2 avisos en 65 pantallas (antes 60),
+  `probar-esquemas` 131. Evidencia de cada corrección fuera del repositorio, con el auditor.

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.61">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Crear tu cuenta · Acreditaciones de arbolado urbano</title>
@@ -45,7 +46,23 @@
       <p>¿Vas a crear la cuenta de otra persona? <button type="button" class="btn-enlace" data-salir-crear>Sal de esta cuenta</button> y llena el formulario.</p></div>
   </div>
 
-  <form id="formulario" class="tarjeta" data-formkit action="#" method="post">
+  <!-- Lo escrito en este dispositivo (auditoría 2026-10-20, B6-02; decisión 6 de Liber, «avisar y recuperar»): el borrador
+       del núcleo y su franja, como la solicitud. Sin la contraseña ni la fotografía (ningún archivo). Datos de identidad y
+       contacto, sí: lo decidió Liber (excepción a FRM-43 del estándar; app/cuenta.js). Se borra al crear la cuenta. -->
+  <div class="franja" data-franja-borrador hidden>
+    <p class="franja-texto">Tienes una cuenta sin crear guardada en este dispositivo, con lo que habías escrito. La contraseña y la fotografía no se guardan: tendrás que ponerlas otra vez.</p>
+    <button type="button" class="btn btn-secundario" data-borrador="recuperar">Recuperar lo que escribiste</button>
+    <button type="button" class="btn btn-secundario" data-borrador="descartar">Empezar de nuevo</button>
+    <div class="aviso aviso-advertencia" data-borrador-confirma hidden>
+      <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+      <div class="aviso-texto"><p><strong class="aviso-titulo">¿Descartar lo que escribiste?</strong> Se borra de este dispositivo y no se puede deshacer.</p>
+        <div class="acciones"><button type="button" class="btn-enlace" data-borrador="conservar">Conservar</button><button type="button" class="btn btn-peligro" data-borrador="descartar-si">Descartar</button></div></div>
+    </div>
+  </div>
+  <!-- Sin rol de región viva: FormKit.anuncia lo escribe aquí y lo anuncia una sola vez (como la solicitud, RI-03) -->
+  <p class="nota-borrador" data-borrador-recuperado hidden></p>
+
+  <form id="formulario" class="tarjeta" data-formkit data-borrador="apd.borrador.cuenta" data-borrador-version="1" action="#" method="post">
     <h2 class="titulo-paso">Crea tu cuenta</h2>
     <p class="bajada">Una cuenta por persona, ligada a tu CURP. Ten a la mano tu CURP y una fotografía de frente, o tómala con tu teléfono. Si ya tuviste una acreditación de la Secretaría, la verás en tu historial.</p>
     <!-- Sólo en la versión de prueba (auditoría integral, alta 1): lo cargado se queda en este navegador. -->

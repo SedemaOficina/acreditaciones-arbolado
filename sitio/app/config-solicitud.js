@@ -132,7 +132,8 @@ window.FORMKIT_OPCIONES = {
           const [tipo, modalidad] = document.getElementById('tramite').value.split('_');
           const continua = new URLSearchParams(location.search).get('folio');
           const ahora = new Date().toISOString();
-          const sesion = APD.sesionCambio();
+          // Sin sesión, lo capturado sigue en el borrador de este dispositivo (B6-01): se recupera al volver a entrar
+          const sesion = APD.sesionCambio('No se envió nada, pero lo que capturaste sigue en este dispositivo: vuelve a entrar y continúa.');
           if (sesion) return Promise.reject(sesion);
           const p = APD.personaDeSesion(datos);
           if (!p) return Promise.reject(APD.rechazo('Tu cuenta no está activa', 'No se envió tu solicitud. Vuelve a entrar; si no puedes, pide ayuda a la Secretaría.', { href: 'entrar.html', texto: 'Entrar' }, 'sesion_cambio'));

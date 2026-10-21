@@ -70,6 +70,8 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     // A3 y M6: citas de días anteriores sin registrar y pausa vencida
     await ir('citas.html', '[data-filas] tr');
     comprueba(/3 citas de días anteriores están sin registrar/.test(await texto('[data-atrasadas]')), t('citas: aviso de las 3 citas de días anteriores sin registrar'));
+    // Como RI-09 en «Asistencia» (auditoría 2026-10-20): se ve, pero no es una alerta que suene en cada carga
+    comprueba(await pg.isVisible('[data-atrasadas] .aviso') && !(await pg.$('[data-atrasadas] [role="alert"]')), t('citas (como RI-09): el aviso de las citas sin registrar se ve, pero no es una alerta que suene al cargar'));
     await pg.click('[data-atrasadas] button');
     comprueba((await pg.locator('[data-filas] tr:visible', { hasText: 'Sin registrar' }).count()) === 3, t('citas: el botón lleva al día con las 3 citas «Sin registrar»'));
     await sinDesborde('citas');
@@ -171,6 +173,87 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
 
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
   await ctx.close();
+}
+
+// B4-01, B1-01 y RI-01 (auditoría 2026-10-20; decisión 1 a y c): en «Grupos», con la espera de 66 personas, la barra de
+// elegidas no tapa la casilla enfocada en las tres computadoras. Se recorre con Tab (y con Mayúsculas+Tab) toda la
+// pantalla y se cuenta cada parada que queda oculta por completo por algo fijo o pegajoso (cinco puntos: el centro y las
+// cuatro esquinas, como foco-recorrido.mjs del revisor independiente). La barra, que aquí mide más de un cuarto de la
+// ventana, deja de ser fija.
+for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
+  const tam = `${w}×${h}`;
+  const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+  await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
+  const pg = await ctx.newPage();
+  try {
+    await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await pg.waitForSelector('.plan-persona input');
+    // La barra ya se ve y pasaron dos cuadros (su ResizeObserver ya la midió)
+    await pg.waitForSelector('.plan-barra:not([hidden])');
+    await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
+    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height }; });
+    comprueba(barra.alto <= h / 4 || barra.pos === 'static', `[${tam}] grupos con volumen: la barra de elegidas (${Math.round(barra.alto)} px, ${Math.round(barra.alto / h * 100)} % de la ventana) deja de ser fija si mide más de un cuarto`);
+    for (const tecla of ['Tab', 'Shift+Tab']) {
+      await pg.evaluate(() => { window.scrollTo(0, 0); document.activeElement && document.activeElement.blur(); });
+      let paradas = 0; let casillas = 0; const ocultas = [];
+      for (let k = 0; k < 400; k++) {
+        await pg.keyboard.press(tecla);
+        const m = await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(() => {
+          const a = document.activeElement;
+          if (!a || a === document.body) return listo(null);
+          const fijos = [...document.querySelectorAll('body *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && !x.contains(a) && x.checkVisibility());
+          const r = a.getBoundingClientRect();
+          const puntos = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 1, r.top + 1], [r.right - 1, r.top + 1], [r.left + 1, r.bottom - 1], [r.right - 1, r.bottom - 1]]
+            .filter(([x, y]) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+          const tapado = puntos.length > 0 && puntos.every(([x, y]) => { const e = document.elementFromPoint(x, y); return e && fijos.some((f) => f.contains(e)); });
+          listo({ casilla: a.matches('.plan-casilla, .plan-bloque input'), tapado, nombre: (a.getAttribute('aria-label') || a.closest('label, .plan-persona')?.textContent || a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40), primero: window.__primero === a, marca: (window.__primero = window.__primero || a) });
+        }))));
+        if (!m) continue;
+        if (m.primero && paradas > 0) break;
+        paradas += 1; if (m.casilla) casillas += 1;
+        if (m.tapado) ocultas.push(m.nombre);
+      }
+      await pg.evaluate(() => { window.__primero = null; });
+      comprueba(casillas >= 66 && ocultas.length === 0, `[${tam}] grupos con volumen, ${tecla}: ninguna de las ${paradas} paradas (${casillas} casillas) queda oculta por completo por la barra${ocultas.length ? `: ${ocultas.length}, p. ej. «${ocultas[0]}»` : ''}`);
+    }
+  } catch (e) { comprueba(false, `[${tam}] grupos con volumen, foco no oculto: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+  await ctx.close();
+}
+
+// RI-09 y B4-03 (auditoría 2026-10-20): en «Asistencia» del grupo de 25 con el día 2 sin capturar, «Falta capturar el día
+// 2» se ve pero no es una alerta que suene en cada carga, y los totales se anuncian sólo al marcar a alguien. Se observa
+// cada cambio de texto de las regiones vivas (como guiones/ri/gestion-foco.mjs).
+{
+  const ctx = await navegador.newContext({ viewport: { width: 1280, height: 720 }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+  await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
+  await ctx.addInitScript(() => {
+    const SEL = '[aria-live]:not([aria-live="off"]),[role="status"],[role="alert"],output';
+    const ev = (window.__vivas = []); const ult = new WeakMap(); window.__marca = 0;
+    const revisa = () => { for (const r of document.querySelectorAll(SEL)) { const t = r.checkVisibility() || r.closest('.solo-lector') ? r.textContent.replace(/\s+/g, ' ').trim() : ''; const a = ult.get(r); ult.set(r, t); if (t && t !== a) ev.push({ marca: window.__marca, rol: r.getAttribute('role') || '', texto: t }); } };
+    let pend = false;
+    new MutationObserver(() => { if (pend) return; pend = true; queueMicrotask(() => { pend = false; revisa(); }); }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live'] });
+  });
+  const pg = await ctx.newPage();
+  const de = (k) => pg.evaluate((m) => window.__vivas.filter((e) => e.marca === m && !/^\(vacío\)$|_/.test(e.texto)), k);
+  try {
+    await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-024');
+    await pg.waitForSelector('.asistencia-fila');
+    await pg.waitForFunction(() => /asisti/.test(document.querySelector('[data-totales]').textContent));
+    await pg.evaluate(() => new Promise((listo) => setTimeout(listo, 300)));
+    const alCargar = await de(0);
+    comprueba(/Falta capturar el día 2/.test(await texto('[data-avisos]')) && !(await pg.$('[data-avisos] [role="alert"]')) && !alCargar.some((e) => e.rol === 'alert'),
+      'asistencia (RI-09): «Falta capturar el día 2» se ve, pero no es una alerta que suene al cargar');
+    comprueba(!alCargar.some((e) => /sin marcar|asisti/.test(e.texto)), `asistencia (B4-03): al cargar no se anuncian los totales (${alCargar.map((e) => e.texto.slice(0, 40)).join(' | ') || 'nada'})`);
+    await pg.evaluate(() => { window.__marca = 1; });
+    await pg.focus('.asistencia-fila .asis-opcion-input:not([disabled])');
+    await pg.keyboard.press('Space');
+    await pg.waitForFunction(() => window.__vivas.some((e) => e.marca === 1), null, { timeout: 4000 }).catch(() => {});
+    await pg.evaluate(() => new Promise((listo) => setTimeout(listo, 300)));
+    const marcar = await de(1);
+    comprueba(marcar.length === 1 && /1 asistió/.test(marcar[0].texto), `asistencia (B4-03): marcar a una persona anuncia los totales una vez (${marcar.map((e) => e.texto).join(' | ')})`);
+  } catch (e) { comprueba(false, `asistencia, anuncios: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+  await ctx.close();
+  async function texto(sel) { return pg.textContent(sel); }
 }
 await navegador.close();
 console.log(fallas ? `\n${fallas} de ${total} comprobación(es) fallida(s).` : `\nLas ${total} comprobaciones, correctas.`);

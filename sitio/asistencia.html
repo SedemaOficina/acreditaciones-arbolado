@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.61">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Asistencia · Personal · Acreditaciones de arbolado urbano</title>
@@ -50,7 +51,8 @@
 
     <div data-personas aria-labelledby="t-asistencia"></div>
     <div class="asis-pie" data-acciones>
-      <p class="asis-totales" role="status" data-totales></p>
+      <!-- Se ve siempre; se anuncia desde app/asistencia.js sólo cuando se marca a alguien (auditoría 2026-10-20, B4-03) -->
+      <p class="asis-totales" data-totales></p>
       <!-- Junto al botón: lo que no se pudo guardar o lo que se acaba de marcar (APD.pintaAviso) -->
       <div data-falta-marcar hidden></div>
       <div class="acciones-grupo">

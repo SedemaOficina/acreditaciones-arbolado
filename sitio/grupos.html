@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.61">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Grupos · Personal · Acreditaciones de arbolado urbano</title>
@@ -43,7 +44,8 @@
   <div class="plan-cursos" role="group" aria-label="Curso" data-cursos></div>
   <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
   <div class="plan-hecho" data-hecho hidden></div>
-  <p class="resumen-filtro" role="status" data-cuenta></p>
+  <!-- Se anuncia al cambiar de curso desde app/grupos.js (auditoría 2026-10-20, RI-04): no es región viva -->
+  <p class="resumen-filtro" data-cuenta></p>
 
   <div class="plan">
     <section class="plan-espera" aria-labelledby="t-espera">
@@ -56,7 +58,8 @@
       <div class="plan-personas" data-personas></div>
       <!-- Cuenta de elegidas y botones, fijos al pie de la columna mientras se recorre la lista -->
       <div class="plan-barra" data-barra hidden>
-        <p class="plan-barra-cuenta" id="plan-elegidas" role="status" data-elegidas>Ninguna elegida</p>
+        <!-- Se anuncia al marcar o desmarcar desde app/grupos.js (RI-04): no es región viva -->
+        <p class="plan-barra-cuenta" id="plan-elegidas" data-elegidas>Ninguna elegida</p>
         <!-- Lo que impidió agregar, junto a los botones (APD.pintaAviso) -->
         <div data-error-eleccion hidden></div>
         <div class="plan-barra-acciones" data-destinos></div>
