@@ -177,7 +177,7 @@
   }
   /* Día de una cita (AAAA-MM-DD) y su hora (HH:MM), en hora de la Ciudad de México */
   const diaDe = APD.diaDe;
-  const horaDe = (iso) => new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+  const horaDe = APD.hora;
   /* Número de expediente que se abriría hoy: consecutivo por año y sin huecos, como apd.asignar_expediente.
      Formato provisional EXP-AAAA-NNNN. */
   function siguienteExpediente(datos) {
@@ -354,16 +354,19 @@
     const fin = APD.sumaDias(inicio, c.dias_duracion - 1);
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días (el curso empieza al menos ${anticipacion} días después de confirmarlo)` };
-    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año (el curso empieza a más tardar un año después de hoy, el ${APD.fecha(ultimoDiaPosible(datos))})` };
+    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año (el curso empieza a más tardar un año después de hoy, el ${APD.fechaCorta(ultimoDiaPosible(datos))})` };
     const otro = choques(datos, tipo, modalidad, inicio, fin, exceptoId)[0];
     if (otro) return { clave: 'otro_curso', texto: `ya hay un curso de ${APD.cursoCorto(tipo, modalidad).toLowerCase()} esas fechas (${APD.nombreGrupo(otro, datos, { sinCurso: true }).toLowerCase()}, ${otro.folio})`, grupo: otro };
     const inhabiles = diasInhabiles(datos);
     const dia = inhabiles.find((d) => d >= inicio && d <= fin);
-    if (dia) return { clave: 'inhabil', texto: `el ${APD.diaMes(dia)} es día inhábil [por confirmar con el calendario oficial]` };
+    if (dia) return { clave: 'inhabil', texto: `el ${APD.fechaCorta(dia)} es día inhábil [por confirmar con el calendario oficial]` };
     return null;
   }
   /* Bloques de la espera (propuesta A): las personas de una misma organización van juntas, en un bloque que ocupa el
-     lugar de quien más espera de ellas; las demás (independientes o solas de su organización), una por una, en su orden. */
+     lugar de quien más espera de ellas; las demás (independientes o solas de su organización), una por una, en su orden.
+     En renovación (decisión 11 b de Liber, auditoría 2026-10-20, C1-03) la lista ya va por vencimiento: cada bloque
+     ocupa el lugar de la primera de su gente en vencer (su vencimiento más antiguo) y, dentro, van primero las que ya
+     vencieron. Así conviven «por vencimiento» (DECISIONES, 14/10) y «agrupada por adscripción» (DECISIONES, 17/10). */
   function bloquesEspera(lista) {
     const cuenta = {};
     for (const x of lista) if (x.s.organizacion_id) cuenta[x.s.organizacion_id] = (cuenta[x.s.organizacion_id] || 0) + 1;
@@ -376,12 +379,23 @@
         b.xs.push(x);
       } else bloques.push({ clave: `sola:${x.s.folio}`, nombre: x.organizacion, junta: false, xs: [x] });
     }
+    // Dentro de cada bloque, primero las vencidas (sort estable: lo demás conserva su orden)
+    for (const b of bloques) b.xs.sort((a, c) => Number(Boolean(c.vencida)) - Number(Boolean(a.vencida)));
     return bloques;
   }
   /* Las que más esperan, hasta n lugares: por bloques completos, para que una organización no se separe; un bloque que no
-     cabe se salta y sigue el siguiente. filtro (opcional) deja sólo a quien puede ir (un grupo de una organización). */
+     cabe se salta y sigue el siguiente. filtro (opcional) deja sólo a quien puede ir (un grupo de una organización).
+     En renovación, primero todas las que ya vencieron (no pueden trabajar mientras esperan), aunque eso parta el bloque
+     de su organización; después, las demás por bloques (decisión 11 b, auditoría 2026-10-20, C1-03). */
   function lasQueMasEsperan(lista, n, filtro) {
-    const candidatas = filtro ? lista.filter(filtro) : lista;
+    const todas = filtro ? lista.filter(filtro) : lista;
+    const vencidas = todas.filter((x) => x.vencida).slice(0, Math.max(0, n));
+    if (vencidas.length) {
+      const resto = todas.filter((x) => !x.vencida);
+      // (con filtro, el resto también una por una: ya está filtrado)
+      return vencidas.concat(vencidas.length < n ? lasQueMasEsperan(resto, n - vencidas.length, filtro ? () => true : undefined) : []);
+    }
+    const candidatas = todas;
     // En un grupo de una organización, o si todas las que esperan son de la misma, no hay a quién no separar: se toman
     // una por una, en su orden (auditoría «intentar romperlo», F3 M4: un bloque de 13 no cabía en 2 lugares y no se
     // proponía a nadie)
@@ -401,7 +415,7 @@
     const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
     const espera = [x.prioritaria ? estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias })];
     // «Vencida el …» y «Vence el …», con la misma mayúscula (auditoría 2026-10-20, C5-04)
-    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `Vence el ${APD.fecha(x.vence)}` }));
+    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fechaCorta(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `Vence el ${APD.fechaCorta(x.vence)}` }));
     return el('label', { class: 'plan-persona' }, [casilla,
       el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
       el('span', { class: 'plan-persona-espera' }, espera),
@@ -497,6 +511,21 @@
      pasó sin capturar se señala aparte («Sin capturar»), como en la captura.
      marco: el [data-tabla] con [data-conc-encabezado], [data-conc-filas] y [data-conc-leyenda].
      El pase de lista ya viene en datos.asistencia (en la prueba lo aplica APD.cargar; en el SIA, apd.asistencia). */
+  /* ¿Se quedó sin derecho a examen por faltas? Las faltas registradas antes del día del examen contra las permitidas
+     (dias_duracion − dias_minimos_asistencia). Lo usan el concentrado y la lista de personas de la ficha del grupo, para
+     que digan lo mismo (auditoría 2026-10-20, C4-07: la lista decía «Inscrita» a quien el concentrado marcaba «Sin
+     derecho»). */
+  function sinDerechoPorFaltas(datos, x, insId) {
+    const { c } = x;
+    if (!c) return false;
+    const ultimo = c.dias_duracion;
+    let faltas = 0;
+    for (let n = 1; n <= ultimo; n++) {
+      const a = datos.asistencia.find((r) => r.inscripcion_id === insId && r.dia === n);
+      if (a && a.asistio === false && !(n === ultimo && ultimo > 1)) faltas += 1;
+    }
+    return faltas > c.dias_duracion - c.dias_minimos_asistencia;
+  }
   function pintaConcentrado(marco, datos, x) {
     const { g, c } = x;
     if (!marco || !c || !g.fecha_inicio) return;
@@ -510,7 +539,7 @@
     };
     const $$ = (s) => marco.querySelector(s);
     const dias = Array.from({ length: ultimo }, (_, k) => k + 1);
-    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fecha(fechaDia(n)).slice(0, 5)}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días', 'Examen']
+    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fechaCorta(fechaDia(n))}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días', 'Examen']
       .map((t) => el('th', { scope: 'col', texto: t })));
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const sols = Object.fromEntries(datos.solicitud.map((s) => [s.id, s]));
@@ -531,7 +560,7 @@
         if (f < hoy) return el('td', {}, [el('span', { class: 'conc-hueco', texto: 'Sin capturar' })]);
         return el('td', { class: 'texto-gris', texto: f === hoy ? 'Hoy' : '—' });
       });
-      const sinDerecho = faltas > permitidas;
+      const sinDerecho = sinDerechoPorFaltas(datos, x, i.id);
       const derecho = el('span', { class: sinDerecho ? 'conc-sin-derecho' : 'texto-gris',
         texto: sinDerecho ? 'Sin derecho' : registro(i.id, ultimo) === true ? 'Lo presentó' : faltas === permitidas && faltas ? 'Ya no puede faltar' : 'Con derecho' });
       return el('tr', {}, [el('td', { texto: quien }), ...celdas, el('td', { class: 'sin-corte', texto: `${asistidos} de ${ultimo}` }), el('td', {}, [derecho])]);
@@ -547,5 +576,5 @@
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
-    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };
+    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas };
 }(window));

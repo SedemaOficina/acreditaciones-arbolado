@@ -57,12 +57,60 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
 
   });
 
+  // C1-02 (auditoría 2026-10-20; decisión 14 a de Liber): la fotografía con que se confirma la identidad es una miniatura
+  // de 96 px que se amplía ahí mismo a unos 320 px (en teléfono, al ancho de la tarjeta) con clic o con el teclado
+  await paso('aplicar: fotografía ampliable', async () => {
+    await ir('aplicar.html?folio=APD-G-2026-020', '[data-filas] tr .examen-foto-boton img');
+    const foto = '[data-filas] tr:first-child .examen-foto-lista';
+    const ancho = () => pg.$eval(foto, (f) => Math.round(f.getBoundingClientRect().width));
+    const mini = await ancho();
+    await pg.click(foto);
+    await pg.waitForFunction((s) => document.querySelector(s).getBoundingClientRect().width > 200, foto);
+    const grande = await ancho();
+    const dentro = await pg.$eval(foto, (f) => { const r = f.getBoundingClientRect(); const t = f.closest('tr').getBoundingClientRect(); return r.right <= t.right + 1; });
+    await pg.keyboard.press('Enter');
+    await pg.waitForFunction((s) => document.querySelector(s).getBoundingClientRect().width < 120, foto);
+    const nombre = await pg.getAttribute('[data-filas] tr:first-child .examen-foto-boton', 'aria-label');
+    comprueba(mini >= 96 && grande >= (tam === 'teléfono' ? 280 : 300) && dentro && /^Ampliar la fotografía de /.test(nombre),
+      t(`C1-02: la fotografía mide ${mini} px y se amplía a ${grande} px sin salirse de su renglón; con Intro se reduce («${nombre}»)`));
+    await sinDesborde('aplicar con la fotografía');
+  });
+
+  // C1-06 (auditoría 2026-10-20): APD-G-2026-006 y -020 se llaman igual (mismo curso, mismas fechas, una sola sede): en
+  // «Otros grupos en curso» el que se repite lleva su folio y cuántas personas tiene
+  await paso('aplicar: otros grupos con el mismo nombre', async () => {
+    await ir('aplicar.html?folio=APD-G-2026-020', '.otros-grupos a');
+    const enlaces = await pg.$$eval('.otros-grupos a', (l) => l.map((a) => a.textContent.trim()));
+    const actual = await texto('[data-grupo] .grupo-nombre');
+    const de006 = enlaces.find((x) => /APD-G-2026-006/.test(x)) || '';
+    comprueba(new Set(enlaces).size === enlaces.length && enlaces.every((x) => !x.startsWith(`${actual} (`)) && /· APD-G-2026-006 · 5 personas \(examen el/.test(de006),
+      t(`C1-06: «Otros grupos en curso» no repite el nombre del grupo en pantalla («${de006}»)`));
+  });
+
+  // C4-07 (auditoría 2026-10-20): en la ficha de un grupo en curso, la situación de la lista y la del concentrado coinciden
+  await paso('grupo en curso: situación y concentrado', async () => {
+    await ir('grupo.html?folio=APD-G-2026-020', '[data-conc-filas] tr');
+    const r = await pg.evaluate(() => {
+      const quien = (tr) => tr.querySelector('td').textContent.trim();
+      const conc = Object.fromEntries([...document.querySelectorAll('[data-conc-filas] tr')].map((tr) => [quien(tr), /Sin derecho/.test(tr.lastElementChild.textContent)]));
+      const lista = [...document.querySelectorAll('[data-filas] tr')].map((tr) => [quien(tr), /Sin derecho a examen/.test(tr.textContent), /Inscrita/.test(tr.textContent)]);
+      return { sinDerecho: Object.values(conc).filter(Boolean).length, distintas: lista.filter(([q, sd, ins]) => conc[q] !== sd || (conc[q] && ins)).map(([q]) => q) };
+    });
+    comprueba(r.sinDerecho === 4 && !r.distintas.length, t(`C4-07: grupo APD-G-2026-020, las ${r.sinDerecho} sin derecho del concentrado se ven así en la lista${r.distintas.length ? `; no coinciden: ${r.distintas.join(', ')}` : ''}`));
+  });
+
   await paso('asistencia', async () => {
     // A1 y M9: asistencia señala el día sin capturar y resume el grupo
     await ir('asistencia.html?folio=APD-G-2026-024', '.asistencia-fila');
     comprueba(/sin capturar/.test(await texto('[data-dias]')) && /Falta capturar el día 2/.test(await texto('[data-avisos]')), t('asistencia: el día 2 pasado sin capturar se señala arriba y en «Corregir otro día»'));
     comprueba(/asisti|falt/.test(await texto('[data-totales]')), t('asistencia: lo marcado se resume junto a «Guardar»'));
     await sinDesborde('asistencia');
+    // C1-05 (auditoría 2026-10-20): el aviso trae el enlace al día que falta, que abre ese día para capturarlo
+    const enlace = pg.locator('[data-avisos] a', { hasText: 'Capturar el día 2' });
+    comprueba((await enlace.count()) === 1 && /asistencia\.html\?folio=APD-G-2026-024&dia=2$/.test(await enlace.getAttribute('href')), t('C1-05: «Falta capturar el día 2» trae el enlace «Capturar el día 2»'));
+    await Promise.all([pg.waitForURL(/dia=2/), enlace.click()]);
+    await pg.waitForSelector('.asistencia-fila');
+    comprueba(/Corregir el día 2 de 5/.test(await texto('[data-titulo-dia]')), t('C1-05: el enlace abre el día 2 para capturarlo'));
 
   });
 
@@ -75,6 +123,18 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await pg.click('[data-atrasadas] button');
     comprueba((await pg.locator('[data-filas] tr:visible', { hasText: 'Sin registrar' }).count()) === 3, t('citas: el botón lleva al día con las 3 citas «Sin registrar»'));
     await sinDesborde('citas');
+    // C4-08 (auditoría 2026-10-20): la cuenta del día suma igual que la situación de sus filas; la que está en pausa no
+    // va «por atender». C1-07: con «Por atender» quedan las del día sin resultado (también la de la pausa)
+    await ir('citas.html', '[data-filas] tr');
+    const situaciones = async () => pg.$$eval('[data-filas] tr:not([hidden])', (l) => l.map((tr) => tr.querySelector('.estado').textContent.trim()));
+    const filasHoy = await situaciones();
+    const nPausa = filasHoy.filter((x) => /^En pausa/.test(x)).length;
+    const nPor = filasHoy.filter((x) => /^Por atender/.test(x)).length;
+    comprueba(nPausa === 1 && (await texto('[data-cuenta]')).trim() === `${filasHoy.length} citas: ${nPor} por atender, 1 en pausa.`,
+      t(`C4-08: «${(await texto('[data-cuenta]')).trim()}» con ${nPor} filas «Por atender» y ${nPausa} en pausa`));
+    await pg.selectOption('#ver', 'por-atender');
+    await pg.waitForFunction(() => /sin resultado/.test(document.querySelector('[data-cuenta]').textContent));
+    comprueba((await situaciones()).length === nPor + nPausa, t(`C1-07: con «Por atender» quedan las ${nPor + nPausa} citas de hoy sin resultado`));
     const pausa = d.solicitud.find((s) => s.cotejo_pausa && s.cita_en && s.cita_en.slice(0, 10) < hoy);
     await ir('citas.html', '[data-filas] tr');
     await pg.fill('#buscar', pausa.folio);
@@ -109,7 +169,54 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await pg.waitForSelector('[data-personas] .plan-casilla[value]');
     const casillas = await pg.$$eval('[data-personas] .plan-casilla[value]', (l) => [l.length, l.filter((k) => k.checked).length]);
     comprueba(casillas[0] === espera && casillas[1] > 0 && casillas[1] <= 25, t(`programar: lista a las ${casillas[0]} de ${espera} en espera y propone ${casillas[1]} (hasta 25)`));
+    // C3-01 (auditoría 2026-10-20; decisión de Liber, opción a): a la vista las propuestas; las demás, plegadas en
+    // «Cambiar a quiénes van (N más en espera)», y al desplegarlo se ven y se eligen
+    const vis = () => pg.$$eval('[data-personas] .plan-casilla[value]', (l) => l.filter((k) => k.checkVisibility()).map((k) => k.checked));
+    const antes = await vis();
+    const resumen = (await texto('[data-mas-espera] > summary.plegable-titulo')).trim();
+    const pantallas = await pg.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+    await pg.click('[data-mas-espera] > summary');
+    const despues = await vis();
+    const folioOtra = await pg.getAttribute('[data-mas-espera] .plan-casilla[value]:not(:checked)', 'value');
+    const otra = pg.locator(`[data-mas-espera] .plan-casilla[value="${folioOtra}"]`);
+    await otra.check();
+    comprueba(antes.length === casillas[1] && antes.every(Boolean) && resumen === `Cambiar a quiénes van (${espera - casillas[1]} más en espera)`
+      && despues.length === espera && await otra.isChecked() && (tam !== 'teléfono' || pantallas < 8.5),
+      t(`C3-01: «Programar» abre con las ${antes.length} propuestas a la vista y «${resumen}» plegado (${pantallas.toFixed(1)} pantallas); al desplegarlo se ven las ${despues.length} y se eligen`));
     await sinDesborde(`programar con ${espera} en espera`);
+  });
+
+  // C1-01 (auditoría 2026-10-20): arriba de la lista, cuántas son prioritarias («31 días o más», auditoría de tareas del
+  // 17/10) y cuántos grupos nuevos alcanzan (M7). Antes del paso que agrega personas a un grupo.
+  await paso('planeador: cifras de la espera', async () => {
+    await ir('grupos.html?curso=poda-nueva', '.plan-persona');
+    const n = (await pg.$$('.plan-persona')).length;
+    const prio = await pg.$$eval('.plan-persona', (l) => l.filter((x) => /prioritaria/.test(x.textContent)).length);
+    const nuevos = Math.floor(n / 25) + (n % 25 >= 5 ? 1 : 0);
+    const cuenta = (await texto('[data-cuenta]')).trim();
+    comprueba(n === 66 && prio === 38 && cuenta.includes(`${n} personas en espera (${prio} esperan 31 días o más)`) && cuenta.includes(`Alcanza para ${nuevos} grupos nuevos de hasta 25.`)
+      && (await pg.evaluate(() => document.querySelector('[data-cuenta]').compareDocumentPosition(document.querySelector('[data-personas]')) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      t(`C1-01: arriba de la lista, «${cuenta}»`));
+  });
+
+  // C1-03 (auditoría 2026-10-20; decisión 11 b de Liber): en renovación, el planeador y «Programar» muestran los bloques
+  // por su vencimiento más antiguo y, dentro, primero las vencidas; la propuesta toma primero a las vencidas (aunque
+  // parta un bloque) y el encabezado dice ese orden
+  await paso('espera de renovación', async () => {
+    for (const pantalla of ['grupos', 'programar']) {
+      await ir(`${pantalla}.html?curso=poda-renovacion`, '.plan-persona');
+      const r = await pg.evaluate(() => {
+        const unidades = [...document.querySelector('[data-personas]').children].map((n) => (n.matches('li') ? n.firstElementChild : n)).map((n) =>
+          [...(n.matches('.plan-bloque') ? n.querySelectorAll('.plan-persona') : [n])].map((f) => { const m = f.textContent.match(/(Vencida|Vence) el (\d{2})\/(\d{2})\/(\d{4})/); return { vencida: m[1] === 'Vencida', iso: `${m[4]}-${m[3]}-${m[2]}` }; }));
+        return { unidades, nota: (document.querySelector('[data-orden]') || document.querySelector('[data-propuesta]')).textContent };
+      });
+      const antigua = r.unidades.map((u) => u.map((p) => p.iso).sort()[0]);
+      const enOrden = antigua.every((f, i) => !i || antigua[i - 1] <= f);
+      const dentro = r.unidades.every((u) => u.every((p, i) => !i || !p.vencida || u[i - 1].vencida));
+      const cinco = await pg.evaluate(() => APD.cargar().then((x) => APD_PERSONAL.lasQueMasEsperan(APD_PERSONAL.enEspera(x, 'poda', 'renovacion'), 5).map((y) => y.vencida)));
+      comprueba(enOrden && dentro && cinco.length === 5 && cinco.every(Boolean) && /vencid|vencieron/.test(r.nota),
+        t(`C1-03: ${pantalla} de renovación, bloques por su vencimiento más antiguo, dentro primero las vencidas y la propuesta de 5 con ${cinco.filter(Boolean).length} vencidas («${r.nota.slice(0, 60)}…»)`));
+    }
   });
 
   await paso('planeador y programar', async () => {

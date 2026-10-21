@@ -380,8 +380,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.isHidden(zonaCurp) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] .lista-arch li'),
     t('documentos: con el archivo cargado ya no se ofrece «Elegir archivo»'));
   await page.click('[data-campo="doc_poda_nueva_curp"] .arch-quitar');
-  comprueba(await page.isVisible(zonaCurp) && /Un archivo de hasta 5 MB/.test(await page.textContent(`${zonaCurp} [data-limite-texto]`)),
-    t('documentos: al quitarlo vuelve «Elegir archivo», con «Un archivo de hasta 5 MB»'));
+  // El formato y el tamaño los dice una vez la bajada del paso, no cada zona (auditoría 2026-10-20, C3-02)
+  comprueba(await page.isVisible(zonaCurp) && !(await page.$(`${zonaCurp} [data-limite-texto]`)) && /sólo en PDF, de hasta 5 MB/.test(await page.textContent('[data-paso]:not([hidden]) .bajada')),
+    t('documentos: al quitarlo vuelve «Elegir archivo»; «sólo en PDF, de hasta 5 MB» lo dice una vez la bajada del paso'));
   await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', PDF);
   await page.waitForSelector('[data-campo="doc_poda_nueva_curp"] .lista-arch li[data-estado="listo"]');
   await captura(page, `03-solicitud-documentos-${sufijo}`);
@@ -764,7 +765,7 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     const g = datos.grupo.find((x) => datos.inscripcion.some((i) => i.grupo_id === x.id && i.activa && datos.solicitud.some((s) => s.id === i.solicitud_id && s.solicitante_id === conGrupo.id)));
     const empezo = g && g.fecha_inicio <= datos.fecha_corte;
     comprueba((empezo ? /Tu curso empezó el/.test(f) && /Hoy es el día\s*\d+ de \d+/.test(f) && !/Preséntate el/.test(f) : /Preséntate el/.test(f) && /El curso termina el/.test(f))
-      && /Examen\s*\d{2}\/\d{2}\/\d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
+      && /Examen\s*(lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
       t(`mis solicitudes: con grupo, dice ${empezo ? 'en qué día del curso va' : 'cuándo presentarse'}, la fecha del examen y dónde`));
     comprueba(/identificación oficial/.test(f) && /examen/.test(f) && /al menos \d\.\d/.test(f) && await ficha.locator('ol.secuencia > li').count() >= 4,
       t('mis solicitudes: con grupo, «Qué sigue» dice que lleve la identificación, cuándo es el examen y la calificación mínima'));
@@ -782,7 +783,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
       const c = fi.querySelector('.ficha-cita'); const pago = Array.from(fi.querySelectorAll('.aviso')).find((x) => /Datos para tu pago/.test(x.textContent));
       return { antes: Boolean(c && pago && (c.compareDocumentPosition(pago) & Node.DOCUMENT_POSITION_FOLLOWING)), paso: (fi.querySelector('ol.secuencia') || {}).textContent || '' };
     });
-    comprueba(cita.antes && /Acude a tu cita el \d{2}\/\d{2}\/\d{4} a las \d{2}:\d{2}/.test(cita.paso), t('mis solicitudes: la cita va antes de los datos de pago y «Acude a tu cita» dice cuándo'));
+    // Con fecha larga: es lo que la persona tiene que recordar (decisión 16 b del 20/10; C5-01)
+    comprueba(cita.antes && /Acude a tu cita el (lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4} a las \d{2}:\d{2}/.test(cita.paso), t('mis solicitudes: la cita va antes de los datos de pago y «Acude a tu cita» dice cuándo, con fecha larga'));
     await page.click('[data-sesion] button');
   }
   comprueba(Boolean(emitida && conGrupo && conCita), t('mis solicitudes: hay ficticios para revisar las tres fichas'));
@@ -1152,11 +1154,12 @@ async function caminosCotejo(navegador) {
     for (const x of datos.cita) {
       const d = diaMX(x.programada_en);
       const abierta = ['pendiente', 'en_pausa'].includes(x.resultado);
-      const k = x.resultado === 'en_pausa' && d < datos.fecha_corte ? 'pausa_vencida' : abierta ? 'pendiente' : x.resultado;
+      // La pausa del día va aparte de «por atender» (auditoría 2026-10-20, C4-08)
+      const k = x.resultado === 'en_pausa' && d < datos.fecha_corte ? 'pausa_vencida' : x.resultado === 'en_pausa' ? 'en_pausa' : abierta ? 'pendiente' : x.resultado;
       (porDia[d] ||= {})[k] = (porDia[d][k] || 0) + 1;
     }
     const ORDEN = [['atendida', 'atendida', 'atendidas'], ['no_se_presento', 'no se presentó', 'no se presentaron'], ['sin_pago', 'sin pago', 'sin pago'],
-      ['pausa_vencida', 'pausa vencida', 'pausas vencidas'], ['cancelada', 'cancelada', 'canceladas'], ['pendiente', 'por atender', 'por atender']];
+      ['pausa_vencida', 'pausa vencida', 'pausas vencidas'], ['cancelada', 'cancelada', 'canceladas'], ['pendiente', 'por atender', 'por atender'], ['en_pausa', 'en pausa', 'en pausa']];
     let iguales = 0;
     const distintos = [];
     for (const [d, k] of Object.entries(porDia).sort()) {
@@ -1539,7 +1542,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + 'tramites.html');
   await pg.waitForSelector('[data-solicitudes] .ficha');
   const tramA = await texto('main');
-  comprueba(/Poda nueva · del 26 al 30 de octubre/.test(tramA) && tramA.includes(g005.folio) && tramA.includes('26/10/2026'), t('«Mis trámites»: el grupo confirmado por su nombre calculado, con su folio y su primer día'));
+  comprueba(/Poda nueva · del 26 al 30 de octubre/.test(tramA) && tramA.includes(g005.folio) && tramA.includes(fechaLarga('2026-10-26')), t('«Mis trámites»: el grupo confirmado por su nombre calculado, con su folio y su primer día'));
   await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
 
   // ── Desde la ficha de un grupo: «Agregar personas de la espera», con el botón de la ficha (auditoría 2026-10-19,
@@ -1592,7 +1595,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + 'tramites.html');
   await pg.waitForSelector('[data-solicitudes] .ficha');
   const tram = await texto('main');
-  comprueba(tram.includes(APDfecha(fechaMas(19))) && /09:00/.test(tram), t('«Mis trámites»: la persona ve el primer día del curso y la hora de entrada'));
+  comprueba(tram.includes(fechaLarga(fechaMas(19))) && /09:00/.test(tram), t('«Mis trámites»: la persona ve el primer día del curso y la hora de entrada'));
   await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
 
   // Baja: el grupo queda por debajo del mínimo y regresa a integración
@@ -1722,6 +1725,13 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await c2.close();
 }
 const APDfecha = (iso) => iso.split('-').reverse().join('/');
+// Fecha larga, como «Mis trámites» escribe el curso (auditoría 2026-10-20, C2-02; decisión 16 b): «lunes 26 de octubre
+// de 2026». Acepta AAAA-MM-DD o DD/MM/AAAA.
+const fechaLarga = (f) => {
+  const [a, m, d] = /\//.test(f) ? f.split('/').reverse() : f.split('-');
+  const dia = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][new Date(Date.UTC(+a, +m - 1, +d, 12)).getUTCDay()];
+  return `${dia} ${+d} de ${['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][+m - 1]} de ${a}`;
+};
 
 /* ── «Programar un curso» en 3 pasos (propuesta B) y «Mis grupos de hoy» (propuesta D), 2026-10-18 ──
    Desde Grupos con cinco personas elegidas («A un curso nuevo…»): error con menos de 5; el calendario no deja empezar
@@ -3366,7 +3376,8 @@ async function fechas(navegador) {
   await pg.selectOption('#cita_hora', '10:00');
   await pg.click('[data-accion="enviar"]');
   await pg.waitForSelector('[data-hecho]:not([hidden])');
-  comprueba(/cita el 02\/11\/2026 a las 10:00/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('revisar: la cita queda el 02/11/2026, sin años imposibles'));
+  // El resultado es un aviso: la cita con fecha larga (decisión 16 b del 20/10; C5-01)
+  comprueba(/cita el lunes 2 de noviembre de 2026 a las 10:00/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('revisar: la cita queda el lunes 2 de noviembre de 2026, sin años imposibles'));
   comprueba(errores.length === 0, t(`revisar sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 
@@ -3383,7 +3394,7 @@ async function fechas(navegador) {
   await pg.selectOption('#cita_hora', '09:30');
   await pg.click('[data-accion="enviar"]');
   await pg.waitForSelector('[data-hecho]:not([hidden])');
-  comprueba(/02\/11\/2026/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('cotejo: la cita nueva queda el 02/11/2026, sin años imposibles'));
+  comprueba(/lunes 2 de noviembre de 2026 a las 09:30/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('cotejo: la cita nueva queda el lunes 2 de noviembre de 2026, sin años imposibles'));
   comprueba(errores.length === 0, t(`cotejo sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 
@@ -4151,7 +4162,7 @@ async function focoAccesibilidad(navegador) {
     await page.focus('[data-ir="1"]');
     await page.keyboard.press('Enter');
     let lista = await anunciosTras(page, k);
-    comprueba(lista.length === 1 && /^[A-ZÁÉÍÓÚ][a-záéíóú]+, \d+ de [a-z]+ de \d{4}: /.test(lista[0].texto), `RI-04: en Citas, «Día siguiente» da un anuncio con el día y su cuenta (${textosDe(lista)})`);
+    comprueba(lista.length === 1 && /^[A-ZÁÉÍÓÚ][a-záéíóú]+ \d+ de [a-z]+ de \d{4}: /.test(lista[0].texto), `RI-04: en Citas, «Día siguiente» da un anuncio con el día y su cuenta (${textosDe(lista)})`);
     k = await nuevaMarca(page);
     await page.focus('#buscar');
     await page.keyboard.type('ana', { delay: 120 });
@@ -4519,6 +4530,417 @@ async function continuidad(navegador) {
 
 }
 
+/* ── Tareas y estados del personal (auditoría de seguimiento 2026-10-20, bloque 3; SOLO=tareas) ──
+   Con los datos ficticios de siempre; lo que necesita volumen está en herramientas/probar-volumen.mjs. */
+async function tareasPersonal(navegador) {
+  const t = (m) => `[tareas] ${m}`;
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+
+  // C1-04: en una solicitud reenviada, lo que se le pidió corregir está junto al documento corregido y «Revisiones
+  // anteriores» abre desplegado
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    const reenv = datos.solicitud.find((s) => s.estado === 'enviada' && datos.revision.some((r) => r.solicitud_id === s.id)
+      && datos.documento.some((d) => d.solicitud_id === s.id && d.estado === 'con_observacion' && d.observacion));
+    const doc = datos.documento.filter((d) => d.solicitud_id === reenv.id && d.estado === 'con_observacion' && d.observacion).pop();
+    await page.goto(BASE + `revisar.html?folio=${reenv.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    const bloque = await page.textContent(`[data-doc="${doc.requisito}"]`);
+    comprueba(await page.$eval('[data-anteriores]', (d) => d.open) && bloque.includes('Corregido para esta revisión') && bloque.includes(`Se le pidió: ${doc.observacion}`) && !errores.length,
+      t(`C1-04: ${reenv.folio}, junto al documento corregido «Se le pidió: ${doc.observacion.slice(0, 40)}…» y las revisiones anteriores abiertas`));
+    await c.close();
+  }
+
+  // C1-07 (decisión 12 a): «Mostrar: Por atender» en «Citas» deja sólo las citas del día sin resultado, queda en la
+  // dirección (?ver=por-atender) y sobrevive a recargar. C4-03: la búsqueda sobrevive a «Atrás» y a recargar (en esta
+  // pestaña, no en la dirección), y al llegar de nuevo desde el menú la agenda empieza sin búsqueda.
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    const dia = await page.evaluate(() => APD.cargar().then((d) => {
+      const por = {};
+      for (const x of APD_PERSONAL.citas(d)) { const k = APD_PERSONAL.diaDe(x.en); (por[k] ||= []).push(x.pendiente); }
+      // Un día con citas ya cerradas (y, si lo hay, con alguna abierta) y el folio de una cita abierta, para buscarla
+      const dias = Object.keys(por).sort();
+      const k = dias.find((x) => por[x].some(Boolean) && por[x].some((v) => !v)) || dias.find((x) => por[x].some((v) => !v));
+      const abierta = APD_PERSONAL.citas(d).find((x) => x.pendiente);
+      return { dia: k, abiertas: por[k].filter(Boolean).length, todas: por[k].length, folio: abierta.s.folio };
+    }));
+    await page.goto(BASE + `citas.html?dia=${dia.dia}`);
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.selectOption('#ver', 'por-atender');
+    const filtrada = () => page.waitForFunction(() => /sin resultado|No quedan citas por atender/.test(document.querySelector('[data-cuenta]').textContent));
+    await filtrada();
+    const vis = () => page.$$eval('[data-filas] tr:not([hidden])', (l) => l.map((tr) => Boolean(tr.querySelector('a'))));
+    const conFiltro = await vis();
+    comprueba(conFiltro.length === dia.abiertas && conFiltro.every(Boolean) && (dia.abiertas || await page.isVisible('[data-tabla-vacia]')) && /[?&]ver=por-atender/.test(page.url()),
+      t(`C1-07: el ${dia.dia}, «Por atender» deja ${conFiltro.length} de ${dia.todas} citas, las que no tienen resultado, y queda en la dirección`));
+    await page.reload();
+    await filtrada();
+    comprueba((await page.inputValue('#ver')) === 'por-atender' && (await vis()).length === dia.abiertas, t('C1-07: al recargar sigue en «Por atender»'));
+    await page.selectOption('#ver', '');
+    const folio = dia.folio;
+    await page.fill('#buscar', folio);
+    await page.waitForFunction(() => /coincide/.test(document.querySelector('[data-cuenta]').textContent));
+    const cuenta = await page.textContent('[data-cuenta]');
+    await page.locator('[data-filas] tr:not([hidden]) a').first().click();
+    await page.waitForURL(/cotejo\.html/);
+    await page.goBack();
+    await page.waitForFunction(() => /coincide/.test(document.querySelector('[data-cuenta]').textContent));
+    const atras = [await page.inputValue('#buscar'), await page.textContent('[data-cuenta]')];
+    await page.reload();
+    await page.waitForFunction(() => /coincide/.test(document.querySelector('[data-cuenta]').textContent));
+    const recarga = [await page.inputValue('#buscar'), await page.textContent('[data-cuenta]')];
+    comprueba(atras[0] === folio && atras[1] === cuenta && recarga[0] === folio && recarga[1] === cuenta && !page.url().includes(folio),
+      t(`C4-03: la búsqueda «${folio}» sigue con «Atrás» y al recargar («${cuenta}»), sin quedar en la dirección`));
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cuenta]').textContent));
+    comprueba((await page.inputValue('#buscar')) === '' && !errores.length, t(`C4-03: al llegar de nuevo, la agenda empieza sin búsqueda${errores.length ? `; errores: ${errores[0]}` : ''}`));
+    await c.close();
+  }
+
+  // C4-01: los filtros de la bandeja quedan en la dirección y sobreviven a «Atrás» y a recargar; «Revisar una solicitud»
+  // regresa a la bandeja con ellos. C4-02: la cuenta filtrada dice con qué filtros. En teléfono (filtros plegados) y en
+  // escritorio.
+  for (const [ancho, alto] of [[390, 844], [1280, 900]]) {
+    const { c, page, errores } = await nuevo(ancho, alto);
+    const tam = ancho < 600 ? 'teléfono' : 'escritorio';
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    if (await page.isVisible('[data-filtrar]')) await page.click('[data-filtrar]');
+    await page.selectOption('#f_tipo', 'poda');
+    await page.selectOption('#f_vuelta', 'primera');
+    await page.waitForFunction(() => /Se muestran/.test(document.querySelector('[data-cuenta]').textContent));
+    const cuenta = (await page.textContent('[data-cuenta]')).trim();
+    const n = (await page.$$('[data-filas] tr:not([hidden])')).length;
+    comprueba(/[?&]tipo=poda/.test(page.url()) && /[?&]vuelta=primera/.test(page.url()) && /\(Poda y derribo · Primera vez\)/.test(cuenta),
+      t(`C4-01 y C4-02 (${tam}): los filtros van en la dirección y la cuenta los nombra («${cuenta}»)`));
+    await Promise.all([page.waitForURL(/revisar\.html/), page.locator('[data-filas] tr:not([hidden]) a').first().click()]);
+    await page.waitForLoadState('load');
+    const vuelta = await page.getAttribute('a.btn-atras', 'href');
+    await page.goBack();
+    await page.waitForFunction((x) => document.querySelector('[data-cuenta]').textContent.trim() === x, cuenta);
+    const atras = [await page.inputValue('#f_tipo'), await page.inputValue('#f_vuelta'), (await page.$$('[data-filas] tr:not([hidden])')).length];
+    await page.reload();
+    await page.waitForFunction((x) => document.querySelector('[data-cuenta]').textContent.trim() === x, cuenta);
+    const recarga = [await page.inputValue('#f_tipo'), await page.inputValue('#f_vuelta'), (await page.$$('[data-filas] tr:not([hidden])')).length];
+    comprueba(atras.join() === `poda,primera,${n}` && recarga.join() === `poda,primera,${n}` && /^revision\.html\?(?=.*tipo=poda)(?=.*vuelta=primera)/.test(vuelta || '') && !errores.length,
+      t(`C4-01 (${tam}): con «Atrás» y al recargar siguen los filtros y las ${n} solicitudes; «Solicitudes por revisar» regresa con ellos (${vuelta})`));
+    await c.close();
+  }
+
+  // C4-05: la bandeja se entera de una revisión registrada en otra pestaña (la fila sale y la cuenta baja)
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    const total = (await page.$$('[data-filas] tr')).length;
+    const folio = await page.getAttribute('[data-filas] tr', 'data-folio');
+    const otra = await c.newPage();
+    await otra.goto(BASE + `revisar.html?folio=${folio}`);
+    await otra.waitForSelector('#formulario', { state: 'attached' });
+    await otra.evaluate((F) => APD_PERSONAL.guardaRevision(F, { resultado: 'con_observaciones', texto: 'Con observaciones', datos: {}, revisor: 'revision.prueba', en: new Date().toISOString() }), folio);
+    await page.bringToFront();
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.waitForFunction((F) => !document.querySelector(`[data-filas] tr[data-folio="${F}"]`), folio, { timeout: 8000 }).catch(() => {});
+    const despues = (await page.$$('[data-filas] tr')).length;
+    comprueba(despues === total - 1 && new RegExp(`^${total - 1} solicitud`).test((await page.textContent('[data-cuenta]')).trim()) && !errores.length,
+      t(`C4-05: revisada en otra pestaña, ${folio} sale de la bandeja (${total} → ${despues}) y la cuenta baja`));
+    await c.close();
+  }
+
+  // C2-02: «Mis trámites» con grupo confirmado, en 390 × 844: cuándo, a qué hora y dónde, arriba en un recuadro como el de
+  // la cita, con la fecha larga, y en la primera pantalla
+  {
+    const ins = datos.inscripcion.find((i) => i.activa && ['confirmado', 'en_curso'].includes((datos.grupo.find((g) => g.id === i.grupo_id) || {}).estado)
+      && (datos.solicitud.find((s) => s.id === i.solicitud_id) || {}).estado === 'inscrita');
+    const quien = datos.solicitud.find((s) => s.id === ins.solicitud_id).solicitante_id;
+    const { c, page, errores } = await nuevo(390, 844, quien);
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-solicitudes] .ficha-cita');
+    const r = await page.evaluate(() => {
+      const caja = document.querySelector('[data-solicitudes] .ficha-cita');
+      const dt = (re) => [...caja.querySelectorAll('dt, .datos-etiqueta')].find((x) => re.test(x.textContent));
+      const inicio = dt(/Preséntate el|Tu curso empezó el/);
+      const lugar = dt(/Lugar del curso/);
+      const sigue = caja.closest('.ficha').querySelector('.ficha-sigue');
+      return { valor: inicio ? inicio.nextElementSibling.textContent.trim() : '', lugarY: lugar ? lugar.getBoundingClientRect().bottom + scrollY : 1e9,
+        antes: Boolean(sigue) && Boolean(caja.compareDocumentPosition(sigue) & Node.DOCUMENT_POSITION_FOLLOWING), ventana: innerHeight };
+    });
+    comprueba(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4}( a las \d{2}:\d{2})?$/.test(r.valor) && r.lugarY < r.ventana && r.antes && !errores.length,
+      t(`C2-02: con grupo, «${r.valor}» y el lugar en un recuadro antes de «Qué sigue», en la primera pantalla (hasta ${Math.round(r.lugarY)} de ${r.ventana} px)`));
+    await c.close();
+  }
+
+  // C4-04: las personas elegidas en el planeador de «Grupos» siguen marcadas al recargar; al llegar de nuevo, ninguna
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-persona input');
+    const cajas = page.locator('.plan-persona input');
+    await cajas.nth(0).check();
+    await cajas.nth(1).check();
+    const marcadas = () => page.$$eval('.plan-persona input:checked', (l) => l.map((k) => k.value).sort().join());
+    const antes = await marcadas();
+    await page.reload();
+    await page.waitForSelector('.plan-persona input');
+    await page.waitForFunction(() => /elegida/.test(document.querySelector('[data-elegidas]').textContent));
+    const recarga = await marcadas();
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('.plan-persona input');
+    const nueva = await marcadas();
+    comprueba(antes.split(',').length === 2 && recarga === antes && nueva === '' && !errores.length,
+      t(`C4-04: las 2 elegidas siguen al recargar (${recarga}) y al llegar de nuevo no hay ninguna`));
+    await c.close();
+  }
+
+  // C3-02: en la solicitud y en «Carga el documento correcto», el formato y el tamaño se dicen una vez y no en cada
+  // documento. C3-03 (decisión 13 a): la solicitud ya no pide «No soy un programa automático» (sí «Crea tu cuenta»)
+  {
+    const { c, page, errores } = await nuevo(390, 844, CON_ORG.id);
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector('[data-si="tramite=poda_nueva"] [data-campo^="doc_"] .zona-carga', { state: 'attached' });
+    await page.waitForLoadState('load');
+    const r = await page.evaluate(() => {
+      const zonas = [...document.querySelectorAll('[data-campo^="doc_"]')];
+      return { zonas: zonas.length, conLimite: zonas.filter((z) => /Formato admitido|Un archivo de hasta/.test(z.textContent)).length,
+        bajada: [...document.querySelectorAll('.bajada')].some((b) => /sólo en PDF, de hasta 5 MB/.test(b.textContent)),
+        humano: Boolean(document.querySelector('input[name="humano"]')), trampa: Boolean(document.querySelector('[data-trampa] input[name="sitio_web"]')) };
+    });
+    const [cuenta, corregir] = await page.evaluate(() => Promise.all(['cuenta.html', 'corregir.html'].map((u) => fetch(u).then((x) => x.text()))));
+    comprueba(r.zonas >= 20 && r.conLimite === 0 && r.bajada && !/data-limite-texto/.test(corregir.replace(/<!--[\s\S]*?-->/g, '')) && /Sólo PDF, de hasta 5 MB/.test(corregir),
+      t(`C3-02: ninguna de las ${r.zonas} zonas de carga de la solicitud repite el formato; la bajada y «Carga el documento correcto» lo dicen una vez`));
+    comprueba(!r.humano && r.trampa && /name="humano"/.test(cuenta) && !errores.length, t('C3-03: la solicitud no pide «No soy un programa automático» (queda la trampa); «Crea tu cuenta» sí'));
+    await c.close();
+  }
+
+  // C4-06: «Mis trámites» abierta y, en otra pestaña, se entra con otra cuenta (o se sale): la pestaña vieja lo dice y deja
+  // de mostrar los trámites de la persona anterior
+  for (const salir of [false, true]) {
+    const [X, Y] = datos.solicitante.filter((p) => p.estado === 'activa' && datos.solicitud.some((s) => s.solicitante_id === p.id && !FINALES.includes(s.estado)));
+    const { c, page, errores } = await nuevo(390, 844, X.id);
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-solicitudes] .ficha');
+    await page.waitForLoadState('load');
+    const otra = await c.newPage();
+    await otra.goto(BASE + 'index.html');
+    await otra.evaluate((id) => { if (id) localStorage.setItem('apd.sesion', JSON.stringify({ id })); else localStorage.removeItem('apd.sesion'); }, salir ? null : Y.id);
+    await page.bringToFront();
+    await page.waitForSelector('[data-sesion-cambio]', { timeout: 8000 }).catch(() => {});
+    const aviso = (await page.textContent('[data-sesion-cambio]').catch(() => '')) || '';
+    comprueba((salir ? /Tu sesión terminó/.test(aviso) : /Tu sesión cambió en otra pestaña/.test(aviso)) && await page.isHidden('[data-solicitudes]') && await page.isVisible('[data-sesion-cambio] a[href^="entrar.html?volver="]') && !errores.length,
+      t(`C4-06: ${salir ? 'se salió' : 'se entró con otra cuenta'} en otra pestaña y «Mis trámites» lo dice sin mostrar los trámites de antes («${aviso.replace(/\s+/g, ' ').trim()}»)`));
+    await c.close();
+  }
+}
+
+/* ── Formas de fecha (auditoría de seguimiento 2026-10-20, bloque 6, C5-01; SOLO=fechas) ──
+   Decisión de Liber del 20/10 (puntos 16 b y 17 b): fecha larga para lo que se recuerda («martes 20 de octubre de 2026
+   a las 10:00», APD.fechaLarga), 20/10/2026 en tablas y datos («20/10/2026 10:00», APD.fechaCorta) y el acuse con la
+   fecha larga del estándar. Recorre las 21 pantallas con los casos del menú de pruebas y falla si aparece otra forma
+   (el clasificador está en herramientas/formatos-fecha.mjs); antes había 14 formas, hasta 5 en una pantalla. */
+async function formatosFecha(navegador) {
+  const t = (m) => `[formas de fecha] ${m}`;
+  const { clasifica, CASOS_CLASIFICADOR } = await import('./formatos-fecha.mjs');
+
+  // 1 · El clasificador: lo decidido pasa y cada forma vieja de C5-01 se detecta
+  const malClasificados = CASOS_CLASIFICADOR.filter(([texto, ok]) => { const r = clasifica(texto); return (r.length > 0 && r.every((x) => x.permitida)) !== ok; });
+  comprueba(!malClasificados.length, t(`el clasificador acepta lo decidido y detecta las ${CASOS_CLASIFICADOR.filter((x) => !x[1]).length} formas viejas${malClasificados.length ? ': falla con ' + malClasificados.map((x) => `«${x[0]}»`).join(', ') : ''}`));
+
+  // 2 · Las dos funciones, en tres zonas horarias del navegador: el resultado es siempre el de la Ciudad de México
+  const ESPERADO = {
+    larga: 'martes 20 de octubre de 2026',
+    largaHoraTexto: 'martes 20 de octubre de 2026 a las 09:00',
+    medianoche: 'miércoles 21 de octubre de 2026 a las 00:00',
+    medianocheCorta: '21/10/2026 00:00',
+    cambioDeDia: '20/10/2026 21:30',
+    cambioDeDiaLarga: 'martes 20 de octubre de 2026 a las 21:30',
+    corta: '20/10/2026',
+    cortaSinHoraDeInstante: '20/10/2026',
+    anioNuevo: 'viernes 1 de enero de 2027',
+    mayuscula: 'Martes 20 de octubre de 2026',
+    vacias: ['', '', '', ''],
+    hora: '00:00'
+  };
+  for (const zona of [ZONA, 'UTC', 'Asia/Tokyo']) {
+    const c = await navegador.newContext({ timezoneId: zona, locale: 'en-US' });
+    const pg = await c.newPage();
+    await pg.goto(BASE + 'index.html');
+    await pg.waitForFunction(() => window.APD);
+    const r = await pg.evaluate(() => (!APD.fechaLarga || !APD.fechaCorta ? {} : {
+      larga: APD.fechaLarga('2026-10-20'),
+      largaHoraTexto: APD.fechaLarga('2026-10-20', { hora: '09:00:00' }),
+      medianoche: APD.fechaLarga('2026-10-21T06:00:00Z', { hora: true }),
+      medianocheCorta: APD.fechaCorta('2026-10-21T00:00:00-06:00', { hora: true }),
+      cambioDeDia: APD.fechaCorta('2026-10-21T03:30:00Z', { hora: true }),
+      cambioDeDiaLarga: APD.fechaLarga('2026-10-21T03:30:00Z', { hora: true }),
+      corta: APD.fechaCorta('2026-10-20'),
+      cortaSinHoraDeInstante: APD.fechaCorta('2026-10-21T03:30:00Z'),
+      anioNuevo: APD.fechaLarga('2027-01-01'),
+      mayuscula: APD.fechaLarga('2026-10-20', { mayuscula: true }),
+      vacias: [APD.fechaLarga(null), APD.fechaCorta(''), APD.fechaLarga('no es fecha'), APD.fechaCorta(undefined, { hora: true })],
+      hora: APD.hora('2026-10-21T06:00:00Z')
+    }));
+    const distintas = Object.keys(ESPERADO).filter((k) => JSON.stringify(r[k]) !== JSON.stringify(ESPERADO[k]));
+    comprueba(!distintas.length, t(`APD.fechaLarga y APD.fechaCorta con el navegador en ${zona}: medianoche «${r.medianoche}», cambio de día «${r.cambioDeDia}», sin hora «${r.larga}» y «${r.corta}»${distintas.length ? ` · distinto: ${distintas.map((k) => `${k} «${r[k]}»`).join(', ')}` : ''}`));
+    await c.close();
+  }
+
+  // 3 · Recorrido: renglones visibles, bloques ocultos y nombres accesibles, sin lo que sólo existe en la prueba
+  const extrae = () => {
+    const limpio = (x) => String(x || '').replace(/[ \t ]+/g, ' ').trim();
+    const lineas = (x) => String(x || '').split(/\n+/).map(limpio).filter(Boolean);
+    const dePrueba = (e) => e.closest('.entorno-pruebas, .ubicacion-prueba, .version-sia, dialog.menu-pruebas, .menu-pruebas-boton');
+    const acuse = new Set([...document.querySelectorAll('[data-acuse], .acuse')].flatMap((e) => lineas(e.innerText || e.textContent)));
+    const quitar = new Set([...document.querySelectorAll('.entorno-pruebas, .ubicacion-prueba, .version-sia, dialog.menu-pruebas, .menu-pruebas-boton')].flatMap((e) => lineas(e.innerText)));
+    const r = new Map();
+    for (const l of lineas(document.body.innerText)) if (!quitar.has(l)) r.set(l, acuse.has(l));
+    for (const e of document.querySelectorAll('[hidden], dialog:not([open]), template')) {
+      if (dePrueba(e) || e.closest('script,style')) continue;
+      for (const l of lineas(e.tagName === 'TEMPLATE' ? e.content.textContent : e.textContent)) if (!r.has(l)) r.set(l, acuse.has(l));
+    }
+    for (const e of document.querySelectorAll('[aria-label],[title],[placeholder],img[alt]')) {
+      if (dePrueba(e)) continue;
+      for (const a of ['aria-label', 'title', 'placeholder', 'alt']) { const v = e.getAttribute(a); if (v && v.trim()) r.set(limpio(v), false); }
+    }
+    return [...r].map(([texto, enAcuse]) => ({ texto, acuse: enAcuse }));
+  };
+  const porPantalla = new Map();
+  const anota = (pantalla, estado, renglones) => {
+    const p = porPantalla.get(pantalla) || { estados: 0, formas: new Set(), malas: [] };
+    p.estados++;
+    for (const { texto, acuse } of renglones) {
+      if (texto.length > 400) continue;
+      for (const x of clasifica(texto, { acuse })) { p.formas.add(x.forma); if (!x.permitida) p.malas.push(`${estado}: ${x.forma} en «${texto.slice(0, 110)}»`); }
+    }
+    porPantalla.set(pantalla, p);
+  };
+  const errores = [];
+  const visita = async (pantalla, url, { sesion, ancho = 1280, antes } = {}) => {
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: 900 }, isMobile: ancho < 600, hasTouch: ancho < 600 });
+    if (sesion) await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const pg = await c.newPage();
+    pg.on('pageerror', (e) => errores.push(`${url}: ${e.message}`));
+    pg.on('dialog', (d) => d.dismiss().catch(() => {}));
+    await pg.goto(BASE + url);
+    await pg.waitForLoadState('networkidle');
+    await pg.waitForFunction(() => !/Cargando/.test((document.querySelector('main') || document.body).innerText), null, { timeout: 8000 }).catch(() => {});
+    if (antes) await antes(pg);
+    anota(pantalla, url, await pg.evaluate(extrae));
+    await c.close();
+  };
+
+  // Los casos del menú de pruebas (persona), como los arma el menú
+  const c0 = await navegador.newContext({ timezoneId: ZONA });
+  const p0 = await c0.newPage();
+  await p0.goto(BASE + 'index.html');
+  await p0.waitForFunction(() => window.APD && window.APD_CASOS_PRUEBA);
+  const casos = await p0.evaluate(() => APD.cargar().then((d) => APD_CASOS_PRUEBA.lista(d).flatMap((g) => g.casos.map((x) => ({ clave: x.clave, persona: x.persona ? x.persona.id : null, migrada: Boolean(x.migrada), pantalla: x.pantalla || null })))));
+  await c0.close();
+  for (const x of casos) {
+    if (x.pantalla || !x.persona) continue;
+    if (x.migrada) { await visita('cuenta', `cuenta.html?migrada=${encodeURIComponent(x.persona)}`, { ancho: 390 }); continue; }
+    await visita('tramites', 'tramites.html', { sesion: x.persona, ancho: 390 });
+    if (/^cita|pausa/.test(x.clave)) await visita('corregir', 'corregir.html', { sesion: x.persona, ancho: 390 });
+  }
+  // «Cargar el documento correcto» de la cita en pausa de hoy: «En tu cita del martes … a las …»
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sPausaHoy = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+  await visita('corregir', `corregir.html?folio=${sPausaHoy.folio}`, { sesion: sPausaHoy.solicitante_id, ancho: 390, antes: (pg) => pg.waitForSelector('#formulario:not([hidden])') });
+  // La solicitud: nueva y con observaciones (lo que se pidió corregir, con sus fechas)
+  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((x) => x.solicitante_id === p.id));
+  await visita('solicitud', 'solicitud.html', { sesion: sinTramite.id, ancho: 390 });
+  await visita('solicitud', `solicitud.html?folio=${conObs.folio}`, { sesion: conObs.solicitante_id, ancho: 390 });
+  const acreditada = casos.find((x) => x.clave === 'acreditada');
+  if (acreditada) await visita('datos', 'datos.html', { sesion: acreditada.persona, ancho: 390 });
+  for (const u of ['index.html', 'entrar.html', 'material.html']) await visita(u.replace('.html', ''), u, { ancho: 390 });
+  for (const a of [datos.acreditacion.find((x) => x.vence_en > datos.fecha_corte && x.numero), datos.acreditacion.find((x) => x.vence_en < datos.fecha_corte && x.numero)].filter(Boolean)) {
+    await visita('verificar', 'verificar.html', { ancho: 390, antes: async (pg) => { await pg.fill('#numero', a.numero); await pg.click('[data-accion="enviar"]'); await pg.waitForSelector('[data-resultado]:not([hidden]), .resultado:not([hidden]), [data-estado-envio]:not([hidden])', { timeout: 8000 }).catch(() => {}); } });
+  }
+  // El acuse de «Crea tu cuenta», con los datos ficticios del menú: conserva la fecha larga del estándar (decisión 17 b)
+  await visita('cuenta (acuse)', 'cuenta.html', { ancho: 390, antes: async (pg) => {
+    await pg.click('.menu-pruebas-boton'); await pg.click('dialog.menu-pruebas >> text="Llenar con datos ficticios"');
+    await pg.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); });
+    await pg.waitForFunction(() => document.querySelector('#curp') && document.querySelector('#curp').value.length === 18);
+    await pg.click('[data-accion="enviar"]');
+    await pg.waitForSelector('[data-acuse]:not([hidden])', { timeout: 15000 });
+  } });
+  // El personal, con los datos ficticios
+  await visita('revision', 'revision.html');
+  for (const s of datos.solicitud.filter((x) => x.estado === 'enviada').slice(0, 4)) await visita('revisar', `revisar.html?folio=${s.folio}`);
+  await visita('citas', 'citas.html');
+  for (const s of datos.solicitud.filter((x) => x.estado === 'validada_en_linea')) await visita('cotejo', `cotejo.html?folio=${s.folio}`);
+  for (const curso of ['poda-nueva', 'poda-renovacion', 'dictaminador-nueva', 'dictaminador-renovacion']) {
+    await visita('grupos', `grupos.html?curso=${curso}`);
+    await visita('programar', `programar.html?curso=${curso}`);
+  }
+  await visita('grupos', 'grupos.html');
+  await visita('espera', 'espera.html?curso=poda-nueva');
+  for (const g of datos.grupo) await visita('grupo', `grupo.html?folio=${g.folio}`);
+  await visita('asistencia', 'asistencia.html');
+  for (const g of datos.grupo.filter((x) => ['en_curso', 'concluido', 'confirmado'].includes(x.estado))) await visita('asistencia', `asistencia.html?folio=${g.folio}`, { ancho: 390 });
+  await visita('aplicar', 'aplicar.html');
+  for (const g of datos.grupo.filter((x) => ['en_curso', 'concluido'].includes(x.estado))) await visita('aplicar', `aplicar.html?folio=${g.folio}`);
+  await visita('material-personal', 'material-personal.html');
+  // «Programar»: el día elegido en el calendario, «Así quedaría» y lo que se dice al elegir
+  await visita('programar', 'programar.html?curso=poda-nueva&semana=2026-11-02', { ancho: 390, antes: (pg) => pg.waitForSelector('.cal-dia[aria-pressed="true"]') });
+  // El examen: pasar lista, entrar con el código y enviar; el resultado dice cuándo se envió
+  {
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: 1280, height: 900 } });
+    const ap = await c.newPage();
+    ap.on('dialog', (d) => d.dismiss().catch(() => {}));
+    const grupo = datos.grupo.find((g) => g.estado === 'en_curso');
+    await ap.goto(BASE + `aplicar.html?folio=${grupo.folio}`);
+    await ap.waitForSelector('[data-filas] tr');
+    const boton = ap.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).first();
+    const ins = await boton.getAttribute('data-ins');
+    await boton.click();
+    await ap.waitForSelector(`tr[data-ins="${ins}"] .examen-codigo`);
+    const codigo = (await ap.textContent(`tr[data-ins="${ins}"] .examen-codigo`)).trim();
+    const ex = await c.newPage();
+    ex.on('pageerror', (e) => errores.push(`examen: ${e.message}`));
+    await ex.goto(BASE + 'examen.html');
+    await ex.fill('#codigo', codigo); await ex.click('#entrar [data-accion="enviar"]');
+    await ex.waitForSelector('[data-vista="confirmar"]:not([hidden])');
+    anota('examen', 'examen · ¿eres tú?', await ex.evaluate(extrae));
+    await ex.click('[data-ir-vista="instrucciones"]'); await ex.click('[data-empezar]');
+    await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+    for (let i = 0; i < 40 && !(await ex.isVisible('[data-vista="revision"]')); i++) {
+      await ex.locator('[data-vista="pregunta"]:not([hidden]) [data-opciones] input').first().check();
+      await ex.click('[data-siguiente]');
+    }
+    await ex.click('[data-enviar]'); await ex.click('.dialogo-confirma [data-r="si"]');
+    await ex.waitForSelector('[data-vista="resultado"]:not([hidden])');
+    anota('examen', 'examen · resultado', await ex.evaluate(extrae));
+    await ap.reload(); await ap.waitForSelector('[data-filas] tr');
+    anota('aplicar', 'aplicar · tras un examen', await ap.evaluate(extrae));
+    await c.close();
+  }
+
+  // Una comprobación por pantalla: sólo las formas decididas (el acuse, sólo en el acuse)
+  for (const [pantalla, p] of [...porPantalla].sort()) {
+    comprueba(!p.malas.length, t(`${pantalla} (${p.estados} ${p.estados === 1 ? 'estado' : 'estados'}): sólo las formas decididas (${[...p.formas].sort().join(', ') || 'sin fechas'})${p.malas.length ? ` · ${p.malas.length} fuera: ${[...new Set(p.malas)].slice(0, 4).join(' | ')}` : ''}`));
+  }
+  const acuse = porPantalla.get('cuenta (acuse)');
+  comprueba(Boolean(acuse) && acuse.formas.has('acuse'), t('el acuse de «Crea tu cuenta» conserva la fecha larga del estándar (FormKit.utilidades.fechaHora, decisión 17 b)'));
+  const todas = new Set([...porPantalla.values()].flatMap((p) => [...p.formas]));
+  comprueba([...todas].every((f) => ['larga', 'largaHora', 'corta', 'cortaHora', 'acuse', 'grupo'].includes(f)) && ['larga', 'largaHora', 'corta', 'cortaHora'].every((f) => todas.has(f)),
+    t(`en todo el sitio, sólo las dos formas decididas (con y sin hora), la del acuse y el nombre del grupo: ${[...todas].sort().join(', ')}`));
+  const pantallas = [...porPantalla.keys()].filter((k) => !k.includes('(')).length;
+  comprueba(pantallas === 21 && !errores.length, t(`${pantallas} pantallas recorridas, más el acuse, sin errores en la página${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -4566,12 +4988,14 @@ try {
   if (toca('romper', 'romper2')) await parte('romper 2', () => romperDos(navegador));
   if (toca('romper', 'romper3')) await parte('romper 3', () => romperTres(navegador));
   if (toca('fechas')) await parte('fechas', () => fechas(navegador));
+  if (toca('fechas')) await parte('formas de fecha', () => formatosFecha(navegador));
   if (toca('estandar')) {
     await parte('estándar en teléfono', () => estandarPantallas(navegador, 390, 844, 'telefono'));
     await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
   }
   if (toca('foco')) await parte('foco y accesibilidad', () => focoAccesibilidad(navegador));
   if (toca('continuidad')) await parte('mensajes y continuidad', () => continuidad(navegador));
+  if (toca('tareas')) await parte('tareas y estados del personal', () => tareasPersonal(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

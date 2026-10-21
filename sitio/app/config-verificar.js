@@ -51,12 +51,12 @@ window.FORMKIT_OPCIONES = {
       const vigente = f.situacion === 'Vigente';
       caja.setAttribute('data-tono', vigente ? 'ok' : 'error');
       caja.replaceChildren(
-        situacion(vigente ? `Vigente hasta el ${APD.fecha(f.vence_en)}` : 'No vigente', vigente ? 'palomita' : 'cerrar'),
+        situacion(vigente ? `Vigente hasta el ${APD.fechaCorta(f.vence_en)}` : 'No vigente', vigente ? 'palomita' : 'cerrar'),
         APD.datosLista([
           ['Nombre', f.nombre],
           ['Acreditación', f.tipo],
           ['Número de acreditación', f.numero],
-          ['Emitida el', APD.fecha(f.emitida_en)],
+          ['Emitida el', APD.fechaCorta(f.emitida_en)],
           // Rótulo según el caso: «Vence en» o «Vencida hace» (auditoría 2026-10-18, D10)
           ...APD.vencimiento({ fecha_corte: r.hoy }, f.vence_en)
         ]),

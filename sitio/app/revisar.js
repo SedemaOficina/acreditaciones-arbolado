@@ -17,12 +17,17 @@
    documento, la cita, y la revisión (apd.revision), que mueve la solicitud. */
 (function () {
   'use strict';
-  const { el, fecha, fechaHora, datosLista } = APD;
+  /* Fechas (decisión 16 b, 20/10/2026): la cita en el resultado (aviso) con fecha larga; los datos, el historial y las
+     ayudas, dd/mm/aaaa */
+  const { el, fechaLarga, fechaCorta, datosLista } = APD;
   const P = APD_PERSONAL;
   const $ = (s, raiz) => (raiz || document).querySelector(s);
   const $$ = (s, raiz) => Array.from((raiz || document).querySelectorAll(s));
   const form = document.getElementById('formulario');
   const folio = new URLSearchParams(location.search).get('folio') || '';
+  /* La bandeja, con los filtros con que se dejó (auditoría 2026-10-20, C4-01; los guarda app/revision.js en esta pestaña) */
+  const bandeja = (() => { try { const f = sessionStorage.getItem('apd.bandeja.filtros') || ''; return /^(\?[\w=&-]*)?$/.test(f) ? `revision.html${f}` : 'revision.html'; } catch (e) { return 'revision.html'; } })();
+  for (const a of $$('a[href="revision.html"]')) a.href = bandeja;
 
   const NIVELES = {
     ninguna: 'Sin estudios', preescolar: 'Preescolar', primaria: 'Primaria', secundaria: 'Secundaria', preparatoria: 'Preparatoria o bachillerato',
@@ -92,8 +97,8 @@
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
     $('[data-bajada]').replaceChildren(APD.lineaDatos([
       [document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio })],
-      `enviada el ${fecha(s.enviada_en)}`,
-      v.n > 1 ? `reenviada con correcciones el ${fecha(s.estado_desde)}` : null,
+      `enviada el ${fechaCorta(s.enviada_en)}`,
+      v.n > 1 ? `reenviada con correcciones el ${fechaCorta(s.estado_desde)}` : null,
       v.n > 1 ? `${v.n}.ª revisión` : 'primera revisión'
     ]));
     $('[data-estado]').replaceChildren(APD.estado('En revisión documental', 'marcha'));
@@ -110,9 +115,9 @@
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre en su primer cotejo'],
       ...APD.adscripcionPares(datos, s, 'Adscripción'),
-      ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : ''],
+      ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fechaCorta(anterior.vence_en)}` : ''],
       // Se comprueba que siga vigente antes de decirlo (auditoría de tareas)
-      ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fecha(podaVigente.vence_en)}` : ''],
+      ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fechaCorta(podaVigente.vence_en)}` : ''],
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
       ['Contacto', `${p.correo} · ${p.telefono}`]
     ])])]));
@@ -132,13 +137,15 @@
         const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.estado === 'con_observacion' && d.revisado_en && d.revisado_en <= r.revisada_en && (anteriores[i - 1] ? d.revisado_en > anteriores[i - 1].revisada_en : true));
         return el('div', { class: 'revision-anterior' }, [
           // Una vuelta puede venir del cotejo: un documento que no coincidió con el que trajo la persona
-          el('p', {}, [el('strong', { texto: r.en_cotejo ? `Cotejo · ${fechaHora(r.revisada_en)}` : `${i + 1}.ª revisión · ${fechaHora(r.revisada_en)}` }),
+          el('p', {}, [el('strong', { texto: r.en_cotejo ? `Cotejo · ${fechaCorta(r.revisada_en, { hora: true })}` : `${i + 1}.ª revisión · ${fechaCorta(r.revisada_en, { hora: true })}` }),
             document.createTextNode(` · ${r.en_cotejo ? 'regresó con observaciones: un documento no coincidió' : r.resultado === 'validada' ? 'validada, con cita de cotejo' : r.resultado === 'rechazada' ? 'rechazada' : 'con observaciones'}`)]),
           obs.length ? el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: `${nombre(d.requisito)}: ${d.observacion}${corregidos.has(d.requisito) ? ' — la persona cargó uno nuevo' : ''}` }))) : null,
           r.observacion_general && !obs.some((d) => d.observacion === r.observacion_general) ? el('p', { class: 'texto-gris', texto: `Mensaje general: ${r.observacion_general}` }) : null
         ]);
       }));
       $('[data-anteriores]').hidden = false;
+      // En una solicitud reenviada con correcciones, abierto: lo observado antes se ve sin desplegarlo (C1-04)
+      if (corregidos.size) $('[data-anteriores]').open = true;
     }
 
     /* ----- Perfil del dictaminador ----- */
@@ -184,6 +191,11 @@
         document.createTextNode(` · ${peso}`),
         corregidos.has(k) ? el('span', { class: 'doc-corregido' }, [APD.estado('Corregido para esta revisión', 'pend')]) : null
       ].filter(Boolean));
+      /* Lo que se le pidió corregir, a la vista junto al documento corregido: estaba sólo en «Revisiones anteriores»,
+         plegado (auditoría 2026-10-20, C1-04). Es la última observación de ese requisito. */
+      const pedido = corregidos.has(k) && datos.documento.filter((x) => x.solicitud_id === s.id && x.requisito === k && x.estado === 'con_observacion' && x.observacion)
+        .sort((a, b) => String(a.revisado_en).localeCompare(String(b.revisado_en))).pop();
+      if (pedido) $('[data-doc-archivo]', art).after(el('p', { class: 'texto-gris', 'data-doc-pedido': '' }, [el('strong', { texto: 'Se le pidió: ' }), document.createTextNode(pedido.observacion)]));
     }
     // El mensaje de rechazo propuesto: la persona lo lee tal cual, por eso le habla de tú (auditoría 2026-10-17)
     const propuesta = () => (elegido('clasificacion') === 'no_afin'
@@ -332,8 +344,8 @@
     const hasta = APD.sumaMeses(APD.hoy(datos), APD.mesesCita(datos));
     $('[data-campo="cita_fecha"]').dataset.min = manana;
     $('[data-campo="cita_fecha"]').dataset.max = hasta;
-    $('[data-cita-desde]').textContent = fecha(manana);
-    $('[data-cita-hasta]').textContent = fecha(hasta);
+    $('[data-cita-desde]').textContent = fechaCorta(manana);
+    $('[data-cita-hasta]').textContent = fechaCorta(hasta);
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     form.hidden = false;
@@ -349,13 +361,13 @@
             const otraVez = { href: `revisar.html?folio=${encodeURIComponent(folio)}`, texto: 'Abrir la solicitud otra vez' };
             if (!s2 || s2.estado !== 'enviada') {
               return mal(APD.rechazo('No se guardó su revisión', `Ya se registró otra revisión de esta solicitud (en otra pestaña o por otra persona): ahora está «${s2 ? APD.nombrePersonal(s2.estado) : 'sin datos'}».`,
-                { href: 'revision.html', texto: 'Volver a la bandeja' }, 'revision_fuera_de_turno'));
+                { href: bandeja, texto: 'Volver a la bandeja' }, 'revision_fuera_de_turno'));
             }
             if (huella(ahora, s2) !== abierta) {
               return mal(APD.rechazo('No se guardó su revisión', 'La solicitud cambió desde que la abrió: la persona la reenvió o cargó otro documento. Ábrala otra vez para revisar lo de ahora.', otraVez, 'conflicto'));
             }
             const textos = {
-              validada: `Validada · cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
+              validada: `Validada · cita el ${fechaCorta(d.cita_fecha, { hora: d.cita_hora })}`,
               con_observaciones: 'Con observaciones',
               rechazada: 'Rechazada'
             };
@@ -385,9 +397,9 @@
         const observados = Object.keys(d).filter((k) => k.startsWith('decision_') && d[k] === 'con_observacion').length;
         const desenlace = {
           // Con su «Qué sigue», como el de observaciones (auditoría 2026-10-18, D21)
-          validada: { tono: 'ok', titulo: `Validada: cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora}`,
+          validada: { tono: 'ok', titulo: `Validada: cita el ${fechaLarga(d.cita_fecha, { hora: d.cita_hora })}`,
             texto: `${nombre} ya ve en «Mis trámites» su cita de cotejo en el ${APD.sede(datos).nombre} y los datos para pagar.`,
-            pasos: [`${nombre} paga los derechos e imprime su comprobante.`, `Acude a su cita el ${fecha(d.cita_fecha)} a las ${d.cita_hora} con sus documentos y su comprobante.`,
+            pasos: [`${nombre} paga los derechos e imprime su comprobante.`, `Acude a su cita el ${fechaLarga(d.cita_fecha, { hora: d.cita_hora })} con sus documentos y su comprobante.`,
               'En la cita, el personal coteja sus documentos y su pago en «Citas de cotejo».'] },
           con_observaciones: { tono: 'atencion', titulo: `Con observaciones: ${observados === 1 ? '1 documento regresa' : `${observados} documentos regresan`} a la persona`,
             texto: `${nombre} ya ve en «Mis trámites» qué debe corregir.`,
@@ -407,7 +419,7 @@
         const acciones = $('[data-hecho-acciones]');
         if (siguiente && !acciones.querySelector('[data-siguiente]')) {
           acciones.prepend(el('a', { class: 'btn btn-primario', 'data-siguiente': '', href: `revisar.html?folio=${encodeURIComponent(siguiente.folio)}`, texto: 'Revisar la siguiente' }));
-          acciones.before(el('p', { class: 'texto-gris', texto: `Siguiente en la bandeja: ${siguiente.folio}, en espera desde el ${fecha(siguiente.estado_desde)}.` }));
+          acciones.before(el('p', { class: 'texto-gris', texto: `Siguiente en la bandeja: ${siguiente.folio}, en espera desde el ${fechaCorta(siguiente.estado_desde)}.` }));
         }
         FormKit.resultado($('[data-hecho]'), Object.assign({ quien: P.REVISORA.nombre }, desenlace));
       }

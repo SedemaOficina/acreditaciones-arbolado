@@ -14,10 +14,8 @@
   FormKit.iniciar(form, {});
 
   const norm = APD.normalizaBusqueda;
-  const diaLargo = (dia) => {
-    const t = new Date(`${dia}T12:00:00-06:00`).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' });
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  };
+  /* El día de la agenda es su encabezado: fecha larga (decisión 16 b), «Miércoles 14 de octubre de 2026» */
+  const diaLargo = (dia) => APD.fechaLarga(dia, { mayuscula: true });
 
   /* La agenda se vuelve a leer cuando la persona carga un documento en otra pestaña, cuando otra pestaña guarda algo o al
      volver a esta (auditoría «intentar romperlo», F2 B1: seguía «En pausa · esperando el documento» hasta recargar). Se
@@ -53,7 +51,7 @@
         const verbo = futura ? 'Ver la cita' : ['pendiente', 'sin_registrar'].includes(c.situacion) ? 'Atender' : 'Retomar';
         const accion = c.pendiente
           ? el('a', { class: 'btn btn-secundario btn-chico', href: `cotejo.html?folio=${encodeURIComponent(s.folio)}`,
-            'aria-label': futura ? `Ver la cita de ${APD.nombreCompleto(p)}: se atiende el ${APD.fecha(P.diaDe(c.en))}` : `${verbo} la cita de ${APD.nombreCompleto(p)}`, texto: verbo })
+            'aria-label': futura ? `Ver la cita de ${APD.nombreCompleto(p)}: se atiende el ${APD.fechaCorta(c.en)}` : `${verbo} la cita de ${APD.nombreCompleto(p)}`, texto: verbo })
           : el('span', { class: 'texto-gris', texto: '—' });
         const hora = el('td', { texto: P.horaDe(c.en) });
         const tr = el('tr', { 'data-folio': s.folio, class: c.pendiente ? null : 'fila-hecha' }, [
@@ -79,7 +77,7 @@
         $('[data-cuenta]').before(caja);
         const ir = porDia.map((d) => {
           const n = sinRegistrar.filter((c) => P.diaDe(c.en) === d).length;
-          const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fecha(d)} (${n})` });
+          const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fechaCorta(d)} (${n})` });
           b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta('dia'); $('[data-dia]').scrollIntoView({ block: 'start' }); });
           return b;
         });
@@ -108,7 +106,9 @@
     ['pausa_vencida', '1 pausa vencida', (k) => `${k} pausas vencidas`],
     ['no_es_la_persona', '1 no era la persona', (k) => `${k} no eran la persona`],
     ['cancelada', '1 cancelada', (k) => `${k} canceladas`],
-    ['pendiente', '1 por atender', (k) => `${k} por atender`]
+    ['pendiente', '1 por atender', (k) => `${k} por atender`],
+    // Una cita en pausa espera el documento de la persona: no se cuenta «por atender» (auditoría 2026-10-20, C4-08)
+    ['en_pausa', '1 en pausa', (k) => `${k} en pausa`]
   ];
   const desglose = (cuenta) => DESGLOSE.filter(([k]) => cuenta[k]).map(([k, uno, varios]) => (cuenta[k] === 1 ? uno : varios(cuenta[k])))
     .concat(Object.keys(cuenta).filter((k) => !DESGLOSE.some(([x]) => x === k)).map((k) => `${cuenta[k]} ${(P.SITUACION[k] || { texto: k }).texto.toLowerCase()}`))
@@ -117,25 +117,43 @@
      regiones vivas; al cambiar de día se anuncia una sola vez el día con su cuenta y, al buscar, la cuenta cuando se deja
      de escribir (una pausa, no en cada tecla). Al cargar no se anuncia nada. */
   const PAUSA_BUSQUEDA = 700;
+  const CLAVE_BUSQUEDA = 'apd.citas.buscar';
+  /* Lo que se trae de la dirección y de esta pestaña: «Por atender» (?ver=) y la búsqueda (C1-07, C4-03) */
+  {
+    const ver = new URLSearchParams(location.search).get('ver');
+    if (ver === 'por-atender') document.getElementById('ver').value = ver;
+    // Sólo al volver con «Atrás» o al recargar; si se llega de nuevo (desde el menú), la agenda empieza sin búsqueda
+    const nav = (performance.getEntriesByType('navigation')[0] || {}).type;
+    try { const b = sessionStorage.getItem(CLAVE_BUSQUEDA); if (b && ['back_forward', 'reload'].includes(nav)) document.getElementById('buscar').value = b; } catch (e) { /* sin almacenamiento */ }
+  }
   let esperaBusqueda = null;
   function pinta(origen) {
     const q = norm(document.getElementById('buscar').value);
+    const porAtender = document.getElementById('ver').value === 'por-atender';
     // El día elegido queda en la dirección (?dia=): al volver del cotejo, con «Atrás» o al recargar, la agenda sigue en
-    // ese día (auditoría 2026-10-18, B8)
+    // ese día (auditoría 2026-10-18, B8); también «Por atender» (?ver=, C1-07)
     const url = new URL(location.href);
-    if (url.searchParams.get('dia') !== dia) { url.searchParams.set('dia', dia); history.replaceState(null, '', url); }
+    const antes = url.search;
+    url.searchParams.set('dia', dia);
+    if (porAtender) url.searchParams.set('ver', 'por-atender'); else url.searchParams.delete('ver');
+    if (url.search !== antes) history.replaceState(null, '', url);
+    // La búsqueda se conserva en esta pestaña (sessionStorage), no en la dirección: puede llevar un nombre o una CURP, que
+    // no deben quedar en el historial ni en el registro del servidor (auditoría 2026-10-20, C4-03)
+    try { if (q) sessionStorage.setItem(CLAVE_BUSQUEDA, document.getElementById('buscar').value); else sessionStorage.removeItem(CLAVE_BUSQUEDA); } catch (e) { /* sin almacenamiento */ }
     let n = 0;
     const cuenta = {};
     for (const f of filas) {
-      const ve = q ? f.texto.includes(q) : f.dia === dia;
+      const ve = (q ? f.texto.includes(q) : f.dia === dia) && (!porAtender || f.c.pendiente);
       f.tr.hidden = !ve;
       // Al buscar en todos los días, la hora lleva también la fecha
-      f.hora.textContent = q ? `${APD.fecha(f.dia)} ${P.horaDe(f.c.en)}` : P.horaDe(f.c.en);
-      if (ve) { n += 1; const k = f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
+      f.hora.textContent = q ? APD.fechaCorta(f.c.en, { hora: true }) : APD.hora(f.c.en);
+      // En pausa por su resultado (apd.cita.resultado), también con el documento ya cargado («retomar»); la pausa vencida va
+      // aparte (C4-08)
+      if (ve) { n += 1; const k = f.c.pendiente && f.c.cita.resultado === 'en_pausa' ? 'en_pausa' : f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
     }
     $('[data-col-hora]').textContent = q ? 'Fecha y hora' : 'Hora';
     $('[data-dia]').textContent = q ? 'Resultados en todos los días' : diaLargo(dia);
-    $('[data-leyenda]').textContent = q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${diaLargo(dia).toLowerCase()}`;
+    $('[data-leyenda]').textContent = q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${APD.fechaLarga(dia)}`;
     $('[data-flechas]').hidden = Boolean(q);
     const i = dias.indexOf(dia);
     // En el primer o el último día con citas el botón queda inactivo con aria-disabled, no con disabled: conserva el foco
@@ -144,11 +162,12 @@
     inactivo(botones[1], i < 0 || i >= dias.length - 1);
     // El módulo tabla vuelve a leer los encabezados (la columna de la hora cambia de nombre)
     $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
-    $('[data-tabla-vacia]').hidden = !(q && n === 0);
+    $('[data-tabla-vacia]').hidden = n > 0 || !(q || porAtender);
+    $('[data-tabla-vacia]').textContent = q ? 'Ninguna cita coincide con la búsqueda. Revise lo que escribió.' : 'Todas las citas de este día ya tienen resultado.';
     const textoCuenta = q
-      ? (n ? `${n === 1 ? 'Una cita coincide' : `${n} citas coinciden`} con la búsqueda.` : 'Ninguna cita coincide con la búsqueda.')
-      : !n ? 'No hay citas este día.'
-        : `${n === 1 ? '1 cita' : `${n} citas`}: ${desglose(cuenta)}.`;
+      ? (n ? `${n === 1 ? 'Una cita coincide' : `${n} citas coinciden`} con la búsqueda${porAtender ? ' y está por atender' : ''}.` : `Ninguna cita${porAtender ? ' por atender' : ''} coincide con la búsqueda.`)
+      : !n ? (porAtender ? 'No quedan citas por atender este día.' : 'No hay citas este día.')
+        : `${n === 1 ? '1 cita' : `${n} citas`}${porAtender ? ' sin resultado' : ''}: ${desglose(cuenta)}.`;
     $('[data-cuenta]').textContent = textoCuenta;
     clearTimeout(esperaBusqueda);
     if (origen === 'dia') FormKit.anuncia(`${diaLargo(dia)}: ${textoCuenta}`);
@@ -164,7 +183,7 @@
       pinta('dia');
     });
   }
-  form.addEventListener('input', () => pinta('busqueda'));
+  form.addEventListener('input', (e) => pinta(e.target.id === 'ver' ? 'dia' : 'busqueda'));
   APD.alCambiar(() => { carga().catch(() => {}); });
 
   carga().catch(() => {

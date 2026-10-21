@@ -26,7 +26,9 @@
   const decimal = (n) => Number(n).toFixed(1);
   const minutos = (ms) => { const m = Math.ceil(ms / 60000); return m === 1 ? 'queda 1 minuto' : `quedan ${m} minutos`; };
   const veces = (n) => (n === 1 ? '1 vez' : `${n} veces`);
-  const hora = (iso) => new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+  const hora = APD.hora;
+  /* Fechas (decisión 16 b, 20/10/2026): «Hoy, …» y el aviso del día del examen, con fecha larga; las listas, la ficha y la
+     papeleta, dd/mm/aaaa */
 
   APD.cargar().then((datos) => {
     pintaSesion($('[data-sesion-personal]'));
@@ -47,8 +49,8 @@
       $('[data-sin-grupo]').hidden = false;
       if (!pedido) {
         $('#t-sin-grupo').textContent = 'Mis grupos de hoy';
-        $('[data-sin-grupo-texto]').textContent = misDeHoy.length ? `Hoy, ${APD.fechaConDia(hoy)}, tiene ${misDeHoy.length} grupos. El examen se aplica el último día del curso; elija el grupo:`
-          : `Hoy, ${APD.fechaConDia(hoy)}, no tiene grupos con clase ni examen.`;
+        $('[data-sin-grupo-texto]').textContent = misDeHoy.length ? `Hoy, ${APD.fechaLarga(hoy)}, tiene ${misDeHoy.length} grupos. El examen se aplica el último día del curso; elija el grupo:`
+          : `Hoy, ${APD.fechaLarga(hoy)}, no tiene grupos con clase ni examen.`;
         const caja = $('[data-mis-grupos-hoy]');
         caja.hidden = false;
         APD_PERSONAL.pintaMisGrupos(caja, datos, INSTRUCTOR.usuario);
@@ -60,7 +62,7 @@
           : existe ? `El grupo ${pedido} no está en curso: el examen se aplica el último día de un curso en marcha.`
             : `No hay un grupo con el folio ${pedido}.`;
         $('[data-mis-grupos]').replaceChildren(...enCurso.map((x) => el('li', {}, [el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`,
-          texto: `${APD.nombreGrupo(x, datos)} · ${x.folio} · examen el ${APD.fecha(G.fechaExamen(datos, x))}` })])));
+          texto: `${APD.nombreGrupo(x, datos)} · ${x.folio} · examen el ${APD.fechaCorta(G.fechaExamen(datos, x))}` })])));
         $('[data-mis-grupos-titulo]').hidden = !enCurso.length;
         if (enCurso.length) $('[data-mis-grupos-titulo]').textContent = 'Sus grupos en curso:';
       }
@@ -72,15 +74,20 @@
     // Otros grupos en curso, con la fecha de su examen, para cambiar de grupo
     const otros = enCurso.filter((x) => x.id !== g.id);
     if (otros.length) {
+      // Dos grupos del mismo curso con las mismas fechas se llaman igual (y la sede es una sola): el que se repite lleva
+      // su folio y cuántas personas tiene, como el aviso de «Grupos» con dos grupos sin fecha (auditoría 2026-10-20, C1-06)
+      const nombres = [g].concat(otros).map((x) => APD.nombreGrupo(x, datos));
+      const repetido = (x) => nombres.filter((n) => n === APD.nombreGrupo(x, datos)).length > 1;
+      const personas = (x) => APD.plural(datos.inscripcion.filter((i) => i.grupo_id === x.id && i.activa).length, 'persona', 'personas');
       avisosGrupo.push(el('p', { class: 'otros-grupos' }, [document.createTextNode('Otros grupos en curso: ')].concat(otros.flatMap((x, i) => [
         i ? document.createTextNode(' · ') : null,
-        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${APD.nombreGrupo(x, datos)} (examen el ${APD.fecha(G.fechaExamen(datos, x))})` })
+        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${APD.nombreGrupo(x, datos)}${repetido(x) ? ` · ${x.folio} · ${personas(x)}` : ''} (examen el ${APD.fechaCorta(G.fechaExamen(datos, x))})` })
       ]).filter(Boolean))));
     }
     // El examen es el último día del curso: otro día no se generan códigos (en la prueba se permite, para probar)
     const fueraDeDia = G.fechaExamen(datos, g) !== hoy;
     if (fueraDeDia) {
-      avisosGrupo.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `El examen de este grupo es el ${APD.fecha(G.fechaExamen(datos, g))}, no hoy`,
+      avisosGrupo.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `El examen de este grupo es el ${APD.fechaLarga(G.fechaExamen(datos, g))}, no hoy`,
         texto: prueba ? 'Versión de prueba: se puede pasar lista para probar. En el sistema, los códigos sólo se generan el día del examen.'
           : 'Los códigos se generan el día del examen. Si hoy presenta otro grupo, elíjalo arriba.' }));
     }
@@ -97,7 +104,7 @@
       // El grupo por su nombre calculado; el folio, que no cambia, debajo en chico (propuesta D, 2026-10-18)
       ['Grupo', APD.grupoTitulo(g, datos)],
       ['Curso', `${APD.TIPOS[g.tipo_acreditacion]} · ${APD.MODALIDADES[g.modalidad].toLowerCase()}`],
-      ['Fecha del examen', `${APD.fecha(G.fechaExamen(datos, g))} · último día del curso (inició el ${APD.fecha(g.fecha_inicio)})`],
+      ['Fecha del examen', `${APD.fechaCorta(G.fechaExamen(datos, g))} · último día del curso (inició el ${APD.fechaCorta(g.fecha_inicio)})`],
       ['Lugar', G.LUGAR],
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
     ]), ...avisosGrupo);
@@ -106,6 +113,8 @@
     const filas = G.personas(datos, g);
     // Códigos repuestos hace poco (inscripción → hora), para señalarlos en su fila
     const recientes = {};
+    // Fotografías ampliadas (inscripción), para que sigan así al volver a pintar la lista (C1-02)
+    const ampliadas = new Set();
     // Fotografías de la cuenta (las confirmadas en el cotejo), para pasar lista
     const fotos = {};
     Promise.all(filas.map((f) => G.fotoDe(f.persona.curp, APD.nombreCompleto(f.persona)).then((u) => { fotos[f.inscripcion.id] = u; })))
@@ -122,7 +131,9 @@
       if (nueva === firma && !forzar) return;
       firma = nueva;
       // Se conserva el foco en el botón de la misma persona al volver a pintar
-      const enfocado = document.activeElement && document.activeElement.closest('[data-tabla]') ? [document.activeElement.dataset.accion, document.activeElement.dataset.ins] : null;
+      // (la fotografía es un botón [data-ampliar], no una acción del pase de lista: C1-02)
+      const activo = document.activeElement;
+      const enfocado = activo && activo.closest('[data-tabla]') ? [activo.hasAttribute('data-ampliar') ? null : activo.dataset.accion, activo.dataset.ins] : null;
 
       const cuenta = { registradas: 0, derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, suspendidas: 0 };
       $('[data-filas]').replaceChildren(...filas.map((f) => {
@@ -130,8 +141,16 @@
         const r = vigente(f);
         const l = lista[f.inscripcion.id];
         const id = f.inscripcion.id;
-        const foto = el('div', { class: 'perfil-foto examen-foto-lista' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: nombre.split(' ').slice(0, 2).map((x) => x[0]).join('') })]);
-        if (fotos[id]) foto.append(el('img', { class: 'perfil-imagen', src: fotos[id], alt: `Fotografía de ${nombre}` }));
+        let foto = el('div', { class: 'perfil-foto examen-foto-lista' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: nombre.split(' ').slice(0, 2).map((x) => x[0]).join('') })]);
+        if (fotos[id]) {
+          foto.append(el('img', { class: 'perfil-imagen', src: fotos[id], alt: `Fotografía de ${nombre}` }));
+          /* Con la fotografía se confirma la identidad (DECISIONES, 17/10): miniatura de 96 px que se amplía a unos 320 px
+             ahí mismo, junto a «Presente» y «No llegó», con clic, toque, Intro o Espacio (decisión 14 a de Liber,
+             auditoría 2026-10-20, C1-02). Sigue ampliada al volver a pintar la lista. */
+          const amplia = ampliadas.has(id);
+          foto = el('button', { type: 'button', class: 'examen-foto-boton', 'data-ampliar': '', 'data-ins': id, 'data-ampliada': amplia ? '' : null,
+            'aria-label': `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${nombre}` }, [foto, el('span', { class: 'examen-foto-accion', 'aria-hidden': 'true', texto: amplia ? 'Reducir' : 'Ampliar' })]);
+        }
         const persona = el('td', {}, [el('div', { class: 'examen-persona-fila' }, [foto, el('div', {}, [el('span', { class: 'examen-nombre', texto: nombre }), el('span', { class: 'examen-nota mono', texto: f.solicitud.folio })])])]);
         const asistencia = el('td', {}, [document.createTextNode(f.anteriores ? `${f.previos} de ${f.anteriores} ${f.anteriores === 1 ? 'día anterior' : 'días anteriores'}` : 'Curso de un día')]);
         let paseLista = el('td', { class: 'texto-gris', texto: '—' });
@@ -211,7 +230,8 @@
       $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
 
       if (enfocado) {
-        const b = $(`[data-tabla] [data-accion="${enfocado[0]}"][data-ins="${enfocado[1]}"]`) || $(`[data-tabla] tr[data-ins="${enfocado[1]}"] button`);
+        const b = enfocado[0] === null ? $(`[data-tabla] [data-ampliar][data-ins="${enfocado[1]}"]`)
+          : $(`[data-tabla] [data-accion="${enfocado[0]}"][data-ins="${enfocado[1]}"]`) || $(`[data-tabla] tr[data-ins="${enfocado[1]}"] [data-accion]`);
         if (b) b.focus();
       }
       pintaPapeletas(filas, vigente);
@@ -222,7 +242,7 @@
       $('[data-papeletas]').replaceChildren(...lista.map((f) => [f, vigente(f)]).filter(([, r]) => r && ['sin_empezar', 'contestando'].includes(r.situacion)).map(([f, r]) =>
         el('div', { class: 'papeleta' }, [
           el('p', { class: 'papeleta-nombre', texto: APD.nombreCompleto(f.persona) }),
-          el('p', { class: 'papeleta-dato', texto: `Examen ${APD.TIPOS[g.tipo_acreditacion].toLowerCase()} · ${APD.nombreGrupo(g, datos)} · grupo ${g.folio} · ${APD.fecha(G.fechaExamen(datos, g))}` }),
+          el('p', { class: 'papeleta-dato', texto: `Examen ${APD.TIPOS[g.tipo_acreditacion].toLowerCase()} · ${APD.nombreGrupo(g, datos)} · grupo ${g.folio} · ${APD.fechaCorta(G.fechaExamen(datos, g))}` }),
           el('p', { class: 'papeleta-codigo mono', texto: r.codigo }),
           el('p', { class: 'papeleta-dato', texto: 'Escribe este código en la computadora, en «Entra a tu examen». Sólo sirve para tu examen.' })
         ])));
@@ -239,6 +259,16 @@
     };
     let suspenderA = null;
     $('[data-filas]').addEventListener('click', (e) => {
+      const fb = e.target.closest('[data-ampliar]');
+      if (fb) {
+        // La fotografía se amplía o se reduce ahí mismo; el foco sigue en el botón (C1-02)
+        const amplia = !fb.hasAttribute('data-ampliada');
+        if (amplia) ampliadas.add(fb.dataset.ins); else ampliadas.delete(fb.dataset.ins);
+        fb.toggleAttribute('data-ampliada', amplia);
+        fb.setAttribute('aria-label', `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${APD.nombreCompleto(fila(fb.dataset.ins).persona)}`);
+        $('.examen-foto-accion', fb).textContent = amplia ? 'Reducir' : 'Ampliar';
+        return;
+      }
       const b = e.target.closest('[data-accion]');
       if (!b) return;
       const f = fila(b.dataset.ins);

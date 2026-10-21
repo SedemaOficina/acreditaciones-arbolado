@@ -160,14 +160,44 @@
 
   /* ----- Fechas: todo en hora de la Ciudad de México ----- */
   function aFecha(iso) { return iso ? new Date(iso.length === 10 ? `${iso}T12:00:00-06:00` : iso) : null; }
-  function fecha(iso) {
-    const d = aFecha(iso);
-    return d ? d.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Mexico_City' }) : '';
+  /* Día y hora de un instante en la Ciudad de México, sin depender de cómo el navegador une las piezas (la coma de
+     toLocaleString, P184) ni de su ciclo de horas (hourCycle h23: la medianoche es 00:00, nunca 24:00). Una fecha sola
+     (AAAA-MM-DD) es ese mismo día, sin hora. */
+  const RELOJ = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  function partesCdmx(v) {
+    if (v == null || v === '') return null;
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) { const [a, m, d] = v.split('-'); return { a, m, d, h: null }; }
+    const t = v instanceof Date ? v : new Date(v);
+    if (Number.isNaN(t.getTime())) return null;
+    const p = {};
+    for (const x of RELOJ.formatToParts(t)) p[x.type] = x.value;
+    return { a: p.year, m: p.month, d: p.day, h: `${p.hour === '24' ? '00' : p.hour}:${p.minute}` };
   }
-  function fechaHora(iso) {
-    const d = aFecha(iso);
-    // Hora de 24 horas, como en todo el sistema (decisión 2026-10-17); sin «a.m.», que dejaba «a.m..» al final de una frase
-    return d ? d.toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }) : '';
+  /* La hora que acompaña a una fecha: opciones.hora = true toma la del mismo instante; un texto («09:00» o «09:00:00»,
+     como hora_entrada o la hora elegida de una cita) se usa tal cual, en HH:MM */
+  const horaPedida = (p, hora) => (hora === true ? p.h : hora ? String(hora).slice(0, 5) : null);
+  /* LAS DOS FORMAS DE ESCRIBIR UNA FECHA (decisión de Liber del 20/10/2026, auditoría del 20/10, punto 16 b; C5-01).
+     Todas las pantallas usan sólo estas dos; el acuse conserva la del estándar (FormKit.utilidades.fechaHora, punto 17 b).
+     · fechaLarga: lo que la persona tiene que recordar (su cita, su curso, su examen) y, para el personal, el día y la
+       hora de un grupo o de una cita cuando es un encabezado o un aviso. «martes 20 de octubre de 2026 a las 10:00»;
+       sin hora, «martes 20 de octubre de 2026». El día de la semana en minúscula (al principio de un renglón, con
+       mayúscula inicial, como cualquier oración: opciones.mayuscula).
+     · fechaCorta: tablas y datos (listas, columnas, líneas de datos, vencimientos, fechas de registro). «20/10/2026»;
+       con hora, «20/10/2026 10:00», sin coma ni «a las».
+     El nombre de un grupo («del 13 al 17 de octubre», decisión 18/10) no es una fecha suelta: lo arma nombreGrupo. */
+  function fechaLarga(v, opciones = {}) {
+    const p = partesCdmx(v);
+    if (!p) return '';
+    const dia = DIAS[new Date(Date.UTC(+p.a, +p.m - 1, +p.d, 12)).getUTCDay()];
+    const h = horaPedida(p, opciones.hora);
+    const t = `${dia} ${Number(p.d)} de ${MESES[+p.m - 1]} de ${p.a}${h ? ` a las ${h}` : ''}`;
+    return opciones.mayuscula ? t.charAt(0).toLocaleUpperCase('es-MX') + t.slice(1) : t;
+  }
+  function fechaCorta(v, opciones = {}) {
+    const p = partesCdmx(v);
+    if (!p) return '';
+    const h = horaPedida(p, opciones.hora);
+    return `${p.d}/${p.m}/${p.a}${h ? ` ${h}` : ''}`;
   }
   function sumaDias(iso, dias) { const d = aFecha(iso); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); }
   /* N meses después de una fecha AAAA-MM-DD, como la base (date + interval 'N months'): si el día no existe en el mes de
@@ -208,19 +238,16 @@
   function vencimiento(datos, venceEn) {
     const n = diasParaVencer(datos, venceEn);
     const dias = (k) => (k === 1 ? '1 día' : `${k.toLocaleString('es-MX')} días`);
-    if (n > 0) return [['Vence el', fecha(venceEn)], ['Vence en', dias(n)]];
-    if (n === 0) return [['Vence el', `${fecha(venceEn)} (hoy)`]];
-    return [['Venció el', fecha(venceEn)], ['Vencida hace', dias(-n)]];
+    if (n > 0) return [['Vence el', fechaCorta(venceEn)], ['Vence en', dias(n)]];
+    if (n === 0) return [['Vence el', `${fechaCorta(venceEn)} (hoy)`]];
+    return [['Venció el', fechaCorta(venceEn)], ['Vencida hace', dias(-n)]];
   }
   /* «1 grupo», «3 grupos» (auditoría 2026-10-18, A 6.5: estaba repetida en cuatro pantallas del personal) */
   const plural = (n, uno, varios) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
   /* Texto para buscar sin acentos ni mayúsculas (A 6.6: estaba repetida en la bandeja y en las citas) */
   const normalizaBusqueda = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
-  /* Hora de 24 horas (HH:MM) en la Ciudad de México */
-  function hora(iso) {
-    const d = aFecha(iso);
-    return d ? d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' }) : '';
-  }
+  /* Hora de 24 horas (HH:MM) en la Ciudad de México; la medianoche es 00:00 */
+  function hora(iso) { const p = partesCdmx(iso); return p && p.h ? p.h : ''; }
 
   /* ----- Sesión simulada ----- */
   /* La sesión simulada se guarda en este navegador (localStorage) y sobrevive a recargar u otra pestaña
@@ -451,7 +478,7 @@
       const a = ultima(tipo);
       const sit = a ? situacion(datos, a) : null;
       if (enCurso) { r[tipo] = { disponible: false, motivo: `Ya tienes un trámite en curso (folio ${enCurso.folio}).` }; continue; }
-      if (sit === 'vigente') { r[tipo] = { disponible: false, motivo: `Tu acreditación ${a.numero} vence el ${fecha(a.vence_en)}. Podrás renovarla a partir del ${fecha(sumaDias(a.vence_en, -diasAntes))}.` }; continue; }
+      if (sit === 'vigente') { r[tipo] = { disponible: false, motivo: `Tu acreditación ${a.numero} vence el ${fechaCorta(a.vence_en)}. Podrás renovarla a partir del ${fechaCorta(sumaDias(a.vence_en, -diasAntes))}.` }; continue; }
       if (sit === 'no_emitida') { r[tipo] = { disponible: false, motivo: `Tu acreditación ${a.numero} todavía no entra en vigor.` }; continue; }
       const renovable = sit === 'por_vencer' || sit === 'vencida_renovable';
       r[tipo] = { disponible: true, modalidad: renovable ? 'renovacion' : 'nueva', anterior: renovable ? a.numero : null };
@@ -596,7 +623,7 @@
   /* Fecha simulada visible en la franja de entorno */
   function pintaCorte(datos) {
     const franja = document.querySelector('[data-corte]');
-    if (franja) franja.textContent = fecha(datos.fecha_corte);
+    if (franja) franja.textContent = fechaCorta(datos.fecha_corte);
   }
 
   /* Iconos del estándar en las pantallas sin formulario: el mismo sprite y la misma marca que usa el
@@ -694,11 +721,10 @@
   const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
   const piezas = (iso) => { const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number); return { a, m, d }; };
-  /* Día de la semana de una fecha AAAA-MM-DD («lunes») */
-  const diaSemana = (iso) => DIAS[aFecha(String(iso).slice(0, 10)).getUTCDay()];
   /* «13 de octubre» (con el año si se pide: «13 de octubre de 2026») */
   function diaMes(iso, conAnio) { const p = piezas(iso); return `${p.d} de ${MESES[p.m - 1]}${conAnio ? ` de ${p.a}` : ''}`; }
-  /* «del 13 al 17 de octubre», «del 29 de octubre al 2 de noviembre»; el año sólo si no es el de anioRef */
+  /* «del 13 al 17 de octubre», «del 29 de octubre al 2 de noviembre»; el año sólo si no es el de anioRef. Sólo para el
+     nombre de un grupo (decisión 18/10): cualquier otra fecha se escribe con fechaLarga o fechaCorta (decisión 20/10) */
   function rangoFechas(desde, hasta, anioRef) {
     const a = piezas(desde);
     const b = piezas(hasta || desde);
@@ -708,8 +734,6 @@
     if (a.a === b.a) return `del ${diaMes(desde)} al ${diaMes(hasta)}${otroAnio ? ` de ${a.a}` : ''}`;
     return `del ${diaMes(desde, true)} al ${diaMes(hasta, true)}`;
   }
-  /* «miércoles 14/10/2026» */
-  const fechaConDia = (iso) => `${diaSemana(iso)} ${fecha(iso)}`;
   /* Último día de un grupo (el del examen), según la duración de su curso */
   function ultimoDia(datos, g) {
     const c = datos ? curso(datos, g.tipo_acreditacion, g.modalidad) : null;
@@ -888,8 +912,8 @@
     fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
-    cursoCorto, cursoLargo, MESES, diaSemana, diaMes, rangoFechas, fechaConDia, ultimoDia, nombreGrupo, grupoTitulo,
-    cargar, cargadoTras, fecha, fechaHora, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
+    cursoCorto, cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
+    cargar, cargadoTras, fechaLarga, fechaCorta, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,

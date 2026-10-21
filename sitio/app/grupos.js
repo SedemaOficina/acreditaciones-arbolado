@@ -17,7 +17,11 @@
    (apd.inscripcion_alta, apd.grupo_cambio). En la etapa 3 los datos los da la API del personal. */
 (function () {
   'use strict';
-  const { el, estado, fecha } = APD;
+  /* Fechas (decisión 16 b, 20/10/2026): «Hoy es …» y el día en que puede empezar un curso, con fecha larga; las semanas,
+     el cupo y la línea de datos de cada grupo, dd/mm/aaaa. El nombre del grupo («del 13 al 17 de octubre») es la
+     decisión del 18/10 y lo arma APD.nombreGrupo. */
+  const { el, estado, fechaLarga, fechaCorta } = APD;
+  const semana = (lunes, domingo) => `del ${fechaCorta(lunes)} al ${fechaCorta(domingo)}`;
   const P = APD_PERSONAL;
   const $ = (s, r) => (r || document).querySelector(s);
   const plural = APD.plural;
@@ -34,7 +38,7 @@
     const curso0 = datos.curso[0] || {};
     $('[data-cupo-min]').textContent = curso0.cupo_minimo;
     $('[data-cupo-max]').textContent = curso0.cupo_maximo;
-    $('[data-hoy]').textContent = `Hoy es ${APD.fechaConDia(hoy)}. Elija el curso para ver quién espera y sus próximas semanas.`;
+    $('[data-hoy]').textContent = `Hoy es ${fechaLarga(hoy)}. Elija el curso para ver quién espera y sus próximas semanas.`;
     const pedido = params.get('grupo');
     const gPedido = pedido ? datos.grupo.find((g) => g.folio === pedido) : null;
     let clave = P.deClave(params.get('curso')) ? params.get('curso')
@@ -42,8 +46,18 @@
     const minimo = P.primerDiaPosible(datos);
     const todos = P.grupos(datos);
 
-    /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) */
+    /* Las elegidas de cada curso se conservan al cambiar de curso y al volver (auditoría «intentar romperlo», F3 B7) y, en
+       esta pestaña (sessionStorage), al recargar o al volver con «Atrás» aunque el navegador vuelva a cargar la página
+       (auditoría 2026-10-20, C4-04). Al llegar de nuevo (desde el menú o tras agregar) se empieza sin elegidas; las que ya
+       no esperan no se marcan porque ya no tienen casilla. */
     const elegidasDe = new Map();
+    const CLAVE_ELEGIDAS = 'apd.grupos.elegidas';
+    try {
+      if (['reload', 'back_forward'].includes((performance.getEntriesByType('navigation')[0] || {}).type)) {
+        for (const [k, v] of Object.entries(JSON.parse(sessionStorage.getItem(CLAVE_ELEGIDAS) || '{}'))) if (Array.isArray(v)) elegidasDe.set(k, new Set(v));
+      } else sessionStorage.removeItem(CLAVE_ELEGIDAS);
+    } catch (e) { /* sin almacenamiento: sólo en memoria */ }
+    const guardaElegidas = () => { try { sessionStorage.setItem(CLAVE_ELEGIDAS, JSON.stringify(Object.fromEntries([...elegidasDe].map(([k, v]) => [k, [...v]])))); } catch (e) { /* sin almacenamiento */ } };
     /* Barra de elegidas (auditoría 2026-10-20, B4-01; decisión 1 a y c de Liber): desde 760 px va fija al pie de «En
        espera». Para que el foco del teclado no quede debajo de ella, la página reserva su alto real al desplazarse
        (scroll-padding-bottom, medido con un ResizeObserver y al cambiar la ventana); si la barra mide más de un cuarto de
@@ -182,7 +196,18 @@
       const espera = P.enEspera(datos, tipo, modalidad);
       const lista = soloOrg ? espera.filter((x) => x.s.organizacion_id === soloOrg) : espera;
       const activos = delCurso.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado)).length;
-      $('[data-cuenta]').textContent = `${largo}: ${plural(espera.length, 'persona en espera', 'personas en espera')} · ${plural(activos, 'grupo activo', 'grupos activos')} (por confirmar, confirmados o en curso).`;
+      /* Cuántas son prioritarias (desde dias_alerta_espera días, «31 días o más») y cuántos grupos nuevos alcanzan, arriba de
+         la lista (auditoría 2026-10-20, C1-01: se habían perdido con el planeador del 18/10; son la corrección M7 y la de
+         «31 días o más» de la auditoría de tareas del 17/10). Los grupos nuevos, con la misma cuenta de entonces: los
+         completos de cupo_maximo y uno más si lo que sobra llega al mínimo. */
+      const prioritarias = espera.filter((x) => x.prioritaria).length;
+      const falta = c.cupo_minimo - espera.length;
+      const nuevos = Math.floor(espera.length / c.cupo_maximo) + (espera.length % c.cupo_maximo >= c.cupo_minimo ? 1 : 0);
+      const alcanza = !espera.length ? '' : falta > 0 ? ` ${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para el mínimo de ${c.cupo_minimo}.`
+        : ` Alcanza para ${nuevos === 1 ? 'un grupo nuevo' : `${nuevos} grupos nuevos`} de hasta ${c.cupo_maximo}.`;
+      $('[data-cuenta]').textContent = `${largo}: ${plural(espera.length, 'persona en espera', 'personas en espera')}`
+        + `${prioritarias ? ` (${plural(prioritarias, 'espera', 'esperan')} ${APD.parametro(datos, 'dias_alerta_espera') || 31} días o más)` : ''}`
+        + ` · ${plural(activos, 'grupo activo', 'grupos activos')} (por confirmar, confirmados o en curso).${alcanza}`;
       pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe: delCurso.filter((x) => x.recibe) });
       pintaSemanas({ tipo, modalidad, c, largo, delCurso, espera });
     }
@@ -190,7 +215,8 @@
     /* ----- En espera ----- */
     function pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
       $('#t-espera').textContent = `En espera · ${lista.length}`;
-      $('[data-orden]').textContent = renov ? 'primero quien vence antes' : 'primero quien más espera';
+      // En renovación, el orden que de verdad se ve (decisión 11 b, auditoría 2026-10-20, C1-03; P.bloquesEspera)
+      $('[data-orden]').textContent = renov ? 'por vencimiento: cada organización va junta en el lugar de la primera que vence y, dentro, primero las vencidas' : 'primero quien más espera';
       const modo = $('[data-modo-grupo]');
       modo.hidden = !modoGrupo && !noRecibe;
       if (!modoGrupo && noRecibe) {
@@ -251,6 +277,7 @@
          casilla o un bloque), no al pintar la pantalla (auditoría 2026-10-20, RI-04) */
       function pintaEleccion(porPersona) {
         elegidasDe.set(clave, new Set(elegidas().map((f) => f.x.s.folio)));
+        guardaElegidas();
         const n = elegidas().length;
         $('[data-elegidas]').textContent = n ? plural(n, 'elegida', 'elegidas') : 'Ninguna elegida';
         if (porPersona === true || (porPersona && porPersona.isTrusted)) FormKit.anuncia($('[data-elegidas]').textContent);
@@ -341,7 +368,7 @@
           : [libre(tipo, modalidad, lunes, domingo)];
         secciones.push(el('section', { class: 'plan-semana', 'aria-labelledby': id, 'data-semana': lunes }, [
           el('h4', { class: 'plan-semana-titulo', id }, [el('span', { class: 'plan-semana-nombre', texto: nombre }),
-            el('span', { class: 'plan-semana-fechas', texto: APD.rangoFechas(lunes, domingo, hoy.slice(0, 4)).replace(/^del /, '') })]),
+            el('span', { class: 'plan-semana-fechas', texto: semana(lunes, domingo).replace(/^del /, '') })]),
           el('div', { class: 'plan-semana-cuerpo' }, cuerpo)
         ]));
       }
@@ -368,11 +395,11 @@
       const programar = (desde, texto) => el('a', { class: 'plan-programar-semana', href: `programar.html?curso=${clave}&semana=${desde}` }, [APD.icono('mas'), el('span', { texto })]);
       const razon = P.razonNoInicio(datos, tipo, modalidad, lunes);
       // Cada enlace dice también su semana (auditoría 2026-10-20, B4-07: eran 5 enlaces con el mismo nombre)
-      if (!razon) { const a = programar(lunes, 'Programar un curso esta semana'); a.append(el('span', { class: 'solo-lector', texto: ` (${APD.rangoFechas(lunes, domingo, hoy.slice(0, 4))})` })); return a; }
+      if (!razon) { const a = programar(lunes, 'Programar un curso esta semana'); a.append(el('span', { class: 'solo-lector', texto: ` (${semana(lunes, domingo)})` })); return a; }
       let primero = null;
       for (let d = APD.sumaDias(lunes, 1); d <= domingo; d = APD.sumaDias(d, 1)) if (!P.razonNoInicio(datos, tipo, modalidad, d)) { primero = d; break; }
-      const linea = el('p', { class: 'plan-semana-no', texto: `El lunes ya no se puede: ${razon.texto}.${primero ? ` Desde el ${APD.diaSemana(primero)} ${fecha(primero).slice(0, 5)} sí, a media semana.` : ''}` });
-      return primero ? el('div', { class: 'plan-semana-libre' }, [linea, programar(primero, `Programar desde el ${APD.diaSemana(primero)} ${fecha(primero).slice(0, 5)}`)]) : linea;
+      const linea = el('p', { class: 'plan-semana-no', texto: `El lunes ya no se puede: ${razon.texto}.${primero ? ` Desde el ${fechaLarga(primero)} sí, a media semana.` : ''}` });
+      return primero ? el('div', { class: 'plan-semana-libre' }, [linea, programar(primero, `Programar desde el ${fechaLarga(primero)}`)]) : linea;
     }
 
     /* La tarjeta de un grupo en su semana */
@@ -384,7 +411,7 @@
       const situacion = dia ? estado(dia.texto, 'marcha')
         : pasada && g.estado === 'en_integracion' ? estado('Propuesta vencida', 'pend')
           : pasada ? estado(`${x.situacion.texto} · no inició`, 'pend') : estado(x.situacion.texto, x.situacion.tono);
-      const examen = !g.fecha_inicio || pasada ? null : c.dias_duracion > 1 ? `examen el ${APD.diaSemana(fin)} ${fecha(fin).slice(0, 5)} en el PILARES` : 'examen ese día en el PILARES';
+      const examen = !g.fecha_inicio || pasada ? null : c.dias_duracion > 1 ? `examen el ${fechaCorta(fin)} en el PILARES` : 'examen ese día en el PILARES';
       // Un grupo por confirmar lleno ya no recibe, pero se confirma y se le elige semana como cualquiera (auditoría
       // «intentar romperlo», F3 M3): el cupo y esas acciones van con «por confirmar»; sólo «Completar» pide lugar
       const integra = g.estado === 'en_integracion';
@@ -440,7 +467,7 @@
       const { g } = x;
       const falta = g.cupo_minimo - x.n;
       const celdas = Array.from({ length: g.cupo_maximo }, (_, i) => el('span', { class: 'plan-cupo-lugar', 'data-lugar': i < x.n ? 'ocupado' : i < g.cupo_minimo ? 'minimo' : 'libre' }));
-      const hasta = g.estado === 'confirmado' ? ` hasta el ${fecha(APD.sumaDias(g.fecha_inicio, -1))}` : '';
+      const hasta = g.estado === 'confirmado' ? ` hasta el ${fechaCorta(APD.sumaDias(g.fecha_inicio, -1))}` : '';
       return el('div', { class: 'plan-cupo' }, [
         el('div', { class: 'plan-cupo-barra', 'aria-hidden': 'true' }, celdas),
         el('p', { class: 'plan-cupo-texto' }, falta > 0
@@ -460,7 +487,7 @@
         FormKit.confirma(b, { titulo: `¿Confirmar «${x.calculado}»?`,
           consecuencias: [`${plural(x.n, 'persona', 'personas')}, entrada a las ${APD.hhmm(g.hora_entrada)}, con ${P.nombreInstructor(g.instructor)}.`,
             'Cada persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
-            `Sigue recibiendo personas hasta el ${fecha(APD.sumaDias(g.fecha_inicio, -1))}, sin pasar de ${g.cupo_maximo}.`],
+            `Sigue recibiendo personas hasta el ${fechaCorta(APD.sumaDias(g.fecha_inicio, -1))}, sin pasar de ${g.cupo_maximo}.`],
           si: 'Sí, confirmar el grupo' })
           .then((si) => {
             if (!si) return;

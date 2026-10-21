@@ -10,7 +10,7 @@
    todo (apd.grupo_cambio, apd.inscripcion_alta, apd.inscripcion_cambio); en la prueba, app/archivos-prueba.js. */
 (function () {
   'use strict';
-  const { el, estado, fecha } = APD;
+  const { el, estado, fechaCorta } = APD;
   const P = APD_PERSONAL;
   const $ = (s, r) => (r || document).querySelector(s);
   const plural = APD.plural;
@@ -61,7 +61,7 @@
     // Nombre calculado y, debajo, el folio en chico (propuesta D, 2026-10-18): el folio no cambia
     document.title = `${x.calculado} · ${g.folio} · Personal · Acreditaciones de arbolado urbano`;
     $('#t-grupo').replaceChildren(APD.grupoTitulo(g, datos));
-    $('[data-bajada]').replaceChildren(APD.lineaDatos([x.nombre, g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado', `creado el ${fecha(g.creado_en)}`]));
+    $('[data-bajada]').replaceChildren(APD.lineaDatos([x.nombre, g.integracion === 'especifico' ? `grupo de ${x.integracion.replace('De una organización · ', '')}` : 'grupo combinado', `creado el ${fechaCorta(g.creado_en)}`]));
     $('[data-situacion]').replaceChildren(estado(x.situacion.texto, x.situacion.tono));
 
     /* Cupo */
@@ -69,7 +69,7 @@
       const falta = g.cupo_minimo - x.n;
       $('[data-cupo]').hidden = false;
       // Hasta cuándo recibe y cuántos lugares quedan (auditoría de tareas, M10)
-      const hasta = x.recibe && g.estado === 'confirmado' ? ` Recibe personas hasta el ${fecha(APD.sumaDias(g.fecha_inicio, -1))}; ${x.lugar === 1 ? 'queda 1 lugar' : `quedan ${x.lugar} lugares`}.` : '';
+      const hasta = x.recibe && g.estado === 'confirmado' ? ` Recibe personas hasta el ${fechaCorta(APD.sumaDias(g.fecha_inicio, -1))}; ${x.lugar === 1 ? 'queda 1 lugar' : `quedan ${x.lugar} lugares`}.` : '';
       $('[data-cupo-texto]').textContent = `${x.n} de ${g.cupo_maximo} personas.${falta > 0 && abierto ? ` ${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.` : ''}${hasta}`;
       $('[data-cupo-lleno]').style.width = `${Math.min(100, Math.round((x.n / g.cupo_maximo) * 100))}%`;
     }
@@ -78,7 +78,7 @@
     const sede = APD.sede(datos).nombre;
     const pares = [];
     if (g.fecha_inicio) {
-      pares.push(['Primer día', fecha(g.fecha_inicio)], ['Último día (examen)', fecha(x.ultimo)],
+      pares.push(['Primer día', fechaCorta(g.fecha_inicio)], ['Último día (examen)', fechaCorta(x.ultimo)],
         ['Hora de entrada', APD.hhmm(g.hora_entrada)], ['Hora de salida', 'Por definir', 'el área la define (P91)'],
         ['Instructor', P.nombreInstructor(g.instructor)],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);
@@ -86,7 +86,7 @@
       // (auditoría «intentar romperlo», F3 M7)
       if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha, hora e instructor propuestos, todavía sin confirmar; se confirman abajo']);
     }
-    if (g.estado === 'cancelado') pares.push(['Motivo de la cancelación', g.motivo_cancelacion || ''], ['Cancelado el', fecha(g.estado_desde)]);
+    if (g.estado === 'cancelado') pares.push(['Motivo de la cancelación', g.motivo_cancelacion || ''], ['Cancelado el', fechaCorta(g.estado_desde)]);
     $('[data-datos]').replaceChildren(pares.length ? APD.datosLista(pares) : '');
 
     /* Personas */
@@ -109,9 +109,15 @@
         el('td', { texto: quien }),
         el('td', {}, [el('span', { class: 'mono', texto: s.folio || '' })]),
         el('td', { texto: P.organizacionDe(datos, s) }),
-        el('td', { texto: fecha(i.inscrita_en) })
+        el('td', { texto: fechaCorta(i.inscrita_en) })
       ];
-      if (conSituacion) { const e = ESTADO_SOLICITUD[s.estado] || [APD.nombrePersonal(s.estado), (APD.ESTADOS[s.estado] || {}).tono || '']; celdas.push(el('td', {}, [estado(e[0], e[1])])); }
+      if (conSituacion) {
+        // Mientras sigue «inscrita», quien ya pasó de las faltas permitidas se ve sin derecho, como en el concentrado
+        // (auditoría 2026-10-20, C4-07)
+        const e = s.estado === 'inscrita' && P.sinDerechoPorFaltas(datos, x, i.id) ? ESTADO_SOLICITUD.sin_derecho_examen
+          : ESTADO_SOLICITUD[s.estado] || [APD.nombrePersonal(s.estado), (APD.ESTADOS[s.estado] || {}).tono || ''];
+        celdas.push(el('td', {}, [estado(e[0], e[1])]));
+      }
       if (puedeBaja) {
         const b = el('button', { type: 'button', class: 'btn-enlace sin-corte', 'aria-label': `Dar de baja a ${quien}`, texto: 'Dar de baja' });
         b.addEventListener('click', () => {
@@ -188,12 +194,12 @@
       $('[data-campo="fecha_inicio"]').dataset.max = maximo;
       const iso = () => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(fi.value)) || '';
       // La propuesta de un grupo que regresó a integración se ofrece de nuevo
-      if (g.fecha_inicio && g.fecha_inicio >= minimo && g.fecha_inicio <= maximo) fi.value = fecha(g.fecha_inicio);
+      if (g.fecha_inicio && g.fecha_inicio >= minimo && g.fecha_inicio <= maximo) fi.value = fechaCorta(g.fecha_inicio);
       if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
-        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fecha(minimo)} y hasta el ${fecha(maximo)}, un año después de hoy. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
-        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo && iso() <= maximo ? `${base}: del ${fecha(iso())} al ${fecha(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
+        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fechaCorta(minimo)} y hasta el ${fechaCorta(maximo)}, un año después de hoy. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
+        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo && iso() <= maximo ? `${base}: del ${fechaCorta(iso())} al ${fechaCorta(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
       };
       fi.addEventListener('input', ayudaFecha);
       fi.addEventListener('change', ayudaFecha);
@@ -203,8 +209,8 @@
       FormKit.iniciar(form, {
         enviar(payload) {
           const d = Object.assign({}, payload.datos, { fecha_inicio: (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(payload.datos.fecha_inicio)) || payload.datos.fecha_inicio });
-          if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fecha(minimo)}.` }] });
-          if (d.fecha_inicio > maximo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso empieza a más tardar un año después de hoy: hasta el ${fecha(maximo)}.` }] });
+          if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fechaCorta(minimo)}.` }] });
+          if (d.fecha_inicio > maximo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso empieza a más tardar un año después de hoy: hasta el ${fechaCorta(maximo)}.` }] });
           // Como la API: con lo guardado de ahora (otra pestaña pudo dar de baja a alguien) y comprobando después que quedó
           // confirmado (auditoría «intentar romperlo», F3 M2: «Grupo confirmado» aunque seguía por confirmar). Lo escrito
           // se conserva.

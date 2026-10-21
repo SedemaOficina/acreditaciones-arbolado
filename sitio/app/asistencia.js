@@ -12,15 +12,14 @@
    llega (sólo la prueba lo permite) va marcado «simulada», porque la base lo rechaza (dia_futuro; auditoría C 3.4). */
 (function () {
   'use strict';
-  const { el, estado, fecha } = APD;
+  const { el, estado, fechaLarga, fechaCorta } = APD;
   const P = APD_PERSONAL;
   const G = window.APD_EXAMEN_GRUPO;
   const $ = (s, r) => (r || document).querySelector(s);
   const plural = APD.plural;
   const params = new URLSearchParams(location.search);
-  const corta = (iso) => fecha(iso).slice(0, 5);
-  const DIA_SEMANA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-  const diaSemana = (iso) => DIA_SEMANA[new Date(`${iso}T12:00:00`).getDay()];
+  /* Fechas (decisión 16 b, 20/10/2026): el día del curso en el título y en los avisos, con fecha larga («martes 13 de
+     octubre de 2026»); en las listas y los enlaces de días, dd/mm/aaaa. Sin «13/10» sin año (C5-01). */
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'asistencia', 'instructor');
@@ -42,7 +41,7 @@
       $('[data-sin-grupo]').hidden = false;
       if (ajeno) {
         $('#t-mis-grupos').textContent = 'Asistencia';
-        $('[data-sin-grupo-texto]').textContent = `Este grupo lo da otra persona: sólo puede pasar asistencia en sus grupos. Hoy, ${APD.fechaConDia(hoy)}, ${misDeHoy.length ? `tiene ${plural(misDeHoy.length, 'grupo', 'grupos')}:` : 'no tiene grupos con clase ni examen.'}`;
+        $('[data-sin-grupo-texto]').textContent = `Este grupo lo da otra persona: sólo puede pasar asistencia en sus grupos. Hoy, ${fechaLarga(hoy)}, ${misDeHoy.length ? `tiene ${plural(misDeHoy.length, 'grupo', 'grupos')}:` : 'no tiene grupos con clase ni examen.'}`;
         P.pintaMisGrupos($('[data-mis-grupos]'), datos, P.INSTRUCTORA.usuario);
         return;
       }
@@ -51,7 +50,7 @@
         $('[data-sin-grupo-texto]').textContent = `El grupo ${pedido} no está en curso: la asistencia se captura sólo mientras el curso está en marcha.`;
         return;
       }
-      $('[data-sin-grupo-texto]').textContent = misDeHoy.length ? `Hoy, ${APD.fechaConDia(hoy)}, tiene ${plural(misDeHoy.length, 'grupo', 'grupos')}. Elija el grupo:` : `Hoy, ${APD.fechaConDia(hoy)}, no tiene grupos con clase ni examen.`;
+      $('[data-sin-grupo-texto]').textContent = misDeHoy.length ? `Hoy, ${fechaLarga(hoy)}, tiene ${plural(misDeHoy.length, 'grupo', 'grupos')}. Elija el grupo:` : `Hoy, ${fechaLarga(hoy)}, no tiene grupos con clase ni examen.`;
       P.pintaMisGrupos($('[data-mis-grupos]'), datos, P.INSTRUCTORA.usuario);
       return;
     }
@@ -63,7 +62,7 @@
     const ultimoDia = c.dias_duracion;
     // El grupo por su nombre calculado y su folio en chico (propuesta D, 2026-10-18)
     $('[data-bajada]').replaceChildren(APD.grupoTitulo(g, datos), APD.lineaDatos([x.nombre,
-      `del ${fecha(g.fecha_inicio)} al ${fecha(x.ultimo)}`, plural(x.n, 'persona', 'personas')], 'grupo-bajada-datos'));
+      `del ${fechaCorta(g.fecha_inicio)} al ${fechaCorta(x.ultimo)}`, plural(x.n, 'persona', 'personas')], 'grupo-bajada-datos'));
     $('[data-regla]').textContent = permitidas > 0
       ? `Para el examen se necesitan ${c.dias_minimos_asistencia} de ${c.dias_duracion} días: cada persona puede faltar ${permitidas === 1 ? '1' : permitidas}.`
       : `Para el examen se necesita asistir ${c.dias_duracion === 1 ? 'al día del curso' : `los ${c.dias_duracion} días`}.`;
@@ -98,13 +97,16 @@
     const sinCapturar = capturables.filter((n) => diaDe(n) < hoy && !listo(n) && n !== dia);
     const avisos = [];
     if (sinCapturar.length) {
-      const dias = sinCapturar.map((n) => `${n} (${corta(diaDe(n))})`);
+      const dias = sinCapturar.map((n) => `${n} (${fechaLarga(diaDe(n))})`);
       const lista = dias.length > 1 ? `los días ${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}` : `el día ${dias[0]}`;
       // Es un estado de la página, no una alerta (auditoría 2026-10-20, RI-09): se ve igual, pero sin role="alert", que lo
       // hacía sonar en cada carga y cortaba la confirmación «Asistencia del día N guardada». FormKit.aviso da el rol por el
       // tono y no tiene uno de bloqueo sin anuncio (nota del revisor independiente sobre el estándar, informe-ri, sección 4).
+      // Con un enlace a cada día que falta (auditoría 2026-10-20, C1-05): «Corregir otro día» queda plegado y abajo
+      const enlaces = sinCapturar.flatMap((n, i) => [i ? document.createTextNode(' · ') : null,
+        el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`, texto: `Capturar el día ${n} (${fechaLarga(diaDe(n))})` })]).filter(Boolean);
       const falta = FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `Falta capturar ${lista}`,
-        texto: 'Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. Ábralo en «Corregir otro día» y guárdelo.' });
+        texto: el('p', {}, [document.createTextNode('Un día sin capturar cuenta como falta para todas las personas del grupo: podrían quedarse sin derecho a examen. '), ...enlaces]) });
       falta.removeAttribute('role');
       avisos.push(falta);
     }
@@ -118,7 +120,7 @@
     const otros = capturables.filter((n) => n !== dia && diaDe(n) <= hoy);
     $('[data-otro-dia]').hidden = !otros.length;
     $('[data-dias]').replaceChildren(...otros.map((n) => el('li', {}, [
-      el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`, texto: `Día ${n} · ${diaSemana(diaDe(n))} ${corta(diaDe(n))}` }),
+      el('a', { href: `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`, texto: `Día ${n} · ${fechaCorta(diaDe(n))}` }),
       document.createTextNode(listo(n) ? ' · capturado' : ' · sin capturar')
     ])));
     if (dia && dia !== deHoy && deHoy) {
@@ -130,7 +132,7 @@
       const enlaces = [];
       for (let n = 1; n <= ultimoDia; n++) {
         const examen = n === ultimoDia;
-        const texto = `Día ${n} · ${corta(diaDe(n))}${examen ? ' · examen' : listo(n) ? ' · capturado' : ''}`;
+        const texto = `Día ${n} · ${fechaCorta(diaDe(n))}${examen ? ' · examen' : listo(n) ? ' · capturado' : ''}`;
         const href = examen ? `aplicar.html?folio=${encodeURIComponent(g.folio)}` : `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`;
         enlaces.push(n === dia ? el('strong', { 'aria-current': 'page', texto }) : el('a', { href, texto }));
       }
@@ -163,14 +165,14 @@
       $('[data-titulo-dia]').textContent = examenHoy ? `Día ${ultimoDia} de ${ultimoDia} · examen` : 'Todavía no hay días por capturar';
       if (!examenHoy) {
         $('[data-ultimo-dia]').hidden = false;
-        $('[data-ultimo-dia]').textContent = `El curso empieza el ${fecha(g.fecha_inicio)}.`;
+        $('[data-ultimo-dia]').textContent = `El curso empieza el ${fechaLarga(g.fecha_inicio)}.`;
       }
       $('[data-acciones]').hidden = true;
       return;
     }
     const corrige = dia !== deHoy;
     const futuro = diaDe(dia) > hoy;
-    $('[data-titulo-dia]').textContent = `${corrige && !futuro ? 'Corregir el día' : 'Día'} ${dia} de ${ultimoDia} · ${diaSemana(diaDe(dia))} ${corta(diaDe(dia))}${futuro ? ' (simulado)' : ''}`;
+    $('[data-titulo-dia]').textContent = `${corrige && !futuro ? 'Corregir el día' : 'Día'} ${dia} de ${ultimoDia} · ${fechaLarga(diaDe(dia))}${futuro ? ' (simulado)' : ''}`;
     $('[data-guardar]').textContent = `Guardar la asistencia del día ${dia}`;
 
     /* Faltas de la persona con lo marcado ahora en pantalla */

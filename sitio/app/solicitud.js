@@ -114,7 +114,7 @@
       APD.icono('adjunto', 'icono arch-icono'),
       el('div', { class: 'arch-cuerpo' }, [
         el('span', { class: 'arch-nombre', texto: nombre }),
-        el('span', { class: 'arch-estado', texto: [d.cargado_en ? `Cargado el ${APD.fecha(d.cargado_en)}` : '', d.tamano_bytes ? APD.tamano(d.tamano_bytes) : ''].filter(Boolean).join(' · ') })
+        el('span', { class: 'arch-estado', texto: [d.cargado_en ? `Cargado el ${APD.fechaCorta(d.cargado_en)}` : '', d.tamano_bytes ? APD.tamano(d.tamano_bytes) : ''].filter(Boolean).join(' · ') })
       ]),
       el('a', { class: 'btn-enlace', href: urlDe(d), target: '_blank', rel: 'noopener' }, [
         document.createTextNode('Ver'), el('span', { class: 'solo-lector', texto: ` ${nombre} (se abre en otra pestaña)` })])
@@ -376,7 +376,8 @@
        · la recuperación y el descarte se dicen también en pantalla. */
   const franja = document.querySelector('[data-franja-borrador]');
   const notaBorrador = document.querySelector('[data-borrador-recuperado]');
-  const DECLARACIONES = ['protesta', 'aviso', 'humano'];
+  // «No soy un programa automático» ya no va en la solicitud: se marca al crear la cuenta (decisión 13 a, C3-03)
+  const DECLARACIONES = ['protesta', 'aviso'];
   let solicitudLista = false;
   let franjaEnEspera = false;
   const esperaFranja = () => { if (franja && !franja.hidden && !solicitudLista) { franja.hidden = true; franjaEnEspera = true; } };

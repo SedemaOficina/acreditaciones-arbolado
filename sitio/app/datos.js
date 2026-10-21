@@ -75,7 +75,7 @@
     // El día en la hora de la Ciudad de México, no en UTC (auditoría 2026-10-18, C 5.2); por confirmar es «en marcha»:
     // se confirma en la cita, no le toca hacer nada antes (D6)
     $('[data-foto-estado]').replaceChildren(confirmada
-      ? APD.estado(`Fotografía confirmada el ${APD.fecha(f.confirmada_en)}`, 'ok')
+      ? APD.estado(`Fotografía confirmada el ${APD.fechaCorta(f.confirmada_en)}`, 'ok')
       : APD.estado('Fotografía por confirmar en tu cita de cotejo', 'marcha'));
     $('[data-foto-cambio]').hidden = Boolean(confirmada);
     const caja = $('[data-perfil-foto]');
@@ -99,7 +99,7 @@
     const curp = p.curp || '';
     $('[data-identidad]').replaceChildren(APD.datosLista([
       ['CURP', curp],
-      ['Fecha de nacimiento', curp ? APD.fecha(nacimientoDe(curp)) : ''],
+      ['Fecha de nacimiento', curp ? APD.fechaCorta(nacimientoDe(curp)) : ''],
       // El sexo se ve como un dato más, tomado de la CURP (decisión 2026-10-18; ya no en el recuadro de dato interno).
       // Sin el número de expediente: es de la carpeta física y se ve en «Mis trámites» (decisión 2026-10-18)
       ['Sexo', SEXO[p.sexo || curp[10]] || '']

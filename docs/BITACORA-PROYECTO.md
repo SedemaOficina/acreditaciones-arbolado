@@ -1452,3 +1452,22 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: `probar-sitio` 1154 (con axe; 58 nuevas, partes `SOLO=foco` y `SOLO=continuidad`), `probar-examen` 79,
   `probar-volumen` 82 (14 nuevas), `auditar-sitio` con los mismos 2 avisos en 65 pantallas (antes 60),
   `probar-esquemas` 131. Evidencia de cada corrección fuera del repositorio, con el auditor.
+
+## 2026-10-20 · Bloque 88 · Correcciones de la auditoría de seguimiento: tareas del personal y fechas
+
+- Publicada la 0.62 (bloques 1 y 2). Bloques 3 y 6 del plan de `docs/AUDITORIA-2026-10-20.md`, aprobados por Liber,
+  con la misma prueba antes y después y una prueba permanente por hallazgo.
+- **Tareas y estados del personal (bloque 3).** El planeador vuelve a decir cuántas personas esperan 31 días o más y
+  cuántos grupos alcanzan (C1-01); la foto del pase de lista es una miniatura que se amplía (C1-02); «Programar» y
+  «Completar» proponen primero a todas las vencidas (C1-03); las revisiones anteriores se ven abiertas, el aviso de día
+  sin capturar lleva a ese día y los grupos de mismo nombre se distinguen (C1-04 a C1-06); «Por atender» en «Citas»
+  (C1-07); fecha, hora y lugar del curso en la tarjeta de «Mis trámites» (C2-02); filtros de la bandeja en la dirección,
+  la cuenta dice qué filtros, búsqueda y elegidas que persisten en la pestaña, avisos entre pestañas y cuentas
+  correctas (C4-01 a C4-08); «Programar» abre con las propuestas y el resto plegado (C3-01, decidido hoy); el formato de
+  los documentos se dice una vez (C3-02) y la solicitud ya no pide «No soy un programa automático» (C3-03).
+- **Fechas (bloque 6, C5-01).** Dos funciones, `APD.fechaLarga` y `APD.fechaCorta`, en la hora de la Ciudad, en las 19
+  pantallas que escriben fechas; se quitaron siete copias locales. El detector de la auditoría pasa de 13 formas y 298
+  renglones fuera de lo decidido a 0. El acuse conserva la fecha del estándar (P184).
+- Decisiones nuevas en DECISIONES; P190 (rango repetido en «Asistencia»).
+- Pruebas: `probar-sitio` 1199 (partes `SOLO=tareas` y `SOLO=fechas`), `probar-examen` 79, `probar-volumen` 106,
+  `auditar-sitio` con los mismos 2 avisos en 65 pantallas, `probar-esquemas` 131 (`solicitud.json` sin la casilla).

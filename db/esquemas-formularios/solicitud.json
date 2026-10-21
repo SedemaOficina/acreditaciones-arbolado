@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-19T06:02:07.301Z",
+  "generado": "2026-10-21T02:45:46.501Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -856,14 +856,6 @@
       "requerido": true,
       "sensible": false,
       "uso": "Dejar constancia de que se informó a la persona.",
-      "atributos": {}
-    },
-    "humano": {
-      "etiqueta": "No soy un programa automático",
-      "tipo": "casilla",
-      "requerido": true,
-      "sensible": false,
-      "uso": "Distinguir personas de envíos automáticos.",
       "atributos": {}
     }
   },

@@ -179,7 +179,9 @@ caso('Cuenta: sin aviso de privacidad se rechaza', 'cuenta', { ...cuenta, aviso:
 
 // Solicitud: lo obligatorio depende del trámite elegido, con una sola condición por bloque
 const docs = (t, lista) => Object.fromEntries(lista.map((r) => [`doc_${t}_${r}`, `${r}.pdf`]));
-const base = { protesta: 'si', aviso: 'si', humano: 'si', nivel_estudios: 'preparatoria' };
+// «No soy un programa automático» ya no va en la solicitud: se marca al crear la cuenta (decisión 13 a, auditoría
+// 2026-10-20, C3-03)
+const base = { protesta: 'si', aviso: 'si', nivel_estudios: 'preparatoria' };
 const podaNueva = ['identificacion_oficial', 'curp', 'comprobante_domicilio', 'constancia_situacion_fiscal'];
 caso('Solicitud poda nueva con sus 4 documentos se acepta', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, true, podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
 caso('Solicitud con un documento en JPG se rechaza: sólo PDF', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva) }, ['doc_poda_nueva_curp'],

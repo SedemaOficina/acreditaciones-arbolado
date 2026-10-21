@@ -20,7 +20,9 @@
    El registro es una SIMULACIÓN: se recuerda en este navegador (APD_PERSONAL.guardaCotejo; la factura, en IndexedDB). En la etapa 3 lo sustituye la API del personal. */
 (function () {
   'use strict';
-  const { el, fecha, fechaHora, datosLista } = APD;
+  /* Fechas (decisión 16 b, 20/10/2026): la cita en los avisos y encabezados, con fecha larga («martes 20 de octubre de
+     2026 a las 10:00»); en la línea de datos, la ficha, las ayudas y los mensajes de error, dd/mm/aaaa */
+  const { el, fechaLarga, fechaCorta, datosLista } = APD;
   const P = APD_PERSONAL;
   const $ = (s, raiz) => (raiz || document).querySelector(s);
   const $$ = (s, raiz) => Array.from((raiz || document).querySelectorAll(s));
@@ -91,8 +93,8 @@
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
     $('[data-bajada]').replaceChildren(APD.lineaDatos([
       [document.createTextNode('Folio de la solicitud '), el('strong', { class: 'mono', texto: s.folio })],
-      `cita del ${fechaHora(s.cita_en)}`,
-      `documentos validados en línea el ${fecha(s.estado_desde)}`
+      `cita del ${fechaCorta(s.cita_en, { hora: true })}`,
+      `documentos validados en línea el ${fechaCorta(s.estado_desde)}`
     ]));
     $('[data-estado]').replaceChildren(retoma ? APD.estado('Cita en pausa', 'marcha') : APD.estado('Cita asignada', 'pend'));
     // Volver a la agenda del día de la cita, no al de hoy (auditoría 2026-10-18, B8)
@@ -113,14 +115,14 @@
       ['CURP', p.curp],
       ['Número de expediente', p.numero_expediente || 'Todavía no tiene: el expediente físico se abre al terminar este cotejo (es su primer trámite)'],
       ...APD.adscripcionPares(datos, s, 'Adscripción'),
-      ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fecha(anterior.vence_en)}` : '']
+      ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fechaCorta(anterior.vence_en)}` : '']
     ])])]));
     // Una pausa sólo dura el día de la cita: después la base la rechaza y la solicitud regresa con observaciones
     // (auditoría de tareas, M6; P80)
     const diaPausa = retoma ? P.diaDe(pausa.cita_en || s.cita_en) : null;
     const pausaVencida = retoma && diaPausa < APD.hoy(datos);
     if (pausaVencida) {
-      FormKit.aviso($('[data-retoma]'), { tono: 'bloqueo', titulo: `La pausa venció el ${fecha(diaPausa)}`,
+      FormKit.aviso($('[data-retoma]'), { tono: 'bloqueo', titulo: `La pausa venció el ${fechaLarga(diaPausa)}`,
         texto: `Una cita en pausa sólo se retoma el mismo día. La solicitud regresa con observaciones para que ${nombre} cargue el documento correcto; no se retoma aquí.` });
       $('[data-estado]').replaceChildren(APD.estado('Pausa vencida', 'cerrado'));
     } else if (retoma) {
@@ -131,7 +133,7 @@
       const nombres = pausa.docs.map((k) => (req[k] ? req[k].nombre : k));
       const faltan = pausa.docs.filter((k) => !nuevos.has(k)).map((k) => (req[k] ? req[k].nombre : k));
       $('[data-retoma-texto]').replaceChildren(
-        el('p', { class: 'aviso-titulo', texto: `Cotejo en pausa desde el ${fecha(diaPausa)} a las ${P.horaDe(pausa.real)}` }),
+        el('p', { class: 'aviso-titulo', texto: `Cotejo en pausa desde el ${fechaLarga(diaPausa, { hora: APD.hora(pausa.real) })}` }),
         el('p', { texto: `No coincidió: ${lista(nombres)}. La identidad y los demás documentos ya se cotejaron.` }),
         el('p', { texto: faltan.length
           ? `La persona todavía no carga: ${lista(faltan)}. Mientras no lo cargue, sólo puede marcar «No coincide»; si no lo carga hoy, marque «No: regresa con observaciones».`
@@ -140,8 +142,8 @@
     }
     if (inasistencias || s.cita_motivo === 'sin_pago') {
       $('[data-antecedente-texto]').replaceChildren(...(s.cita_motivo === 'sin_pago'
-        ? [el('p', { class: 'aviso-titulo', texto: 'Cita nueva por falta de pago' }), el('p', { texto: `En su cita del ${fechaHora(s.cita_anterior)} no presentó el comprobante de pago.` })]
-        : [el('p', { class: 'aviso-titulo', texto: 'Es su segunda cita' }), el('p', { texto: `No se presentó a su cita del ${fechaHora(s.cita_anterior)}. Si tampoco se presenta a ésta, la solicitud se cierra.` })]));
+        ? [el('p', { class: 'aviso-titulo', texto: 'Cita nueva por falta de pago' }), el('p', { texto: `En su cita del ${fechaLarga(s.cita_anterior, { hora: true })} no presentó el comprobante de pago.` })]
+        : [el('p', { class: 'aviso-titulo', texto: 'Es su segunda cita' }), el('p', { texto: `No se presentó a su cita del ${fechaLarga(s.cita_anterior, { hora: true })}. Si tampoco se presenta a ésta, la solicitud se cierra.` })]));
       $('[data-antecedente]').hidden = false;
     }
     $('[data-cabeza]').hidden = false;
@@ -154,7 +156,7 @@
       archivos[k] = d.blob
         ? { url: URL.createObjectURL(d.blob), tipo: d.blob.type, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
         : { url: `datos/documentos/${k}.pdf`, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
-      const pie = [el('span', { class: 'mono', texto: nombreArchivo }), document.createTextNode(` · lo cargó el ${fecha(d.cargado_en)}`)];
+      const pie = [el('span', { class: 'mono', texto: nombreArchivo }), document.createTextNode(` · lo cargó el ${fechaCorta(d.cargado_en)}`)];
       if (retoma && nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Cargado de nuevo hoy', 'pend')]));
       // Pide atención (puede cargarlo todavía hoy), no es un cierre (auditoría 2026-10-18, D6)
       if (retoma && pausa.docs.includes(k) && !nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Todavía no carga el nuevo', 'pend')]));
@@ -363,10 +365,10 @@
     let simulada = false;
     const prueba = Boolean(datos.fecha_corte) && typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
     if (futura && !pausaVencida) {
-      $('[data-futura-titulo]').textContent = `La cita es el ${APD.fechaConDia(diaCita)} a las ${P.horaDe(s.cita_en)}`;
-      $('[data-futura-texto]').textContent = `Se atiende ese día: hasta entonces no se registra si ${nombre} se presentó, el cotejo ni una inasistencia. Hoy es ${APD.fechaConDia(hoy)}.`;
+      $('[data-futura-titulo]').textContent = `La cita es el ${fechaLarga(s.cita_en, { hora: true })}`;
+      $('[data-futura-texto]').textContent = `Se atiende ese día: hasta entonces no se registra si ${nombre} se presentó, el cotejo ni una inasistencia. Hoy es ${fechaLarga(hoy)}.`;
       const b = $('[data-atender-simulada]');
-      b.textContent = `Atenderla como si fuera el ${fecha(diaCita)}`;
+      b.textContent = `Atenderla como si fuera el ${fechaCorta(diaCita)}`;
       $('[data-futura-prueba]').hidden = !prueba;
       b.addEventListener('click', () => {
         simulada = true;
@@ -386,8 +388,8 @@
     const hasta = APD.sumaMeses(hoy, APD.mesesCita(datos));
     $('[data-campo="cita_fecha"]').dataset.min = manana;
     $('[data-campo="cita_fecha"]').dataset.max = hasta;
-    $('[data-cita-desde]').textContent = fecha(manana);
-    $('[data-cita-hasta]').textContent = fecha(hasta);
+    $('[data-cita-desde]').textContent = fechaCorta(manana);
+    $('[data-cita-hasta]').textContent = fechaCorta(hasta);
     // Retomar una pausa empieza en los documentos: la nota de obligatorias va en esa tarjeta (D33)
     $('[data-leyenda-llegada]').hidden = retoma;
     $('[data-leyenda-docs]').hidden = !retoma;
@@ -404,7 +406,7 @@
             const resultado = document.getElementById('resultado').value;
             // Como lo hará la API: una cita que todavía no llega no se registra (F2 A6), y al retomar una pausa sólo
             // «coincide» el documento que la persona volvió a cargar, leído ahora, no al abrir la página (F2 A7)
-            if (futura && !simulada) return mal({ mensaje: `La cita es el ${fecha(diaCita)}: se registra ese día.` });
+            if (futura && !simulada) return mal({ mensaje: `La cita es el ${fechaCorta(diaCita)}: se registra ese día.` });
             const s2 = ahora.solicitud.find((x) => x.folio === folio);
             // ¿Sigue siendo la cita que se abrió, en la misma situación? (F2 A3)
             const abiertaAhora = s2 && (ahora.cita || []).find((c) => c.solicitud_id === s2.id && ['pendiente', 'en_pausa'].includes(c.resultado));
@@ -412,7 +414,7 @@
               && abiertaAhora.resultado === desde && (!retoma || (s2.cotejo_pausa && s2.cotejo_pausa.real === pausa.real));
             if (!misma) {
               const ahoraEs = !s2 ? 'sin datos' : s2.estado !== 'validada_en_linea' ? `la solicitud está «${APD.nombrePersonal(s2.estado)}»`
-                : abiertaAhora && ms(abiertaAhora.programada_en) !== ms(s.cita_en) ? `tiene otra cita, el ${fechaHora(abiertaAhora.programada_en)}`
+                : abiertaAhora && ms(abiertaAhora.programada_en) !== ms(s.cita_en) ? `tiene otra cita, el ${fechaCorta(abiertaAhora.programada_en, { hora: true })}`
                   : abiertaAhora && abiertaAhora.resultado === 'en_pausa' ? 'la cita está en pausa' : 'la cita ya se cerró';
               return mal(APD.rechazo('Esta cita ya se registró', `Mientras tenía abierta esta página se registró lo que pasó en ella (en otra pestaña o por otra persona): ${ahoraEs}. No se guardó lo suyo.`,
                 { href: `cotejo.html?folio=${encodeURIComponent(folio)}`, texto: 'Abrir la cita otra vez' }, 'cita_cerrada'));
@@ -478,7 +480,7 @@
       // Lo capturado ya no se puede guardar (otra pestaña registró primero): salir o «Abrir … otra vez» no lo advierte
       alFallar(e) { if (APD.muestraRechazo(e, form) && !e.errores) sinGuardar = false; },
       alEnviar({ resultado, d, expediente }) {
-        const cita = d.cita_fecha ? `${fecha(d.cita_fecha)} a las ${d.cita_hora}` : '';
+        const cita = d.cita_fecha ? fechaLarga(d.cita_fecha, { hora: d.cita_hora }) : '';
         // Resultado de la cita con el módulo «resultado» del estándar (1.4.0, P113): [familia, título, texto, pasos]; lo
         // que sigue en varias acciones va en la secuencia «Qué sigue» (P119)
         const curso = `${APD.TIPOS[s.tipo_acreditacion].toLowerCase()} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
