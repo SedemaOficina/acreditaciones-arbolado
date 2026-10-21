@@ -4940,6 +4940,160 @@ async function formatosFecha(navegador) {
   comprueba(pantallas === 21 && !errores.length, t(`${pantallas} pantallas recorridas, más el acuse, sin errores en la página${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
 }
 
+/* ── Sistema visual (auditoría de seguimiento 2026-10-20, bloque 4; SOLO=visual) ──
+   C6-02 con P164 (decisión 2): un solo botón principal (relleno guinda) por pantalla en «Grupos», «Programar», «Mis grupos
+   de hoy» y «Mis trámites» con la poda por vencer, y ningún principal entre los destinos con «Ninguna elegida» (C2-01).
+   C6-01: con colores forzados, lo elegido se distingue. C6-03: lo elegido con el tratamiento del estándar. C6-04
+   (decisión 3 a): la espera de 10 días o más, «te toca actuar» en rojo con «N días · atrasada». C6-09 (decisión 4 a):
+   «Asistencia» con la opción corta Sí/No del estándar. Decisión 5 b: el motivo de una opción deshabilitada va fuera de
+   ella, a contraste normal. A6-02: los días del calendario delimitados a 3:1 o más. */
+async function sistemaVisual(navegador) {
+  const t = (m) => `[visual] ${m}`;
+  const GUINDA = 'rgb(157, 33, 72)';
+  const AZUL_CL = 'rgb(238, 243, 250)';
+  const AZUL = 'rgb(26, 86, 168)';
+  const nuevo = async (ancho, alto, { sesion, forzado = 'none', datosPropios } = {}) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, forcedColors: forzado });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    if (datosPropios) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(datosPropios), contentType: 'application/json' }));
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  // Controles visibles con relleno guinda (el aspecto del botón principal), sin «Ir al contenido»
+  const guindas = (page) => page.evaluate((g) => [...document.querySelectorAll('a, button, label, summary, [role="button"]')].filter((e) => !e.matches('.salto')
+    && e.checkVisibility() && e.getBoundingClientRect().width > 0 && getComputedStyle(e).backgroundColor === g).map((e) => e.textContent.replace(/\s+/g, ' ').trim()), GUINDA);
+  const ult = (p, tipo) => datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === tipo).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en))[0];
+  const porVencer = datos.solicitante.find((p) => p.estado === 'activa' && ult(p, 'poda') && datos.estado_acreditacion[ult(p, 'poda').numero] === 'por_vencer'
+    && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+
+  // 1. Un principal por pantalla, en teléfono y en escritorio. La pantalla espera a lo que la página pinta.
+  const PANTALLAS = [
+    ['Grupos (poda nueva)', 'grupos.html?curso=poda-nueva', '.plan-grupo', null, 'Programar un curso'],
+    ['Grupos (renovación)', 'grupos.html?curso=poda-renovacion', '[data-destinos] a', null, 'Programar un curso'],
+    ['Programar un curso', 'programar.html?curso=poda-nueva', '.cal-dia[data-rango]', null, 'Crear y confirmar el grupo'],
+    ['Mis grupos de hoy (asistencia)', 'asistencia.html', '.hoy-grupo', null, 'Pasar lista y aplicar'],
+    ['Mis grupos de hoy (aplicar)', 'aplicar.html', '.hoy-grupo', null, 'Pasar lista y aplicar'],
+    ['Mis trámites con la poda por vencer (P164)', 'tramites.html', '[data-acreditaciones] .ficha', porVencer.id, 'Renovar']
+  ];
+  for (const [ancho, alto] of [[390, 844], [1440, 900]]) {
+    for (const [nombre, ruta, listo, sesion, principal] of PANTALLAS) {
+      const { c, page, errores } = await nuevo(ancho, alto, { sesion });
+      await page.goto(BASE + ruta);
+      await page.waitForSelector(listo);
+      const g = await guindas(page);
+      const extra = ruta.startsWith('grupos') ? await page.evaluate(() => ({ cuenta: document.querySelector('[data-elegidas]').textContent, destinos: document.querySelectorAll('[data-destinos] .btn-primario').length })) : null;
+      comprueba(g.length === 1 && g[0].startsWith(principal) && (!extra || (extra.cuenta === 'Ninguna elegida' && extra.destinos === 0)) && !errores.length,
+        t(`C6-02: ${nombre} a ${ancho} px, un solo principal: «${g.join('», «')}»${extra ? `; con «${extra.cuenta}», ${extra.destinos} principales entre los destinos (C2-01)` : ''}`));
+      await c.close();
+    }
+  }
+  // Con la poda por vencer, «Iniciar una solicitud» sigue a la vista, como secundario (P164)
+  {
+    const { c, page } = await nuevo(390, 844, { sesion: porVencer.id });
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-acreditaciones] .ficha');
+    const iniciar = await page.getAttribute('[data-nueva] a', 'class');
+    comprueba(await page.isVisible('[data-nueva] a') && /btn-secundario/.test(iniciar) && /btn-primario/.test(await page.getAttribute('[data-acreditaciones] a:has-text("Renovar")', 'class')),
+      t('P164: con la poda por vencer, «Renovar» es el principal e «Iniciar una solicitud» queda como secundario'));
+    await c.close();
+  }
+
+  // 2 y 3. Lo elegido: el tratamiento del estándar y, con colores forzados, distinto de lo no elegido
+  const ELEGIDO = [
+    ['el curso de «Grupos»', 'grupos.html?curso=poda-nueva', '.plan-curso', null, '.plan-curso[aria-pressed="true"]', '.plan-curso[aria-pressed="false"]'],
+    ['la persona elegida', 'grupos.html?curso=poda-nueva', '.plan-persona', (pg) => pg.locator('.plan-persona .casilla-input').first().evaluate((e) => e.click()), '.plan-persona:has(.casilla-input:checked)', '.plan-persona:not(:has(.casilla-input:checked))'],
+    ['los días del curso en el calendario', 'programar.html?curso=poda-nueva', '.cal-dia[data-rango]', null, '.cal-dia[data-rango]', '.cal-dia:not([data-rango]):not([aria-disabled="true"]):not([data-inhabil])'],
+    ['la respuesta de «¿Asistió?»', 'asistencia.html?folio=APD-G-2026-003', '.asistencia-fila', (pg) => marcar(pg, '.asistencia-fila input[value="no"]:enabled'), '.asistencia-fila .opcion:has(.opcion-input:checked)', '.asistencia-fila .opcion:has(.opcion-input:not(:checked):enabled)']
+  ];
+  const lee = (page, sel) => page.$eval(sel, (e) => { const cs = getComputedStyle(e); return { fondo: cs.backgroundColor, borde: cs.borderTopColor, todo: [cs.backgroundColor, cs.color, cs.borderTopColor, cs.borderTopWidth, `${cs.outlineWidth} ${cs.outlineStyle} ${cs.outlineColor}`, cs.boxShadow].join(' · ') }; });
+  for (const forzado of ['none', 'active']) {
+    for (const [nombre, ruta, listo, accion, elegido, otro] of ELEGIDO) {
+      const { c, page, errores } = await nuevo(1440, 900, { forzado });
+      await page.goto(BASE + ruta);
+      await page.waitForSelector(listo);
+      if (accion) await accion(page);
+      await page.waitForFunction((s) => Boolean(document.querySelector(s)), elegido);
+      // Las opciones del estándar cambian de color con una transición: se lee al terminar
+      await page.evaluate(() => Promise.all(document.getAnimations().map((x) => x.finished.catch(() => {}))));
+      const [a, b] = [await lee(page, elegido), await lee(page, otro)];
+      if (forzado === 'none') comprueba(a.fondo === AZUL_CL && a.borde === AZUL && !errores.length, t(`C6-03: ${nombre}, con fondo azul claro y borde azul, como lo elegido del estándar (${a.fondo}, ${a.borde})`));
+      else comprueba(a.todo !== b.todo, t(`C6-01: con colores forzados se distingue ${nombre} (${a.todo} frente a ${b.todo})`));
+      await c.close();
+    }
+  }
+
+  // 4. Bandeja: una solicitud que espera 15 días lleva la etiqueta de «te toca actuar» en rojo, «15 días · atrasada»
+  {
+    const propios = JSON.parse(JSON.stringify(datos));
+    const s = propios.solicitud.find((x) => x.estado === 'enviada');
+    const hace = new Date(`${propios.fecha_corte}T12:00:00-06:00`);
+    hace.setDate(hace.getDate() - 15);
+    s.estado_desde = `${hace.toISOString().slice(0, 10)}T10:00:00-06:00`;
+    const { c, page, errores } = await nuevo(1440, 900, { datosPropios: propios });
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector(`[data-filas] tr[data-folio="${s.folio}"]`, { state: 'attached' });
+    const e = await page.$eval(`[data-filas] tr[data-folio="${s.folio}"] .estado`, (x) => ({ texto: x.textContent.trim(), clase: x.className, icono: (x.querySelector('use') || { getAttribute: () => '' }).getAttribute('href'), fondo: getComputedStyle(x).backgroundColor, borde: getComputedStyle(x).borderTopColor }));
+    const otras = await page.$$eval('[data-filas] .estado-rechazo', (l) => l.length);
+    comprueba(e.texto === '15 días · atrasada' && /estado-atencion/.test(e.clase) && /alerta/.test(e.icono) && e.fondo === 'rgb(253, 243, 242)' && e.borde === 'rgb(179, 38, 30)' && !otras
+      && /1 con 10 días o más/.test(await page.textContent('[data-cuenta]')) && !errores.length,
+      t(`C6-04: la espera de 15 días dice «${e.texto}», con la etiqueta de «te toca actuar» (${e.icono}) en rojo; ninguna con la de «cerrado sin éxito»`));
+    await c.close();
+  }
+
+  // 5. «Asistencia»: «¿Asistió?» con la opción corta Sí/No del estándar; «No» elegido no se parece al botón de peligro
+  for (const [ancho, alto] of [[390, 844], [1440, 900]]) {
+    const { c, page, errores } = await nuevo(ancho, alto);
+    await page.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
+    await page.waitForSelector('.asistencia-fila');
+    await marcar(page, '.asistencia-fila input[value="no"]:enabled');
+    await page.evaluate(() => Promise.all(document.getAnimations().map((x) => x.finished.catch(() => {}))));
+    const r = await page.$eval('.asistencia-fila', (f) => {
+      const ops = [...f.querySelectorAll('.opciones-cortas > label.opcion.opcion-corta')];
+      const no = f.querySelector('.opcion:has(.opcion-input:checked)');
+      const a = ops[0].getBoundingClientRect(); const b = ops[1].getBoundingClientRect();
+      return { textos: ops.map((o) => o.textContent.trim()), pregunta: f.querySelector('legend').textContent, fondo: getComputedStyle(no).backgroundColor, palomita: getComputedStyle(no.querySelector('.opcion-marca')).display, renglon: Math.abs(a.top - b.top) < 2 };
+    });
+    comprueba(r.textos.join('/') === 'Sí/No' && /¿Asistió\?$/.test(r.pregunta) && r.fondo === AZUL_CL && r.palomita !== 'none' && r.renglon && !errores.length,
+      t(`C6-09: a ${ancho} px, «${r.pregunta}» con Sí/No del estándar en un renglón; «No» elegido en azul claro con palomita (${r.fondo}), no como el botón de peligro`));
+    await c.close();
+  }
+
+  // 6. Decisión 5 b: la opción deshabilitada lleva su motivo fuera, como ayuda de la pregunta, a 4.5:1 o más, y la opción
+  // la nombra en su descripción accesible
+  {
+    const p = datos.solicitante.find((x) => x.estado === 'activa' && ult(x, 'poda') && ['vencida_renovable', 'vencida_no_renovable'].includes(datos.estado_acreditacion[ult(x, 'poda').numero])
+      && !datos.solicitud.some((s) => s.solicitante_id === x.id && !FINALES.includes(s.estado)));
+    const { c, page, errores } = await nuevo(390, 844, { sesion: p.id });
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector('[data-motivo-tipo]:not([hidden])');
+    const r = await page.evaluate(() => {
+      const ayuda = document.querySelector('[data-motivo-tipo]');
+      const dis = document.querySelector('input[name="tipo"]:disabled');
+      const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+      let o = 1; for (let x = ayuda; x; x = x.parentElement) o *= parseFloat(getComputedStyle(x).opacity);
+      const col = getComputedStyle(ayuda).color.match(/[\d.]+/g).map(Number).slice(0, 3).map((v) => v * o + 255 * (1 - o));
+      return { texto: ayuda.textContent, dentro: Boolean(ayuda.closest('label')), razon: 1.05 / (lum(col) + 0.05), describe: Boolean(dis) && (dis.getAttribute('aria-describedby') || '').split(' ').includes(ayuda.id) };
+    });
+    comprueba(/Dictaminador técnico: .*poda y derribo/.test(r.texto) && !r.dentro && r.razon >= 4.5 && r.describe && !errores.length,
+      t(`decisión 5 b: «${r.texto.slice(0, 60)}…» fuera de la opción, a ${r.razon.toFixed(2)}:1, y en la descripción de la opción`));
+    await c.close();
+  }
+
+  // 7. A6-02: el día disponible del calendario se delimita a 3:1 o más (--borde, no --linea)
+  {
+    const { c, page } = await nuevo(1440, 900);
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia');
+    const borde = await page.$eval('.cal-dia:not([data-rango]):not([aria-disabled="true"]):not([data-inhabil])', (e) => getComputedStyle(e).borderTopColor);
+    comprueba(borde === 'rgb(135, 139, 142)', t(`A6-02: el día disponible del calendario tiene el borde de un control (${borde}, 3.43:1)`));
+    await c.close();
+  }
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -4995,6 +5149,7 @@ try {
   if (toca('foco')) await parte('foco y accesibilidad', () => focoAccesibilidad(navegador));
   if (toca('continuidad')) await parte('mensajes y continuidad', () => continuidad(navegador));
   if (toca('tareas')) await parte('tareas y estados del personal', () => tareasPersonal(navegador));
+  if (toca('visual')) await parte('sistema visual', () => sistemaVisual(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));
