@@ -149,7 +149,9 @@
       f.tr.hidden = !ve;
       // Al buscar en todos los días, la hora lleva también la fecha
       f.hora.textContent = q ? `${APD.fecha(f.dia)} ${P.horaDe(f.c.en)}` : P.horaDe(f.c.en);
-      if (ve) { n += 1; const k = f.c.situacion === 'en_pausa' ? 'en_pausa' : f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
+      // En pausa por su resultado (apd.cita.resultado), también con el documento ya cargado («retomar»); la pausa vencida va
+      // aparte (C4-08)
+      if (ve) { n += 1; const k = f.c.pendiente && f.c.cita.resultado === 'en_pausa' ? 'en_pausa' : f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
     }
     $('[data-col-hora]').textContent = q ? 'Fecha y hora' : 'Hora';
     $('[data-dia]').textContent = q ? 'Resultados en todos los días' : diaLargo(dia);
