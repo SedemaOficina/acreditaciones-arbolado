@@ -380,8 +380,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(await page.isHidden(zonaCurp) && await page.isVisible('[data-campo="doc_poda_nueva_curp"] .lista-arch li'),
     t('documentos: con el archivo cargado ya no se ofrece «Elegir archivo»'));
   await page.click('[data-campo="doc_poda_nueva_curp"] .arch-quitar');
-  comprueba(await page.isVisible(zonaCurp) && /Un archivo de hasta 5 MB/.test(await page.textContent(`${zonaCurp} [data-limite-texto]`)),
-    t('documentos: al quitarlo vuelve «Elegir archivo», con «Un archivo de hasta 5 MB»'));
+  // El formato y el tamaño los dice una vez la bajada del paso, no cada zona (auditoría 2026-10-20, C3-02)
+  comprueba(await page.isVisible(zonaCurp) && !(await page.$(`${zonaCurp} [data-limite-texto]`)) && /sólo en PDF, de hasta 5 MB/.test(await page.textContent('[data-paso]:not([hidden]) .bajada')),
+    t('documentos: al quitarlo vuelve «Elegir archivo»; «sólo en PDF, de hasta 5 MB» lo dice una vez la bajada del paso'));
   await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', PDF);
   await page.waitForSelector('[data-campo="doc_poda_nueva_curp"] .lista-arch li[data-estado="listo"]');
   await captura(page, `03-solicitud-documentos-${sufijo}`);
@@ -1540,7 +1541,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + 'tramites.html');
   await pg.waitForSelector('[data-solicitudes] .ficha');
   const tramA = await texto('main');
-  comprueba(/Poda nueva · del 26 al 30 de octubre/.test(tramA) && tramA.includes(g005.folio) && tramA.includes('26/10/2026'), t('«Mis trámites»: el grupo confirmado por su nombre calculado, con su folio y su primer día'));
+  comprueba(/Poda nueva · del 26 al 30 de octubre/.test(tramA) && tramA.includes(g005.folio) && tramA.includes(fechaLarga('2026-10-26')), t('«Mis trámites»: el grupo confirmado por su nombre calculado, con su folio y su primer día'));
   await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
 
   // ── Desde la ficha de un grupo: «Agregar personas de la espera», con el botón de la ficha (auditoría 2026-10-19,
@@ -1593,7 +1594,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + 'tramites.html');
   await pg.waitForSelector('[data-solicitudes] .ficha');
   const tram = await texto('main');
-  comprueba(tram.includes(APDfecha(fechaMas(19))) && /09:00/.test(tram), t('«Mis trámites»: la persona ve el primer día del curso y la hora de entrada'));
+  comprueba(tram.includes(fechaLarga(fechaMas(19))) && /09:00/.test(tram), t('«Mis trámites»: la persona ve el primer día del curso y la hora de entrada'));
   await pg.evaluate(() => localStorage.removeItem('apd.sesion'));
 
   // Baja: el grupo queda por debajo del mínimo y regresa a integración
@@ -1723,6 +1724,13 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await c2.close();
 }
 const APDfecha = (iso) => iso.split('-').reverse().join('/');
+// Fecha larga, como «Mis trámites» escribe el curso (auditoría 2026-10-20, C2-02; decisión 16 b): «lunes 26 de octubre
+// de 2026». Acepta AAAA-MM-DD o DD/MM/AAAA.
+const fechaLarga = (f) => {
+  const [a, m, d] = /\//.test(f) ? f.split('/').reverse() : f.split('-');
+  const dia = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][new Date(Date.UTC(+a, +m - 1, +d, 12)).getUTCDay()];
+  return `${dia} ${+d} de ${['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][+m - 1]} de ${a}`;
+};
 
 /* ── «Programar un curso» en 3 pasos (propuesta B) y «Mis grupos de hoy» (propuesta D), 2026-10-18 ──
    Desde Grupos con cinco personas elegidas («A un curso nuevo…»): error con menos de 5; el calendario no deja empezar
