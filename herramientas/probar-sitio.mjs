@@ -4694,6 +4694,25 @@ async function tareasPersonal(navegador) {
     await c.close();
   }
 
+  // C3-02: en la solicitud y en «Carga el documento correcto», el formato y el tamaño se dicen una vez y no en cada
+  // documento
+  {
+    const { c, page, errores } = await nuevo(390, 844, CON_ORG.id);
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector('[data-si="tramite=poda_nueva"] [data-campo^="doc_"] .zona-carga', { state: 'attached' });
+    await page.waitForLoadState('load');
+    const r = await page.evaluate(() => {
+      const zonas = [...document.querySelectorAll('[data-campo^="doc_"]')];
+      return { zonas: zonas.length, conLimite: zonas.filter((z) => /Formato admitido|Un archivo de hasta/.test(z.textContent)).length,
+        bajada: [...document.querySelectorAll('.bajada')].some((b) => /sólo en PDF, de hasta 5 MB/.test(b.textContent)),
+        humano: Boolean(document.querySelector('input[name="humano"]')), trampa: Boolean(document.querySelector('[data-trampa] input[name="sitio_web"]')) };
+    });
+    const [cuenta, corregir] = await page.evaluate(() => Promise.all(['cuenta.html', 'corregir.html'].map((u) => fetch(u).then((x) => x.text()))));
+    comprueba(r.zonas >= 20 && r.conLimite === 0 && r.bajada && !errores.length && !/data-limite-texto/.test(corregir.replace(/<!--[\s\S]*?-->/g, '')) && /Sólo PDF, de hasta 5 MB/.test(corregir),
+      t(`C3-02: ninguna de las ${r.zonas} zonas de carga de la solicitud repite el formato; la bajada y «Carga el documento correcto» lo dicen una vez`));
+    await c.close();
+  }
+
   // C4-06: «Mis trámites» abierta y, en otra pestaña, se entra con otra cuenta (o se sale): la pestaña vieja lo dice y deja
   // de mostrar los trámites de la persona anterior
   for (const salir of [false, true]) {

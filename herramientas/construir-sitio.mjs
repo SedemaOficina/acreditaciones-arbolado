@@ -130,6 +130,10 @@ const extensionesDe = (r) => (r.formatos || ['application/pdf']).flatMap((m) => 
 const enlaceDe = (r) => (r.enlace ? ` <a href="${esc(r.enlace)}" target="_blank" rel="noopener">${esc(r.enlace_texto)}<span class="solo-lector"> (se abre en otra pestaña)</span></a>.` : '');
 const cursos = [['poda', 'nueva'], ['poda', 'renovacion'], ['dictaminador', 'nueva'], ['dictaminador', 'renovacion']];
 const bloques = [];
+// El formato y el tamaño se dicen una vez, en la bajada del paso («Un archivo por documento, sólo en PDF, de hasta
+// 5 MB»), y no en cada zona de carga (auditoría 2026-10-20, C3-02: se repetía 4 veces en poda y 7 en dictaminador). La
+// frase de cada zona es la pieza [data-limite-texto] del módulo archivos, que la escribe sólo si existe (archivos.js:
+// «if (lim)»); el formato y el tamaño los sigue validando el módulo con data-extensiones y data-mb.
 for (const [tipo, modalidad] of cursos) {
   const filas = datos.requisito_curso
     .filter((rc) => rc.tipo_acreditacion === tipo && rc.modalidad === modalidad && requisito[rc.requisito].forma === 'documento' && requisito[rc.requisito].momento === 'en_linea')
@@ -146,7 +150,6 @@ for (const [tipo, modalidad] of cursos) {
               <button type="button" class="zona-carga" aria-describedby="ay-${nombre}">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
                 <span class="zona-carga-texto">Elegir archivo</span>
-                <span class="zona-carga-limite" data-limite-texto></span>
               </button>
               <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
               <input type="file" hidden autocomplete="off">
@@ -258,7 +261,8 @@ const cotejoDocs = enLinea.map((r) => {
 });
 const cotejoAux = enLinea.map((r) => `    <input type="hidden" id="cotejar_${r.clave}" name="cotejar_${r.clave}" value="no" data-campo="cotejar_${r.clave}" data-auxiliar data-uso="Pedir el cotejo de «${esc(r.nombre)}» sólo si está cargado y toca cotejarlo; lo calculan la página y el servidor.">`);
 // 4d · Corrección del mismo día (decisión 2026-10-17): la persona carga en «Mis trámites» el documento que no coincidió
-// en su cita en pausa. Un campo por requisito; se pide sólo el que quedó en pausa (cargar_<requisito>).
+// en su cita en pausa. Un campo por requisito; se pide sólo el que quedó en pausa (cargar_<requisito>). El formato y el
+// tamaño se dicen una vez, arriba de los documentos (C3-02, como en la solicitud).
 const corregirDocs = enLinea.map((r) => {
   const k = r.clave;
   const nombre = `doc_${k}`;
@@ -271,7 +275,6 @@ const corregirDocs = enLinea.map((r) => {
               <button type="button" class="zona-carga" aria-describedby="ay-${nombre}">
                 <svg class="icono" aria-hidden="true"><use href="#i-adjunto"></use></svg>
                 <span class="zona-carga-texto">Elegir archivo</span>
-                <span class="zona-carga-limite" data-limite-texto></span>
               </button>
               <!-- autocomplete off: es un archivo; el navegador no tiene nada que proponer. -->
               <input type="file" hidden autocomplete="off">
