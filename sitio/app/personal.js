@@ -459,6 +459,9 @@
      aplicar» el día del examen. */
   function pintaMisGrupos(contenedor, datos, usuario) {
     const sede = APD.sede(datos).nombre;
+    /* Un solo botón principal por pantalla (auditoría 2026-10-20, C6-02; decisión 2 de Liber): el del grupo con examen hoy
+       (el primero, si hay varios) o, si ninguno tiene examen, el del primer grupo; los demás, secundarios */
+    let principal = -1;
     const tarjeta = (g, i) => {
       const x = grupo(datos, g);
       const d = diaDelCurso(datos, g);
@@ -471,11 +474,12 @@
           estado(d.examen ? 'Examen hoy' : d.texto, d.examen ? 'pend' : 'marcha')
         ]),
         APD.lineaDatos([lugar, APD.hhmm(g.hora_entrada), APD.plural(x.n, 'persona', 'personas')]),
-        el('a', { class: 'btn btn-primario hoy-grupo-accion', href, 'aria-describedby': idN }, [
+        el('a', { class: `btn ${i === principal ? 'btn-primario' : 'btn-secundario'} hoy-grupo-accion`, href, 'aria-describedby': idN }, [
           document.createTextNode(d.examen ? 'Pasar lista y aplicar' : 'Pasar asistencia'), APD.icono('flecha-der')])
       ]);
     };
     const hoyL = gruposDeHoy(datos, usuario);
+    principal = Math.max(0, hoyL.findIndex((g) => diaDelCurso(datos, g).examen));
     const prox = proximosDe(datos, usuario);
     const partes = [];
     partes.push(hoyL.length ? el('ul', { class: 'hoy-grupos' }, hoyL.map(tarjeta)) : el('p', { texto: 'Hoy no tiene grupos con clase ni examen.' }));

@@ -490,12 +490,9 @@ body > main { flex: 1 0 auto; width: 100%; }
    cuida que funcionen); desde 760 px queda fija al pie de la columna mientras se recorre la lista */
 .plan-barra { display: grid; gap: var(--e-2); padding-block: var(--e-3) var(--e-2); border-block-start: var(--b-1) solid var(--linea); background: var(--blanco); }
 .plan-barra[hidden] { display: none; }
-.plan-barra-cuenta { margin: 0; font-weight: var(--peso-semi); }
+.plan-barra-cuenta { margin: 0; font-weight: var(--peso-fuerte); }
 .plan-barra-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .plan-barra-acciones .btn { width: auto; }
-/* El núcleo empuja el botón primario a la derecha en computadora; aquí van en orden, a la izquierda */
-.plan-barra-acciones .btn-primario, .plan-grupo-acciones .btn-primario { margin-inline-start: 0; }
-.plan-destino-cupo { font-weight: var(--peso-normal); }
 /* Próximas semanas: una fila por semana (rótulo y su contenido) */
 .plan-semanas { display: grid; gap: var(--e-3); min-width: 0; }
 .plan-semanas-lista { display: grid; gap: var(--e-4); }
