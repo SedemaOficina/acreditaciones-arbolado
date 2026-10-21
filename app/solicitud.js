@@ -376,7 +376,8 @@
        · la recuperación y el descarte se dicen también en pantalla. */
   const franja = document.querySelector('[data-franja-borrador]');
   const notaBorrador = document.querySelector('[data-borrador-recuperado]');
-  const DECLARACIONES = ['protesta', 'aviso', 'humano'];
+  // «No soy un programa automático» ya no va en la solicitud: se marca al crear la cuenta (decisión 13 a, C3-03)
+  const DECLARACIONES = ['protesta', 'aviso'];
   let solicitudLista = false;
   let franjaEnEspera = false;
   const esperaFranja = () => { if (franja && !franja.hidden && !solicitudLista) { franja.hidden = true; franjaEnEspera = true; } };
