@@ -93,6 +93,12 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     comprueba(/sin capturar/.test(await texto('[data-dias]')) && /Falta capturar el día 2/.test(await texto('[data-avisos]')), t('asistencia: el día 2 pasado sin capturar se señala arriba y en «Corregir otro día»'));
     comprueba(/asisti|falt/.test(await texto('[data-totales]')), t('asistencia: lo marcado se resume junto a «Guardar»'));
     await sinDesborde('asistencia');
+    // C1-05 (auditoría 2026-10-20): el aviso trae el enlace al día que falta, que abre ese día para capturarlo
+    const enlace = pg.locator('[data-avisos] a', { hasText: 'Capturar el día 2' });
+    comprueba((await enlace.count()) === 1 && /asistencia\.html\?folio=APD-G-2026-024&dia=2$/.test(await enlace.getAttribute('href')), t('C1-05: «Falta capturar el día 2» trae el enlace «Capturar el día 2»'));
+    await Promise.all([pg.waitForURL(/dia=2/), enlace.click()]);
+    await pg.waitForSelector('.asistencia-fila');
+    comprueba(/Corregir el día 2 de 5/.test(await texto('[data-titulo-dia]')), t('C1-05: el enlace abre el día 2 para capturarlo'));
 
   });
 
