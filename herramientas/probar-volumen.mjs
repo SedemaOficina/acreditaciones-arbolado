@@ -169,6 +169,20 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await pg.waitForSelector('[data-personas] .plan-casilla[value]');
     const casillas = await pg.$$eval('[data-personas] .plan-casilla[value]', (l) => [l.length, l.filter((k) => k.checked).length]);
     comprueba(casillas[0] === espera && casillas[1] > 0 && casillas[1] <= 25, t(`programar: lista a las ${casillas[0]} de ${espera} en espera y propone ${casillas[1]} (hasta 25)`));
+    // C3-01 (auditoría 2026-10-20; decisión de Liber, opción a): a la vista las propuestas; las demás, plegadas en
+    // «Cambiar a quiénes van (N más en espera)», y al desplegarlo se ven y se eligen
+    const vis = () => pg.$$eval('[data-personas] .plan-casilla[value]', (l) => l.filter((k) => k.checkVisibility()).map((k) => k.checked));
+    const antes = await vis();
+    const resumen = (await texto('[data-mas-espera] > summary.plegable-titulo')).trim();
+    const pantallas = await pg.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+    await pg.click('[data-mas-espera] > summary');
+    const despues = await vis();
+    const folioOtra = await pg.getAttribute('[data-mas-espera] .plan-casilla[value]:not(:checked)', 'value');
+    const otra = pg.locator(`[data-mas-espera] .plan-casilla[value="${folioOtra}"]`);
+    await otra.check();
+    comprueba(antes.length === casillas[1] && antes.every(Boolean) && resumen === `Cambiar a quiénes van (${espera - casillas[1]} más en espera)`
+      && despues.length === espera && await otra.isChecked() && (tam !== 'teléfono' || pantallas < 8.5),
+      t(`C3-01: «Programar» abre con las ${antes.length} propuestas a la vista y «${resumen}» plegado (${pantallas.toFixed(1)} pantallas); al desplegarlo se ven las ${despues.length} y se eligen`));
     await sinDesborde(`programar con ${espera} en espera`);
   });
 
