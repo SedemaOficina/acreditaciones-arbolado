@@ -5160,6 +5160,16 @@ async function sistemaVisual(navegador) {
     t(`decisión del 21/10 (C6-10 c): «Programar» (${curso}) a ${ancho} px, ${telefono ? `sin nota en la celda y abajo «${r.linea}»` : `notas ${r.notas.map((x) => `«${x.t}» ${x.tam} px${x.cabe ? '' : ' cortada'}`).join(', ')}`}; texto a menos de 12 px: ${r.chicos.join(', ') || 'ninguno'}`));
     await c.close();
   }
+
+  // 10. Decisión de Liber del 21/10: en «Asistencia», el botón que marca «Sí» a todas se llama «Todas asistieron»
+  {
+    const { c, page } = await nuevo(390, 844);
+    await page.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
+    await page.waitForSelector('.asistencia-fila');
+    const texto = (await page.textContent('[data-todas]')).trim();
+    comprueba(texto === 'Todas asistieron', t(`decisión del 21/10: el botón de «Asistencia» dice «${texto}»`));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
