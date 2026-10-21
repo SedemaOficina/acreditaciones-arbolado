@@ -44,6 +44,14 @@
         <!-- autocomplete off: búsqueda de quien atiende; no es un dato suyo. -->
         <input class="control" id="buscar" name="buscar" type="search" maxlength="60" autocomplete="off" spellcheck="false">
       </div>
+      <!-- Para cerrar el día (decisión 12 a de Liber, auditoría 2026-10-20, C1-07): sólo las citas que aún no tienen
+           resultado. Queda en la dirección (?ver=por-atender), como el día. El registro en lote va con P69. -->
+      <div class="campo" data-campo="ver" data-uso="Ver sólo las citas que aún no tienen resultado; no se guarda.">
+        <label class="etiqueta" for="ver">Mostrar</label>
+        <p class="ayuda">«Por atender»: las que todavía no tienen resultado, para cerrar el día.</p>
+        <!-- autocomplete off: filtro de la vista. -->
+        <div class="select"><select class="control control-select" id="ver" name="ver" autocomplete="off"><option value="">Todas</option><option value="por-atender">Por atender</option></select></div>
+      </div>
     </form>
 
     <div class="agenda-dia">

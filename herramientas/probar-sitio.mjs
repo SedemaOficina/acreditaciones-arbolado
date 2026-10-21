@@ -4548,6 +4548,56 @@ async function tareasPersonal(navegador) {
       t(`C1-04: ${reenv.folio}, junto al documento corregido «Se le pidió: ${doc.observacion.slice(0, 40)}…» y las revisiones anteriores abiertas`));
     await c.close();
   }
+
+  // C1-07 (decisión 12 a): «Mostrar: Por atender» en «Citas» deja sólo las citas del día sin resultado, queda en la
+  // dirección (?ver=por-atender) y sobrevive a recargar. C4-03: la búsqueda sobrevive a «Atrás» y a recargar (en esta
+  // pestaña, no en la dirección), y al llegar de nuevo desde el menú la agenda empieza sin búsqueda.
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    const dia = await page.evaluate(() => APD.cargar().then((d) => {
+      const por = {};
+      for (const x of APD_PERSONAL.citas(d)) { const k = APD_PERSONAL.diaDe(x.en); (por[k] ||= []).push(x.pendiente); }
+      // Un día con citas ya cerradas (y, si lo hay, con alguna abierta) y el folio de una cita abierta, para buscarla
+      const dias = Object.keys(por).sort();
+      const k = dias.find((x) => por[x].some(Boolean) && por[x].some((v) => !v)) || dias.find((x) => por[x].some((v) => !v));
+      const abierta = APD_PERSONAL.citas(d).find((x) => x.pendiente);
+      return { dia: k, abiertas: por[k].filter(Boolean).length, todas: por[k].length, folio: abierta.s.folio };
+    }));
+    await page.goto(BASE + `citas.html?dia=${dia.dia}`);
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.selectOption('#ver', 'por-atender');
+    const filtrada = () => page.waitForFunction(() => /sin resultado|No quedan citas por atender/.test(document.querySelector('[data-cuenta]').textContent));
+    await filtrada();
+    const vis = () => page.$$eval('[data-filas] tr:not([hidden])', (l) => l.map((tr) => Boolean(tr.querySelector('a'))));
+    const conFiltro = await vis();
+    comprueba(conFiltro.length === dia.abiertas && conFiltro.every(Boolean) && (dia.abiertas || await page.isVisible('[data-tabla-vacia]')) && /[?&]ver=por-atender/.test(page.url()),
+      t(`C1-07: el ${dia.dia}, «Por atender» deja ${conFiltro.length} de ${dia.todas} citas, las que no tienen resultado, y queda en la dirección`));
+    await page.reload();
+    await filtrada();
+    comprueba((await page.inputValue('#ver')) === 'por-atender' && (await vis()).length === dia.abiertas, t('C1-07: al recargar sigue en «Por atender»'));
+    await page.selectOption('#ver', '');
+    const folio = dia.folio;
+    await page.fill('#buscar', folio);
+    await page.waitForFunction(() => /coincide/.test(document.querySelector('[data-cuenta]').textContent));
+    const cuenta = await page.textContent('[data-cuenta]');
+    await page.locator('[data-filas] tr:not([hidden]) a').first().click();
+    await page.waitForURL(/cotejo\.html/);
+    await page.goBack();
+    await page.waitForFunction(() => /coincide/.test(document.querySelector('[data-cuenta]').textContent));
+    const atras = [await page.inputValue('#buscar'), await page.textContent('[data-cuenta]')];
+    await page.reload();
+    await page.waitForFunction(() => /coincide/.test(document.querySelector('[data-cuenta]').textContent));
+    const recarga = [await page.inputValue('#buscar'), await page.textContent('[data-cuenta]')];
+    comprueba(atras[0] === folio && atras[1] === cuenta && recarga[0] === folio && recarga[1] === cuenta && !page.url().includes(folio),
+      t(`C4-03: la búsqueda «${folio}» sigue con «Atrás» y al recargar («${cuenta}»), sin quedar en la dirección`));
+    await page.goto(BASE + 'citas.html');
+    await page.waitForSelector('[data-filas] tr', { state: 'attached' });
+    await page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cuenta]').textContent));
+    comprueba((await page.inputValue('#buscar')) === '' && !errores.length, t(`C4-03: al llegar de nuevo, la agenda empieza sin búsqueda${errores.length ? `; errores: ${errores[0]}` : ''}`));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});

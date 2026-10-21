@@ -123,6 +123,18 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await pg.click('[data-atrasadas] button');
     comprueba((await pg.locator('[data-filas] tr:visible', { hasText: 'Sin registrar' }).count()) === 3, t('citas: el botón lleva al día con las 3 citas «Sin registrar»'));
     await sinDesborde('citas');
+    // C4-08 (auditoría 2026-10-20): la cuenta del día suma igual que la situación de sus filas; la que está en pausa no
+    // va «por atender». C1-07: con «Por atender» quedan las del día sin resultado (también la de la pausa)
+    await ir('citas.html', '[data-filas] tr');
+    const situaciones = async () => pg.$$eval('[data-filas] tr:not([hidden])', (l) => l.map((tr) => tr.querySelector('.estado').textContent.trim()));
+    const filasHoy = await situaciones();
+    const nPausa = filasHoy.filter((x) => /^En pausa/.test(x)).length;
+    const nPor = filasHoy.filter((x) => /^Por atender/.test(x)).length;
+    comprueba(nPausa === 1 && (await texto('[data-cuenta]')).trim() === `${filasHoy.length} citas: ${nPor} por atender, 1 en pausa.`,
+      t(`C4-08: «${(await texto('[data-cuenta]')).trim()}» con ${nPor} filas «Por atender» y ${nPausa} en pausa`));
+    await pg.selectOption('#ver', 'por-atender');
+    await pg.waitForFunction(() => /sin resultado/.test(document.querySelector('[data-cuenta]').textContent));
+    comprueba((await situaciones()).length === nPor + nPausa, t(`C1-07: con «Por atender» quedan las ${nPor + nPausa} citas de hoy sin resultado`));
     const pausa = d.solicitud.find((s) => s.cotejo_pausa && s.cita_en && s.cita_en.slice(0, 10) < hoy);
     await ir('citas.html', '[data-filas] tr');
     await pg.fill('#buscar', pausa.folio);
