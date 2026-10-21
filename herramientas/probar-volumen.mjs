@@ -76,6 +76,17 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await sinDesborde('aplicar con la fotografía');
   });
 
+  // C1-06 (auditoría 2026-10-20): APD-G-2026-006 y -020 se llaman igual (mismo curso, mismas fechas, una sola sede): en
+  // «Otros grupos en curso» el que se repite lleva su folio y cuántas personas tiene
+  await paso('aplicar: otros grupos con el mismo nombre', async () => {
+    await ir('aplicar.html?folio=APD-G-2026-020', '.otros-grupos a');
+    const enlaces = await pg.$$eval('.otros-grupos a', (l) => l.map((a) => a.textContent.trim()));
+    const actual = await texto('[data-grupo] .grupo-nombre');
+    const de006 = enlaces.find((x) => /APD-G-2026-006/.test(x)) || '';
+    comprueba(new Set(enlaces).size === enlaces.length && enlaces.every((x) => !x.startsWith(`${actual} (`)) && /· APD-G-2026-006 · 5 personas \(examen el/.test(de006),
+      t(`C1-06: «Otros grupos en curso» no repite el nombre del grupo en pantalla («${de006}»)`));
+  });
+
   await paso('asistencia', async () => {
     // A1 y M9: asistencia señala el día sin capturar y resume el grupo
     await ir('asistencia.html?folio=APD-G-2026-024', '.asistencia-fila');
