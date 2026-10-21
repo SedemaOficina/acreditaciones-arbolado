@@ -70,6 +70,8 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     // A3 y M6: citas de días anteriores sin registrar y pausa vencida
     await ir('citas.html', '[data-filas] tr');
     comprueba(/3 citas de días anteriores están sin registrar/.test(await texto('[data-atrasadas]')), t('citas: aviso de las 3 citas de días anteriores sin registrar'));
+    // Como RI-09 en «Asistencia» (auditoría 2026-10-20): se ve, pero no es una alerta que suene en cada carga
+    comprueba(await pg.isVisible('[data-atrasadas] .aviso') && !(await pg.$('[data-atrasadas] [role="alert"]')), t('citas (como RI-09): el aviso de las citas sin registrar se ve, pero no es una alerta que suene al cargar'));
     await pg.click('[data-atrasadas] button');
     comprueba((await pg.locator('[data-filas] tr:visible', { hasText: 'Sin registrar' }).count()) === 3, t('citas: el botón lleva al día con las 3 citas «Sin registrar»'));
     await sinDesborde('citas');

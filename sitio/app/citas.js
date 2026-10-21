@@ -83,8 +83,13 @@
           b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta('dia'); $('[data-dia]').scrollIntoView({ block: 'start' }); });
           return b;
         });
-        caja.append(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `${sinRegistrar.length === 1 ? '1 cita de un día anterior está' : `${sinRegistrar.length} citas de días anteriores están`} sin registrar`,
-          texto: [el('p', { texto: 'Registre si cada persona se presentó: sin eso no recibe cita nueva y su inasistencia no cuenta.' }), el('div', { class: 'acciones-grupo' }, ir)] }));
+        // Es un estado de la página, no una alerta (auditoría 2026-10-20, como RI-09 en «Asistencia»): se ve igual, pero sin
+        // role="alert", que lo hacía sonar en cada carga y cada vez que la agenda se vuelve a pintar. FormKit.aviso da el rol
+        // por el tono y no tiene uno de bloqueo sin anuncio (nota del revisor independiente sobre el estándar).
+        const atrasadas = FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: `${sinRegistrar.length === 1 ? '1 cita de un día anterior está' : `${sinRegistrar.length} citas de días anteriores están`} sin registrar`,
+          texto: [el('p', { texto: 'Registre si cada persona se presentó: sin eso no recibe cita nueva y su inasistencia no cuenta.' }), el('div', { class: 'acciones-grupo' }, ir)] });
+        atrasadas.removeAttribute('role');
+        caja.append(atrasadas);
       }
       // El módulo tabla copia el encabezado a cada celda para leerla como ficha en teléfono
       $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
