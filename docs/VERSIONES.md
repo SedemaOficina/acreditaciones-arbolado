@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.62 | 20/10/26, 7:29 p.m. | Merge pull request #7 from SedemaOficina/correcciones-2026-10-20 |
 | 0.61 | 20/10/26, 8:22 a.m. | Merge pull request #4 from SedemaOficina/bloque6-ci |
 | 0.60 | 19/10/26, 3:50 p.m. | Merge pull request #3 from SedemaOficina/bloque4-estandar |
 | 0.59 | 19/10/26, 12:55 p.m. | Merge pull request #2 from SedemaOficina/bloque3-grupos |
