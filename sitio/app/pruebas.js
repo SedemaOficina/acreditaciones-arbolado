@@ -67,7 +67,7 @@
     for (const c of document.querySelectorAll('form [required]')) c.removeAttribute('required');
     for (const l of document.querySelectorAll('.leyenda-oblig')) l.hidden = true;
     const main = document.querySelector('main');
-    if (main) main.prepend(APD.el('p', { class: 'aviso aviso-advertencia', role: 'status', texto: 'Modo de prueba: las preguntas obligatorias están desactivadas. Los formatos y las comprobaciones de la CURP siguen activos.' }));
+    if (main) main.prepend(APD.el('p', { class: 'aviso aviso-advertencia', role: 'status' }, [APD.icono('alerta'), APD.el('span', { class: 'aviso-texto', texto: 'Modo de prueba: las preguntas obligatorias están desactivadas. Los formatos y las comprobaciones de la CURP siguen activos.' })]));
   }
 
   /* ----- Utilidades de llenado ----- */

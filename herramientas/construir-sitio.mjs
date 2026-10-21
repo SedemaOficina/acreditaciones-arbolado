@@ -209,7 +209,7 @@ const revisionDocs = enLinea.map((r) => {
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_${k}=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_${k}=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>`;

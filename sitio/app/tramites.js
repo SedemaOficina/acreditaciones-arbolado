@@ -93,7 +93,8 @@
       const importe = s.pago_monto != null ? s.pago_monto : c.pago_monto;
       const monto = importe != null ? Number(importe).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
       const instrucciones = (datos.parametro.find((x) => x.clave === 'pago_instrucciones') || {}).valor || '';
-      extra.push(el('div', { class: 'aviso' }, [
+      // Con el icono de su tono, como todo aviso del estándar (auditoría 2026-10-20, C6-08)
+      extra.push(el('div', { class: 'aviso' }, [APD.icono('info'),
         el('div', { class: 'aviso-texto aviso-pila' }, [
           el('p', {}, [el('strong', { texto: citaNueva ? 'Datos para tu pago, si todavía no pagas' : 'Datos para tu pago' })]),
           citaNueva ? el('p', { texto: 'Si ya pagaste, no pagues otra vez: lleva el comprobante de ese pago.' }) : null,
@@ -276,7 +277,7 @@
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
     // Cerrada sin atender (por inasistencia o por plazo), el motivo de la base ya lo dice el texto de arriba
-    const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
+    const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [APD.icono('info'), el('div', { class: 'aviso-texto aviso-pila' }, [
       el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : s.estado === 'cancelada' ? 'Motivo de la cancelación' : 'Motivo' })]),
       el('p', { class: 'con-renglones', texto: APD.paraTi(s.motivo_cierre) })])]) : null;
 

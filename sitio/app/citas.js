@@ -77,7 +77,7 @@
         $('[data-cuenta]').before(caja);
         const ir = porDia.map((d) => {
           const n = sinRegistrar.filter((c) => P.diaDe(c.en) === d).length;
-          const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fechaCorta(d)} (${n})` });
+          const b = el('button', { type: 'button', class: 'btn btn-secundario', texto: `Ver el ${APD.fechaCorta(d)} (${n})` });
           b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta('dia'); $('[data-dia]').scrollIntoView({ block: 'start' }); });
           return b;
         });
