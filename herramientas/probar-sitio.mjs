@@ -4134,6 +4134,13 @@ async function focoAccesibilidad(navegador) {
     const { c, page, errores } = await nuevo(w, h);
     await page.goto(BASE + `revisar.html?folio=${enviadaPoda.folio}`);
     await page.waitForSelector('#formulario input[name^="decision_"]');
+    // En computadora, la página abre sola el primer documento y el visor anuncia «Cargando el documento…» con retardo:
+    // en una máquina lenta (GitHub) ese anuncio de la carga caía dentro de la primera decisión. Se espera a que el
+    // visor termine de pintar (hojas con contenido y aviso oculto) y a que pase el retardo de los anuncios.
+    if (w >= 760) {
+      await page.waitForFunction(() => { const h = document.querySelector('[data-visor-hojas]'); const a = document.querySelector('[data-visor-aviso]'); return h && h.childElementCount > 0 && (!a || a.hidden); }, null, { timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout((await page.evaluate(() => FormKit.config.anuncios.retardoMs)) + 300);
+    }
     const nombres = await page.$$eval('#formulario input[name^="decision_"][value="aceptado"]', (l) => [...new Set(l.filter((x) => !x.disabled && x.checkVisibility()).map((x) => x.name))]);
     const malos = [];
     for (const [i, n] of nombres.entries()) {
