@@ -346,13 +346,15 @@
     return datos.grupo.filter((g) => g.id !== exceptoId && g.instructor === usuario && ACTIVOS.includes(g.estado)
       && g.fecha_inicio && traslapa(desde, hasta, g.fecha_inicio, APD.ultimoDia(datos, g)));
   }
-  /* ¿Puede empezar ahí un curso? → null o la razón (para el calendario y para el error del formulario) */
+  /* ¿Puede empezar ahí un curso? → null o la razón (para el calendario y para el error del formulario). La razón va sin «:»
+     propios, entre paréntesis: quien la usa la pone después de los suyos («El lunes ya no se puede: …»; auditoría
+     2026-10-20, C5-04, eran dos «:» seguidos) */
   function razonNoInicio(datos, tipo, modalidad, inicio, exceptoId) {
     const c = APD.curso(datos, tipo, modalidad);
     const fin = APD.sumaDias(inicio, c.dias_duracion - 1);
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
-    if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días: el curso empieza al menos ${anticipacion} días después de confirmarlo` };
-    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año: el curso empieza a más tardar un año después de hoy, el ${APD.fecha(ultimoDiaPosible(datos))}` };
+    if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días (el curso empieza al menos ${anticipacion} días después de confirmarlo)` };
+    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año (el curso empieza a más tardar un año después de hoy, el ${APD.fecha(ultimoDiaPosible(datos))})` };
     const otro = choques(datos, tipo, modalidad, inicio, fin, exceptoId)[0];
     if (otro) return { clave: 'otro_curso', texto: `ya hay un curso de ${APD.cursoCorto(tipo, modalidad).toLowerCase()} esas fechas (${APD.nombreGrupo(otro, datos, { sinCurso: true }).toLowerCase()}, ${otro.folio})`, grupo: otro };
     const inhabiles = diasInhabiles(datos);
@@ -398,7 +400,8 @@
   function filaEspera(x, casilla, conOrganizacion) {
     const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
     const espera = [x.prioritaria ? estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias })];
-    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `vence el ${APD.fecha(x.vence)}` }));
+    // «Vencida el …» y «Vence el …», con la misma mayúscula (auditoría 2026-10-20, C5-04)
+    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `Vence el ${APD.fecha(x.vence)}` }));
     return el('label', { class: 'plan-persona' }, [casilla,
       el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
       el('span', { class: 'plan-persona-espera' }, espera),

@@ -4466,6 +4466,54 @@ async function continuidad(navegador) {
       await c.close();
     }
   }
+  // C5-02: la persona espera el curso (el personal arma los grupos): en «Mis trámites» no lee «espera de grupo»
+  {
+    const ins = datos.inscripcion.find((x) => !x.activa && /^Grupo cancelado/.test(x.motivo_baja || '')
+      && datos.solicitud.some((s) => s.id === x.solicitud_id && s.estado === 'lista_para_curso' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa')));
+    const s = datos.solicitud.find((x) => x.id === ins.solicitud_id);
+    const { c, page, errores } = await nuevo(390, 844, s.solicitante_id);
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('text=Tu grupo se canceló');
+    const texto = await page.textContent('main');
+    comprueba(/Sigues en espera de un curso/.test(texto) && !/espera de grupo/i.test(texto) && !errores.length, t('C5-02: con su grupo cancelado, «Mis trámites» dice «en espera de un curso» y no «espera de grupo»'));
+    await c.close();
+  }
+  // C5-03 y C5-04: en las pantallas del personal la franja de ubicación no habla de tú; «Vence el» con la misma mayúscula
+  // que «Vencida el»; ninguna oración con dos «:» (la razón de un día que no se puede va entre paréntesis)
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    const dosPuntos = () => page.evaluate(() => {
+      const fuera = (n) => n.closest('.ubicacion-prueba, .entorno-pruebas, dialog, script, style, .solo-lector');
+      const textos = [...document.querySelectorAll('main p, main li, main span, main [role="alert"], main .aviso-texto')].filter((n) => !fuera(n) && n.childElementCount === 0).map((n) => n.textContent.replace(/\s+/g, ' ').trim());
+      return textos.flatMap((x) => x.split(/(?<=[.!?])\s+/)).filter((o) => (o.match(/: /g) || []).length > 1);
+    });
+    await page.goto(BASE + 'grupos.html?curso=poda-renovacion');
+    await page.waitForSelector('.plan-semana-no');
+    const ubic = await page.waitForSelector('nav.ubicacion-prueba').then((n) => n.getAttribute('aria-label'));
+    const espera = await page.$$eval('.plan-persona-espera > *', (xs) => xs.map((x) => x.textContent.trim()));
+    const conVence = espera.filter((x) => /^vence el/i.test(x));
+    const dobles = await dosPuntos();
+    comprueba(ubic === 'Ubicación en el trámite (versión de prueba)', t(`C5-03: la franja de ubicación del personal se llama «${ubic}»`));
+    comprueba(conVence.length > 0 && conVence.every((x) => x.startsWith('Vence el')) && espera.some((x) => /^Vencida el/.test(x)),
+      t(`C5-04: en la espera de renovación «Vencida el» y «Vence el» llevan la misma mayúscula (${conVence.length} con «Vence el»)`));
+    comprueba(!dobles.length && /El lunes ya no se puede: faltan menos de \d+ días \(el curso empieza/.test(await page.textContent('.plan-semana-no')),
+      t(`C5-04: «Grupos» no tiene oraciones con dos «:»${dobles.length ? `: ${dobles.slice(0, 3).join(' | ')}` : ''}`));
+    // Programar: un día que no se puede, elegido en el calendario, se dice con un solo «:»
+    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.waitForSelector('.cal-dia');
+    // El calendario abre en el mes del primer día posible: el mes anterior tiene los días que ya no se pueden
+    while (!(await page.$('.cal-dia[data-no="anticipacion"]')) && (await page.getAttribute('[data-mes="-1"]', 'aria-disabled')) !== 'true') {
+      const mes = await page.textContent('[data-mes-nombre]');
+      await page.click('[data-mes="-1"]');
+      await page.waitForFunction((m) => document.querySelector('[data-mes-nombre]').textContent !== m, mes);
+    }
+    await page.click('.cal-dia[data-no="anticipacion"]', { force: true }); // aria-disabled: se elige igual y dice por qué no
+    await page.waitForFunction(() => /no se puede/.test(document.querySelector('main').textContent));
+    const doblesP = await dosPuntos();
+    comprueba(!doblesP.length && !errores.length, t(`C5-04: «Programar» dice por qué un día no se puede sin dos «:» seguidos${doblesP.length ? `: ${doblesP.slice(0, 3).join(' | ')}` : ''}`));
+    await c.close();
+  }
+
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
