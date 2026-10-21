@@ -1,12 +1,15 @@
 /* Distintivo de versión siempre visible (guía SIA, sección 8, «Versión en pantalla»).
-   Lee el archivo VERSION publicado junto a la página y pinta, fijo en pantalla:
+   Lee la versión escrita en la página al construirla (<meta name="sia-version" content="0.N">, herramientas/
+   construir-sitio.mjs) y pinta, fijo en pantalla:
      0.N  → «Versión de prueba 0.N»   (estilo de prueba)
      1, 1.1… → «Versión 1»             (estilo instalado en el SIA)
-   Si no puede leerlo, dice «Versión sin identificar» en lugar de esconderse.
-   Sin dependencias; servido desde el propio sitio. Requiere connect-src 'self' en la CSP.
-   Si VERSION no está junto a la página: <meta name="sia-version-src" content="../VERSION">. */
+   Así dice la versión del código que corre, también sin red o con la página en caché (auditoría 2026-10-20, B6-04;
+   decisión 7a de Liber), y no pide nada (D4-03). Sólo si la página no la trae lee el archivo VERSION publicado junto a
+   ella (o el de <meta name="sia-version-src" content="../VERSION">; requiere connect-src 'self' en la CSP).
+   Si no la encuentra, dice «Versión sin identificar» en lugar de esconderse. Sin dependencias. */
 (function () {
   'use strict';
+  var escrita = document.querySelector('meta[name="sia-version"]');
   var meta = document.querySelector('meta[name="sia-version-src"]');
   var origen = (meta && meta.content) || 'VERSION';
 
@@ -26,6 +29,7 @@
   }
 
   function iniciar() {
+    if (escrita) { pintar((escrita.content || '').trim()); return; }
     fetch(origen, { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.text() : ''; })
       .then(function (t) { pintar(t.trim()); })

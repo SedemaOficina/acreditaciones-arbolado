@@ -505,23 +505,24 @@
     return avisos;
   }
 
+  /* Sólo en la versión de prueba (0.N): la versión escrita en la página al construirla, la misma que muestra el
+     distintivo (auditoría 2026-10-20, B6-04 y D4-03: se pedía VERSION aparte, dos veces por pantalla) */
   function monta() {
-    fetch('VERSION', { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((v) => {
-      if (!/^0\./.test(v.trim())) return;
-      return APD.cargar().then((datos) => {
-        const dialogo = panel(datos);
-        // Caso del registro anterior elegido en el menú: «Crea tu cuenta» llega llenada con su CURP
-        const migrada = new URLSearchParams(location.search).get('migrada');
-        const m = migrada && pagina === 'cuenta.html' && form ? APD_CASOS_PRUEBA.migradas(datos).find((x) => x.id === migrada) : null;
-        if (m) setTimeout(() => { const aviso = llenaMigrada(m); const e = dialogo.querySelector('.menu-pruebas-estado'); if (e) e.textContent = aviso; }, 300);
-        const franja = document.querySelector('.entorno-pruebas');
-        if (franja) franja.after(ubicacion(datos), ...avisosDeLaPrueba(datos));
-        const abre = el('button', { type: 'button', class: 'btn btn-secundario menu-pruebas-boton', 'aria-haspopup': 'dialog', texto: 'Menú de pruebas' });
-        abre.addEventListener('click', () => dialogo.showModal());
-        const pie = document.querySelector('footer') || document.body;
-        pie.append(abre, dialogo);
-      });
-    }).catch(() => { /* sin VERSION o sin datos: no hay menú */ });
+    const v = (document.querySelector('meta[name="sia-version"]') || {}).content || '';
+    if (!/^0\./.test(v.trim())) return;
+    APD.cargar().then((datos) => {
+      const dialogo = panel(datos);
+      // Caso del registro anterior elegido en el menú: «Crea tu cuenta» llega llenada con su CURP
+      const migrada = new URLSearchParams(location.search).get('migrada');
+      const m = migrada && pagina === 'cuenta.html' && form ? APD_CASOS_PRUEBA.migradas(datos).find((x) => x.id === migrada) : null;
+      if (m) setTimeout(() => { const aviso = llenaMigrada(m); const e = dialogo.querySelector('.menu-pruebas-estado'); if (e) e.textContent = aviso; }, 300);
+      const franja = document.querySelector('.entorno-pruebas');
+      if (franja) franja.after(ubicacion(datos), ...avisosDeLaPrueba(datos));
+      const abre = el('button', { type: 'button', class: 'btn btn-secundario menu-pruebas-boton', 'aria-haspopup': 'dialog', texto: 'Menú de pruebas' });
+      abre.addEventListener('click', () => dialogo.showModal());
+      const pie = document.querySelector('footer') || document.body;
+      pie.append(abre, dialogo);
+    }).catch(() => { /* sin datos: no hay menú */ });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', monta); else monta();
 }());
