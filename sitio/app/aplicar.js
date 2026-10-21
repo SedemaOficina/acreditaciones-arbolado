@@ -129,7 +129,9 @@
       if (nueva === firma && !forzar) return;
       firma = nueva;
       // Se conserva el foco en el botón de la misma persona al volver a pintar
-      const enfocado = document.activeElement && document.activeElement.closest('[data-tabla]') ? [document.activeElement.dataset.accion, document.activeElement.dataset.ins] : null;
+      // (la fotografía es un botón [data-ampliar], no una acción del pase de lista: C1-02)
+      const activo = document.activeElement;
+      const enfocado = activo && activo.closest('[data-tabla]') ? [activo.hasAttribute('data-ampliar') ? null : activo.dataset.accion, activo.dataset.ins] : null;
 
       const cuenta = { registradas: 0, derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, suspendidas: 0 };
       $('[data-filas]').replaceChildren(...filas.map((f) => {
@@ -144,7 +146,7 @@
              ahí mismo, junto a «Presente» y «No llegó», con clic, toque, Intro o Espacio (decisión 14 a de Liber,
              auditoría 2026-10-20, C1-02). Sigue ampliada al volver a pintar la lista. */
           const amplia = ampliadas.has(id);
-          foto = el('button', { type: 'button', class: 'examen-foto-boton', 'data-accion': 'foto', 'data-ins': id, 'data-ampliada': amplia ? '' : null,
+          foto = el('button', { type: 'button', class: 'examen-foto-boton', 'data-ampliar': '', 'data-ins': id, 'data-ampliada': amplia ? '' : null,
             'aria-label': `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${nombre}` }, [foto, el('span', { class: 'examen-foto-accion', 'aria-hidden': 'true', texto: amplia ? 'Reducir' : 'Ampliar' })]);
         }
         const persona = el('td', {}, [el('div', { class: 'examen-persona-fila' }, [foto, el('div', {}, [el('span', { class: 'examen-nombre', texto: nombre }), el('span', { class: 'examen-nota mono', texto: f.solicitud.folio })])])]);
@@ -226,7 +228,8 @@
       $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
 
       if (enfocado) {
-        const b = $(`[data-tabla] [data-accion="${enfocado[0]}"][data-ins="${enfocado[1]}"]`) || $(`[data-tabla] tr[data-ins="${enfocado[1]}"] button`);
+        const b = enfocado[0] === null ? $(`[data-tabla] [data-ampliar][data-ins="${enfocado[1]}"]`)
+          : $(`[data-tabla] [data-accion="${enfocado[0]}"][data-ins="${enfocado[1]}"]`) || $(`[data-tabla] tr[data-ins="${enfocado[1]}"] [data-accion]`);
         if (b) b.focus();
       }
       pintaPapeletas(filas, vigente);
@@ -254,18 +257,21 @@
     };
     let suspenderA = null;
     $('[data-filas]').addEventListener('click', (e) => {
+      const fb = e.target.closest('[data-ampliar]');
+      if (fb) {
+        // La fotografía se amplía o se reduce ahí mismo; el foco sigue en el botón (C1-02)
+        const amplia = !fb.hasAttribute('data-ampliada');
+        if (amplia) ampliadas.add(fb.dataset.ins); else ampliadas.delete(fb.dataset.ins);
+        fb.toggleAttribute('data-ampliada', amplia);
+        fb.setAttribute('aria-label', `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${APD.nombreCompleto(fila(fb.dataset.ins).persona)}`);
+        $('.examen-foto-accion', fb).textContent = amplia ? 'Reducir' : 'Ampliar';
+        return;
+      }
       const b = e.target.closest('[data-accion]');
       if (!b) return;
       const f = fila(b.dataset.ins);
       const nombre = APD.nombreCompleto(f.persona);
-      if (b.dataset.accion === 'foto') {
-        // Se amplía o se reduce ahí mismo; el foco sigue en el botón (C1-02)
-        const amplia = !b.hasAttribute('data-ampliada');
-        if (amplia) ampliadas.add(b.dataset.ins); else ampliadas.delete(b.dataset.ins);
-        b.toggleAttribute('data-ampliada', amplia);
-        b.setAttribute('aria-label', `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${nombre}`);
-        $('.examen-foto-accion', b).textContent = amplia ? 'Reducir' : 'Ampliar';
-      } else if (b.dataset.accion === 'presente') {
+      if (b.dataset.accion === 'presente') {
         G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario).then((r) => { pinta(true); FormKit.anuncia(`${nombre}, presente. Su código: ${r.codigo.split('').join(' ')}.`); }, noSeHizo(nombre));
       } else if (b.dataset.accion === 'ausente') {
         G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); }, noSeHizo(nombre));
