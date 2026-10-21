@@ -291,12 +291,15 @@
     // se dice y no se propone a nadie más (auditoría «intentar romperlo», F3 M5: se marcaban 18 que nadie eligió)
     const yaNo = pedidas.length - deUrl.length;
     const propuestas = new Set((pedidas.length || gExistente ? deUrl : P.lasQueMasEsperan(espera, c.cupo_maximo)).map((x) => x.s.folio));
+    if (modalidad === 'renovacion') $('[data-ayuda-personas]').textContent = `Si hay más de ${c.cupo_maximo}, entran primero las que ya vencieron y después las que vencen antes, con las de una misma organización juntas; el resto sigue en espera para otra semana.`;
     $('[data-propuesta]').textContent = yaNo
       ? `${yaNo === pedidas.length ? (yaNo === 1 ? 'La persona que eligió en «Grupos» ya no está en espera: ya tiene grupo.' : `Las ${yaNo} que eligió en «Grupos» ya no están en espera: ya tienen grupo.`)
         : `${yaNo} de las ${pedidas.length} que eligió en «Grupos» ya no ${yaNo === 1 ? 'está' : 'están'} en espera: ya ${yaNo === 1 ? 'tiene' : 'tienen'} grupo. Quedan marcadas las demás.`} No se propone a nadie más: marque a quien quiera agregar.`
       : deUrl.length ? `Las ${deUrl.length === 1 ? 'que eligió' : `${deUrl.length} que eligió`} en «Grupos»; puede agregar o quitar.`
         : gExistente ? 'Marque a quien quiera agregar de la espera.'
-          : 'Propuesta: las que más esperan, hasta 25, primero las prioritarias y las de una misma organización juntas.';
+          // En renovación, primero las que ya vencieron (decisión 11 b, auditoría 2026-10-20, C1-03; P.lasQueMasEsperan)
+          : modalidad === 'renovacion' ? `Propuesta: hasta ${c.cupo_maximo}, primero las que ya vencieron y después las que vencen antes, con las de una misma organización juntas.`
+            : 'Propuesta: las que más esperan, hasta 25, primero las prioritarias y las de una misma organización juntas.';
     if (gExistente) {
       const ya = $('[data-ya-estan]');
       ya.hidden = false;

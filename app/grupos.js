@@ -201,7 +201,8 @@
     /* ----- En espera ----- */
     function pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
       $('#t-espera').textContent = `En espera · ${lista.length}`;
-      $('[data-orden]').textContent = renov ? 'primero quien vence antes' : 'primero quien más espera';
+      // En renovación, el orden que de verdad se ve (decisión 11 b, auditoría 2026-10-20, C1-03; P.bloquesEspera)
+      $('[data-orden]').textContent = renov ? 'por vencimiento: cada organización va junta en el lugar de la primera que vence y, dentro, primero las vencidas' : 'primero quien más espera';
       const modo = $('[data-modo-grupo]');
       modo.hidden = !modoGrupo && !noRecibe;
       if (!modoGrupo && noRecibe) {
