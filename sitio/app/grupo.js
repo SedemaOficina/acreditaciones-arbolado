@@ -111,7 +111,13 @@
         el('td', { texto: P.organizacionDe(datos, s) }),
         el('td', { texto: fecha(i.inscrita_en) })
       ];
-      if (conSituacion) { const e = ESTADO_SOLICITUD[s.estado] || [APD.nombrePersonal(s.estado), (APD.ESTADOS[s.estado] || {}).tono || '']; celdas.push(el('td', {}, [estado(e[0], e[1])])); }
+      if (conSituacion) {
+        // Mientras sigue «inscrita», quien ya pasó de las faltas permitidas se ve sin derecho, como en el concentrado
+        // (auditoría 2026-10-20, C4-07)
+        const e = s.estado === 'inscrita' && P.sinDerechoPorFaltas(datos, x, i.id) ? ESTADO_SOLICITUD.sin_derecho_examen
+          : ESTADO_SOLICITUD[s.estado] || [APD.nombrePersonal(s.estado), (APD.ESTADOS[s.estado] || {}).tono || ''];
+        celdas.push(el('td', {}, [estado(e[0], e[1])]));
+      }
       if (puedeBaja) {
         const b = el('button', { type: 'button', class: 'btn-enlace sin-corte', 'aria-label': `Dar de baja a ${quien}`, texto: 'Dar de baja' });
         b.addEventListener('click', () => {

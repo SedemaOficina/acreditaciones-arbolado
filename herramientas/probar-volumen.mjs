@@ -87,6 +87,18 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
       t(`C1-06: «Otros grupos en curso» no repite el nombre del grupo en pantalla («${de006}»)`));
   });
 
+  // C4-07 (auditoría 2026-10-20): en la ficha de un grupo en curso, la situación de la lista y la del concentrado coinciden
+  await paso('grupo en curso: situación y concentrado', async () => {
+    await ir('grupo.html?folio=APD-G-2026-020', '[data-conc-filas] tr');
+    const r = await pg.evaluate(() => {
+      const quien = (tr) => tr.querySelector('td').textContent.trim();
+      const conc = Object.fromEntries([...document.querySelectorAll('[data-conc-filas] tr')].map((tr) => [quien(tr), /Sin derecho/.test(tr.lastElementChild.textContent)]));
+      const lista = [...document.querySelectorAll('[data-filas] tr')].map((tr) => [quien(tr), /Sin derecho a examen/.test(tr.textContent), /Inscrita/.test(tr.textContent)]);
+      return { sinDerecho: Object.values(conc).filter(Boolean).length, distintas: lista.filter(([q, sd, ins]) => conc[q] !== sd || (conc[q] && ins)).map(([q]) => q) };
+    });
+    comprueba(r.sinDerecho === 4 && !r.distintas.length, t(`C4-07: grupo APD-G-2026-020, las ${r.sinDerecho} sin derecho del concentrado se ven así en la lista${r.distintas.length ? `; no coinciden: ${r.distintas.join(', ')}` : ''}`));
+  });
+
   await paso('asistencia', async () => {
     // A1 y M9: asistencia señala el día sin capturar y resume el grupo
     await ir('asistencia.html?folio=APD-G-2026-024', '.asistencia-fila');

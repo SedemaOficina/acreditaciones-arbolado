@@ -511,6 +511,21 @@
      pasó sin capturar se señala aparte («Sin capturar»), como en la captura.
      marco: el [data-tabla] con [data-conc-encabezado], [data-conc-filas] y [data-conc-leyenda].
      El pase de lista ya viene en datos.asistencia (en la prueba lo aplica APD.cargar; en el SIA, apd.asistencia). */
+  /* ¿Se quedó sin derecho a examen por faltas? Las faltas registradas antes del día del examen contra las permitidas
+     (dias_duracion − dias_minimos_asistencia). Lo usan el concentrado y la lista de personas de la ficha del grupo, para
+     que digan lo mismo (auditoría 2026-10-20, C4-07: la lista decía «Inscrita» a quien el concentrado marcaba «Sin
+     derecho»). */
+  function sinDerechoPorFaltas(datos, x, insId) {
+    const { c } = x;
+    if (!c) return false;
+    const ultimo = c.dias_duracion;
+    let faltas = 0;
+    for (let n = 1; n <= ultimo; n++) {
+      const a = datos.asistencia.find((r) => r.inscripcion_id === insId && r.dia === n);
+      if (a && a.asistio === false && !(n === ultimo && ultimo > 1)) faltas += 1;
+    }
+    return faltas > c.dias_duracion - c.dias_minimos_asistencia;
+  }
   function pintaConcentrado(marco, datos, x) {
     const { g, c } = x;
     if (!marco || !c || !g.fecha_inicio) return;
@@ -545,7 +560,7 @@
         if (f < hoy) return el('td', {}, [el('span', { class: 'conc-hueco', texto: 'Sin capturar' })]);
         return el('td', { class: 'texto-gris', texto: f === hoy ? 'Hoy' : '—' });
       });
-      const sinDerecho = faltas > permitidas;
+      const sinDerecho = sinDerechoPorFaltas(datos, x, i.id);
       const derecho = el('span', { class: sinDerecho ? 'conc-sin-derecho' : 'texto-gris',
         texto: sinDerecho ? 'Sin derecho' : registro(i.id, ultimo) === true ? 'Lo presentó' : faltas === permitidas && faltas ? 'Ya no puede faltar' : 'Con derecho' });
       return el('tr', {}, [el('td', { texto: quien }), ...celdas, el('td', { class: 'sin-corte', texto: `${asistidos} de ${ultimo}` }), el('td', {}, [derecho])]);
@@ -561,5 +576,5 @@
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
-    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma };
+    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas };
 }(window));
