@@ -83,6 +83,8 @@
       const lista = P.enEspera(datos, t, m);
       const vencidas = lista.filter((x) => x.vencida).length;
       const b = el('button', { type: 'button', class: 'plan-curso', 'data-curso': P.claveCurso(t, m), 'aria-pressed': 'false' }, [
+        // La palomita de lo elegido, como en las opciones del estándar: se ve sólo con aria-pressed="true" (C6-03)
+        APD.icono('palomita', 'icono icono-sm plan-curso-marca'),
         el('span', { class: 'plan-curso-nombre', texto: APD.cursoLargo(t, m) }),
         el('span', { class: 'plan-curso-cifra' }, [document.createTextNode(String(lista.length)), el('span', { class: 'solo-lector', texto: ' en espera' })]),
         vencidas ? el('span', { class: 'plan-curso-vencidas', texto: plural(vencidas, 'vencida', 'vencidas') }) : null
