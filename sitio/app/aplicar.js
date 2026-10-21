@@ -106,6 +106,8 @@
     const filas = G.personas(datos, g);
     // Códigos repuestos hace poco (inscripción → hora), para señalarlos en su fila
     const recientes = {};
+    // Fotografías ampliadas (inscripción), para que sigan así al volver a pintar la lista (C1-02)
+    const ampliadas = new Set();
     // Fotografías de la cuenta (las confirmadas en el cotejo), para pasar lista
     const fotos = {};
     Promise.all(filas.map((f) => G.fotoDe(f.persona.curp, APD.nombreCompleto(f.persona)).then((u) => { fotos[f.inscripcion.id] = u; })))
@@ -130,8 +132,16 @@
         const r = vigente(f);
         const l = lista[f.inscripcion.id];
         const id = f.inscripcion.id;
-        const foto = el('div', { class: 'perfil-foto examen-foto-lista' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: nombre.split(' ').slice(0, 2).map((x) => x[0]).join('') })]);
-        if (fotos[id]) foto.append(el('img', { class: 'perfil-imagen', src: fotos[id], alt: `Fotografía de ${nombre}` }));
+        let foto = el('div', { class: 'perfil-foto examen-foto-lista' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: nombre.split(' ').slice(0, 2).map((x) => x[0]).join('') })]);
+        if (fotos[id]) {
+          foto.append(el('img', { class: 'perfil-imagen', src: fotos[id], alt: `Fotografía de ${nombre}` }));
+          /* Con la fotografía se confirma la identidad (DECISIONES, 17/10): miniatura de 96 px que se amplía a unos 320 px
+             ahí mismo, junto a «Presente» y «No llegó», con clic, toque, Intro o Espacio (decisión 14 a de Liber,
+             auditoría 2026-10-20, C1-02). Sigue ampliada al volver a pintar la lista. */
+          const amplia = ampliadas.has(id);
+          foto = el('button', { type: 'button', class: 'examen-foto-boton', 'data-accion': 'foto', 'data-ins': id, 'data-ampliada': amplia ? '' : null,
+            'aria-label': `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${nombre}` }, [foto, el('span', { class: 'examen-foto-accion', 'aria-hidden': 'true', texto: amplia ? 'Reducir' : 'Ampliar' })]);
+        }
         const persona = el('td', {}, [el('div', { class: 'examen-persona-fila' }, [foto, el('div', {}, [el('span', { class: 'examen-nombre', texto: nombre }), el('span', { class: 'examen-nota mono', texto: f.solicitud.folio })])])]);
         const asistencia = el('td', {}, [document.createTextNode(f.anteriores ? `${f.previos} de ${f.anteriores} ${f.anteriores === 1 ? 'día anterior' : 'días anteriores'}` : 'Curso de un día')]);
         let paseLista = el('td', { class: 'texto-gris', texto: '—' });
@@ -243,7 +253,14 @@
       if (!b) return;
       const f = fila(b.dataset.ins);
       const nombre = APD.nombreCompleto(f.persona);
-      if (b.dataset.accion === 'presente') {
+      if (b.dataset.accion === 'foto') {
+        // Se amplía o se reduce ahí mismo; el foco sigue en el botón (C1-02)
+        const amplia = !b.hasAttribute('data-ampliada');
+        if (amplia) ampliadas.add(b.dataset.ins); else ampliadas.delete(b.dataset.ins);
+        b.toggleAttribute('data-ampliada', amplia);
+        b.setAttribute('aria-label', `${amplia ? 'Reducir' : 'Ampliar'} la fotografía de ${nombre}`);
+        $('.examen-foto-accion', b).textContent = amplia ? 'Reducir' : 'Ampliar';
+      } else if (b.dataset.accion === 'presente') {
         G.pasarLista(datos, g, f, true, INSTRUCTOR.usuario).then((r) => { pinta(true); FormKit.anuncia(`${nombre}, presente. Su código: ${r.codigo.split('').join(' ')}.`); }, noSeHizo(nombre));
       } else if (b.dataset.accion === 'ausente') {
         G.pasarLista(datos, g, f, false, INSTRUCTOR.usuario).then(() => { pinta(true); FormKit.anuncia(`${nombre}: no llegó. Si llega después, márquela presente.`); }, noSeHizo(nombre));

@@ -50,8 +50,12 @@
 .examen-pasos { display: grid; gap: var(--e-1); margin-block: var(--e-5) 0; padding-inline-start: var(--e-7); list-style: decimal; }
 .examen-herramientas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3) var(--e-5); margin-block: var(--e-4); }
 .examen-herramientas .btn { width: auto; }
-.examen-persona-fila { display: flex; align-items: center; gap: var(--e-3); }
-.examen-foto-lista { flex: none; width: var(--e-9); }
+.examen-persona-fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); }
+/* Fotografía para confirmar la identidad (decisión 14 a, auditoría 2026-10-20, C1-02): miniatura de 96 px que, como
+   botón, se amplía ahí mismo a unos 320 px (sin pasar del ancho de su celda) */
+.examen-foto-lista { flex: none; width: var(--e-11); max-width: 100%; }
+.examen-foto-boton { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--e-1); max-width: 100%; padding: 0; background: none; border: 0; border-radius: var(--r-caja); font: inherit; color: var(--azul); cursor: zoom-in; }
+.examen-foto-accion { font-size: var(--t-sm); text-decoration: underline; }
 .examen-lista-botones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
 .examen-lista-botones .btn { width: auto; }
 .examen-nombre { display: block; font-weight: var(--peso-medio); }
@@ -73,6 +77,10 @@
 .examen-numero:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
 .examen-repaso-fila[data-estado="libre"] { border-color: var(--error); }
 .examen-nota-alerta { color: var(--pend-txt); font-weight: var(--peso-medio); }
+.examen-foto-boton[data-ampliada] { cursor: zoom-out; }
+.examen-foto-boton[data-ampliada] .examen-foto-lista { width: calc(var(--e-11) * 10 / 3); }
+/* En teléfono (la tabla en tarjetas), la ampliada ocupa todo el ancho de la tarjeta, debajo de «Persona» */
+.tabla td:has(.examen-foto-boton[data-ampliada]) > .tabla-valor { grid-column: 1 / -1; }
 
 /* ---------- Adaptaciones ---------- */
 

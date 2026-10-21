@@ -57,6 +57,25 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
 
   });
 
+  // C1-02 (auditoría 2026-10-20; decisión 14 a de Liber): la fotografía con que se confirma la identidad es una miniatura
+  // de 96 px que se amplía ahí mismo a unos 320 px (en teléfono, al ancho de la tarjeta) con clic o con el teclado
+  await paso('aplicar: fotografía ampliable', async () => {
+    await ir('aplicar.html?folio=APD-G-2026-020', '[data-filas] tr .examen-foto-boton img');
+    const foto = '[data-filas] tr:first-child .examen-foto-lista';
+    const ancho = () => pg.$eval(foto, (f) => Math.round(f.getBoundingClientRect().width));
+    const mini = await ancho();
+    await pg.click(foto);
+    await pg.waitForFunction((s) => document.querySelector(s).getBoundingClientRect().width > 200, foto);
+    const grande = await ancho();
+    const dentro = await pg.$eval(foto, (f) => { const r = f.getBoundingClientRect(); const t = f.closest('tr').getBoundingClientRect(); return r.right <= t.right + 1; });
+    await pg.keyboard.press('Enter');
+    await pg.waitForFunction((s) => document.querySelector(s).getBoundingClientRect().width < 120, foto);
+    const nombre = await pg.getAttribute('[data-filas] tr:first-child .examen-foto-boton', 'aria-label');
+    comprueba(mini >= 96 && grande >= (tam === 'teléfono' ? 280 : 300) && dentro && /^Ampliar la fotografía de /.test(nombre),
+      t(`C1-02: la fotografía mide ${mini} px y se amplía a ${grande} px sin salirse de su renglón; con Intro se reduce («${nombre}»)`));
+    await sinDesborde('aplicar con la fotografía');
+  });
+
   await paso('asistencia', async () => {
     // A1 y M9: asistencia señala el día sin capturar y resume el grupo
     await ir('asistencia.html?folio=APD-G-2026-024', '.asistencia-fila');
