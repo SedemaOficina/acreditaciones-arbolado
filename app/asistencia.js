@@ -244,7 +244,7 @@
       pintaFila(fila, f);
       // Lo que se marca cambia la tira y la etiqueta al momento
       // Los totales se ven siempre, pero se anuncian sólo cuando la persona marca a alguien (B4-03): al cargar un día nuevo
-      // no suenan «0 asistieron…» encima de la confirmación de lo guardado; «Marcar a todas» dice lo suyo
+      // no suenan «0 asistieron…» encima de la confirmación de lo guardado; «Todas asistieron» dice lo suyo (nombre del botón: decisión de Liber del 21/10)
       fila.addEventListener('change', (e) => { pintaFila(fila, f); if (e.isTrusted) { sinGuardar = true; FormKit.anuncia(pintaTotales()); } });
       return fila;
     }));
