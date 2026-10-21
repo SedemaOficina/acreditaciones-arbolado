@@ -981,6 +981,14 @@
       "desde": "2026-10-20",
       "titulo": "Borrador local de «Crea tu cuenta» con datos de identidad y contacto",
       "recomendacion": "Por decisión de Liber del 20/10 (decisión 6 de la auditoría del 20/10/2026), «Crea tu cuenta» guarda en el navegador lo escrito (nombre, apellidos, fecha de nacimiento, CURP, correos, teléfono, empresa) para recuperarlo al volver; nunca la contraseña, la fotografía ni archivos. Dura 14 días o hasta crear la cuenta. Es una excepción a FRM-43 del estándar, que deja fuera del borrador los campos data-sensible. Antes de la etapa 3, confirmar con la Unidad de Transparencia si se mantiene, se acorta o se limita en computadoras compartidas, y mencionarlo en el aviso de privacidad."
+    },
+    {
+      "id": "P190",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-20",
+      "titulo": "«Asistencia»: la bajada repite el rango del curso en dos formas",
+      "recomendacion": "La bajada dice el nombre del grupo (que ya lleva sus días, decisión del 18/10) y además «del 13/10/2026 al 17/10/2026». Las dos formas están permitidas (decisión 16 b del 20/10), pero se repite el dato. Opciones: (a) quitar el rango de la bajada; (b) dejarlo. Recomendación: (a). Visto al corregir las fechas (auditoría del 20/10, C5-01)."
     }
   ],
   "resueltos": [
