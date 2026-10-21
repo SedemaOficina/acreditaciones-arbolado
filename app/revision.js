@@ -88,6 +88,13 @@
     // Lo enviado en este navegador durante la prueba va primero, para encontrarlo (decisión 2026-10-17); lo demás, de la
     // que más espera a la más reciente
     const enviadas = P.porRevisar(datos);
+    /* La espera en la bandeja: «en marcha» hasta UMBRAL.ambar, «te toca actuar» después y, desde UMBRAL.rojo, la misma
+       etiqueta en rojo con «N días · atrasada» (decisión 3 a de Liber; auditoría 2026-10-20, C6-04) */
+    const plazo = (e) => {
+      const etq = estado(e.texto, e.tono || 'marcha');
+      if (e.atrasada) etq.setAttribute('data-plazo', 'atrasada');
+      return etq;
+    };
     filas = enviadas.map((s) => {
       const p = persona[s.solicitante_id];
       const v = P.vuelta(datos, s);
@@ -99,7 +106,7 @@
         el('td', { texto: APD.nombreCompleto(p) }),
         el('td', { texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${s.modalidad === 'renovacion' ? 'renovación' : 'nueva'}` }),
         el('td', { class: 'sin-corte', texto: fechaCorta(s.estado_desde) }),
-        el('td', {}, [estado(e.texto, e.tono || 'marcha')]),
+        el('td', {}, [plazo(e)]),
         el('td', { texto: v.texto }),
         el('td', {}, sen.length ? el('span', { class: 'senales' }, sen.map(([t, tono]) => (tono ? estado(t, tono) : el('span', { texto: t })))) : el('span', { class: 'texto-gris', texto: '—' })),
         el('td', {}, [enlace])
@@ -109,7 +116,7 @@
         tipo: s.tipo_acreditacion,
         modalidad: s.modalidad,
         vuelta: v.n > 1 ? 'reenviada' : 'primera',
-        tono: e.tono,
+        tono: e.atrasada ? 'atrasada' : e.tono,
         // Se busca por nombre, CURP, folio de la solicitud y número de expediente (si ya lo tiene)
         texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' '))
       };
@@ -142,7 +149,7 @@
     for (const f of filas) {
       const ve = (!q || f.texto.includes(q)) && (!tipo || f.tipo === tipo) && (!mod || f.modalidad === mod) && (!vta || f.vuelta === vta);
       f.tr.hidden = !ve;
-      if (ve) { n += 1; if (f.tono === 'error') rojas += 1; else if (f.tono === 'pend') ambar += 1; }
+      if (ve) { n += 1; if (f.tono === 'atrasada') rojas += 1; else if (f.tono === 'pend') ambar += 1; }
     }
     // Cuántas llevan más tiempo, sin recorrer la lista (auditoría de tareas, M8)
     const espera = [rojas ? `${rojas} con ${P.UMBRAL.rojo} días o más` : '', ambar ? `${ambar} de ${P.UMBRAL.ambar} a ${P.UMBRAL.rojo - 1} días` : ''].filter(Boolean);

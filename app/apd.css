@@ -176,6 +176,11 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .resumen-filtro { color: var(--gris); font-size: var(--t-sm); margin-block: 0 var(--e-2); }
 .tabla-bandeja { font-size: var(--t-sm); }
 .tabla-bandeja tr[hidden] { display: none; }
+/* Espera de 10 días o más (decisión 3 a de Liber, auditoría 2026-10-20, C6-04): la etiqueta de «te toca actuar» del
+   estándar (estado-atencion, con su icono de alerta) en rojo, con el texto «N días · atrasada»; no la de «cerrado sin
+   éxito», que es de rechazadas y canceladas. El estándar no trae un tono rojo para «atender»: es una variante del
+   proyecto por decisión del dueño, en un atributo y con los tokens del error (8.37:1, par C49). */
+.estado-atencion[data-plazo="atrasada"] { background: var(--error-bg); border-color: var(--error); color: var(--error-txt); }
 /* Folios, botones y fechas de las tablas del personal no se parten, y la etiqueta de estado se parte en teléfono y va en
    un renglón en computadora: desde la 1.4.2 y la 1.5.0 lo hace el estándar (P126 y P145, módulos «estado» y «tabla»). */
 .senales { display: flex; flex-wrap: wrap; gap: var(--e-1); }
