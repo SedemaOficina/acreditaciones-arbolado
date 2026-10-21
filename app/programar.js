@@ -326,7 +326,19 @@
       refleja();
       return el('li', {}, [bloque]);
     });
-    $('[data-personas]').replaceChildren(...(items.length ? items : [el('li', { class: 'texto-gris', texto: propia ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
+    /* Las propuestas (o las elegidas en «Grupos») a la vista; las demás, plegadas en «Cambiar a quiénes van (N más en
+       espera)», con el plegable del estándar (módulo acordeon): al desplegarlo se ven y se eligen como siempre (decisión de
+       Liber sobre C3-01, auditoría 2026-10-20: la lista de 66 ocupaba 12.4 pantallas en teléfono). Un bloque con alguna
+       propuesta va completo a la vista. Sin propuesta (grupo que ya existe), todas a la vista. */
+    const conPropuesta = (li) => [...li.querySelectorAll('.plan-casilla[value]')].some((k) => propuestas.has(k.value));
+    const aLaVista = propuestas.size ? items.filter(conPropuesta) : items;
+    const resto = items.filter((li) => !aLaVista.includes(li));
+    const nResto = resto.reduce((n, li) => n + li.querySelectorAll('.plan-casilla[value]').length, 0);
+    const plegadas = resto.length ? el('li', {}, [el('details', { class: 'plegable', 'data-mas-espera': '' }, [
+      el('summary', { class: 'plegable-titulo', texto: `Cambiar a quiénes van (${nResto} más en espera)` }),
+      el('div', { class: 'plegable-cuerpo' }, [el('ul', { class: 'prog-personas', 'aria-label': `Las otras ${nResto} personas en espera` }, resto)])
+    ])]) : null;
+    $('[data-personas]').replaceChildren(...(items.length ? [...aLaVista, plegadas].filter(Boolean) : [el('li', { class: 'texto-gris', texto: propia ? 'Nadie de esa organización espera en este curso.' : 'Nadie espera en este curso.' })]));
     $('[data-personas]').addEventListener('change', () => pintaTodo(false));
     const elegidas = () => filas.filter((f) => f.k.checked).map((f) => f.x);
     const total = () => (xG ? xG.n : 0) + elegidas().length;
