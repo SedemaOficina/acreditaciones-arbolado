@@ -139,6 +139,8 @@
         ]);
       }));
       $('[data-anteriores]').hidden = false;
+      // En una solicitud reenviada con correcciones, abierto: lo observado antes se ve sin desplegarlo (C1-04)
+      if (corregidos.size) $('[data-anteriores]').open = true;
     }
 
     /* ----- Perfil del dictaminador ----- */
@@ -184,6 +186,11 @@
         document.createTextNode(` · ${peso}`),
         corregidos.has(k) ? el('span', { class: 'doc-corregido' }, [APD.estado('Corregido para esta revisión', 'pend')]) : null
       ].filter(Boolean));
+      /* Lo que se le pidió corregir, a la vista junto al documento corregido: estaba sólo en «Revisiones anteriores»,
+         plegado (auditoría 2026-10-20, C1-04). Es la última observación de ese requisito. */
+      const pedido = corregidos.has(k) && datos.documento.filter((x) => x.solicitud_id === s.id && x.requisito === k && x.estado === 'con_observacion' && x.observacion)
+        .sort((a, b) => String(a.revisado_en).localeCompare(String(b.revisado_en))).pop();
+      if (pedido) $('[data-doc-archivo]', art).after(el('p', { class: 'texto-gris', 'data-doc-pedido': '' }, [el('strong', { texto: 'Se le pidió: ' }), document.createTextNode(pedido.observacion)]));
     }
     // El mensaje de rechazo propuesto: la persona lo lee tal cual, por eso le habla de tú (auditoría 2026-10-17)
     const propuesta = () => (elegido('clasificacion') === 'no_afin'
