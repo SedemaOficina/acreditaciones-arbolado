@@ -190,10 +190,10 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .doc-archivo { margin: 0; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; }
 .doc-corregido { display: inline-flex; margin-inline-start: var(--e-2); }
 /* «Ver documento»: botón secundario chico, a su medida (auditoría 2026-10-18, D19); el del documento abierto en el
-   visor dice «En el visor» y se marca con borde guinda (B16) */
+   visor dice «En el visor» y se marca con el borde y el texto azules de lo elegido (B16; auditoría 2026-10-20, C6-03) */
 .doc-ver { margin: 0; }
 .doc-ver .btn { width: auto; }
-.doc-ver .btn[aria-current] { border-color: var(--guinda); color: var(--guinda); }
+.doc-ver .btn[aria-current] { border-color: var(--azul); color: var(--azul); }
 /* Aceptado en una revisión anterior: se ve, sin pedir decisión (2026-10-18) */
 .doc-previo { margin: 0; font-size: var(--t-sm); color: var(--gris); }
 .resumen-revision { font-weight: var(--peso-medio); margin-block-end: var(--e-4); }
@@ -453,10 +453,12 @@ body > main { flex: 1 0 auto; width: 100%; }
   padding: var(--e-1) var(--e-4); border: var(--b-1) solid var(--borde); border-radius: var(--r-pill); background: var(--blanco);
   color: var(--texto); font: var(--peso-semi) var(--t-md)/var(--interlineado-compacto) var(--fuente-titulo); text-align: start; cursor: pointer;
 }
-.plan-curso[aria-pressed="true"] { border-color: var(--guinda); background: var(--guinda); color: var(--blanco); }
-.plan-curso[aria-pressed="true"] .plan-curso-cifra { background: var(--blanco); color: var(--guinda); }
-.plan-curso[aria-pressed="true"] .plan-curso-vencidas { color: var(--blanco); }
-.plan-curso:not([aria-pressed="true"]):hover { border-color: var(--guinda); }
+/* El curso elegido, como lo elegido del estándar (fondo azul claro, sombra interior y palomita), no guinda: el guinda
+   relleno es del botón principal (auditoría 2026-10-20, C6-02 y C6-03) */
+.plan-curso-marca { display: none; }
+.plan-curso[aria-pressed="true"] { border-color: var(--azul); background: var(--azul-cl); color: var(--azul); box-shadow: inset 0 0 0 var(--b-1) var(--azul); }
+.plan-curso[aria-pressed="true"] .plan-curso-marca { display: inline-block; }
+.plan-curso:not([aria-pressed="true"]):hover { border-color: var(--azul); }
 .plan-curso-cifra { padding: 0 var(--e-2); border-radius: var(--r-pill); background: var(--fondo); font: var(--peso-fuerte) var(--t-sm)/var(--interlineado-cuerpo) var(--fuente-cuerpo); }
 .plan-curso-vencidas { font: var(--peso-medio) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--pend-txt); }
 .plan-hecho { margin-block-end: var(--e-4); }
@@ -477,9 +479,10 @@ body > main { flex: 1 0 auto; width: 100%; }
 .plan-persona-espera { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); }
 .plan-persona-org { grid-column: 2; font-size: var(--t-sm); color: var(--gris); overflow-wrap: anywhere; }
 .plan-dias { font-size: var(--t-sm); color: var(--gris); white-space: nowrap; }
-.plan-persona:has(.casilla-input:checked) { border-color: var(--guinda); background: var(--guinda-cl); }
+.plan-persona:has(.casilla-input:checked) { border-color: var(--azul); background: var(--azul-cl); box-shadow: inset 0 0 0 var(--b-1) var(--azul); }
 /* Las de una misma organización, juntas en un bloque */
-.plan-bloque { display: grid; gap: var(--e-2); padding: var(--e-3); border: var(--b-1) dashed var(--dorado); border-radius: var(--r-ctrl); background: var(--beige); }
+/* El dorado, sólo como filete (tokens.css; auditoría 2026-10-20, C6-05) */
+.plan-bloque { display: grid; gap: var(--e-2); padding: var(--e-3); border: var(--b-1) solid var(--linea); border-inline-start: var(--b-4) solid var(--dorado); border-radius: var(--r-ctrl); background: var(--beige); }
 .plan-bloque-cabeza { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--e-1) var(--e-3); min-height: var(--objetivo-min); cursor: pointer; }
 /* «Su grupo …» o si alcanzan para uno propio, debajo del nombre de la organización (decisión 2, 2026-10-19) */
 .plan-bloque-cabeza > :nth-child(3) { grid-column: 2; justify-self: start; }
@@ -554,28 +557,30 @@ body > main { flex: 1 0 auto; width: 100%; }
 .cal-mes { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); text-align: center; }
 .cal-mes-boton[aria-disabled="true"] { opacity: var(--op-inactivo); cursor: not-allowed; }
 .cal-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: var(--e-1); }
-.cal-tabla th { padding-block: var(--e-1); font-size: var(--t-xs); font-weight: var(--peso-semi); color: var(--gris); text-align: center; }
+.cal-tabla th { padding-block: var(--e-1); font-size: var(--t-xs); font-weight: var(--peso-fuerte); color: var(--gris); text-align: center; }
 .cal-tabla abbr { text-decoration: none; }
 .cal-tabla td { padding: 0; text-align: center; }
 .cal-dia {
   display: grid; justify-items: center; align-content: center; gap: var(--b-2); width: 100%; min-height: calc(var(--objetivo-min) + var(--e-3));
-  padding: var(--e-1) 0; border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto);
+  padding: var(--e-1) 0; border: var(--b-1) solid var(--borde); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto);
   font-family: var(--fuente-cuerpo); cursor: pointer;
 }
 .cal-num { font-size: var(--t-base); font-weight: var(--peso-medio); line-height: 1; }
-/* En teléfono la celda mide unos 44 px: la nota («inicia», «examen») un poco menor, para que no se parta */
+/* En teléfono la celda mide unos 40 px: la nota («inicia», «examen») un poco menor que --t-xs, para que quepa; desde 560 px,
+   --t-xs. Pendiente de decisión (auditoría 2026-10-20, C6-10): a 12 px «examen» pide 42 px y se corta a 390, 360 y
+   320 px; ver CORRECCIONES del bloque 4. */
 .cal-nota { min-height: var(--t-xs); max-width: 100%; font-size: calc(var(--t-xs) * .85); line-height: 1; color: var(--gris); white-space: nowrap; overflow: hidden; text-overflow: clip; }
-.cal-dia:not([aria-disabled="true"]):hover { border-color: var(--guinda); }
+.cal-dia:not([aria-disabled="true"]):hover { border-color: var(--azul); }
 .cal-dia[aria-disabled="true"] { border-style: dashed; border-color: var(--borde); background: var(--fondo); color: var(--gris); cursor: not-allowed; }
 .cal-dia[data-inhabil="si"] { border-color: var(--pend); background: var(--pend-bg); }
-.cal-dia[data-rango] { border-color: var(--guinda); background: var(--guinda-cl); }
-.cal-dia[data-rango="inicio"], .cal-dia[data-rango="fin"] { background: var(--guinda); color: var(--blanco); }
-.cal-dia[data-rango="inicio"] .cal-nota, .cal-dia[data-rango="fin"] .cal-nota { color: var(--blanco); }
+/* Los días del curso elegido, como lo elegido del estándar; «inicia» y «examen» lo dice su nota (C6-02 y C6-03) */
+.cal-dia[data-rango] { border-color: var(--azul); background: var(--azul-cl); box-shadow: inset 0 0 0 var(--b-1) var(--azul); }
+.cal-dia[data-rango="inicio"] .cal-nota, .cal-dia[data-rango="fin"] .cal-nota { color: var(--azul); }
 .cal-estado { margin: 0; padding: var(--e-2) var(--e-3); border-radius: var(--r-ctrl); background: var(--fondo); font-size: var(--t-sm); }
 .cal-leyenda { display: grid; gap: var(--e-1); margin: 0; padding: 0; list-style: none; font-size: var(--t-sm); color: var(--gris); }
 .cal-leyenda li { display: flex; align-items: center; gap: var(--e-2); }
-.cal-muestra { flex: none; width: var(--e-4); height: var(--e-4); border: var(--b-1) solid var(--linea); border-radius: var(--b-2); }
-.cal-muestra[data-muestra="rango"] { border-color: var(--guinda); background: var(--guinda-cl); }
+.cal-muestra { flex: none; width: var(--e-4); height: var(--e-4); border: var(--b-1) solid var(--borde); border-radius: var(--b-2); }
+.cal-muestra[data-muestra="rango"] { border-color: var(--azul); background: var(--azul-cl); }
 .cal-muestra[data-muestra="no"] { border-style: dashed; border-color: var(--borde); background: var(--fondo); }
 .cal-muestra[data-muestra="inhabil"] { border-color: var(--pend); background: var(--pend-bg); }
 
@@ -613,4 +618,12 @@ body > main { flex: 1 0 auto; width: 100%; }
   .prog-resumen { position: sticky; top: var(--e-4); }
   /* Versión de prueba: «Así quedaría» va a la derecha, donde está fijo el botón «Menú de pruebas»; se le deja su lugar */
   .modo-pruebas .prog { padding-inline-end: calc(var(--ancho-boton-min) + var(--e-4)); }
+}
+
+/* Colores forzados (alto contraste): el sistema impone sus colores y lo que se distinguía por el fondo se pierde. Lo
+   elegido lleva el contorno del estándar (opciones.css, `Highlight`) también en las piezas propias (auditoría 2026-10-20,
+   C6-01; relacionado con P35). La opción Sí/No de «Asistencia» ya es del estándar y trae el suyo. */
+@media (forced-colors: active) {
+  .plan-curso[aria-pressed="true"], .plan-persona:has(.casilla-input:checked), .cal-dia[data-rango] { outline: var(--b-3) solid Highlight; outline-offset: calc(var(--b-1) * -1); }
+  .estado-atencion[data-plazo="atrasada"] { border-width: var(--b-2); }
 }
