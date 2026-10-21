@@ -339,6 +339,18 @@
 
     document.querySelector('[data-nueva]').hidden = !puedeNueva;
     document.querySelector('[data-cargando]').textContent = 'Aquí ves tus acreditaciones y en qué va cada solicitud.';
+
+    /* Si en otra pestaña se entró con otra cuenta (o se salió), esta lo dice al enterarse (evento storage o al volver a
+       ella, APD.alCambiar) y deja de mostrar los trámites de antes, con el mismo texto que la solicitud y «Mi perfil»
+       (auditoría 2026-10-20, C4-06: seguía con los trámites de la persona anterior y sus enlaces). */
+    APD.alCambiar(() => {
+      const r = APD.sesionCambio('Vuelve a entrar para ver tus trámites.');
+      if (!r || document.querySelector('[data-sesion-cambio]')) return;
+      const aviso = FormKit.aviso(el('div', { class: 'aviso', 'data-sesion-cambio': '' }), { tono: 'advertencia', titulo: r.titulo,
+        texto: el('p', {}, [document.createTextNode(`${r.texto.replace(/ No se guardó nada, para no mezclar tus datos con los de otra persona\.$/, '')} `), el('a', { href: r.enlace.href, texto: r.enlace.texto })]) });
+      for (const n of document.querySelectorAll('main > section, [data-nueva], [data-cargando], [data-sesion]')) n.hidden = true;
+      document.querySelector('main .titulo-paso').after(aviso);
+    });
   }).catch(() => {
     document.querySelector('[data-cargando]').textContent = 'No se pudo cargar tu información. Intenta de nuevo más tarde.';
   });

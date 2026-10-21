@@ -4648,6 +4648,25 @@ async function tareasPersonal(navegador) {
       t(`C4-05: revisada en otra pestaña, ${folio} sale de la bandeja (${total} → ${despues}) y la cuenta baja`));
     await c.close();
   }
+
+  // C4-06: «Mis trámites» abierta y, en otra pestaña, se entra con otra cuenta (o se sale): la pestaña vieja lo dice y deja
+  // de mostrar los trámites de la persona anterior
+  for (const salir of [false, true]) {
+    const [X, Y] = datos.solicitante.filter((p) => p.estado === 'activa' && datos.solicitud.some((s) => s.solicitante_id === p.id && !FINALES.includes(s.estado)));
+    const { c, page, errores } = await nuevo(390, 844, X.id);
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-solicitudes] .ficha');
+    await page.waitForLoadState('load');
+    const otra = await c.newPage();
+    await otra.goto(BASE + 'index.html');
+    await otra.evaluate((id) => { if (id) localStorage.setItem('apd.sesion', JSON.stringify({ id })); else localStorage.removeItem('apd.sesion'); }, salir ? null : Y.id);
+    await page.bringToFront();
+    await page.waitForSelector('[data-sesion-cambio]', { timeout: 8000 }).catch(() => {});
+    const aviso = (await page.textContent('[data-sesion-cambio]').catch(() => '')) || '';
+    comprueba((salir ? /Tu sesión terminó/.test(aviso) : /Tu sesión cambió en otra pestaña/.test(aviso)) && await page.isHidden('[data-solicitudes]') && await page.isVisible('[data-sesion-cambio] a[href^="entrar.html?volver="]') && !errores.length,
+      t(`C4-06: ${salir ? 'se salió' : 'se entró con otra cuenta'} en otra pestaña y «Mis trámites» lo dice sin mostrar los trámites de antes («${aviso.replace(/\s+/g, ' ').trim()}»)`));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
