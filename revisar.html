@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/visor/visor.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/acordeon/acordeon.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/resultado/resultado.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.63">
@@ -123,7 +124,7 @@
       <!-- Si se ve el perfil del dictaminador, la nota va allá y ésta se oculta (app/revisar.js) -->
       <p class="leyenda-oblig" data-leyenda-docs>Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
       <p class="ayuda ayuda-bloque" data-docs-ayuda>Abra cada documento y acéptelo, o escriba lo que debe corregir la persona.</p>
-      <p class="aviso" data-docs-rechazo hidden>No hace falta revisar los documentos: la solicitud se rechaza por el perfil.</p>
+      <p class="aviso" data-docs-rechazo hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="aviso-texto">No hace falta revisar los documentos: la solicitud se rechaza por el perfil.</span></p>
       <!-- revision-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
         <div data-si="revisar_identificacion_oficial=si">
           <article class="doc-revision" data-doc="identificacion_oficial" data-contexto="Identificación oficial">
@@ -152,7 +153,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_identificacion_oficial=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="identificacion_oficial">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_identificacion_oficial=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="identificacion_oficial">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -183,7 +184,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_curp=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curp">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_curp=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="curp">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -214,7 +215,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_comprobante_domicilio=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_domicilio">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_comprobante_domicilio=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="comprobante_domicilio">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -245,7 +246,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_constancia_situacion_fiscal=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="constancia_situacion_fiscal">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_constancia_situacion_fiscal=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="constancia_situacion_fiscal">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -276,7 +277,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_comprobante_estudios=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobante_estudios">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_comprobante_estudios=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="comprobante_estudios">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -307,7 +308,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_curriculum_vitae=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="curriculum_vitae">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_curriculum_vitae=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="curriculum_vitae">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>
@@ -338,7 +339,7 @@
             </div>
             <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
                  Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_comprobantes_experiencia=con_observacion"><button type="button" class="btn btn-secundario btn-chico" data-seguir="comprobantes_experiencia">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
+            <p class="doc-seguir" data-si="decision_comprobantes_experiencia=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="comprobantes_experiencia">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
             </div>
           </article>
         </div>

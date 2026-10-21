@@ -396,7 +396,7 @@
       const falta = y.g.cupo_minimo - y.n;
       APD.pintaAviso(cajaSuGrupo, 'info', `${nombre} ya tiene su grupo`,
         `El grupo ${y.g.folio} tiene ${y.n} de ${y.g.cupo_maximo}${falta > 0 ? `, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : ''} y recibe personas. Conviene agregarlas ahí: con dos grupos de la misma organización, ninguno llega al mínimo.`);
-      const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Agregarlas a ${y.g.folio}` });
+      const b = el('button', { type: 'button', class: 'btn btn-secundario', texto: `Agregarlas a ${y.g.folio}` });
       b.addEventListener('click', () => agregaASuGrupo(y, b));
       $('.aviso-texto', cajaSuGrupo).append(el('p', {}, [b]));
     }

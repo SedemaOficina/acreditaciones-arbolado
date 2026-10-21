@@ -47,7 +47,7 @@
 .datos-etq { font-size: var(--t-md); font-weight: var(--peso-normal); color: var(--gris-cl); }
 .datos-valor { margin: 0; font-weight: var(--peso-medio); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
 @media (min-width: 560px) {
-  .datos-par { grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); gap: var(--e-1) var(--e-5); align-items: baseline; }
+  .datos-par { grid-template-columns: minmax(0, calc(var(--e-11) * 2 + var(--e-4))) minmax(0, 1fr); gap: var(--e-1) var(--e-5); align-items: baseline; }
 }
 
 .lista-obs { list-style: disc; margin: 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-1); }
@@ -126,7 +126,6 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .arch-previo .btn-enlace { flex: none; }
 .doc-aceptado-estado { display: block; margin-block: var(--e-2); }
 .doc-reemplazo { margin-block-start: var(--e-3); }
-.doc-reemplazo-titulo { display: inline-flex; align-items: center; min-height: var(--objetivo-min); cursor: pointer; color: var(--azul); }
 .doc-observacion { margin-block: var(--e-3); }
 .doc-observacion-archivo { font-size: var(--t-sm); overflow-wrap: anywhere; }
 /* Ayuda de un campo en renglones cortos («Crea tu cuenta», fotografía: D30) */
@@ -187,7 +186,6 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .btn-chico { min-height: var(--objetivo-min); padding-block: var(--e-1); padding-inline: var(--e-3); font-size: var(--t-sm); }
 /* Revisión de una solicitud */
 .revision-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--e-3); margin-block-end: var(--e-4); }
-.plegable-titulo { display: flex; align-items: center; gap: var(--e-2); min-height: var(--objetivo-min); cursor: pointer; font-weight: var(--peso-medio); }
 .revision-anterior { padding-block: var(--e-3); border-block-start: var(--b-1) solid var(--linea); }
 .doc-revision { display: grid; gap: var(--e-2); padding-block: var(--e-4); border-block-start: var(--b-1) solid var(--linea); }
 .doc-cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--e-2); }
@@ -354,7 +352,7 @@ body > main { flex: 1 0 auto; width: 100%; }
 .tabla-concentrado tr { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-2) var(--e-3); }
 .tabla-concentrado td { display: grid; grid-template-columns: none; justify-items: start; gap: 0; padding: 0; border-bottom: 0; text-align: start; }
 .tabla-concentrado td::before { font-size: var(--t-xs); font-weight: var(--peso-normal); }
-.tabla-concentrado td:first-child { flex-basis: 100%; font-weight: var(--peso-semi); }
+.tabla-concentrado td:first-child { flex-basis: 100%; font-weight: var(--peso-fuerte); }
 .tabla-concentrado td:first-child::before { display: none; }
 @media (min-width: 760px) {
   .tabla-concentrado tr { display: table-row; }
@@ -374,7 +372,6 @@ body > main { flex: 1 0 auto; width: 100%; }
 .material-archivo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-4); margin-block-start: var(--e-1); }
 .material-peso { color: var(--gris-cl); font-size: var(--t-sm); }
 .material-temas { margin-block-start: var(--e-1); }
-.material-temas > summary { cursor: pointer; font-weight: var(--peso-semi); color: var(--guinda); padding-block: var(--e-2); min-height: var(--objetivo-min); box-sizing: border-box; }
 .material-temas-lista { margin: var(--e-2) 0 0; padding-inline-start: var(--e-5); display: grid; gap: var(--e-2); }
 .material-temas-lista a { display: inline; }
 .material-pagina { margin-inline-start: var(--e-2); color: var(--gris-cl); font-size: var(--t-sm); white-space: nowrap; }
@@ -508,7 +505,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 .plan-semana-fechas { font: var(--peso-normal) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--gris); }
 .plan-semana-cuerpo { display: grid; gap: var(--e-2); min-width: 0; }
 .plan-grupo { display: grid; gap: var(--e-3); padding: var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); min-width: 0; }
-.plan-grupo[data-situacion="en_integracion"] { border-color: var(--dorado); box-shadow: inset var(--b-4) 0 0 var(--dorado); }
+/* Por confirmar: lo dice su etiqueta; el dorado queda como filete (C6-05) */
+.plan-grupo[data-situacion="en_integracion"] { box-shadow: inset var(--b-4) 0 0 var(--dorado); }
 .plan-grupo-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--e-2) var(--e-3); }
 .plan-grupo-nombre { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); min-width: 0; }
 .plan-grupo-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
@@ -517,8 +515,9 @@ body > main { flex: 1 0 auto; width: 100%; }
 .plan-cupo { display: grid; gap: var(--e-2); }
 .plan-cupo-barra { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--b-2); }
 .plan-cupo-lugar { height: var(--e-3); border-radius: var(--b-2); background: var(--linea); }
-.plan-cupo-lugar[data-lugar="ocupado"] { background: var(--guinda); }
-.plan-cupo-lugar[data-lugar="minimo"] { background: var(--guinda-cl); outline: var(--b-1) dashed var(--guinda); outline-offset: calc(var(--b-1) * -1); }
+/* Lo ocupado, del mismo color que la barra de cupo de la ficha del grupo (.cupo-lleno; C6-05) */
+.plan-cupo-lugar[data-lugar="ocupado"] { background: var(--dorado); }
+.plan-cupo-lugar[data-lugar="minimo"] { background: var(--fondo); outline: var(--b-1) dashed var(--borde); outline-offset: calc(var(--b-1) * -1); }
 .plan-cupo-texto { margin: 0; font-size: var(--t-sm); }
 /* Semana libre: el enlace para programarla, o en una línea por qué no se puede */
 .plan-programar-semana {
@@ -529,9 +528,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 .plan-programar-semana:hover { background: var(--guinda-cl); }
 .plan-semana-libre { display: grid; gap: var(--e-2); }
 .plan-semana-no { margin: 0; padding: var(--e-3) var(--e-4); border: var(--b-1) dashed var(--borde); border-radius: var(--r-caja); font-size: var(--t-sm); color: var(--gris); }
-.plan-terminados { padding: var(--e-2) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
-.plan-terminados-titulo { display: flex; align-items: center; min-height: var(--objetivo-min); font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); cursor: pointer; }
-.plan-terminados-lista { display: grid; margin: 0; padding: 0; list-style: none; }
+/* «Grupos que ya terminaron»: el plegable del estándar (details.plegable; C6-06) */
+.plan-terminados-lista { display: grid; margin: 0; padding: 0 var(--e-4) var(--e-2); list-style: none; }
 .plan-terminado { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); padding-block: var(--e-2); border-block-start: var(--b-1) solid var(--linea); }
 .plan-pie { margin-block-start: var(--e-5); }
 
@@ -545,7 +543,7 @@ body > main { flex: 1 0 auto; width: 100%; }
 .prog-propuesta { margin: 0 0 var(--e-3); font-size: var(--t-sm); color: var(--gris); }
 .prog-fecha { margin-block-start: var(--e-4); }
 .prog-personas { display: grid; gap: var(--e-2); margin: 0 0 var(--e-3); padding: 0; list-style: none; }
-.prog-ya-titulo { margin: 0 0 var(--e-1); font-weight: var(--peso-semi); }
+.prog-ya-titulo { margin: 0 0 var(--e-1); font-weight: var(--peso-fuerte); }
 .prog-ya { margin: 0 0 var(--e-4); padding-inline-start: var(--e-5); list-style: disc; font-size: var(--t-sm); }
 .prog-cursos { display: grid; gap: var(--e-2); margin: 0; padding: 0; list-style: none; }
 .prog-resumen { display: grid; gap: var(--e-3); padding: var(--e-seccion); background: var(--blanco); border: var(--b-2) solid var(--guinda); border-radius: var(--r-caja); min-width: 0; }
@@ -605,14 +603,14 @@ body > main { flex: 1 0 auto; width: 100%; }
   .prog-cursos { display: flex; flex-wrap: wrap; }
   .cal-nota { font-size: var(--t-xs); }
   .prog-cursos .btn { width: auto; }
-  .prog-resumen .datos-par { grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); }
+  .prog-resumen .datos-par { grid-template-columns: minmax(0, calc(var(--e-11) + var(--e-4))) minmax(0, 1fr); }
   .hoy-grupo-accion { width: auto; justify-self: start; }
 }
 @media (min-width: 760px) {
   .plan-barra { position: sticky; bottom: 0; z-index: var(--z-lista); padding-block-end: calc(var(--e-2) + var(--safe-inf)); }
   /* Si la barra mide más de un cuarto de la ventana deja de ser fija (B4-01, decisión 1c del 20/10; app/grupos.js) */
   .plan-barra[data-suelta] { position: static; }
-  .plan-semana { grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
+  .plan-semana { grid-template-columns: minmax(0, calc(var(--e-11) * 1.5)) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
   .plan-semana-titulo { padding-block-start: var(--e-3); }
   .hoy-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
