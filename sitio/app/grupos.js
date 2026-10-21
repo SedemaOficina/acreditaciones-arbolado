@@ -83,6 +83,8 @@
       const lista = P.enEspera(datos, t, m);
       const vencidas = lista.filter((x) => x.vencida).length;
       const b = el('button', { type: 'button', class: 'plan-curso', 'data-curso': P.claveCurso(t, m), 'aria-pressed': 'false' }, [
+        // La palomita de lo elegido, como en las opciones del estándar: se ve sólo con aria-pressed="true" (C6-03)
+        APD.icono('palomita', 'icono icono-sm plan-curso-marca'),
         el('span', { class: 'plan-curso-nombre', texto: APD.cursoLargo(t, m) }),
         el('span', { class: 'plan-curso-cifra' }, [document.createTextNode(String(lista.length)), el('span', { class: 'solo-lector', texto: ' en espera' })]),
         vencidas ? el('span', { class: 'plan-curso-vencidas', texto: plural(vencidas, 'vencida', 'vencidas') }) : null
@@ -300,7 +302,9 @@
       const acciones = receptores.map((x, i) => {
         const n = APD.nombreGrupo(x.g, datos, { sinCurso: true });
         const texto = `${x.g.fecha_inicio ? 'Al curso' : 'Al grupo'} ${n.charAt(0).toLocaleLowerCase('es-MX')}${n.slice(1)}${x.g.fecha_inicio ? '' : ` · ${x.g.folio}`}`;
-        const b = el('button', { type: 'button', class: `btn ${i === 0 ? 'btn-primario' : 'btn-secundario'} btn-chico`, 'aria-describedby': 'plan-elegidas' }, [
+        /* Un solo botón principal por pantalla (auditoría 2026-10-20, C6-02 y C2-01; decisión 2 de Liber): el de «Grupos» es
+           «Programar un curso»; los destinos son secundarios, también sin nadie elegido */
+        const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'aria-describedby': 'plan-elegidas' }, [
           el('span', { texto }), el('span', { class: 'plan-destino-cupo', texto: ` (${x.n} de ${x.g.cupo_maximo})` })]);
         b.addEventListener('click', () => {
           const eleg = elegidas();
@@ -321,7 +325,7 @@
       });
       if (!modoGrupo) {
         // «A un curso nuevo…»: Programar con las elegidas (sin elegir a nadie, Programar propone a las que más esperan)
-        const nuevo = el('a', { class: `btn ${acciones.length ? 'btn-secundario' : 'btn-primario'} btn-chico`, href: `programar.html?curso=${clave}`, texto: 'A un curso nuevo…' });
+        const nuevo = el('a', { class: 'btn btn-secundario btn-chico', href: `programar.html?curso=${clave}`, texto: 'A un curso nuevo…' });
         nuevo.addEventListener('click', (e) => {
           const eleg = elegidas();
           if (eleg.length > c.cupo_maximo) { e.preventDefault(); falla(['Eligió más personas de las que caben', `Un grupo recibe hasta ${c.cupo_maximo}; eligió ${eleg.length}.`]); return; }
@@ -436,8 +440,8 @@
         if (falta > 0) {
           const van = P.lasQueMasEsperan(espera, falta, filtro);
           if (van.length) {
-            // Con la fecha ya pasada, lo principal es elegir otra semana
-            const b = el('button', { type: 'button', class: `btn ${pasada ? 'btn-secundario' : 'btn-primario'} btn-chico`, texto: van.length === 1 ? 'Completar con la que más espera' : `Completar con las ${van.length} que más esperan` });
+            // Secundario: el único principal de la pantalla es «Programar un curso» (C6-02, decisión 2)
+            const b = el('button', { type: 'button', class: 'btn btn-secundario', texto: van.length === 1 ? 'Completar con la que más espera' : `Completar con las ${van.length} que más esperan` });
             b.addEventListener('click', () => {
               // Deshabilitado mientras guarda (F3 B10); el aviso dice cuántas entraron de verdad (F3 M1)
               const libera = APD.ocupa(b);
@@ -454,7 +458,7 @@
       if (integra && falta <= 0) acciones.push(botonConfirmar(x));
       if (integra) {
         const texto = pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana';
-        acciones.push(el('a', { class: `btn ${pasada ? 'btn-primario' : 'btn-secundario'} btn-chico`, href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
+        acciones.push(el('a', { class: 'btn btn-secundario', href: `programar.html?curso=${clave}&grupo=${encodeURIComponent(g.folio)}`,
           'aria-label': `${texto} de ${x.calculado} · ${g.folio}`, texto }));
       }
       acciones.push(el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `Ver a las personas de ${x.calculado} · ${g.folio}`, texto: 'Ver a las personas' }));
@@ -481,8 +485,8 @@
     function botonConfirmar(x) {
       const { g } = x;
       const listo = g.fecha_inicio && g.fecha_inicio >= minimo && g.hora_entrada && g.instructor && !P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, g.fecha_inicio, g.id);
-      if (!listo) return el('a', { class: 'btn btn-secundario btn-chico', href: `grupo.html?folio=${encodeURIComponent(g.folio)}#t-confirmar`, texto: 'Confirmar el grupo' });
-      const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: 'Confirmar el grupo' });
+      if (!listo) return el('a', { class: 'btn btn-secundario', href: `grupo.html?folio=${encodeURIComponent(g.folio)}#t-confirmar`, texto: 'Confirmar el grupo' });
+      const b = el('button', { type: 'button', class: 'btn btn-secundario', texto: 'Confirmar el grupo' });
       b.addEventListener('click', () => {
         FormKit.confirma(b, { titulo: `¿Confirmar «${x.calculado}»?`,
           consecuencias: [`${plural(x.n, 'persona', 'personas')}, entrada a las ${APD.hhmm(g.hora_entrada)}, con ${P.nombreInstructor(g.instructor)}.`,

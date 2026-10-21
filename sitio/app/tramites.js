@@ -18,7 +18,8 @@
 
   function fichaAcreditacion(datos, a, op) {
     const sit = APD.situacion(datos, a);
-    const v = APD.VIGENCIA[sit];
+    // «Vencida · puedes renovarla» sólo si aparece «Renovar»; si no, «Vencida» (decisión de Liber del 21/10, C6-05 a)
+    const v = APD.vigencia(sit, { renovable: porRenovar(datos, a, op) });
     const ficha = el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [
         el('h4', { class: 'ficha-titulo', texto: APD.TIPOS[a.tipo_acreditacion] }),
@@ -93,7 +94,8 @@
       const importe = s.pago_monto != null ? s.pago_monto : c.pago_monto;
       const monto = importe != null ? Number(importe).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
       const instrucciones = (datos.parametro.find((x) => x.clave === 'pago_instrucciones') || {}).valor || '';
-      extra.push(el('div', { class: 'aviso' }, [
+      // Con el icono de su tono, como todo aviso del estándar (auditoría 2026-10-20, C6-08)
+      extra.push(el('div', { class: 'aviso' }, [APD.icono('info'),
         el('div', { class: 'aviso-texto aviso-pila' }, [
           el('p', {}, [el('strong', { texto: citaNueva ? 'Datos para tu pago, si todavía no pagas' : 'Datos para tu pago' })]),
           citaNueva ? el('p', { texto: 'Si ya pagaste, no pagues otra vez: lleva el comprobante de ese pago.' }) : null,
@@ -276,7 +278,7 @@
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
     // Cerrada sin atender (por inasistencia o por plazo), el motivo de la base ya lo dice el texto de arriba
-    const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [el('div', { class: 'aviso-texto aviso-pila' }, [
+    const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [APD.icono('info'), el('div', { class: 'aviso-texto aviso-pila' }, [
       el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : s.estado === 'cancelada' ? 'Motivo de la cancelación' : 'Motivo' })]),
       el('p', { class: 'con-renglones', texto: APD.paraTi(s.motivo_cierre) })])]) : null;
 
@@ -346,6 +348,13 @@
     document.querySelector('[data-anteriores]').replaceChildren(...anteriores.map((s) => fichaSolicitud(datos, s, persona)));
 
     document.querySelector('[data-nueva]').hidden = !puedeNueva;
+    /* Un solo botón principal por pantalla (auditoría 2026-10-20, C6-02 con P164; decisión 2 de Liber). Queda principal el
+       primero en este orden y los demás pasan a secundarios: lo que toca hacer con una solicitud en curso (continuar,
+       corregir y reenviar, cargar el documento), «Renovar» (la acreditación por renovar va primero en su lista) y, al
+       final, «Iniciar una solicitud». Con la poda por vencer, «Renovar» es el principal (P164). */
+    const principales = ['[data-solicitudes]', '[data-acreditaciones]', '[data-nueva]']
+      .flatMap((s) => [...document.querySelectorAll(`${s} .btn-primario`)]).filter((b) => !b.closest('[hidden]'));
+    for (const b of principales.slice(1)) b.classList.replace('btn-primario', 'btn-secundario');
     document.querySelector('[data-cargando]').textContent = 'Aquí ves tus acreditaciones y en qué va cada solicitud.';
 
     /* Si en otra pestaña se entró con otra cuenta (o se salió), esta lo dice al enterarse (evento storage o al volver a

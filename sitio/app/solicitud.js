@@ -208,13 +208,23 @@
     const disponibles = ['poda', 'dictaminador'].filter((t) => op[t].disponible);
     if (!disponibles.length) { sinOpciones(['poda', 'dictaminador'].map((t) => `${APD.TIPOS[t]}: ${op[t].motivo}`)); return false; }
 
-    // Sólo se deshabilita lo que de verdad no se puede pedir hoy, con su motivo
+    /* Sólo se deshabilita lo que de verdad no se puede pedir hoy. Su motivo va fuera de la opción, como ayuda de la pregunta
+       y a contraste normal: dentro, la opción atenuada lo dejaba a 2.08:1 (decisión 5 b de Liber; auditoría 2026-10-20) */
+    const motivos = [];
     for (const r of radios('tipo')) {
       if (op[r.value].disponible) continue;
       r.disabled = true;
       r.checked = false;
-      const desc = form.querySelector(`[data-desc-tipo="${r.value}"]`);
-      if (desc) desc.textContent = op[r.value].motivo;
+      motivos.push(`${APD.TIPOS[r.value]}: ${op[r.value].motivo}`);
+    }
+    const ayudaMotivo = form.querySelector('[data-motivo-tipo]');
+    ayudaMotivo.textContent = motivos.join(' ');
+    ayudaMotivo.hidden = !motivos.length;
+    if (motivos.length) {
+      for (const r of radios('tipo')) {
+        const ids = (r.getAttribute('aria-describedby') || '').split(' ').filter(Boolean);
+        if (!ids.includes(ayudaMotivo.id)) r.setAttribute('aria-describedby', [ayudaMotivo.id, ...ids].join(' '));
+      }
     }
     alCambiarTipo = () => {
       const r = radios('tipo').find((x) => x.checked && !x.disabled);

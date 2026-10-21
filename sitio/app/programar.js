@@ -121,7 +121,8 @@
 
     function etiquetaDia(d, r, enRango, k) {
       const base = fechaLarga(d);
-      if (d === inicio) return `${base}: empieza el curso elegido${dur > 1 ? `, que termina el ${fechaLarga(finDe(inicio))}` : ''}`;
+      // El curso de un día también dice su examen, como lo decía la nota «curso y examen» (C6-10 c)
+      if (d === inicio) return `${base}: empieza el curso elegido${dur > 1 ? `, que termina el ${fechaLarga(finDe(inicio))}` : ', con su examen ese mismo día'}`;
       if (enRango) return `${base}: día ${k} de ${dur} del curso elegido${k === dur ? ', examen' : ''}`;
       if (r) return `${base}: no se puede empezar, ${r.texto}`;
       return `${base}: se puede empezar`;
@@ -158,6 +159,11 @@
         filas.push(el('tr', {}, celdas));
       }
       $('[data-dias]').replaceChildren(...filas);
+      // En teléfono la celda no lleva nota: lo dice esta línea, con la fecha larga y sin hora (decisión de Liber del 21/10,
+      // C6-10 c; en escritorio la oculta apd.css)
+      const fechas = $('[data-cal-fechas]');
+      fechas.textContent = !inicio ? '' : dur > 1 ? `Inicia el ${fechaLarga(inicio)} y examen el ${fechaLarga(fin)}.` : `Curso y examen el ${fechaLarga(inicio)}.`;
+      fechas.hidden = !inicio;
       // En el mes actual y en el último permitido el botón queda inactivo con aria-disabled, no con disabled: conserva el
       // foco (auditoría 2026-10-20, RI-02; como los botones de envío, abajo)
       for (const [b, si] of [[$('[data-mes="-1"]'), mes <= mesDe(hoy)], [$('[data-mes="1"]'), mes >= mesDe(maximo)]]) {
@@ -396,7 +402,7 @@
       const falta = y.g.cupo_minimo - y.n;
       APD.pintaAviso(cajaSuGrupo, 'info', `${nombre} ya tiene su grupo`,
         `El grupo ${y.g.folio} tiene ${y.n} de ${y.g.cupo_maximo}${falta > 0 ? `, le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo` : ''} y recibe personas. Conviene agregarlas ahí: con dos grupos de la misma organización, ninguno llega al mínimo.`);
-      const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Agregarlas a ${y.g.folio}` });
+      const b = el('button', { type: 'button', class: 'btn btn-secundario', texto: `Agregarlas a ${y.g.folio}` });
       b.addEventListener('click', () => agregaASuGrupo(y, b));
       $('.aviso-texto', cajaSuGrupo).append(el('p', {}, [b]));
     }

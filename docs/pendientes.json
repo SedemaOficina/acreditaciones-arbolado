@@ -989,6 +989,38 @@
       "desde": "2026-10-20",
       "titulo": "«Asistencia»: la bajada repite el rango del curso en dos formas",
       "recomendacion": "La bajada dice el nombre del grupo (que ya lleva sus días, decisión del 18/10) y además «del 13/10/2026 al 17/10/2026». Las dos formas están permitidas (decisión 16 b del 20/10), pero se repite el dato. Opciones: (a) quitar el rango de la bajada; (b) dejarlo. Recomendación: (a). Visto al corregir las fechas (auditoría del 20/10, C5-01)."
+    },
+    {
+      "id": "P191",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-21",
+      "titulo": "Propuesta al estándar: rojo para «te toca actuar» cuando la espera está atrasada",
+      "recomendacion": "Decisión 3 a de Liber (auditoría del 20/10/2026, C6-04): en la bandeja, desde 10 días, la etiqueta «te toca actuar» va en rojo con «N días · atrasada». El estándar 1.5.1 no trae esa variante: el proyecto la pone con un atributo propio en app/apd.css. Propuesta: una variante de urgencia de la familia «te toca actuar» en el módulo estado."
+    },
+    {
+      "id": "P192",
+      "grupo": "estandar",
+      "bloquea": "no",
+      "desde": "2026-10-21",
+      "titulo": "Propuesta al estándar: botón compacto para tablas del personal",
+      "recomendacion": "C6-07 (auditoría del 20/10/2026): el proyecto conserva btn-chico sólo en tablas, el visor y la barra de elegidas porque el botón del estándar ocupa demasiado en filas de 65 solicitudes. Propuesta: un tamaño compacto del estándar para tablas en computadora, con objetivo táctil de 24 px como mínimo (WCAG 2.5.8)."
+    },
+    {
+      "id": "P193",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-21",
+      "titulo": "«Ver todas las preguntas» del examen con su propio plegable",
+      "recomendacion": "C6-06 (auditoría del 20/10/2026): los plegables del proyecto ya usan el del estándar, salvo «Ver todas las preguntas» del examen (examen.css), que no se tocó para no cambiar la pantalla del examen sin pedirlo. Opciones: (a) unificarlo con el del estándar; (b) dejarlo y registrarlo. Recomendación: (a), con una prueba del examen en las computadoras del salón."
+    },
+    {
+      "id": "P194",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-21",
+      "titulo": "Hoja de estilos del proyecto: estructura de bloques y ancho de la página amplia",
+      "recomendacion": "A6-03 (auditoría del 20/10/2026): app/apd.css redefine --ancho-contenido para la página amplia del personal (regla A15 del auditor del estándar) y no agrupa sus @media al final de cada bloque (A13). Se pasaron a tokens las medidas literales que tenían token. Pendiente: reordenar la hoja por bloques y pedir al estándar un token de ancho amplio. Sin efecto visible."
     }
   ],
   "resueltos": [

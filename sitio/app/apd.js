@@ -7,7 +7,7 @@
    a la fecha de corte. El acceso es SIMULADO: no protege nada y se
    sustituye por el del backend en la etapa 3.
 
-   Una sola fuente de los textos de estado: ESTADOS y VIGENCIA, aquí.
+   Una sola fuente de los textos de estado: ESTADOS y VIGENCIA (por APD.vigencia), aquí.
    ========================================================= */
 (function (global) {
   'use strict';
@@ -47,11 +47,21 @@
   const VIGENCIA = {
     vigente: { texto: 'Vigente', tono: 'ok' },
     por_vencer: { texto: 'Vigente · por vencer', tono: 'pend' },
-    // Vencida pero renovable: te toca actuar (renovarla); vencida sin renovación: terminada (auditoría 2026-10-18, D6)
-    vencida_renovable: { texto: 'No vigente', tono: 'pend' },
-    vencida_no_renovable: { texto: 'No vigente', tono: 'cerrado' },
+    // Vencida pero renovable: te toca actuar (renovarla); vencida sin renovación: terminada (auditoría 2026-10-18, D6). Con
+    // textos distintos, para que el color diga algo distinto porque el texto también (decisión de Liber del 21/10, C6-05 a);
+    // «personal», de usted
+    vencida_renovable: { texto: 'Vencida · puedes renovarla', personal: 'Vencida · puede renovarla', tono: 'pend' },
+    vencida_no_renovable: { texto: 'Vencida', tono: 'cerrado' },
     no_emitida: { texto: 'Todavía no vigente', tono: 'marcha' }
   };
+
+  /* La etiqueta de vigencia de una acreditación ({ texto, tono }). renovable: false cuando la base la cuenta renovable pero
+     ahora no se puede renovar (ya hay un trámite en curso, el dictaminador sin la poda vigente o no es la última de su
+     tipo): entonces es «Vencida», en gris (C6-05 a). personal: el texto para el personal. */
+  function vigencia(sit, { personal, renovable } = {}) {
+    const v = sit === 'vencida_renovable' && renovable === false ? VIGENCIA.vencida_no_renovable : VIGENCIA[sit] || { texto: sit, tono: '' };
+    return { texto: personal ? v.personal || v.texto : v.texto, tono: v.tono };
+  }
 
   const TIPOS = { poda: 'Poda y derribo', dictaminador: 'Dictaminador técnico' };
   const MODALIDADES = { nueva: 'Solicitud nueva', renovacion: 'Renovación' };
@@ -911,7 +921,7 @@
   global.APD = {
     fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
-    CONTRASENA_FICTICIA, ESTADOS, VIGENCIA, TIPOS, MODALIDADES, FINALES,
+    CONTRASENA_FICTICIA, ESTADOS, vigencia, TIPOS, MODALIDADES, FINALES,
     cursoCorto, cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fechaLarga, fechaCorta, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
     plural, normalizaBusqueda, paraTi, observacionDe,

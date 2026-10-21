@@ -39,7 +39,8 @@ window.FORMKIT_OPCIONES = {
     const caja = document.querySelector('[data-verificacion]');
     const f = r.fila;
     // El desenlace con su color e icono (propuesta «Avisos y confirmaciones», 2026-10-17): para quien verifica, una
-    // acreditación que no existe es una alerta, como una que ya no está vigente
+    // acreditación que no existe es una alerta. Una que ya venció dice «Vencida» con la familia gris, la misma de «Vencida»
+    // en «Mis trámites» (decisión de Liber del 21/10, C6-05 a): antes era «No vigente» en rojo, un tercer color
     const situacion = (texto, icono) => el('p', { class: 'verificacion-situacion' }, [APD.icono(icono, 'icono verificacion-icono'), document.createTextNode(texto)]);
     if (!f) {
       caja.setAttribute('data-tono', 'error');
@@ -49,9 +50,9 @@ window.FORMKIT_OPCIONES = {
       );
     } else {
       const vigente = f.situacion === 'Vigente';
-      caja.setAttribute('data-tono', vigente ? 'ok' : 'error');
+      caja.setAttribute('data-tono', vigente ? 'ok' : 'terminado');
       caja.replaceChildren(
-        situacion(vigente ? `Vigente hasta el ${APD.fechaCorta(f.vence_en)}` : 'No vigente', vigente ? 'palomita' : 'cerrar'),
+        situacion(vigente ? `Vigente hasta el ${APD.fechaCorta(f.vence_en)}` : f.vence_en < r.hoy ? 'Vencida' : 'No vigente', vigente ? 'palomita' : 'archivo'),
         APD.datosLista([
           ['Nombre', f.nombre],
           ['Acreditación', f.tipo],

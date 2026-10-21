@@ -1471,3 +1471,18 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Decisiones nuevas en DECISIONES; P190 (rango repetido en «Asistencia»).
 - Pruebas: `probar-sitio` 1199 (partes `SOLO=tareas` y `SOLO=fechas`), `probar-examen` 79, `probar-volumen` 106,
   `auditar-sitio` con los mismos 2 avisos en 65 pantallas, `probar-esquemas` 131 (`solicitud.json` sin la casilla).
+
+## 2026-10-21 · Bloque 89 · Correcciones de la auditoría de seguimiento: sistema visual
+
+- Publicada la 0.63 (bloques 3 y 6). Bloque 4 del plan de `docs/AUDITORIA-2026-10-20.md`, con las decisiones de Liber
+  del 20/10 y del 21/10.
+- **Un botón principal por pantalla** (C6-02, P164, lo que quedaba de C2-01), con la tabla confirmada por Liber.
+- **Lo elegido** con el tratamiento del estándar en curso, persona, días, «¿Asistió?» y visor (C6-03), visible con
+  colores forzados (C6-01). **Bandeja:** desde 10 días, «te toca actuar» en rojo con «N días · atrasada» (C6-04).
+  **Asistencia:** Sí/No del estándar y «Todas asistieron» (C6-09). **Opción deshabilitada:** su motivo fuera de la opción,
+  a 5.14:1 (decisión 5 b). **«No vigente»:** dos textos y dos colores (C6-05). **Calendario:** sin nota en la celda en
+  teléfono; ya no queda texto a 10.2 px (C6-10). Bajos: avisos con su ícono (C6-08), borde del calendario a 3.43:1
+  (A6-02), plegables del estándar (C6-06), de 41 a 33 aspectos de botón (C6-07), medidas a tokens (A6-03).
+- Pendientes nuevos: P191 y P192 (propuestas al estándar), P193 (plegable del examen) y P194 (estructura de `apd.css`).
+- Pruebas: `probar-sitio` 1234 (parte `SOLO=visual`, 35), `probar-examen` 79, `probar-volumen` 106, `auditar-sitio`
+  con los mismos 2 avisos en 65 pantallas, `probar-esquemas` 131.

@@ -78,7 +78,10 @@
      posterior a la fecha simulada (se veía «-1 días») */
   function espera(desde, corte) {
     const n = Math.max(0, dias(desde, corte));
-    return { n, texto: n === 0 ? 'Hoy' : n === 1 ? '1 día' : `${n} días`, tono: n >= UMBRAL.rojo ? 'error' : n >= UMBRAL.ambar ? 'pend' : '' };
+    /* Desde UMBRAL.rojo días, atrasada (decisión 3 a de Liber, auditoría 2026-10-20, C6-04): la etiqueta de «te toca
+       actuar» en rojo con «N días · atrasada», no la de «cerrado sin éxito» (APD.estado y [data-plazo] en app/apd.css) */
+    const atrasada = n >= UMBRAL.rojo;
+    return { n, atrasada, texto: n === 0 ? 'Hoy' : n === 1 ? '1 día' : `${n} días${atrasada ? ' · atrasada' : ''}`, tono: n >= UMBRAL.ambar ? 'pend' : '' };
   }
   const ORDINAL = ['', '1.ª', '2.ª', '3.ª', '4.ª', '5.ª', '6.ª'];
   function vuelta(datos, s) {
@@ -459,6 +462,9 @@
      aplicar» el día del examen. */
   function pintaMisGrupos(contenedor, datos, usuario) {
     const sede = APD.sede(datos).nombre;
+    /* Un solo botón principal por pantalla (auditoría 2026-10-20, C6-02; decisión 2 de Liber): el del grupo con examen hoy
+       (el primero, si hay varios) o, si ninguno tiene examen, el del primer grupo; los demás, secundarios */
+    let principal = -1;
     const tarjeta = (g, i) => {
       const x = grupo(datos, g);
       const d = diaDelCurso(datos, g);
@@ -471,11 +477,12 @@
           estado(d.examen ? 'Examen hoy' : d.texto, d.examen ? 'pend' : 'marcha')
         ]),
         APD.lineaDatos([lugar, APD.hhmm(g.hora_entrada), APD.plural(x.n, 'persona', 'personas')]),
-        el('a', { class: 'btn btn-primario hoy-grupo-accion', href, 'aria-describedby': idN }, [
+        el('a', { class: `btn ${i === principal ? 'btn-primario' : 'btn-secundario'} hoy-grupo-accion`, href, 'aria-describedby': idN }, [
           document.createTextNode(d.examen ? 'Pasar lista y aplicar' : 'Pasar asistencia'), APD.icono('flecha-der')])
       ]);
     };
     const hoyL = gruposDeHoy(datos, usuario);
+    principal = Math.max(0, hoyL.findIndex((g) => diaDelCurso(datos, g).examen));
     const prox = proximosDe(datos, usuario);
     const partes = [];
     partes.push(hoyL.length ? el('ul', { class: 'hoy-grupos' }, hoyL.map(tarjeta)) : el('p', { texto: 'Hoy no tiene grupos con clase ni examen.' }));
@@ -507,7 +514,7 @@
   /* Concentrado de asistencia del grupo (pedido de Liber, 2026-10-18): una fila por persona y una columna por día, con
      los días asistidos y si conserva el derecho a examen. La captura sigue siendo por día («Asistencia»); esto es la
      vista de conjunto, en la ficha del grupo (en curso o concluido). El último día es el del examen:
-     su asistencia es el pase de lista del salón de cómputo. Sólo cuenta como falta lo marcado «Faltó»; un día que ya
+     su asistencia es el pase de lista del salón de cómputo. Sólo cuenta como falta lo marcado «No» (antes «Faltó»); un día que ya
      pasó sin capturar se señala aparte («Sin capturar»), como en la captura.
      marco: el [data-tabla] con [data-conc-encabezado], [data-conc-filas] y [data-conc-leyenda].
      El pase de lista ya viene en datos.asistencia (en la prueba lo aplica APD.cargar; en el SIA, apd.asistencia). */
