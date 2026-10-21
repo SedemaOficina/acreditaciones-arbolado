@@ -478,7 +478,7 @@
       n = s ? FASE_ESTADO[s.estado] || 1 : 1;
     }
     const nombre = NOMBRES[pagina] || pagina;
-    return el('nav', { class: 'ubicacion-prueba', 'aria-label': 'Dónde estás en el trámite (versión de prueba)' }, [
+    return el('nav', { class: 'ubicacion-prueba', 'aria-label': 'Ubicación en el trámite (versión de prueba)' }, [
       el('p', { class: 'ubicacion-prueba-int' }, [
         el('strong', { texto: `Pantalla: ${nombre}` }),
         n ? document.createTextNode(` · Fase ${n} de 7: ${FASES[n - 1]} · `) : document.createTextNode(' · '),
