@@ -23,6 +23,9 @@
   const $$ = (s, raiz) => Array.from((raiz || document).querySelectorAll(s));
   const form = document.getElementById('formulario');
   const folio = new URLSearchParams(location.search).get('folio') || '';
+  /* La bandeja, con los filtros con que se dejó (auditoría 2026-10-20, C4-01; los guarda app/revision.js en esta pestaña) */
+  const bandeja = (() => { try { const f = sessionStorage.getItem('apd.bandeja.filtros') || ''; return /^(\?[\w=&-]*)?$/.test(f) ? `revision.html${f}` : 'revision.html'; } catch (e) { return 'revision.html'; } })();
+  for (const a of $$('a[href="revision.html"]')) a.href = bandeja;
 
   const NIVELES = {
     ninguna: 'Sin estudios', preescolar: 'Preescolar', primaria: 'Primaria', secundaria: 'Secundaria', preparatoria: 'Preparatoria o bachillerato',
@@ -356,7 +359,7 @@
             const otraVez = { href: `revisar.html?folio=${encodeURIComponent(folio)}`, texto: 'Abrir la solicitud otra vez' };
             if (!s2 || s2.estado !== 'enviada') {
               return mal(APD.rechazo('No se guardó su revisión', `Ya se registró otra revisión de esta solicitud (en otra pestaña o por otra persona): ahora está «${s2 ? APD.nombrePersonal(s2.estado) : 'sin datos'}».`,
-                { href: 'revision.html', texto: 'Volver a la bandeja' }, 'revision_fuera_de_turno'));
+                { href: bandeja, texto: 'Volver a la bandeja' }, 'revision_fuera_de_turno'));
             }
             if (huella(ahora, s2) !== abierta) {
               return mal(APD.rechazo('No se guardó su revisión', 'La solicitud cambió desde que la abrió: la persona la reenvió o cargó otro documento. Ábrala otra vez para revisar lo de ahora.', otraVez, 'conflicto'));
