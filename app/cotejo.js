@@ -295,7 +295,7 @@
 
     /* Ver documento: en el visor, con todas sus hojas; el que se ve queda señalado en la lista y su botón dice «En el
        visor». En computadora, pedir otra vez el que ya está abierto lleva el foco a sus hojas (auditoría 2026-10-18, B16). */
-    /* Falla del estándar, pendiente por registrar (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» cada vez que
+    /* Falla del estándar, registrada como P181 (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» cada vez que
        carga un documento. Cuando lo abre la página sola, se callan; vuelven en cuanto quien atiende usa el visor o pide un
        documento con su botón (como en revisar.js). */
     function callaVisor(si) { for (const n of document.querySelectorAll('[data-visor-pagina], [data-visor-zoom]')) n.setAttribute('aria-live', si ? 'off' : 'polite'); }

@@ -548,7 +548,7 @@
      <p class="linea-datos"> con cada dato en <span class="linea-datos-item">, que no se parte (si no cabe, pasa completo al
      renglón siguiente), y los puntos medios en el texto. Una parte es texto o una lista de nodos; clase, la propia de la
      pantalla, si la lleva. */
-  /* B4-06 (auditoría 2026-10-20; falla del estándar, pendiente por registrar): un dato que no cabe ni en una línea entera
+  /* B4-06 (auditoría 2026-10-20; falla del estándar, P187): un dato que no cabe ni en una línea entera
      (con el espaciado de texto de WCAG 1.4.12 en 320 px) se marca [data-ancho] y se parte por dentro (app/apd.css); los
      demás siguen enteros. Se revisa cada vez que la línea cambia de tamaño. Se recuerda el ancho que pedía el dato entero
      para no marcarlo y desmarcarlo sin fin. */

@@ -295,7 +295,7 @@
       }
     }
     const global_visor = () => Boolean(window.FormKit && FormKit.visor);
-    /* Falla del estándar, pendiente por registrar (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» (aria-live)
+    /* Falla del estándar, registrada como P181 (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» (aria-live)
        cada vez que carga un documento. Cuando lo abre la página sola (el primero al entrar o el siguiente al aceptar), se
        callan: ya se anuncia «Siguiente documento: …» (RI-04, un anuncio por decisión). Vuelven a anunciarse en cuanto quien
        revisa usa el visor o pide un documento con su botón. */
