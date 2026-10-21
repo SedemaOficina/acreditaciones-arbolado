@@ -4194,6 +4194,9 @@ async function focoAccesibilidad(navegador) {
     await page.keyboard.press('Escape');
     await page.waitForSelector('dialog[data-visor]:not([open])', { state: 'attached' });
     await page.waitForFunction(() => document.activeElement && document.activeElement.matches('[data-ver]'));
+    // El texto del botón cambia al cerrarse el visor, que puede llegar después del foco: se espera la condición (si no
+    // llega en 5 s, la comprobación falla con lo que haya) (intermitente en la batería completa, bloque 2)
+    await page.waitForFunction(() => !/^En el visor/.test(document.activeElement.textContent.trim()) && !document.activeElement.hasAttribute('aria-current'), null, { timeout: 5000 }).catch(() => {});
     const r = await page.evaluate(() => ({ texto: document.activeElement.textContent.trim(), actual: document.activeElement.hasAttribute('aria-current') }));
     comprueba(/^En el visor/.test(abierto) && r.texto.startsWith(normal) && !r.actual,
       `RI-08: en ${pagina.split('.')[0]}, al cerrar el visor en teléfono el botón enfocado vuelve a decir «${normal}» («${r.texto.slice(0, 40)}»${r.actual ? ', con aria-current' : ''})`);
