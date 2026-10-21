@@ -21,7 +21,7 @@
     }
     // La pausa sólo dura el día de la cita (auditoría integral, alta 6): después ya no se carga aquí
     if (APD.pausaVencida(datos, s)) {
-      return falla(`La pausa de tu cita del ${APD.fecha(s.cotejo_pausa.cita_en || s.cita_en)} venció: sólo duraba ese día. La Secretaría regresa tu solicitud con observaciones; cuando la veas así en «Mis trámites», corrige ahí el documento y reenvía tu solicitud.`);
+      return falla(`La pausa de tu cita del ${APD.fechaCorta(s.cotejo_pausa.cita_en || s.cita_en)} venció: sólo duraba ese día. La Secretaría regresa tu solicitud con observaciones; cuando la veas así en «Mis trámites», corrige ahí el documento y reenvía tu solicitud.`);
     }
     const pausa = s.cotejo_pausa;
     const docs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente);
@@ -32,7 +32,7 @@
         pasos: ['Imprime lo que cargaste.', `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}.`, 'Ahí termina tu cotejo.'] });
       return;
     }
-    $('[data-bajada]').textContent = `En tu cita del ${APD.fechaHora(s.cita_en)} ${pausa.docs.length === 1 ? 'un documento no coincidió' : 'algunos documentos no coincidieron'} con ${pausa.docs.length === 1 ? 'el' : 'los'} que cargaste. Cárgalo hoy y regresa con la persona que te atiende para terminar tu cotejo.`;
+    $('[data-bajada]').textContent = `En tu cita del ${APD.fechaLarga(s.cita_en, { hora: true })} ${pausa.docs.length === 1 ? 'un documento no coincidió' : 'algunos documentos no coincidieron'} con ${pausa.docs.length === 1 ? 'el' : 'los'} que cargaste. Cárgalo hoy y regresa con la persona que te atiende para terminar tu cotejo.`;
     for (const k of pausa.docs) {
       const d = docs.find((x) => x.requisito === k);
       const ayuda = $(`[data-diferencia="${k}"]`, form);

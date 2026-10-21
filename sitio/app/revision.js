@@ -4,7 +4,7 @@
    Lee los datos ficticios exportados por la base; en la etapa 3 los da la API del personal. */
 (function () {
   'use strict';
-  const { el, estado, fecha } = APD;
+  const { el, estado, fechaCorta } = APD;
   const P = APD_PERSONAL;
   const form = document.getElementById('filtros');
   const $ = (s) => document.querySelector(s);
@@ -98,7 +98,7 @@
         el('td', {}, [el('span', { class: 'mono', texto: s.folio })]),
         el('td', { texto: APD.nombreCompleto(p) }),
         el('td', { texto: `${APD.TIPOS[s.tipo_acreditacion]} · ${s.modalidad === 'renovacion' ? 'renovación' : 'nueva'}` }),
-        el('td', { class: 'sin-corte', texto: fecha(s.estado_desde) }),
+        el('td', { class: 'sin-corte', texto: fechaCorta(s.estado_desde) }),
         el('td', {}, [estado(e.texto, e.tono || 'marcha')]),
         el('td', { texto: v.texto }),
         el('td', {}, sen.length ? el('span', { class: 'senales' }, sen.map(([t, tono]) => (tono ? estado(t, tono) : el('span', { texto: t })))) : el('span', { class: 'texto-gris', texto: '—' })),

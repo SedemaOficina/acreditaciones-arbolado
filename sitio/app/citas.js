@@ -14,10 +14,8 @@
   FormKit.iniciar(form, {});
 
   const norm = APD.normalizaBusqueda;
-  const diaLargo = (dia) => {
-    const t = new Date(`${dia}T12:00:00-06:00`).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' });
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  };
+  /* El día de la agenda es su encabezado: fecha larga (decisión 16 b), «Miércoles 14 de octubre de 2026» */
+  const diaLargo = (dia) => APD.fechaLarga(dia, { mayuscula: true });
 
   /* La agenda se vuelve a leer cuando la persona carga un documento en otra pestaña, cuando otra pestaña guarda algo o al
      volver a esta (auditoría «intentar romperlo», F2 B1: seguía «En pausa · esperando el documento» hasta recargar). Se
@@ -53,7 +51,7 @@
         const verbo = futura ? 'Ver la cita' : ['pendiente', 'sin_registrar'].includes(c.situacion) ? 'Atender' : 'Retomar';
         const accion = c.pendiente
           ? el('a', { class: 'btn btn-secundario btn-chico', href: `cotejo.html?folio=${encodeURIComponent(s.folio)}`,
-            'aria-label': futura ? `Ver la cita de ${APD.nombreCompleto(p)}: se atiende el ${APD.fecha(P.diaDe(c.en))}` : `${verbo} la cita de ${APD.nombreCompleto(p)}`, texto: verbo })
+            'aria-label': futura ? `Ver la cita de ${APD.nombreCompleto(p)}: se atiende el ${APD.fechaCorta(c.en)}` : `${verbo} la cita de ${APD.nombreCompleto(p)}`, texto: verbo })
           : el('span', { class: 'texto-gris', texto: '—' });
         const hora = el('td', { texto: P.horaDe(c.en) });
         const tr = el('tr', { 'data-folio': s.folio, class: c.pendiente ? null : 'fila-hecha' }, [
@@ -79,7 +77,7 @@
         $('[data-cuenta]').before(caja);
         const ir = porDia.map((d) => {
           const n = sinRegistrar.filter((c) => P.diaDe(c.en) === d).length;
-          const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fecha(d)} (${n})` });
+          const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', texto: `Ver el ${APD.fechaCorta(d)} (${n})` });
           b.addEventListener('click', () => { document.getElementById('buscar').value = ''; dia = d; pinta('dia'); $('[data-dia]').scrollIntoView({ block: 'start' }); });
           return b;
         });
@@ -148,14 +146,14 @@
       const ve = (q ? f.texto.includes(q) : f.dia === dia) && (!porAtender || f.c.pendiente);
       f.tr.hidden = !ve;
       // Al buscar en todos los días, la hora lleva también la fecha
-      f.hora.textContent = q ? `${APD.fecha(f.dia)} ${P.horaDe(f.c.en)}` : P.horaDe(f.c.en);
+      f.hora.textContent = q ? APD.fechaCorta(f.c.en, { hora: true }) : APD.hora(f.c.en);
       // En pausa por su resultado (apd.cita.resultado), también con el documento ya cargado («retomar»); la pausa vencida va
       // aparte (C4-08)
       if (ve) { n += 1; const k = f.c.pendiente && f.c.cita.resultado === 'en_pausa' ? 'en_pausa' : f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
     }
     $('[data-col-hora]').textContent = q ? 'Fecha y hora' : 'Hora';
     $('[data-dia]').textContent = q ? 'Resultados en todos los días' : diaLargo(dia);
-    $('[data-leyenda]').textContent = q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${diaLargo(dia).toLowerCase()}`;
+    $('[data-leyenda]').textContent = q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${APD.fechaLarga(dia)}`;
     $('[data-flechas]').hidden = Boolean(q);
     const i = dias.indexOf(dia);
     // En el primer o el último día con citas el botón queda inactivo con aria-disabled, no con disabled: conserva el foco

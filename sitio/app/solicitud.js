@@ -114,7 +114,7 @@
       APD.icono('adjunto', 'icono arch-icono'),
       el('div', { class: 'arch-cuerpo' }, [
         el('span', { class: 'arch-nombre', texto: nombre }),
-        el('span', { class: 'arch-estado', texto: [d.cargado_en ? `Cargado el ${APD.fecha(d.cargado_en)}` : '', d.tamano_bytes ? APD.tamano(d.tamano_bytes) : ''].filter(Boolean).join(' · ') })
+        el('span', { class: 'arch-estado', texto: [d.cargado_en ? `Cargado el ${APD.fechaCorta(d.cargado_en)}` : '', d.tamano_bytes ? APD.tamano(d.tamano_bytes) : ''].filter(Boolean).join(' · ') })
       ]),
       el('a', { class: 'btn-enlace', href: urlDe(d), target: '_blank', rel: 'noopener' }, [
         document.createTextNode('Ver'), el('span', { class: 'solo-lector', texto: ` ${nombre} (se abre en otra pestaña)` })])
