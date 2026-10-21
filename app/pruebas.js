@@ -298,7 +298,7 @@
       if (migradas.length) {
         const sel = el('select', { class: 'control control-select', id: 'menu-pruebas-migrada' },
           [el('option', { value: '', texto: 'Elige una persona' }), ...migradas.map((m) => {
-            const acs = APD.acreditacionesDe(datos, m).map((a) => `${APD.TIPOS[a.tipo_acreditacion]} ${APD.VIGENCIA[APD.situacion(datos, a)].texto.toLowerCase()}`).join('; ');
+            const acs = APD.acreditacionesDe(datos, m).map((a) => `${APD.TIPOS[a.tipo_acreditacion]} ${APD.vigencia(APD.situacion(datos, a), { personal: true }).texto.toLowerCase()}`).join('; ');
             return el('option', { value: m.id, texto: `${APD.nombreCompleto(m)} — ${acs}` });
           })]);
         aqui.push(el('div', { class: 'menu-pruebas-campo' }, [

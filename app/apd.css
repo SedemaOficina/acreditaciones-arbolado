@@ -105,6 +105,8 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 
 .verificacion[data-tono="ok"] { border-color: var(--ok); background: var(--ok-bg); }
 .verificacion[data-tono="error"] { border-color: var(--error); background: var(--error-bg); }
+/* «Vencida»: la familia «terminado» del módulo «estado» (gris, ícono de archivo), como en «Mis trámites» (C6-05 a) */
+.verificacion[data-tono="terminado"] { border-color: var(--borde); background: var(--aviso-bg); }
 .menu-opcion:hover { border-color: var(--guinda); }
 .menu-opcion:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
 
@@ -340,6 +342,7 @@ body > main { flex: 1 0 auto; width: 100%; }
 .verificacion-icono { width: var(--e-6); height: var(--e-6); flex: none; }
 .verificacion[data-tono="ok"] .verificacion-situacion { color: var(--ok-txt); }
 .verificacion[data-tono="error"] .verificacion-situacion { color: var(--error-txt); }
+.verificacion[data-tono="terminado"] .verificacion-situacion { color: var(--texto); }
 /* Asistencia por día en la ficha del grupo (P.pintaConcentrado, propuesta A): ✓ en gris, ✗ en tinta y negritas; sólo
    «Sin derecho» lleva color. El día sin capturar se lee por su texto. */
 .conc-si { text-align: center; font-size: var(--t-base); color: var(--gris); }
