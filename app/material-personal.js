@@ -7,7 +7,7 @@
    las páginas del PDF se cuentan con pdf.js, que en el SIA cuenta el servidor. */
 (function () {
   'use strict';
-  const { el, estado, fecha } = APD;
+  const { el, estado, fechaCorta } = APD;
   const P = APD_PERSONAL;
   const A = window.APD_ARCHIVOS_PRUEBA;
   const $ = (s, r) => (r || document).querySelector(s);
@@ -103,7 +103,7 @@
         el('td', { texto: PARA[m.tipo_acreditacion || 'ambas'] }),
         el('td', {}, [
           el('a', { href: m.url, target: '_blank', rel: 'noopener' }, [document.createTextNode(`PDF · ${m.paginas} págs. · ${APD.tamano(m.tamano_bytes)}`), nuevaPestana()]),
-          el('span', { class: 'material-edicion-celda', texto: `Cargado el ${fecha(m.cargado_en)}` })
+          el('span', { class: 'material-edicion-celda', texto: `Cargado el ${fechaCorta(m.cargado_en)}` })
         ]),
         el('td', {}, [m.publicado ? estado('Publicado', 'ok') : estado('Sin publicar', 'pend')]),
         el('td', {}, [el('div', { class: 'material-acciones' }, [

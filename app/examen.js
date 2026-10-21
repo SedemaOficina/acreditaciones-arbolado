@@ -90,7 +90,7 @@
       ['Nombre', ex.persona.nombre],
       ['Examen', nombreExamen()],
       ['Grupo', ex.grupo.folio],
-      ['Fecha', APD.fecha(ex.grupo.examen_en)]
+      ['Fecha', APD.fechaCorta(ex.grupo.examen_en)]
     ]));
     muestra('confirmar');
   }
@@ -257,11 +257,11 @@
     // Las respuestas correctas ya van en el veredicto (D27). La fecha del envío es la del examen, el último día del
     // curso, con la hora real: en la versión de prueba, un examen presentado antes se fecha ese día, como lo registra
     // la prueba en apd.examen (B14, D28)
-    const hora = new Date(ex.terminado_en).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+    // Dato: dd/mm/aaaa con la hora, sin coma (decisión 16 b, 20/10/2026)
     $('[data-resultado-datos]').replaceChildren(datosLista([
       ['Nombre', ex.persona.nombre],
       ['Examen', nombreExamen()],
-      ['Enviado', `${APD.fecha(ex.grupo.examen_en)}, ${hora}`]
+      ['Enviado', APD.fechaCorta(ex.grupo.examen_en, { hora: APD.hora(ex.terminado_en) })]
     ]));
     $('[data-resultado-sigue]').replaceChildren(ex.aprobado
       ? FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'ok', titulo: 'Recoge hoy tu credencial', texto: ['Se entrega hoy mismo, en la oficina del Vivero Nezahualcóyotl.', APD.tituloPasos()], pasos: ['Avisa a quien aplica el examen que aprobaste.', 'Ve a la oficina del Vivero: ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] })

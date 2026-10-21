@@ -177,7 +177,7 @@
   }
   /* Día de una cita (AAAA-MM-DD) y su hora (HH:MM), en hora de la Ciudad de México */
   const diaDe = APD.diaDe;
-  const horaDe = (iso) => new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Mexico_City' });
+  const horaDe = APD.hora;
   /* Número de expediente que se abriría hoy: consecutivo por año y sin huecos, como apd.asignar_expediente.
      Formato provisional EXP-AAAA-NNNN. */
   function siguienteExpediente(datos) {
@@ -354,12 +354,12 @@
     const fin = APD.sumaDias(inicio, c.dias_duracion - 1);
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días (el curso empieza al menos ${anticipacion} días después de confirmarlo)` };
-    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año (el curso empieza a más tardar un año después de hoy, el ${APD.fecha(ultimoDiaPosible(datos))})` };
+    if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año (el curso empieza a más tardar un año después de hoy, el ${APD.fechaCorta(ultimoDiaPosible(datos))})` };
     const otro = choques(datos, tipo, modalidad, inicio, fin, exceptoId)[0];
     if (otro) return { clave: 'otro_curso', texto: `ya hay un curso de ${APD.cursoCorto(tipo, modalidad).toLowerCase()} esas fechas (${APD.nombreGrupo(otro, datos, { sinCurso: true }).toLowerCase()}, ${otro.folio})`, grupo: otro };
     const inhabiles = diasInhabiles(datos);
     const dia = inhabiles.find((d) => d >= inicio && d <= fin);
-    if (dia) return { clave: 'inhabil', texto: `el ${APD.diaMes(dia)} es día inhábil [por confirmar con el calendario oficial]` };
+    if (dia) return { clave: 'inhabil', texto: `el ${APD.fechaCorta(dia)} es día inhábil [por confirmar con el calendario oficial]` };
     return null;
   }
   /* Bloques de la espera (propuesta A): las personas de una misma organización van juntas, en un bloque que ocupa el
@@ -415,7 +415,7 @@
     const dias = x.dias === 0 ? 'Hoy' : x.dias === 1 ? '1 día' : `${x.dias} días`;
     const espera = [x.prioritaria ? estado(`${dias} · prioritaria`, 'pend') : el('span', { class: 'plan-dias', texto: dias })];
     // «Vencida el …» y «Vence el …», con la misma mayúscula (auditoría 2026-10-20, C5-04)
-    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fecha(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `Vence el ${APD.fecha(x.vence)}` }));
+    if (x.vence) espera.push(x.vencida ? estado(`Vencida el ${APD.fechaCorta(x.vence)}`, 'pend') : el('span', { class: 'plan-dias', texto: `Vence el ${APD.fechaCorta(x.vence)}` }));
     return el('label', { class: 'plan-persona' }, [casilla,
       el('span', { class: 'plan-persona-nombre', texto: APD.nombreCompleto(x.p) }),
       el('span', { class: 'plan-persona-espera' }, espera),
@@ -539,7 +539,7 @@
     };
     const $$ = (s) => marco.querySelector(s);
     const dias = Array.from({ length: ultimo }, (_, k) => k + 1);
-    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fecha(fechaDia(n)).slice(0, 5)}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días', 'Examen']
+    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fechaCorta(fechaDia(n))}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días', 'Examen']
       .map((t) => el('th', { scope: 'col', texto: t })));
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const sols = Object.fromEntries(datos.solicitud.map((s) => [s.id, s]));

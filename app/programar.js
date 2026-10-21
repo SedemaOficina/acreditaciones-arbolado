@@ -18,7 +18,9 @@
    apd.grupo_cambio). Al terminar, el resultado del estándar (FormKit.resultado) con «Qué sigue». */
 (function () {
   'use strict';
-  const { el, fecha } = APD;
+  /* Fechas (decisión 16 b, 20/10/2026): el día y las fechas del grupo que se programa (calendario, lo elegido, «Así
+     quedaría» y el resultado), con fecha larga; las ayudas y los plazos, dd/mm/aaaa */
+  const { el, fechaLarga, fechaCorta } = APD;
   const P = APD_PERSONAL;
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
@@ -83,8 +85,8 @@
     const finDe = (d) => APD.sumaDias(d, dur - 1);
     const sede = APD.sede(datos).nombre;
     $('[data-ayuda-semana]').textContent = dur > 1
-      ? `Toque el día en que empieza (de preferencia, un lunes). El curso dura ${dur} días seguidos; el examen es el último, en el PILARES. Desde el ${APD.diaSemana(minimo)} ${fecha(minimo)}: ${anticipacion} días después de hoy; hasta el ${fecha(maximo)}, un año después.`
-      : `Toque el día del curso. Dura un día y el examen es ese mismo día, en el PILARES. Desde el ${APD.diaSemana(minimo)} ${fecha(minimo)}: ${anticipacion} días después de hoy; hasta el ${fecha(maximo)}, un año después.`;
+      ? `Toque el día en que empieza (de preferencia, un lunes). El curso dura ${dur} días seguidos; el examen es el último, en el PILARES. Desde el ${fechaCorta(minimo)}: ${anticipacion} días después de hoy; hasta el ${fechaCorta(maximo)}, un año después.`
+      : `Toque el día del curso. Dura un día y el examen es ese mismo día, en el PILARES. Desde el ${fechaCorta(minimo)}: ${anticipacion} días después de hoy; hasta el ${fechaCorta(maximo)}, un año después.`;
 
     /* ----- Paso 1 · calendario ----- */
     const fi = $('#fecha_inicio');
@@ -118,8 +120,8 @@
     foco = inicio || pedidaValida || minimo;
 
     function etiquetaDia(d, r, enRango, k) {
-      const base = `${APD.diaSemana(d)} ${APD.diaMes(d, true)}`;
-      if (d === inicio) return `${base}: empieza el curso elegido${dur > 1 ? `, ${APD.rangoFechas(inicio, finDe(inicio), hoy.slice(0, 4))}` : ''}`;
+      const base = fechaLarga(d);
+      if (d === inicio) return `${base}: empieza el curso elegido${dur > 1 ? `, que termina el ${fechaLarga(finDe(inicio))}` : ''}`;
       if (enRango) return `${base}: día ${k} de ${dur} del curso elegido${k === dur ? ', examen' : ''}`;
       if (r) return `${base}: no se puede empezar, ${r.texto}`;
       return `${base}: se puede empezar`;
@@ -167,7 +169,7 @@
     function elige(d, desdeCampo) {
       const r = razon(d);
       if (r) {
-        diga(`El ${APD.diaSemana(d)} ${fecha(d)} no se puede: ${r.texto}.`);
+        diga(`El ${fechaLarga(d)} no se puede: ${r.texto}.`);
         return false;
       }
       inicio = d;
@@ -175,7 +177,7 @@
       foco = d;
       recuerdaSemana(d);
       if (!desdeCampo) { fi.value = V().dmaDeIso(d); APD.avisa(fi); }
-      diga(dur > 1 ? `Elegido: ${APD.rangoFechas(d, finDe(d), hoy.slice(0, 4))}; el examen, el ${APD.diaSemana(finDe(d))} ${APD.diaMes(finDe(d))}.` : `Elegido: ${APD.diaSemana(d)} ${APD.diaMes(d)}, con su examen.`);
+      diga(dur > 1 ? `Elegido: del ${fechaLarga(d)} al ${fechaLarga(finDe(d))}; el examen, el último día.` : `Elegido: el ${fechaLarga(d)}, con su examen.`);
       return true;
     }
     /* La semana elegida queda en la dirección (&semana=): recargar, «Atrás» y «Adelante» la conservan (auditoría 2026-10-19,
@@ -247,7 +249,7 @@
     fi.addEventListener('input', deCampo);
     fi.addEventListener('change', deCampo);
     if (inicio) fi.value = V().dmaDeIso(inicio);
-    if (pedida && !inicio) diga(`El ${APD.diaSemana(pedida)} ${fecha(pedida)} no se puede: ${razon(pedida).texto}. Elija otro día.`);
+    if (pedida && !inicio) diga(`El ${fechaLarga(pedida)} no se puede: ${razon(pedida).texto}. Elija otro día.`);
 
     /* ----- Paso 2 · instructor y hora ----- */
     const selInstructor = $('#instructor');
@@ -390,8 +392,7 @@
     /* ----- Así quedaría ----- */
     function pintaResumen() {
       const fin = inicio ? finDe(inicio) : null;
-      // Con el año cuando el curso no es de este año o cruza de año (F3 B4: «al viernes 1 de enero» sin año)
-      const conAnio = Boolean(inicio) && (inicio.slice(0, 4) !== hoy.slice(0, 4) || fin.slice(0, 4) !== inicio.slice(0, 4));
+      // Siempre con el año (fecha larga), también cuando el curso cruza de año (F3 B4: «al viernes 1 de enero» sin año)
       const n = total();
       const borrador = { tipo_acreditacion: tipo, modalidad, fecha_inicio: inicio, integracion: integracion(), organizacion_id: integracion() === 'especifico' ? (gExistente ? gExistente.organizacion_id : orgDeElegidas()) : null };
       $('[data-resumen-nombre]').replaceChildren(el('span', { class: 'grupo-titulo' }, [el('span', { class: 'grupo-nombre', texto: APD.nombreGrupo(borrador, datos) }),
@@ -399,10 +400,10 @@
       const falta = c.cupo_minimo - n;
       $('[data-resumen]').replaceChildren(APD.datosLista([
         ['Curso', largo],
-        ['Fechas', inicio ? mayuscula(dur > 1 ? `${APD.diaSemana(inicio)} ${APD.diaMes(inicio, conAnio)} al ${APD.diaSemana(fin)} ${APD.diaMes(fin, conAnio)}` : `${APD.diaSemana(inicio)} ${APD.diaMes(inicio, conAnio)}`) : 'Sin elegir'],
+        ['Fechas', inicio ? (dur > 1 ? `Del ${fechaLarga(inicio)} al ${fechaLarga(fin)}` : `El ${fechaLarga(inicio)}`) : 'Sin elegir'],
         ['Horario', selHora.value ? `${selHora.value}, ${dur > 1 ? `los ${dur} días` : 'ese día'}` : 'Sin elegir'],
         ['Instructor', selInstructor.value ? P.nombreInstructor(selInstructor.value) : 'Sin elegir'],
-        ['Examen', inicio ? `${mayuscula(APD.diaSemana(fin))} ${APD.diaMes(fin, conAnio)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
+        ['Examen', inicio ? `El ${fechaLarga(fin)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
         ['Lugar del curso', `Aula de capacitación del ${sede}`],
         ['Personas', `${n} de ${c.cupo_maximo}${n > c.cupo_maximo ? ` · sobran ${n - c.cupo_maximo}` : falta > 0 ? ` · ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para confirmarlo` : ''}`]
       ]));
@@ -521,8 +522,8 @@
       if (quedo) {
         FormKit.resultado($('[data-resultado]'), { tono: 'ok', titulo: `Grupo confirmado: ${nombre}`, texto: datosTxt, quien: P.REVISORA.nombre, oculta: form,
           pasos: ['Cada persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
-            `El grupo sigue recibiendo personas hasta el ${fecha(APD.sumaDias(g.fecha_inicio, -1))}, sin pasar de ${g.cupo_maximo}.`,
-            `Del ${fecha(g.fecha_inicio)} en adelante, el instructor pasa asistencia cada día y aplica el examen el último, en el PILARES.`] });
+            `El grupo sigue recibiendo personas hasta el ${fechaCorta(APD.sumaDias(g.fecha_inicio, -1))}, sin pasar de ${g.cupo_maximo}.`,
+            `A partir del ${fechaLarga(g.fecha_inicio)}, el instructor pasa asistencia cada día y aplica el examen el último, en el PILARES.`] });
       } else {
         const sigue = [];
         if (x.n < g.cupo_minimo) sigue.push(`Complete al menos ${g.cupo_minimo} personas (${x.n < g.cupo_minimo - 1 ? `faltan ${g.cupo_minimo - x.n}` : 'falta 1'}).`);
