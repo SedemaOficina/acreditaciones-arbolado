@@ -72,9 +72,14 @@
     // Otros grupos en curso, con la fecha de su examen, para cambiar de grupo
     const otros = enCurso.filter((x) => x.id !== g.id);
     if (otros.length) {
+      // Dos grupos del mismo curso con las mismas fechas se llaman igual (y la sede es una sola): el que se repite lleva
+      // su folio y cuántas personas tiene, como el aviso de «Grupos» con dos grupos sin fecha (auditoría 2026-10-20, C1-06)
+      const nombres = [g].concat(otros).map((x) => APD.nombreGrupo(x, datos));
+      const repetido = (x) => nombres.filter((n) => n === APD.nombreGrupo(x, datos)).length > 1;
+      const personas = (x) => APD.plural(datos.inscripcion.filter((i) => i.grupo_id === x.id && i.activa).length, 'persona', 'personas');
       avisosGrupo.push(el('p', { class: 'otros-grupos' }, [document.createTextNode('Otros grupos en curso: ')].concat(otros.flatMap((x, i) => [
         i ? document.createTextNode(' · ') : null,
-        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${APD.nombreGrupo(x, datos)} (examen el ${APD.fecha(G.fechaExamen(datos, x))})` })
+        el('a', { href: `aplicar.html?folio=${encodeURIComponent(x.folio)}`, texto: `${APD.nombreGrupo(x, datos)}${repetido(x) ? ` · ${x.folio} · ${personas(x)}` : ''} (examen el ${APD.fecha(G.fechaExamen(datos, x))})` })
       ]).filter(Boolean))));
     }
     // El examen es el último día del curso: otro día no se generan códigos (en la prueba se permite, para probar)
