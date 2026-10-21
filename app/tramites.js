@@ -346,6 +346,13 @@
     document.querySelector('[data-anteriores]').replaceChildren(...anteriores.map((s) => fichaSolicitud(datos, s, persona)));
 
     document.querySelector('[data-nueva]').hidden = !puedeNueva;
+    /* Un solo botón principal por pantalla (auditoría 2026-10-20, C6-02 con P164; decisión 2 de Liber). Queda principal el
+       primero en este orden y los demás pasan a secundarios: lo que toca hacer con una solicitud en curso (continuar,
+       corregir y reenviar, cargar el documento), «Renovar» (la acreditación por renovar va primero en su lista) y, al
+       final, «Iniciar una solicitud». Con la poda por vencer, «Renovar» es el principal (P164). */
+    const principales = ['[data-solicitudes]', '[data-acreditaciones]', '[data-nueva]']
+      .flatMap((s) => [...document.querySelectorAll(`${s} .btn-primario`)]).filter((b) => !b.closest('[hidden]'));
+    for (const b of principales.slice(1)) b.classList.replace('btn-primario', 'btn-secundario');
     document.querySelector('[data-cargando]').textContent = 'Aquí ves tus acreditaciones y en qué va cada solicitud.';
 
     /* Si en otra pestaña se entró con otra cuenta (o se salió), esta lo dice al enterarse (evento storage o al volver a
