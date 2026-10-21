@@ -18,7 +18,8 @@
 
   function fichaAcreditacion(datos, a, op) {
     const sit = APD.situacion(datos, a);
-    const v = APD.VIGENCIA[sit];
+    // «Vencida · puedes renovarla» sólo si aparece «Renovar»; si no, «Vencida» (decisión de Liber del 21/10, C6-05 a)
+    const v = APD.vigencia(sit, { renovable: porRenovar(datos, a, op) });
     const ficha = el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [
         el('h4', { class: 'ficha-titulo', texto: APD.TIPOS[a.tipo_acreditacion] }),

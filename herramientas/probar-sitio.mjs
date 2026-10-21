@@ -587,8 +587,9 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba((await page.textContent('[data-verificacion]')).includes(esperado), t(`verificar: dice cuánto falta para vencer (${esperado})`));
   await page.fill('#numero', noVigente.numero);
   await page.click('[data-accion="enviar"]');
-  await page.waitForFunction(() => document.querySelector('[data-verificacion]').dataset.tono === 'error');
-  bien(t(`verificar: ${noVigente.numero} no vigente (segunda consulta sin recargar)`));
+  // «Vencida», con la familia gris de «Mis trámites» (decisión de Liber del 21/10, C6-05 a; antes, data-tono «error»)
+  await page.waitForFunction(() => document.querySelector('[data-verificacion]').dataset.tono === 'terminado');
+  comprueba(/^Vencida$/.test((await page.textContent('.verificacion-situacion')).trim()), t(`verificar: ${noVigente.numero} vencida (segunda consulta sin recargar)`));
   await captura(page, `09-verificar-${sufijo}`);
   await sinDesborde(page, t('verificar'));
 
@@ -5090,6 +5091,46 @@ async function sistemaVisual(navegador) {
     await page.waitForSelector('.cal-dia');
     const borde = await page.$eval('.cal-dia:not([data-rango]):not([aria-disabled="true"]):not([data-inhabil])', (e) => getComputedStyle(e).borderTopColor);
     comprueba(borde === 'rgb(135, 139, 142)', t(`A6-02: el día disponible del calendario tiene el borde de un control (${borde}, 3.43:1)`));
+    await c.close();
+  }
+
+  // 8. Decisión de Liber del 21/10 sobre C6-05 (opción a): «Vencida · puedes renovarla» en ámbar cuando se puede renovar y
+  // «Vencida» en gris cuando no; el color dice algo distinto porque el texto también. «Verificar» dice «Vencida» con la
+  // familia gris, y para el personal (menú de pruebas de «Crear cuenta») es «puede renovarla».
+  {
+    const sinTramite = (x) => !datos.solicitud.some((s) => s.solicitante_id === x.id && !FINALES.includes(s.estado));
+    const sitPoda = (x) => ult(x, 'poda') && datos.estado_acreditacion[ult(x, 'poda').numero];
+    const renovable = datos.solicitante.find((x) => x.estado === 'activa' && sitPoda(x) === 'vencida_renovable' && sinTramite(x));
+    const enTramite = datos.solicitante.find((x) => x.estado === 'activa' && sitPoda(x) === 'vencida_renovable' && !sinTramite(x));
+    const noRenovable = datos.solicitante.find((x) => x.estado === 'activa' && sitPoda(x) === 'vencida_no_renovable');
+    const etiquetas = [];
+    for (const p of [renovable, enTramite, noRenovable].filter(Boolean)) {
+      const { c, page, errores } = await nuevo(390, 844, { sesion: p.id });
+      await page.goto(BASE + 'tramites.html');
+      await page.waitForSelector('[data-acreditaciones] .ficha');
+      const f = page.locator('[data-acreditaciones] .ficha', { has: page.locator('.ficha-titulo', { hasText: 'Poda y derribo' }) }).first();
+      etiquetas.push({ texto: (await f.locator('.estado').textContent()).trim(), clase: await f.locator('.estado').getAttribute('class'),
+        icono: await f.locator('.estado use').getAttribute('href'), renovar: await f.locator('a:has-text("Renovar")').count(), errores: errores.length });
+      await c.close();
+    }
+    const [a, b, n] = [etiquetas[0], enTramite ? etiquetas[1] : null, etiquetas[enTramite ? 2 : 1]];
+    comprueba(a.texto === 'Vencida · puedes renovarla' && /estado-atencion/.test(a.clase) && a.icono === '#i-alerta' && a.renovar === 1
+      && n.texto === 'Vencida' && /estado-terminado/.test(n.clase) && n.icono === '#i-archivo' && !n.renovar
+      && (!b || (b.texto === 'Vencida' && /estado-terminado/.test(b.clase) && !b.renovar)) && etiquetas.every((x) => !x.errores),
+      t(`decisión del 21/10 (C6-05 a): «Mis trámites» dice «${a.texto}» en ámbar con «Renovar», y «${n.texto}» en gris cuando no se puede renovar${b ? ` (también con la renovación ya en trámite: «${b.texto}»)` : ''}`));
+    const { c, page, errores } = await nuevo(390, 844);
+    await page.goto(BASE + 'verificar.html');
+    await page.fill('#numero', noVigente.numero);
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-verificacion]:not([hidden])');
+    const v = await page.$eval('[data-verificacion]', (x) => { const s = x.querySelector('.verificacion-situacion'); return { tono: x.dataset.tono, texto: s.textContent.trim(), icono: s.querySelector('use').getAttribute('href'), color: getComputedStyle(s).color, borde: getComputedStyle(x).borderTopColor }; });
+    comprueba(v.tono === 'terminado' && v.texto === 'Vencida' && v.icono === '#i-archivo' && v.color === 'rgb(43, 45, 46)' && v.borde === 'rgb(135, 139, 142)' && !errores.length,
+      t(`decisión del 21/10: «Verificar» dice «${v.texto}» con la familia gris de «Mis trámites» (${v.icono}, texto ${v.color}, borde ${v.borde}), no en rojo`));
+    await page.goto(BASE + 'cuenta.html');
+    await page.click('.menu-pruebas-boton');
+    const ops = await page.$$eval('#menu-pruebas-migrada option', (l) => l.map((o) => o.textContent));
+    comprueba(ops.some((o) => /vencida · puede renovarla/.test(o)) && !ops.some((o) => /no vigente|puedes/.test(o)),
+      t(`decisión del 21/10: para el personal, «puede renovarla» (menú de pruebas: «${(ops.find((o) => /vencida/.test(o)) || '').replace(/^[^—]+— /, '')}»)`));
     await c.close();
   }
 }
