@@ -511,7 +511,7 @@
   /* Concentrado de asistencia del grupo (pedido de Liber, 2026-10-18): una fila por persona y una columna por día, con
      los días asistidos y si conserva el derecho a examen. La captura sigue siendo por día («Asistencia»); esto es la
      vista de conjunto, en la ficha del grupo (en curso o concluido). El último día es el del examen:
-     su asistencia es el pase de lista del salón de cómputo. Sólo cuenta como falta lo marcado «Faltó»; un día que ya
+     su asistencia es el pase de lista del salón de cómputo. Sólo cuenta como falta lo marcado «No» (antes «Faltó»); un día que ya
      pasó sin capturar se señala aparte («Sin capturar»), como en la captura.
      marco: el [data-tabla] con [data-conc-encabezado], [data-conc-filas] y [data-conc-leyenda].
      El pase de lista ya viene en datos.asistencia (en la prueba lo aplica APD.cargar; en el SIA, apd.asistencia). */
