@@ -5133,6 +5133,33 @@ async function sistemaVisual(navegador) {
       t(`decisión del 21/10: para el personal, «puede renovarla» (menú de pruebas: «${(ops.find((o) => /vencida/.test(o)) || '').replace(/^[^—]+— /, '')}»)`));
     await c.close();
   }
+
+  // 9. Decisión de Liber del 21/10 sobre C6-10 (opción c): en teléfono la celda del calendario no lleva nota y abajo dice
+  // «Inicia el … y examen el …» (fecha larga, sin hora), con la etiqueta de cada día para el lector; en escritorio la nota
+  // se queda, a 12 px o más y completa. Ningún texto de «Programar» a menos de 12 px.
+  for (const [ancho, alto, curso] of [[320, 700, 'poda-nueva'], [390, 844, 'poda-nueva'], [390, 844, 'poda-renovacion'], [1440, 900, 'poda-nueva'], [1440, 900, 'poda-renovacion']]) {
+    const { c, page, errores } = await nuevo(ancho, alto);
+    await page.goto(BASE + `programar.html?curso=${curso}`);
+    await page.waitForSelector('.cal-dia[data-rango="inicio"]');
+    const r = await page.evaluate(() => {
+      const visibles = (sel) => [...document.querySelectorAll(sel)].filter((e) => e.textContent && e.checkVisibility());
+      const linea = document.querySelector('[data-cal-fechas]');
+      const ini = document.querySelector('.cal-dia[data-rango="inicio"]');
+      const fin = document.querySelector('.cal-dia[data-rango="fin"]') || ini;
+      const chicos = [...document.querySelectorAll('main *')].filter((e) => e.checkVisibility() && [...e.childNodes].some((x) => x.nodeType === 3 && x.textContent.trim()) && parseFloat(getComputedStyle(e).fontSize) < 12);
+      return { notas: visibles('.cal-nota').map((e) => ({ t: e.textContent, tam: parseFloat(getComputedStyle(e).fontSize), cabe: e.scrollWidth <= e.clientWidth })),
+        linea: linea && linea.checkVisibility() ? linea.textContent : '', lector: [ini.getAttribute('aria-label'), fin.getAttribute('aria-label')],
+        chicos: chicos.map((e) => `${e.className} ${getComputedStyle(e).fontSize}`) };
+    });
+    const telefono = ancho < 560;
+    const corto = curso.endsWith('renovacion');
+    comprueba((telefono
+      ? !r.notas.length && (corto ? /^Curso y examen el \S+ \d+ de \S+ de \d{4}\.$/ : /^Inicia el \S+ \d+ de \S+ de \d{4} y examen el \S+ \d+ de \S+ de \d{4}\.$/).test(r.linea)
+        && /empieza el curso/.test(r.lector[0]) && /examen/.test(r.lector[corto ? 0 : 1])
+      : r.notas.length >= (corto ? 1 : 2) && r.notas.every((x) => x.tam >= 12 && x.cabe) && !r.linea) && !r.chicos.length && !errores.length,
+    t(`decisión del 21/10 (C6-10 c): «Programar» (${curso}) a ${ancho} px, ${telefono ? `sin nota en la celda y abajo «${r.linea}»` : `notas ${r.notas.map((x) => `«${x.t}» ${x.tam} px${x.cabe ? '' : ' cortada'}`).join(', ')}`}; texto a menos de 12 px: ${r.chicos.join(', ') || 'ninguno'}`));
+    await c.close();
+  }
 }
 
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
