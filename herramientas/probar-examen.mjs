@@ -449,7 +449,8 @@ async function enviar(ex) {
   await ex.click('.examen-mapa-titulo');
   await ex.locator('.examen-numero').last().click();
   await enviar(ex);
-  const enviado = (await ex.textContent('[data-resultado-datos]')).match(/Enviado\s*(\d{2}\/\d{2}\/\d{4}), (\d{2}):(\d{2})/);
+  // dd/mm/aaaa y la hora, sin coma (decisión 16 b del 20/10; C5-01)
+  const enviado = (await ex.textContent('[data-resultado-datos]')).match(/Enviado\s*(\d{2}\/\d{2}\/\d{4}) (\d{2}):(\d{2})/);
   const r = await ex.evaluate(async (codigo) => {
     const reg = JSON.parse(localStorage.getItem(`apd.examen.c.${codigo}`));
     const d = await APD.cargar();

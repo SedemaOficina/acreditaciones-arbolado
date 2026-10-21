@@ -783,7 +783,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
       const c = fi.querySelector('.ficha-cita'); const pago = Array.from(fi.querySelectorAll('.aviso')).find((x) => /Datos para tu pago/.test(x.textContent));
       return { antes: Boolean(c && pago && (c.compareDocumentPosition(pago) & Node.DOCUMENT_POSITION_FOLLOWING)), paso: (fi.querySelector('ol.secuencia') || {}).textContent || '' };
     });
-    comprueba(cita.antes && /Acude a tu cita el \d{2}\/\d{2}\/\d{4} a las \d{2}:\d{2}/.test(cita.paso), t('mis solicitudes: la cita va antes de los datos de pago y «Acude a tu cita» dice cuándo'));
+    // Con fecha larga: es lo que la persona tiene que recordar (decisión 16 b del 20/10; C5-01)
+    comprueba(cita.antes && /Acude a tu cita el (lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4} a las \d{2}:\d{2}/.test(cita.paso), t('mis solicitudes: la cita va antes de los datos de pago y «Acude a tu cita» dice cuándo, con fecha larga'));
     await page.click('[data-sesion] button');
   }
   comprueba(Boolean(emitida && conGrupo && conCita), t('mis solicitudes: hay ficticios para revisar las tres fichas'));
@@ -3375,7 +3376,8 @@ async function fechas(navegador) {
   await pg.selectOption('#cita_hora', '10:00');
   await pg.click('[data-accion="enviar"]');
   await pg.waitForSelector('[data-hecho]:not([hidden])');
-  comprueba(/cita el 02\/11\/2026 a las 10:00/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('revisar: la cita queda el 02/11/2026, sin años imposibles'));
+  // El resultado es un aviso: la cita con fecha larga (decisión 16 b del 20/10; C5-01)
+  comprueba(/cita el lunes 2 de noviembre de 2026 a las 10:00/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('revisar: la cita queda el lunes 2 de noviembre de 2026, sin años imposibles'));
   comprueba(errores.length === 0, t(`revisar sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 
@@ -3392,7 +3394,7 @@ async function fechas(navegador) {
   await pg.selectOption('#cita_hora', '09:30');
   await pg.click('[data-accion="enviar"]');
   await pg.waitForSelector('[data-hecho]:not([hidden])');
-  comprueba(/02\/11\/2026/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('cotejo: la cita nueva queda el 02/11/2026, sin años imposibles'));
+  comprueba(/lunes 2 de noviembre de 2026 a las 09:30/.test(await pg.textContent('[data-hecho]')) && (await anioImposible(pg)).length === 0, t('cotejo: la cita nueva queda el lunes 2 de noviembre de 2026, sin años imposibles'));
   comprueba(errores.length === 0, t(`cotejo sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 
@@ -4160,7 +4162,7 @@ async function focoAccesibilidad(navegador) {
     await page.focus('[data-ir="1"]');
     await page.keyboard.press('Enter');
     let lista = await anunciosTras(page, k);
-    comprueba(lista.length === 1 && /^[A-ZÁÉÍÓÚ][a-záéíóú]+, \d+ de [a-z]+ de \d{4}: /.test(lista[0].texto), `RI-04: en Citas, «Día siguiente» da un anuncio con el día y su cuenta (${textosDe(lista)})`);
+    comprueba(lista.length === 1 && /^[A-ZÁÉÍÓÚ][a-záéíóú]+ \d+ de [a-z]+ de \d{4}: /.test(lista[0].texto), `RI-04: en Citas, «Día siguiente» da un anuncio con el día y su cuenta (${textosDe(lista)})`);
     k = await nuevaMarca(page);
     await page.focus('#buscar');
     await page.keyboard.type('ana', { delay: 120 });
@@ -4743,6 +4745,202 @@ async function tareasPersonal(navegador) {
   }
 }
 
+/* ── Formas de fecha (auditoría de seguimiento 2026-10-20, bloque 6, C5-01; SOLO=fechas) ──
+   Decisión de Liber del 20/10 (puntos 16 b y 17 b): fecha larga para lo que se recuerda («martes 20 de octubre de 2026
+   a las 10:00», APD.fechaLarga), 20/10/2026 en tablas y datos («20/10/2026 10:00», APD.fechaCorta) y el acuse con la
+   fecha larga del estándar. Recorre las 21 pantallas con los casos del menú de pruebas y falla si aparece otra forma
+   (el clasificador está en herramientas/formatos-fecha.mjs); antes había 14 formas, hasta 5 en una pantalla. */
+async function formatosFecha(navegador) {
+  const t = (m) => `[formas de fecha] ${m}`;
+  const { clasifica, CASOS_CLASIFICADOR } = await import('./formatos-fecha.mjs');
+
+  // 1 · El clasificador: lo decidido pasa y cada forma vieja de C5-01 se detecta
+  const malClasificados = CASOS_CLASIFICADOR.filter(([texto, ok]) => { const r = clasifica(texto); return (r.length > 0 && r.every((x) => x.permitida)) !== ok; });
+  comprueba(!malClasificados.length, t(`el clasificador acepta lo decidido y detecta las ${CASOS_CLASIFICADOR.filter((x) => !x[1]).length} formas viejas${malClasificados.length ? ': falla con ' + malClasificados.map((x) => `«${x[0]}»`).join(', ') : ''}`));
+
+  // 2 · Las dos funciones, en tres zonas horarias del navegador: el resultado es siempre el de la Ciudad de México
+  const ESPERADO = {
+    larga: 'martes 20 de octubre de 2026',
+    largaHoraTexto: 'martes 20 de octubre de 2026 a las 09:00',
+    medianoche: 'miércoles 21 de octubre de 2026 a las 00:00',
+    medianocheCorta: '21/10/2026 00:00',
+    cambioDeDia: '20/10/2026 21:30',
+    cambioDeDiaLarga: 'martes 20 de octubre de 2026 a las 21:30',
+    corta: '20/10/2026',
+    cortaSinHoraDeInstante: '20/10/2026',
+    anioNuevo: 'viernes 1 de enero de 2027',
+    mayuscula: 'Martes 20 de octubre de 2026',
+    vacias: ['', '', '', ''],
+    hora: '00:00'
+  };
+  for (const zona of [ZONA, 'UTC', 'Asia/Tokyo']) {
+    const c = await navegador.newContext({ timezoneId: zona, locale: 'en-US' });
+    const pg = await c.newPage();
+    await pg.goto(BASE + 'index.html');
+    await pg.waitForFunction(() => window.APD);
+    const r = await pg.evaluate(() => (!APD.fechaLarga || !APD.fechaCorta ? {} : {
+      larga: APD.fechaLarga('2026-10-20'),
+      largaHoraTexto: APD.fechaLarga('2026-10-20', { hora: '09:00:00' }),
+      medianoche: APD.fechaLarga('2026-10-21T06:00:00Z', { hora: true }),
+      medianocheCorta: APD.fechaCorta('2026-10-21T00:00:00-06:00', { hora: true }),
+      cambioDeDia: APD.fechaCorta('2026-10-21T03:30:00Z', { hora: true }),
+      cambioDeDiaLarga: APD.fechaLarga('2026-10-21T03:30:00Z', { hora: true }),
+      corta: APD.fechaCorta('2026-10-20'),
+      cortaSinHoraDeInstante: APD.fechaCorta('2026-10-21T03:30:00Z'),
+      anioNuevo: APD.fechaLarga('2027-01-01'),
+      mayuscula: APD.fechaLarga('2026-10-20', { mayuscula: true }),
+      vacias: [APD.fechaLarga(null), APD.fechaCorta(''), APD.fechaLarga('no es fecha'), APD.fechaCorta(undefined, { hora: true })],
+      hora: APD.hora('2026-10-21T06:00:00Z')
+    }));
+    const distintas = Object.keys(ESPERADO).filter((k) => JSON.stringify(r[k]) !== JSON.stringify(ESPERADO[k]));
+    comprueba(!distintas.length, t(`APD.fechaLarga y APD.fechaCorta con el navegador en ${zona}: medianoche «${r.medianoche}», cambio de día «${r.cambioDeDia}», sin hora «${r.larga}» y «${r.corta}»${distintas.length ? ` · distinto: ${distintas.map((k) => `${k} «${r[k]}»`).join(', ')}` : ''}`));
+    await c.close();
+  }
+
+  // 3 · Recorrido: renglones visibles, bloques ocultos y nombres accesibles, sin lo que sólo existe en la prueba
+  const extrae = () => {
+    const limpio = (x) => String(x || '').replace(/[ \t ]+/g, ' ').trim();
+    const lineas = (x) => String(x || '').split(/\n+/).map(limpio).filter(Boolean);
+    const dePrueba = (e) => e.closest('.entorno-pruebas, .ubicacion-prueba, .version-sia, dialog.menu-pruebas, .menu-pruebas-boton');
+    const acuse = new Set([...document.querySelectorAll('[data-acuse], .acuse')].flatMap((e) => lineas(e.innerText || e.textContent)));
+    const quitar = new Set([...document.querySelectorAll('.entorno-pruebas, .ubicacion-prueba, .version-sia, dialog.menu-pruebas, .menu-pruebas-boton')].flatMap((e) => lineas(e.innerText)));
+    const r = new Map();
+    for (const l of lineas(document.body.innerText)) if (!quitar.has(l)) r.set(l, acuse.has(l));
+    for (const e of document.querySelectorAll('[hidden], dialog:not([open]), template')) {
+      if (dePrueba(e) || e.closest('script,style')) continue;
+      for (const l of lineas(e.tagName === 'TEMPLATE' ? e.content.textContent : e.textContent)) if (!r.has(l)) r.set(l, acuse.has(l));
+    }
+    for (const e of document.querySelectorAll('[aria-label],[title],[placeholder],img[alt]')) {
+      if (dePrueba(e)) continue;
+      for (const a of ['aria-label', 'title', 'placeholder', 'alt']) { const v = e.getAttribute(a); if (v && v.trim()) r.set(limpio(v), false); }
+    }
+    return [...r].map(([texto, enAcuse]) => ({ texto, acuse: enAcuse }));
+  };
+  const porPantalla = new Map();
+  const anota = (pantalla, estado, renglones) => {
+    const p = porPantalla.get(pantalla) || { estados: 0, formas: new Set(), malas: [] };
+    p.estados++;
+    for (const { texto, acuse } of renglones) {
+      if (texto.length > 400) continue;
+      for (const x of clasifica(texto, { acuse })) { p.formas.add(x.forma); if (!x.permitida) p.malas.push(`${estado}: ${x.forma} en «${texto.slice(0, 110)}»`); }
+    }
+    porPantalla.set(pantalla, p);
+  };
+  const errores = [];
+  const visita = async (pantalla, url, { sesion, ancho = 1280, antes } = {}) => {
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: 900 }, isMobile: ancho < 600, hasTouch: ancho < 600 });
+    if (sesion) await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const pg = await c.newPage();
+    pg.on('pageerror', (e) => errores.push(`${url}: ${e.message}`));
+    pg.on('dialog', (d) => d.dismiss().catch(() => {}));
+    await pg.goto(BASE + url);
+    await pg.waitForLoadState('networkidle');
+    await pg.waitForFunction(() => !/Cargando/.test((document.querySelector('main') || document.body).innerText), null, { timeout: 8000 }).catch(() => {});
+    if (antes) await antes(pg);
+    anota(pantalla, url, await pg.evaluate(extrae));
+    await c.close();
+  };
+
+  // Los casos del menú de pruebas (persona), como los arma el menú
+  const c0 = await navegador.newContext({ timezoneId: ZONA });
+  const p0 = await c0.newPage();
+  await p0.goto(BASE + 'index.html');
+  await p0.waitForFunction(() => window.APD && window.APD_CASOS_PRUEBA);
+  const casos = await p0.evaluate(() => APD.cargar().then((d) => APD_CASOS_PRUEBA.lista(d).flatMap((g) => g.casos.map((x) => ({ clave: x.clave, persona: x.persona ? x.persona.id : null, migrada: Boolean(x.migrada), pantalla: x.pantalla || null })))));
+  await c0.close();
+  for (const x of casos) {
+    if (x.pantalla || !x.persona) continue;
+    if (x.migrada) { await visita('cuenta', `cuenta.html?migrada=${encodeURIComponent(x.persona)}`, { ancho: 390 }); continue; }
+    await visita('tramites', 'tramites.html', { sesion: x.persona, ancho: 390 });
+    if (/^cita|pausa/.test(x.clave)) await visita('corregir', 'corregir.html', { sesion: x.persona, ancho: 390 });
+  }
+  // «Cargar el documento correcto» de la cita en pausa de hoy: «En tu cita del martes … a las …»
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sPausaHoy = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+  await visita('corregir', `corregir.html?folio=${sPausaHoy.folio}`, { sesion: sPausaHoy.solicitante_id, ancho: 390, antes: (pg) => pg.waitForSelector('#formulario:not([hidden])') });
+  // La solicitud: nueva y con observaciones (lo que se pidió corregir, con sus fechas)
+  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((x) => x.solicitante_id === p.id));
+  await visita('solicitud', 'solicitud.html', { sesion: sinTramite.id, ancho: 390 });
+  await visita('solicitud', `solicitud.html?folio=${conObs.folio}`, { sesion: conObs.solicitante_id, ancho: 390 });
+  const acreditada = casos.find((x) => x.clave === 'acreditada');
+  if (acreditada) await visita('datos', 'datos.html', { sesion: acreditada.persona, ancho: 390 });
+  for (const u of ['index.html', 'entrar.html', 'material.html']) await visita(u.replace('.html', ''), u, { ancho: 390 });
+  for (const a of [datos.acreditacion.find((x) => x.vence_en > datos.fecha_corte && x.numero), datos.acreditacion.find((x) => x.vence_en < datos.fecha_corte && x.numero)].filter(Boolean)) {
+    await visita('verificar', 'verificar.html', { ancho: 390, antes: async (pg) => { await pg.fill('#numero', a.numero); await pg.click('[data-accion="enviar"]'); await pg.waitForSelector('[data-resultado]:not([hidden]), .resultado:not([hidden]), [data-estado-envio]:not([hidden])', { timeout: 8000 }).catch(() => {}); } });
+  }
+  // El acuse de «Crea tu cuenta», con los datos ficticios del menú: conserva la fecha larga del estándar (decisión 17 b)
+  await visita('cuenta (acuse)', 'cuenta.html', { ancho: 390, antes: async (pg) => {
+    await pg.click('.menu-pruebas-boton'); await pg.click('dialog.menu-pruebas >> text="Llenar con datos ficticios"');
+    await pg.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); });
+    await pg.waitForFunction(() => document.querySelector('#curp') && document.querySelector('#curp').value.length === 18);
+    await pg.click('[data-accion="enviar"]');
+    await pg.waitForSelector('[data-acuse]:not([hidden])', { timeout: 15000 });
+  } });
+  // El personal, con los datos ficticios
+  await visita('revision', 'revision.html');
+  for (const s of datos.solicitud.filter((x) => x.estado === 'enviada').slice(0, 4)) await visita('revisar', `revisar.html?folio=${s.folio}`);
+  await visita('citas', 'citas.html');
+  for (const s of datos.solicitud.filter((x) => x.estado === 'validada_en_linea')) await visita('cotejo', `cotejo.html?folio=${s.folio}`);
+  for (const curso of ['poda-nueva', 'poda-renovacion', 'dictaminador-nueva', 'dictaminador-renovacion']) {
+    await visita('grupos', `grupos.html?curso=${curso}`);
+    await visita('programar', `programar.html?curso=${curso}`);
+  }
+  await visita('grupos', 'grupos.html');
+  await visita('espera', 'espera.html?curso=poda-nueva');
+  for (const g of datos.grupo) await visita('grupo', `grupo.html?folio=${g.folio}`);
+  await visita('asistencia', 'asistencia.html');
+  for (const g of datos.grupo.filter((x) => ['en_curso', 'concluido', 'confirmado'].includes(x.estado))) await visita('asistencia', `asistencia.html?folio=${g.folio}`, { ancho: 390 });
+  await visita('aplicar', 'aplicar.html');
+  for (const g of datos.grupo.filter((x) => ['en_curso', 'concluido'].includes(x.estado))) await visita('aplicar', `aplicar.html?folio=${g.folio}`);
+  await visita('material-personal', 'material-personal.html');
+  // «Programar»: el día elegido en el calendario, «Así quedaría» y lo que se dice al elegir
+  await visita('programar', 'programar.html?curso=poda-nueva&semana=2026-11-02', { ancho: 390, antes: (pg) => pg.waitForSelector('.cal-dia[aria-pressed="true"]') });
+  // El examen: pasar lista, entrar con el código y enviar; el resultado dice cuándo se envió
+  {
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: 1280, height: 900 } });
+    const ap = await c.newPage();
+    ap.on('dialog', (d) => d.dismiss().catch(() => {}));
+    const grupo = datos.grupo.find((g) => g.estado === 'en_curso');
+    await ap.goto(BASE + `aplicar.html?folio=${grupo.folio}`);
+    await ap.waitForSelector('[data-filas] tr');
+    const boton = ap.locator('[data-accion="presente"]', { hasText: /^Presente$/ }).first();
+    const ins = await boton.getAttribute('data-ins');
+    await boton.click();
+    await ap.waitForSelector(`tr[data-ins="${ins}"] .examen-codigo`);
+    const codigo = (await ap.textContent(`tr[data-ins="${ins}"] .examen-codigo`)).trim();
+    const ex = await c.newPage();
+    ex.on('pageerror', (e) => errores.push(`examen: ${e.message}`));
+    await ex.goto(BASE + 'examen.html');
+    await ex.fill('#codigo', codigo); await ex.click('#entrar [data-accion="enviar"]');
+    await ex.waitForSelector('[data-vista="confirmar"]:not([hidden])');
+    anota('examen', 'examen · ¿eres tú?', await ex.evaluate(extrae));
+    await ex.click('[data-ir-vista="instrucciones"]'); await ex.click('[data-empezar]');
+    await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+    for (let i = 0; i < 40 && !(await ex.isVisible('[data-vista="revision"]')); i++) {
+      await ex.locator('[data-vista="pregunta"]:not([hidden]) [data-opciones] input').first().check();
+      await ex.click('[data-siguiente]');
+    }
+    await ex.click('[data-enviar]'); await ex.click('.dialogo-confirma [data-r="si"]');
+    await ex.waitForSelector('[data-vista="resultado"]:not([hidden])');
+    anota('examen', 'examen · resultado', await ex.evaluate(extrae));
+    await ap.reload(); await ap.waitForSelector('[data-filas] tr');
+    anota('aplicar', 'aplicar · tras un examen', await ap.evaluate(extrae));
+    await c.close();
+  }
+
+  // Una comprobación por pantalla: sólo las formas decididas (el acuse, sólo en el acuse)
+  for (const [pantalla, p] of [...porPantalla].sort()) {
+    comprueba(!p.malas.length, t(`${pantalla} (${p.estados} ${p.estados === 1 ? 'estado' : 'estados'}): sólo las formas decididas (${[...p.formas].sort().join(', ') || 'sin fechas'})${p.malas.length ? ` · ${p.malas.length} fuera: ${[...new Set(p.malas)].slice(0, 4).join(' | ')}` : ''}`));
+  }
+  const acuse = porPantalla.get('cuenta (acuse)');
+  comprueba(Boolean(acuse) && acuse.formas.has('acuse'), t('el acuse de «Crea tu cuenta» conserva la fecha larga del estándar (FormKit.utilidades.fechaHora, decisión 17 b)'));
+  const todas = new Set([...porPantalla.values()].flatMap((p) => [...p.formas]));
+  comprueba([...todas].every((f) => ['larga', 'largaHora', 'corta', 'cortaHora', 'acuse', 'grupo'].includes(f)) && ['larga', 'largaHora', 'corta', 'cortaHora'].every((f) => todas.has(f)),
+    t(`en todo el sitio, sólo las dos formas decididas (con y sin hora), la del acuse y el nombre del grupo: ${[...todas].sort().join(', ')}`));
+  const pantallas = [...porPantalla.keys()].filter((k) => !k.includes('(')).length;
+  comprueba(pantallas === 21 && !errores.length, t(`${pantallas} pantallas recorridas, más el acuse, sin errores en la página${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -4790,6 +4988,7 @@ try {
   if (toca('romper', 'romper2')) await parte('romper 2', () => romperDos(navegador));
   if (toca('romper', 'romper3')) await parte('romper 3', () => romperTres(navegador));
   if (toca('fechas')) await parte('fechas', () => fechas(navegador));
+  if (toca('fechas')) await parte('formas de fecha', () => formatosFecha(navegador));
   if (toca('estandar')) {
     await parte('estándar en teléfono', () => estandarPantallas(navegador, 390, 844, 'telefono'));
     await parte('estándar en escritorio', () => estandarPantallas(navegador, 1280, 900, 'escritorio'));
