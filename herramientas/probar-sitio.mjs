@@ -4695,7 +4695,7 @@ async function tareasPersonal(navegador) {
   }
 
   // C3-02: en la solicitud y en «Carga el documento correcto», el formato y el tamaño se dicen una vez y no en cada
-  // documento
+  // documento. C3-03 (decisión 13 a): la solicitud ya no pide «No soy un programa automático» (sí «Crea tu cuenta»)
   {
     const { c, page, errores } = await nuevo(390, 844, CON_ORG.id);
     await page.goto(BASE + 'solicitud.html');
@@ -4708,8 +4708,9 @@ async function tareasPersonal(navegador) {
         humano: Boolean(document.querySelector('input[name="humano"]')), trampa: Boolean(document.querySelector('[data-trampa] input[name="sitio_web"]')) };
     });
     const [cuenta, corregir] = await page.evaluate(() => Promise.all(['cuenta.html', 'corregir.html'].map((u) => fetch(u).then((x) => x.text()))));
-    comprueba(r.zonas >= 20 && r.conLimite === 0 && r.bajada && !errores.length && !/data-limite-texto/.test(corregir.replace(/<!--[\s\S]*?-->/g, '')) && /Sólo PDF, de hasta 5 MB/.test(corregir),
+    comprueba(r.zonas >= 20 && r.conLimite === 0 && r.bajada && !/data-limite-texto/.test(corregir.replace(/<!--[\s\S]*?-->/g, '')) && /Sólo PDF, de hasta 5 MB/.test(corregir),
       t(`C3-02: ninguna de las ${r.zonas} zonas de carga de la solicitud repite el formato; la bajada y «Carga el documento correcto» lo dicen una vez`));
+    comprueba(!r.humano && r.trampa && /name="humano"/.test(cuenta) && !errores.length, t('C3-03: la solicitud no pide «No soy un programa automático» (queda la trampa); «Crea tu cuenta» sí'));
     await c.close();
   }
 
