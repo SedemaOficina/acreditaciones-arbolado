@@ -4519,6 +4519,37 @@ async function continuidad(navegador) {
 
 }
 
+/* ── Tareas y estados del personal (auditoría de seguimiento 2026-10-20, bloque 3; SOLO=tareas) ──
+   Con los datos ficticios de siempre; lo que necesita volumen está en herramientas/probar-volumen.mjs. */
+async function tareasPersonal(navegador) {
+  const t = (m) => `[tareas] ${m}`;
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+
+  // C1-04: en una solicitud reenviada, lo que se le pidió corregir está junto al documento corregido y «Revisiones
+  // anteriores» abre desplegado
+  {
+    const { c, page, errores } = await nuevo(1280, 900);
+    const reenv = datos.solicitud.find((s) => s.estado === 'enviada' && datos.revision.some((r) => r.solicitud_id === s.id)
+      && datos.documento.some((d) => d.solicitud_id === s.id && d.estado === 'con_observacion' && d.observacion));
+    const doc = datos.documento.filter((d) => d.solicitud_id === reenv.id && d.estado === 'con_observacion' && d.observacion).pop();
+    await page.goto(BASE + `revisar.html?folio=${reenv.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    const bloque = await page.textContent(`[data-doc="${doc.requisito}"]`);
+    comprueba(await page.$eval('[data-anteriores]', (d) => d.open) && bloque.includes('Corregido para esta revisión') && bloque.includes(`Se le pidió: ${doc.observacion}`) && !errores.length,
+      t(`C1-04: ${reenv.folio}, junto al documento corregido «Se le pidió: ${doc.observacion.slice(0, 40)}…» y las revisiones anteriores abiertas`));
+    await c.close();
+  }
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -4572,6 +4603,7 @@ try {
   }
   if (toca('foco')) await parte('foco y accesibilidad', () => focoAccesibilidad(navegador));
   if (toca('continuidad')) await parte('mensajes y continuidad', () => continuidad(navegador));
+  if (toca('tareas')) await parte('tareas y estados del personal', () => tareasPersonal(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));
