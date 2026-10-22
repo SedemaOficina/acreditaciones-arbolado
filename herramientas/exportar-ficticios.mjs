@@ -1,6 +1,9 @@
 // Exporta los expedientes ficticios de una base de pruebas a datos/ficticios.json, con las mismas tablas y
 // los mismos nombres de campo que la base (norma 3: sustituirlos por la base real es cambiar el origen).
 // Lo usa la interfaz mientras no hay backend (etapas 1 y 2).
+// La bitácora (apd.bitacora) va aparte, en datos/bitacora-ficticia.json: ninguna pantalla la lee y era un tercio del
+// archivo que descarga cada pantalla (auditoría 2026-10-20, D4-01). Se sigue exportando para revisarla y para comprobar
+// que regenerar no la cambia; construir-sitio.mjs no la copia al sitio.
 //
 // La exportación se hace con la fecha simulada del corte de los ficticios, para que regenerarla otro día
 // produzca exactamente el mismo archivo. Nunca exporta contraseñas (ni su resumen) ni sesiones.
@@ -90,6 +93,10 @@ const archivo = {
   esquema: 'apd',
   ...json
 };
-writeFileSync(join(raiz, 'datos/ficticios.json'), JSON.stringify(archivo, null, 1) + '\n');
-const resumen = Object.entries(json).filter(([, v]) => Array.isArray(v)).map(([k, v]) => `${k} ${v.length}`).join(' · ');
+// La bitácora, en su archivo (D4-01)
+const { bitacora, ...tablas } = archivo;
+writeFileSync(join(raiz, 'datos/ficticios.json'), JSON.stringify(tablas, null, 1) + '\n');
+writeFileSync(join(raiz, 'datos/bitacora-ficticia.json'), JSON.stringify({ aviso: archivo.aviso, fecha_corte: CORTE, esquema: 'apd', bitacora }, null, 1) + '\n');
+const resumen = Object.entries(tablas).filter(([, v]) => Array.isArray(v)).map(([k, v]) => `${k} ${v.length}`).join(' · ');
 console.log(`datos/ficticios.json: ${resumen}`);
+console.log(`datos/bitacora-ficticia.json: bitacora ${bitacora.length}`);

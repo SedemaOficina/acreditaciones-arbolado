@@ -161,6 +161,8 @@ for (let i = 0; i < 4; i++) {
   }
 }
 
+// Como el archivo que carga el sitio: sin la bitácora (auditoría 2026-10-20, D4-01), también si se le da uno anterior
+delete d.bitacora;
 writeFileSync(salida, JSON.stringify(d));
 const cuenta = (e) => d.solicitud.filter((s) => s.estado === e).length;
 console.log(`enviada ${cuenta('enviada')} · validada ${cuenta('validada_en_linea')} · espera ${cuenta('lista_para_curso')} · inscrita ${cuenta('inscrita')} · grupos ${d.grupo.length} · citas hoy ${d.cita.filter((c) => c.programada_en.startsWith(corte) && c.resultado === 'pendiente').length}`);
