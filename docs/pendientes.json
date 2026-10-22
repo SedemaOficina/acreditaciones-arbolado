@@ -1021,6 +1021,14 @@
       "desde": "2026-10-21",
       "titulo": "Hoja de estilos del proyecto: estructura de bloques y ancho de la página amplia",
       "recomendacion": "A6-03 (auditoría del 20/10/2026): app/apd.css redefine --ancho-contenido para la página amplia del personal (regla A15 del auditor del estándar) y no agrupa sus @media al final de cada bloque (A13). Se pasaron a tokens las medidas literales que tenían token. Pendiente: reordenar la hoja por bloques y pedir al estándar un token de ancho amplio. Sin efecto visible."
+    },
+    {
+      "id": "P195",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-22",
+      "titulo": "Presupuesto de peso: lo que falta después del bloque 5",
+      "recomendacion": "Medido el 22/10/2026 con la 0.64 más el bloque 5 (auditoría del 20/10, D4; presupuesto decidido el 20/10). El personal cumple (12 de 12, 0.8 a 1.8 s con procesador 4×; búsqueda de citas bajo 200 ms). La persona: 315 a 369 KB comprimidos por pantalla contra 300 (sin las piezas de la versión de prueba, ficticios.json y scripts de prueba, son 209 a 263 KB: en el SIA cumpliría); «solicitud» hace 43 peticiones contra 40; los tiempos en 4G lento con 4× cumplen en 6 de 9 pantallas y en 3G lento con 6× en 7 de 9, con mucha variación entre corridas, que depende de que los scripts se carguen sin esperarse (D4-02). Siguiente paso: medir en teléfonos reales (P33) y luego aplicar D4-02 (defer) y, si sigue sin cumplir, reducir las peticiones de «solicitud»."
     }
   ],
   "resueltos": [
