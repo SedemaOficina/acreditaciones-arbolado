@@ -10,7 +10,7 @@
 // Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
 
 import { chromium } from 'playwright';
-import { readFileSync, readdirSync, mkdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
@@ -1048,6 +1048,8 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
   comprueba(/Por atender/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t('la cita aparece en la agenda de su día, por atender'));
   await page.fill('#buscar', P.curp);
+  // Se filtra al dejar de teclear (D4-04): se espera a que la agenda muestre los resultados de todos los días
+  await page.waitForFunction(() => /todos los días/.test(document.querySelector('[data-dia]').textContent));
   comprueba(await page.isVisible(`[data-filas] tr[data-folio="${folio}"]`) && /todos los días/.test(await page.textContent('[data-dia]')), t('la búsqueda por CURP la encuentra en todos los días'));
   await abreCotejo(page, folio);
   await page.check('input[name="se_presento"][value="si"]');
@@ -5179,6 +5181,66 @@ async function sistemaVisual(navegador) {
   }
 }
 
+// D4-01 (auditoría 2026-10-20; decisión 15 b): el archivo de datos que carga cada pantalla no trae la bitácora (ninguna
+// pantalla la lee: va aparte, en datos/bitacora-ficticia.json, y no se copia al sitio), se pide con la versión de la página
+// (?v=, la de <meta name="sia-version">) y, dentro de la misma versión, la pantalla siguiente no lo vuelve a descargar:
+// lo toma de la caché del navegador o lo revalida (304, sólo encabezados). Lo registrado en el navegador de prueba se
+// sigue sumando: la persona que entra ve su sesión y sus trámites en la segunda pantalla.
+async function pesoDatos(navegador) {
+  const t = (m) => `[peso] ${m}`;
+  const archivo = join(raiz, 'sitio/datos/ficticios.json');
+  const enSitio = JSON.parse(readFileSync(archivo, 'utf8'));
+  const tablas = Object.keys(enSitio).filter((k) => Array.isArray(enSitio[k]));
+  const kb = Math.round(statSync(archivo).size / 1024);
+  comprueba(!('bitacora' in enSitio) && tablas.length >= 18 && ['solicitud', 'cita', 'documento', 'grupo'].every((k) => tablas.includes(k)),
+    t(`D4-01: el archivo de datos del sitio no trae la bitácora (${tablas.length} tablas, ${kb} KB)`));
+  const aparte = join(raiz, 'datos/bitacora-ficticia.json');
+  const bit = existsSync(aparte) ? JSON.parse(readFileSync(aparte, 'utf8')).bitacora : null;
+  comprueba(Array.isArray(bit) && bit.length > 0 && !existsSync(join(raiz, 'sitio/datos/bitacora-ficticia.json')),
+    t(`D4-01: la bitácora va aparte (datos/bitacora-ficticia.json, ${bit ? bit.length : 0} renglones) y no se copia al sitio`));
+  const usan = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js') && /bitacora/.test(readFileSync(join(raiz, 'sitio/app', f), 'utf8')));
+  comprueba(!usan.length, t(`D4-01: ninguna pantalla lee la bitácora${usan.length ? ': ' + usan.join(', ') : ''}`));
+
+  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
+  await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, CON_ORG.id);
+  const pg = await c.newPage();
+  const errores = [];
+  pg.on('pageerror', (e) => errores.push(String(e)));
+  const cdp = await c.newCDPSession(pg);
+  await cdp.send('Network.enable');
+  let pedidas = new Map();
+  const deDatos = (u) => /\/datos\/ficticios\.json/.test(u);
+  cdp.on('Network.requestWillBeSent', (e) => { if (deDatos(e.request.url)) pedidas.set(e.requestId, { url: e.request.url, estado: 0, cache: false, bytes: 0 }); });
+  cdp.on('Network.requestServedFromCache', (e) => { const p = pedidas.get(e.requestId); if (p) p.cache = true; });
+  cdp.on('Network.responseReceived', (e) => { const p = pedidas.get(e.requestId); if (p) { p.estado = e.response.status; p.cache = p.cache || Boolean(e.response.fromDiskCache || e.response.fromMemoryCache); } });
+  cdp.on('Network.loadingFinished', (e) => { const p = pedidas.get(e.requestId); if (p) { p.bytes = e.encodedDataLength; p.fin = true; } });
+  const visita = async (ruta, listo) => {
+    pedidas = new Map();
+    await pg.goto(BASE + ruta);
+    await pg.waitForSelector(listo);
+    await pg.waitForFunction(() => document.readyState === 'complete');
+    // Que la petición de los datos haya terminado (la página ya pintó con ellos; el aviso de la red llega después)
+    for (let i = 0; i < 50 && [...pedidas.values()].some((p) => !p.fin); i++) await pg.waitForTimeout(100);
+    return [...pedidas.values()];
+  };
+  const version = async () => pg.evaluate(() => (document.querySelector('meta[name="sia-version"]') || {}).content || '');
+  const primera = await visita('tramites.html', '[data-sesion]:not(:empty)');
+  const v = await version();
+  const describe = (l) => l.map((p) => `${p.url.replace(BASE, '')} ${p.cache ? 'de la caché' : `${p.estado}, ${(p.bytes / 1024).toFixed(1)} KB`}`).join('; ') || 'ninguna';
+  comprueba(v && primera.length === 1 && new URL(primera[0].url).search === `?v=${encodeURIComponent(v)}` && primera[0].estado === 200 && primera[0].bytes > 100 * 1024,
+    t(`D4-01: la primera pantalla pide los datos con la versión de la página (${v}): ${describe(primera)}`));
+  // La pantalla siguiente (y la misma otra vez), de la misma versión: de la caché o revalidado (304), sin el cuerpo
+  for (const ruta of ['datos.html', 'tramites.html']) {
+    const otra = await visita(ruta, '[data-sesion]:not(:empty)');
+    const sinCuerpo = otra.length <= 1 && otra.every((p) => p.cache || p.estado === 304 || p.bytes < 4096);
+    comprueba(sinCuerpo && otra.every((p) => p.url === primera[0].url), t(`D4-01: ${ruta} (misma versión) no vuelve a descargar los datos: ${describe(otra)}`));
+  }
+  // Lo de este navegador se sigue sumando con los datos de la caché: la sesión y el nombre de la persona
+  const nombre = await pg.textContent('[data-sesion]');
+  comprueba(nombre.includes(CON_ORG.nombre) && !errores.length, t(`D4-01: con los datos de la caché, «Mis trámites» sigue con la sesión de ${CON_ORG.nombre}${errores.length ? '; errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+  await c.close();
+}
+
 const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
@@ -5197,6 +5259,7 @@ try {
   if (toca('limpieza')) await parte('limpieza', () => limpieza(navegador));
   if (toca('limpieza', 'licencias')) await parte('licencias', () => licencias());
   if (toca('csp')) await parte('política de contenido', () => politicaContenido(navegador));
+  if (toca('peso')) await parte('peso de los datos', () => pesoDatos(navegador));
   if (!solo) {
     await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));
     await parte('recorrido en escritorio', () => recorrido(navegador, 1280, 900, 'escritorio'));

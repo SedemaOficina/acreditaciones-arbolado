@@ -9,8 +9,8 @@
   const form = document.getElementById('filtros');
   const $ = (s) => document.querySelector(s);
 
-  /* La búsqueda no se envía: Enter no hace nada más que filtrar */
-  form.addEventListener('submit', (e) => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
+  /* La búsqueda no se envía: Enter no hace nada más que filtrar (en ese momento, sin esperar la pausa: D4-04) */
+  form.addEventListener('submit', (e) => { e.preventDefault(); e.stopImmediatePropagation(); filtraYa(); }, true);
   FormKit.iniciar(form, {});
 
   const norm = APD.normalizaBusqueda;
@@ -62,7 +62,9 @@
           el('td', {}, [estado(texto, sit.tono)]),
           el('td', {}, [accion])
         ]);
-        return { tr, hora, c, dia: P.diaDe(c.en), texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' ')) };
+        // Las dos formas de la hora se arman una vez, no en cada tecla (D4-04)
+        return { tr, hora, c, dia: P.diaDe(c.en), texto: norm([APD.nombreCompleto(p), p.curp, s.folio, p.numero_expediente].join(' ')),
+          horaSola: APD.hora(c.en), horaConFecha: APD.fechaCorta(c.en, { hora: true }), conFecha: false };
       });
       $('[data-filas]').replaceChildren(...filas.map((f) => f.tr));
 
@@ -127,7 +129,26 @@
     try { const b = sessionStorage.getItem(CLAVE_BUSQUEDA); if (b && ['back_forward', 'reload'].includes(nav)) document.getElementById('buscar').value = b; } catch (e) { /* sin almacenamiento */ }
   }
   let esperaBusqueda = null;
-  function pinta(origen) {
+  /* Mientras se escribe, se filtra cuando se deja de teclear 150 ms (auditoría 2026-10-20, D4-04; propuesta del revisor):
+     así cada tecla responde enseguida y la agenda se vuelve a pintar una vez, no en cada letra. El anuncio sigue llegando
+     700 ms después de la última tecla (B4-03 y RI-04): al filtrar se espera lo que falta de esa pausa. La búsqueda se
+     guarda en la pestaña en cada tecla (C4-03), sin esperar. */
+  const ESPERA_FILTRO = 150;
+  let esperaFiltro = null;
+  function guardaBusqueda() {
+    const v = document.getElementById('buscar').value;
+    try { if (norm(v)) sessionStorage.setItem(CLAVE_BUSQUEDA, v); else sessionStorage.removeItem(CLAVE_BUSQUEDA); } catch (e) { /* sin almacenamiento */ }
+  }
+  function alEscribir() {
+    guardaBusqueda();
+    clearTimeout(esperaFiltro);
+    esperaFiltro = setTimeout(() => { esperaFiltro = null; pinta('busqueda', PAUSA_BUSQUEDA - ESPERA_FILTRO); }, ESPERA_FILTRO);
+  }
+  function filtraYa() { if (esperaFiltro) { clearTimeout(esperaFiltro); esperaFiltro = null; pinta('busqueda'); } }
+  function pinta(origen, pausaAnuncio = PAUSA_BUSQUEDA) {
+    // Un filtro pendiente se cancela: esta vuelta ya pinta lo último (un cambio de día, «Por atender» o una recarga)
+    clearTimeout(esperaFiltro);
+    esperaFiltro = null;
     const q = norm(document.getElementById('buscar').value);
     const porAtender = document.getElementById('ver').value === 'por-atender';
     // El día elegido queda en la dirección (?dia=): al volver del cotejo, con «Atrás» o al recargar, la agenda sigue en
@@ -139,40 +160,55 @@
     if (url.search !== antes) history.replaceState(null, '', url);
     // La búsqueda se conserva en esta pestaña (sessionStorage), no en la dirección: puede llevar un nombre o una CURP, que
     // no deben quedar en el historial ni en el registro del servidor (auditoría 2026-10-20, C4-03)
-    try { if (q) sessionStorage.setItem(CLAVE_BUSQUEDA, document.getElementById('buscar').value); else sessionStorage.removeItem(CLAVE_BUSQUEDA); } catch (e) { /* sin almacenamiento */ }
+    guardaBusqueda();
+    /* Cada tecla de la búsqueda sólo cambia lo que cambió (auditoría 2026-10-20, D4-04: con 70 citas y el procesador 4×
+       más lento tardaba de 472 a 568 ms en pintarse). Antes, en cada tecla se reescribía la hora de todas las filas y el
+       módulo tabla volvía a leer los encabezados y a preparar todas las celdas; ahora la hora se reescribe y la tabla se
+       vuelve a preparar sólo cuando se pasa del día a la búsqueda o de regreso (la columna cambia de nombre). */
     let n = 0;
     const cuenta = {};
+    const conFecha = Boolean(q);
     for (const f of filas) {
       const ve = (q ? f.texto.includes(q) : f.dia === dia) && (!porAtender || f.c.pendiente);
-      f.tr.hidden = !ve;
-      // Al buscar en todos los días, la hora lleva también la fecha
-      f.hora.textContent = q ? APD.fechaCorta(f.c.en, { hora: true }) : APD.hora(f.c.en);
+      if (f.tr.hidden !== !ve) f.tr.hidden = !ve;
+      // Al buscar en todos los días, la hora lleva también la fecha. El módulo tabla pone el contenido de cada celda en
+      // .tabla-valor: el texto va ahí, para no quitarlo
+      if (f.conFecha !== conFecha || !f.horaPintada) {
+        const destino = f.hora.firstElementChild && f.hora.firstElementChild.classList.contains('tabla-valor') ? f.hora.firstElementChild : f.hora;
+        destino.textContent = conFecha ? f.horaConFecha : f.horaSola;
+        f.conFecha = conFecha;
+        f.horaPintada = true;
+      }
       // En pausa por su resultado (apd.cita.resultado), también con el documento ya cargado («retomar»); la pausa vencida va
       // aparte (C4-08)
       if (ve) { n += 1; const k = f.c.pendiente && f.c.cita.resultado === 'en_pausa' ? 'en_pausa' : f.c.pendiente ? 'pendiente' : (DESGLOSE_DE[f.c.situacion] || f.c.situacion); cuenta[k] = (cuenta[k] || 0) + 1; }
     }
-    $('[data-col-hora]').textContent = q ? 'Fecha y hora' : 'Hora';
-    $('[data-dia]').textContent = q ? 'Resultados en todos los días' : diaLargo(dia);
-    $('[data-leyenda]').textContent = q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${APD.fechaLarga(dia)}`;
+    const columna = q ? 'Fecha y hora' : 'Hora';
+    const cambiaColumna = $('[data-col-hora]').textContent !== columna;
+    if (cambiaColumna) $('[data-col-hora]').textContent = columna;
+    pon($('[data-dia]'), q ? 'Resultados en todos los días' : diaLargo(dia));
+    pon($('[data-leyenda]'), q ? 'Citas de cotejo que coinciden con la búsqueda' : `Citas de cotejo del ${APD.fechaLarga(dia)}`);
     $('[data-flechas]').hidden = Boolean(q);
     const i = dias.indexOf(dia);
     // En el primer o el último día con citas el botón queda inactivo con aria-disabled, no con disabled: conserva el foco
     // y el lector lo dice «no disponible» (auditoría 2026-10-20, RI-02; como programar.js con sus botones de envío)
     inactivo(botones[0], i <= 0);
     inactivo(botones[1], i < 0 || i >= dias.length - 1);
-    // El módulo tabla vuelve a leer los encabezados (la columna de la hora cambia de nombre)
-    $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
+    // El módulo tabla vuelve a leer los encabezados cuando la columna de la hora cambia de nombre (sólo entonces: D4-04)
+    if (cambiaColumna) $('[data-tabla]').dispatchEvent(new CustomEvent('formkit:tabla'));
     $('[data-tabla-vacia]').hidden = n > 0 || !(q || porAtender);
-    $('[data-tabla-vacia]').textContent = q ? 'Ninguna cita coincide con la búsqueda. Revise lo que escribió.' : 'Todas las citas de este día ya tienen resultado.';
+    pon($('[data-tabla-vacia]'), q ? 'Ninguna cita coincide con la búsqueda. Revise lo que escribió.' : 'Todas las citas de este día ya tienen resultado.');
     const textoCuenta = q
       ? (n ? `${n === 1 ? 'Una cita coincide' : `${n} citas coinciden`} con la búsqueda${porAtender ? ' y está por atender' : ''}.` : `Ninguna cita${porAtender ? ' por atender' : ''} coincide con la búsqueda.`)
       : !n ? (porAtender ? 'No quedan citas por atender este día.' : 'No hay citas este día.')
         : `${n === 1 ? '1 cita' : `${n} citas`}${porAtender ? ' sin resultado' : ''}: ${desglose(cuenta)}.`;
-    $('[data-cuenta]').textContent = textoCuenta;
+    pon($('[data-cuenta]'), textoCuenta);
     clearTimeout(esperaBusqueda);
     if (origen === 'dia') FormKit.anuncia(`${diaLargo(dia)}: ${textoCuenta}`);
-    else if (origen === 'busqueda') esperaBusqueda = setTimeout(() => FormKit.anuncia(q ? textoCuenta : `${diaLargo(dia)}: ${textoCuenta}`), PAUSA_BUSQUEDA);
+    else if (origen === 'busqueda') esperaBusqueda = setTimeout(() => FormKit.anuncia(q ? textoCuenta : `${diaLargo(dia)}: ${textoCuenta}`), pausaAnuncio);
   }
+  /* Un texto sólo se escribe si cambió (D4-04) */
+  function pon(nodo, texto) { if (nodo.textContent !== texto) nodo.textContent = texto; }
   function inactivo(b, si) { if (si) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled'); }
   for (const b of botones) {
     b.addEventListener('click', () => {
@@ -183,7 +219,7 @@
       pinta('dia');
     });
   }
-  form.addEventListener('input', (e) => pinta(e.target.id === 'ver' ? 'dia' : 'busqueda'));
+  form.addEventListener('input', (e) => { if (e.target.id === 'ver') pinta('dia'); else alEscribir(); });
   APD.alCambiar(() => { carga().catch(() => {}); });
 
   carga().catch(() => {

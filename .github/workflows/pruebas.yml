@@ -52,7 +52,7 @@ jobs:
       - name: probar-base (reglas, permisos, concurrencia, respaldo y restauración)
         run: bash herramientas/en-github.sh probar-base bash herramientas/probar-base.sh
       - name: Los ficticios regenerados son los guardados (A3-01)
-        run: git diff --exit-code -- datos/ficticios.json
+        run: git diff --exit-code -- datos/ficticios.json datos/bitacora-ficticia.json
 
   sitio:
     name: Sitio, esquemas y examen (Chromium)

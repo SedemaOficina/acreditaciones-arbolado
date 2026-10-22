@@ -289,14 +289,14 @@ la sesión con teléfonos, Firefox, Safari y lector de pantalla (P33 a P36).
 | 2. Mensajes y continuidad | **Corregido** (20/10/2026, bitácora 87) | B6-01 (texto adaptado en «Mi perfil» y «Cargar el documento correcto»), B6-02 (decisión 6; excepción a FRM-43, P189), B6-03, B6-04, D4-03, B1-02, B1-04, B1-05, C5-02 a C5-04; aviso de Citas como RI-09 | `probar-sitio` `SOLO=continuidad` y «romper 2» F1 2; `auditar-sitio` con el grupo cancelado y la asistencia a 360 px |
 | 3. Tareas y estados del personal | **Corregido** (20/10/2026, bitácora 88) | C1-01 a C1-07, C2-02, C3-01 (decidido el 20/10: propuestas a la vista y el resto plegado), C3-02, C3-03, C4-01 a C4-08 | `probar-sitio` `SOLO=tareas`; `probar-volumen` con las cifras del planeador y «Programar» con 66 en espera |
 | 4. Sistema visual | **Corregido** (21/10/2026, bitácora 89) | C6-01 a C6-10, A6-02, A6-03 y lo decidido en 2 a 5; quedan P191 a P194 | `probar-sitio` `SOLO=visual` (35): un principal por pantalla, colores forzados, atrasada, Sí/No, opción deshabilitada |
-| 5. Peso | Abierto (D4-02 espera P33) | — | — |
+| 5. Peso | **Corregido en parte** (22/10/2026, bitácora 90): D4-01 y D4-04; D4-02 espera P33 | D4-01, D4-04; lo que falta del presupuesto, P195 | `probar-sitio` parte «peso»; `probar-volumen` con el tiempo por tecla de «Citas» |
 | 6. Fechas | **Corregido** (20/10/2026, bitácora 88) | C5-01 con las decisiones 16 b y 17 b | `probar-sitio` `SOLO=fechas`: sólo la larga, la corta y la del acuse en las 21 pantallas |
 | 7. Estándar | **Registrado** | Las 13 fallas de la sección 9 y tres más vistas al corregir: P173 a P188 | `docs/PENDIENTES.md`, grupo «Estándar» |
 
 Con B4-01 corregido, el veredicto «Antes de mostrar al área» pasa a **Lista con reservas** (los medios abiertos de los
 bloques 3, 4 y 6). C2-01 sigue abierto en lo que no es foco: el botón principal con «Ninguna elegida» (bloque 4).
 Con los bloques 3 y 6, el veredicto «Al terminar pantallas» queda sin medios abiertos de tareas, estados ni fechas; lo
-abierto es el sistema visual (bloque 4) y el peso (bloque 5). Con el bloque 4, el único bloque abierto es el 5 (peso). Pruebas al cerrar el bloque 4: `probar-sitio` 1234,
+abierto es el sistema visual (bloque 4) y el peso (bloque 5). Con el bloque 5 en parte (22/10), sólo queda D4-02, que espera la prueba en teléfono real (P33), y el presupuesto de la persona (P195). Con el bloque 4, el único bloque abierto era el 5 (peso). Pruebas al cerrar el bloque 4: `probar-sitio` 1234,
 `probar-examen` 79, `probar-volumen` 106, `auditar-sitio` con los mismos 2 avisos, `probar-esquemas` 131.
 Pruebas al cerrar los bloques 3 y 6: `probar-sitio` 1199,
 `probar-examen` 79, `probar-volumen` 106, `auditar-sitio` con los mismos 2 avisos, `probar-esquemas` 131.

@@ -85,9 +85,15 @@
     const tras = () => setTimeout(listo, 0);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tras, { once: true }); else tras();
   });
+  /* Los datos se piden con la versión de la página (?v=, la de <meta name="sia-version">) y con la caché normal del
+     navegador (auditoría 2026-10-20, D4-01): una versión nueva los vuelve a pedir y, dentro de la misma versión, la
+     pantalla siguiente los toma de la caché o los revalida (304) en vez de descargarlos completos en cada pantalla, como
+     hacía «no-store». Lo registrado en este navegador no depende de esto: se mezcla en cada carga (abajo). */
+  const VERSION_PAGINA = ((document.querySelector('meta[name="sia-version"]') || {}).content || '').trim();
+  const URL_DATOS = `datos/ficticios.json${VERSION_PAGINA ? `?v=${encodeURIComponent(VERSION_PAGINA)}` : ''}`;
   function cargar() {
     if (!promesa) {
-      promesa = fetch('datos/ficticios.json', { cache: 'no-store' })
+      promesa = fetch(URL_DATOS)
         .then((r) => { if (!r.ok) throw new Error('datos'); return r.json(); })
         .then(soloRegistros);
     }

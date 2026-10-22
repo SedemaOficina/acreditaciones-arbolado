@@ -1486,3 +1486,17 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pendientes nuevos: P191 y P192 (propuestas al estándar), P193 (plegable del examen) y P194 (estructura de `apd.css`).
 - Pruebas: `probar-sitio` 1234 (parte `SOLO=visual`, 35), `probar-examen` 79, `probar-volumen` 106, `auditar-sitio`
   con los mismos 2 avisos en 65 pantallas, `probar-esquemas` 131.
+
+## 2026-10-22 · Bloque 90 · Correcciones de la auditoría de seguimiento: peso (parte aprobada del bloque 5)
+
+- Publicada la 0.64 (bloque 4). Del bloque 5 se hizo lo que no espera el teléfono real: D4-01 y D4-04. D4-02 (scripts
+  con `defer`) espera P33, como decidió Liber.
+- **D4-01.** La bitácora de los datos ficticios va aparte (`datos/bitacora-ficticia.json`, fuera del sitio): ninguna
+  pantalla la leía. El archivo que carga cada pantalla baja de 760 a 494 KB (84 a 69 KB comprimido) y se pide con
+  `?v=<versión>` y caché normal: dentro de la misma versión ya no se vuelve a descargar (antes, 761 KB en cada pantalla).
+  `probar-base` y la verificación de GitHub comparan los dos archivos con los guardados.
+- **D4-04.** La búsqueda de «Citas» ya no reescribe las 127 filas ni vuelve a preparar las 762 celdas en cada tecla y
+  filtra tras 150 ms sin teclear: la peor tecla con volumen pasa de 184 a 232 ms a 32 a 40 ms con procesador 4×.
+- **Presupuesto** (decisión del 20/10): el personal cumple; la persona aún no del todo (P195).
+- Pruebas: `probar-sitio` 1241 (parte nueva «peso»), `probar-examen` 79, `probar-volumen` 109, `probar-base` 303,
+  `probar-esquemas` 131, `auditar-sitio` con los mismos 2 avisos en 65 pantallas.

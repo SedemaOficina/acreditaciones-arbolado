@@ -362,6 +362,76 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
   await ctx.close();
   async function texto(sel) { return pg.textContent(sel); }
 }
+// D4-04 (auditoría 2026-10-20; decisión 15 b: respuesta ≤ 200 ms): en «Citas de cotejo» con volumen (40 citas hoy y 30 los
+// días siguientes), cada tecla de «Buscar» responde pronto con el procesador 4× más lento (Emulation.setCPUThrottlingRate,
+// como d4-interaccion.mjs de r5). Se mide de cada evento «input» al cuadro siguiente ya pintado y, aparte, de la última
+// tecla a la agenda ya filtrada (se filtra al dejar de teclear 150 ms). Antes de la corrección, en el equipo de la
+// auditoría: 472 a 568 ms por tecla. La máquina de GitHub es más lenta y variable: los topes de la prueba son amplios
+// (400 ms por tecla, el doble del presupuesto; 1 s hasta la agenda filtrada) y además se comprueba la causa, que no
+// depende de la máquina: al seguir escribiendo no se vuelven a preparar las celdas de la tabla (sin cambios de
+// data-etiqueta) ni se reescribe la hora de las filas.
+{
+  const ctx = await navegador.newContext({ viewport: { width: 1280, height: 900 }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+  await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
+  await ctx.addInitScript(() => {
+    window.__teclas = [];
+    window.__mut = { etiquetas: 0, horas: 0 };
+    window.addEventListener('input', (e) => {
+      if (!e.target || e.target.id !== 'buscar') return;
+      const t0 = e.timeStamp;
+      window.__ultima = t0;
+      requestAnimationFrame(() => setTimeout(() => window.__teclas.push(performance.now() - t0), 0));
+    }, true);
+    document.addEventListener('DOMContentLoaded', () => {
+      new MutationObserver((l) => {
+        for (const m of l) {
+          const nodo = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+          // La agenda quedó filtrada: la cuenta cambió (se toma el cuadro siguiente, ya pintado)
+          if (nodo && nodo.closest('[data-cuenta]') && window.__ultima) { const u = window.__ultima; requestAnimationFrame(() => setTimeout(() => { window.__filtrada = performance.now() - u; }, 0)); }
+          if (!window.__contar) continue;
+          if (m.type === 'attributes' && m.attributeName === 'data-etiqueta') window.__mut.etiquetas += 1;
+          if (m.type !== 'attributes' && nodo && nodo.closest('[data-filas] td:first-child')) window.__mut.horas += 1;
+        }
+      }).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-etiqueta'] });
+    });
+  });
+  const pg = await ctx.newPage();
+  const errores = [];
+  pg.on('pageerror', (e) => errores.push(String(e)));
+  try {
+    await pg.goto(BASE + 'citas.html');
+    await pg.waitForSelector('[data-filas] tr:not([hidden])');
+    const nFilas = await pg.locator('[data-filas] tr').count();
+    const cdp = await ctx.newCDPSession(pg);
+    await pg.click('#buscar');
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    // Primera tecla: pasa del día a la búsqueda (la columna cambia a «Fecha y hora»: ahí sí se preparan las celdas)
+    await pg.keyboard.type('M');
+    await pg.waitForFunction(() => document.querySelector('[data-col-hora]').textContent === 'Fecha y hora' && window.__teclas.length >= 1);
+    const conM = await pg.textContent('[data-cuenta]');
+    await pg.evaluate(() => { window.__contar = true; window.__mut = { etiquetas: 0, horas: 0 }; window.__filtrada = null; });
+    await pg.keyboard.type('ODELO', { delay: 120 });
+    await pg.waitForFunction((a) => window.__teclas.length >= 6 && window.__filtrada && document.querySelector('[data-cuenta]').textContent !== a, conM);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    const r = await pg.evaluate(() => ({ teclas: window.__teclas.map(Math.round), filtrada: Math.round(window.__filtrada), mut: window.__mut, cuenta: document.querySelector('[data-cuenta]').textContent }));
+    const peor = Math.max(...r.teclas);
+    comprueba(peor <= 400 && r.filtrada <= 1000 && /coincide/.test(r.cuenta) && !errores.length,
+      `citas con volumen (D4-04): con el procesador 4× más lento, cada tecla de «Buscar» responde en ${r.teclas.join(', ')} ms (peor ${peor}; tope de la prueba 400 ms; presupuesto 200 ms) y la agenda queda filtrada ${r.filtrada} ms después de la última tecla (tope 1 s), en ${nFilas} filas`);
+    comprueba(r.mut.etiquetas === 0 && r.mut.horas === 0,
+      `citas con volumen (D4-04): al seguir escribiendo no se vuelven a preparar las celdas (${r.mut.etiquetas} cambios de data-etiqueta) ni se reescribe la hora (${r.mut.horas} cambios)`);
+    // Lo ya corregido sigue: la búsqueda se guarda en la pestaña y, al borrarla, la hora vuelve a ser sólo la hora
+    const guardada = await pg.evaluate(() => sessionStorage.getItem('apd.citas.buscar'));
+    const horaBusqueda = (await pg.textContent('[data-filas] tr:not([hidden]) td:first-child')).trim();
+    await pg.fill('#buscar', '');
+    await pg.waitForFunction(() => document.querySelector('[data-col-hora]').textContent === 'Hora');
+    const horaDia = (await pg.textContent('[data-filas] tr:not([hidden]) td:first-child')).trim();
+    const etiqueta = await pg.getAttribute('[data-filas] tr:not([hidden]) td:first-child', 'data-etiqueta');
+    comprueba(guardada === 'MODELO' && /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/.test(horaBusqueda) && /^\d{2}:\d{2}$/.test(horaDia) && etiqueta === 'Hora',
+      `citas con volumen (D4-04): la búsqueda se guarda en la pestaña («${guardada}»); buscando, la hora lleva la fecha («${horaBusqueda}»); sin búsqueda, sólo la hora («${horaDia}», rótulo «${etiqueta}»)`);
+  } catch (e) { comprueba(false, `citas con volumen (D4-04): se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+  await ctx.close();
+}
+
 await navegador.close();
 console.log(fallas ? `\n${fallas} de ${total} comprobación(es) fallida(s).` : `\nLas ${total} comprobaciones, correctas.`);
 process.exit(fallas ? 1 : 0);

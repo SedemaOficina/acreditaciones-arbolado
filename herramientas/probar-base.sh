@@ -80,12 +80,14 @@ echo "Conteos iguales en las $(head -1 "$temporal/conteos-original.txt" | wc -w)
 node "$raiz/herramientas/probar-reglas.mjs" "$restaurada" | tail -1
 dropdb "$restaurada"
 
-echo "8/8 Exportación de datos/ficticios.json"
+echo "8/8 Exportación de datos/ficticios.json (y de la bitácora, aparte: datos/bitacora-ficticia.json)"
 node "$raiz/herramientas/exportar-ficticios.mjs" "$base"
-# Regenerar no debe cambiar el archivo sin motivo (auditoría 2026-10-19, A3-01): se compara con el guardado en Git.
-# Aquí sólo se informa (quien cambió los ficticios debe guardar el archivo nuevo); la verificación de GitHub falla.
+# Regenerar no debe cambiar los archivos sin motivo (auditoría 2026-10-19, A3-01): se comparan con los guardados en Git.
+# Aquí sólo se informa (quien cambió los ficticios debe guardar los archivos nuevos); la verificación de GitHub falla.
 if git -C "$raiz" rev-parse --verify -q HEAD >/dev/null 2>&1; then
-  if git -C "$raiz" diff --quiet -- datos/ficticios.json; then echo "datos/ficticios.json: igual al guardado en Git."
-  else echo "datos/ficticios.json: cambió respecto al guardado en Git (git diff datos/ficticios.json)."; fi
+  for f in datos/ficticios.json datos/bitacora-ficticia.json; do
+    if git -C "$raiz" diff --quiet -- "$f" && git -C "$raiz" ls-files --error-unmatch "$f" >/dev/null 2>&1; then echo "$f: igual al guardado en Git."
+    else echo "$f: cambió respecto al guardado en Git (git diff $f)."; fi
+  done
 fi
 echo "Listo."
