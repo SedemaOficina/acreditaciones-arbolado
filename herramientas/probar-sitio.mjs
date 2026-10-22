@@ -1048,6 +1048,8 @@ async function recorridoGuardado(navegador) {
   await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
   comprueba(/Por atender/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t('la cita aparece en la agenda de su día, por atender'));
   await page.fill('#buscar', P.curp);
+  // Se filtra al dejar de teclear (D4-04): se espera a que la agenda muestre los resultados de todos los días
+  await page.waitForFunction(() => /todos los días/.test(document.querySelector('[data-dia]').textContent));
   comprueba(await page.isVisible(`[data-filas] tr[data-folio="${folio}"]`) && /todos los días/.test(await page.textContent('[data-dia]')), t('la búsqueda por CURP la encuentra en todos los días'));
   await abreCotejo(page, folio);
   await page.check('input[name="se_presento"][value="si"]');
