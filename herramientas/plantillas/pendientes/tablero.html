@@ -113,7 +113,7 @@ tbody tr:last-child td { border-bottom: 0; }
 
 <div class="envoltura">
   <header class="cabeza">
-    <span class="etiqueta">Sistema de Acreditaciones de Poda y Dictaminación · versión de prueba 0.1</span>
+    <span class="etiqueta">Sistema de Acreditaciones de Poda y Dictaminación · <span id="corte">pendientes al día</span></span>
     <h1>Pendientes del sistema</h1>
     <p class="bajada">Todo lo que falta decidir o hacer, agrupado por quién lo decide. Cada pendiente trae mi recomendación. Márcalo y, si decides otra cosa o tienes duda, escribe tu respuesta: yo la leo y la aplico en la base, las pantallas y los documentos.</p>
     <div class="avance" id="avance" aria-live="polite"></div>
@@ -175,6 +175,8 @@ tbody tr:last-child td { border-bottom: 0; }
   'use strict';
   // Generado por herramientas/generar-pendientes.mjs desde docs/pendientes.json. No se edita a mano.
   var DATOS = /*DATOS*/null;
+  // Fecha de corte del tablero: la de docs/pendientes.json, en día/mes/año.
+  (function () { var f = String(DATOS.actualizado || '').split('-'); var c = document.getElementById('corte'); if (c && f.length === 3) c.textContent = 'pendientes al ' + f[2] + '/' + f[1] + '/' + f[0]; })();
 
   var MARCAS = { acepto: 'Acepto la recomendación', otra: 'Decido otra cosa', duda: 'Tengo duda', resuelto: 'Ya está resuelto' };
   var FILTROS = [['todos', 'Todos'], ['sin_marcar', 'Sin marcar'], ['acepto', 'Aceptados'], ['otra', 'Otra decisión'], ['duda', 'Con duda'], ['resuelto', 'Resueltos'], ['datos', 'Antes de datos reales']];
