@@ -188,8 +188,11 @@ async function llenaCuenta(page, p, curp = p.curp) {
   await cargaFoto(page);
   await marcaCasillas(page);
 }
+// Con marcar(), que vuelve a intentar: en «regresos» la casilla se marcaba mientras la página aún recuperaba el borrador y
+// a veces no quedaba («Clicking the checkbox did not change its state», 2 de 10 corridas el 23/10/2026; con la ruta de
+// herramientas/sin-google.mjs, Playwright no usa la caché HTTP y las cargas tardan un poco más)
 async function marcaCasillas(page) {
-  for (const n of ['protesta', 'aviso', 'humano']) if (await page.$(`input[name="${n}"]`)) await page.check(`input[name="${n}"]`, { force: true });
+  for (const n of ['protesta', 'aviso', 'humano']) if (await page.$(`input[name="${n}"]`)) await marcar(page, `input[name="${n}"]`);
 }
 
 async function recorrido(navegador, ancho, alto, sufijo) {
