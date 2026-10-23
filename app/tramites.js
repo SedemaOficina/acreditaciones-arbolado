@@ -339,7 +339,9 @@
     const frase = comoLista(a);
     const hijos = [
       el('p', { class: 'ficha-sigue', texto: `${frase.charAt(0).toLocaleUpperCase('es-MX')}${frase.slice(1)} ${a.length > 1 ? 'son' : 'es'} en el ${lugar.nombre}${lugar.direccion ? `, ${lugar.direccion}` : ''}.` }),
-      lugar.direccion ? null : el('p', { class: 'pendiente', texto: 'Pendiente: dirección y referencias para llegar.' })
+      // Sin dirección, falta todo; con la dirección confirmada (23/10/2026), sólo las referencias si siguen «[pendiente]»
+      lugar.direccion ? (!lugar.referenciasPendientes ? null : el('p', { class: 'pendiente', texto: 'Pendiente: referencias para llegar (puerta de acceso y transporte).' }))
+        : el('p', { class: 'pendiente', texto: 'Pendiente: dirección y referencias para llegar.' })
     ];
     if (lugar.mapa) {
       const { lat, lng } = lugar.mapa;
