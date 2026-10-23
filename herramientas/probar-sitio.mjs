@@ -10,7 +10,7 @@
 // Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
 
 import { chromium } from 'playwright';
-import { navegadorSinGoogle } from './sin-google.mjs';
+import { navegadorSinGoogle, GOOGLE_BLOQUEO } from './sin-google.mjs';
 import { readFileSync, readdirSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -5391,13 +5391,15 @@ async function pesoDatos(navegador) {
   const usan = readdirSync(join(raiz, 'sitio/app')).filter((f) => f.endsWith('.js') && /bitacora/.test(readFileSync(join(raiz, 'sitio/app', f), 'utf8')));
   comprueba(!usan.length, t(`D4-01: ninguna pantalla lee la bitácora${usan.length ? ': ' + usan.join(', ') : ''}`));
 
-  const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
+  // Sin la ruta de herramientas/sin-google.mjs, que apagaría la caché que aquí se mide; Google se bloquea abajo (P68)
+  const c = await navegador.newContextConCache({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
   await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, CON_ORG.id);
   const pg = await c.newPage();
   const errores = [];
   pg.on('pageerror', (e) => errores.push(String(e)));
   const cdp = await c.newCDPSession(pg);
   await cdp.send('Network.enable');
+  await cdp.send('Network.setBlockedURLs', { urls: GOOGLE_BLOQUEO });
   let pedidas = new Map();
   const deDatos = (u) => /\/datos\/ficticios\.json/.test(u);
   cdp.on('Network.requestWillBeSent', (e) => { if (deDatos(e.request.url)) pedidas.set(e.requestId, { url: e.request.url, estado: 0, cache: false, bytes: 0 }); });

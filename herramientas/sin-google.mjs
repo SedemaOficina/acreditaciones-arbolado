@@ -12,6 +12,8 @@ export const PAGINA_MAPA = '<!DOCTYPE html><html lang="es-MX"><head><meta charse
   + '<body style="margin:0;display:grid;place-items:center;min-height:100vh;background:#e8edef;color:#55585a;font:16px/1.4 sans-serif;text-align:center">'
   + '<p data-mapa-prueba>Mapa de Google<br>(en las pruebas, una página mínima)</p></body></html>';
 
+export const GOOGLE_BLOQUEO = ['https://maps.google.com/*', 'https://www.google.com/*'];
+
 export async function sinGoogle(contexto) {
   await contexto.route(GOOGLE, (r) => r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: PAGINA_MAPA }));
 }
@@ -20,6 +22,9 @@ export function navegadorSinGoogle(navegador) {
   const nuevoContexto = navegador.newContext.bind(navegador);
   const nuevaPagina = navegador.newPage.bind(navegador);
   navegador.newContext = async (opciones) => { const c = await nuevoContexto(opciones); await sinGoogle(c); return c; };
+  // Con una ruta, Playwright apaga la caché HTTP del contexto. La prueba que mide la caché (SOLO=peso) usa este, sin ruta,
+  // y bloquea a Google por el protocolo del navegador (Network.setBlockedURLs, con GOOGLE_BLOQUEO), que no la apaga.
+  navegador.newContextConCache = nuevoContexto;
   navegador.newPage = async (opciones) => { const p = await nuevaPagina(opciones); await sinGoogle(p.context()); return p; };
   return navegador;
 }
