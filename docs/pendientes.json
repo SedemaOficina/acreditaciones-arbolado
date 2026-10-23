@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-20",
+  "actualizado": "2026-10-23",
   "grupos": [
     {
       "id": "direccion",
@@ -74,15 +74,6 @@
       "titulo": "Secciones «Del pago» y «Del curso» del borrador, y visto bueno del check list del cotejo",
       "recomendacion": "El check list del cotejo ya lo genera el sistema desde los requisitos de cada curso (cotejo.html); falta que la Dirección lo confirme y entregue las secciones «Del pago» y «Del curso». (El Anexo 1 del borrador del área, de carreras afines, ya no se necesita: la carrera la valida el personal.) El anteproyecto de lineamientos ya redacta el pago (Cap. VII), el curso y la evaluación (Cap. V, secciones cuarta y quinta) y la lista de cotejo (Anexo 2): falta el visto bueno del área.",
       "lineamientos": "Anteproyecto 0.5: Cap. V, secciones tercera a quinta; Cap. VII; Anexo 2. Redactadas en el anteproyecto."
-    },
-    {
-      "id": "P06",
-      "grupo": "direccion",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "No admitir una solicitud nueva si la persona ya tiene una del mismo tipo vigente o renovable (R07)",
-      "recomendacion": "Mantener la regla: con una acreditación vigente o todavía renovable corresponde renovar. Evita dos acreditaciones del mismo tipo para la misma persona.",
-      "lineamientos": "Anteproyecto 0.5: Art. 26, fracc. II. Incorporado."
     },
     {
       "id": "P07",
@@ -322,15 +313,6 @@
       "lineamientos": "Anteproyecto 0.5: Datos personales (Cap. XI). Incorporado: sin reconocimiento facial automatizado."
     },
     {
-      "id": "P51",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-14",
-      "titulo": "¿La verificación pública muestra la foto de la credencial?",
-      "recomendacion": "No por omisión: la verificación pública sólo dice número, nombre, tipo, fechas y vigencia. Si se quiere comprobar el rostro, mejor que el QR de la credencial lleve a la verificación y que quien verifica compare con la credencial física.",
-      "lineamientos": "Anteproyecto 0.5: Art. 53. Incorporado."
-    },
-    {
       "id": "P55",
       "grupo": "sia",
       "bloquea": "etapa 3",
@@ -362,7 +344,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-16",
       "titulo": "Dirección del Vivero Nezahualcóyotl y referencias para llegar",
-      "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega. Dato recibido (2026-10-17): el PILARES Vivero Nezahualcóyotl, dentro del predio, está en Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco; falta confirmar que el acceso al público del Vivero sea el mismo.",
+      "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega. Dato recibido (2026-10-17): el PILARES Vivero Nezahualcóyotl, dentro del predio, está en Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco; falta confirmar que el acceso al público del Vivero sea el mismo. Liber confirmó la ubicación del Vivero el 19/10/2026 con su enlace de Google Maps (https://maps.app.goo.gl/j9izbz3PHUuXz9VL6) y pidió mostrar un mapa junto a la dirección. Falta decidir la forma: un enlace «Cómo llegar» que abre Google Maps, un mapa de Google dentro de la página (exige abrir la política de seguridad a Google y avisarlo en el aviso de privacidad) o un croquis propio.",
       "lineamientos": "Anteproyecto 0.5: Art. 6. La sede no se fija en el texto."
     },
     {
@@ -450,14 +432,6 @@
       "recomendacion": "Decisión de Liber (2026-10-18): la restitución económica se calcula con un valor fijo por unidad dado en el enunciado ($113.14), sin actualizarlo cada año, porque el ejercicio evalúa el cálculo. La Tabla 4 de la norma está en UCDMX, no en UMA: la versión corregida usa UCDMX y empareja cada cifra con su equivalente en pesos (reactivos 43, 47 y 51). Pendiente del área técnica: el criterio del ejercicio 2 (cómo medir el DAP de un ejemplar con varios tallos y si se valora uno en fase arbustiva; ni la norma ni el manual lo dicen) y las preguntas de manejo 44 y 52, que el enunciado responde."
     },
     {
-      "id": "P85",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "El banco de reactivos con su clave no entra al repositorio público",
-      "recomendacion": "Mientras el repositorio sea público, el prototipo del examen usa preguntas ficticias. El banco real se carga directo en la base del SIA, y la página nunca recibe la respuesta correcta: la califica el servidor."
-    },
-    {
       "id": "P88",
       "grupo": "direccion",
       "bloquea": "datos reales",
@@ -509,14 +483,6 @@
       "titulo": "Cómo se actualiza una fotografía ya confirmada (renovación, cambio de aspecto)",
       "recomendacion": "Ya confirmada, la persona no la cambia y en la cita no se toma otra (decisión 2026-10-17); pero debe verse clara para el pase de lista del examen. Recomendación: al iniciar una renovación la persona puede cargar una fotografía nueva, que se vuelve a confirmar contra la identificación en la cita de cotejo. La base conserva la carga por el personal (origen cotejo) por si se prefiere que la tome la Secretaría. Liber lo dejó pendiente (2026-10-17); no detiene grupos ni asistencia. Los lineamientos (Anexo 1 del anteproyecto) suponen que en la renovación se puede cargar una fotografía nueva; si se decide otra cosa, corregir el anexo.",
       "lineamientos": "Anteproyecto 0.5: Anexo 1, fila 1. El anexo supone que sí se actualiza."
-    },
-    {
-      "id": "P109",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-17",
-      "titulo": "Quitar el correo personal de Liber del historial del repositorio público",
-      "recomendacion": "Diez cambios de la rama principal llevan como autor el correo personal de Liber (nueve también como quien hizo el commit; se guardaron desde el chat del examen). Quitarlo exige reescribir el historial ya publicado y volver a subir la rama encima de la existente; el sistema lo bloquea mientras Liber no lo autorice de forma expresa. Antes: respaldo completo del repositorio. Después: el chat del examen se vuelve a sincronizar; GitHub puede conservar un tiempo los cambios antiguos y quien ya descargó el repositorio conserva la copia vieja. Para que no vuelva a pasar: configurar en ese chat un correo sin datos personales para los cambios y activar en GitHub la opción de mantener privado el correo."
     },
     {
       "id": "P120",
@@ -1582,6 +1548,30 @@
       "titulo": "Estándar: el borrador automático (data-borrador) guarda lo que llena la página y no admite archivos (P148)",
       "como": "Lo resolvió la versión 1.5.0 (con el ajuste de privacidad de la 1.5.1) del Estándar de formularios; el proyecto usa la 1.5.1 desde el 2026-10-19 y quitó su solución provisional. Se quitó el borrador propio de app/solicitud.js: la solicitud usa el del núcleo (data-borrador) y el almacén de documentos de la prueba es su proveedor borradorArchivos (app/config-solicitud.js).",
       "fecha": "2026-10-19"
+    },
+    {
+      "id": "P06",
+      "titulo": "No admitir una solicitud nueva si la persona ya tiene una del mismo tipo vigente o renovable (R07)",
+      "como": "Liber aceptó la recomendación en el tablero (18/10/2026): con una acreditación vigente o todavía renovable corresponde renovar, no una solicitud nueva. Así funciona ya: la base rechaza un segundo trámite en curso del mismo tipo y «Mis trámites» ofrece «Renovar» mientras se puede.",
+      "fecha": "2026-10-18"
+    },
+    {
+      "id": "P51",
+      "titulo": "¿La verificación pública muestra la foto de la credencial?",
+      "como": "Liber aceptó la recomendación en el tablero (19/10/2026): la verificación pública no muestra la fotografía; sólo número, nombre, tipo, fechas y vigencia. Quien verifica compara con la credencial física. Así funciona ya.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P85",
+      "titulo": "El banco de reactivos con su clave no entra al repositorio público",
+      "como": "Liber aceptó la recomendación en el tablero (19/10/2026): mientras el repositorio sea público, el examen de prueba usa preguntas ficticias; el banco real se carga directo en la base del SIA y la página nunca recibe la respuesta correcta.",
+      "fecha": "2026-10-19"
+    },
+    {
+      "id": "P109",
+      "titulo": "Quitar el correo personal de Liber del historial del repositorio público",
+      "como": "Liber autorizó quitar su correo personal del historial (tablero, 19/10/2026; confirmado el 23/10/2026). Al revisarlo el 23/10/2026, ningún cambio de ninguna rama del repositorio lo lleva: todos van como Liber Saltijeral o Claude con correo noreply, y las fusiones hechas en GitHub con la cuenta institucional de SedemaOficina. No hubo que reescribir nada.",
+      "fecha": "2026-10-23"
     }
   ]
 }
