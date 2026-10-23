@@ -7130,6 +7130,11 @@
    "descripcion": "Cómo llegar a la sede; se muestra a la persona con la cita, el grupo y la entrega."
   },
   {
+   "clave": "sede_mapa",
+   "valor": "19.2893657,-99.075447",
+   "descripcion": "Ubicación de la sede en el mapa: «latitud,longitud» en grados decimales (la que confirmó Liber con su enlace de Google Maps). De aquí salen el mapa de Google y el enlace «Abrir en Google Maps» de «Mis trámites»; vacía, no se muestra mapa (decisión 2026-10-23, Liber)."
+  },
+  {
    "clave": "tamano_maximo_archivo_bytes",
    "valor": "5242880",
    "descripcion": "Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14)."
