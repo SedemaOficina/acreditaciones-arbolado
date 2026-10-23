@@ -7126,8 +7126,8 @@
   },
   {
    "clave": "sede_direccion",
-   "valor": "[pendiente] Dirección y referencias para llegar al Vivero Nezahualcóyotl.",
-   "descripcion": "Cómo llegar a la sede; se muestra a la persona con la cita, el grupo y la entrega."
+   "valor": "Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco [pendiente: referencias para llegar (puerta de acceso y transporte)].",
+   "descripcion": "Dirección de la sede (confirmada por Liber el 2026-10-23) y referencias para llegar; se muestra a la persona con la cita, el grupo y la entrega. Lo marcado [pendiente] no se muestra: la pantalla dice que faltan las referencias."
   },
   {
    "clave": "sede_mapa",

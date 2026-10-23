@@ -777,9 +777,11 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   const conCita = personaCon('validada_en_linea', citaSencilla);
   if (conCita) {
     await entra(page, conCita.curp);
-    comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 4,
-      t('mis solicitudes: concepto, monto y referencia del pago, y la dirección de la sede, se marcan en amarillo, por confirmar'));
-    comprueba(/Lugar de la cita\s*Vivero Nezahualcóyotl/.test(await page.textContent('[data-solicitudes]')), t('mis solicitudes: la cita es en el Vivero Nezahualcóyotl'));
+    // La dirección de la sede ya no va por confirmar: la confirmó Liber el 23/10/2026 (P68)
+    comprueba(await page.locator('[data-solicitudes] .datos-por-confirmar').count() === 3,
+      t('mis solicitudes: concepto, monto y referencia del pago se marcan en amarillo, por confirmar; la dirección de la sede ya no'));
+    comprueba(/Lugar de la cita\s*Vivero Nezahualcóyotl, Canal de Chalco s\/n, colonia Ciénega Grande, Alcaldía Xochimilco/.test(await page.textContent('[data-solicitudes]')),
+      t('mis solicitudes: la cita es en el Vivero Nezahualcóyotl, con su dirección'));
     // D4 (auditoría 2026-10-18): fecha, hora y lugar al principio de la ficha, antes de los datos de pago; el paso con su fecha
     const cita = await page.$eval('[data-solicitudes] .ficha', (fi) => {
       const c = fi.querySelector('.ficha-cita'); const pago = Array.from(fi.querySelectorAll('.aviso')).find((x) => /Datos para tu pago/.test(x.textContent));
@@ -3674,6 +3676,8 @@ async function mapaSede(navegador) {
   const param = (datos.parametro.find((x) => x.clave === 'sede_mapa') || {}).valor || '';
   const [lat, lng] = param.split(',');
   const nombre = (datos.parametro.find((x) => x.clave === 'sede') || {}).valor;
+  // La dirección confirmada por Liber el 23/10/2026, sin la marca de las referencias, que siguen pendientes
+  const direccion = 'Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco';
   // A qué va a la sede cada solicitud, calculado aquí desde los datos (no desde la pantalla)
   const entregada = (s) => (datos.acreditacion.find((a) => a.solicitud_id === s.id) || {}).entregada_en;
   const aQueVa = (s) => {
@@ -3715,7 +3719,7 @@ async function mapaSede(navegador) {
     const a = document.querySelector('[data-mapa-abrir]');
     const ficha = f && f.closest('.ficha');
     return { marcos: document.querySelectorAll('iframe').length, bloques: document.querySelectorAll('[data-mapa-sede]').length, visible: Boolean(sec && !sec.hidden && sec.checkVisibility()),
-      frase: ((sec && sec.querySelector('.ficha-sigue')) || {}).textContent || '',
+      frase: ((sec && sec.querySelector('.ficha-sigue')) || {}).textContent || '', pendientes: sec ? [...sec.querySelectorAll('.pendiente')].map((p) => p.textContent) : [],
       marco: f && { title: f.getAttribute('title'), loading: f.getAttribute('loading'), ref: f.getAttribute('referrerpolicy'), src: f.getAttribute('src'),
         ancho: f.getBoundingClientRect().width, anchoFicha: ficha ? ficha.clientWidth : 0, alto: f.getBoundingClientRect().height },
       enlace: a && { href: a.getAttribute('href'), target: a.getAttribute('target'), rel: a.getAttribute('rel'), texto: a.textContent.replace(/\s+/g, ' ').trim() },
@@ -3755,10 +3759,10 @@ async function mapaSede(navegador) {
       const r = await lee(page);
       const m = r.marco || {};
       const e = r.enlace || {};
-      comprueba(r.marcos === 1 && r.bloques === 1 && r.frase.startsWith(`${frase} en el ${nombre}`)
+      comprueba(r.marcos === 1 && r.bloques === 1 && r.frase === `${frase} en el ${nombre}, ${direccion}.` && r.pendientes.join() === 'Pendiente: referencias para llegar (puerta de acceso y transporte).'
         && m.title === `Mapa de la ubicación del ${nombre}` && m.loading === 'lazy' && m.ref === 'no-referrer'
         && m.src === `https://maps.google.com/maps?q=${lat},${lng}&z=16&hl=es&output=embed` && m.alto >= 200,
-        t(`${k} a ${ancho} px: un solo mapa, «${r.frase}», marco con título, lazy y sin referente, a ${param}`));
+        t(`${k} a ${ancho} px: un solo mapa, «${r.frase}» (${r.pendientes.join(' ')}), marco con título, lazy y sin referente, a ${param}`));
       const destino = e.href ? new URL(e.href) : null;
       comprueba(destino && destino.origin === 'https://www.google.com' && destino.searchParams.get('query') === `${lat},${lng}` && destino.searchParams.get('api') === '1'
         && e.target === '_blank' && /noopener/.test(e.rel || '') && e.texto === 'Abrir en Google Maps (se abre en otra pestaña)' && /^El mapa lo muestra Google/.test(r.aviso),
@@ -3784,7 +3788,7 @@ async function mapaSede(navegador) {
       const r = await lee(page);
       const despues = await page.evaluate(() => Boolean(document.querySelector('[data-solicitudes]').compareDocumentPosition(document.querySelector('[data-mapa-sede]')) & Node.DOCUMENT_POSITION_FOLLOWING));
       const fichas = await page.$$eval('[data-solicitudes] > .ficha', (l) => l.length);
-      comprueba(fichas === 2 && r.marcos === 1 && r.bloques === 1 && r.visible && despues && r.frase.startsWith(`Tu cita de cotejo y tu curso son en el ${nombre}`) && !errores.length,
+      comprueba(fichas === 2 && r.marcos === 1 && r.bloques === 1 && r.visible && despues && r.frase === `Tu cita de cotejo y tu curso son en el ${nombre}, ${direccion}.` && !errores.length,
         t(`cita y curso a la vez a ${ancho} px: ${fichas} tarjetas y ${r.marcos} mapa, después de ellas: «${r.frase}»`));
       comprueba(r.marco && r.marco.ancho <= r.marco.anchoFicha + 0.5, t(`cita y curso a ${ancho} px: el mapa cabe en su tarjeta (${r.marco && Math.round(r.marco.ancho)} px)`));
       await sinDesborde(page, t(`cita y curso a ${ancho} px`));
@@ -3801,12 +3805,14 @@ async function mapaSede(navegador) {
     await c.close();
   }
   {
-    const datosDe = (d) => { d.parametro.find((x) => x.clave === 'sede_mapa').valor = ''; return d; };
+    // Sin ubicación ni dirección (los dos parámetros vacíos o «[pendiente]»): la sede y lo que falta, sin mapa
+    const datosDe = (d) => { d.parametro.find((x) => x.clave === 'sede_mapa').valor = ''; d.parametro.find((x) => x.clave === 'sede_direccion').valor = '[pendiente] Dirección.'; return d; };
     const { c, page, errores, aGoogle } = await nuevo(390, 844, { sesion: conLugar('cita').id, datosDe });
     await abre(page);
     const r = await lee(page);
-    comprueba(r.visible && !r.marcos && !r.enlace && !r.aviso && !aGoogle.length && r.frase.startsWith('Tu cita de cotejo es') && !errores.length,
-      t('con sede_mapa vacío: «Dónde es» con la sede, sin mapa, sin enlace y sin pedir nada a Google'));
+    comprueba(r.visible && !r.marcos && !r.enlace && !r.aviso && !aGoogle.length && r.frase === `Tu cita de cotejo es en el ${nombre}.`
+      && r.pendientes.join() === 'Pendiente: dirección y referencias para llegar.' && !errores.length,
+      t(`con sede_mapa y sede_direccion vacíos: «Dónde es» con «${r.frase}» y «${r.pendientes.join(' ')}», sin mapa, sin enlace y sin pedir nada a Google`));
     await c.close();
   }
 
