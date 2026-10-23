@@ -58,6 +58,12 @@ const versionEstandar = cambios ? cambios[1] : '0';
 const CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; "
   + "connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'";
 const META_CSP = `<meta http-equiv="Content-Security-Policy" content="${CSP}">\n<meta name="referrer" content="same-origin">`;
+// Excepción documentada (decisión de Liber del 23/10/2026, P68): la página que lleva el mapa de Google de la sede (marcada
+// con data-mapa-sede; hoy sólo «Mis trámites») permite ese marco y nada más: frame-src con los dos dominios del mapa sin
+// clave (maps.google.com, que puede redirigir a www.google.com). Ni scripts ni estilos de Google: el mapa corre dentro de
+// su marco, con su propia política. Las demás páginas siguen con la política estricta (SOLO=csp de probar-sitio).
+const CSP_MAPA = `${CSP}; frame-src https://www.google.com https://maps.google.com`;
+const META_CSP_MAPA = META_CSP.replace(CSP, CSP_MAPA);
 // La versión, escrita en cada página (auditoría 2026-10-20, B6-04 y D4-03; decisión 7a de Liber): el distintivo y el
 // menú de pruebas la leen de aquí, así que dicen la versión del código que corre, también sin red o con una copia vieja
 // en caché, y la página ya no pide VERSION (lo pedía dos veces). herramientas/nueva-version.mjs la sube al publicar.
@@ -65,13 +71,15 @@ const META_VERSION = `<meta name="sia-version" content="${version}">`;
 const paginas = readdirSync(sitio).filter((f) => f.endsWith('.html'));
 for (const p of paginas) {
   const ruta = join(sitio, p);
-  const html = readFileSync(ruta, 'utf8')
+  const original = readFileSync(ruta, 'utf8');
+  const meta = /\sdata-mapa-sede[\s>]/.test(original) ? META_CSP_MAPA : META_CSP;
+  const html = original
     .replace(/((?:href|src)="(?!formkit\/)[^"?]+)\?v=[0-9.]+"/g, `$1?v=${version}"`)
     .replace(/((?:href|src)="formkit\/[^"?]+\.(?:css|js))(?:\?v=[0-9.]+)?"/g, `$1?v=${versionEstandar}"`)
     .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n?/g, '').replace(/<meta name="referrer"[^>]*>\n?/g, '')
     .replace(/<meta name="sia-version"[^>]*>\n?/g, '')
-    .replace(/<meta charset="utf-8">\n/, `<meta charset="utf-8">\n${META_CSP}\n${META_VERSION}\n`);
-  if (!html.includes(META_CSP)) throw new Error(`${p}: no se pudo poner la política de contenido (falta <meta charset="utf-8">)`);
+    .replace(/<meta charset="utf-8">\n/, `<meta charset="utf-8">\n${meta}\n${META_VERSION}\n`);
+  if (!html.includes(meta)) throw new Error(`${p}: no se pudo poner la política de contenido (falta <meta charset="utf-8">)`);
   writeFileSync(ruta, html);
 }
 

@@ -62,7 +62,9 @@
     return { ins, grupo: datos.grupo.find((g) => g.id === ins.grupo_id) };
   }
 
-  function fichaSolicitud(datos, s, persona) {
+  /* lugares: a qué va la persona a la sede según esta ficha (cita, curso, entrega); con alguno, la pantalla lleva el bloque
+     «Dónde es» con el mapa, uno solo aunque haya varias fichas (decisión 2026-10-23, P68) */
+  function fichaSolicitud(datos, s, persona, lugares = new Set()) {
     const e = APD.ESTADOS[s.estado] || { texto: s.estado, tono: '', sigue: '' };
     let sigue = e.sigue;
     const pares = [['Folio de la solicitud', s.folio], ['Fecha en que enviaste la solicitud', fechaCorta(s.enviada_en, { hora: true })]];
@@ -75,6 +77,7 @@
     // La cita (fecha, hora y lugar) va al principio de la ficha, antes de los datos de pago (auditoría 2026-10-18, D4)
     const cita = s.estado === 'validada_en_linea' && s.cita_en
       ? el('div', { class: 'ficha-cita' }, [datosLista([['Cita de cotejo', fechaLarga(s.cita_en, { hora: true })], ['Lugar de la cita', ...sedeTexto(lugar.nombre)]])]) : null;
+    if (cita) lugares.add('cita');
     const acudeEl = s.cita_en ? `el ${fechaLarga(s.cita_en, { hora: true })}` : '';
     if (s.estado === 'validada_en_linea' && s.cita_en && !s.cotejo_pausa) {
       sigue = { pasos: ['Imprime los mismos documentos que cargaste.', 'Paga los derechos e imprime tu comprobante de pago.', `Acude a tu cita ${acudeEl} con tus documentos y tu comprobante.`] };
@@ -140,6 +143,7 @@
           ['Lugar del curso', ...sedeTexto(g.grupo.sede)],
           empezo && c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}`] : ['El curso termina el', ultimo && larga(ultimo)],
           ['Examen', examen]])]);
+        lugares.add('curso');
         // Confirmado: el grupo por su nombre (curso y fechas) con el folio en chico (propuesta D, 2026-10-18). Por confirmar,
         // sólo el folio: la fecha propuesta todavía no es segura
         pares.push(['Grupo', APD.grupoTitulo(g.grupo, datos)]);
@@ -264,6 +268,7 @@
           const entrega = (datos.parametro.find((x) => x.clave === 'entrega_lugar') || {}).valor || '';
           sigue = { texto: `Tu acreditación se emitió el ${fechaCorta(a.emitida_en)}; tu credencial te espera.`, pasos: ['Recógela en persona, con tu identificación oficial.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
           pares.push(['Dónde recogerla', ...sedeTexto(`Oficina del ${lugar.nombre}`)]); // decisión 2026-10-18
+          lugares.add('entrega');
           extra.push(APD.limpia(entrega) ? el('p', { texto: APD.limpia(entrega) }) : el('p', { class: 'pendiente', texto: 'Pendiente: días y horario de entrega.' }));
         }
       }
@@ -273,6 +278,7 @@
     // El día de la Ciudad de México, no los 10 primeros caracteres del texto: con una hora en UTC («…T01:30:00Z») esos
     // son el día siguiente (auditoría 2026-10-19, B8-02). APD.diaDe también acepta una fecha sola (AAAA-MM-DD).
     const delDia = APD.diaDe(s.estado_desde) === APD.hoy(datos);
+    if (s.estado === 'aprobada') lugares.add('entrega');
     if (s.estado === 'aprobada') sigue = { texto: 'Aprobaste el examen.', pasos: [delDia ? 'Recoge tu credencial hoy mismo, en la oficina del Vivero, antes de irte.' : 'Recoge tu credencial en la oficina del Vivero.', 'Ahí te toman la fotografía que lleva tu credencial.', 'Al recibirla, firmas el comprobante de recepción.'] };
     if (s.estado === 'no_acreditada') sigue = 'No alcanzaste la calificación mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
@@ -319,6 +325,40 @@
     ]);
   }
 
+  /* «Dónde es» (decisión de Liber del 23/10/2026, P68): la sede, su dirección y un mapa de Google dentro de la página,
+     una sola vez aunque haya cita y curso a la vez, cuando la persona tiene que ir: su cita de cotejo, su curso o la
+     entrega de su credencial. Sin nada de eso, el bloque no aparece y el mapa no se carga. El mapa es un marco de Google
+     sin clave, que se carga al acercarse a él (loading="lazy") y sin decirle a Google de qué página viene
+     (referrerpolicy="no-referrer"); la política de contenido de esta página permite ese marco y nada más de Google
+     (frame-src, herramientas/construir-sitio.mjs). Google recibe los datos de conexión de quien lo carga: se dice junto al
+     mapa y va en el aviso de privacidad (P31). La ubicación sale del parámetro sede_mapa (APD.sede). */
+  const A_QUE = { cita: 'tu cita de cotejo', curso: 'tu curso', entrega: 'la entrega de tu credencial' };
+  function dondeEs(datos, lugares) {
+    const lugar = APD.sede(datos);
+    const a = ['cita', 'curso', 'entrega'].filter((k) => lugares.has(k)).map((k) => A_QUE[k]);
+    const frase = comoLista(a);
+    const hijos = [
+      el('p', { class: 'ficha-sigue', texto: `${frase.charAt(0).toLocaleUpperCase('es-MX')}${frase.slice(1)} ${a.length > 1 ? 'son' : 'es'} en el ${lugar.nombre}${lugar.direccion ? `, ${lugar.direccion}` : ''}.` }),
+      // Sin dirección, falta todo; con la dirección confirmada (23/10/2026), sólo las referencias si siguen «[pendiente]»
+      lugar.direccion ? (!lugar.referenciasPendientes ? null : el('p', { class: 'pendiente', texto: 'Pendiente: referencias para llegar (puerta de acceso y transporte).' }))
+        : el('p', { class: 'pendiente', texto: 'Pendiente: dirección y referencias para llegar.' })
+    ];
+    if (lugar.mapa) {
+      const { lat, lng } = lugar.mapa;
+      hijos.push(
+        el('iframe', { class: 'mapa-sede', 'data-mapa': '', title: `Mapa de la ubicación del ${lugar.nombre}`, loading: 'lazy', referrerpolicy: 'no-referrer',
+          src: `https://maps.google.com/maps?q=${lat},${lng}&z=16&hl=es&output=embed` }),
+        el('p', { class: 'ficha-sigue' }, [
+          el('a', { class: 'btn-enlace', 'data-mapa-abrir': '', href: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, target: '_blank', rel: 'noopener' }, [
+            document.createTextNode('Abrir en Google Maps'),
+            el('span', { class: 'solo-lector', texto: ` ${FormKit.config.mensajes.enlaceNuevaPestana}` }),
+            APD.icono('externo', 'icono icono-sm')])
+        ]),
+        el('p', { class: 'texto-gris', texto: 'El mapa lo muestra Google: al verlo, Google recibe los datos de tu conexión.' }));
+    }
+    return el('div', { class: 'ficha' }, hijos);
+  }
+
   APD.cargar().then((datos) => {
     const persona = APD.requiereSesion(datos);
     if (!persona) return;
@@ -341,9 +381,14 @@
     // Una sola acción principal: iniciar una solicitud nueva, si hay algo que se pueda pedir como nueva
     const puedeNueva = ['poda', 'dictaminador'].some((t) => op[t].disponible && op[t].modalidad === 'nueva');
     // Un solo texto para «sin solicitudes en curso», con la guía de cómo empezar si se puede (D14)
+    const lugares = new Set();
     document.querySelector('[data-solicitudes]').replaceChildren(...(enCurso.length
-      ? enCurso.map((s) => fichaSolicitud(datos, s, persona))
+      ? enCurso.map((s) => fichaSolicitud(datos, s, persona, lugares))
       : [el('p', { class: 'vacio', texto: `No tienes solicitudes en curso.${puedeNueva ? ' Para empezar, presiona «Iniciar una solicitud».' : ''}` })]));
+    // Un solo «Dónde es» por pantalla, después de las solicitudes en curso (P68)
+    const donde = document.querySelector('[data-mapa-sede]');
+    donde.hidden = !lugares.size;
+    if (lugares.size) donde.querySelector('[data-donde]').replaceChildren(dondeEs(datos, lugares));
     document.querySelector('[data-anteriores-seccion]').hidden = !anteriores.length;
     document.querySelector('[data-anteriores]').replaceChildren(...anteriores.map((s) => fichaSolicitud(datos, s, persona)));
 

@@ -250,7 +250,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Aviso de privacidad de cuenta, solicitud y verificación pública, con sus fundamentos",
-      "recomendacion": "Enviar a la Unidad de Transparencia los tres textos simplificados que ya están en las pantallas, con la lista de datos y su finalidad (P32). Ley vigente: la de Protección de Datos Personales en Posesión de Sujetos Obligados de la Ciudad de México publicada el 13/07/2026, que abrogó la de 2018: aviso simplificado e integral (arts. 19 a 23), con el nombre del sistema de datos personales, cuya creación se publica en la Gaceta (arts. 38 y 39).",
+      "recomendacion": "Enviar a la Unidad de Transparencia los tres textos simplificados que ya están en las pantallas, con la lista de datos y su finalidad (P32). Ley vigente: la de Protección de Datos Personales en Posesión de Sujetos Obligados de la Ciudad de México publicada el 13/07/2026, que abrogó la de 2018: aviso simplificado e integral (arts. 19 a 23), con el nombre del sistema de datos personales, cuya creación se publica en la Gaceta (arts. 38 y 39). Desde el 23/10/2026 (P68), «Mis trámites» muestra un mapa de Google dentro de la página: el aviso debe decir que ese mapa lo sirve Google, que al cargarlo Google recibe los datos de conexión de la persona (dirección IP, navegador) conforme a sus propias políticas, y que puede usar «Abrir en Google Maps» o la dirección escrita en su lugar.",
       "lineamientos": "Anteproyecto 0.5: Datos personales (Cap. XI). Incorporado: sin reconocimiento facial automatizado."
     },
     {
@@ -343,8 +343,8 @@
       "grupo": "direccion",
       "bloquea": "datos reales",
       "desde": "2026-10-16",
-      "titulo": "Dirección del Vivero Nezahualcóyotl y referencias para llegar",
-      "recomendacion": "Confirmar la dirección exacta del acceso al público y referencias (transporte, puerta de entrada, área donde se atiende). Se captura en el parámetro sede_direccion y se muestra con la cita, el grupo y la entrega. Dato recibido (2026-10-17): el PILARES Vivero Nezahualcóyotl, dentro del predio, está en Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco; falta confirmar que el acceso al público del Vivero sea el mismo. Liber confirmó la ubicación del Vivero el 19/10/2026 con su enlace de Google Maps (https://maps.app.goo.gl/j9izbz3PHUuXz9VL6) y pidió mostrar un mapa junto a la dirección. Falta decidir la forma: un enlace «Cómo llegar» que abre Google Maps, un mapa de Google dentro de la página (exige abrir la política de seguridad a Google y avisarlo en el aviso de privacidad) o un croquis propio.",
+      "titulo": "Referencias para llegar al Vivero Nezahualcóyotl",
+      "recomendacion": "Falta sólo confirmar las referencias para llegar: puerta de acceso al público, transporte y área donde se atiende. Se agregan al parámetro sede_direccion en lugar de su marca «[pendiente: referencias para llegar …]»; mientras, «Dónde es» dice «Pendiente: referencias para llegar (puerta de acceso y transporte)». Ya confirmado por Liber el 23/10/2026: la dirección escrita, «Canal de Chalco s/n, colonia Ciénega Grande, Alcaldía Xochimilco», en sede_direccion (se muestra con la cita, el curso y la entrega), y la ubicación de su enlace de Google Maps (https://maps.app.goo.gl/j9izbz3PHUuXz9VL6; 19.2893657, -99.075447), en el parámetro sede_mapa. «Mis trámites» muestra un mapa de Google dentro de la página, en el bloque «Dónde es», una sola vez, cuando la persona tiene cita de cotejo, curso o credencial por recoger, con el enlace «Abrir en Google Maps» y la línea «El mapa lo muestra Google»; la política de contenido de esa página permite sólo el marco de Google (frame-src). Falta también ver en un teléfono real, con red, que el mapa de Google carga (en las pruebas se sustituye por una página mínima).",
       "lineamientos": "Anteproyecto 0.5: Art. 6. La sede no se fija en el texto."
     },
     {

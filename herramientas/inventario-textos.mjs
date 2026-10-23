@@ -4,6 +4,7 @@
 // lo agrega herramientas/inventario-textos.py. Escribe docs/textos/estaticos.json.
 //   node herramientas/inventario-textos.mjs [http://localhost:8765/]
 import { chromium } from 'playwright';
+import { navegadorSinGoogle } from './sin-google.mjs';
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,7 +35,8 @@ const OCULTOS = {
   'data-camara': 'En teléfono o equipo con cámara'
 };
 
-const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+// El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
+const navegador = navegadorSinGoogle(await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}));
 const contexto = await navegador.newContext({ javaScriptEnabled: false });
 const filas = [
   { pantalla: 'Todas las pantallas', archivo: '*.html', seccion: 'Cabecera', tipo: 'Título del sistema', cuando: 'Siempre', texto: 'Acreditaciones de arbolado urbano' },
