@@ -2,7 +2,7 @@
 <html lang="es-MX">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://www.google.com https://maps.google.com">
 <meta name="referrer" content="same-origin">
 <meta name="sia-version" content="0.65">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -45,6 +45,13 @@
   <section class="seccion" aria-labelledby="t-solicitudes">
     <h3 class="titulo-bloque" id="t-solicitudes">Solicitudes en curso</h3>
     <div class="seccion" data-solicitudes></div>
+  </section>
+
+  <!-- Dónde es (decisión 2026-10-23, P68): un solo mapa de Google por pantalla, con la cita, el curso o la entrega. Con
+       data-mapa-sede, herramientas/construir-sitio.mjs abre la política de contenido de esta página a ese marco (frame-src). -->
+  <section class="seccion" aria-labelledby="t-donde" data-mapa-sede hidden>
+    <h3 class="titulo-bloque" id="t-donde">Dónde es</h3>
+    <div data-donde></div>
   </section>
 
   <section class="seccion" aria-labelledby="t-acreditaciones">
