@@ -440,10 +440,14 @@
   function situacion(datos, acreditacion) { return datos.estado_acreditacion[acreditacion.numero]; }
   function parametro(datos, clave) { const p = datos.parametro.find((x) => x.clave === clave); return p ? Number(p.valor) : null; }
   /* Sede única de la cita, el curso y la entrega (parámetros sede y sede_direccion de la base, decisión 2026-10-16).
-     La dirección vacía (aún «[pendiente]») se muestra como «por confirmar». */
+     La dirección vacía (aún «[pendiente]») se muestra como «por confirmar». La ubicación en el mapa sale del parámetro
+     sede_mapa, «latitud,longitud» en grados decimales (decisión 2026-10-23, P68): vacía o mal escrita, no hay mapa. */
   function sede(datos) {
     const valor = (c) => (datos.parametro.find((x) => x.clave === c) || {}).valor || '';
-    return { nombre: valor('sede'), direccion: limpia(valor('sede_direccion')) };
+    const m = limpia(valor('sede_mapa')).match(/^(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/);
+    const [lat, lng] = m ? [Number(m[1]), Number(m[2])] : [NaN, NaN];
+    const mapa = Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat: m[1], lng: m[2] } : null;
+    return { nombre: valor('sede'), direccion: limpia(valor('sede_direccion')), mapa };
   }
   function curso(datos, tipo, modalidad) { return datos.curso.find((c) => c.tipo_acreditacion === tipo && c.modalidad === modalidad); }
   function activa(solicitud) { return !FINALES.includes(solicitud.estado); }

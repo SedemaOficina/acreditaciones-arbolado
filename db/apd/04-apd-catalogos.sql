@@ -28,6 +28,8 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Lugar único de la cita de cotejo, del curso y de la entrega de acreditaciones (decisión 2026-10-16, Liber).'),
   ('sede_direccion', '[pendiente] Dirección y referencias para llegar al Vivero Nezahualcóyotl.',
    'Cómo llegar a la sede; se muestra a la persona con la cita, el grupo y la entrega.'),
+  ('sede_mapa', '19.2893657,-99.075447',
+   'Ubicación de la sede en el mapa: «latitud,longitud» en grados decimales (la que confirmó Liber con su enlace de Google Maps). De aquí salen el mapa de Google y el enlace «Abrir en Google Maps» de «Mis trámites»; vacía, no se muestra mapa (decisión 2026-10-23, Liber).'),
   ('intentos_maximos', '5',
    'Intentos de entrada fallidos seguidos con los que la cuenta se bloquea (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].'),
   ('minutos_bloqueo', '15',
