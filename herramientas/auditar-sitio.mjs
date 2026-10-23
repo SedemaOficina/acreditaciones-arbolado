@@ -11,6 +11,7 @@
 // Uso: node herramientas/auditar-sitio.mjs http://localhost:8765/ verificacion/auditoria
 //   CHROMIUM=<ruta> para usar un Chromium instalado; SIN_CLICS=1 omite la prueba de botones.
 import { chromium } from 'playwright';
+import { navegadorSinGoogle } from './sin-google.mjs';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -194,7 +195,8 @@ function huella() {
   return `${location.href}#${t}#${texto.length}#${texto.slice(0, 2000)}#${aria}#${valores}#${foco}#${window.scrollY}`;
 }
 
-const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+// El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
+const navegador = navegadorSinGoogle(await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}));
 const recursosRevisados = new Map();
 let paginas = 0;
 let presionados = 0;

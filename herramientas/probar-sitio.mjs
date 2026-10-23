@@ -10,6 +10,7 @@
 // Requiere `npm install` (Playwright como dependencia de desarrollo) y un Chromium de Playwright.
 
 import { chromium } from 'playwright';
+import { navegadorSinGoogle } from './sin-google.mjs';
 import { readFileSync, readdirSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -3613,9 +3614,17 @@ async function politicaContenido(navegador) {
     politicas.add(m[1]);
   }
   comprueba(paginas.length === 21 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
+  /* Excepción documentada (decisión del 23/10/2026, P68): la página con el mapa de Google de la sede (data-mapa-sede; sólo
+     «Mis trámites») agrega frame-src con los dos dominios del mapa y nada más; las demás, la política estricta sin cambio */
+  const conMapa = paginas.filter((p) => /\sdata-mapa-sede[\s>]/.test(readFileSync(join(raiz, 'sitio', p), 'utf8')));
+  const FRAME_MAPA = '; frame-src https://www.google.com https://maps.google.com';
+  const politicaDe = (p) => readFileSync(join(raiz, 'sitio', p), 'utf8').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
+  for (const p of conMapa) politicas.delete(politicaDe(p));
   const csp = [...politicas][0] || '';
-  comprueba(politicas.size === 1 && /script-src 'self';/.test(csp) && /style-src 'self';/.test(csp) && /object-src 'none'/.test(csp) && /base-uri 'none'/.test(csp) && !/unsafe/.test(csp),
-    t(`una sola política, estricta, en todas: «${csp}»`));
+  comprueba(politicas.size === 1 && /script-src 'self';/.test(csp) && /style-src 'self';/.test(csp) && /object-src 'none'/.test(csp) && /base-uri 'none'/.test(csp) && !/unsafe/.test(csp) && !/frame-src/.test(csp),
+    t(`una sola política, estricta, en las ${paginas.length - conMapa.length} páginas sin mapa: «${csp}»`));
+  comprueba(conMapa.join() === 'tramites.html' && conMapa.every((p) => politicaDe(p) === csp + FRAME_MAPA),
+    t(`excepción del mapa (P68) sólo en ${conMapa.join(', ') || 'ninguna'}: la misma política más «${FRAME_MAPA.slice(2)}», sin scripts ni estilos de Google`));
   const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: 390, height: 844 } });
   await c.addInitScript(() => { window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())); });
   const pg = await c.newPage();
@@ -3637,7 +3646,188 @@ async function politicaContenido(navegador) {
   await pg.goto(BASE + 'cuenta.html');
   await cargaFoto(pg);
   await revisa('cuenta con la fotografía cargada');
+  // «Mis trámites» con el mapa (una persona con cita): el marco de Google se carga (aquí, la página mínima de
+  // herramientas/sin-google.mjs) sin violación; en una página sin la excepción, el mismo marco se bloquea (frame-src)
+  const conCitaId = conCita.solicitante_id;
+  await pg.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), conCitaId);
+  await pg.goto(BASE + 'tramites.html');
+  await pg.locator('[data-mapa]').scrollIntoViewIfNeeded();
+  await (await (await pg.$('[data-mapa]')).contentFrame()).waitForSelector('[data-mapa-prueba]');
+  await revisa('tramites con el mapa de Google cargado');
+  await pg.goto(BASE + 'index.html');
+  await pg.evaluate(() => { const f = document.createElement('iframe'); f.src = 'https://maps.google.com/maps?q=0,0&output=embed'; document.body.append(f); });
+  await pg.waitForFunction(() => (window.__csp || []).length > 0, null, { timeout: 5000 }).catch(() => {});
+  const bloqueado = (await violaciones()).filter((v) => /frame-src|child-src|default-src/.test(v) && /maps\.google\.com|Refused to frame/.test(v));
+  comprueba(bloqueado.length >= 1, t(`index.html (sin la excepción) bloquea un marco de Google: ${bloqueado[0] || 'no lo bloqueó'}`));
   await c.close();
+}
+
+/* ── Mapa de la sede (decisión de Liber del 23/10/2026, P68; SOLO=mapa) ──
+   «Mis trámites» muestra un mapa de Google del Vivero Nezahualcóyotl cuando la persona tiene que ir: su cita de cotejo,
+   su curso o la entrega de su credencial. Un solo mapa por pantalla, aunque haya cita y curso a la vez; sin nada de eso,
+   no hay mapa. El marco lleva título, se carga al acercarse (lazy) y sin referente; el enlace «Abrir en Google Maps» va a
+   las coordenadas del parámetro sede_mapa y dice que se abre en otra pestaña; junto al mapa se dice que lo muestra
+   Google. Sin desborde a 320 y 390 px, axe sin violaciones y la política de contenido permite el marco (la página mínima
+   de herramientas/sin-google.mjs llega a cargarse) sin otra violación. */
+async function mapaSede(navegador) {
+  const t = (m) => `[mapa] ${m}`;
+  const param = (datos.parametro.find((x) => x.clave === 'sede_mapa') || {}).valor || '';
+  const [lat, lng] = param.split(',');
+  const nombre = (datos.parametro.find((x) => x.clave === 'sede') || {}).valor;
+  // A qué va a la sede cada solicitud, calculado aquí desde los datos (no desde la pantalla)
+  const entregada = (s) => (datos.acreditacion.find((a) => a.solicitud_id === s.id) || {}).entregada_en;
+  const aQueVa = (s) => {
+    if (s.estado === 'validada_en_linea' && s.cita_en) return 'cita';
+    if (s.estado === 'inscrita') {
+      const ins = datos.inscripcion.find((i) => i.solicitud_id === s.id && i.activa);
+      const g = ins && datos.grupo.find((x) => x.id === ins.grupo_id);
+      return g && g.fecha_inicio && ['confirmado', 'en_curso'].includes(g.estado) ? 'curso' : null;
+    }
+    if (s.estado === 'aprobada') return 'entrega';
+    if (s.estado === 'acreditada' && datos.acreditacion.some((a) => a.solicitud_id === s.id) && !entregada(s)) return 'entrega';
+    return null;
+  };
+  const lugaresDe = (p, d = datos) => new Set(d.solicitud.filter((s) => s.solicitante_id === p.id).map(aQueVa).filter(Boolean));
+  const activas = datos.solicitante.filter((p) => p.estado === 'activa');
+  const conLugar = (k) => activas.find((p) => { const l = lugaresDe(p); return l.size === 1 && l.has(k); });
+  const sinLugar = activas.find((p) => !lugaresDe(p).size && datos.solicitud.some((s) => s.solicitante_id === p.id));
+
+  const nuevo = async (ancho, alto, { sesion, datosDe } = {}) => {
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, reducedMotion: 'reduce' });
+    if (sesion) await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
+    if (datosDe) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(datosDe(structuredClone(datos))) }));
+    await c.addInitScript(() => { window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())); });
+    const page = await c.newPage();
+    const errores = [];
+    const aGoogle = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error' || /Content Security Policy|Refused to/i.test(m.text())) errores.push(m.text().slice(0, 160)); });
+    page.on('request', (q) => { if (/^https:\/\/(?:www|maps)\.google\.com\//.test(q.url())) aGoogle.push(q.url()); });
+    return { c, page, errores, aGoogle };
+  };
+  const abre = async (page) => {
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForFunction(() => { const n = document.querySelector('[data-cargando]'); return n && !/Cargando/.test(n.textContent); });
+  };
+  const lee = (page) => page.evaluate(() => {
+    const sec = document.querySelector('[data-mapa-sede]');
+    const f = document.querySelector('iframe');
+    const a = document.querySelector('[data-mapa-abrir]');
+    const ficha = f && f.closest('.ficha');
+    return { marcos: document.querySelectorAll('iframe').length, bloques: document.querySelectorAll('[data-mapa-sede]').length, visible: Boolean(sec && !sec.hidden && sec.checkVisibility()),
+      frase: ((sec && sec.querySelector('.ficha-sigue')) || {}).textContent || '',
+      marco: f && { title: f.getAttribute('title'), loading: f.getAttribute('loading'), ref: f.getAttribute('referrerpolicy'), src: f.getAttribute('src'),
+        ancho: f.getBoundingClientRect().width, anchoFicha: ficha ? ficha.clientWidth : 0, alto: f.getBoundingClientRect().height },
+      enlace: a && { href: a.getAttribute('href'), target: a.getAttribute('target'), rel: a.getAttribute('rel'), texto: a.textContent.replace(/\s+/g, ' ').trim() },
+      aviso: sec ? [...sec.querySelectorAll('p')].map((p) => p.textContent).find((x) => /Google/.test(x) && !/Abrir/.test(x)) || '' : '',
+      csp: (document.querySelector('meta[http-equiv="Content-Security-Policy"]') || {}).content || '', violaciones: window.__csp || [] };
+  });
+
+  // 1. Todas las personas con cuenta, en teléfono: mapa (uno solo) si y sólo si tiene cita, curso o entrega
+  {
+    const { c, page, errores } = await nuevo(390, 844);
+    await page.goto(BASE + 'index.html');
+    const malas = [];
+    const cuenta = { con: 0, sin: 0 };
+    for (const p of activas) {
+      await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), p.id);
+      await abre(page);
+      const r = await lee(page);
+      const debe = lugaresDe(p).size > 0;
+      cuenta[debe ? 'con' : 'sin']++;
+      if (debe ? !(r.marcos === 1 && r.visible) : (r.marcos || r.visible)) malas.push(`${p.curp} (${[...lugaresDe(p)].join(', ') || 'nada'}: ${r.marcos} marcos)`);
+    }
+    comprueba(!malas.length && cuenta.con >= 3 && cuenta.sin >= 3 && !errores.length,
+      t(`las ${activas.length} personas con cuenta: mapa sólo con cita, curso o entrega (${cuenta.con} con mapa, ${cuenta.sin} sin)${malas.length ? '; mal: ' + malas.slice(0, 4).join(', ') : ''}${errores.length ? '; consola: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
+
+  // 2. Cita, curso y entrega, en teléfono y en escritorio: el marco, el enlace, el aviso de Google y la política
+  const casos = [['cita', conLugar('cita'), 'Tu cita de cotejo es'], ['curso', conLugar('curso'), 'Tu curso es'], ['entrega', conLugar('entrega'), 'La entrega de tu credencial es']];
+  for (const [ancho, alto] of [[390, 844], [1280, 900]]) {
+    for (const [k, p, frase] of casos) {
+      if (!p) { mal(t(`no hay en los datos una persona sólo con ${k}`)); continue; }
+      const { c, page, errores, aGoogle } = await nuevo(ancho, alto, { sesion: p.id });
+      await abre(page);
+      await page.locator('[data-mapa]').scrollIntoViewIfNeeded();
+      const marco = await (await page.$('[data-mapa]')).contentFrame();
+      await marco.waitForSelector('[data-mapa-prueba]');
+      const r = await lee(page);
+      const m = r.marco || {};
+      const e = r.enlace || {};
+      comprueba(r.marcos === 1 && r.bloques === 1 && r.frase.startsWith(`${frase} en el ${nombre}`)
+        && m.title === `Mapa de la ubicación del ${nombre}` && m.loading === 'lazy' && m.ref === 'no-referrer'
+        && m.src === `https://maps.google.com/maps?q=${lat},${lng}&z=16&hl=es&output=embed` && m.alto >= 200,
+        t(`${k} a ${ancho} px: un solo mapa, «${r.frase}», marco con título, lazy y sin referente, a ${param}`));
+      const destino = e.href ? new URL(e.href) : null;
+      comprueba(destino && destino.origin === 'https://www.google.com' && destino.searchParams.get('query') === `${lat},${lng}` && destino.searchParams.get('api') === '1'
+        && e.target === '_blank' && /noopener/.test(e.rel || '') && e.texto === 'Abrir en Google Maps (se abre en otra pestaña)' && /^El mapa lo muestra Google/.test(r.aviso),
+        t(`${k} a ${ancho} px: «${e.texto}» lleva a las coordenadas del parámetro y junto al mapa dice «${r.aviso}»`));
+      comprueba(/frame-src https:\/\/www\.google\.com https:\/\/maps\.google\.com$/.test(r.csp) && aGoogle.length >= 1 && aGoogle.every((u) => u.startsWith('https://maps.google.com/maps?'))
+        && !r.violaciones.length && !errores.length,
+        t(`${k} a ${ancho} px: la política permite el marco (cargó ${aGoogle.length} vez), sin violaciones ni errores${r.violaciones.length || errores.length ? ': ' + [...r.violaciones, ...errores].slice(0, 3).join(' | ') : ''}`));
+      comprueba(m.ancho <= m.anchoFicha + 0.5, t(`${k} a ${ancho} px: el mapa no pasa del ancho de su tarjeta (${Math.round(m.ancho)} de ${m.anchoFicha} px)`));
+      await sinDesborde(page, t(`${k} a ${ancho} px`));
+      if (k === 'cita') await captura(page, `mapa-cita-${ancho}`);
+      await c.close();
+    }
+  }
+
+  // 3. Cita y curso a la vez (dos solicitudes de la misma persona): un solo mapa, después de las dos tarjetas
+  {
+    const pCurso = conLugar('curso');
+    const sCita = datos.solicitud.find((s) => aQueVa(s) === 'cita' && s.solicitante_id !== pCurso.id);
+    const datosDe = (d) => { d.solicitud.find((s) => s.id === sCita.id).solicitante_id = pCurso.id; return d; };
+    for (const ancho of [320, 390, 1280]) {
+      const { c, page, errores } = await nuevo(ancho, 900, { sesion: pCurso.id, datosDe });
+      await abre(page);
+      const r = await lee(page);
+      const despues = await page.evaluate(() => Boolean(document.querySelector('[data-solicitudes]').compareDocumentPosition(document.querySelector('[data-mapa-sede]')) & Node.DOCUMENT_POSITION_FOLLOWING));
+      const fichas = await page.$$eval('[data-solicitudes] > .ficha', (l) => l.length);
+      comprueba(fichas === 2 && r.marcos === 1 && r.bloques === 1 && r.visible && despues && r.frase.startsWith(`Tu cita de cotejo y tu curso son en el ${nombre}`) && !errores.length,
+        t(`cita y curso a la vez a ${ancho} px: ${fichas} tarjetas y ${r.marcos} mapa, después de ellas: «${r.frase}»`));
+      comprueba(r.marco && r.marco.ancho <= r.marco.anchoFicha + 0.5, t(`cita y curso a ${ancho} px: el mapa cabe en su tarjeta (${r.marco && Math.round(r.marco.ancho)} px)`));
+      await sinDesborde(page, t(`cita y curso a ${ancho} px`));
+      await c.close();
+    }
+  }
+
+  // 4. Sin cita, curso ni entrega no hay bloque ni petición a Google; con sede_mapa vacío, la dirección sin mapa ni enlace
+  {
+    const { c, page, errores, aGoogle } = await nuevo(390, 844, { sesion: sinLugar.id });
+    await abre(page);
+    const r = await lee(page);
+    comprueba(!r.marcos && !r.visible && !aGoogle.length && !errores.length, t(`sin cita, curso ni entrega (${sinLugar.curp}): sin «Dónde es», sin mapa y sin pedir nada a Google`));
+    await c.close();
+  }
+  {
+    const datosDe = (d) => { d.parametro.find((x) => x.clave === 'sede_mapa').valor = ''; return d; };
+    const { c, page, errores, aGoogle } = await nuevo(390, 844, { sesion: conLugar('cita').id, datosDe });
+    await abre(page);
+    const r = await lee(page);
+    comprueba(r.visible && !r.marcos && !r.enlace && !r.aviso && !aGoogle.length && r.frase.startsWith('Tu cita de cotejo es') && !errores.length,
+      t('con sede_mapa vacío: «Dónde es» con la sede, sin mapa, sin enlace y sin pedir nada a Google'));
+    await c.close();
+  }
+
+  // 5. axe sobre «Mis trámites» con el mapa (cita y curso a la vez), en teléfono y en escritorio
+  if (process.env.AXE) {
+    const axe = readFileSync(process.env.AXE, 'utf8');
+    const pCurso = conLugar('curso');
+    const sCita = datos.solicitud.find((s) => aQueVa(s) === 'cita' && s.solicitante_id !== pCurso.id);
+    const datosDe = (d) => { d.solicitud.find((s) => s.id === sCita.id).solicitante_id = pCurso.id; return d; };
+    for (const [ancho, alto] of [[390, 844], [1280, 900]]) {
+      const { c, page } = await nuevo(ancho, alto, { sesion: pCurso.id, datosDe });
+      await abre(page);
+      await page.locator('[data-mapa]').scrollIntoViewIfNeeded();
+      await (await (await page.$('[data-mapa]')).contentFrame()).waitForSelector('[data-mapa-prueba]');
+      await page.evaluate(axe);
+      const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
+        .violations.map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 160)).join(' || ')}`));
+      comprueba(!v.length, t(`axe a ${ancho} px con el mapa: sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
+      await c.close();
+    }
+  } else console.log('OMITIDO  [mapa] axe: falta AXE=<ruta a axe.min.js del estándar>');
 }
 
 /* ── Limpieza del código (auditoría 2026-10-19, R4-07, A4-01 y R4-08) ──
@@ -5241,7 +5431,8 @@ async function pesoDatos(navegador) {
   await c.close();
 }
 
-const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+// El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
+const navegador = navegadorSinGoogle(await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}));
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
 // terminaba la batería y las siguientes no corrían. La parte detenida cuenta como falla.
 const detenidas = [];
@@ -5260,6 +5451,7 @@ try {
   if (toca('limpieza', 'licencias')) await parte('licencias', () => licencias());
   if (toca('csp')) await parte('política de contenido', () => politicaContenido(navegador));
   if (toca('peso')) await parte('peso de los datos', () => pesoDatos(navegador));
+  if (toca('mapa')) await parte('mapa de la sede', () => mapaSede(navegador));
   if (!solo) {
     await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));
     await parte('recorrido en escritorio', () => recorrido(navegador, 1280, 900, 'escritorio'));

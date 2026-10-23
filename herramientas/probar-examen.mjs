@@ -9,6 +9,7 @@
 //       AXE=<ruta a axe.min.js> CHROMIUM=<ruta opcional> node herramientas/probar-examen.mjs http://localhost:8765/ [carpeta-de-capturas]
 
 import { chromium } from 'playwright';
+import { navegadorSinGoogle } from './sin-google.mjs';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +24,8 @@ let bien = 0;
 const ok = (cond, texto) => { if (cond) { bien += 1; } else { fallas += 1; console.log(`FALLA    ${texto}`); } };
 const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const navegador = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
+// El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
+const navegador = navegadorSinGoogle(await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}));
 
 /* Zona horaria del navegador fija: la de la Ciudad de México (auditoría 2026-10-19, B8-03); una pasada corta va en UTC */
 async function contexto(ancho, zona = 'America/Mexico_City') {
