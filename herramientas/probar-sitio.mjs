@@ -3891,9 +3891,8 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
-    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr. Sin excepciones: las casillas de
-    // «Grupos» que quedan debajo de la barra fija también cuentan (sesión del 23/10, parte B: la barra ya cubre entera la
-    // casilla que el borde de la ventana corta; app/apd.css)
+    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr. Sin excepciones (la barra fija de
+    // elegidas de «Grupos», que pedía cuidar las casillas que quedaban debajo, ya no existe desde el 24/10/2026)
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
       .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`));
     comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
