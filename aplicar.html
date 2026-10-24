@@ -36,33 +36,37 @@
 
   <section class="tarjeta" aria-labelledby="t-aplicar" data-con-grupo hidden>
     <h2 class="titulo-paso" id="t-aplicar">Aplicar el examen</h2>
-    <p class="bajada">Examen en línea del grupo, el último día del curso, en el salón de cómputo. Al pasar lista se registra la asistencia de hoy y, a quien está presente, el sistema le genera su código de un solo uso.</p>
+    <p class="bajada">El último día del curso, en el salón de cómputo: primero se pasa lista, que es la asistencia de ese día, y después cada persona presente contesta el examen en línea con su código de un solo uso.</p>
     <div class="grupo-examen" data-grupo></div>
 
+    <!-- Primero el pase de lista (la asistencia del último día), después el examen (reporte de Liber del 24/10/2026). El
+         título y el texto los pone app/aplicar.js con el día del curso: «Día 5 de 5 · Pase de lista en el salón de cómputo». -->
+    <h3 class="titulo-bloque" id="t-pase-lista" data-titulo-lista>Pase de lista en el salón de cómputo</h3>
+    <p class="ayuda ayuda-bloque" data-lista-texto>Compare a cada persona con su fotografía y con su identificación oficial, y márquela «Presente» o «No llegó». Al marcarla presente aparece su código.</p>
+    <!-- Lo que se acaba de hacer o lo que no se pudo (APD.pintaAviso), junto a la lista -->
+    <div data-aviso-accion hidden></div>
+    <p class="resumen-filtro" role="status" data-cuenta>Cargando el grupo…</p>
+
+    <div class="tabla-marco" data-tabla data-clave="persona">
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector" data-leyenda>Pase de lista y examen de las personas del grupo</caption>
+        <thead><tr><th scope="col">Persona</th><th scope="col">Asistencia</th><th scope="col">Pase de lista y código</th><th scope="col">Avance</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+    </div>
+
+    <h3 class="titulo-bloque" id="t-el-examen">Después de pasar lista: el examen</h3>
     <ol class="ayuda ayuda-bloque examen-pasos">
-      <li>Pase lista: compare a cada persona con su fotografía y con su identificación oficial, y márquela «Presente» o «No llegó». Al marcarla presente aparece su código.</li>
-      <li>Entréguele su código impreso o dígaselo. Sólo sirve para su examen y sólo en una computadora a la vez.</li>
+      <li>Entregue a cada persona presente su código impreso o dígaselo. Sólo sirve para su examen y sólo en una computadora a la vez.</li>
       <li>La persona escribe el código en la computadora, en «Entra a tu examen»; su pantalla muestra su nombre y su fotografía.</li>
-      <li>Siga aquí el avance. Al enviar, cada persona ve su calificación y queda registrada.</li>
+      <li>Siga el avance en la lista, en «Avance». Al enviar, cada persona ve su calificación y queda registrada.</li>
     </ol>
 
     <div class="examen-herramientas">
       <button type="button" class="btn btn-secundario" data-imprimir><svg class="icono" aria-hidden="true"><use href="#i-descarga"></use></svg>Imprimir los códigos</button>
       <a class="btn-enlace" href="examen.html" target="_blank" rel="noopener">Abrir la pantalla del examen<span class="solo-lector"> (se abre en otra pestaña)</span><svg class="icono icono-sm" aria-hidden="true"><use href="#i-externo"></use></svg></a>
     </div>
-
-    <!-- Lo que se acaba de hacer o lo que no se pudo (APD.pintaAviso), junto a las herramientas -->
-    <div data-aviso-accion hidden></div>
-    <p class="resumen-filtro" role="status" data-cuenta>Cargando el grupo…</p>
     <div class="aviso aviso-ok" data-todos hidden><svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg><p class="aviso-texto">Todas las personas con derecho a examen terminaron. Las calificaciones quedaron registradas desde el examen en línea y ya no se pueden modificar. Sigue la entrega de credenciales a quienes aprobaron. <span class="pendiente">Pendiente: la pantalla de emisión y entrega es el siguiente bloque.</span></p></div>
-
-    <div class="tabla-marco" data-tabla data-clave="persona">
-      <table class="tabla tabla-bandeja">
-        <caption class="solo-lector" data-leyenda>Personas del grupo y su examen</caption>
-        <thead><tr><th scope="col">Persona</th><th scope="col">Asistencia</th><th scope="col">Pase de lista y código</th><th scope="col">Avance</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
-        <tbody data-filas></tbody>
-      </table>
-    </div>
     <p class="ayuda">El pase de lista registra la asistencia del último día. Versión de prueba: la asistencia de los días anteriores que aún no se capturan se cuenta como cumplida, salvo a una persona a la que se le simula otra falta para ver el caso sin derecho a examen. Abra la pantalla del examen en otra pestaña de este navegador: el avance se ve aquí al momento. Un examen por acreditación, igual para nueva y renovación; aquí, los dos con 10 preguntas ficticias de opción múltiple, sólo para probar las pantallas. <span class="pendiente">Pendiente: el examen real y su página se construyen después.</span></p>
   </section>
 
