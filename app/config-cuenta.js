@@ -97,6 +97,9 @@ window.FORMKIT_OPCIONES = {
   alEnviar(respuesta) {
     const h = document.querySelector('[data-cuenta-historial]');
     if (h) h.hidden = !respuesta.historial;
+    // Con la cuenta creada, la barra de pasos ya no dice nada (el acuse ocupa el lugar del formulario)
+    const barra = document.querySelector('[data-con-formulario]');
+    if (barra) barra.hidden = true;
   },
   alFallar(error, form) {
     // El núcleo ya mostró el aviso general de fallo y pintó junto a su campo los errores que devolvió el servidor
