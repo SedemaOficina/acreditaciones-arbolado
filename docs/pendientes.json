@@ -13,8 +13,8 @@
     },
     {
       "id": "liber",
-      "nombre": "Liber",
-      "nota": "formatos y definiciones del sistema"
+      "nombre": "Definiciones del sistema",
+      "nota": "formatos, pantallas y reglas internas"
     },
     {
       "id": "finanzas",
@@ -635,14 +635,6 @@
       "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). Los Rnn viven en un artefacto privado; pasar al repositorio la tabla Rnn → regla → fila de DECISIONES, o citar la fila de DECISIONES."
     },
     {
-      "id": "P164",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-19",
-      "titulo": "Con la poda por vencer, «Mis trámites» muestra dos botones principales",
-      "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). «Iniciar una solicitud» y «Renovar» compiten; decidir cuál es la acción principal."
-    },
-    {
       "id": "P165",
       "grupo": "liber",
       "bloquea": "no",
@@ -907,6 +899,78 @@
       "titulo": "Dictaminador: qué cuenta como «dos años consecutivos» con la acreditación de poda",
       "recomendacion": "Sesión de trabajo del 23/10/2026: para pedir por primera vez la de dictaminador hace falta la de poda y derribo durante al menos 2 años consecutivos. El sistema lo aplica así (propuesta para confirmar): se cuenta desde la emisión de la primera acreditación de poda de una cadena sin cortes que llega al día de la solicitud, y la de poda debe estar vigente ese día; una renovación emitida dentro de la ventana de renovación tardía (hasta meses_despues_renovacion, 12 meses, después del vencimiento) no corta la cuenta; una tramitada como nueva después de esa ventana la empieza otra vez. La renovación de dictaminador sigue pidiendo sólo la poda vigente. Los años son el parámetro anios_poda_dictaminador. Confirmar con la Dirección y llevarlo a los lineamientos (requisitos del dictaminador).",
       "lineamientos": "Anteproyecto 0.5: requisitos del dictaminador. Por incorporar."
+    },
+    {
+      "id": "P198",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Siguiente pantalla del personal que pasa a paso a paso",
+      "recomendacion": "Ya están por pasos «Grupos», «Revisar una solicitud», «Cita de cotejo» y «Crea tu cuenta», y la asistencia avanza día por día hasta el pase de lista del día 5. Opciones: (a) «Aplicar el examen» completo (pase de lista, abrir el examen, seguir el avance, cerrar y ver resultados); (b) «Entregar la credencial» (verificar identidad, imprimir, firmar de recibido); (c) «Corregir documentos» y «Reposición» de la persona. Recomendación: (a), porque es la pantalla que se usa el día de más presión, con el grupo completo en el salón.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P199",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-24",
+      "titulo": "Plazos ya decididos (P02) que todavía no están en el sistema",
+      "recomendacion": "En la sesión del 23/10 se aceptaron 10 días hábiles para revisar, 20 para atender observaciones y la cita dentro de los 20 siguientes (P02), pero la base aún no los tiene como parámetros: «Mis trámites» dice «Fecha por definir» y la bandeja de revisión marca la espera con los valores de prueba de 3 y 10 días. Recomendación: cargarlos como parámetros editables, mostrar la fecha límite en «Mis trámites» y usar esos plazos en las alertas de la bandeja.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P200",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Fecha de nacimiento: se toma de la CURP y ya no se escribe",
+      "recomendacion": "La decisión del 14/10 decía que la persona escribe su fecha de nacimiento y el sistema la compara con la CURP. Desde el 24/10 («Crea tu cuenta» por pasos) la fecha y el sexo se toman de la CURP y no se preguntan. Recomendación: confirmarlo y registrarlo como decisión; la mayoría de edad (P138) se comprueba con esa fecha.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P201",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-24",
+      "titulo": "Quién puede cancelar una acreditación: ¿«administración» son los directivos?",
+      "recomendacion": "Se decidió el 23/10 que cancelan instructores y directivos (P120). En el sistema, el permiso está en el parámetro perfiles_cancelan_acreditacion con los perfiles «instructor» y «administración». Opciones: (a) «administración» equivale a directivos y se deja así; (b) crear un perfil «directivo» distinto de la administración del sistema. Recomendación: (b) si quien administra el sistema no es quien decide cancelaciones.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P202",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Grupo específico de una sola organización: ¿sólo para gobierno?",
+      "recomendacion": "El 23/10 se decidió que sólo las instituciones de gobierno local y federal acceden a grupos en bloque. Hoy «Grupos» permite crear un grupo específico de cualquier organización (empresa, escuela). Opciones: (a) limitar el grupo específico a dependencias de la Ciudad, alcaldías y dependencias federales; (b) dejarlo abierto y que «en bloque» sólo signifique la solicitud conjunta. Recomendación: (a), para que la regla se cumpla en la pantalla.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P203",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-24",
+      "titulo": "Pantalla del personal para emitir la acreditación y registrar la entrega",
+      "recomendacion": "La entrega el mismo día del examen está decidida (R40), con fotografía de la credencial y comprobante firmado, pero no hay pantalla del personal para emitir ni para registrar la entrega. Recomendación: construirla por pasos (verificar identidad, emitir, tomar la fotografía, imprimir y firmar el comprobante, registrar la entrega), junto con P198.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P204",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Último día vigente: el día anterior al aniversario",
+      "recomendacion": "La regla R41 (emitida el 25/10/2025, vigente hasta el 24/10/2026) nació como propuesta y en el mapa del trámite se pasó a decisión por la del 19/10 sobre el 29 de febrero. Recomendación: confirmarla como decisión.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P205",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Cita de cotejo: ¿hasta cuántos meses después se puede dar?",
+      "recomendacion": "El sistema acepta una cita nueva hasta 6 meses después (propuesta al construir). Con el plazo aceptado en P02 (cita dentro de los 20 días hábiles siguientes a la validación), conviene alinear el límite. Opciones: (a) 20 días hábiles; (b) dejar 6 meses para casos excepcionales. Recomendación: (a), con el plazo como parámetro.",
+      "lineamientos": ""
     }
   ],
   "resueltos": [
@@ -1493,7 +1557,7 @@
     },
     {
       "id": "P03",
-      "titulo": "Comprobante de domicilio: no pedirlo al emitir los lineamientos; hoy lo pide el procedimiento del área, no una norma publicada",
+      "titulo": "Comprobante de domicilio: ¿se pide en la solicitud?",
       "como": "Liber determinó en la sesión de trabajo del 23/10/2026 que sí se pide el comprobante de domicilio (deja sin efecto su decisión del 16/10/2026). Se queda en el catálogo de requisitos, en la solicitud, en la revisión y en el aviso de privacidad, y los lineamientos lo incluyen en el Anexo 1.",
       "fecha": "2026-10-23"
     },
@@ -1556,6 +1620,13 @@
       "titulo": "Firma, huella digital y antigüedad consecutiva en la credencial (Norma 5.5)",
       "como": "Ya no aplica (sesión de trabajo del 23/10/2026, P49): la credencial no lleva huella digital ni antigüedad, aunque se aparte del numeral 5.5 de la NADF-001-RNAT-2015 (los lineamientos lo señalan para la Dirección Jurídica). El sistema no recaba huella ni calcula antigüedad, así que no hay dato biométrico que tratar. La firma de la persona y la de la persona titular de la Secretaría siguen en el diseño de la credencial (P49).",
       "fecha": "2026-10-23"
+    },
+    {
+      "id": "P164",
+      "titulo": "Con la poda por vencer, «Mis trámites» mostraba dos botones principales (P164)",
+      "como": "Un botón principal por pantalla (decisión del 21/10): en «Mis trámites» va primero la solicitud en curso, luego «Renovar» y luego «Iniciar una solicitud»",
+      "fecha": "2026-10-21"
     }
-  ]
+  ],
+  "aplicado_hasta": "2026-10-24T05:59:59.000Z"
 }
