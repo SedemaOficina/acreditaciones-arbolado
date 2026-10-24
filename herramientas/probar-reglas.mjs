@@ -28,7 +28,8 @@ const DICT_SIN_PODA = `(SELECT id FROM apd.acreditacion WHERE numero = 'DT-2026-
 // El grupo en integración de los ficticios originales, por su folio: fijo aunque el caso le cambie la fecha o el estado
 // (el de «grupo-por-confirmar» también está en integración, con fecha propuesta)
 const GRUPO_INTEGRACION = `(SELECT id FROM apd.grupo WHERE folio = 'APD-G-2026-004')`;
-const GRUPO_EN_CURSO = `(SELECT id FROM apd.grupo WHERE estado = 'en_curso' LIMIT 1)`;
+// El grupo de la alcaldía (APD-G-2026-003), en curso desde el lunes 12/10: hay otro en curso, el del caso «aprobó», sin concluir
+const GRUPO_EN_CURSO = `(SELECT id FROM apd.grupo WHERE folio = 'APD-G-2026-003')`;
 const BORRADOR = `(SELECT id FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1)`;
 const ENVIADA = `(SELECT id FROM apd.solicitud WHERE estado = 'enviada' ORDER BY folio LIMIT 1)`;
 const DICT_OBS = `(SELECT id FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1)`;
@@ -92,9 +93,10 @@ const ALFABETO_CURP = '0123456789ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 const curpCon = (b) => { let s = 0; for (let i = 0; i < 17; i++) s += ALFABETO_CURP.indexOf(b[i]) * (18 - i); return b + String((10 - (s % 10)) % 10); };
 const S44 = `(SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00044')`;
 const G5 = `(SELECT id FROM apd.grupo WHERE folio = 'APD-G-2026-005')`;
-// La inscripción activa de APD-S-2026-00021 (grupo de la alcaldía, en curso desde el 13/10) y su asistencia de los días 2 a 5
+// La inscripción activa de APD-S-2026-00021 (grupo de la alcaldía, en curso desde el lunes 12/10, con los días 1 y 2
+// capturados; antes del 23/10/2026 empezaba el martes 13) y su asistencia de los días 3 a 5
 const INS21 = `(SELECT i.id FROM apd.inscripcion i JOIN apd.solicitud s ON s.id = i.solicitud_id WHERE s.folio = 'APD-S-2026-00021' AND i.activa)`;
-const ASISTE21 = `INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT ${INS21}, d, true, 'x' FROM generate_series(2, 5) d;`;
+const ASISTE21 = `INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT ${INS21}, d, true, 'x' FROM generate_series(3, 5) d;`;
 const SIN_ACRED = `(SELECT s.id FROM apd.solicitante s WHERE NOT EXISTS (SELECT 1 FROM apd.acreditacion a WHERE a.solicitante_id = s.id) ORDER BY s.curp LIMIT 1)`;
 const ACTIVA = `(SELECT id FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)`;
 const COMO = (tipo, usuario = 'prueba.automatica') => `SELECT set_config('apd.usuario', '${usuario}', true), set_config('apd.usuario_tipo', '${tipo}', true);`;
@@ -371,15 +373,15 @@ const casos = [
   ['La cuenta no borra citas', { sqlstate: '42501' }, null, `DELETE FROM apd.cita;`],
   ['La cuenta no cambia la fecha de una cita: se asigna otra', { sqlstate: '42501' }, null, `UPDATE apd.cita SET programada_en = now();`],
   // Como administración: la cuenta del servicio ya no llama asignar_expediente (decisión 6, 2026-10-19); lo abre la regla del cotejo
-  ['Un segundo trámite de la misma persona usa su mismo expediente', 'ok', null, `
-     CREATE TEMP TABLE p AS SELECT s.solicitante_id, pe.numero_expediente
-       FROM apd.solicitud s JOIN apd.solicitante pe ON pe.id = s.solicitante_id
+  // Su segundo trámite es la renovación de su poda (la de dictaminador ya no: pide 2 años de poda, sesión del 23/10/2026)
+  ['Un segundo trámite de la misma persona usa su mismo expediente', 'ok', '2027-09-01 10:00', `
+     CREATE TEMP TABLE p AS SELECT s.solicitante_id, pe.numero_expediente, a.id AS acreditacion
+       FROM apd.solicitud s JOIN apd.solicitante pe ON pe.id = s.solicitante_id JOIN apd.acreditacion a ON a.solicitud_id = s.id
       WHERE s.estado = 'acreditada' AND s.tipo_acreditacion = 'poda'
-        AND NOT EXISTS (SELECT 1 FROM apd.solicitud x WHERE x.solicitante_id = s.solicitante_id AND x.tipo_acreditacion = 'dictaminador')
       ORDER BY s.folio LIMIT 1;
      CREATE TEMP TABLE c AS SELECT count(*) AS n FROM apd.solicitante WHERE numero_expediente IS NOT NULL;
-     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
-     VALUES ('00000000-0000-4000-a000-000000000009', (SELECT solicitante_id FROM p), 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id, nivel_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000009', (SELECT solicitante_id FROM p), 'poda', 'renovacion', (SELECT acreditacion FROM p), 'preparatoria');
      SELECT apd.asignar_expediente((SELECT solicitante_id FROM p));
      DO $$ BEGIN
        ASSERT (SELECT numero_expediente FROM apd.solicitante WHERE id = (SELECT solicitante_id FROM p)) = (SELECT numero_expediente FROM p);
@@ -432,7 +434,7 @@ const casos = [
 
   // ── Grupos y cupos ──
   ['Un grupo no se confirma por debajo del mínimo (4 de 5)', { codigo: 'cupo_minimo' }, null, `
-     UPDATE apd.grupo SET instructor = 'i', sede = 's', fecha_inicio = '2026-11-03', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
+     UPDATE apd.grupo SET instructor = 'i', sede = 's', fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Un grupo nuevo copia los cupos vigentes del curso, y nunca pasa del máximo', { codigo: 'cupo_maximo' }, null, `
      UPDATE apd.curso SET cupo_minimo = 1, cupo_maximo = 2 WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva';
@@ -483,74 +485,74 @@ const casos = [
      CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
-     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-27', hora_entrada = '09:00' WHERE id = (SELECT id FROM g);
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = (SELECT id FROM g);
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = (SELECT id FROM g);
-     SELECT set_config('apd.ahora_simulado', '2026-10-26 18:00:00-06', true);
+     SELECT set_config('apd.ahora_simulado', '2026-11-01 18:00:00-06', true);
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
   ['El día que empieza el curso ya no se agregan personas al grupo confirmado', { codigo: 'grupo_por_iniciar' }, '2026-10-20 10:00', `
      CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
-     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-27', hora_entrada = '09:00' WHERE id = (SELECT id FROM g);
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = (SELECT id FROM g);
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = (SELECT id FROM g);
-     SELECT set_config('apd.ahora_simulado', '2026-10-27 08:00:00-06', true);
+     SELECT set_config('apd.ahora_simulado', '2026-11-02 08:00:00-06', true);
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
   ['Un grupo no se confirma sin hora de entrada (P91)', { codigo: 'datos_para_confirmar' }, '2026-10-20 10:00', `
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
-     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-27' WHERE id = ${GRUPO_INTEGRACION};
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-11-02' WHERE id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Una baja que deja al grupo confirmado por debajo del mínimo lo regresa a integración, con su fecha', 'ok', '2026-10-20 10:00', `
      CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
-     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-27', hora_entrada = '09:00' WHERE id = (SELECT id FROM g);
+     UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = (SELECT id FROM g);
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = (SELECT id FROM g);
      UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Prueba' WHERE id = (SELECT id FROM apd.inscripcion WHERE grupo_id = (SELECT id FROM g) AND activa LIMIT 1);
      DO $$ BEGIN
        ASSERT (SELECT estado FROM apd.grupo WHERE id = (SELECT id FROM g)) = 'en_integracion';
-       ASSERT (SELECT fecha_inicio FROM apd.grupo WHERE id = (SELECT id FROM g)) = '2026-10-27';
+       ASSERT (SELECT fecha_inicio FROM apd.grupo WHERE id = (SELECT id FROM g)) = '2026-11-02';
      END $$;`],
   ['Cancelar un grupo exige motivo', { codigo: 'cancelacion_sin_motivo' }, null, `
      UPDATE apd.grupo SET estado = 'cancelado' WHERE id = ${GRUPO_INTEGRACION};`],
 
-  // ── Asistencia y examen (grupo en curso desde el 13/10; una persona faltó el día 1) ──
+  // ── Asistencia y examen (grupo en curso desde el lunes 12/10; una persona faltó el día 1) ──
   ['No se captura asistencia de un día que no ha ocurrido', { codigo: 'dia_futuro' }, '2026-10-14 10:00', `
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT id, 3, true, 'i' FROM apd.inscripcion WHERE grupo_id = ${GRUPO_EN_CURSO} AND activa LIMIT 1;`],
+     SELECT id, 4, true, 'i' FROM apd.inscripcion WHERE grupo_id = ${GRUPO_EN_CURSO} AND activa LIMIT 1;`],
   ['Sin la asistencia mínima no hay examen', { codigo: 'sin_derecho_examen' }, '2026-10-15 19:00', `
      INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
      SELECT i.id, '2026-10-15', 9, 'i' FROM apd.inscripcion i
       WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
         AND EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND NOT a.asistio) LIMIT 1;`],
-  ['Sin el pase de lista del día del examen no hay examen (P94)', { codigo: 'sin_pase_de_lista' }, '2026-10-17 20:00', `
+  ['Sin el pase de lista del día del examen no hay examen (P94)', { codigo: 'sin_pase_de_lista' }, '2026-10-16 20:00', `
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 4) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
-     SELECT i.id, '2026-10-17', 9, 'i' FROM apd.inscripcion i
-      WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
-        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 4 LIMIT 1;`],
-  ['El examen se presenta el último día del curso', { codigo: 'fecha_examen' }, '2026-10-17 20:00', `
-     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(3, 4) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
      INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
      SELECT i.id, '2026-10-16', 9, 'i' FROM apd.inscripcion i
       WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
-        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 5 LIMIT 1;`],
-  ['No se concluye un grupo con calificaciones pendientes', { codigo: 'faltan_calificaciones' }, '2026-10-17 20:00', `
+        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 4 LIMIT 1;`],
+  ['El examen se presenta el último día del curso', { codigo: 'fecha_examen' }, '2026-10-16 20:00', `
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(3, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
+     SELECT i.id, '2026-10-15', 9, 'i' FROM apd.inscripcion i
+      WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa
+        AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 5 LIMIT 1;`],
+  ['No se concluye un grupo con calificaciones pendientes', { codigo: 'faltan_calificaciones' }, '2026-10-16 20:00', `
+     INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(3, 5) d WHERE i.grupo_id = ${GRUPO_EN_CURSO} AND i.activa;
      UPDATE apd.grupo SET estado = 'concluido' WHERE id = ${GRUPO_EN_CURSO};`],
-  ['Recorrido completo: cinco días, examen, conclusión, emisión y verificación', 'ok', '2026-10-17 20:00', `
+  ['Recorrido completo: cinco días, examen, conclusión, emisión y verificación', 'ok', '2026-10-16 20:00', `
      CREATE TEMP TABLE g AS SELECT ${GRUPO_EN_CURSO} AS id; -- el grupo deja de estar «en curso» a la mitad del caso
      -- quien faltó el día 1 falta también el día 2: 3 de 5, sin derecho a examen; los demás asisten todo
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, NOT (d = 2 AND EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND NOT a.asistio)), 'otro.instructor'
-       FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
+     SELECT i.id, d, NOT (d = 3 AND EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND NOT a.asistio)), 'otro.instructor'
+       FROM apd.inscripcion i, generate_series(3, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
      INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por)
-     SELECT i.id, '2026-10-17', 8, 'i' FROM apd.inscripcion i
+     SELECT i.id, '2026-10-16', 8, 'i' FROM apd.inscripcion i
       WHERE i.grupo_id = (SELECT id FROM g) AND i.activa
         AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) >= 4;
      UPDATE apd.grupo SET estado = 'concluido' WHERE id = (SELECT id FROM g);
@@ -561,18 +563,18 @@ const casos = [
                 WHERE i.grupo_id = (SELECT id FROM g) AND s.estado = 'acreditada') = 9;
        ASSERT (SELECT count(*) FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id
                 WHERE i.grupo_id = (SELECT id FROM g) AND s.estado = 'sin_derecho_examen') = 1;
-       ASSERT (SELECT bool_and(situacion = 'Vigente' AND vence_en = '2027-10-16') FROM apd.verificacion_publica
-                WHERE emitida_en = '2026-10-17');
+       ASSERT (SELECT bool_and(situacion = 'Vigente' AND vence_en = '2027-10-15') FROM apd.verificacion_publica
+                WHERE emitida_en = '2026-10-16');
      END $$;`],
-  ['Con 7.0 se aprueba poda; con 6.9 no (R34)', 'ok', '2026-10-17 20:00', `
+  ['Con 7.0 se aprueba poda; con 6.9 no (R34)', 'ok', '2026-10-16 20:00', `
      CREATE TEMP TABLE g AS SELECT ${GRUPO_EN_CURSO} AS id;
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(2, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
+     SELECT i.id, d, true, 'i' FROM apd.inscripcion i, generate_series(3, 5) d WHERE i.grupo_id = (SELECT id FROM g) AND i.activa;
      CREATE TEMP TABLE dos AS SELECT i.id, row_number() OVER (ORDER BY i.id) AS n FROM apd.inscripcion i
       WHERE i.grupo_id = (SELECT id FROM g) AND i.activa
         AND (SELECT count(*) FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.asistio) = 5 LIMIT 2;
      INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por, origen)
-     SELECT id, '2026-10-17', CASE n WHEN 1 THEN 7.0 ELSE 6.9 END, 'sistema-examen', 'examen_web' FROM dos;
+     SELECT id, '2026-10-16', CASE n WHEN 1 THEN 7.0 ELSE 6.9 END, 'sistema-examen', 'examen_web' FROM dos;
      DO $$ BEGIN
        ASSERT (SELECT s.estado FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id JOIN dos ON dos.id = i.id WHERE n = 1) = 'aprobada';
        ASSERT (SELECT s.estado FROM apd.solicitud s JOIN apd.inscripcion i ON i.solicitud_id = s.id JOIN dos ON dos.id = i.id WHERE n = 2) = 'no_acreditada';
@@ -673,10 +675,10 @@ const casos = [
      UPDATE apd.solicitud SET nivel_estudios = 'preparatoria', estatus_estudios = 'titulado', carrera = 'Biología' WHERE id = ${DICT_OBS};
      DO $$ BEGIN ASSERT (SELECT carrera IS NULL AND estatus_estudios IS NULL AND perfil_academico = 'no_cumple' AND experiencia_minima = 5
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
-  ['Poda: se guardan nivel, carrera y situación, sin perfil', 'ok', null, `
+  ['Poda: se guardan nivel y carrera, sin la situación de la licenciatura (sesión del 23/10/2026) ni perfil', 'ok', null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', carrera = 'Biología', estatus_estudios = 'titulado' WHERE id = ${BORRADOR};
      DO $$ BEGIN ASSERT (SELECT nivel_estudios = 'licenciatura' AND carrera = 'Biología' AND carrera_id IS NOT NULL
-                                AND estatus_estudios = 'titulado' AND perfil_academico IS NULL
+                                AND estatus_estudios IS NULL AND perfil_academico IS NULL
                            FROM apd.solicitud WHERE estado = 'borrador' LIMIT 1); END $$;`],
   ['Con licenciatura, sin la situación de los estudios no se envía', { codigo: 'faltan_estudios' }, null, `
      UPDATE apd.solicitud SET nivel_estudios = 'licenciatura', carrera = 'Biología', estatus_estudios = NULL WHERE id = ${DICT_OBS};
@@ -855,7 +857,7 @@ const casos = [
      ${MAS(1, 'asistencia')}
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'asistencia' AND usuario = 'prueba.automatica' AND detalle LIKE 'Día 1: % → faltó%'); END $$;`],
   ['Bitácora · mover la fecha y la hora de un grupo por confirmar deja un renglón (E2-04)', 'ok', '2026-10-14 10:00', `${B0}
-     UPDATE apd.grupo SET fecha_inicio = '2026-11-30', hora_entrada = '07:00' WHERE id = ${GRUPO_INTEGRACION};
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-30', hora_entrada = '10:00' WHERE id = ${GRUPO_INTEGRACION};
      ${MAS(1, 'cambio_programacion')}`],
   ['Bitácora · cambiar la cita de una solicitud deja un renglón (E2-04)', 'ok', null, `${B0}
      UPDATE apd.solicitud SET cita_en = '2026-11-02 10:00-06' WHERE id = ${S44};
@@ -921,8 +923,9 @@ const casos = [
   // ── Decisión 3 · El primer día de un curso: a lo más dentro de un año ──
   ['El primer día de un grupo no pasa de 12 meses desde hoy: con hoy 14/10/2026, el 15/10/2027 se rechaza (decisión 3)', { codigo: 'inicio_muy_lejano' }, '2026-10-14 10:00', `
      UPDATE apd.grupo SET fecha_inicio = '2027-10-15' WHERE id = ${GRUPO_INTEGRACION};`],
-  ['El primer día puede ser justo a los 12 meses: con hoy 14/10/2026, el 14/10/2027 pasa (decisión 3)', 'ok', '2026-10-14 10:00', `
-     UPDATE apd.grupo SET fecha_inicio = '2027-10-14' WHERE id = ${GRUPO_INTEGRACION};`],
+  // Con un lunes justo a los 12 meses: el curso de 5 días empieza en lunes (sesión del 23/10/2026)
+  ['El primer día puede ser justo a los 12 meses: con hoy 18/10/2026, el lunes 18/10/2027 pasa (decisión 3)', 'ok', '2026-10-18 10:00', `
+     UPDATE apd.grupo SET fecha_inicio = '2027-10-18' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Un grupo nuevo con el primer día en el año 6110 (fecha pegada) se rechaza (decisión 3)', { codigo: 'inicio_muy_lejano' }, '2026-10-14 10:00', `
      INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'nueva', 'combinado', '6110-02-20');`],
 
@@ -1045,24 +1048,24 @@ const casos = [
   ['D-06 · La asistencia la captura una sesión de personal, no de solicitante', { codigo: 'captura_de_personal' }, '2026-10-14 10:00', `
      ${COMO('solicitante', 'instructor.ficticio')}
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, 2, true, 'otra.persona' FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
+     SELECT i.id, 3, true, 'otra.persona' FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
       WHERE g.estado = 'en_curso' AND i.activa
-        AND NOT EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.dia = 2) LIMIT 1;`],
+        AND NOT EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.dia = 3) LIMIT 1;`],
   ['D-06 · Quien captura la asistencia queda como la cuenta de la sesión (capturada_por = apd.usuario)', 'ok', '2026-10-14 10:00', `
      ${COMO('personal', 'instructor.ficticio')}
      INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por)
-     SELECT i.id, 2, true, 'otra.persona' FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
+     SELECT i.id, 3, true, 'otra.persona' FROM apd.inscripcion i JOIN apd.grupo g ON g.id = i.grupo_id
       WHERE g.estado = 'en_curso' AND i.activa
-        AND NOT EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.dia = 2) LIMIT 1;
+        AND NOT EXISTS (SELECT 1 FROM apd.asistencia a WHERE a.inscripcion_id = i.id AND a.dia = 3) LIMIT 1;
      DO $$ BEGIN ASSERT NOT EXISTS (SELECT 1 FROM apd.asistencia WHERE capturada_por = 'otra.persona'); END $$;`],
-  ['D-06 · La calificación la captura una sesión de personal, a su propio nombre', { codigo: 'captura_de_personal' }, '2026-10-17 10:00', `
+  ['D-06 · La calificación la captura una sesión de personal, a su propio nombre', { codigo: 'captura_de_personal' }, '2026-10-16 10:00', `
      ${ASISTE21}
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'otra.persona');`],
-  ['D-06 · Quien captura la calificación queda como la cuenta de la sesión', 'ok', '2026-10-17 10:00', `
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-16', 9, 'otra.persona');`],
+  ['D-06 · Quien captura la calificación queda como la cuenta de la sesión', 'ok', '2026-10-16 10:00', `
      ${ASISTE21}
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'otra.persona');
-     DO $$ BEGIN ASSERT (SELECT capturado_por FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-17') = 'prueba.automatica'; END $$;`],
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-16', 9, 'otra.persona');
+     DO $$ BEGIN ASSERT (SELECT capturado_por FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-16') = 'prueba.automatica'; END $$;`],
 
   // ── E2-01 a E2-03 en secuencia (con dos conexiones: herramientas/probar-concurrencia.sh) ──
   ['Una segunda revisión de la misma vuelta se rechaza: ya la registró otra persona (E2-01)', { codigo: 'revision_ya_registrada' }, null, `
@@ -1080,19 +1083,19 @@ const casos = [
                      WHERE s.estado = 'lista_para_curso' AND d.vigente ORDER BY s.folio LIMIT 1);`],
   ['Las observaciones necesitan un texto general o un documento observado', { codigo: 'observaciones_vacias' }, null, `
      INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'con_observaciones', 'prueba.automatica');`],
-  ['No se da de baja a quien ya presentó examen (E2-03)', { codigo: 'baja_con_examen' }, '2026-10-17 10:00', `
+  ['No se da de baja a quien ya presentó examen (E2-03)', { codigo: 'baja_con_examen' }, '2026-10-16 10:00', `
      ${ASISTE21}
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'x');
-     UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = (SELECT inscripcion_id FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-17');`],
-  ['Con el examen capturado, la asistencia ya no cambia (E2-03)', { codigo: 'asistencia_cerrada' }, '2026-10-17 10:00', `
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-16', 9, 'x');
+     UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = (SELECT inscripcion_id FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-16');`],
+  ['Con el examen capturado, la asistencia ya no cambia (E2-03)', { codigo: 'asistencia_cerrada' }, '2026-10-16 10:00', `
      ${ASISTE21}
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'x');
-     UPDATE apd.asistencia SET asistio = false WHERE dia = 5 AND inscripcion_id = (SELECT inscripcion_id FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-17');`],
-  ['Una inscripción dada de baja no recibe calificación', { codigo: 'inscripcion_inactiva' }, '2026-10-17 10:00', `
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-16', 9, 'x');
+     UPDATE apd.asistencia SET asistio = false WHERE dia = 5 AND inscripcion_id = (SELECT inscripcion_id FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-16');`],
+  ['Una inscripción dada de baja no recibe calificación', { codigo: 'inscripcion_inactiva' }, '2026-10-16 10:00', `
      ${ASISTE21}
      CREATE TEMP TABLE i AS SELECT ${INS21} AS id;
      UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = (SELECT id FROM i);
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ((SELECT id FROM i), '2026-10-17', 9, 'x');`],
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ((SELECT id FROM i), '2026-10-16', 9, 'x');`],
   ['Una baja necesita motivo', { codigo: 'baja_sin_motivo' }, null, `
      UPDATE apd.inscripcion SET activa = false WHERE id = (SELECT id FROM apd.inscripcion WHERE grupo_id = ${GRUPO_INTEGRACION} AND activa LIMIT 1);`],
   ['Una inscripción dada de baja no se reactiva', { codigo: 'inscripcion_inmutable' }, null, `
@@ -1156,26 +1159,26 @@ const casos = [
      UPDATE apd.solicitud SET estado = 'lista_para_curso' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`],
   ['Sin calificación no hay resultado', { codigo: 'sin_examen' }, null, `
      UPDATE apd.solicitud SET estado = 'aprobada' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`],
-  ['El resultado sale de la calificación', { codigo: 'resultado_no_corresponde' }, '2026-10-17 10:00', `
+  ['El resultado sale de la calificación', { codigo: 'resultado_no_corresponde' }, '2026-10-16 10:00', `
      ${ASISTE21}
      SET LOCAL session_replication_role = replica;
-     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-17', 9, 'x');
+     INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES (${INS21}, '2026-10-16', 9, 'x');
      SET LOCAL session_replication_role = origin;
      UPDATE apd.solicitud SET estado = 'no_acreditada' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`, 'admin'],
-  ['Con la asistencia mínima no se marca «sin derecho a examen»', { codigo: 'con_derecho_examen' }, '2026-10-17 10:00', `
+  ['Con la asistencia mínima no se marca «sin derecho a examen»', { codigo: 'con_derecho_examen' }, '2026-10-16 10:00', `
      ${ASISTE21}
      UPDATE apd.solicitud SET estado = 'sin_derecho_examen' WHERE id = (SELECT id FROM apd.solicitud WHERE folio = 'APD-S-2026-00021');`],
   ['Sin acreditación emitida la solicitud no queda como acreditada', { codigo: 'sin_acreditacion' }, null, `
      UPDATE apd.solicitud SET estado = 'acreditada' WHERE id = (SELECT id FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1);`],
-  ['La acreditación corresponde a la persona de la solicitud', { codigo: 'acreditacion_no_corresponde' }, '2026-10-17 10:00', `
+  ['La acreditación corresponde a la persona de la solicitud', { codigo: 'acreditacion_no_corresponde' }, '2026-10-16 10:00', `
      INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id)
      SELECT ${SIN_ACRED}, 'poda', id FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
-  ['La acreditación se emite con la fecha del día', { codigo: 'emision_con_otra_fecha' }, '2026-10-17 10:00', `
+  ['La acreditación se emite con la fecha del día', { codigo: 'emision_con_otra_fecha' }, '2026-10-16 10:00', `
      INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id, emitida_en)
      SELECT solicitante_id, 'poda', id, '2026-01-01' FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
-  ['La entrega no se registra al emitir', { codigo: 'entrega_al_emitir' }, '2026-10-17 10:00', `
+  ['La entrega no se registra al emitir', { codigo: 'entrega_al_emitir' }, '2026-10-16 10:00', `
      INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id, entregada_en)
-     SELECT solicitante_id, 'poda', id, '2026-10-17' FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
+     SELECT solicitante_id, 'poda', id, '2026-10-16' FROM apd.solicitud WHERE estado = 'aprobada' ORDER BY folio LIMIT 1;`],
   ['La entrega no se registra con fecha futura', { codigo: 'entrega_futura' }, null, `
      UPDATE apd.acreditacion SET entregada_en = apd.hoy() + 5 WHERE origen = 'sistema' AND entregada_en IS NULL AND numero LIKE 'PD-2026-%';`],
   ['Un curso inactivo no abre grupos', { codigo: 'curso_inactivo' }, null, `
@@ -1232,7 +1235,112 @@ const casos = [
      UPDATE apd.solicitud SET factura_rfc = 'EJE011310AB1' WHERE id = ${CITA_SOL};`],
   ['RFC con Ñ: la base lo conserva (P129)', 'ok', null, `
      UPDATE apd.solicitud SET factura_rfc = 'ÑEJE010110AB1' WHERE id = ${CITA_SOL};
-     DO $$ BEGIN ASSERT (SELECT factura_rfc FROM apd.solicitud WHERE factura_rfc LIKE 'Ñ%') = 'ÑEJE010110AB1'; END $$;`]
+     DO $$ BEGIN ASSERT (SELECT factura_rfc FROM apd.solicitud WHERE factura_rfc LIKE 'Ñ%') = 'ÑEJE010110AB1'; END $$;`],
+
+  // ── Sesión de trabajo del 23/10/2026 (parte A) ──
+  // Mayoría de edad (P138): 18 años cumplidos el día de la solicitud, con la fecha de nacimiento de la CURP
+  ['Mayoría de edad: quien cumple 18 años mañana no solicita hoy (P138)', { codigo: 'menor_de_edad' }, '2026-10-14 10:00', `
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000231', ${q(curpCon('EEMJ081015HNEJSNA'))}, 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000231', 'poda', 'nueva', 'preparatoria');`],
+  ['Mayoría de edad: quien cumple 18 años hoy sí solicita (P138)', 'ok', '2026-10-14 10:00', `
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000232', ${q(curpCon('EEMJ081014HNEJSNA'))}, 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000232', 'poda', 'nueva', 'preparatoria');
+     DO $$ BEGIN ASSERT apd.curp_nacimiento(${q(curpCon('EEMJ081014HNEJSNA'))}) = '2008-10-14';
+       ASSERT apd.curp_nacimiento(${q(curpCon('EEMJ760707HNEJSN0'))}) = '1976-07-07'; END $$;`],
+  ['Todas las personas ficticias son mayores de edad (P138)', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitante WHERE (apd.curp_nacimiento(curp) + interval '18 years')::date > apd.hoy()); END $$;`],
+  // Dictaminador por primera vez: la poda durante al menos 2 años consecutivos
+  ['Dictaminador: con la poda 2 años o más sin corte, se solicita (sesión del 23/10)', 'ok', '2026-10-14 10:00', `
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
+     VALUES ((SELECT solicitante_id FROM apd.acreditacion WHERE tipo_acreditacion = 'poda' AND emitida_en = '2024-06-01'), 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);
+     DO $$ BEGIN ASSERT apd.poda_continua_desde((SELECT solicitante_id FROM apd.acreditacion WHERE tipo_acreditacion = 'poda' AND emitida_en = '2024-06-01')) = '2024-06-01'; END $$;`],
+  ['Dictaminador: con la poda desde hace menos de 2 años no se solicita (sesión del 23/10)', { codigo: 'poda_menos_de_dos_anios' }, '2026-10-14 10:00', `
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
+     VALUES ((SELECT solicitante_id FROM apd.acreditacion WHERE origen = 'sistema' AND emitida_en = '2026-09-15' ORDER BY numero LIMIT 1), 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);`],
+  ['Dictaminador: un corte (renovó fuera de la ventana) vuelve a empezar la cuenta (sesión del 23/10)', { codigo: 'poda_menos_de_dos_anios' }, '2026-10-14 10:00', `
+     DO $$ BEGIN ASSERT apd.poda_continua_desde((SELECT solicitante_id FROM apd.acreditacion WHERE emitida_en = '2023-03-06')) = '2025-05-05'; END $$;
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios, anios_experiencia)
+     VALUES ((SELECT solicitante_id FROM apd.acreditacion WHERE emitida_en = '2023-03-06'), 'dictaminador', 'nueva', 'licenciatura', 'Biología', 'titulado', 3);`],
+  ['Dictaminador: renovar dentro de la ventana de renovación tardía no corta la cuenta (sesión del 23/10)', 'ok', '2026-10-14 10:00', `
+     SELECT set_config('apd.usuario_tipo', 'migracion', true);
+     CREATE TEMP TABLE p AS SELECT ${SIN_ACRED} AS id;
+     INSERT INTO apd.acreditacion (numero, solicitante_id, tipo_acreditacion, emitida_en, origen)
+     VALUES ('PD-2023-K950', (SELECT id FROM p), 'poda', '2023-09-04', 'kobo'), ('PD-2025-K951', (SELECT id FROM p), 'poda', '2025-08-25', 'kobo'),
+            ('PD-2026-K952', (SELECT id FROM p), 'poda', '2026-08-24', 'kobo');
+     DO $$ BEGIN ASSERT apd.poda_continua_desde((SELECT id FROM p)) = '2023-09-04';
+       ASSERT apd.poda_continua_desde((SELECT id FROM p), '2025-08-20') IS NULL; END $$;`],
+  // En poda no se pregunta la situación de la licenciatura: la base no la guarda; en dictaminador sigue
+  ['Poda: la situación de la licenciatura no se guarda ni se pide (sesión del 23/10)', 'ok', null, `
+     INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
+     VALUES ('00000000-0000-4000-a000-000000000233', 'XAXX991231HNEXXX09', 'Caso', 'Prueba', 'caso@ejemplo.local', '0000000099', 'independiente', 'x', true);
+     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios, carrera, estatus_estudios)
+     VALUES ('00000000-0000-4000-a000-000000000234', '00000000-0000-4000-a000-000000000233', 'poda', 'nueva', 'licenciatura', 'Arquitectura de Paisaje', 'trunco');
+     DO $$ BEGIN ASSERT (SELECT estatus_estudios IS NULL AND carrera = 'Arquitectura de Paisaje' FROM apd.solicitud WHERE id = '00000000-0000-4000-a000-000000000234');
+       ASSERT NOT EXISTS (SELECT 1 FROM apd.solicitud WHERE tipo_acreditacion = 'poda' AND estatus_estudios IS NOT NULL); END $$;
+     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
+     SELECT '00000000-0000-4000-a000-000000000234', rc.requisito, 'prueba/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1000, repeat('a', 64)
+       FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
+      WHERE rc.tipo_acreditacion = 'poda' AND rc.modalidad = 'nueva' AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'en_linea';
+     ${FOTO("'00000000-0000-4000-a000-000000000233'")}
+     SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = '00000000-0000-4000-a000-000000000234';`],
+  // Fines de semana (P150, P151): ni cursos ni citas en sábado o domingo; plazos en días hábiles
+  ['Curso de 5 días que empieza en martes (cae en sábado) se rechaza (P151)', { codigo: 'curso_en_fin_de_semana' }, '2026-10-14 10:00', `
+     UPDATE apd.grupo SET fecha_inicio = '2026-10-27' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Curso de 5 días que empieza en lunes se acepta; el de renovación (1 día), cualquier día de lunes a viernes (P151)', 'ok', '2026-10-14 10:00', `
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-02' WHERE id = ${GRUPO_INTEGRACION};
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'renovacion', 'combinado', '2026-11-04');`],
+  ['Curso de renovación en sábado se rechaza (P151)', { codigo: 'curso_en_fin_de_semana' }, '2026-10-14 10:00', `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'renovacion', 'combinado', '2026-11-07');`],
+  ['Hora de entrada fuera del horario del curso (9:00 a 15:00) se rechaza (P91)', { codigo: 'hora_fuera_de_horario' }, '2026-10-14 10:00', `
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-02', hora_entrada = '08:00' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Cita de cotejo en sábado se rechaza (P150)', { codigo: 'cita_en_fin_de_semana' }, null, `
+     UPDATE apd.solicitud SET cita_en = '2026-10-24 10:00-06' WHERE id = ${ENVIADA};`],
+  ['Cita de cotejo a las 15:00 se rechaza: son de 9:30 a 14:30 (P69)', { codigo: 'cita_fuera_de_horario' }, null, `
+     UPDATE apd.solicitud SET cita_en = '2026-10-23 15:00-06' WHERE id = ${ENVIADA};`],
+  ['Cita de cotejo a las 9:30 y a las 14:30 de un viernes se aceptan (P69)', 'ok', null, `
+     UPDATE apd.solicitud SET cita_en = '2026-10-23 09:30-06' WHERE id = ${ENVIADA};
+     UPDATE apd.solicitud SET cita_en = '2026-10-23 14:30-06' WHERE id = ${ENVIADA};`],
+  ['Plazos en días hábiles: no cuentan sábados ni domingos (P150)', 'ok', null, `DO $$ BEGIN
+     ASSERT apd.suma_dias_habiles('2026-10-14', 10) = '2026-10-28';
+     ASSERT apd.suma_dias_habiles('2026-10-16', 1) = '2026-10-19';
+     ASSERT apd.dias_habiles_entre('2026-10-16', '2026-10-19') = 1;
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.grupo g JOIN apd.curso c USING (tipo_acreditacion, modalidad), generate_series(g.fecha_inicio, g.fecha_inicio + c.dias_duracion - 1, interval '1 day') d
+                         WHERE g.fecha_inicio IS NOT NULL AND NOT apd.es_habil(d::date));
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.cita WHERE NOT apd.es_habil((programada_en AT TIME ZONE 'America/Mexico_City')::date)); END $$;`],
+  // Grupos al mismo tiempo (P149): como máximo 2, de cualquier curso
+  ['Un segundo grupo en la misma semana se acepta; un tercero no (P149)', { codigo: 'grupos_simultaneos' }, '2026-10-14 10:00', `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('dictaminador', 'nueva', 'combinado', '2026-10-26');
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'renovacion', 'combinado', '2026-10-28');`],
+  ['Dos grupos al mismo tiempo sí, y uno que no se encima con los dos también (P149)', 'ok', '2026-10-14 10:00', `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'renovacion', 'combinado', '2026-10-28');
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'renovacion', 'combinado', '2026-11-03');
+     DO $$ BEGIN ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'grupos_simultaneos_maximo') = '2'; END $$;`],
+  // Espera de grupo: 15 días (P143) y bloques sólo de gobierno local y federal
+  ['La espera es prioritaria desde 15 días (P143)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'dias_alerta_espera') = '15';
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.bandeja_demanda WHERE prioridad <> (dias_espera >= 15)); END $$;`],
+  ['En la espera sólo se agrupan en bloque las instituciones de gobierno local y federal (sesión del 23/10)', 'ok', null, `DO $$ BEGIN
+     ASSERT EXISTS (SELECT 1 FROM apd.bandeja_demanda WHERE organizacion_tipo = 'privada');
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.bandeja_demanda WHERE organizacion_tipo NOT IN ('dependencia_cdmx', 'alcaldia', 'dependencia_federal') AND bloque IS NOT NULL);
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.bandeja_demanda WHERE organizacion_tipo IN ('dependencia_cdmx', 'alcaldia', 'dependencia_federal') AND bloque IS DISTINCT FROM organizacion_id);
+     ASSERT apd.es_gobierno('alcaldia') AND apd.es_gobierno('dependencia_federal') AND apd.es_gobierno('dependencia_cdmx');
+     ASSERT NOT apd.es_gobierno('privada') AND NOT apd.es_gobierno('educativa') AND NOT apd.es_gobierno(NULL); END $$;`],
+  // Catálogo
+  ['La Universidad Autónoma Chapingo está en las instituciones educativas (sesión del 23/10)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT tipo FROM apd.organizacion WHERE clave = 'chapingo' AND activa) = 'educativa'; END $$;`],
+  ['Constancia de situación fiscal de la persona solicitante y comprobante de domicilio sin marca de provisional (P196, P03)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT nombre FROM apd.requisito WHERE clave = 'constancia_situacion_fiscal') = 'Constancia de situación fiscal';
+     ASSERT (SELECT descripcion LIKE 'Tuya, como persona solicitante%régimen%domicilio fiscal%[pendiente P196%' FROM apd.requisito WHERE clave = 'constancia_situacion_fiscal');
+     ASSERT (SELECT descripcion NOT LIKE '%pendiente%' AND activo FROM apd.requisito WHERE clave = 'comprobante_domicilio');
+     ASSERT (SELECT bool_and(obligatorio) FROM apd.requisito_curso WHERE requisito = 'comprobante_domicilio' AND modalidad = 'nueva'); END $$;`],
+  // Montos (P16): cada concepto con su monto, su publicación y su fecha de inicio, editable sin programar
+  ['Cada curso tiene su monto con la publicación que lo fija y desde cuándo aplica (P16)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT count(*) FROM apd.curso WHERE pago_monto > 0 AND coalesce(trim(pago_fundamento), '') <> '' AND pago_vigente_desde IS NOT NULL) = 4; END $$;`]
 ];
 
 let fallas = 0;

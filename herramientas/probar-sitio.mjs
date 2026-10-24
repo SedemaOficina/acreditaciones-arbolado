@@ -51,10 +51,29 @@ const renovable = datos.solicitante.find((p) => {
   const poda = ultimaDe(p, 'poda');
   return p.estado === 'sin_activar' && poda && ['por_vencer', 'vencida_renovable'].includes(datos.estado_acreditacion[poda.numero]) && !tieneActiva(p, 'poda');
 });
-// Con poda vigente y sin dictaminador: puede pedir dictaminador nueva
+// Con poda vigente y sin dictaminador: puede pedir dictaminador nueva. Desde la sesión de trabajo del 23/10/2026, con la
+// poda al menos 2 años consecutivos: la cadena sin cortes (cada renovación a más tardar 12 meses después del vencimiento
+// de la anterior, como apd.poda_continua_desde) empieza hace 2 años o más
+const masMeses = (iso, n) => { const [a, m, d] = iso.split('-').map(Number); const t = a * 12 + m - 1 + n; return `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; };
+function podaDesde(p) {
+  const podas = datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda' && a.emitida_en <= datos.fecha_corte).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en));
+  if (!podas.length || podas[0].vence_en < datos.fecha_corte) return null;
+  let desde = podas[0].emitida_en;
+  for (const a of podas.slice(1)) { if (desde <= masMeses(a.vence_en, 12)) desde = a.emitida_en < desde ? a.emitida_en : desde; else break; }
+  return desde;
+}
+// Una persona activa, sin trámite, que puede iniciar una solicitud: sin la poda vigente por más de un mes (antes de los
+// 30 días previos al vencimiento no se renueva). Desde la
+// sesión del 23/10 hay personas con la poda vigente que no pueden pedir nada todavía (dos años de poda): la primera por
+// CURP (poda-con-corte) sólo ve por qué
+const SIN_TRAMITE = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id)
+  && !datos.acreditacion.some((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda' && a.vence_en > masMeses(datos.fecha_corte, 1)));
 const paraDictaminador = datos.solicitante.find((p) => {
   const poda = ultimaDe(p, 'poda');
-  return p.estado === 'activa' && poda && datos.estado_acreditacion[poda.numero] === 'vigente' && !ultimaDe(p, 'dictaminador') && !tieneActiva(p, 'dictaminador');
+  const desde = podaDesde(p);
+  // Sin ninguna solicitud de dictaminador (también cerrada: la rechazada es la del caso «Rechazado por perfil»)
+  return p.estado === 'activa' && poda && datos.estado_acreditacion[poda.numero] === 'vigente' && desde && desde <= masMeses(datos.fecha_corte, -24)
+    && !ultimaDe(p, 'dictaminador') && !datos.solicitud.some((s) => s.solicitante_id === p.id && s.tipo_acreditacion === 'dictaminador');
 });
 const inscrita = datos.solicitud.find((s) => s.estado === 'inscrita');
 // Una cita de cotejo sencilla: una sola cita, pendiente (los casos del menú traen citas nuevas y pausas)
@@ -366,10 +385,10 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   comprueba(!(await page.isVisible('[data-campo="carrera"]')) && !(await page.isVisible('[data-campo="estatus_estudios"]')),
     t('estudios: con carrera técnica no se preguntan carrera ni situación'));
   await page.selectOption('#nivel_estudios', 'licenciatura');
-  comprueba(await page.isVisible('[data-campo="carrera"]') && await page.isVisible('[data-campo="estatus_estudios"]') && !(await page.isVisible('[data-campo="anios_experiencia"]')),
-    t('poda: con licenciatura pregunta carrera y su situación, sin experiencia'));
+  // En poda no se pregunta la situación de la licenciatura (sesión de trabajo del 23/10/2026)
+  comprueba(await page.isVisible('[data-campo="carrera"]') && !(await page.isVisible('[data-campo="estatus_estudios"]')) && !(await page.isVisible('[data-campo="anios_experiencia"]')),
+    t('poda: con licenciatura pregunta la carrera, sin su situación ni experiencia'));
   await page.fill('#carrera', 'Arquitectura de Paisaje');
-  await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
   await siguiente(page);
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
     t('documentos: la CURP trae el enlace oficial para obtenerla'));
@@ -661,10 +680,19 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     t('menú de pruebas: bloques en orden (en esta pantalla, entrar como, ir a otra pantalla, ajustes)'));
   // En dos pasos (decisión 2026-10-18): «¿Quién?» y luego «¿En qué momento?»; cada caso encuentra su persona
   const perfilesMenu = await page.locator('#menu-pruebas-perfil option').evaluateAll((o) => o.map((x) => x.value));
+  // Los casos, en un navegador sin lo que esta prueba ya guardó: la solicitud de dictaminador de arriba se queda en
+  // IndexedDB y usó a la única persona con dos años de poda que todavía no la pedía (caso «dict-puede», sesión del 23/10)
   const opcionesCasos = [];
-  for (const perfil of perfilesMenu) {
-    await page.selectOption('#menu-pruebas-perfil', perfil);
-    opcionesCasos.push(...await page.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean)));
+  {
+    const cm = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
+    const pm = await cm.newPage();
+    await pm.goto(BASE + 'solicitud.html');
+    await pm.click('.menu-pruebas-boton');
+    for (const perfil of perfilesMenu) {
+      await pm.selectOption('#menu-pruebas-perfil', perfil);
+      opcionesCasos.push(...await pm.locator('#menu-pruebas-persona option').evaluateAll((o) => o.map((x) => x.value).filter(Boolean)));
+    }
+    await cm.close();
   }
   const casosSinPersona = APD_CASOS_PRUEBA.claves().filter((k) => !opcionesCasos.includes(k));
   comprueba(perfilesMenu.join('|') === 'nueva|poda|dictaminador|kobo|personal' && !casosSinPersona.length,
@@ -770,7 +798,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
     const g = datos.grupo.find((x) => datos.inscripcion.some((i) => i.grupo_id === x.id && i.activa && datos.solicitud.some((s) => s.id === i.solicitud_id && s.solicitante_id === conGrupo.id)));
     const empezo = g && g.fecha_inicio <= datos.fecha_corte;
     comprueba((empezo ? /Tu curso empezó el/.test(f) && /Hoy es el día\s*\d+ de \d+/.test(f) && !/Preséntate el/.test(f) : /Preséntate el/.test(f) && /El curso termina el/.test(f))
-      && /Examen\s*(lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
+      // En el curso de primera vez el último día es «Día 5: repaso de conocimientos y examen final» (sesión del 23/10/2026)
+      && /(Examen|examen final)\s*(lunes|martes|miércoles|jueves|viernes|sábado|domingo) \d{1,2} de [a-z]+ de \d{4}/.test(f) && /Lugar del curso/.test(f) && !/Duración|Inicia el/.test(f),
       t(`mis solicitudes: con grupo, dice ${empezo ? 'en qué día del curso va' : 'cuándo presentarse'}, la fecha del examen y dónde`));
     comprueba(/identificación oficial/.test(f) && /examen/.test(f) && /al menos \d\.\d/.test(f) && await ficha.locator('ol.secuencia > li').count() >= 4,
       t('mis solicitudes: con grupo, «Qué sigue» dice que lleve la identificación, cuándo es el examen y la calificación mínima'));
@@ -1506,9 +1535,10 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
   await pg.waitForSelector('.plan-grupo');
   const tarjeta003 = pg.locator('.plan-grupo[data-grupo="APD-G-2026-003"]');
-  comprueba((await tarjeta003.locator('.grupo-nombre').textContent()) === 'Poda nueva · del 13 al 17 de octubre · Iztapalapa' && (await tarjeta003.locator('.grupo-folio').textContent()) === 'APD-G-2026-003',
-    t('nombre calculado del grupo («Poda nueva · del 13 al 17 de octubre · Iztapalapa») con el folio en chico debajo'));
-  comprueba(/Día 2 de 5/.test(await tarjeta003.textContent()) && /examen hoy/.test(await texto('.plan-grupo[data-grupo="APD-G-2026-006"]')), t('esta semana: los grupos en curso con «Día X de Y» y «examen hoy»'));
+  // El grupo de la alcaldía va de lunes a viernes, del 12 al 16/10 (sesión de trabajo del 23/10/2026); hoy, 14/10, es su día 3
+  comprueba((await tarjeta003.locator('.grupo-nombre').textContent()) === 'Poda nueva · del 12 al 16 de octubre · Iztapalapa' && (await tarjeta003.locator('.grupo-folio').textContent()) === 'APD-G-2026-003',
+    t('nombre calculado del grupo («Poda nueva · del 12 al 16 de octubre · Iztapalapa») con el folio en chico debajo'));
+  comprueba(/Día 3 de 5/.test(await tarjeta003.textContent()), t('esta semana: el grupo en curso con «Día X de Y»'));
   comprueba((await pg.$$('.plan-semana')).length >= 7 && /Sin fecha/.test(await texto('[data-semanas]')), t('esta semana, al menos seis más y «Sin fecha»'));
   comprueba(/ya no se puede/.test(await texto('.plan-semana[data-semana="2026-10-19"]')) && (await pg.$$('.plan-programar-semana[href*="semana="]')).length > 0,
     t('la semana que ya no se puede se explica en una línea; las libres llevan «Programar un curso esta semana»'));
@@ -1666,7 +1696,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
 
   // Asistencia del instructor: no guarda con alguien sin marcar; guarda el día y avisa a quien ya no tiene derecho
   // Hay dos grupos en curso (el del caso «aprobó hoy» termina en la fecha de corte): se abre el que sigue en clases
-  const grupoClases = datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13');
+  const grupoClases = datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-12');
   // El último día (examen) no se captura aquí: pedirlo con ?dia=5 no abre su lista (auditoría A 7.1: la comprobación
   // anterior miraba «Corregir otro día», que nunca lo lista)
   await pg.goto(BASE + `asistencia.html?folio=${grupoClases.folio}&dia=5`);
@@ -1675,7 +1705,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.goto(BASE + `asistencia.html?folio=${grupoClases.folio}`);
   await pg.waitForSelector('.asistencia-fila');
   // Propuesta A (2026-10-18): la lista del día de hoy; el último día (examen) no se ofrece para capturar
-  comprueba(/^Día 2 de 5/.test(await texto('[data-titulo-dia]')) && !/^Día 5\b/.test(tituloDia5) && (await pg.$$('[data-dias] a[href*="dia=5"]')).length === 0
+  comprueba(/^Día 3 de 5/.test(await texto('[data-titulo-dia]')) && !/^Día 5\b/.test(tituloDia5) && (await pg.$$('[data-dias] a[href*="dia=5"]')).length === 0
     && (await pg.$$('.asis-marcas .asis-marca')).length > 0,
     t('la lista es la del día de hoy y el examen no se captura aquí (se registra al pasar lista)'));
   // Versión de prueba: el recorrido de todos los días, con el examen que lleva a «Aplicar el examen»
@@ -1699,7 +1729,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await llega5;
   await pg.waitForSelector('.asistencia-fila');
   comprueba(/guardada/.test(await texto('[data-hecho]')), t('la asistencia del día se guarda'));
-  comprueba(/^Día 3 de 5/.test(await texto('[data-titulo-dia]')) && /Sigue el día 3/.test(await texto('[data-hecho]')), t('en la versión de prueba, guardar lleva al día siguiente del curso'));
+  comprueba(/^Día 4 de 5/.test(await texto('[data-titulo-dia]')) && /Sigue el día 4/.test(await texto('[data-hecho]')), t('en la versión de prueba, guardar lleva al día siguiente del curso'));
   comprueba(Boolean(falto) && /Sin derecho a examen/.test(await texto(`.asistencia-fila[data-ins="${faltaDia1.inscripcion_id}"]`)), t('quien faltó dos días se marca sin derecho a examen'));
   await sinDesborde(pg, t('asistencia'));
   await captura(pg, `asistencia-guardada-${sufijo}`);
@@ -1776,8 +1806,8 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
     await p2.goto(BASE + 'programar.html?curso=poda-nueva');
     await p2.waitForSelector('.cal-dia');
     const sinCambios = await p2.evaluate(() => { const ev = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(ev); return ev.defaultPrevented; });
+    await p2.click('[data-mes="1"]');
     await p2.click('.cal-dia[data-fecha="2026-11-16"]');
-    await p2.selectOption('#hora_entrada', '07:00');
     await p2.reload();
     await p2.waitForSelector('.cal-dia');
     comprueba(!sinCambios && dialogos.includes('beforeunload') && (await p2.inputValue('#fecha_inicio')) === '16/11/2026' && /semana=2026-11-16/.test(p2.url()),
@@ -1786,6 +1816,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
     await p2.waitForSelector('.plan-persona input');
     await p2.goto(BASE + 'programar.html?curso=poda-nueva');
     await p2.waitForSelector('.cal-dia');
+    await p2.click('[data-mes="1"]');
     await p2.click('.cal-dia[data-fecha="2026-11-23"]');
     await p2.goBack();
     await p2.waitForURL(/grupos\.html/);
@@ -1818,16 +1849,17 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   await pg.waitForSelector('.cal-dia');
   const marcadas = await pg.$$eval('[data-personas] .plan-persona input:checked', (l) => l.map((i) => i.value));
   comprueba(marcadas.length === 5 && cinco.every((f) => marcadas.includes(f)), t('«A un curso nuevo…» lleva a Programar con las cinco elegidas'));
-  // Paso 1: la propuesta es el primer lunes que se puede; el del 26 de octubre lo ocupa otro curso igual
-  comprueba((await pg.getAttribute('.cal-dia[aria-pressed="true"]', 'data-fecha')) === '2026-11-02' && (await pg.$$('.cal-dia[data-rango]')).length === 5
-    && (await pg.inputValue('#fecha_inicio')) === '02/11/2026', t('paso 1: propone el primer lunes posible y resalta los 5 días del curso, con el primer día escrito'));
-  await pg.click('[data-mes="-1"]');
-  const d26 = '.cal-dia[data-fecha="2026-10-26"]';
-  comprueba((await pg.getAttribute(d26, 'aria-disabled')) === 'true' && /ya hay un curso de poda nueva/.test(await pg.getAttribute(d26, 'aria-label'))
-    && (await pg.getAttribute('.cal-dia[data-fecha="2026-10-20"]', 'data-no')) === 'anticipacion', t('días que no se pueden: otro curso igual esas fechas y menos de 7 días, con la razón en su nombre'));
+  // Paso 1: la propuesta es el primer lunes que se puede. Desde la sesión del 23/10 (P149) pueden ir hasta 2 grupos a la
+  // vez, de cualquier curso: el 26 de octubre ya tiene uno (APD-G-2026-005) y aun así se puede
+  comprueba((await pg.getAttribute('.cal-dia[aria-pressed="true"]', 'data-fecha')) === '2026-10-26' && (await pg.$$('.cal-dia[data-rango]')).length === 5
+    && (await pg.inputValue('#fecha_inicio')) === '26/10/2026', t('paso 1: propone el primer lunes posible (aunque ya haya un grupo esa semana) y resalta los 5 días del curso, con el primer día escrito'));
+  // P150/P151: el curso de 5 días va de lunes a viernes; un sábado no se puede
+  const d27 = '.cal-dia[data-fecha="2026-10-31"]';
+  comprueba((await pg.getAttribute(d27, 'aria-disabled')) === 'true' && (await pg.getAttribute(d27, 'data-no')) === 'fin_de_semana' && /de lunes a viernes/.test(await pg.getAttribute(d27, 'aria-label'))
+    && (await pg.getAttribute('.cal-dia[data-fecha="2026-10-20"]', 'data-no')) === 'anticipacion', t('días que no se pueden: un sábado y menos de 7 días, con la razón en su nombre'));
   // aria-disabled: Playwright no lo «presiona» por su cuenta; la persona sí puede tocarlo y lee por qué
-  await pg.click(d26, { force: true });
-  comprueba(/no se puede/.test(await texto('[data-cal-estado]')) && (await pg.inputValue('#fecha_inicio')) === '02/11/2026', t('tocar un día que no se puede dice por qué y no cambia la fecha'));
+  await pg.click(d27, { force: true });
+  comprueba(/no se puede/.test(await texto('[data-cal-estado]')) && (await pg.inputValue('#fecha_inicio')) === '26/10/2026', t('tocar un día que no se puede dice por qué y no cambia la fecha'));
   await pg.click('[data-mes="1"]');
   await pg.click('.cal-dia[data-fecha="2026-11-09"]');
   comprueba((await pg.getAttribute('.cal-dia[data-fecha="2026-11-09"]', 'aria-pressed')) === 'true' && (await pg.inputValue('#fecha_inicio')) === '09/11/2026', t('tocar un lunes lo elige y escribe el primer día'));
@@ -1839,7 +1871,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   comprueba((await pg.inputValue('#fecha_inicio')) === '16/11/2026' && /del 16 al 20 de noviembre/.test(await texto('[data-resumen-nombre]')), t('Intro elige el día y «Así quedaría» muestra el nombre calculado'));
   // Paso 2: instructor propuesto (libre esas fechas) y hora de entrada
   comprueba(/libre esas fechas/.test(await pg.$eval('#instructor', (s) => s.selectedOptions[0].textContent)), t('paso 2: el instructor propuesto está libre esas fechas'));
-  await pg.selectOption('#hora_entrada', '08:30');
+  await pg.selectOption('#hora_entrada', '09:00');
   // Paso 3: con menos de 5 no se crea ni se confirma, y se dice qué falta
   for (const f of cinco.slice(2)) await pg.uncheck(`[data-personas] input[value="${f}"]`);
   await pg.click('[data-programar="confirmar"]');
@@ -1851,7 +1883,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   for (const f of cinco.slice(2)) await pg.check(`[data-personas] input[value="${f}"]`);
   await pg.click('[data-programar="confirmar"]');
   await pg.waitForSelector('[data-resultado]:not([hidden])');
-  comprueba(/Grupo confirmado: Poda nueva · del 16 al 20 de noviembre/.test(await texto('[data-resultado]')) && /APD-G-2026-007 · 5 personas · entrada a las 08:30/.test(await texto('[data-resultado]'))
+  comprueba(/Grupo confirmado: Poda nueva · del 16 al 20 de noviembre/.test(await texto('[data-resultado]')) && /APD-G-2026-007 · 5 personas · entrada a las 09:00/.test(await texto('[data-resultado]'))
     && /Qué sigue/.test(await texto('[data-resultado]')), t('crear y confirmar: resultado con el nombre calculado, el folio y «Qué sigue»'));
   await captura(pg, `programar-hecho-${sufijo}`);
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
@@ -1863,6 +1895,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   await pg.waitForURL(/programar\.html\?curso=poda-nueva&grupo=/);
   await pg.waitForSelector('.cal-dia');
   comprueba(/Ya están en el grupo \(4\)/.test(await texto('[data-ya-estan]')) && await pg.isHidden('[data-campo="integracion"]'), t('programar un grupo que existe: muestra a quienes ya están y no cambia su tipo'));
+  await pg.click('[data-mes="1"]');
   await pg.click('.cal-dia[data-fecha="2026-11-23"]');
   await pg.selectOption('#instructor', 'instructor2.ficticio');
   await pg.click('[data-programar="confirmar"]');
@@ -1873,26 +1906,37 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   await pg.waitForSelector('[data-resultado]:not([hidden])');
   comprueba(new RegExp(`Grupo confirmado: Poda nueva · del 23 al 27 de noviembre`).test(await texto('[data-resultado]')) && (await texto('[data-resultado]')).includes(sinFecha.folio), t('el grupo sin fecha queda programado y confirmado, con su mismo folio'));
 
-  // «Mis grupos de hoy» del instructor: Asistencia y Aplicar el examen sin ?folio=
-  for (const [pagina, nombre] of [['asistencia.html', 'Asistencia'], ['aplicar.html', 'Aplicar el examen']]) {
+  // «Mis grupos de hoy» del instructor: Asistencia y Aplicar el examen sin ?folio=. Desde la sesión del 23/10 (P150 y
+  // P151) los cursos de cinco días van de lunes a viernes: al corte (miércoles 14/10) el instructor tiene un solo grupo
+  // con clase, en su día 3 (APD-G-2026-003), y las dos pantallas entran directo a él; el viernes 9/10 tuvo el quinto día
+  // de APD-G-2026-006 (se ve con la fecha de corte en ese día): «Mis grupos de hoy» con su tarjeta
+  for (const [pagina, nombre, sel] of [['asistencia.html', 'Asistencia', '[data-bajada] .grupo-nombre'], ['aplicar.html', 'Aplicar el examen', '[data-grupo] .grupo-nombre']]) {
     await pg.goto(BASE + pagina);
+    await pg.waitForSelector(sel);
+    comprueba((await texto(sel)) === 'Poda nueva · del 12 al 16 de octubre · Iztapalapa', t(`${nombre} sin folio: con un solo grupo hoy entra directo a él, por su nombre calculado`));
+    await sinDesborde(pg, t(`${nombre} sin folio`));
+  }
+  {
+    const viernes = JSON.parse(JSON.stringify(datos));
+    viernes.fecha_corte = '2026-10-09';
+    await pg.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(viernes), contentType: 'application/json' }));
+    await pg.goto(BASE + 'asistencia.html');
     await pg.waitForSelector('.hoy-grupo');
     const tarjetas = await pg.$$eval('.hoy-grupo', (l) => l.map((x) => ({ nombre: x.querySelector('.grupo-nombre').textContent, accion: x.querySelector('a.btn').getAttribute('href'), texto: x.textContent })));
-    comprueba(/Mis grupos de hoy/.test(await texto('#t-mis-grupos, #t-sin-grupo')) && tarjetas.length === 2
-      && tarjetas.some((x) => x.nombre === 'Poda nueva · del 10 al 14 de octubre' && /aplicar\.html\?folio=APD-G-2026-006/.test(x.accion) && /Pasar lista y aplicar/.test(x.texto))
-      && tarjetas.some((x) => x.nombre === 'Poda nueva · del 13 al 17 de octubre · Iztapalapa' && /asistencia\.html\?folio=APD-G-2026-003/.test(x.accion) && /Pasar asistencia/.test(x.texto)),
-    t(`${nombre} sin folio: «Mis grupos de hoy» con dos tarjetas por su nombre calculado y la acción del día`));
-    comprueba(/Próximos/.test(await texto('main')) && /del 16 al 20 de noviembre/.test(await texto('.hoy-proximos')), t(`${nombre}: «Próximos» con los grupos que vienen`));
-    await sinDesborde(pg, t(`${nombre} sin folio`));
-    await captura(pg, `mis-grupos-${pagina.replace('.html', '')}-${sufijo}`);
+    comprueba(/Mis grupos de hoy/.test(await texto('#t-mis-grupos, #t-sin-grupo')) && tarjetas.length === 1 && tarjetas[0].nombre === 'Poda nueva · del 5 al 9 de octubre' && /aplicar\.html\?folio=APD-G-2026-006/.test(tarjetas[0].accion)
+      && /Repaso de conocimientos y examen final hoy/.test(tarjetas[0].texto) && /Pasar lista y aplicar/.test(tarjetas[0].texto),
+    t('el quinto día del curso, «Mis grupos de hoy» dice «Repaso de conocimientos y examen final hoy» y lleva a «Pasar lista y aplicar»'));
+    comprueba(/Próximos/.test(await texto('main')) && /del 26 al 30 de octubre/.test(await texto('.hoy-proximos')), t('«Mis grupos de hoy»: «Próximos» con los grupos que vienen'));
+    await captura(pg, `mis-grupos-asistencia-${sufijo}`);
+    await pg.click('.hoy-grupo a:has-text("Pasar lista y aplicar")');
+    await pg.waitForURL(/aplicar\.html\?folio=APD-G-2026-006/);
+    await pg.waitForSelector('[data-grupo] .grupo-nombre');
+    comprueba(/Poda nueva · del 5 al 9 de octubre/.test(await texto('[data-grupo] .grupo-nombre')), t('«Aplicar el examen» abre el grupo de la tarjeta, con su nombre calculado'));
+    await pg.unroute('**/datos/ficticios.json*');
   }
-  await pg.click('.hoy-grupo a:has-text("Pasar lista y aplicar")');
-  await pg.waitForURL(/aplicar\.html\?folio=APD-G-2026-006/);
-  await pg.waitForSelector('[data-grupo] .grupo-nombre');
-  comprueba(/Poda nueva · del 10 al 14 de octubre/.test(await texto('[data-grupo] .grupo-nombre')), t('«Aplicar el examen» abre el grupo de la tarjeta, con su nombre calculado'));
   await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
   await pg.waitForSelector('.asistencia-fila');
-  comprueba((await texto('[data-bajada] .grupo-nombre')) === 'Poda nueva · del 13 al 17 de octubre · Iztapalapa' && (await texto('[data-bajada] .grupo-folio')) === 'APD-G-2026-003',
+  comprueba((await texto('[data-bajada] .grupo-nombre')) === 'Poda nueva · del 12 al 16 de octubre · Iztapalapa' && (await texto('[data-bajada] .grupo-folio')) === 'APD-G-2026-003',
     t('«Asistencia» con ?folio= sigue funcionando y nombra al grupo por su nombre calculado'));
   comprueba(errores.length === 0, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
@@ -2104,7 +2148,8 @@ async function romper(navegador) {
   await pg.waitForSelector(`${pasoVisible} #nivel_estudios`);
   // 12 · la carrera escrita lleva letras
   await pg.selectOption('#nivel_estudios', 'licenciatura');
-  await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+  // En poda no se pregunta la situación de la licenciatura (sesión de trabajo del 23/10/2026)
+  if (await pg.isVisible('[data-campo="estatus_estudios"]')) await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
   for (const raro of ['🌳🌳🌳', '...']) {
     await pg.fill('#carrera', raro);
     await pg.keyboard.press('Escape');
@@ -2247,7 +2292,8 @@ async function romper(navegador) {
   await pg.locator('#cita_fecha').blur();
   await pg.click('[data-accion="enviar"]');
   comprueba(/posterior/.test((await pg.textContent('[data-campo="cita_fecha"] .err')) || ''), t('F2 M4: una cita el 31/12/9999 se rechaza con su mensaje'));
-  comprueba(/sábado y domingo/.test(await pg.textContent('#ay-cita-hora')), t('F2 M4: la ayuda dice que los días de atención los define el área (P69, P151)'));
+  // Desde la sesión del 23/10 (P151): de lunes a viernes, de 9:30 a 14:30
+  comprueba(/de lunes a viernes/.test(await pg.textContent('#ay-cita_fecha')) && /de 9:30 a 14:30/.test(await pg.textContent('#ay-cita-hora')), t('F2 M4: la ayuda dice los días y el horario de atención (de lunes a viernes, de 9:30 a 14:30)'));
   // B3 · la observación conserva el nombre propio y sus renglones
   const b3 = await pg.evaluate(() => {
     const txt = APD.observacionDe('Comprobante de domicilio', 'Juárez no es tu alcaldía según lo que cargó.\n1) Uno\n2) Dos');
@@ -2446,7 +2492,8 @@ async function romper(navegador) {
   await c.close();
   // M9 · el único grupo de hoy tiene examen: «Mis grupos de hoy» con «Pasar lista y aplicar»
   ({ c, pg, errores } = await contexto());
-  await conRuta(pg, (j) => { j.grupo.find((x) => x.folio === 'APD-G-2026-003').instructor = 'instructor2.ficticio'; });
+  // Desde la sesión del 23/10 (P151) el quinto día de APD-G-2026-006 fue el viernes 9/10: la fecha de corte va en ese día
+  await conRuta(pg, (j) => { j.fecha_corte = '2026-10-09'; j.grupo.find((x) => x.folio === 'APD-G-2026-003').instructor = 'instructor2.ficticio'; });
   await pg.goto(BASE + 'asistencia.html');
   await pg.waitForSelector('[data-sin-grupo]:not([hidden]), [data-con-grupo]:not([hidden])');
   comprueba(await pg.isVisible('[data-sin-grupo]') && await pg.locator('[data-mis-grupos] a[href="aplicar.html?folio=APD-G-2026-006"]').count() === 1,
@@ -2616,7 +2663,8 @@ async function romperDos(navegador) {
     await pg.selectOption('#nivel_estudios', 'licenciatura');
     await pg.fill('#carrera', 'Biología');
     await pg.keyboard.press('Escape');
-    await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+    // En poda no se pregunta la situación de la licenciatura (sesión de trabajo del 23/10/2026)
+    if (await pg.isVisible('[data-campo="estatus_estudios"]')) await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
     await siguiente(pg);
     await pg.waitForSelector(`${pasoVisible} [data-campo^="doc_"]`);
     await cargaObligatorios(pg);
@@ -2838,7 +2886,7 @@ async function romperDos(navegador) {
     await abreCotejo(cb, c43.folio);
     await ca.check('input[name="se_presento"][value="no"]');
     await ca.fill('#cita_fecha', '22/10/2026');
-    await ca.selectOption('#cita_hora', '09:00');
+    await ca.selectOption('#cita_hora', '09:30');
     await registraCita(ca);
     const c1 = await terminaCotejo(cb, uuid());
     const e1 = await estadoDe(ca, c43.folio);
@@ -2861,7 +2909,7 @@ async function romperDos(navegador) {
     await registraCita(ca);
     await cb.check('input[name="se_presento"][value="no"]');
     await cb.fill('#cita_fecha', '23/10/2026');
-    await cb.selectOption('#cita_hora', '09:00');
+    await cb.selectOption('#cita_hora', '09:30');
     const c2 = await registraCita(cb);
     const e2 = await estadoDe(ca, c43.folio);
     comprueba(!c2.hecho && /Esta cita ya se registró/.test(c2.aviso) && e2.inasistencias === 0 && e2.citas.includes('2026-10-21:en_pausa') && !e2.citas.some((x) => x.startsWith('2026-10-23')),
@@ -2905,11 +2953,11 @@ async function romperDos(navegador) {
   const gruposPrueba = (pg) => pg.evaluate(() => APD.cargar().then((d) => d.grupo.filter((g) => g.de_prueba).map((g) => ({ folio: g.folio, inicio: g.fecha_inicio, instructor: g.instructor, hora: g.hora_entrada }))));
   await parte('F3 A1', async ({ pagina }) => {
     const pa = await pagina('programar.html?curso=poda-nueva');
-    const pb = await pagina('programar.html?curso=poda-nueva');
+    // La segunda, otra semana: desde la sesión del 23/10 (P149) la del 26/10 ya queda con 2 grupos a la vez
+    const pb = await pagina('programar.html?curso=poda-nueva&semana=2026-11-02');
     for (const pg of [pa, pb]) await pg.waitForSelector('[data-programar="guardar"]');
     await pa.selectOption('#instructor', 'instructor.ficticio');
     await pb.selectOption('#instructor', 'instructor2.ficticio');
-    await pb.selectOption('#hora_entrada', '07:00');
     await pa.click('[data-programar="guardar"]');
     await pa.waitForSelector('[data-resultado]:not([hidden])');
     const deA = (await gruposPrueba(pa))[0];
@@ -2925,7 +2973,7 @@ async function romperDos(navegador) {
       const en = new Date().toISOString();
       const l = JSON.parse(localStorage.getItem('apd.personal.grupos') || '[]');
       l.push({ tipo: 'crear', grupo_id: 'prueba-grupo:otro', folio: 'APD-G-2026-004', tipo_acreditacion: 'poda', modalidad: 'nueva', integracion: 'combinado', folios: [], por: 'x', en });
-      l.push({ tipo: 'proponer', grupo_id: 'prueba-grupo:otro', fecha_inicio: '2026-12-07', hora_entrada: '07:00', instructor: 'instructor2.ficticio', por: 'x', en });
+      l.push({ tipo: 'proponer', grupo_id: 'prueba-grupo:otro', fecha_inicio: '2026-12-07', hora_entrada: '09:00', instructor: 'instructor2.ficticio', por: 'x', en });
       localStorage.setItem('apd.personal.grupos', JSON.stringify(l));
       const d = await APD.cargar();
       return d.grupo.filter((g) => g.folio === 'APD-G-2026-004').map((g) => g.fecha_inicio);
@@ -2989,7 +3037,8 @@ async function romperDos(navegador) {
     await fb.click('[data-filas] button:has-text("Dar de baja")');
     await fb.fill('#motivo-baja', 'Pidió cambiar de fecha por trabajo.');
     await Promise.all([fb.waitForNavigation(), fb.click('#baja [data-accion="enviar"]')]);
-    await fa.fill('#fecha_inicio', dma(sumaDiasIso(datos.fecha_corte, 14)));
+    // Un lunes (desde la sesión del 23/10 el curso de cinco días empieza en lunes, P151)
+    await fa.fill('#fecha_inicio', '02/11/2026');
     await fa.selectOption('#hora_entrada', '09:00');
     await fa.selectOption('#instructor', 'instructor.ficticio');
     await fa.click('#confirmar [data-accion="enviar"]');
@@ -3051,7 +3100,8 @@ async function romperTres(navegador) {
     await pg.selectOption('#nivel_estudios', 'licenciatura');
     await pg.fill('#carrera', 'Biología');
     await pg.keyboard.press('Escape');
-    await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+    // En poda no se pregunta la situación de la licenciatura (sesión de trabajo del 23/10/2026)
+    if (await pg.isVisible('[data-campo="estatus_estudios"]')) await pg.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
     await siguiente(pg);
     await pg.waitForSelector(`${pasoVisible} [data-campo^="doc_"]`);
     await cargaObligatorios(pg);
@@ -3542,7 +3592,7 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
   const pantallas = [['index.html'], ['cuenta.html'], ['cuenta.html', 'con errores'], ['entrar.html'], ['tramites.html'], ['datos.html'], ['solicitud.html?tipo=dictaminador'], ['solicitud.html?tipo=dictaminador', 'con errores'], ['verificar.html'],
     ['revision.html'], [`revisar.html?folio=${porClasificar.folio}`], [`revisar.html?folio=${porClasificar.folio}`, 'con errores'], [`revisar.html?folio=${noCumple.folio}`, 'rechazo'], [`revisar.html?folio=${porClasificar.folio}`, 'visor'],
     ['grupos.html'], ['grupos.html?curso=poda-renovacion'], ['programar.html?curso=poda-nueva'], ['programar.html?curso=poda-nueva', 'sin personas'], ['asistencia.html'], ['aplicar.html'], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`], [`grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`],
-    [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`], [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-13').folio}`, 'sin marcar'],
+    [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-12').folio}`], [`asistencia.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso' && g.fecha_inicio === '2026-10-12').folio}`, 'sin marcar'],
     ['material.html'], ['material-personal.html'], ['citas.html'], [`cotejo.html?folio=${conCita.folio}`], [`cotejo.html?folio=${conCita.folio}`, 'cita futura'], [`cotejo.html?folio=${conCita.folio}`, 'con errores'], [`cotejo.html?folio=${conCita.folio}`, 'factura'],
     ['solicitud.html', 'menú de pruebas'], ['cuenta.html', 'menú de pruebas'], ['entrar.html', 'menú de pruebas']];
   // «Cargar el documento correcto» de una cita en pausa, con la sesión de su persona (al final: cambia la sesión)
@@ -3574,9 +3624,19 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
-    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr
-    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] }))
-      .violations.map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`));
+    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr. En «Grupos» de escritorio, una
+    // casilla que en esa posición de la página queda debajo de la barra fija de abajo (.plan-barra, sticky) no se
+    // cuenta en target-size: axe mide el espacio libre con la barra encima y depende de dónde caiga el borde de la
+    // ventana (sesión del 23/10: con las empresas ya una por una, una casilla cayó justo ahí); al desplazarse, la barra
+    // la deja libre
+    const v = await page.evaluate(async () => {
+      const barra = document.querySelector('.plan-barra');
+      const fija = barra && !barra.hidden && getComputedStyle(barra).position === 'sticky' ? barra.getBoundingClientRect() : null;
+      const tapada = (sel) => { const e = fija && document.querySelector(sel); if (!e) return false; const r = e.getBoundingClientRect(); return r.bottom > fija.top && r.top < fija.bottom; };
+      return (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+        .map((x) => ({ ...x, nodes: x.id === 'target-size' ? x.nodes.filter((n) => !tapada(n.target[0])) : x.nodes })).filter((x) => x.nodes.length)
+        .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`);
+    });
     comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
   }
   await page.close();
@@ -3877,7 +3937,8 @@ async function limpieza(navegador) {
     listas.push(JSON.stringify(await pg.evaluate(() => ['#instructor', '#hora_entrada'].map((s) => [...document.querySelectorAll(`${s} option`)].map((o) => o.value)))));
   }
   const nombresIguales = await pg.$$eval('#instructor option', (l) => l.filter((o) => o.value).every((o) => APD_PERSONAL.nombreInstructor(o.value) === o.textContent) && l.length > 1);
-  comprueba(listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /"07:00"/.test(listas[0]) && nombresIguales,
+  // La entrada del curso es a las 09:00 (de 9:00 a 15:00, sesión de trabajo del 23/10/2026)
+  comprueba(listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /\["","09:00"\]/.test(listas[0]) && nombresIguales,
     t('horas de entrada e instructores: la misma lista en la ficha del grupo y en «Programar», con los instructores de APD_PERSONAL'));
   comprueba(!/const MESES = \[/.test(leer('sitio/app/programar.js')) && !/nombreCurso/.test(fuentes), t('sin copias de MESES ni de nombreCurso (APD.MESES, APD.cursoLargo)'));
   await c.close();
@@ -4236,7 +4297,7 @@ async function focoAccesibilidad(navegador) {
 
   // RS-01 (falla del estándar, rodeada en app/solicitud.js) y RI-03: al recuperar o descartar el borrador con el teclado
   // el foco no cae en <body> (va al primer campo del paso) y el mensaje se anuncia una sola vez
-  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+  const sinTramite = SIN_TRAMITE;
   for (const [w, h] of [[390, 844], [1280, 720]]) {
     for (const accion of ['recuperar', 'descartar']) {
       const { c, page, errores } = await nuevo(w, h, sinTramite.id);
@@ -4286,7 +4347,8 @@ async function focoAccesibilidad(navegador) {
   // B4-03: en «Programar», las flechas dentro del mismo mes no vuelven a escribir (ni a anunciar) el nombre del mes
   {
     const { c, page } = await nuevo(1440, 900);
-    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    // Desde la sesión del 23/10 la primera semana posible es la del 26/10: noviembre se abre con su semana
+    await page.goto(BASE + 'programar.html?curso=poda-nueva&semana=2026-11-02');
     await page.waitForSelector('.cal-dia[tabindex="0"]');
     await page.focus('.cal-dia[tabindex="0"]');
     const k = await nuevaMarca(page);
@@ -4621,7 +4683,7 @@ async function continuidad(navegador) {
 
   // B6-03: después de recargar en «Documentos», cada «Atrás» cambia de paso o de página, tanto al recuperar el borrador
   // como al descartarlo (antes, el primero o el segundo no hacían nada)
-  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+  const sinTramite = SIN_TRAMITE;
   for (const accion of ['recuperar', 'descartar']) {
     const { c, page, errores } = await nuevo(390, 844, sinTramite.id);
     const paso = () => page.evaluate(() => { const x = [...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden); return x ? x.dataset.titulo : location.pathname.split('/').pop(); });
@@ -4631,7 +4693,8 @@ async function continuidad(navegador) {
     await page.selectOption('#nivel_estudios', 'licenciatura');
     await page.fill('#carrera', 'Biología');
     await page.keyboard.press('Escape');
-    await marcar(page, 'input[name="estatus_estudios"][value="titulado"]');
+    // En poda no se pregunta la situación de la licenciatura (sesión de trabajo del 23/10/2026)
+    if (await page.isVisible('[data-campo="estatus_estudios"]')) await marcar(page, 'input[name="estatus_estudios"][value="titulado"]');
     await siguiente(page);
     const enDocumentos = () => page.waitForFunction(() => { const x = [...document.querySelectorAll('section[data-paso]')].find((p) => !p.hidden); return x && x.dataset.titulo === 'Documentos'; });
     await enDocumentos();
@@ -5067,7 +5130,7 @@ async function formatosFecha(navegador) {
   const sPausaHoy = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
   await visita('corregir', `corregir.html?folio=${sPausaHoy.folio}`, { sesion: sPausaHoy.solicitante_id, ancho: 390, antes: (pg) => pg.waitForSelector('#formulario:not([hidden])') });
   // La solicitud: nueva y con observaciones (lo que se pidió corregir, con sus fechas)
-  const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((x) => x.solicitante_id === p.id));
+  const sinTramite = SIN_TRAMITE;
   await visita('solicitud', 'solicitud.html', { sesion: sinTramite.id, ancho: 390 });
   await visita('solicitud', `solicitud.html?folio=${conObs.folio}`, { sesion: conObs.solicitante_id, ancho: 390 });
   const acreditada = casos.find((x) => x.clave === 'acreditada');
@@ -5180,17 +5243,20 @@ async function sistemaVisual(navegador) {
     && !datos.solicitud.some((s) => s.solicitante_id === p.id));
 
   // 1. Un principal por pantalla, en teléfono y en escritorio. La pantalla espera a lo que la página pinta.
+  const VIERNES_9 = { ...datos, fecha_corte: '2026-10-09' };
   const PANTALLAS = [
     ['Grupos (poda nueva)', 'grupos.html?curso=poda-nueva', '.plan-grupo', null, 'Programar un curso'],
     ['Grupos (renovación)', 'grupos.html?curso=poda-renovacion', '[data-destinos] a', null, 'Programar un curso'],
     ['Programar un curso', 'programar.html?curso=poda-nueva', '.cal-dia[data-rango]', null, 'Crear y confirmar el grupo'],
-    ['Mis grupos de hoy (asistencia)', 'asistencia.html', '.hoy-grupo', null, 'Pasar lista y aplicar'],
-    ['Mis grupos de hoy (aplicar)', 'aplicar.html', '.hoy-grupo', null, 'Pasar lista y aplicar'],
+    // El quinto día de APD-G-2026-006 (viernes 9/10): desde la sesión del 23/10 el corte (miércoles) no es día de examen y
+    // el instructor tiene un solo grupo hoy. «Aplicar el examen» con un solo grupo entra directo a él (sin «Mis grupos de
+    // hoy»), así que ya no va en esta lista
+    ['Mis grupos de hoy (asistencia)', 'asistencia.html', '.hoy-grupo', null, 'Pasar lista y aplicar', VIERNES_9],
     ['Mis trámites con la poda por vencer (P164)', 'tramites.html', '[data-acreditaciones] .ficha', porVencer.id, 'Renovar']
   ];
   for (const [ancho, alto] of [[390, 844], [1440, 900]]) {
-    for (const [nombre, ruta, listo, sesion, principal] of PANTALLAS) {
-      const { c, page, errores } = await nuevo(ancho, alto, { sesion });
+    for (const [nombre, ruta, listo, sesion, principal, datosPropios] of PANTALLAS) {
+      const { c, page, errores } = await nuevo(ancho, alto, { sesion, datosPropios });
       await page.goto(BASE + ruta);
       await page.waitForSelector(listo);
       const g = await guindas(page);
@@ -5215,7 +5281,8 @@ async function sistemaVisual(navegador) {
   const ELEGIDO = [
     ['el curso de «Grupos»', 'grupos.html?curso=poda-nueva', '.plan-curso', null, '.plan-curso[aria-pressed="true"]', '.plan-curso[aria-pressed="false"]'],
     ['la persona elegida', 'grupos.html?curso=poda-nueva', '.plan-persona', (pg) => pg.locator('.plan-persona .casilla-input').first().evaluate((e) => e.click()), '.plan-persona:has(.casilla-input:checked)', '.plan-persona:not(:has(.casilla-input:checked))'],
-    ['los días del curso en el calendario', 'programar.html?curso=poda-nueva', '.cal-dia[data-rango]', null, '.cal-dia[data-rango]', '.cal-dia:not([data-rango]):not([aria-disabled="true"]):not([data-inhabil])'],
+    // Noviembre: desde la sesión del 23/10 sólo se empieza en lunes y en octubre el único posible es el elegido (26/10)
+    ['los días del curso en el calendario', 'programar.html?curso=poda-nueva&semana=2026-11-02', '.cal-dia[data-rango]', null, '.cal-dia[data-rango]', '.cal-dia:not([data-rango]):not([aria-disabled="true"]):not([data-inhabil])'],
     ['la respuesta de «¿Asistió?»', 'asistencia.html?folio=APD-G-2026-003', '.asistencia-fila', (pg) => marcar(pg, '.asistencia-fila input[value="no"]:enabled'), '.asistencia-fila .opcion:has(.opcion-input:checked)', '.asistencia-fila .opcion:has(.opcion-input:not(:checked):enabled)']
   ];
   const lee = (page, sel) => page.$eval(sel, (e) => { const cs = getComputedStyle(e); return { fondo: cs.backgroundColor, borde: cs.borderTopColor, todo: [cs.backgroundColor, cs.color, cs.borderTopColor, cs.borderTopWidth, `${cs.outlineWidth} ${cs.outlineStyle} ${cs.outlineColor}`, cs.boxShadow].join(' · ') }; });
@@ -5295,7 +5362,7 @@ async function sistemaVisual(navegador) {
   // 7. A6-02: el día disponible del calendario se delimita a 3:1 o más (--borde, no --linea)
   {
     const { c, page } = await nuevo(1440, 900);
-    await page.goto(BASE + 'programar.html?curso=poda-nueva');
+    await page.goto(BASE + 'programar.html?curso=poda-nueva&semana=2026-11-02');
     await page.waitForSelector('.cal-dia');
     const borde = await page.$eval('.cal-dia:not([data-rango]):not([aria-disabled="true"]):not([data-inhabil])', (e) => getComputedStyle(e).borderTopColor);
     comprueba(borde === 'rgb(135, 139, 142)', t(`A6-02: el día disponible del calendario tiene el borde de un control (${borde}, 3.43:1)`));
@@ -5362,7 +5429,7 @@ async function sistemaVisual(navegador) {
     const telefono = ancho < 560;
     const corto = curso.endsWith('renovacion');
     comprueba((telefono
-      ? !r.notas.length && (corto ? /^Curso y examen el \S+ \d+ de \S+ de \d{4}\.$/ : /^Inicia el \S+ \d+ de \S+ de \d{4} y examen el \S+ \d+ de \S+ de \d{4}\.$/).test(r.linea)
+      ? !r.notas.length && (corto ? /^Curso y examen el \S+ \d+ de \S+ de \d{4}\.$/ : /^Inicia el \S+ \d+ de \S+ de \d{4}; repaso de conocimientos y examen final el \S+ \d+ de \S+ de \d{4}\.$/).test(r.linea)
         && /empieza el curso/.test(r.lector[0]) && /examen/.test(r.lector[corto ? 0 : 1])
       : r.notas.length >= (corto ? 1 : 2) && r.notas.every((x) => x.tam >= 12 && x.cabe) && !r.linea) && !r.chicos.length && !errores.length,
     t(`decisión del 21/10 (C6-10 c): «Programar» (${curso}) a ${ancho} px, ${telefono ? `sin nota en la celda y abajo «${r.linea}»` : `notas ${r.notas.map((x) => `«${x.t}» ${x.tam} px${x.cabe ? '' : ' cortada'}`).join(', ')}`}; texto a menos de 12 px: ${r.chicos.join(', ') || 'ninguno'}`));
@@ -5447,6 +5514,8 @@ async function pesoDatos(navegador) {
    pantalla cambia entre los dos. */
 async function sesion23(navegador) {
   const t = (m) => `[sesión 23/10] ${m}`;
+  // Cada bloque sigue aunque otro se detenga: un error se cuenta como falla de ese bloque y se pasa al siguiente
+  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
   const nuevo = async (ancho, alto, sesion) => {
     const movil = ancho < 600;
     const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
@@ -5493,7 +5562,7 @@ async function sesion23(navegador) {
   // con observaciones): «Recibimos la corrección de tus documentos», con «Corrección recibida el» y los pasos de una
   // corrección; una solicitud nueva sigue diciendo «Recibimos tu solicitud». b) El documento correcto de una cita en
   // pausa (corregir.html): el mismo título y, como pasos, regresar con quien atiende, que revisa lo corregido.
-  {
+  await bloque('nuevo 6 a', async () => {
     const obsS = datos.solicitud.find((s) => s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda');
     const { c, page, errores } = await nuevo(390, 844, obsS.solicitante_id);
     await page.goto(BASE + `solicitud.html?folio=${obsS.folio}`);
@@ -5513,8 +5582,8 @@ async function sesion23(navegador) {
     const html = await page.evaluate(() => fetch('solicitud.html').then((r) => r.text()));
     comprueba(/<h2 class="titulo-paso" tabindex="-1">Recibimos tu solicitud<\/h2>/.test(html), t('nuevo 6: una solicitud nueva sigue diciendo «Recibimos tu solicitud»'));
     await c.close();
-  }
-  {
+  });
+  await bloque('nuevo 6 b', async () => {
     const cp = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
     const sp = datos.solicitud.find((x) => x.id === cp.solicitud_id);
     const { c, page, errores } = await nuevo(1280, 900, sp.solicitante_id);
@@ -5528,7 +5597,254 @@ async function sesion23(navegador) {
     comprueba(/Recibimos la corrección de tus documentos/.test(hecho) && /revisa lo que corregiste/.test(hecho) && !/Listo: ya cargaste/.test(hecho) && !errores.length,
       t(`nuevo 6: en la cita en pausa de ${sp.folio}, «Recibimos la corrección de tus documentos» y que quien atiende revisa lo corregido`));
     await c.close();
-  }
+  });
+
+  // Persona con sesión y su página, para las pruebas de abajo
+  const conSesion = async (persona, url, ancho = 390, alto = 844) => {
+    const r = await nuevo(ancho, alto, persona.id);
+    await r.page.goto(BASE + url);
+    return r;
+  };
+  const activa = (pred) => datos.solicitante.find((p) => p.estado === 'activa' && pred(p));
+  const podasDe = (p) => datos.acreditacion.filter((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda');
+  const tieneSol = (p, tipo) => datos.solicitud.some((x) => x.solicitante_id === p.id && (!tipo || x.tipo_acreditacion === tipo));
+
+  // Nuevos 4 y 5 (P196): «Constancia de situación fiscal» de la persona solicitante, reciente («del mes en curso»,
+  // provisional y marcado pendiente sólo para el personal), y de ella se toman nombre, régimen y domicilio fiscal. En la
+  // solicitud, el inicio, la revisión y el cotejo. P03: el comprobante de domicilio se pide, sin marca de provisional.
+  await bloque('nuevos 4 y 5', async () => {
+    const html = await (await fetch(BASE + 'solicitud.html')).text();
+    const ayuda = (html.match(/id="ay-doc_poda_nueva_constancia_situacion_fiscal">([^<]*)</) || [])[1] || '';
+    const domicilio = (html.match(/id="ay-doc_poda_nueva_comprobante_domicilio">([^<]*)</) || [])[1] || '';
+    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.$/.test(ayuda)
+      && !/pendiente/i.test(ayuda) && domicilio && !/pendiente|dejar|provisional/i.test(domicilio),
+      t(`nuevos 4 y 5 (P196) y P03: la ayuda de la constancia («${ayuda}») y la del comprobante de domicilio, sin marcas`));
+    for (const [pagina, sel] of [['revisar.html', '[data-doc="constancia_situacion_fiscal"]'], ['cotejo.html', '[data-doc="constancia_situacion_fiscal"]']]) {
+      const h = await (await fetch(BASE + pagina)).text();
+      const bloque = h.slice(h.indexOf(sel.slice(1, -1)), h.indexOf(sel.slice(1, -1)) + 1500);
+      comprueba(/Constancia de situación fiscal<\/h4>/.test(bloque) && /de la persona solicitante y reciente: del mes en curso <span class="pendiente">\[pendiente P196/.test(bloque) && /nombre, su régimen y su domicilio fiscal/.test(bloque),
+        t(`nuevos 4 y 5: en ${pagina}, la constancia dice al personal que es de la persona solicitante, del mes en curso (pendiente P196) y qué se toma de ella`));
+    }
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'index.html');
+    await page.waitForSelector('[data-requisitos] details');
+    const req = await page.textContent('[data-requisitos]');
+    comprueba(/Constancia de situación fiscal\. Tuya, como persona solicitante/.test(req) && !/\[pendiente/.test(req) && /Comprobante de domicilio\. De luz/.test(req) && !errores.length,
+      t('nuevos 4 y 5 y P03: el inicio lista la constancia de la persona solicitante y el comprobante de domicilio, sin marcas'));
+    await c.close();
+  });
+
+  // Nuevo 2: en la solicitud de poda no se pregunta la situación de la licenciatura; en la de dictaminador sí
+  await bloque('nuevo 2', async () => {
+    const dos = activa((p) => podasDe(p).some((a) => a.emitida_en === '2024-06-01'));
+    // Para poda, una persona nueva que crea su cuenta aquí
+    const NUEVO = { nombre: 'Rodrigo', primer_apellido: 'Ejemplo', segundo_apellido: 'Podador', nacimiento: '1990-03-12' };
+    NUEVO.curp = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: NUEVO.nombre, primer: NUEVO.primer_apellido, segundo: NUEVO.segundo_apellido }, NUEVO.nacimiento, 'H', 'NE') + '0');
+    for (const [persona, tipo, debe] of [[null, 'poda', false], [dos, 'dictaminador', true]]) {
+      const { c, page, errores } = persona ? await conSesion(persona, `solicitud.html?tipo=${tipo}`) : await nuevo(390, 844);
+      if (!persona) {
+        await page.goto(BASE + 'cuenta.html');
+        await llenaCuenta(page, NUEVO);
+        await page.click('[data-accion="enviar"]');
+        await page.waitForSelector('[data-acuse]:not([hidden])');
+        await page.goto(BASE + `solicitud.html?tipo=${tipo}`);
+      }
+      await page.waitForSelector('#formulario:not([hidden])');
+      await page.waitForFunction((t) => document.getElementById('tramite').value === `${t}_nueva`, tipo);
+      await page.selectOption('#nivel_estudios', 'licenciatura');
+      await page.waitForSelector('[data-campo="carrera"]', { state: 'visible' });
+      const ve = await page.isVisible('[data-campo="estatus_estudios"]');
+      comprueba(ve === debe && (await page.inputValue('#pedir_situacion')) === (debe ? 'si' : 'no') && !errores.length,
+        t(`nuevo 2: en ${tipo}, con licenciatura, ${debe ? 'sí' : 'no'} se pregunta «¿En qué situación está tu licenciatura?»`));
+      await c.close();
+    }
+  });
+
+  // Nuevo 3: dictaminador por primera vez, con la poda al menos 2 años consecutivos. Con 2 años, puede; con menos (las del
+  // grupo de septiembre de 2026), no; con un corte (renovó fuera de la ventana), la cuenta empieza otra vez y tampoco. Lo
+  // dicen la solicitud, «Mis trámites» y el inicio; el menú de pruebas trae un caso de cada uno.
+  await bloque('nuevo 3', async () => {
+    const dos = activa((p) => podasDe(p).some((a) => a.emitida_en === '2024-06-01'));
+    const menos = activa((p) => podasDe(p).length === 1 && podasDe(p)[0].emitida_en === '2026-09-15' && !tieneSol(p, 'dictaminador'));
+    const corte = activa((p) => podasDe(p).some((a) => a.emitida_en === '2023-03-06'));
+    for (const [persona, puede, texto] of [[dos, true, null], [menos, false, /dos años consecutivos\. Tienes la tuya sin interrupción desde el 15\/09\/2026: podrás solicitarla a partir del 15\/09\/2028/],
+      [corte, false, /sin interrupción desde el 05\/05\/2025: podrás solicitarla a partir del 05\/05\/2027/]]) {
+      const { c, page, errores } = await conSesion(persona, 'solicitud.html');
+      await page.waitForSelector('#formulario:not([hidden]), [data-sin-opciones]:not([hidden])');
+      // Sin nada que pedir, el formulario no se muestra (sólo los motivos)
+      const habilitada = await page.isVisible('#formulario') && await page.isEnabled('input[name="tipo"][value="dictaminador"]').catch(() => false);
+      const motivo = (await page.textContent('[data-motivo-tipo]').catch(() => '')) + (await page.textContent('[data-sin-opciones-motivos]').catch(() => ''));
+      comprueba(habilitada === puede && (puede || texto.test(motivo)) && !errores.length,
+        t(`nuevo 3: ${persona.nombre} ${persona.primer_apellido}, ${puede ? 'con la poda desde 2024 sin corte, puede pedir dictaminador' : `no puede pedir dictaminador: «${motivo.trim().slice(0, 150)}»${errores.length ? ` errores: ${errores.join(" | ").slice(0, 300)}` : ""}`}`));
+      if (!puede) {
+        await page.goto(BASE + 'tramites.html');
+        await page.waitForSelector('[data-acreditaciones] .aviso');
+        comprueba(texto.test(await page.textContent('[data-acreditaciones] .aviso')), t('nuevo 3: «Mis trámites» dice desde cuándo podrá pedir la de dictaminador'));
+      }
+      await c.close();
+    }
+    const casos = globalThis.APD_CASOS_PRUEBA;
+    comprueba(['dict-puede', 'dict-menos-dos', 'dict-corte'].every((k) => casos.claves().includes(k)), t('nuevo 3: el menú de pruebas trae los casos «con 2 años», «con menos» y «con un corte»'));
+    const { c, page } = await nuevo(1280, 900);
+    await page.goto(BASE + 'index.html');
+    await page.waitForSelector('[data-requisitos] details');
+    comprueba(/de poda y derribo durante al menos 2 años consecutivos, y vigente/.test(await page.textContent('#t-renovar + p, .seccion')) || /durante al menos 2 años consecutivos/.test(await page.textContent('main')),
+      t('nuevo 3: el inicio lo explica antes de empezar'));
+    await c.close();
+  });
+
+  // P138: 18 años cumplidos a la fecha de la solicitud, para las dos acreditaciones. Una persona nacida en 2010 crea su
+  // cuenta (la CURP es válida), pero no puede solicitar: la solicitud se lo dice, con el día en que los cumple.
+  await bloque('P138', async () => {
+    const MENOR = { nombre: 'Noemí', primer_apellido: 'Ejemplo', segundo_apellido: 'Menor', nacimiento: '2010-05-05' };
+    MENOR.curp = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: MENOR.nombre, primer: MENOR.primer_apellido, segundo: MENOR.segundo_apellido }, MENOR.nacimiento, 'M', 'NE') + 'A');
+    const { c, page, errores } = await nuevo(390, 844);
+    await page.goto(BASE + 'cuenta.html');
+    await llenaCuenta(page, MENOR);
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-acuse]:not([hidden])');
+    await page.goto(BASE + 'solicitud.html');
+    await page.waitForSelector('[data-sin-opciones]:not([hidden])');
+    const motivos = await page.textContent('[data-sin-opciones-motivos]');
+    comprueba(/18 años cumplidos para solicitar una acreditación\. Según tu CURP, los cumples el 05\/05\/2028/.test(motivos) && /Poda y derribo/.test(motivos) && /Dictaminador técnico/.test(motivos) && !errores.length,
+      t(`P138: con 16 años no se solicita ninguna de las dos («${motivos.trim().slice(0, 120)}…»)`));
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-solicitudes] .vacio');
+    comprueba(/los cumples el 05\/05\/2028/.test(await page.textContent('[data-solicitudes] .vacio')), t('P138: «Mis trámites» dice desde cuándo podrá solicitar'));
+    await c.close();
+  });
+
+  // Nuevo 1: la Universidad Autónoma Chapingo en las instituciones educativas (catálogo, «Crea tu cuenta» y «Mi perfil»)
+  await bloque('Chapingo', async () => {
+    const { c, page, errores } = await nuevo(390, 844);
+    await page.goto(BASE + 'cuenta.html');
+    await page.check('input[name="adscrito"][value="si"]', { force: true });
+    await page.check('input[name="tipo_adscripcion"][value="educativa"]', { force: true });
+    await page.waitForSelector('input[name="institucion_educativa"][value="chapingo"]', { state: 'attached' });
+    const etiqueta = await page.textContent('label:has(input[name="institucion_educativa"][value="chapingo"])');
+    const mapea = await page.evaluate(() => APD.cargar().then((d) => { const a = APD.adscripcionDe(d, { adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'chapingo' }); const o = d.organizacion.find((x) => x.id === a.organizacion_id); return o ? `${o.tipo}:${o.nombre}` : ''; }));
+    const html = await (await fetch(BASE + 'datos.html')).text();
+    comprueba(/Universidad Autónoma Chapingo/.test(etiqueta) && mapea === 'educativa:Universidad Autónoma Chapingo' && /value="chapingo"/.test(html) && !errores.length,
+      t(`nuevo 1: «Crea tu cuenta» y «Mi perfil» ofrecen la Universidad Autónoma Chapingo, del catálogo (${mapea})`));
+    await c.close();
+  });
+
+  // Horarios (P69, P91, P132): citas de cotejo de 9:30 a 14:30 en la revisión y en el cotejo; el curso de 9:00 a 15:00 (la
+  // entrada del grupo y la salida que ve la persona); informes de 9:00 a 15:00 donde se menciona el contacto.
+  await bloque('horarios', async () => {
+    for (const pagina of ['revisar.html', 'cotejo.html']) {
+      const h = await (await fetch(BASE + pagina)).text();
+      const horas = [...h.slice(h.indexOf('id="cita_hora"')).split('</select>')[0].matchAll(/<option value="(\d\d:\d\d)">/g)].map((m) => m[1]);
+      comprueba(horas.join(' ') === '09:30 10:00 10:30 11:00 11:30 12:00 12:30 13:00 13:30 14:00 14:30' && /de lunes a viernes/.test(h),
+        t(`P69: en ${pagina} la hora de la cita va de 09:30 a 14:30 (${horas[0]}–${horas[horas.length - 1]}) y la fecha dice «de lunes a viernes»`));
+    }
+    for (const pagina of ['grupo.html', 'programar.html']) {
+      const h = await (await fetch(BASE + pagina)).text();
+      const horas = [...h.slice(h.indexOf('id="hora_entrada"')).split('</select>')[0].matchAll(/<option value="(\d\d:\d\d)">/g)].map((m) => m[1]);
+      comprueba(horas.join(' ') === '09:00' && /El curso es de 9:00 a 15:00/.test(h), t(`P91: en ${pagina} la entrada del grupo es a las 09:00 y la ayuda dice «de 9:00 a 15:00»`));
+    }
+    const ins = datos.solicitud.find((x) => x.estado === 'inscrita' && datos.inscripcion.some((i) => i.solicitud_id === x.id && i.activa && (datos.grupo.find((g) => g.id === i.grupo_id) || {}).folio === 'APD-G-2026-003'));
+    const persona = datos.solicitante.find((p) => p.id === ins.solicitante_id);
+    const { c, page, errores } = await conSesion(persona, 'tramites.html');
+    await page.waitForSelector('[data-solicitudes] .ficha-cita');
+    const caja = await page.textContent('[data-solicitudes] .ficha-cita');
+    comprueba(/De 09:00 a 15:00, todos los días del curso/.test(caja) && /Día 5: repaso de conocimientos y examen final/.test(caja) && !errores.length,
+      t('P91 y quinto día: «Mis trámites» dice el horario del curso (de 09:00 a 15:00) y que el día 5 es de repaso de conocimientos y examen final'));
+    await c.close();
+    const perfil = await (await fetch(BASE + 'datos.html')).text();
+    comprueba(/Informes en la Secretaría: de lunes a viernes, de 9:00 a 15:00/.test(perfil) && /P132/.test(perfil), t('P132: «Mi perfil» da el horario de informes (9:00 a 15:00) y el teléfono y el correo siguen pendientes'));
+  });
+
+  // P150 y P151: sábados y domingos inhábiles. En la revisión, un sábado como fecha de la cita se dice junto al campo y no
+  // se guarda; en «Programar un curso», el de 5 días sólo deja empezar en lunes y el de un día, de lunes a viernes.
+  await bloque('P150 y P151', async () => {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + `revisar.html?folio=${enviada.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    for (const n of await page.$$eval('input[value="aceptado"]', (l) => l.filter((r) => r.checkVisibility()).map((r) => r.name))) await marcar(page, `input[name="${n}"][value="aceptado"]`);
+    await page.waitForSelector('#cita_fecha', { state: 'visible' });
+    await page.fill('#cita_fecha', '17/10/2026');
+    await page.selectOption('#cita_hora', '10:00');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForFunction(() => /lunes a viernes/.test((document.querySelector('[data-campo="cita_fecha"] .err') || {}).textContent || ''));
+    comprueba(await page.isHidden('[data-hecho]') && !errores.length, t('P150: el sábado 17/10/2026 como fecha de la cita se rechaza: «Las citas de cotejo son de lunes a viernes»'));
+    await c.close();
+    for (const [curso, ok] of [['poda-nueva', (d) => d === 1], ['poda-renovacion', (d) => d >= 1 && d <= 5]]) {
+      const r = await nuevo(1280, 900);
+      await r.page.goto(BASE + `programar.html?curso=${curso}`);
+      await r.page.waitForSelector('.cal-dia');
+      const dias = await r.page.$$eval('.cal-dia', (l) => l.map((b) => ({ d: b.dataset.fecha, no: b.dataset.no || '' })));
+      const malos = dias.filter((x) => x.no !== 'anticipacion' && x.no !== 'lejana' && (ok(new Date(`${x.d}T12:00:00Z`).getUTCDay()) ? x.no === 'fin_de_semana' : x.no !== 'fin_de_semana'));
+      comprueba(!malos.length && dias.some((x) => !x.no) && !r.errores.length,
+        t(`P151: en «Programar» ${curso} sólo ${curso === 'poda-nueva' ? 'los lunes' : 'de lunes a viernes'} se puede empezar${malos.length ? `; no cumplen: ${malos.slice(0, 3).map((x) => x.d).join(', ')}` : ''}`));
+      await r.c.close();
+    }
+    comprueba(datos.grupo.filter((g) => g.fecha_inicio).every((g) => {
+      const dur = datos.curso.find((x) => x.tipo_acreditacion === g.tipo_acreditacion && x.modalidad === g.modalidad).dias_duracion;
+      for (let k = 0; k < dur; k++) { const w = new Date(Date.parse(`${g.fecha_inicio}T12:00:00Z`) + k * 86400000).getUTCDay(); if (w === 0 || w === 6) return false; }
+      return true;
+    }), t('P151: ningún grupo ficticio tiene clase en sábado ni domingo'));
+  });
+
+  // Quinto día (curso de primera vez): «Repaso de conocimientos y examen final» para el personal (asistencia, ficha del
+  // grupo) y para la persona («Mis trámites», arriba). Renovación (un día): «curso y examen», como estaba.
+  await bloque('quinto día', async () => {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
+    await page.waitForSelector('.asistencia-fila');
+    const tira = await page.textContent('main');
+    await page.goto(BASE + 'grupo.html?folio=APD-G-2026-003');
+    await page.waitForSelector('[data-conc-encabezado] th');
+    const encabezado = await page.textContent('[data-conc-encabezado]');
+    const datosG = await page.textContent('[data-datos]');
+    comprueba(/16\/10\/2026 · repaso de conocimientos y examen final/.test(encabezado) && /Último día \(repaso de conocimientos y examen final\)/.test(datosG) && /Hora de salida\s*15:00/.test(datosG) && !errores.length,
+      t('quinto día: la ficha del grupo dice «repaso de conocimientos y examen final» en el último día y la salida a las 15:00'));
+    comprueba(/Día 5 · 16\/10\/2026 · repaso de conocimientos y examen final/.test(tira), t('quinto día: en «Asistencia», el día 5 dice «repaso de conocimientos y examen final»'));
+    const renov = await page.evaluate(() => APD.cargar().then((d) => [APD.diaFinal(APD.curso(d, 'poda', 'renovacion')), APD.diaFinal(APD.curso(d, 'poda', 'nueva'))]));
+    comprueba(renov[0] === 'Examen' && renov[1] === 'Repaso de conocimientos y examen final', t('quinto día: sólo en el curso de primera vez; la renovación queda como estaba'));
+    await c.close();
+  });
+
+  // P149, P143 y gobierno en bloque: como máximo 2 grupos al mismo tiempo (la pantalla, como la base); la espera es
+  // prioritaria desde 15 días y la persona lee que se asigna grupo en 15 días si se completa el cupo mínimo; sólo las
+  // instituciones de gobierno local y federal se agrupan en bloque.
+  await bloque('P149, P143 y bloques', async () => {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + 'grupos.html?curso=poda-nueva');
+    await page.waitForSelector('[data-personas] .plan-persona');
+    const r = await page.evaluate(() => APD.cargar().then((d) => {
+      const P = APD_PERSONAL;
+      const lunes = '2026-10-26';
+      const uno = P.razonNoInicio(d, 'dictaminador', 'nueva', lunes);
+      const g = Object.assign({}, d.grupo.find((x) => x.folio === 'APD-G-2026-005'), { id: 'otro-de-prueba', folio: 'APD-G-2026-090', tipo_acreditacion: 'poda', modalidad: 'renovacion', fecha_inicio: '2026-10-28', estado: 'confirmado' });
+      d.grupo.push(g);
+      const dos = P.razonNoInicio(d, 'dictaminador', 'nueva', lunes);
+      const renovJueves = P.razonNoInicio(d, 'dictaminador', 'renovacion', '2026-10-29');
+      // Bloques: dos de la misma alcaldía, juntas; dos de la misma empresa, cada una por su lado
+      const alc = d.organizacion.find((o) => o.tipo === 'alcaldia');
+      const emp = d.organizacion.find((o) => o.tipo === 'privada');
+      const x = (folio, o, gob) => ({ s: { folio, organizacion_id: o.id }, organizacion: o.nombre, gobierno: gob });
+      const bloques = P.bloquesEspera([x('A', alc, true), x('B', emp, false), x('C', alc, true), x('D', emp, false)]);
+      return { uno: uno && uno.clave, dos: dos && dos.clave, texto: dos && dos.texto, renovJueves: renovJueves && renovJueves.clave,
+        bloques: bloques.map((b) => `${b.junta ? 'junta' : 'sola'}:${b.xs.map((y) => y.s.folio).join('')}`).join(' ') };
+    }));
+    comprueba(r.uno === null && r.dos === 'simultaneos' && /como máximo hay 2 al mismo tiempo/.test(r.texto) && r.renovJueves === null,
+      t(`P149: con un grupo esa semana se puede programar otro; con dos, un tercero no («${r.texto}»); otro día de la semana sin dos grupos, sí`));
+    comprueba(r.bloques === 'junta:AC sola:B sola:D', t(`gobierno en bloque: dos de la misma alcaldía van juntas y dos de la misma empresa, una por una (${r.bloques})`));
+    const privada = datos.organizacion.find((o) => o.tipo === 'privada' && datos.solicitud.filter((x) => x.estado === 'lista_para_curso' && x.tipo_acreditacion === 'poda' && x.modalidad === 'nueva' && x.organizacion_id === o.id).length > 1);
+    comprueba(!(await page.$$eval('.plan-bloque-nombre', (l) => l.map((n) => n.textContent))).some((n) => n.startsWith(privada.nombre)) && !errores.length,
+      t(`gobierno en bloque: en «Grupos», las de ${privada.nombre} ya no van en un bloque`));
+    comprueba(/15 días o más|personas? en espera/.test(await page.textContent('[data-cuenta]')), t('P143: el planeador cuenta como prioritarias las que esperan 15 días o más'));
+    await c.close();
+    const espera = datos.solicitud.find((x) => x.estado === 'lista_para_curso' && x.modalidad === 'nueva' && x.tipo_acreditacion === 'poda');
+    const persona = datos.solicitante.find((p) => p.id === espera.solicitante_id);
+    const r2 = await conSesion(persona, 'tramites.html');
+    await r2.page.waitForSelector('[data-solicitudes] .ficha');
+    const ficha = await r2.page.textContent('[data-solicitudes]');
+    comprueba(/te asigna un grupo del curso en un plazo de 15 días, siempre que se reúnan al menos 5 personas para abrirlo/.test(ficha) && /de lunes a viernes, de 9:00 a 15:00/.test(ficha) && /repaso de conocimientos y examen final/.test(ficha) && !r2.errores.length,
+      t('P143: la persona en espera lee que se le asigna grupo en 15 días si se reúne el cupo mínimo, el horario del curso y el quinto día'));
+    await r2.c.close();
+  });
 }
 
 // El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
@@ -5552,7 +5868,8 @@ try {
   if (toca('csp')) await parte('política de contenido', () => politicaContenido(navegador));
   if (toca('peso')) await parte('peso de los datos', () => pesoDatos(navegador));
   if (toca('mapa')) await parte('mapa de la sede', () => mapaSede(navegador));
-  if (!solo) {
+  // SOLO=principal: sólo los recorridos de la persona y del personal (para depurar)
+  if (!solo || solo === 'principal') {
     await parte('recorrido en teléfono', () => recorrido(navegador, 390, 844, 'telefono'));
     await parte('recorrido en escritorio', () => recorrido(navegador, 1280, 900, 'escritorio'));
     await parte('personal en teléfono', () => personal(navegador, 390, 844, 'telefono'));

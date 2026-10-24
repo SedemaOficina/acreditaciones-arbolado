@@ -389,7 +389,8 @@
     else if (d.tipo_adscripcion === 'dependencia_federal') {
       if (d.dependencia_federal === 'cfe') o = porClave('cfe'); else nombre = d.dependencia_federal_otra;
     } else if (d.tipo_adscripcion === 'educativa') {
-      if (d.institucion_educativa === 'unam') o = porClave('unam'); else nombre = d.institucion_educativa_otra;
+      // UNAM y Universidad Autónoma Chapingo, por su clave (Chapingo: sesión de trabajo del 23/10/2026)
+      if (['unam', 'chapingo'].includes(d.institucion_educativa)) o = porClave(d.institucion_educativa); else nombre = d.institucion_educativa_otra;
     } else if (d.dependencia_cdmx === 'sedema') o = porClave(`sedema_${d.direccion_sedema}`);
     else if (d.dependencia_cdmx && d.dependencia_cdmx !== 'otro') o = porClave(d.dependencia_cdmx);
     else nombre = d.dependencia_cdmx_otra;
@@ -439,6 +440,41 @@
   function acreditacionesDe(datos, persona) { return deTabla(datos, 'acreditacion', 'solicitante_id', persona.id).sort((a, b) => b.emitida_en.localeCompare(a.emitida_en)); }
   function situacion(datos, acreditacion) { return datos.estado_acreditacion[acreditacion.numero]; }
   function parametro(datos, clave) { const p = datos.parametro.find((x) => x.clave === clave); return p ? Number(p.valor) : null; }
+  /* Un parámetro de texto (una hora «09:30», el horario de informes), tal cual */
+  function parametroTexto(datos, clave) { const p = (datos.parametro || []).find((x) => x.clave === clave); return p ? String(p.valor) : null; }
+
+  /* ----- Sesión de trabajo del 23/10/2026: edad, años de poda, días hábiles y horarios (la misma regla que la base) -----
+     Fecha de nacimiento que dice la CURP (posiciones 5 a 10; el siglo, del carácter 17: dígito, 1900; letra, 2000), como
+     apd.curp_nacimiento. La mayoría de edad (P138) se cumple el día del aniversario 18, como en la base. */
+  function nacimientoDeCurp(curp) {
+    const c = String(curp || '').toUpperCase();
+    if (!/^[A-Z]{4}\d{6}/.test(c) || c.length !== 18) return null;
+    const a = (/\d/.test(c[16]) ? 1900 : 2000) + Number(c.slice(4, 6));
+    return `${a}-${c.slice(6, 8)}-${c.slice(8, 10)}`;
+  }
+  function cumpleEdad(curp, anios) { const n = nacimientoDeCurp(curp); return n ? sumaMeses(n, anios * 12) : null; }
+  /* Desde cuándo tiene la persona la poda sin interrupción hasta ese día (apd.poda_continua_desde): se parte de la vigente
+     y se va hacia atrás; la anterior cuenta si la siguiente se emitió a más tardar meses_despues_renovacion meses después
+     de su vencimiento. null sin poda vigente. */
+  function podaContinuaDesde(datos, persona, fecha) {
+    const f = fecha || hoy(datos);
+    const meses = parametro(datos, 'meses_despues_renovacion') || 12;
+    const podas = (datos.acreditacion || []).filter((a) => a.solicitante_id === persona.id && a.tipo_acreditacion === 'poda' && a.emitida_en <= f)
+      .sort((a, b) => b.emitida_en.localeCompare(a.emitida_en));
+    let desde = null;
+    for (const a of podas) {
+      if (!desde) { if (f > a.vence_en) return null; desde = a.emitida_en; continue; }
+      if (desde <= sumaMeses(a.vence_en, meses)) { if (a.emitida_en < desde) desde = a.emitida_en; } else break;
+    }
+    return desde;
+  }
+  /* Sábados y domingos inhábiles (P150); el calendario de festivos de la Gaceta está pendiente */
+  const esHabil = (iso) => { const d = new Date(`${String(iso).slice(0, 10)}T12:00:00Z`).getUTCDay(); return d !== 0 && d !== 6; };
+  /* El quinto día del curso de primera vez es de repaso de conocimientos y examen final (sesión de trabajo del 23/10/2026);
+     la renovación (un día) sigue siendo «curso y examen» */
+  const DIA_FINAL_NUEVA = 'Repaso de conocimientos y examen final';
+  const diaFinal = (c) => (c && c.modalidad === 'nueva' && c.dias_duracion > 1 ? DIA_FINAL_NUEVA : 'Examen');
+
   /* Sede única de la cita, el curso y la entrega (parámetros sede y sede_direccion de la base, decisión 2026-10-16).
      La dirección vacía (aún «[pendiente]») se muestra como «por confirmar»; con la dirección ya escrita (confirmada por
      Liber el 2026-10-23), la marca «[pendiente: …]» que queda en el valor son las referencias para llegar
@@ -509,6 +545,26 @@
     const poda = ultima('poda');
     const podaVigente = poda && ['vigente', 'por_vencer'].includes(situacion(datos, poda));
     if (r.dictaminador.disponible && !podaVigente) r.dictaminador = { disponible: false, motivo: 'Necesitas tener vigente tu acreditación de poda y derribo.' };
+    /* Dictaminador por primera vez: la poda durante al menos anios_poda_dictaminador años consecutivos (sesión de trabajo
+       del 23/10/2026; la base: poda_menos_de_dos_anios). La renovación de dictaminador sigue pidiendo sólo la poda vigente. */
+    const anios = parametro(datos, 'anios_poda_dictaminador') || 2;
+    if (r.dictaminador.disponible && r.dictaminador.modalidad === 'nueva') {
+      const desde = podaContinuaDesde(datos, persona);
+      const podra = desde ? sumaMeses(desde, anios * 12) : null;
+      if (!desde || podra > hoy(datos)) {
+        r.dictaminador = { disponible: false, clave: 'dos_anios', desde, podra,
+          motivo: `Necesitas tener la acreditación de poda y derribo durante al menos ${anios === 2 ? 'dos' : anios} años consecutivos. Tienes la tuya sin interrupción desde el ${fechaCorta(desde)}: podrás solicitarla a partir del ${fechaCorta(podra)}.` };
+      }
+    }
+    /* Mayoría de edad para las dos acreditaciones (P138): 18 años cumplidos el día de la solicitud, con la CURP (la base:
+       menor_de_edad). Va al final: es lo primero que se le dice a la persona. */
+    const edad = parametro(datos, 'edad_minima') || 18;
+    const cumple = cumpleEdad(persona.curp, edad);
+    if (cumple && cumple > hoy(datos)) {
+      for (const tipo of ['poda', 'dictaminador']) {
+        r[tipo] = { disponible: false, clave: 'menor_de_edad', motivo: `Necesitas tener ${edad} años cumplidos para solicitar una acreditación. Según tu CURP, los cumples el ${fechaCorta(cumple)}: podrás solicitarla desde ese día.` };
+      }
+    }
     return r;
   }
 
@@ -673,7 +729,8 @@
     return Boolean(c) && datos.solicitante.some((p) => p.estado !== 'sin_activar' && String(p.correo || '').toLowerCase() === c
       && (!propia || (p.id !== propia.id && p.curp !== propia.curp)));
   }
-  const CORREO_EN_USO = 'Este correo ya está registrado en otra cuenta. Escribe otro; si es tuyo y no recuerdas esa cuenta, pide ayuda a la Secretaría.';
+  // Con el horario de informes (sesión de trabajo del 23/10/2026, parámetro informes_horario; teléfono y correo: P132)
+  const CORREO_EN_USO = 'Este correo ya está registrado en otra cuenta. Escribe otro; si es tuyo y no recuerdas esa cuenta, pide ayuda a la Secretaría (informes de lunes a viernes, de 9:00 a 15:00).';
 
   /* Avisa al núcleo que la página cambió el valor de un control (input y change, como al escribir). Desde la 1.3.3 el
      combo del estándar ya no abre su lista cuando la página llena el campo (P99). */
@@ -944,11 +1001,12 @@
     fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, vigencia, TIPOS, MODALIDADES, FINALES,
-    cursoCorto, cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
+    cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fechaLarga, fechaCorta, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
-    solicitudesDe, acreditacionesDe, situacion, parametro, curso, sede, activa, limpia, opciones,
+    solicitudesDe, acreditacionesDe, situacion, parametro, parametroTexto, curso, sede, activa, limpia, opciones,
+    podaContinuaDesde, esHabil, diaFinal,
     el, lineaDatos, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, pintaAviso, tituloPasos, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano
   };

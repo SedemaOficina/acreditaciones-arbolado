@@ -26,7 +26,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | → rechazada | Revisión (revisión con resultado `rechazada`) | Sólo dictaminador cuyo perfil no cumple (`rechazo_sin_causa`): carrera clasificada como no afín, o estudios que el comprobante confirma por debajo del lineamiento. Motivo obligatorio (`rechazo_sin_motivo`), que se copia a `motivo_cierre`. Es final: la persona puede iniciar otra solicitud |
 | Clasificar una carrera | Personal (`apd.carrera.grupo`) | Sólo el personal (`clasificacion_sin_permiso`); queda en la bitácora y las solicitudes abiertas con esa carrera recalculan perfil y experiencia mínima |
 | → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la cuenta confirmada por el personal (en la cita no se toma otra, decisión 2026-10-17). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha. Además, todos los documentos en línea coincidieron (`documentos_sin_cotejar`) y la cita quedó atendida (`cotejo_sin_cita`). El folio fiscal no se repite en dos solicitudes (`folio_fiscal_repetido`) |
-| Cita de cotejo (`apd.cita`) | Personal | La crea la base al validar o al cambiar la cita (el cambio queda en la bitácora); con una cita abierta no se asigna otra (`cita_abierta`), y sólo el personal la asigna (`cita_de_personal`). Se cierra una vez (`cita_cerrada`): atendida, en pausa (con un documento marcado como no coincidente, `cotejo_sin_documento`; sólo ese día, `pausa_vencida`), con observaciones (la solicitud regresa), sin pago, no se presentó (a la segunda, la solicitud se cierra: `inasistencias_cotejo_maximas`) o no era la persona (la cuenta queda bloqueada; sólo la Secretaría la bloquea o desbloquea, `bloqueo_de_personal`). Si la solicitud se cancela con la cita abierta, la base la cierra como `cancelada`, con el motivo (decisión 8, 2026-10-19); nadie la marca así a mano (`cita_sin_cancelacion`). En pausa la persona sólo carga el documento que no coincidió. `apd.cerrar_pausas_vencidas()` regresa con observaciones las pausas de días anteriores. Lo que pasó en una cita se registra su día, no antes (`cita_futura`), y una cita se asigna hasta `meses_adelanto_cita` meses adelante (`cita_lejana`; auditoría «intentar romperlo», 2026-10-18) |
+| Cita de cotejo (`apd.cita`) | Personal | La crea la base al validar o al cambiar la cita (el cambio queda en la bitácora); con una cita abierta no se asigna otra (`cita_abierta`), y sólo el personal la asigna (`cita_de_personal`). Se cierra una vez (`cita_cerrada`): atendida, en pausa (con un documento marcado como no coincidente, `cotejo_sin_documento`; sólo ese día, `pausa_vencida`), con observaciones (la solicitud regresa), sin pago, no se presentó (a la segunda, la solicitud se cierra: `inasistencias_cotejo_maximas`) o no era la persona (la cuenta queda bloqueada; sólo la Secretaría la bloquea o desbloquea, `bloqueo_de_personal`). Si la solicitud se cancela con la cita abierta, la base la cierra como `cancelada`, con el motivo (decisión 8, 2026-10-19); nadie la marca así a mano (`cita_sin_cancelacion`). En pausa la persona sólo carga el documento que no coincidió. `apd.cerrar_pausas_vencidas()` regresa con observaciones las pausas de días anteriores. Lo que pasó en una cita se registra su día, no antes (`cita_futura`), y una cita se asigna hasta `meses_adelanto_cita` meses adelante (`cita_lejana`; auditoría «intentar romperlo», 2026-10-18), de lunes a viernes (`cita_en_fin_de_semana`) y de `cita_hora_desde` a `cita_hora_hasta` (9:30 a 14:30; `cita_fuera_de_horario`; P69, sesión de trabajo del 23/10/2026) |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
@@ -34,7 +34,14 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | → cancelada / concluida_sin_atender | Persona o personal | Motivo. Si estaba en un grupo, sale de él. Al cancelar, su cita de cotejo abierta (por atender o en pausa) queda `cancelada`, con el motivo (decisión 8, 2026-10-19) |
 
 **Elegibilidad** (al iniciar la solicitud, y otra vez sólo si en borrador cambia el curso o la acreditación a renovar):
+- Las dos acreditaciones: `edad_minima` (18) años cumplidos ese día, con la fecha de nacimiento de la CURP
+  (`apd.curp_nacimiento`; `menor_de_edad`; P138, sesión de trabajo del 23/10/2026).
 - Dictaminador: acreditación de poda vigente ese día.
+- Dictaminador por primera vez: la de poda durante al menos `anios_poda_dictaminador` (2) años consecutivos
+  (`poda_menos_de_dos_anios`; sesión de trabajo del 23/10/2026). `apd.poda_continua_desde(persona, día)` parte de la poda
+  vigente y va hacia atrás: la anterior cuenta si la siguiente se emitió a más tardar `meses_despues_renovacion` (12)
+  meses después de su vencimiento (la ventana de renovación tardía); si no, ahí hay un corte y la cuenta empieza en la
+  siguiente. La renovación de dictaminador sigue pidiendo sólo la poda vigente (P197: definición por confirmar).
 - Renovación: la acreditación más reciente de ese tipo, desde 30 días naturales antes de su vencimiento y
   hasta un año después.
 - Nueva: no se admite si la persona ya tiene una de ese tipo vigente o todavía renovable.
@@ -62,7 +69,7 @@ Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `
 | Paso | La base exige |
 |---|---|
 | Alta | Curso activo. Copia los cupos vigentes del curso (hoy 5 a 25) |
-| Primer día | A lo más 12 meses después de hoy, ese día incluido (`apd.hoy() + interval '12 months'`, el mismo cálculo que la pantalla; `inicio_muy_lejano`, decisión 3, 2026-10-19), al crear el grupo y en cada cambio de fecha |
+| Primer día | A lo más 12 meses después de hoy, ese día incluido (`apd.hoy() + interval '12 months'`, el mismo cálculo que la pantalla; `inicio_muy_lejano`, decisión 3, 2026-10-19), al crear el grupo y en cada cambio de fecha. Ningún día del curso en sábado ni domingo: el de 5 días va de lunes a viernes (`curso_en_fin_de_semana`; P150 y P151). Como máximo `grupos_simultaneos_maximo` (2) grupos al mismo tiempo, de cualquier curso, contando los activos con fecha (por confirmar, confirmados y en curso; `grupos_simultaneos`, P149), con un candado de la transacción para que dos que programan a la vez no dejen tres. Hora de entrada entre `curso_hora_entrada` (09:00) y antes de `curso_hora_salida` (15:00) (`hora_fuera_de_horario`, P91). Lo revisa `apd.comprobar_fechas_grupo` (sesión de trabajo del 23/10/2026) |
 | Inscribir | Grupo en integración o confirmado; solicitud en espera, del mismo curso y, si el grupo es específico, de la misma organización; cupo máximo (el grupo se bloquea mientras se cuenta) |
 | Baja | Motivo (`baja_sin_motivo`); no a quien ya presentó examen (`baja_con_examen`). El grupo se bloquea mientras se da: si un grupo confirmado queda por debajo del mínimo, regresa a integración |
 | → confirmado | Cupo mínimo, instructor, sede y fecha de inicio. **Sin excepción** |
@@ -70,7 +77,8 @@ Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `
 | → concluido | Nadie con asistencia suficiente sin calificación. Quien no alcanzó la asistencia queda sin derecho a examen |
 | → cancelado | Motivo. Las personas regresan a la bandeja con su antigüedad original |
 
-Cursos: 5 días los nuevos y 1 día las renovaciones. El instructor puede cambiar hasta concluir el grupo, con
+Cursos: 5 días los nuevos (de lunes a viernes; el quinto, de repaso de conocimientos y examen final) y 1 día las
+renovaciones, de 9:00 a 15:00. El instructor puede cambiar hasta concluir el grupo, con
 constancia en la bitácora; sede y fecha no cambian una vez iniciado. Cada cambio de primer día, hora de entrada o sede
 queda en la bitácora con lo que había.
 
@@ -80,6 +88,19 @@ en la bitácora con el valor anterior. Examen: el último día del curso (`fecha
 (`sin_pase_de_lista`) y la asistencia mínima del curso, capturado por el personal o el examen en línea, a su nombre;
 calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación registrada no se modifica
 (resultado inapelable). Cada calificación guarda su origen: captura del instructor o examen en línea.
+
+## Días hábiles y espera de grupo (sesión de trabajo del 23/10/2026)
+
+- Sábados y domingos son inhábiles (P150): `apd.es_habil(día)`; los plazos en días hábiles se cuentan con
+  `apd.suma_dias_habiles(desde, n)` y `apd.dias_habiles_entre(desde, hasta)`, sin ellos. El calendario de festivos de la
+  Gaceta está pendiente (P150) y se agrega en `apd.es_habil`.
+- La espera de grupo es prioritaria desde `dias_alerta_espera` (15) días (P143: la Secretaría asigna grupo en 15 días si se
+  completa el cupo mínimo).
+- En la espera sólo se agrupan en bloque las instituciones de gobierno local y federal (`apd.es_gobierno(tipo)`:
+  `dependencia_cdmx`, `alcaldia` y `dependencia_federal` del catálogo `apd.organizacion`); `apd.bandeja_demanda` trae
+  `es_gobierno` y `bloque` (su organización, o vacío). Las demás adscripciones van una por una en el orden general.
+- En poda no se pregunta ni se guarda la situación de la licenciatura (`estatus_estudios`); en dictaminador sí, porque
+  define el perfil.
 
 ## Siempre
 
@@ -161,9 +182,10 @@ primera, ve lo que hizo y, si ya no corresponde, recibe el error de su regla con
 | La revisión (`revision_alta`) y la decisión sobre un documento (`documento_cambio`) | La solicitud | Dos revisiones en la misma vuelta, una revisión que regresa una solicitud ya validada, observaciones sin nada que corregir (`revision_ya_registrada`, `observaciones_vacias`) |
 | La baja de una inscripción (`inscripcion_cambio`) | El grupo | Un grupo confirmado por debajo del mínimo (`cupo_minimo`, o el grupo regresa a integración) |
 | La inscripción (`inscripcion_alta`) | El grupo y la solicitud | Pasar del cupo máximo; la misma solicitud en dos grupos |
+| Fijar o cambiar la fecha de un grupo (`apd.comprobar_fechas_grupo`, sesión de trabajo del 23/10/2026) | Un candado de la transacción (`pg_advisory_xact_lock`) | Tres grupos al mismo tiempo cuando dos personas programan a la vez (`grupos_simultaneos`, P149) |
 | La asistencia (`asistencia_captura`) y el examen (`examen_captura`) | La inscripción | Examen de quien se dio de baja o sin el pase de lista del día del examen (`baja_con_examen`, `inscripcion_inactiva`, `asistencia_cerrada`, `sin_pase_de_lista`) |
 
-`herramientas/probar-concurrencia.sh` lo comprueba con dos conexiones de la cuenta del servicio a la vez (20 escenarios).
+`herramientas/probar-concurrencia.sh` lo comprueba con dos conexiones de la cuenta del servicio a la vez (21 escenarios).
 
 Para el backend: si una transacción de revisión cambia la cita antes que los documentos y otra decide un documento al
 mismo tiempo, PostgreSQL puede encontrar un interbloqueo y abortar una de las dos (`40P01`, sin código `apd:`); la base

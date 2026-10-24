@@ -71,6 +71,17 @@ BEGIN
 END $$;
 COMMENT ON FUNCTION apd.curp_valida(text) IS 'Estructura, fecha real y no futura, entidad y dígito verificador de la CURP, con las mismas reglas que el Estándar de formularios del SIA.';
 
+-- Fecha de nacimiento que dice la CURP (posiciones 5 a 10, AAMMDD; el siglo, del carácter 17 como en curp_valida). La
+-- cuenta no guarda otra fecha de nacimiento: la mayoría de edad (P138, sesión del 23/10/2026) se calcula con ésta.
+CREATE FUNCTION apd.curp_nacimiento(c text) RETURNS date LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE WHEN c ~ '^[A-Z]{4}[0-9]{6}' AND length(c) = 18
+                   AND apd.es_fecha_real(CASE WHEN substr(c, 17, 1) ~ '[0-9]' THEN 1900 ELSE 2000 END + substr(c, 5, 2)::integer,
+                                         substr(c, 7, 2)::integer, substr(c, 9, 2)::integer)
+              THEN make_date(CASE WHEN substr(c, 17, 1) ~ '[0-9]' THEN 1900 ELSE 2000 END + substr(c, 5, 2)::integer,
+                             substr(c, 7, 2)::integer, substr(c, 9, 2)::integer) END
+$$;
+COMMENT ON FUNCTION apd.curp_nacimiento(text) IS 'Fecha de nacimiento que codifica la CURP (AAMMDD y el siglo del carácter 17); NULL si no se puede leer.';
+
 -- RFC: estructura (3 o 4 letras, con Ñ y &, seis dígitos y homoclave) y fecha real, en el siglo 1900 o 2000, como el
 -- formato «rfc» del estándar
 CREATE FUNCTION apd.rfc_valido(r text) RETURNS boolean LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE AS $$

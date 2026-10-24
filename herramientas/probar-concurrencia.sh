@@ -177,12 +177,24 @@ verifica "2d · A da de baja a una persona; B confirma el grupo" cupo_minimo "$R
 nueva; prepara "$F2" "$CINCO INSERT INTO apd.inscripcion (solicitud_id, grupo_id) VALUES ($(S 00039), $G5); $CONFIRMA"
 par "$F2" "$(BAJA 00037)" "$(BAJA 00038)"
 verifica "2e · Dos bajas a la vez en un grupo confirmado de 6 (RI-01)" ok "$REGLA_GRUPOS" "$MIRA_GRUPOS"
+# Sesión de trabajo del 23/10/2026 (P149): como máximo 2 grupos al mismo tiempo. APD-G-2026-005 ya tiene la semana del
+# 26/10; dos personas crean a la vez otro grupo esa semana: sin el candado de apd.comprobar_fechas_grupo, cada una contaría
+# un solo grupo y quedarían tres
+OTRO_GRUPO() { echo "INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('$1', 'nueva', 'combinado', '2026-10-26');"; }
+REGLA_SIMULTANEOS="SELECT NOT EXISTS (SELECT 1 FROM generate_series('2026-10-01'::date, '2026-12-31'::date, interval '1 day') d
+   WHERE (SELECT count(*) FROM apd.grupo g JOIN apd.curso c USING (tipo_acreditacion, modalidad)
+           WHERE g.estado IN ('en_integracion', 'confirmado', 'en_curso') AND g.fecha_inicio IS NOT NULL
+             AND d::date BETWEEN g.fecha_inicio AND g.fecha_inicio + c.dias_duracion - 1) > 2)"
+MIRA_SIMULTANEOS="SELECT string_agg(folio || ':' || estado || ':' || coalesce(fecha_inicio::text, '-'), ' ' ORDER BY folio) FROM apd.grupo WHERE fecha_inicio >= '2026-10-19'"
+nueva; par "$F2" "$(OTRO_GRUPO dictaminador)" "$(OTRO_GRUPO poda)"
+verifica "2f · Dos personas crean a la vez otro grupo en una semana que ya tiene uno (P149)" grupos_simultaneos "$REGLA_SIMULTANEOS" "$MIRA_SIMULTANEOS"
 
 # ─────────────── 4 · Examen frente a baja y frente a corrección de asistencia (APD-S-2026-00021, grupo 003) ───────────────
-F4='2026-10-17 10:00-06'
+# El grupo 003 va del lunes 12 al viernes 16/10 (sesión del 23/10/2026: de lunes a viernes), con los días 1 y 2 capturados
+F4='2026-10-16 10:00-06'
 INS="(SELECT i.id FROM apd.inscripcion i JOIN apd.solicitud s ON s.id = i.solicitud_id WHERE s.folio = 'APD-S-2026-00021' AND i.activa)"
-ASISTE="INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT $INS, d, true, 'preparacion' FROM generate_series(2, 5) d;"
-EXAMEN="INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ($INS, '2026-10-17', 9.0, current_setting('apd.usuario'));"
+ASISTE="INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT $INS, d, true, 'preparacion' FROM generate_series(3, 5) d;"
+EXAMEN="INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ($INS, '2026-10-16', 9.0, current_setting('apd.usuario'));"
 BAJA21="UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = $INS;"
 FALTA="UPDATE apd.asistencia SET asistio = false, capturada_por = current_setting('apd.usuario') WHERE inscripcion_id = $INS AND dia = 5;"
 REGLA_EXAMEN="SELECT NOT EXISTS (SELECT 1 FROM apd.examen e JOIN apd.inscripcion i ON i.id = e.inscripcion_id

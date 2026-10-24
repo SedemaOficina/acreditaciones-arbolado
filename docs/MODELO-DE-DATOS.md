@@ -312,7 +312,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `carrera` | `text` | No | Con licenciatura o posgrado, en poda y en dictaminador: la carrera que estudió, elegida del catálogo o escrita |
 | `carrera_id` | `uuid` | No | Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo) |
 | `carrera_tecnica` | `text` | No | Con carrera técnica, en poda y en dictaminador: el nombre de la carrera técnica, escrito; sin catálogo (decisión 2026-10-17, Liber) |
-| `estatus_estudios` | `text` | No | Sólo con licenciatura, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado). Con posgrado no se pregunta: se asume la licenciatura titulada (decisión 2026-10-18) |
+| `estatus_estudios` | `text` | No | Sólo en dictaminador con licenciatura (en poda no se pregunta ni se guarda: sesión de trabajo del 23/10/2026): situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado). Con posgrado no se pregunta: se asume la licenciatura titulada (decisión 2026-10-18) |
 | `perfil_academico` | `text` | No | Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple. No impide enviar: el personal lo revisa en la revisión documental |
 | `experiencia_minima` | `numeric(3,1)` | No | Años de experiencia que pide el perfil; la calcula la base: 2 con licenciatura o posgrado en carrera principal o afín; 5 en todo lo demás, también cuando lo decide el personal (por clasificar o no cumple) |
 | `anios_experiencia` | `numeric(4,1)` | No | Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban |
@@ -463,7 +463,7 @@ Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con e
 | `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo |
 | `sede` | `text` | No | Instalación de la Secretaría; obligatoria para confirmar |
 | `fecha_inicio` | `date` | No | Primer día; obligatoria para confirmar |
-| `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. Falta la hora de salida y si cambia el día del examen (P91) |
+| `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. El curso es de 9:00 a 15:00 (P91, sesión de trabajo del 23/10/2026): entre curso_hora_entrada y antes de curso_hora_salida; la salida no se guarda por grupo |
 | `estado` | `text` | Sí | en_integracion, confirmado, en_curso, concluido o cancelado (por omisión: `'en_integracion'`) |
 | `estado_desde` | `timestamptz` | Sí | Desde cuándo; lo pone la base (por omisión: `now()`) |
 | `motivo_cancelacion` | `text` | No | Obligatorio al cancelar |

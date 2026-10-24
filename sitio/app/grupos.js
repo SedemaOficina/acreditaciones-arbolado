@@ -5,7 +5,8 @@
      · Arriba: la fecha de hoy (simulada), «Programar un curso» (programar.html) y los cuatro cursos, cada uno con cuántas
        personas esperan y, en renovación, cuántas tienen la acreditación vencida.
      · «En espera»: de la que más espera a la más reciente (renovación: por la fecha en que vence; desde
-       dias_alerta_espera días, prioritaria); las de una misma organización, juntas en un bloque. Se eligen y se agregan a
+       dias_alerta_espera días, prioritaria); las de una misma institución de gobierno local o federal, juntas en un bloque
+       (sesión de trabajo del 23/10/2026: las demás, una por una). Se eligen y se agregan a
        un grupo del curso que recibe personas, o «A un curso nuevo…» (programar.html con esas personas).
      · «Próximas semanas»: esta semana (grupos en curso, «Día X de Y» o «examen hoy») y las siguientes, cada una con su
        grupo (cupo de 25 lugares, «Completar con las N que más esperan», «Confirmar el grupo», «Ver a las personas») o, si
@@ -198,7 +199,8 @@
       const espera = P.enEspera(datos, tipo, modalidad);
       const lista = soloOrg ? espera.filter((x) => x.s.organizacion_id === soloOrg) : espera;
       const activos = delCurso.filter((x) => ['en_integracion', 'confirmado', 'en_curso'].includes(x.g.estado)).length;
-      /* Cuántas son prioritarias (desde dias_alerta_espera días, «31 días o más») y cuántos grupos nuevos alcanzan, arriba de
+      /* Cuántas son prioritarias (desde dias_alerta_espera días: 15 desde la sesión de trabajo del 23/10/2026, P143; antes
+         «31 días o más») y cuántos grupos nuevos alcanzan, arriba de
          la lista (auditoría 2026-10-20, C1-01: se habían perdido con el planeador del 18/10; son la corrección M7 y la de
          «31 días o más» de la auditoría de tareas del 17/10). Los grupos nuevos, con la misma cuenta de entonces: los
          completos de cupo_maximo y uno más si lo que sobra llega al mínimo. */
@@ -208,7 +210,7 @@
       const alcanza = !espera.length ? '' : falta > 0 ? ` ${falta === 1 ? 'Falta 1' : `Faltan ${falta}`} para el mínimo de ${c.cupo_minimo}.`
         : ` Alcanza para ${nuevos === 1 ? 'un grupo nuevo' : `${nuevos} grupos nuevos`} de hasta ${c.cupo_maximo}.`;
       $('[data-cuenta]').textContent = `${largo}: ${plural(espera.length, 'persona en espera', 'personas en espera')}`
-        + `${prioritarias ? ` (${plural(prioritarias, 'espera', 'esperan')} ${APD.parametro(datos, 'dias_alerta_espera') || 31} días o más)` : ''}`
+        + `${prioritarias ? ` (${plural(prioritarias, 'espera', 'esperan')} ${APD.parametro(datos, 'dias_alerta_espera') || 15} días o más)` : ''}`
         + ` · ${plural(activos, 'grupo activo', 'grupos activos')} (por confirmar, confirmados o en curso).${alcanza}`;
       pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe: delCurso.filter((x) => x.recibe) });
       pintaSemanas({ tipo, modalidad, c, largo, delCurso, espera });
@@ -218,7 +220,8 @@
     function pintaEspera({ renov, c, lista, receptores, soloOrg, delCursoRecibe }) {
       $('#t-espera').textContent = `En espera · ${lista.length}`;
       // En renovación, el orden que de verdad se ve (decisión 11 b, auditoría 2026-10-20, C1-03; P.bloquesEspera)
-      $('[data-orden]').textContent = renov ? 'por vencimiento: cada organización va junta en el lugar de la primera que vence y, dentro, primero las vencidas' : 'primero quien más espera';
+      // Sólo las instituciones de gobierno local y federal van juntas (sesión de trabajo del 23/10/2026)
+      $('[data-orden]').textContent = renov ? 'por vencimiento: cada institución de gobierno va junta en el lugar de la primera que vence y, dentro, primero las vencidas; las demás, una por una' : 'primero quien más espera; las de una misma institución de gobierno, juntas';
       const modo = $('[data-modo-grupo]');
       modo.hidden = !modoGrupo && !noRecibe;
       if (!modoGrupo && noRecibe) {

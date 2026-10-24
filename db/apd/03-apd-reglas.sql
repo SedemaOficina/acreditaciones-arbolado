@@ -298,8 +298,9 @@ BEGIN
   IF NEW.nivel_estudios IS NULL OR NEW.nivel_estudios NOT IN ('licenciatura', 'maestria', 'doctorado') THEN
     NEW.carrera := NULL;
   END IF;
-  -- La situación del grado, sólo con licenciatura: con maestría o doctorado se asume la licenciatura titulada (2026-10-18)
-  IF NEW.nivel_estudios IS DISTINCT FROM 'licenciatura' THEN NEW.estatus_estudios := NULL; END IF;
+  -- La situación del grado, sólo con licenciatura: con maestría o doctorado se asume la licenciatura titulada (2026-10-18).
+  -- En poda no se pregunta (sesión de trabajo del 23/10/2026): sólo en dictaminador, donde define el perfil.
+  IF NEW.nivel_estudios IS DISTINCT FROM 'licenciatura' OR NEW.tipo_acreditacion <> 'dictaminador' THEN NEW.estatus_estudios := NULL; END IF;
   IF NEW.nivel_estudios IS DISTINCT FROM 'tecnica' THEN NEW.carrera_tecnica := NULL; END IF;
   NEW.carrera_tecnica := nullif(regexp_replace(trim(coalesce(NEW.carrera_tecnica, '')), '\s+', ' ', 'g'), '');
   NEW.carrera := nullif(regexp_replace(trim(coalesce(NEW.carrera, '')), '\s+', ' ', 'g'), '');
@@ -619,6 +620,36 @@ CREATE FUNCTION apd.poda_vigente(p_solicitante uuid, p_fecha date DEFAULT NULL) 
        AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en)
 $$;
 
+-- Desde cuándo tiene la persona la acreditación de poda sin interrupción, hasta ese día (sesión de trabajo del 23/10/2026:
+-- para pedir la de dictaminador hacen falta 2 años consecutivos). Se parte de la acreditación de poda vigente ese día y
+-- se va hacia atrás: la anterior cuenta si la siguiente se emitió a más tardar meses_despues_renovacion meses después de
+-- su vencimiento (la misma ventana de renovación tardía en la que todavía se renueva; pasada ésa, se tramita como nueva y
+-- la cuenta empieza de nuevo). Devuelve la emisión de la primera de esa cadena, o NULL si ese día no tiene la poda vigente.
+CREATE FUNCTION apd.poda_continua_desde(p_solicitante uuid, p_fecha date DEFAULT NULL) RETURNS date
+  LANGUAGE plpgsql STABLE AS $$
+DECLARE
+  f date := coalesce(p_fecha, apd.hoy());
+  meses integer := apd.parametro_texto('meses_despues_renovacion')::integer;
+  desde date;
+  a record;
+BEGIN
+  FOR a IN SELECT emitida_en, vence_en FROM apd.acreditacion
+            WHERE solicitante_id = p_solicitante AND tipo_acreditacion = 'poda' AND emitida_en <= f
+            ORDER BY emitida_en DESC LOOP
+    IF desde IS NULL THEN
+      IF f > a.vence_en THEN RETURN NULL; END IF;       -- la más reciente ya no está vigente
+      desde := a.emitida_en;
+    ELSIF desde <= (a.vence_en + make_interval(months => meses))::date THEN
+      desde := least(desde, a.emitida_en);              -- sin corte: se renovó dentro de la ventana
+    ELSE
+      EXIT;                                             -- corte: se renovó después de la ventana
+    END IF;
+  END LOOP;
+  RETURN desde;
+END $$;
+COMMENT ON FUNCTION apd.poda_continua_desde(uuid, date) IS
+  'Emisión de la primera acreditación de poda de la cadena sin cortes que llega a ese día (renovaciones dentro de la ventana de renovación tardía); NULL sin poda vigente.';
+
 -- ¿Puede operar con esta acreditación ese día? Sólo cuentan sus propias fechas. La de dictaminador
 -- sigue vigente hasta su fecha aunque la de poda venza antes (corrección R43, 2026-10-14): la poda
 -- vigente se exige sólo al iniciar la solicitud.
@@ -805,9 +836,27 @@ DECLARE
   estado_anterior text;
   hoy date := apd.hoy();
 BEGIN
+  -- Mayoría de edad para las dos acreditaciones (P138, sesión de trabajo del 23/10/2026): edad_minima años cumplidos el día
+  -- de la solicitud, con la fecha de nacimiento de la CURP
+  IF (apd.curp_nacimiento((SELECT curp FROM apd.solicitante WHERE id = s.solicitante_id))
+        + make_interval(years => apd.parametro_texto('edad_minima')::integer))::date > hoy THEN
+    PERFORM apd.error('menor_de_edad', format('Para solicitar una acreditación necesitas tener %s años cumplidos: según tu CURP, todavía no los tienes',
+      apd.parametro_texto('edad_minima')));
+  END IF;
   -- Dictaminador: poda vigente al iniciar la solicitud
   IF s.tipo_acreditacion = 'dictaminador' AND NOT apd.poda_vigente(s.solicitante_id, hoy) THEN
     PERFORM apd.error('sin_poda_vigente', 'Para tramitar la acreditación de dictaminador necesitas la de poda y derribo vigente');
+  END IF;
+  -- Dictaminador por primera vez: la acreditación de poda y derribo durante al menos anios_poda_dictaminador años
+  -- consecutivos (sesión de trabajo del 23/10/2026; apd.poda_continua_desde). La renovación de dictaminador sigue pidiendo
+  -- sólo la poda vigente.
+  IF s.tipo_acreditacion = 'dictaminador' AND s.modalidad = 'nueva'
+     AND apd.poda_continua_desde(s.solicitante_id, hoy) > (hoy - make_interval(years => apd.parametro_texto('anios_poda_dictaminador')::integer))::date THEN
+    PERFORM apd.error('poda_menos_de_dos_anios', format(
+      'Para la acreditación de dictaminador necesitas tener la de poda y derribo durante al menos %s años consecutivos: tienes la tuya sin interrupción desde el %s, así que podrás solicitarla a partir del %s',
+      apd.parametro_texto('anios_poda_dictaminador'),
+      to_char(apd.poda_continua_desde(s.solicitante_id, hoy), 'DD/MM/YYYY'),
+      to_char((apd.poda_continua_desde(s.solicitante_id, hoy) + make_interval(years => apd.parametro_texto('anios_poda_dictaminador')::integer))::date, 'DD/MM/YYYY')));
   END IF;
 
   IF s.modalidad = 'renovacion' THEN
@@ -845,13 +894,16 @@ END $$;
 CREATE FUNCTION apd.comprobar_envio(s apd.solicitud) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE faltan text; perfil text;
 BEGIN
-  -- Estudios: en los dos tipos, el nivel; con licenciatura o posgrado, la carrera; con licenciatura, además, su
-  -- situación (con posgrado se asume titulada, 2026-10-18); con carrera técnica, cuál (decisión 2026-10-17)
+  -- Estudios: en los dos tipos, el nivel; con licenciatura o posgrado, la carrera; en dictaminador con licenciatura,
+  -- además, su situación (con posgrado se asume titulada, 2026-10-18; en poda no se pregunta, sesión del 23/10/2026); con
+  -- carrera técnica, cuál (decisión 2026-10-17)
   IF s.nivel_estudios IS NULL
      OR (s.nivel_estudios IN ('licenciatura', 'maestria', 'doctorado') AND coalesce(trim(s.carrera), '') = '')
-     OR (s.nivel_estudios = 'licenciatura' AND s.estatus_estudios IS NULL)
+     OR (s.tipo_acreditacion = 'dictaminador' AND s.nivel_estudios = 'licenciatura' AND s.estatus_estudios IS NULL)
      OR (s.nivel_estudios = 'tecnica' AND coalesce(trim(s.carrera_tecnica), '') = '') THEN
-    PERFORM apd.error('faltan_estudios', 'Indica tu último nivel de estudios; si es licenciatura o posgrado, tu carrera (y, con licenciatura, su situación); si es carrera técnica, cuál');
+    PERFORM apd.error('faltan_estudios', CASE WHEN s.tipo_acreditacion = 'dictaminador'
+      THEN 'Indica tu último nivel de estudios; si es licenciatura o posgrado, tu carrera (y, con licenciatura, su situación); si es carrera técnica, cuál'
+      ELSE 'Indica tu último nivel de estudios; si es licenciatura o posgrado, tu carrera; si es carrera técnica, cuál' END);
   END IF;
   -- La experiencia se comprueba en la primera vez; la renovación no la vuelve a pedir (decisión 2026-10-18)
   IF s.tipo_acreditacion = 'dictaminador' AND s.modalidad = 'nueva' THEN
@@ -956,10 +1008,19 @@ BEGIN
       PERFORM apd.error('cita_abierta', 'Registre primero lo que pasó en la cita actual');
     END IF;
     -- Una cita hasta meses_adelanto_cita meses adelante (auditoría «intentar romperlo» 2026-10-18, F2 M4: se aceptaba el
-    -- 31/12/9999). Sábados y domingos no se bloquean: los días de atención los define el área (P69, P151).
+    -- 31/12/9999).
     IF NEW.cita_en IS NOT NULL AND (NEW.cita_en AT TIME ZONE 'America/Mexico_City')::date
          > apd.hoy() + make_interval(months => apd.parametro_texto('meses_adelanto_cita')::integer) THEN
       PERFORM apd.error('cita_lejana', format('La cita de cotejo se asigna como máximo %s meses adelante', apd.parametro_texto('meses_adelanto_cita')));
+    END IF;
+    -- Las citas de cotejo son de lunes a viernes, de cita_hora_desde a cita_hora_hasta (sesión de trabajo del 23/10/2026:
+    -- 9:30 a 14:30, P69; sábados y domingos inhábiles, P150)
+    IF NEW.cita_en IS NOT NULL AND NOT apd.es_habil((NEW.cita_en AT TIME ZONE 'America/Mexico_City')::date) THEN
+      PERFORM apd.error('cita_en_fin_de_semana', 'Las citas de cotejo son de lunes a viernes: elija otro día');
+    END IF;
+    IF NEW.cita_en IS NOT NULL AND ((NEW.cita_en AT TIME ZONE 'America/Mexico_City')::time < apd.parametro_texto('cita_hora_desde')::time
+         OR (NEW.cita_en AT TIME ZONE 'America/Mexico_City')::time > apd.parametro_texto('cita_hora_hasta')::time) THEN
+      PERFORM apd.error('cita_fuera_de_horario', format('Las citas de cotejo son de %s a %s', apd.parametro_texto('cita_hora_desde'), apd.parametro_texto('cita_hora_hasta')));
     END IF;
   END IF;
 
@@ -1501,6 +1562,77 @@ BEGIN
   END IF;
 END $$;
 
+-- Días hábiles (sesión de trabajo del 23/10/2026, P150 y P151): sábados y domingos no se trabaja ni hay cursos. El
+-- calendario oficial de días festivos (P150) todavía no existe: cuando la Secretaría lo publique, se agrega aquí.
+CREATE FUNCTION apd.es_habil(p_dia date) RETURNS boolean LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT extract(isodow FROM p_dia) < 6
+$$;
+COMMENT ON FUNCTION apd.es_habil(date) IS 'De lunes a viernes (sábados y domingos inhábiles, P150); sin calendario de festivos todavía.';
+-- Plazos en días hábiles: el día que resulta de sumar n días hábiles a una fecha (sin contar sábados ni domingos), y
+-- cuántos días hábiles hay después de una fecha hasta otra, ésta incluida
+CREATE FUNCTION apd.suma_dias_habiles(p_desde date, p_dias integer) RETURNS date LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE AS $$
+DECLARE d date := p_desde; n integer := 0;
+BEGIN
+  WHILE n < p_dias LOOP
+    d := d + 1;
+    IF apd.es_habil(d) THEN n := n + 1; END IF;
+  END LOOP;
+  RETURN d;
+END $$;
+CREATE FUNCTION apd.dias_habiles_entre(p_desde date, p_hasta date) RETURNS integer LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT count(*)::integer FROM generate_series(p_desde + 1, p_hasta, interval '1 day') g WHERE apd.es_habil(g::date)
+$$;
+COMMENT ON FUNCTION apd.suma_dias_habiles(date, integer) IS 'Fecha que resulta de sumar n días hábiles (lunes a viernes) a otra.';
+COMMENT ON FUNCTION apd.dias_habiles_entre(date, date) IS 'Días hábiles (lunes a viernes) después de la primera fecha y hasta la segunda, inclusive.';
+
+-- Las fechas de un grupo (sesión de trabajo del 23/10/2026): ningún día del curso cae en sábado ni domingo (el de 5 días
+-- va de lunes a viernes, P151); como máximo grupos_simultaneos_maximo grupos al mismo tiempo, de cualquier curso, contando
+-- los que tienen fecha y siguen activos (en integración con fecha propuesta, confirmados y en curso; P149); y la hora de
+-- entrada dentro del horario del curso (curso_hora_entrada a curso_hora_salida, P91). Un candado de la transacción hace
+-- que dos personas que programan a la vez no dejen tres grupos en las mismas fechas.
+CREATE FUNCTION apd.comprobar_fechas_grupo(g apd.grupo) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+  duracion smallint;
+  fin date;
+  maximo integer := apd.parametro_texto('grupos_simultaneos_maximo')::integer;
+  ocupados integer;
+  dia date;
+  otros text;
+BEGIN
+  IF g.fecha_inicio IS NULL THEN RETURN; END IF;
+  SELECT c.dias_duracion INTO duracion FROM apd.curso c WHERE c.tipo_acreditacion = g.tipo_acreditacion AND c.modalidad = g.modalidad;
+  fin := g.fecha_inicio + duracion - 1;
+  SELECT min(d::date) INTO dia FROM generate_series(g.fecha_inicio, fin, interval '1 day') d WHERE NOT apd.es_habil(d::date);
+  IF dia IS NOT NULL THEN
+    PERFORM apd.error('curso_en_fin_de_semana', CASE WHEN duracion > 1
+      THEN format('El curso de %s días va de lunes a viernes: el primer día debe ser un lunes (el %s cae en %s)', duracion,
+                  to_char(dia, 'DD/MM/YYYY'), CASE extract(isodow FROM dia) WHEN 6 THEN 'sábado' ELSE 'domingo' END)
+      ELSE format('No hay cursos en sábado ni domingo: el %s no se puede', to_char(dia, 'DD/MM/YYYY')) END);
+  END IF;
+  IF g.hora_entrada IS NOT NULL AND (g.hora_entrada < apd.parametro_texto('curso_hora_entrada')::time
+       OR g.hora_entrada >= apd.parametro_texto('curso_hora_salida')::time) THEN
+    PERFORM apd.error('hora_fuera_de_horario', format('El curso es de %s a %s: la hora de entrada va en ese horario',
+      apd.parametro_texto('curso_hora_entrada'), apd.parametro_texto('curso_hora_salida')));
+  END IF;
+  PERFORM pg_advisory_xact_lock(hashtext('apd.grupo.fechas'));
+  -- El día más ocupado del curso: cuántos otros grupos activos tienen clase ese día
+  SELECT max(n) INTO ocupados FROM (
+    SELECT d, count(o.id) AS n
+      FROM generate_series(g.fecha_inicio, fin, interval '1 day') d
+      JOIN apd.grupo o ON o.id <> g.id AND o.estado IN ('en_integracion', 'confirmado', 'en_curso') AND o.fecha_inicio IS NOT NULL
+       AND d::date BETWEEN o.fecha_inicio
+                       AND o.fecha_inicio + (SELECT c.dias_duracion FROM apd.curso c WHERE c.tipo_acreditacion = o.tipo_acreditacion AND c.modalidad = o.modalidad) - 1
+     GROUP BY d) x;
+  IF coalesce(ocupados, 0) >= maximo THEN
+    SELECT string_agg(o.folio, ', ' ORDER BY o.folio) INTO otros FROM apd.grupo o
+     WHERE o.id <> g.id AND o.estado IN ('en_integracion', 'confirmado', 'en_curso') AND o.fecha_inicio IS NOT NULL
+       AND o.fecha_inicio <= fin
+       AND o.fecha_inicio + (SELECT c.dias_duracion FROM apd.curso c WHERE c.tipo_acreditacion = o.tipo_acreditacion AND c.modalidad = o.modalidad) - 1 >= g.fecha_inicio;
+    PERFORM apd.error('grupos_simultaneos', format('Puede haber como máximo %s grupos al mismo tiempo y en esas fechas ya hay %s (%s): elija otra semana',
+      maximo, ocupados, otros));
+  END IF;
+END $$;
+
 -- SECURITY DEFINER (con search_path fijo): el folio sale de apd.siguiente_folio (decisión 6, 2026-10-19)
 CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
 DECLARE
@@ -1515,6 +1647,7 @@ BEGIN
     PERFORM apd.error('alta_fuera_de_integracion', 'Un grupo nuevo se crea sin confirmar («En integración»)');
   END IF;
   PERFORM apd.comprobar_inicio_grupo(NEW.fecha_inicio);
+  PERFORM apd.comprobar_fechas_grupo(NEW);
   NEW.cupo_minimo := c.cupo_minimo;
   NEW.cupo_maximo := c.cupo_maximo;
   -- Todos los cursos son en la sede única (Vivero Nezahualcóyotl, decisión 2026-10-16), salvo que se indique otra
@@ -1559,6 +1692,11 @@ BEGIN
   -- Primer día, hora de entrada y sede: con el tope de un año, y cada cambio en la bitácora con lo que había (E2-04)
   IF NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio THEN
     PERFORM apd.comprobar_inicio_grupo(NEW.fecha_inicio);
+  END IF;
+  -- Fines de semana, grupos al mismo tiempo y horario (sesión del 23/10/2026): al fijar o cambiar la fecha o la hora
+  IF (NEW.fecha_inicio, NEW.hora_entrada) IS DISTINCT FROM (OLD.fecha_inicio, OLD.hora_entrada)
+     AND NEW.estado IN ('en_integracion', 'confirmado') THEN
+    PERFORM apd.comprobar_fechas_grupo(NEW);
   END IF;
   IF (NEW.fecha_inicio, NEW.hora_entrada, NEW.sede) IS DISTINCT FROM (OLD.fecha_inicio, OLD.hora_entrada, OLD.sede) THEN
     PERFORM apd.registrar('cambio_programacion', 'grupo', NEW.id::text, concat_ws('; ',
@@ -1930,6 +2068,13 @@ CREATE VIEW apd.material_publico AS
    WHERE m.vigente AND m.publicado;
 COMMENT ON VIEW apd.material_publico IS 'Material de estudio publicado y vigente, para la página pública (sin cuenta).';
 
+-- ¿Es una institución de gobierno local (dependencias de la Ciudad de México y alcaldías) o federal? Sale del tipo de la
+-- organización en el catálogo (apd.organizacion.tipo): no hace falta otro dato (sesión de trabajo del 23/10/2026).
+CREATE FUNCTION apd.es_gobierno(p_tipo text) RETURNS boolean LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT coalesce(p_tipo IN ('dependencia_cdmx', 'alcaldia', 'dependencia_federal'), false)
+$$;
+COMMENT ON FUNCTION apd.es_gobierno(text) IS 'Gobierno local (dependencia_cdmx, alcaldia) o federal (dependencia_federal): las únicas adscripciones que se agrupan en bloque en la espera.';
+
 CREATE VIEW apd.bandeja_demanda AS
   SELECT s.id AS solicitud_id,
          s.folio,
@@ -1939,6 +2084,10 @@ CREATE VIEW apd.bandeja_demanda AS
          o.id AS organizacion_id,
          coalesce(o.nombre, CASE s.adscripcion WHEN 'independiente' THEN 'Independiente' ELSE 'Sin adscripción' END) AS organizacion,
          coalesce(o.tipo, s.adscripcion, 'sin_adscripcion') AS organizacion_tipo,
+         -- Sólo las instituciones de gobierno local y federal se agrupan en bloque en la espera (sesión de trabajo del
+         -- 23/10/2026): las demás van una por una en el orden general. El bloque es su organización; sin bloque, NULL.
+         apd.es_gobierno(o.tipo) AS es_gobierno,
+         CASE WHEN apd.es_gobierno(o.tipo) THEN o.id END AS bloque,
          s.lista_para_curso_en,
          apd.hoy() - (s.lista_para_curso_en AT TIME ZONE 'America/Mexico_City')::date AS dias_espera,
          a.vence_en AS vence_anterior,
@@ -1953,7 +2102,7 @@ CREATE VIEW apd.bandeja_demanda AS
     LEFT JOIN apd.organizacion o ON o.id = s.organizacion_id
     LEFT JOIN apd.acreditacion a ON a.id = s.acreditacion_anterior_id
    WHERE s.estado = 'lista_para_curso';
-COMMENT ON VIEW apd.bandeja_demanda IS 'Personas en espera de grupo, con días de espera, prioridad (alerta) y, en renovación, días para el vencimiento.';
+COMMENT ON VIEW apd.bandeja_demanda IS 'Personas en espera de grupo, con días de espera, prioridad (alerta desde dias_alerta_espera), bloque (sólo gobierno local y federal) y, en renovación, días para el vencimiento.';
 
 -- Indicador permanente (decisión 2026-10-14): personas cuya acreditación venció mientras esperan grupo.
 CREATE VIEW apd.vencidas_en_espera AS

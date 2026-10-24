@@ -64,7 +64,8 @@
           (p, s, acs, d) => s && s.estado === 'inscrita' && (grupoDe(d, s) || {}).estado === 'en_integracion'],
         ['grupo', 'Con grupo confirmado', 'Ver las fechas del curso, qué llevar y la calificación mínima.',
           (p, s, acs, d) => s && s.estado === 'inscrita' && ['confirmado', 'en_curso'].includes((grupoDe(d, s) || {}).estado)],
-        ['aprobada', 'Aprobó el examen hoy', 'Ver que recoge su credencial hoy, en la oficina del Vivero.', (p, s) => s && s.estado === 'aprobada']
+        // El grupo del caso va del lunes 5 al viernes 9/10 (sesión de trabajo del 23/10/2026: de lunes a viernes): ya no es «hoy»
+        ['aprobada', 'Aprobó el examen', 'Ver que recoge su credencial en la oficina del Vivero.', (p, s) => s && s.estado === 'aprobada']
       ]],
       ['Acreditación', [
         ['por-recoger', 'Acreditación emitida, credencial por recoger', 'Ver cuándo y dónde recogerla.',
@@ -91,6 +92,16 @@
       ]]
     ]],
     ['dictaminador', 'Dictaminador técnico', [
+      /* Antes de empezar (sesión de trabajo del 23/10/2026): para pedirla por primera vez hace falta la poda durante al menos
+         dos años consecutivos (APD.podaContinuaDesde, como apd.poda_continua_desde) */
+      ['Antes de empezar: dos años de poda', [
+        ['dict-puede', 'Con la poda dos años o más, sin corte', 'Ver que puede iniciar la solicitud de dictaminador.',
+          (p, s, acs, d) => !de(acs, 'dictaminador') && !d.solicitud.some((x) => x.solicitante_id === p.id && x.tipo_acreditacion === 'dictaminador') && A().opciones(d, p, []).dictaminador.disponible],
+        ['dict-menos-dos', 'Con la poda desde hace menos de dos años', 'Ver por qué todavía no puede pedirla y desde cuándo podrá.',
+          (p, s, acs, d) => acs.filter((a) => a.tipo_acreditacion === 'poda').length === 1 && A().opciones(d, p, []).dictaminador.clave === 'dos_anios'],
+        ['dict-corte', 'Con un corte en su poda (renovó fuera de plazo)', 'Ver que la cuenta de los dos años empezó otra vez.',
+          (p, s, acs, d) => acs.filter((a) => a.tipo_acreditacion === 'poda').length > 1 && A().opciones(d, p, []).dictaminador.clave === 'dos_anios']
+      ]],
       ['Solicitud', [
         ['obs-dict', 'Con observaciones', 'Corregir las observaciones de una solicitud de dictaminador.',
           (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'dictaminador'],

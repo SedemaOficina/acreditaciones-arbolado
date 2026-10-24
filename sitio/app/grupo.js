@@ -78,8 +78,10 @@
     const sede = APD.sede(datos).nombre;
     const pares = [];
     if (g.fecha_inicio) {
-      pares.push(['Primer día', fechaCorta(g.fecha_inicio)], ['Último día (examen)', fechaCorta(x.ultimo)],
-        ['Hora de entrada', APD.hhmm(g.hora_entrada)], ['Hora de salida', 'Por definir', 'el área la define (P91)'],
+      // El último día es de examen o, en el curso de primera vez, de repaso de conocimientos y examen final; la salida es a
+      // las 15:00 (sesión de trabajo del 23/10/2026, P91: parámetro curso_hora_salida)
+      pares.push(['Primer día', fechaCorta(g.fecha_inicio)], [`Último día (${APD.diaFinal(x.c).toLowerCase()})`, fechaCorta(x.ultimo)],
+        ['Hora de entrada', APD.hhmm(g.hora_entrada)], ['Hora de salida', APD.parametroTexto(datos, 'curso_hora_salida') || '15:00'],
         ['Instructor', P.nombreInstructor(g.instructor)],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);
       // Texto neutro: la fecha puede venir de «Guardar sin confirmar» o de un grupo que dejó de estar confirmado
@@ -198,7 +200,8 @@
       if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
-        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fechaCorta(minimo)} y hasta el ${fechaCorta(maximo)}, un año después de hoy. Dura ${plural(c.dias_duracion, 'día', 'días seguidos')}`;
+        // De lunes a viernes (sesión de trabajo del 23/10/2026): el de 5 días empieza en lunes
+        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fechaCorta(minimo)} y hasta el ${fechaCorta(maximo)}, un año después de hoy. ${c.dias_duracion > 1 ? `Dura ${c.dias_duracion} días, de lunes a viernes: empieza en lunes` : 'Dura un día, de lunes a viernes'}`;
         $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo && iso() <= maximo ? `${base}: del ${fechaCorta(iso())} al ${fechaCorta(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
       };
       fi.addEventListener('input', ayudaFecha);
@@ -211,6 +214,10 @@
           const d = Object.assign({}, payload.datos, { fecha_inicio: (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(payload.datos.fecha_inicio)) || payload.datos.fecha_inicio });
           if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fechaCorta(minimo)}.` }] });
           if (d.fecha_inicio > maximo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso empieza a más tardar un año después de hoy: hasta el ${fechaCorta(maximo)}.` }] });
+          // Sábados y domingos sin curso (el de 5 días empieza en lunes, P151) y como máximo 2 grupos al mismo tiempo (P149):
+          // sesión de trabajo del 23/10/2026; la base: curso_en_fin_de_semana y grupos_simultaneos
+          const r = P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, d.fecha_inicio, g.id);
+          if (r && ['fin_de_semana', 'simultaneos'].includes(r.clave)) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El ${fechaCorta(d.fecha_inicio)} no se puede: ${r.texto}.` }] });
           // Como la API: con lo guardado de ahora (otra pestaña pudo dar de baja a alguien) y comprobando después que quedó
           // confirmado (auditoría «intentar romperlo», F3 M2: «Grupo confirmado» aunque seguía por confirmar). Lo escrito
           // se conserva.

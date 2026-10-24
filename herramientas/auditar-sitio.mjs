@@ -39,7 +39,11 @@ const [acred, pAcred] = conPersona('acreditada');
 const [, pRech] = conPersona('rechazada');
 const enviadaDict = sol('enviada', (s) => s.tipo_acreditacion === 'dictaminador') || sol('enviada');
 const enviadaPoda = sol('enviada', (s) => s.tipo_acreditacion === 'poda');
-const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id));
+// Una persona sin trámite que puede iniciar una solicitud: sin la poda vigente por más de un mes (desde la sesión del
+// 23/10 hay personas con la poda vigente que todavía no pueden pedir nada: dos años de poda para la de dictaminador)
+const unMes = new Date(`${datos.fecha_corte}T12:00:00Z`); unMes.setUTCMonth(unMes.getUTCMonth() + 1);
+const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id)
+  && !datos.acreditacion.some((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda' && a.vence_en > unMes.toISOString().slice(0, 10)));
 const ESTADOS = [
   ['inicio', 'index.html', null],
   ['crear-cuenta', 'cuenta.html', null],
@@ -179,8 +183,10 @@ function revisaEnPagina() {
     // El estándar pide 44 px de alto (--objetivo-min) en los controles: se anota aparte, como aviso
     else if (el.matches('button,input:not([type=radio]):not([type=checkbox]),select,summary') && b.height < 43.5) r.bajos.push(`${nombre(el)} (${Math.round(b.width)}×${Math.round(b.height)} px)`);
   }
-  // Botones visibles para la prueba de clics, con un selector estable
-  const botones = [...document.querySelectorAll('button,summary,[role=button],a[href^="#"]:not([href="#"])')].filter((el) => visible(el) && !el.disabled);
+  // Botones visibles para la prueba de clics, con un selector estable. Los inactivos con aria-disabled (conservan el foco,
+  // RI-02) tampoco se presionan: Playwright no los presiona y lo que hacen al tocarlos lo prueba probar-sitio (desde la
+  // sesión del 23/10 «Programar» abre en octubre, con casi todos sus días inactivos: sólo se empieza en lunes)
+  const botones = [...document.querySelectorAll('button,summary,[role=button],a[href^="#"]:not([href="#"])')].filter((el) => visible(el) && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
   r.botones = botones.map((el, i) => { el.dataset.auditoria = String(i); return { i, nombre: nombre(el) }; });
   return r;
 }
