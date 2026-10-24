@@ -263,7 +263,12 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .cotejo-foto figcaption { font-size: var(--t-sm); }
 /* «Paso N de M · Título» a la vista también en computadora (criterio de la decisión del 24/10/2026); el estándar lo
    muestra sólo en teléfono, donde sustituye a las etiquetas. Lo dice también el botón del paso (es aria-hidden). */
-@media (min-width: 760px) { .barra-paso-visible .pasos-actual { display: block; } }
+@media (min-width: 760px) {
+  .barra-paso-visible .pasos-actual { display: block; }
+  /* Versión de prueba: el último paso no queda debajo del botón fijo «Menú de pruebas» cuando la barra está al pie de
+     la ventana (como «Así quedaría» de «Programar»; auditar-sitio, encimado) */
+  .modo-pruebas .barra-paso-visible { padding-inline-end: calc(var(--ancho-boton-min) + var(--e-6)); }
+}
 /* Muchos pasos en teléfono (la revisión de un dictaminador lleva hasta diez): cada uno conserva su objetivo de 44 px y
    la lista se desplaza dentro de la barra, no la página */
 @media (max-width: 759.98px) {
