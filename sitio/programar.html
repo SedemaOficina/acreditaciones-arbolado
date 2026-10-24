@@ -8,18 +8,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Programar un curso · Personal · Acreditaciones de arbolado urbano</title>
-<meta name="description" content="Programar un curso en tres pasos: qué semana, quién lo da y a qué hora, y quiénes van. Personal de la Secretaría. Versión de prueba con datos ficticios.">
+<meta name="description" content="«Programar un curso» ahora es el paso a paso de «Grupos»: esta dirección lleva ahí. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/css/nucleo.css?v=1.5.1">
-<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.5.1">
-<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.5.1">
-<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
-<link rel="stylesheet" href="formkit/modulos/resultado/resultado.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
-<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
-<link rel="stylesheet" href="formkit/modulos/acordeon/acordeon.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.67">
 </head>
 <body>
@@ -34,137 +28,12 @@
 </header>
 
 <main class="pagina pagina-amplia" id="contenido">
-  <div class="sesion personal-sesion" data-sesion-personal></div>
-  <p><a class="btn-atras" href="grupos.html" data-volver><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Grupos</a></p>
-
-  <!-- Programar un curso en tres pasos (propuesta B, aprobada por Liber el 2026-10-18): qué semana, quién lo da y a qué
-       hora, y quiénes van. El sistema propone; quien arma el grupo ajusta. ?curso=poda-nueva &semana=AAAA-MM-DD
-       &personas=folio1,folio2 (desde «Grupos»); ?grupo=APD-G-… programa un grupo por confirmar que ya existe. -->
-  <div class="prog-cabeza">
-    <h2 class="titulo-paso" id="t-programar">Programar un curso</h2>
-    <p class="bajada" data-bajada>Cargando…</p>
-  </div>
-
-  <!-- Sin curso en la dirección: se elige aquí -->
-  <section class="tarjeta" aria-labelledby="t-que-curso" data-sin-curso hidden>
-    <h3 class="titulo-bloque" id="t-que-curso">¿Qué curso?</h3>
-    <ul class="prog-cursos" data-cursos></ul>
-  </section>
-
-  <form id="programar" class="prog" data-formkit="manual" action="#" method="post" hidden>
-    <div class="prog-pasos">
-      <!-- Paso 1 · la semana: el calendario escribe el primer día en el campo, y el campo mueve el calendario -->
-      <section class="tarjeta prog-paso" aria-labelledby="t-paso-1">
-        <h3 class="titulo-bloque prog-paso-titulo" id="t-paso-1"><span class="prog-paso-num">1.</span> ¿Qué semana?</h3>
-        <p class="ayuda" data-ayuda-semana>Toque el día en que empieza el curso.</p>
-        <!-- data-calendario-curso: no es el botón de calendario de un campo de fecha ([data-calendario], app/apd.js) -->
-        <div class="cal" data-calendario-curso>
-          <div class="cal-cabeza">
-            <button type="button" class="btn-icono cal-mes-boton" data-mes="-1" aria-label="Mes anterior"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg></button>
-            <p class="cal-mes" id="cal-mes" aria-live="polite" data-mes-nombre></p>
-            <button type="button" class="btn-icono cal-mes-boton" data-mes="1" aria-label="Mes siguiente"><svg class="icono" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button>
-          </div>
-          <table class="cal-tabla" aria-labelledby="cal-mes">
-            <thead><tr>
-              <th scope="col"><abbr title="lunes">LUN</abbr></th><th scope="col"><abbr title="martes">MAR</abbr></th><th scope="col"><abbr title="miércoles">MIÉ</abbr></th>
-              <th scope="col"><abbr title="jueves">JUE</abbr></th><th scope="col"><abbr title="viernes">VIE</abbr></th><th scope="col"><abbr title="sábado">SÁB</abbr></th><th scope="col"><abbr title="domingo">DOM</abbr></th>
-            </tr></thead>
-            <tbody data-dias></tbody>
-          </table>
-          <!-- En teléfono, en lugar de la nota de cada celda: cuándo inicia y cuándo es el examen (C6-10 c) -->
-          <p class="cal-fechas" data-cal-fechas hidden></p>
-          <!-- Por qué no se puede un día (al tocarlo) o qué se eligió: se ve y se anuncia (FormKit.anuncia) -->
-          <p class="cal-estado" data-cal-estado hidden></p>
-          <ul class="cal-leyenda" aria-label="Qué significa cada día">
-            <li><span class="cal-muestra" data-muestra="rango" aria-hidden="true"></span><span>El curso elegido</span></li>
-            <li><span class="cal-muestra" data-muestra="no" aria-hidden="true"></span><span data-leyenda-no>No se puede: menos de 7 días, sábado o domingo, o ya hay 2 grupos esas fechas</span></li>
-            <li><span class="cal-muestra" data-muestra="inhabil" aria-hidden="true"></span><span>Día inhábil <span class="pendiente">[por confirmar con el calendario oficial de la Secretaría]</span></span></li>
-          </ul>
-        </div>
-        <!-- Fecha día/mes/año como en el resto del sitio (formato «fecha-dma» del estándar). El mínimo (7 días después de
-             hoy) lo pone la página en data-min. -->
-        <div class="campo prog-fecha" data-campo="fecha_inicio" data-formato="fecha-dma" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
-          <label class="etiqueta" for="fecha_inicio">Primer día del curso</label>
-          <p class="ayuda" id="ay-fecha-inicio" data-ayuda-fecha>Tóquelo en el calendario o escríbalo como día/mes/año.</p>
-          <!-- autocomplete off: la fecha la elige quien arma el grupo. -->
-          <input class="control control-corto" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="14" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-fecha-inicio">
-        </div>
-      </section>
-
-      <!-- Paso 2 · instructor y hora de entrada -->
-      <section class="tarjeta prog-paso" aria-labelledby="t-paso-2">
-        <h3 class="titulo-bloque prog-paso-titulo" id="t-paso-2"><span class="prog-paso-num">2.</span> ¿Quién lo da y a qué hora?</h3>
-        <p class="ayuda-bloque">Para confirmar el grupo se necesitan los dos; para guardarlo sin confirmar, pueden quedar pendientes.</p>
-        <div class="fila">
-          <div class="campo" data-campo="instructor" data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
-            <label class="etiqueta" for="instructor">Instructor</label>
-            <p class="ayuda" id="ay-instructor" data-ayuda-instructor>Se indica si ya tiene otro curso esas fechas.</p>
-            <!-- Versión de prueba: instructores ficticios. En la etapa 3 la API da las cuentas con perfil «instructor» (P27).
-                 autocomplete off: lo elige quien arma el grupo. -->
-            <div class="select"><select class="control control-select" id="instructor" name="instructor" autocomplete="off" aria-describedby="ay-instructor">
-                <option value="">Elija</option>
-                <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
-                <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
-            </select></div>
-          </div>
-          <div class="campo" data-campo="hora_entrada" data-formato="hora" data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
-            <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
-            <p class="ayuda" id="ay-hora-entrada">El curso es de 9:00 a 15:00, de lunes a viernes, todos sus días.</p>
-            <!-- Lista cerrada de 24 horas, la misma de la ficha del grupo (Liber, 2026-10-17). Sesión de trabajo del 23/10/2026
-                 (P91): el curso es de 9:00 a 15:00, así que la entrada es a las 09:00. autocomplete off: la elige quien arma el grupo. -->
-            <div class="select control-corto"><select class="control control-select" id="hora_entrada" name="hora_entrada" autocomplete="off" aria-describedby="ay-hora-entrada">
-                <option value="">Elija</option>
-                <option value="09:00">09:00</option>
-            </select></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Paso 3 · quiénes van: elegir personas es una acción sobre una lista, no un dato del formulario (la base la revisa:
-           apd.inscripcion_alta) -->
-      <section class="tarjeta prog-paso" aria-labelledby="t-paso-3">
-        <div class="prog-paso-cabeza">
-          <h3 class="titulo-bloque prog-paso-titulo" id="t-paso-3"><span class="prog-paso-num">3.</span> ¿Quiénes van?</h3>
-          <p class="prog-propuesta" data-propuesta></p>
-        </div>
-        <div data-ya-estan hidden></div>
-        <ul class="prog-personas" data-personas aria-labelledby="t-paso-3"></ul>
-        <p class="ayuda" data-ayuda-personas>Si hay más de 25, entran las que más esperan y las de una misma institución de gobierno van juntas; el resto sigue en espera para otra semana.</p>
-        <fieldset class="grupo" data-campo="integracion" data-requerido data-uso="Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).">
-          <legend class="etiqueta">¿De quiénes es el grupo?</legend>
-          <!-- autocomplete off: decisión de quien arma el grupo. -->
-          <div class="opciones-lista">
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="combinado" checked><span><span class="opcion-nombre">Combinado</span><span class="opcion-desc">Recibe personas de cualquier organización e independientes.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de una organización</span><span class="opcion-desc" data-especifico-desc>Recibe únicamente a la gente de esa organización: todas las elegidas tienen que ser de ella.</span></span></label>
-          </div>
-        </fieldset>
-        <!-- Si todas las elegidas son de una organización que ya tiene su grupo que recibe personas: se dice y se ofrece
-             agregarlas ahí (decisión 2 de la auditoría del 2026-10-19) -->
-        <div data-su-grupo hidden></div>
-      </section>
-    </div>
-
-    <!-- Así quedaría: a la vista mientras se decide (en computadora, fijo a la derecha) -->
-    <aside class="prog-resumen" aria-labelledby="t-resumen">
-      <h3 class="prog-resumen-titulo" id="t-resumen">Así quedaría</h3>
-      <p class="prog-resumen-nombre" data-resumen-nombre></p>
-      <div data-resumen></div>
-      <!-- Lo que falta para confirmar o guardar, junto a los botones (APD.pintaAviso) -->
-      <div data-falta hidden></div>
-      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
-      <div class="prog-resumen-acciones">
-        <button type="submit" class="btn btn-primario" data-accion="enviar" data-programar="confirmar">Crear y confirmar el grupo</button>
-        <button type="submit" class="btn btn-secundario" data-programar="guardar">Guardar sin confirmar</button>
-      </div>
-      <p class="prog-resumen-nota" data-resumen-nota>Al confirmar, cada persona ve en «Mis trámites» la fecha, la hora y el lugar.</p>
-    </aside>
-  </form>
-
-  <section class="tarjeta resultado" data-resultado hidden>
-    <div class="acciones" data-resultado-acciones>
-      <a class="btn btn-secundario" href="grupos.html" data-ir-grupos>Volver a Grupos</a>
-      <a class="btn btn-primario" href="grupo.html" data-ir-grupo>Ver el grupo</a>
-    </div>
+  <!-- Sin uso desde el 2026-10-24 (decisión de Liber, opción B1): «Programar un curso» es ahora el paso a paso de «Grupos»
+       (el curso, la semana, quiénes van y confirmar). Esta dirección se conserva para los enlaces guardados:
+       app/programar.js lleva a grupos.html con el mismo curso, la semana, el grupo y las personas, en el paso que toca. -->
+  <section class="tarjeta" aria-labelledby="t-programar">
+    <h2 class="titulo-paso" id="t-programar">«Programar un curso» ahora está en «Grupos»</h2>
+    <p data-redireccion>Lo llevamos a <a href="grupos.html" data-ir>Grupos</a>, donde se arma el grupo paso a paso.</p>
   </section>
 </main>
 
@@ -173,23 +42,8 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
-<script src="app/perfil-academico.js?v=0.67"></script>
-<script src="app/apd.js?v=0.67"></script>
-<!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
-<script src="app/archivos-prueba.js?v=0.67"></script>
-<script src="app/personal.js?v=0.67"></script>
-<script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
-<script src="app/mensajes-usted.js?v=0.67"></script>
-<script src="formkit/js/iconos.js?v=1.5.1"></script>
-<script src="formkit/js/formkit.core.js?v=1.5.1"></script>
-<script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
-<script src="formkit/modulos/fecha/fecha.js?v=1.5.1"></script>
-<script src="formkit/modulos/resultado/resultado.js?v=1.5.1"></script>
-<script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<!-- Sólo lleva a «Grupos» con el mismo curso, semana, grupo y personas -->
 <script src="app/programar.js?v=0.67"></script>
-<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
-<script src="app/casos-prueba.js?v=0.67"></script>
-<script src="app/pruebas.js?v=0.67"></script>
 <script src="app/version-visible.js?v=0.67"></script>
 </body>
 </html>
