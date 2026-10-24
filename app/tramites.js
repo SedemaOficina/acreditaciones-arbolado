@@ -125,8 +125,12 @@
     if (g && g.grupo && s.estado === 'inscrita') {
       if (g.grupo.fecha_inicio && ['confirmado', 'en_curso'].includes(g.grupo.estado)) {
         const ultimo = c ? sumaDias(g.grupo.fecha_inicio, c.dias_duracion - 1) : null;
-        // Hora de entrada del grupo (la misma todos los días); la de salida la define el área (P91)
+        // Hora de entrada del grupo (la misma todos los días) y la de salida del curso: de 9:00 a 15:00 (P91, sesión de
+        // trabajo del 23/10/2026; parámetros curso_hora_entrada y curso_hora_salida)
         const sinHora = g.grupo.hora_entrada ? null : 'hora de entrada.';
+        const salida = APD.parametroTexto(datos, 'curso_hora_salida') || '15:00';
+        // El quinto día del curso de primera vez: repaso de conocimientos y examen final (sesión de trabajo del 23/10/2026)
+        const final = APD.diaFinal(c);
         // Con el curso ya empezado no se dice «Preséntate el …» (día pasado): en qué día va y cuándo es el examen
         // (auditoría 2026-10-18, D13). Los días son consecutivos, como los cuenta la base.
         const hoy = APD.hoy(datos);
@@ -141,8 +145,9 @@
         cursoCaja = el('div', { class: 'ficha-cita' }, [datosLista([
           [empezo ? 'Tu curso empezó el' : 'Preséntate el', larga(g.grupo.fecha_inicio, g.grupo.hora_entrada), sinHora],
           ['Lugar del curso', ...sedeTexto(g.grupo.sede)],
-          empezo && c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}`] : ['El curso termina el', ultimo && larga(ultimo)],
-          ['Examen', examen]])]);
+          ['Horario', g.grupo.hora_entrada ? `De ${APD.hhmm(g.grupo.hora_entrada)} a ${salida}, todos los días del curso` : `Hasta las ${salida}`],
+          empezo && c && dia <= c.dias_duracion ? ['Hoy es el día', `${dia} de ${c.dias_duracion}${dia === c.dias_duracion && final !== 'Examen' ? ` · ${final.toLowerCase()}` : ''}`] : ['El curso termina el', ultimo && larga(ultimo)],
+          [final === 'Examen' ? 'Examen' : `Día ${c.dias_duracion}: ${final.toLowerCase()}`, examen]])]);
         lugares.add('curso');
         // Confirmado: el grupo por su nombre (curso y fechas) con el folio en chico (propuesta D, 2026-10-18). Por confirmar,
         // sólo el folio: la fecha propuesta todavía no es segura
@@ -152,7 +157,8 @@
           const unDia = c.dias_duracion === 1;
           sigue = { texto: `Tu curso dura ${c.dias_duracion} ${unDia ? 'día' : 'días'}.`, pasos: [
             unDia ? 'Asiste al curso completo: sin esa asistencia no puedes presentar el examen.' : `Asiste al menos ${c.dias_minimos_asistencia} de los ${c.dias_duracion} días: con menos no puedes presentar el examen.`,
-            `${unDia ? 'Al terminar el curso' : 'El último día'} presentas el examen en computadora, en el salón de cómputo del PILARES Vivero Nezahualcóyotl.`,
+            unDia ? 'Al terminar el curso presentas el examen en computadora, en el salón de cómputo del PILARES Vivero Nezahualcóyotl.'
+              : `El día ${c.dias_duracion} es de ${final.toLowerCase()}: presentas el examen en computadora, en el salón de cómputo del PILARES Vivero Nezahualcóyotl.`,
             'Lleva tu identificación oficial: sin ella no te dan tu código para el examen.',
             `Para aprobar necesitas al menos ${Number(c.calificacion_minima).toFixed(1)}. Si apruebas, ese mismo día recoges tu credencial en la oficina del Vivero.`
           ] };
@@ -206,6 +212,15 @@
       cambio.push(s.cita_motivo === 'sin_pago'
         ? FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: 'No presentaste tu comprobante de pago', texto: [`Tu cita nueva es el ${fechaLarga(s.cita_en, { hora: true })}.`, APD.tituloPasos()], pasos: ['Si ya pagaste, imprime el comprobante de ese pago: no pagues otra vez.', 'Si todavía no pagas, paga con los datos de abajo e imprime tu comprobante.', `Acude a tu cita nueva ${acudeEl} con el comprobante y tus documentos impresos.`] })
         : FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `No te presentaste a tu cita del ${fechaCorta(s.cita_anterior)}`, texto: `Tu cita nueva es el ${fechaLarga(s.cita_en, { hora: true })}. Si tampoco te presentas, tu solicitud se cierra.` }));
+    }
+    /* En espera de grupo (P143, sesión de trabajo del 23/10/2026): la Secretaría asigna grupo en un plazo de 15 días
+       (parámetro dias_alerta_espera), siempre que se reúna el cupo mínimo para abrirlo */
+    if (s.estado === 'lista_para_curso' && c) {
+      const plazo = APD.parametro(datos, 'dias_alerta_espera') || 15;
+      sigue = { texto: 'Tu cotejo terminó.', pasos: [
+        `La Secretaría te asigna un grupo del curso en un plazo de ${plazo} días, siempre que se reúnan al menos ${c.cupo_minimo} personas para abrirlo.`,
+        `Te avisa las fechas y la hora: el curso es de lunes a viernes, de ${(APD.parametroTexto(datos, 'curso_hora_entrada') || '09:00').replace(/^0/, '')} a ${APD.parametroTexto(datos, 'curso_hora_salida') || '15:00'}.`,
+        c.dias_duracion > 1 ? `Asistes al curso y, el día ${c.dias_duracion}, ${APD.diaFinal(c).toLowerCase()}.` : 'Asistes al curso y ese mismo día presentas el examen.'] };
     }
     const ultimaIns = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();
     // La persona espera el curso; el personal arma los grupos (decisión 2026-10-18; auditoría 2026-10-20, C5-02)
@@ -370,6 +385,12 @@
     document.querySelector('[data-acreditaciones]').replaceChildren(...(acs.length
       ? acs.slice().sort((x, y) => Number(porRenovar(datos, y, op)) - Number(porRenovar(datos, x, op))).map((a) => fichaAcreditacion(datos, a, op))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes acreditaciones.' })]));
+    // Antes de empezar (sesión de trabajo del 23/10/2026): la de dictaminador pide la de poda durante al menos dos años
+    // consecutivos; quien todavía no los tiene sabe desde cuándo podrá pedirla
+    if (op.dictaminador.clave === 'dos_anios') {
+      document.querySelector('[data-acreditaciones]').append(FormKit.aviso(el('div', { class: 'aviso' }),
+        { tono: 'neutro', titulo: 'Acreditación de dictaminador técnico', texto: op.dictaminador.motivo }));
+    }
 
     // En curso: las que todavía avanzan, y la acreditada cuya credencial no se ha recogido (aún hay un paso).
     // Anteriores: las terminadas (cerradas, rechazadas, no acreditadas o con la credencial ya entregada).
@@ -384,7 +405,7 @@
     const lugares = new Set();
     document.querySelector('[data-solicitudes]').replaceChildren(...(enCurso.length
       ? enCurso.map((s) => fichaSolicitud(datos, s, persona, lugares))
-      : [el('p', { class: 'vacio', texto: `No tienes solicitudes en curso.${puedeNueva ? ' Para empezar, presiona «Iniciar una solicitud».' : ''}` })]));
+      : [el('p', { class: 'vacio', texto: `No tienes solicitudes en curso.${puedeNueva ? ' Para empezar, presiona «Iniciar una solicitud».' : op.poda.clave === 'menor_de_edad' ? ` ${op.poda.motivo}` : ''}` })]));
     // Un solo «Dónde es» por pantalla, después de las solicitudes en curso (P68)
     const donde = document.querySelector('[data-mapa-sede]');
     donde.hidden = !lugares.size;

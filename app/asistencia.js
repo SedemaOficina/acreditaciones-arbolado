@@ -113,7 +113,8 @@
     $('[data-avisos]').replaceChildren(...avisos);
     if (examenHoy) {
       $('[data-ultimo-dia]').hidden = false;
-      $('[data-ultimo-dia]').textContent = 'Hoy es el examen: la asistencia de hoy se registra al pasar lista en el salón de cómputo, en «Aplicar el examen».';
+      // En el curso de primera vez, el último día es de repaso de conocimientos y examen final (sesión del 23/10/2026)
+      $('[data-ultimo-dia]').textContent = `Hoy es ${APD.diaFinal(c) === 'Examen' ? 'el examen' : `el día de ${APD.diaFinal(c).toLowerCase()}`}: la asistencia de hoy se registra al pasar lista en el salón de cómputo, en «Aplicar el examen».`;
     }
 
     /* Corregir otro día: los días ya ocurridos, salvo el que está en pantalla */
@@ -132,7 +133,7 @@
       const enlaces = [];
       for (let n = 1; n <= ultimoDia; n++) {
         const examen = n === ultimoDia;
-        const texto = `Día ${n} · ${fechaCorta(diaDe(n))}${examen ? ' · examen' : listo(n) ? ' · capturado' : ''}`;
+        const texto = `Día ${n} · ${fechaCorta(diaDe(n))}${examen ? ` · ${APD.diaFinal(c).toLowerCase()}` : listo(n) ? ' · capturado' : ''}`;
         const href = examen ? `aplicar.html?folio=${encodeURIComponent(g.folio)}` : `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`;
         enlaces.push(n === dia ? el('strong', { 'aria-current': 'page', texto }) : el('a', { href, texto }));
       }
@@ -162,7 +163,7 @@
     }
 
     if (!dia) {
-      $('[data-titulo-dia]').textContent = examenHoy ? `Día ${ultimoDia} de ${ultimoDia} · examen` : 'Todavía no hay días por capturar';
+      $('[data-titulo-dia]').textContent = examenHoy ? `Día ${ultimoDia} de ${ultimoDia} · ${APD.diaFinal(c).toLowerCase()}` : 'Todavía no hay días por capturar';
       if (!examenHoy) {
         $('[data-ultimo-dia]').hidden = false;
         $('[data-ultimo-dia]').textContent = `El curso empieza el ${fechaLarga(g.fecha_inicio)}.`;
