@@ -3250,5 +3250,462 @@
   "cuando": "Siempre",
   "seccion": "Pide la reposición de tu credencial",
   "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Título",
+  "texto": "Grupos",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Introducción",
+  "texto": "Cargando los grupos…",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ver los grupos programados",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "Armar un grupo",
+  "cuando": "Siempre",
+  "seccion": "Armar un grupo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "¿Para qué curso?",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Introducción",
+  "texto": "Cada curso arma sus grupos por separado: nunca se mezclan.",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Poda y derribo · nueva — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Poda y derribo · renovación — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Dictaminador técnico · nueva — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Dictaminador técnico · renovación — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "¿Qué semana?",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Semana elegida",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Ninguna todavía",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "Primer día del curso",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Se llena al elegir la semana en el calendario.",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Semana libre: toque «Libre» para elegirla",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "El grupo nuevo",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo por confirmar",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo confirmado",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo en curso",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo que ya terminó",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo de otro curso: también cuenta para el máximo",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "No disponible: ya pasó, faltan menos de 7 días o ya hay 2 grupos",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Sábado y domingo: no hay curso",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Día inhábil [por confirmar con el calendario oficial de la Secretaría]",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "¿Quiénes van?",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Si hay más de 25, entran las que más esperan y las de una misma institución de gobierno van juntas; el resto sigue en espera para otra semana.",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "¿De quiénes es el grupo?",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Combinado — Recibe personas de cualquier organización e independientes.",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Sólo de una organización — Recibe únicamente a la gente de esa organización: todas las elegidas tienen que ser de ella.",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "Revise y confirme",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "Instructor",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Se indica si ya tiene otro curso esas fechas.",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Indicación de lista",
+  "texto": "Por asignar",
+  "cuando": "Siempre",
+  "seccion": "Confirmar"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción de lista",
+  "texto": "Laura Ejemplo Instructora",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción de lista",
+  "texto": "Instructor Ejemplo Dos",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "Hora de entrada",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "El curso es de 9:00 a 15:00 todos sus días.",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Indicación de lista",
+  "texto": "Elija",
+  "cuando": "Siempre",
+  "seccion": "Confirmar"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Crear sin confirmar",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Crear el grupo",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "Grupos programados",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Introducción",
+  "texto": "Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta.",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Título desplegable",
+  "texto": "Grupos que ya terminaron",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas, hora de entrada e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
  }
 ]

@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-23",
+  "actualizado": "2026-10-24",
   "grupos": [
     {
       "id": "direccion",
@@ -412,7 +412,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-17",
       "titulo": "Quién arma y programa los grupos (preguntar al Vivero Nezahualcóyotl)",
-      "recomendacion": "Preguntar al Vivero Nezahualcóyotl quién programa hoy los grupos: quién decide la semana, el instructor y la hora, y quién avisa a las personas. Con eso se define qué perfil usa «Grupos» y «Programar un curso». Propuesta mientras tanto: el mismo perfil «revisión y cotejo» (P27) arma, programa, confirma y cancela grupos; el instructor sólo ve sus grupos («Mis grupos de hoy») y captura asistencia. Si los programa el Vivero, se agrega un perfil del Vivero con sólo esas pantallas. Nota de la sesión de trabajo del 23/10/2026: la persona responsable del cotejo programa las fechas y conforma los grupos; y la asignación de instructores la hará el área de instructores y capacitación. Liber lo deja pendiente (23/10/2026)."
+      "recomendacion": "Preguntar al Vivero Nezahualcóyotl quién programa hoy los grupos: quién decide la semana, el instructor y la hora, y quién avisa a las personas. Con eso se define qué perfil usa «Grupos» (desde el 24/10/2026, un paso a paso que sustituye a «Programar un curso»). Propuesta mientras tanto: el mismo perfil «revisión y cotejo» (P27) arma, programa, confirma y cancela grupos; el instructor sólo ve sus grupos («Mis grupos de hoy») y captura asistencia. Si los programa el Vivero, se agrega un perfil del Vivero con sólo esas pantallas. Nota de la sesión de trabajo del 23/10/2026: la persona responsable del cotejo programa las fechas y conforma los grupos; y la asignación de instructores la hará el área de instructores y capacitación. Liber lo deja pendiente (23/10/2026). Desde el paso a paso de «Grupos» (24/10/2026), el instructor puede quedar «Por asignar»: el grupo se crea, pero no se confirma sin instructor."
     },
     {
       "id": "P100",
@@ -535,7 +535,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-18",
       "titulo": "Calendario oficial de días inhábiles (sábados y domingos ya no se trabajan)",
-      "recomendacion": "«Programar un curso» ya marca los días inhábiles en el calendario (lugar listo para un parámetro dias_inhabiles, previsto pero que todavía no existe en la base), pero hoy no tiene ninguna fecha: no se inventan. Pedir el calendario oficial de días inhábiles publicado en la Gaceta y capturarlo como parámetro; también sirve para el cómputo de plazos en días hábiles de los lineamientos. Sesión de trabajo del 23/10/2026: sábados y domingos no se trabaja; el sistema los trata como inhábiles. Falta el calendario oficial de días festivos de la Gaceta. En el sistema (23/10/2026): la base no acepta cursos ni citas de cotejo en sábado o domingo y cuenta los plazos en días hábiles sin ellos (apd.es_habil, apd.suma_dias_habiles); «Programar un curso» sólo ofrece lunes para el curso de cinco días. Cuando exista el calendario de festivos, se agrega en apd.es_habil y en APD.esHabil.",
+      "recomendacion": "«Grupos» (paso 2, el calendario; antes «Programar un curso») ya marca los días inhábiles: la semana con uno dice «No disponible · Día inhábil» (lugar listo para un parámetro dias_inhabiles, previsto pero que todavía no existe en la base), pero hoy no tiene ninguna fecha: no se inventan. Pedir el calendario oficial de días inhábiles publicado en la Gaceta y capturarlo como parámetro; también sirve para el cómputo de plazos en días hábiles de los lineamientos. Sesión de trabajo del 23/10/2026: sábados y domingos no se trabaja; el sistema los trata como inhábiles. Falta el calendario oficial de días festivos de la Gaceta. En el sistema (23/10/2026): la base no acepta cursos ni citas de cotejo en sábado o domingo y cuenta los plazos en días hábiles sin ellos (apd.es_habil, apd.suma_dias_habiles); «Programar un curso» sólo ofrece lunes para el curso de cinco días. Cuando exista el calendario de festivos, se agrega en apd.es_habil y en APD.esHabil.",
       "lineamientos": "Anteproyecto 0.5: Cómputo de plazos (Cap. I). Los inhábiles los fija la Secretaría por acuerdo en la Gaceta."
     },
     {
@@ -584,7 +584,7 @@
       "bloquea": "no",
       "desde": "2026-10-19",
       "titulo": "Hallazgo del estándar: botonEnviar() sólo bloquea el primer botón de envío",
-      "recomendacion": "En un formulario con dos botones de envío (por ejemplo «Crear y confirmar» y «Guardar sin confirmar» en «Programar un curso»), el segundo queda activo mientras se guarda y un doble clic manda dos envíos. Solución provisional: APD.ocupa en el proyecto. Propuesta: bloquear todos los botones de envío del formulario mientras se guarda. Sigue igual en la 1.5.1."
+      "recomendacion": "En un formulario con dos botones de envío (por ejemplo «Crear el grupo» y «Crear sin confirmar» en el paso 4 de «Grupos»; antes «Crear y confirmar» y «Guardar sin confirmar» en «Programar un curso»), el segundo queda activo mientras se guarda y un doble clic manda dos envíos. Solución provisional: APD.ocupa en el proyecto. Propuesta: bloquear todos los botones de envío del formulario mientras se guarda. Sigue igual en la 1.5.1."
     },
     {
       "id": "P158",
@@ -745,7 +745,7 @@
       "bloquea": "no",
       "desde": "2026-10-20",
       "titulo": "Hallazgo del estándar: la barra de pasos pegajosa ocupa del 31 al 34 % del alto en teléfono horizontal y con zoom",
-      "recomendacion": "Módulo pasos (C-01, auditoría del 20/10/2026). Propuesta: que deje de ser pegajosa cuando su alto pase de un cuarto de la ventana, como se hizo en «Grupos» (B4-01)."
+      "recomendacion": "Módulo pasos (C-01, auditoría del 20/10/2026). Propuesta: que deje de ser pegajosa cuando su alto pase de un cuarto de la ventana, como se hizo con la barra de elegidas de «Grupos» (B4-01). «Grupos» paso a paso (24/10/2026) usa la barra de pasos sin .barra-fija (no queda pegada) y ya no tiene barra de elegidas."
     },
     {
       "id": "P178",
@@ -865,7 +865,7 @@
       "bloquea": "no",
       "desde": "2026-10-21",
       "titulo": "Propuesta al estándar: botón compacto para tablas del personal",
-      "recomendacion": "C6-07 (auditoría del 20/10/2026): el proyecto conserva btn-chico sólo en tablas, el visor y la barra de elegidas porque el botón del estándar ocupa demasiado en filas de 65 solicitudes. Propuesta: un tamaño compacto del estándar para tablas en computadora, con objetivo táctil de 24 px como mínimo (WCAG 2.5.8)."
+      "recomendacion": "C6-07 (auditoría del 20/10/2026): el proyecto conserva btn-chico sólo en tablas y el visor (la barra de elegidas de «Grupos» ya no existe desde el 24/10/2026) porque el botón del estándar ocupa demasiado en filas de 65 solicitudes. Propuesta: un tamaño compacto del estándar para tablas en computadora, con objetivo táctil de 24 px como mínimo (WCAG 2.5.8)."
     },
     {
       "id": "P193",
@@ -1542,13 +1542,13 @@
     {
       "id": "P149",
       "titulo": "¿Puede haber dos grupos del mismo curso en las mismas fechas?",
-      "como": "Sesión de trabajo del 23/10/2026: puede haber como máximo 2 grupos al mismo tiempo. Es un parámetro de la base; «Programar un curso», la ficha del grupo y la base no aceptan un tercero en las mismas fechas.",
+      "como": "Sesión de trabajo del 23/10/2026: puede haber como máximo 2 grupos al mismo tiempo. Es un parámetro de la base; «Grupos» (cada semana del calendario dice cuántos lugares le quedan, de 2), la ficha del grupo y la base no aceptan un tercero en las mismas fechas.",
       "fecha": "2026-10-23"
     },
     {
       "id": "P151",
       "titulo": "¿Se pueden dar cursos en sábado y domingo?",
-      "como": "Sesión de trabajo del 23/10/2026: no hay cursos en sábado ni domingo. El curso de 5 días va de lunes a viernes; «Programar un curso» sólo ofrece lunes como primer día.",
+      "como": "Sesión de trabajo del 23/10/2026: no hay cursos en sábado ni domingo. El curso de 5 días va de lunes a viernes; «Grupos» lo elige por semana (empieza en lunes) y el de un día, de lunes a viernes.",
       "fecha": "2026-10-23"
     },
     {

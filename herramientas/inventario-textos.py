@@ -1,6 +1,7 @@
 """INVENTARIO DE TEXTOS PARA REVISIÓN (2026-10-15, Liber)
 
-Junta en una sola hoja todo texto que ve la persona solicitante, con la pantalla, la sección, el tipo, la condición
+Junta en una sola hoja todo texto que ve la persona solicitante (y, desde el 24/10/2026, el paso a paso de «Grupos» del
+personal), con la pantalla, la sección, el tipo, la condición
 en que aparece y dónde se cambia:
   · docs/textos/estaticos.json (lo saca herramientas/inventario-textos.mjs de las páginas, sin ejecutar scripts);
   · los textos que pintan los scripts del sitio según el perfil, el estado o la respuesta (lista curada abajo);
@@ -45,7 +46,7 @@ filas = []
 for r in estaticos:
     filas.append({
         'pantalla': r['pantalla'], 'seccion': r['seccion'] or '—', 'tipo': r['tipo'],
-        'cuando': corta_condicion(r['cuando']), 'texto': r['texto'], 'quien': PERSONA, 'donde': donde_pagina(r), 'obs': ''
+        'cuando': corta_condicion(r['cuando']), 'texto': r['texto'], 'quien': PERSONAL if r['archivo'] == 'grupos.html' else PERSONA, 'donde': donde_pagina(r), 'obs': ''
     })
 
 # La adscripción es el mismo fragmento en «Crea tu cuenta» y en «Mis datos»: una sola fila por texto
@@ -211,8 +212,35 @@ dinamicos = [
     # Versión
     ('Todas las pantallas', 'Pie', 'Distintivo', 'Versión de prueba', 'Versión de prueba 0.N', D('version-visible.js')),
 ]
+# «Grupos» paso a paso (personal, de usted; decisión del 24/10/2026): lo que pinta app/grupos.js
+G = 'Grupos (personal)'
+dinamicos += [
+    (G, 'Cabecera', 'Texto', 'Siempre', 'Hoy es DÍA N de MES de AAAA. Arme un grupo en cuatro pasos: el curso, la semana, quiénes van y confirmar.', D('grupos.js')),
+    (G, 'Paso 1 · el curso', 'Texto', 'En cada curso', 'N personas en espera · N esperan 15 días o más · N ya vencidas · Falta gente para un grupo (mínimo 5) / Alcanza para N grupos nuevos de hasta 25 / Nadie espera por ahora', D('grupos.js')),
+    (G, 'Paso 2 · la semana', 'Texto', 'Siempre', 'CURSO · lunes a viernes, de 9:00 a 15:00 (o «un día, de 9:00 a 15:00»). Puede haber 2 grupos al mismo tiempo, de cualquier curso; el curso empieza al menos 7 días después de confirmarlo.', D('grupos.js')),
+    (G, 'Paso 2 · columna «Semana»', 'Botón', 'Semana que se puede elegir', 'Libre · 2 lugares libres / 1 lugar libre de 2 (elegida: «Elegida»). Nombre para el lector: «Elegir la semana del 2 al 6 de noviembre de 2026: 2 lugares libres»', D('grupos.js')),
+    (G, 'Paso 2 · columna «Semana»', 'Estado', 'Semana que no se puede elegir', 'No disponible · Ya pasó / Ya empezó / Faltan menos de 7 días / Ya hay 2 grupos / Día inhábil / Falta más de un año', D('grupos.js')),
+    (G, 'Paso 2 · calendario', 'Etiqueta', 'En los días', 'G-AAAA-NNN (folio, el primer día) · Examen (el último) · Nuevo grupo (la semana elegida) · Hoy · Inhábil', D('grupos.js')),
+    (G, 'Paso 2 · semana elegida', 'Texto', 'Con una semana elegida', 'Del 2 al 6 de noviembre · Del lunes 2 de noviembre de 2026 al viernes 6 de noviembre de 2026, de 9:00 a 15:00. El viernes, repaso de conocimientos y examen final en el PILARES. (Curso de un día: «El DÍA…, de 9:00 a 15:00, con el examen ese mismo día en el PILARES».)', D('grupos.js')),
+    (G, 'Paso 2 · semana elegida', 'Texto', 'Sin semana', 'Ninguna todavía · Toque «Libre» en la semana que quiere. (Grupo que ya existe: «Sin semana todavía · … o siga sin semana: el grupo la conserva como está».)', D('grupos.js')),
+    (G, 'Paso 2', 'Error', 'Siguiente sin semana', 'Elija una semana libre en el calendario: toque «Libre» en la semana que quiere.', D('grupos.js')),
+    (G, 'Paso 2', 'Aviso', 'Al tocar un día que no se puede', 'El DÍA no se puede: RAZÓN.', D('grupos.js')),
+    (G, 'Paso 3 · quiénes van', 'Texto', 'Grupo nuevo', 'Se proponen las N personas que más esperan, primero las prioritarias y las de una misma institución de gobierno juntas. Quite o agregue a quien haga falta.', D('grupos.js')),
+    (G, 'Paso 3 · quiénes van', 'Texto', 'Siempre', 'N de 25 lugares · se confirma con al menos 5 personas', D('grupos.js')),
+    (G, 'Paso 3 · quiénes van', 'Plegable', 'Con más en espera que las propuestas', 'Cambiar a quiénes van (N más en espera)', D('grupos.js')),
+    (G, 'Paso 3', 'Error', 'Siguiente sin nadie', 'Elija a quién va · Marque la casilla junto al nombre de al menos una persona. El grupo se confirma con al menos 5.', D('grupos.js')),
+    (G, 'Paso 4 · confirmar', 'Estado', 'Antes de crearlo', 'Se crea confirmado · Cada persona verá en «Mis trámites» la fecha, la hora y el lugar. / Se crea por confirmar · Para confirmarlo le falta …', D('grupos.js')),
+    (G, 'Paso 4 · confirmar', 'Botón', 'Grupo nuevo', 'Crear el grupo · Crear sin confirmar (sólo si podría confirmarse)', D('grupos.js')),
+    (G, 'Paso 4 · confirmar', 'Botón', 'Grupo que ya existe', 'Confirmar el grupo / Guardar los cambios / Guardar sin confirmar / Agregar al grupo (confirmado)', D('grupos.js')),
+    (G, 'Paso 4 · instructor', 'Ayuda (cambia)', 'Instructor «Por asignar»', 'Por asignar: el grupo se crea, pero no se confirma sin instructor. La asignación de instructores la hará el área de capacitación (pendiente P92).', D('grupos.js')),
+    (G, 'Grupos programados', 'Aviso', 'Al crear un grupo', 'Grupo creado y confirmado: NOMBRE / Grupo creado, por confirmar: NOMBRE · FOLIO · N personas · entrada a las 09:00 · INSTRUCTOR. · Ver la ficha del grupo · Qué sigue', D('grupos.js')),
+    (G, 'Grupos programados', 'Estado', 'Situación de cada grupo', 'En curso · día N de 5 / Confirmado / Por confirmar / Sin semana / Propuesta vencida / Confirmado · no inició', D('grupos.js')),
+    (G, 'Grupos programados', 'Botón o enlace', 'Acciones de cada grupo', 'Completar con las N que más esperan · Confirmar el grupo · Elegir semana / Cambiar la semana / Elegir otra semana · Agregar personas', D('grupos.js')),
+    (G, 'Grupos programados', 'Texto', 'Lo que falta', 'Semana, N personas, hora e instructor / Confirmarlo / —', D('grupos.js')),
+]
 for p, s, t, c, x, d in dinamicos:
-    filas.append({'pantalla': p, 'seccion': s, 'tipo': t, 'cuando': c, 'texto': x, 'quien': PERSONA if p != 'Verificar una acreditación' else 'Cualquier persona (público)', 'donde': d, 'obs': ''})
+    quien = PERSONAL if p == G else PERSONA if p != 'Verificar una acreditación' else 'Cualquier persona (público)'
+    filas.append({'pantalla': p, 'seccion': s, 'tipo': t, 'cuando': c, 'texto': x, 'quien': quien, 'donde': d, 'obs': ''})
 
 # ── 3. Mensajes de la base al guardar o enviar ────────────────────────────────────────────────────────────
 VE_PERSONA = {'anterior_no_corresponde', 'anterior_no_es_la_ultima', 'archivo_grande', 'curso_fijo', 'curso_inactivo',

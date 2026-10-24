@@ -17,7 +17,7 @@ principio.
 |---|---|---|
 | 0. Decisiones previas | Nueve decisiones del SIA, reglas del trámite validadas en el mapa, modelo de datos, base y datos ficticios | **Cerrada** el 14/10/2026, con pendientes que no bloquean |
 | 1. Cascarón | Pantallas públicas y de la persona solicitante, con el Estándar de formularios del SIA y datos ficticios, publicadas y probadas en teléfono | **Construida** el 14/10/2026; falta revisión en dispositivos reales (`docs/ETAPA-1-PANTALLAS.md`) |
-| 2. Administración | Revisión, cotejo, bandeja de demanda, grupos, asistencia, examen, emisión; carga del padrón de Kobo | **En construcción**: revisión documental, citas y cotejo, grupos (planeador por curso y «Programar un curso»), asistencia, examen en línea y material de estudio; faltan emisión y entrega, y carga del padrón de Kobo (`docs/ETAPA-2-PANTALLAS.md`) |
+| 2. Administración | Revisión, cotejo, bandeja de demanda, grupos, asistencia, examen, emisión; carga del padrón de Kobo | **En construcción**: revisión documental, citas y cotejo, grupos (paso a paso con calendario y grupos programados, desde el 24/10/2026), asistencia, examen en línea y material de estudio; faltan emisión y entrega, y carga del padrón de Kobo (`docs/ETAPA-2-PANTALLAS.md`) |
 | 3. Datos reales | Backend `crearRutasApd(pool)` sobre la base | — |
 | 4–6 | Trámites, indicadores, cierre y paquete para el SIA | — |
 
