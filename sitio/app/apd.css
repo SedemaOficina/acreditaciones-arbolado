@@ -143,7 +143,7 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .nota-borrador { margin: 0 0 var(--e-4); font-size: var(--t-sm); color: var(--ok-txt); }
 /* Estilo de formularios (decisión 2026-10-16, Liber; S2-1 a S2-3): la ayuda por bloque (.ayuda-bloque) y las
    respuestas cortas en línea (.opciones-lista.opciones-en-linea) son del estándar desde la 1.1.0; aquí, los anchos. */
-.titulo-primero { margin-top: var(--e-6); }
+/* .titulo-primero («Tus datos» de «Crea tu cuenta») ya no hace falta: la cuenta va por pasos, cada uno con su título (24/10/2026) */
 .control-medio { max-width: var(--ancho-acuse); } /* en el envoltorio .select, para que la flecha quede dentro (auditoría 2026-10-17) */
 /* Falla del estándar, registrada como P173 (FC-1; auditoría 2026-10-20, A6-01): el estándar no da color al marcador de
    posición y queda el del navegador, a 4.41:1 sobre el fondo de solo lectura y 4.23:1 sobre el de error. --gris-cl da
@@ -244,11 +244,32 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .perfil-foto-chica { width: var(--e-11); }
 @media (min-width: 560px) { .persona-con-foto { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }
 
-/* Revisión: «Listo, ir al siguiente» bajo la observación (2026-10-17) */
-.doc-seguir { margin: var(--e-3) 0 0; display: flex; justify-content: flex-end; }
-.doc-seguir .btn { width: auto; }
-/* Va fuera del campo con su propio data-si (D20): oculto, no se ve aunque su clase declare display */
-.doc-seguir[hidden] { display: none; }
+/* ───── Tareas por pasos (decisión de Liber del 24/10/2026): «Revisar una solicitud», «Cita de cotejo» y «Crea tu
+   cuenta», con el módulo «pasos» del estándar. Antes aquí: «Listo, ir al siguiente» de la revisión (2026-10-17), que
+   ya no hace falta: cada documento es un paso con su «Siguiente documento». ───── */
+/* El documento de su paso: sin la raya que separaba los documentos de la lista ni el realce del que se ve en el visor
+   (en el paso sólo hay uno) */
+.doc-paso { padding-block-start: 0; border-block-start: 0; }
+.doc-paso[data-viendo] { padding-inline: 0; border-inline-start: 0; background: none; }
+/* Resumen antes de confirmar: una fila por respuesta, con su etiqueta de estado y, si la hay, lo que se le dirá */
+.resumen-pasos { display: grid; gap: var(--e-2); margin: 0 0 var(--e-4); padding: 0; list-style: none; }
+.resumen-pasos-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-1) var(--e-3); padding: var(--e-2) var(--e-3); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); }
+.resumen-pasos-nombre { overflow-wrap: anywhere; }
+.resumen-pasos-detalle { flex-basis: 100%; color: var(--gris); font-size: var(--t-sm); overflow-wrap: anywhere; white-space: pre-line; }
+/* «Revisa y crea» de la cuenta: cada dato con su «Cambiar» al lado (abajo en teléfono, si no cabe) */
+.resumen-cuenta-valor { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-1) var(--e-3); }
+/* «¿Es la persona?» del cotejo: la fotografía de la cuenta con su pie */
+.cotejo-foto { display: grid; gap: var(--e-2); justify-items: center; margin: 0; }
+.cotejo-foto figcaption { font-size: var(--t-sm); }
+/* «Paso N de M · Título» a la vista también en computadora (criterio de la decisión del 24/10/2026); el estándar lo
+   muestra sólo en teléfono, donde sustituye a las etiquetas. Lo dice también el botón del paso (es aria-hidden). */
+@media (min-width: 760px) { .barra-paso-visible .pasos-actual { display: block; } }
+/* Muchos pasos en teléfono (la revisión de un dictaminador lleva hasta diez): cada uno conserva su objetivo de 44 px y
+   la lista se desplaza dentro de la barra, no la página */
+@media (max-width: 759.98px) {
+  .barra-pasos-larga .pasos { overflow-x: auto; }
+  .barra-pasos-larga .pasos-item { flex: 1 0 var(--objetivo-min); }
+}
 
 /* Versión de prueba: dónde estás en el trámite, siempre a la vista bajo la franja (app/pruebas.js, 2026-10-17) */
 .ubicacion-prueba { border-block-end: var(--b-1) dashed var(--pend); background: var(--blanco); }

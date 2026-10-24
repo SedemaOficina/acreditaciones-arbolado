@@ -195,39 +195,53 @@ const NOTA_PERSONAL = {
   constancia_situacion_fiscal: 'Debe ser de la persona solicitante y reciente: del mes en curso <span class="pendiente">[pendiente P196: cuántos días de antigüedad se aceptan]</span>. De ella se toman su nombre, su régimen y su domicilio fiscal para la factura.'
 };
 const notaPersonal = (k, sangria) => (NOTA_PERSONAL[k] ? `\n${sangria}<p class="ayuda">${NOTA_PERSONAL[k]}</p>` : '');
+// «Revisar una solicitud» por pasos (decisión de Liber del 24/10/2026, maqueta «Pantallas por pasos: propuestas»): un paso
+// por documento con la pregunta «¿El documento está bien?». La página quita, antes de iniciar el formulario, los pasos de
+// los documentos que la solicitud no trae (app/revisar.js): el número de pasos es el de los documentos que pide su
+// requisito. Mismos campos y condiciones que antes (decision_<requisito>, observacion_<requisito>): el esquema no cambia.
+// En la barra de pasos, el nombre corto: la sigla entre paréntesis si la tiene («CURP»).
+const corto = (n) => { const m = String(n).match(/\(([^)]+)\)\s*$/); return m ? m[1] : n; };
+const pideDe = (r) => (NOTA_PERSONAL[r.clave] ? NOTA_PERSONAL[r.clave] : `Lo que pide el requisito: ${esc(limpia(r.descripcion))}`);
 const revisionDocs = enLinea.map((r) => {
   const k = r.clave;
-  return `        <div data-si="revisar_${k}=si">
-          <article class="doc-revision" data-doc="${k}" data-contexto="${esc(r.nombre)}">
-            <div class="doc-cabeza">
-              <h4 class="doc-titulo">${esc(r.nombre)}</h4>
-              <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
+  return `    <section class="tarjeta" data-paso data-titulo="${esc(corto(r.nombre))}" data-paso-doc="${k}" hidden>
+      <article class="doc-revision doc-paso" data-doc="${k}" data-contexto="${esc(r.nombre)}">
+        <div class="doc-cabeza">
+          <h2 class="titulo-paso doc-titulo" id="t-doc-${k}">${esc(r.nombre)}</h2>
+          <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
+        </div>
+        <p class="leyenda-oblig" data-leyenda hidden>Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
+        <p class="doc-archivo" data-doc-archivo></p>
+        <p class="ayuda">${pideDe(r)}</p>
+        <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+        <!-- Si la solicitud se rechaza por el perfil, sus documentos no se revisan (revisar_${k}=no) -->
+        <p class="aviso" data-doc-sin-revision hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="aviso-texto">No hace falta revisar este documento: la solicitud se rechaza por el perfil.</span></p>
+        <div data-si="revisar_${k}=si">
+          <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
+          <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="${k}">Revisarlo de nuevo<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
+          <div data-si="decidir_${k}=si">
+          <fieldset class="grupo" data-campo="decision_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» cumple el requisito (apd.documento.estado).">
+            <legend class="etiqueta">¿El documento está bien?</legend>
+            <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+            <div class="opciones-lista">
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, está bien</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene un problema</span><span class="opcion-desc">Regresa a la persona para que lo corrija.</span></span></label>
             </div>
-            <p class="doc-archivo" data-doc-archivo></p>${notaPersonal(k, '            ')}
-            <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
-            <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
-            <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="${k}">Revisarlo de nuevo<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
-            <div data-si="decidir_${k}=si">
-            <fieldset class="grupo" data-campo="decision_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» cumple el requisito (apd.documento.estado).">
-              <legend class="etiqueta">¿El documento cumple?</legend>
-              <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
-              <div class="opciones-lista opciones-en-linea">
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="aceptado"><span><span class="opcion-nombre">Sí, aceptarlo</span></span></label>
-                <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision_${k}" autocomplete="off" value="con_observacion"><span><span class="opcion-nombre">No, tiene observaciones</span></span></label>
-              </div>
-            </fieldset>
-            <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-chips-fijos="${MOTIVOS.map(esc).join('|')}" data-chips-etiqueta="${esc(r.nombre)}" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
-              <label class="etiqueta" for="observacion_${k}">¿Qué debe corregir la persona?</label>
-              <p class="ayuda" id="ay-observacion_${k}">Puede elegir un motivo frecuente y completarlo; al menos 10 caracteres. La persona lo lee con el nombre del documento al inicio y dirigido a ella, de tú («cargaste»); sus renglones se conservan.</p>
-              <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
-              <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
-            </div>
-            <!-- Al observar no se avanza solo (hay que escribir); este botón lleva al siguiente documento (decisión 2026-10-17).
-                 Va fuera del campo, para que el error de la observación quede junto a ella (auditoría 2026-10-18, D20). -->
-            <p class="doc-seguir" data-si="decision_${k}=con_observacion"><button type="button" class="btn btn-secundario" data-seguir="${k}">Listo, ir al siguiente<svg class="icono icono-sm" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button></p>
-            </div>
-          </article>
-        </div>`;
+          </fieldset>
+          <div class="campo" data-campo="observacion_${k}" data-requerido data-si="decision_${k}=con_observacion" data-chips-fijos="${MOTIVOS.map(esc).join('|')}" data-chips-etiqueta="${esc(r.nombre)}" data-uso="Decirle a la persona qué debe corregir de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
+            <label class="etiqueta" for="observacion_${k}">¿Qué problema tiene? Lo que le diremos a la persona</label>
+            <p class="ayuda" id="ay-observacion_${k}">Elija un motivo frecuente y complételo; al menos 10 caracteres. La persona lo lee con el nombre del documento al inicio y dirigido a ella, de tú («cargaste»); sus renglones se conservan.</p>
+            <!-- autocomplete off: texto de quien revisa; el navegador no tiene un valor que proponer. -->
+            <textarea class="control" id="observacion_${k}" name="observacion_${k}" rows="3" minlength="10" maxlength="400" autocomplete="off"></textarea>
+          </div>
+          </div>
+        </div>
+      </article>
+      <div class="acciones">
+        <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+        <button type="button" class="btn btn-primario" data-accion="siguiente">Siguiente documento</button>
+      </div>
+    </section>`;
 });
 const auxiliares = enLinea.flatMap((r) => [
   `      <input type="hidden" id="revisar_${r.clave}" name="revisar_${r.clave}" value="no" data-campo="revisar_${r.clave}" data-auxiliar data-uso="Pedir la revisión de «${esc(r.nombre)}» sólo si está cargado y la solicitud no se rechaza por perfil; lo calculan la página y el servidor.">`,
@@ -236,7 +250,7 @@ const auxiliares = enLinea.flatMap((r) => [
 {
   const r = join(sitio, 'revisar.html');
   let h = readFileSync(r, 'utf8');
-  for (const [marca, contenido] of [['revision-documentos', revisionDocs.join('\n')], ['revision-auxiliares', auxiliares.join('\n')]]) {
+  for (const [marca, contenido] of [['revision-documentos', revisionDocs.join('\n\n')], ['revision-auxiliares', auxiliares.join('\n')]]) {
     const ini = h.match(new RegExp(`^( *)<!-- ${marca}:inicio[^>]*-->`, 'm'));
     const f = h.indexOf(`<!-- ${marca}:fin -->`);
     if (!ini || f < 0) { console.error(`Faltan los marcadores ${marca} en sitio/revisar.html`); process.exit(1); }
@@ -248,26 +262,28 @@ const auxiliares = enLinea.flatMap((r) => [
 // 4c · Cotejo presencial (etapa 2, decisiones 2026-10-17): un bloque por requisito que se carga en línea. Se coteja si la
 // solicitud lo tiene cargado y la persona se presentó y es quien dice ser; al retomar un cotejo en pausa, sólo los que no
 // coincidieron. Lo dice cotejar_<requisito>, que calculan la página y el servidor (una sola condición por campo, P38).
+// «Cita de cotejo» por pasos (decisión de Liber del 24/10/2026): los documentos van juntos en el paso «Documentos
+// originales», cada uno con «Sí, es igual» / «No es igual». Mismos campos que antes (coincide_<requisito>, diferencia_<requisito>).
 const cotejoDocs = enLinea.map((r) => {
   const k = r.clave;
   return `      <div data-si="cotejar_${k}=si">
         <article class="doc-revision" data-doc="${k}" data-contexto="${esc(r.nombre)}">
           <div class="doc-cabeza">
-            <h4 class="doc-titulo">${esc(r.nombre)}</h4>
+            <h3 class="doc-titulo">${esc(r.nombre)}</h3>
             <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>${notaPersonal(k, '          ')}
           <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver lo que cargó<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
           <fieldset class="grupo" data-campo="coincide_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» que trae la persona coincide con el que cargó en línea.">
-            <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
+            <legend class="etiqueta">¿El original es igual al que cargó?</legend>
             <!-- autocomplete off: decisión de quien atiende; el navegador no tiene un valor que proponer. -->
             <div class="opciones-lista opciones-en-linea">
-              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, coincide</span></span></label>
-              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="no"><span><span class="opcion-nombre">No coincide</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="si"><span><span class="opcion-nombre">Sí, es igual</span></span></label>
+              <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="coincide_${k}" autocomplete="off" value="no"><span><span class="opcion-nombre">No es igual</span></span></label>
             </div>
           </fieldset>
           <div class="campo" data-campo="diferencia_${k}" data-requerido data-si="coincide_${k}=no" data-uso="Decirle a la persona qué no coincidió de «${esc(r.nombre)}»; se le muestra tal cual (apd.documento.observacion).">
-            <label class="etiqueta" for="diferencia_${k}">¿Qué no coincide?</label>
+            <label class="etiqueta" for="diferencia_${k}">¿Qué no es igual? Lo que le diremos a la persona</label>
             <!-- autocomplete off: texto de quien atiende. -->
             <textarea class="control" id="diferencia_${k}" name="diferencia_${k}" rows="2" minlength="10" maxlength="400" autocomplete="off"></textarea>
           </div>
