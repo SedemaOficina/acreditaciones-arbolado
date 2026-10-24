@@ -1,7 +1,8 @@
 /* grupo.js · Un grupo (personal, etapa 2; maqueta aprobada y decisiones del 2026-10-17). ?folio=APD-G-…
    Situación, cupo, datos del curso y personas inscritas. Según la situación:
      · en integración: agregar personas de la espera, dar de baja, confirmar (con el mínimo: primer día al menos
-       dias_anticipacion_grupo días después, hora de entrada e instructor) o cancelar;
+       dias_anticipacion_grupo días después, e instructor; la hora de entrada es la del curso, curso_hora_entrada, y no se
+       elige: decisión de Liber del 24/10/2026) o cancelar;
      · confirmado: agregar personas hasta el día anterior al inicio (sin pasar del máximo), dar de baja (si queda por
        debajo del mínimo regresa a integración, con su fecha) o cancelar;
      · en curso: asistencia (instructor) y, el último día, el examen;
@@ -25,14 +26,14 @@
     // [tono, título, texto]: aviso con título e icono (propuesta «Avisos y confirmaciones», 2026-10-17)
     const textos = {
       creado: ['ok', `Grupo creado con ${plural(n, 'persona', 'personas')}`, { texto: 'Todavía no está confirmado.', pasos: [
-        'Complete al menos el mínimo de personas.', 'Elija el primer día, la hora de entrada y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
+        'Complete al menos el mínimo de personas.', 'Elija el primer día y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
       // Las que de verdad entraron; las que no, aparte (auditoría «intentar romperlo», F3 M1)
       agregadas: [params.get('no') ? 'pend' : 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`,
         params.get('no') ? `${params.get('no').split(',').length === 1 ? '1 de las que eligió no entró: ya tenía grupo o el grupo se llenó' : `${params.get('no').split(',').length} de las que eligió no entraron: ya tenían grupo o el grupo se llenó`}.` : ''],
       confirmado: ['ok', 'Grupo confirmado', 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.'],
-      // Desde el paso a paso de «Grupos» sin confirmarlo: la semana, la hora y el instructor quedan como propuesta
+      // Desde el paso a paso de «Grupos» sin confirmarlo: la semana y el instructor quedan como propuesta
       propuesto: ['pend', 'Se guardaron los cambios del grupo', { texto: `Sigue por confirmar: su semana queda como propuesta${n ? ` y se ${n === 1 ? 'agregó 1 persona' : `agregaron ${n} personas`}` : ''}.`, pasos: [
-        'Complete lo que le falte: el mínimo de personas, la hora de entrada y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
+        'Complete lo que le falte: el mínimo de personas y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
       baja: ['ok', 'La persona salió del grupo', 'Regresó a la espera con su antigüedad.'],
       baja_integracion: ['pend', 'El grupo dejó de estar confirmado', { texto: 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta.', pasos: [
         'Agregue personas hasta completar el mínimo.', 'Vuelva a confirmar el grupo.'] }],
@@ -81,17 +82,21 @@
 
     /* Datos del curso */
     const sede = APD.sede(datos).nombre;
+    // Las horas del curso (parámetros curso_hora_entrada y curso_hora_salida, P91): fijas, no se eligen (24/10/2026)
+    const horaEntrada = APD.hhmm(APD.parametroTexto(datos, 'curso_hora_entrada') || '09:00');
+    const horaSalida = APD.hhmm(APD.parametroTexto(datos, 'curso_hora_salida') || '15:00');
+    const hm = (t) => String(t).replace(/^0/, '');
     const pares = [];
     if (g.fecha_inicio) {
       // El último día es de examen o, en el curso de primera vez, de repaso de conocimientos y examen final; la salida es a
       // las 15:00 (sesión de trabajo del 23/10/2026, P91: parámetro curso_hora_salida)
       pares.push(['Primer día', fechaCorta(g.fecha_inicio)], [`Último día (${APD.diaFinal(x.c).toLowerCase()})`, fechaCorta(x.ultimo)],
-        ['Hora de entrada', APD.hhmm(g.hora_entrada)], ['Hora de salida', APD.parametroTexto(datos, 'curso_hora_salida') || '15:00'],
+        ['Hora de entrada', APD.hhmm(g.hora_entrada) || horaEntrada], ['Hora de salida', horaSalida],
         ['Instructor', P.nombreInstructor(g.instructor)],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);
       // Texto neutro: la fecha puede venir de «Guardar sin confirmar» o de un grupo que dejó de estar confirmado
       // (auditoría «intentar romperlo», F3 M7)
-      if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha, hora e instructor propuestos, todavía sin confirmar; se confirman abajo']);
+      if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha e instructor propuestos, todavía sin confirmar; se confirman abajo']);
     }
     if (g.estado === 'cancelado') pares.push(['Motivo de la cancelación', g.motivo_cancelacion || ''], ['Cancelado el', fechaCorta(g.estado_desde)]);
     $('[data-datos]').replaceChildren(pares.length ? APD.datosLista(pares) : '');
@@ -207,7 +212,8 @@
       const iso = () => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(fi.value)) || '';
       // La propuesta de un grupo que regresó a integración se ofrece de nuevo
       if (g.fecha_inicio && g.fecha_inicio >= minimo && g.fecha_inicio <= maximo) fi.value = fechaCorta(g.fecha_inicio);
-      if (g.hora_entrada) $('#hora_entrada').value = APD.hhmm(g.hora_entrada);
+      // El horario, como dato: la hora es fija (decisión de Liber del 24/10/2026)
+      $('[data-horario]').textContent = `Horario: de ${hm(horaEntrada)} a ${hm(horaSalida)}${c.dias_duracion > 1 ? ', de lunes a viernes' : ''}.`;
       if (g.instructor) $('#instructor').value = g.instructor;
       const ayudaFecha = () => {
         // De lunes a viernes (sesión de trabajo del 23/10/2026): el de 5 días empieza en lunes
@@ -233,7 +239,8 @@
           // se conserva.
           return P.guardaGrupoComprobado({
             antes: (d1) => P.razonNoConfirma(d1, deAhora(d1), d.fecha_inicio),
-            eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: d.fecha_inicio, hora_entrada: d.hora_entrada, instructor: d.instructor, por: P.REVISORA.usuario }),
+            // La hora de entrada es la del curso (parámetro), también para un grupo que no la tenía
+            eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: d.fecha_inicio, hora_entrada: horaEntrada, instructor: d.instructor, por: P.REVISORA.usuario }),
             comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'confirmado' ? null : P.razonNoConfirma(d2, deAhora(d2), d.fecha_inicio) || 'la base no lo confirmó')
           }).catch((e) => Promise.reject(e && e.motivo ? noSeHizo('No se confirmó el grupo', e.motivo) : e));
         },

@@ -9352,46 +9352,13 @@
  {
   "pantalla": "Grupos (personal)",
   "seccion": "Confirmar",
-  "tipo": "Pregunta",
-  "cuando": "Siempre",
-  "texto": "Hora de entrada",
-  "quien": "Personal de la Secretaría",
-  "donde": "Página (sitio/grupos.html)",
-  "obs": "",
-  "id": "T851"
- },
- {
-  "pantalla": "Grupos (personal)",
-  "seccion": "Confirmar",
-  "tipo": "Ayuda",
-  "cuando": "Siempre",
-  "texto": "El curso es de 9:00 a 15:00 todos sus días.",
-  "quien": "Personal de la Secretaría",
-  "donde": "Página (sitio/grupos.html)",
-  "obs": "",
-  "id": "T852"
- },
- {
-  "pantalla": "Grupos (personal)",
-  "seccion": "Confirmar",
-  "tipo": "Indicación de lista",
-  "cuando": "Siempre",
-  "texto": "Elija",
-  "quien": "Personal de la Secretaría",
-  "donde": "Página (sitio/grupos.html)",
-  "obs": "",
-  "id": "T853"
- },
- {
-  "pantalla": "Grupos (personal)",
-  "seccion": "Confirmar",
   "tipo": "Botón o enlace",
   "cuando": "Siempre",
   "texto": "Atrás",
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T854"
+  "id": "T851"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9402,7 +9369,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T855"
+  "id": "T852"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9413,7 +9380,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T856"
+  "id": "T853"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9424,7 +9391,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T857"
+  "id": "T854"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9435,7 +9402,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T858"
+  "id": "T855"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9446,18 +9413,18 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T859"
+  "id": "T856"
  },
  {
   "pantalla": "Grupos (personal)",
   "seccion": "Grupos programados",
   "tipo": "Ayuda",
   "cuando": "Siempre",
-  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas, hora de entrada e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
+  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T860"
+  "id": "T857"
  },
  {
   "pantalla": "Reposición de tu credencial",
@@ -9468,7 +9435,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/reposicion.js)",
   "obs": "",
-  "id": "T861"
+  "id": "T858"
  },
  {
   "pantalla": "Reposición de tu credencial",
@@ -9479,7 +9446,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/reposicion.js)",
   "obs": "",
-  "id": "T862"
+  "id": "T859"
  },
  {
   "pantalla": "Reposición de tu credencial",
@@ -9490,7 +9457,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/reposicion.js)",
   "obs": "",
-  "id": "T863"
+  "id": "T860"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9501,7 +9468,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T864"
+  "id": "T861"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9512,7 +9479,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T865"
+  "id": "T862"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9523,7 +9490,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T866"
+  "id": "T863"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9534,7 +9501,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T867"
+  "id": "T864"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9545,7 +9512,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T868"
+  "id": "T865"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9556,7 +9523,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T869"
+  "id": "T866"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9567,7 +9534,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T870"
+  "id": "T867"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9578,7 +9545,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T871"
+  "id": "T868"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9589,7 +9556,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T872"
+  "id": "T869"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9600,7 +9567,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T873"
+  "id": "T870"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9611,7 +9578,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T874"
+  "id": "T871"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9622,7 +9589,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T875"
+  "id": "T872"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9633,7 +9600,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T876"
+  "id": "T873"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9644,7 +9611,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T877"
+  "id": "T874"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9655,7 +9622,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T878"
+  "id": "T875"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9666,7 +9633,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T879"
+  "id": "T876"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9677,7 +9644,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T880"
+  "id": "T877"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9688,7 +9655,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T881"
+  "id": "T878"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9699,7 +9666,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T882"
+  "id": "T879"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9710,7 +9677,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T883"
+  "id": "T880"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9721,7 +9688,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T884"
+  "id": "T881"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9732,6 +9699,6 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T885"
+  "id": "T882"
  }
 ]

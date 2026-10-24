@@ -162,7 +162,9 @@
         </div>
       </section>
 
-      <!-- Paso 4 · confirmar: el resumen, el instructor y la hora; «Crear el grupo» -->
+      <!-- Paso 4 · confirmar: el resumen (con el horario, que es fijo) y el instructor; «Crear el grupo». La hora de entrada
+           no se elige: el curso es de 9:00 a 15:00 (parámetros curso_hora_entrada y curso_hora_salida; decisión de Liber del
+           24/10/2026) y el grupo la toma del parámetro al guardarse. -->
       <section class="tarjeta arm-paso" data-paso data-titulo="Confirmar" id="paso-confirmar" hidden>
         <h4 class="titulo-paso" data-titulo-confirmar>Revise y confirme</h4>
         <div data-resumen></div>
@@ -177,16 +179,6 @@
                 <option value="">Por asignar</option>
                 <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
                 <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
-            </select></div>
-          </div>
-          <div class="campo" data-campo="hora_entrada" data-formato="hora" data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
-            <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
-            <p class="ayuda" id="ay-hora-entrada">El curso es de 9:00 a 15:00 todos sus días.</p>
-            <!-- Lista cerrada de 24 horas, la misma de la ficha del grupo (Liber, 2026-10-17). Sesión de trabajo del 23/10/2026
-                 (P91): el curso es de 9:00 a 15:00, así que la entrada es a las 09:00. autocomplete off: la elige quien arma el grupo. -->
-            <div class="select control-corto"><select class="control control-select" id="hora_entrada" name="hora_entrada" autocomplete="off" aria-describedby="ay-hora-entrada">
-                <option value="">Elija</option>
-                <option value="09:00">09:00</option>
             </select></div>
           </div>
         </div>
@@ -215,7 +207,7 @@
       <div class="plegable-cuerpo"><ul class="plan-terminados-lista" data-terminados-lista></ul></div>
     </details>
   </section>
-  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas, hora de entrada e instructor, y recibe hasta <span data-cupo-max>25</span>. <span class="pendiente">Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.</span></p>
+  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas e instructor, y recibe hasta <span data-cupo-max>25</span>. <span class="pendiente">Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.</span></p>
 </main>
 
 <footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>

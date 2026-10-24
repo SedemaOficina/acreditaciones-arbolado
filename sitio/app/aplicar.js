@@ -108,6 +108,17 @@
       ['Lugar', G.LUGAR],
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
     ]), ...avisosGrupo);
+    /* Primero el pase de lista, que es la asistencia del último día (reporte de Liber del 24/10/2026): su título dice qué
+       día del curso es («Día 5 de 5 · Pase de lista en el salón de cómputo») y el texto, que esa lista es la asistencia de
+       ese día; si hoy no hay que pasar lista, lo dice. Después, el examen. */
+    const ultimo = c.dias_duracion;
+    const deUltimo = ultimo > 1 ? `del día ${ultimo}, «${APD.diaFinal(c)}», del ${APD.fechaLarga(G.fechaExamen(datos, g))}` : `del día del curso (curso y examen, ${APD.fechaLarga(G.fechaExamen(datos, g))})`;
+    const como = 'Compare a cada persona con su fotografía y con su identificación oficial, y márquela «Presente» o «No llegó»: a quien está presente se le cuenta el día y aparece su código.';
+    $('[data-titulo-lista]').textContent = `Día ${ultimo} de ${ultimo} · Pase de lista en el salón de cómputo`;
+    $('[data-lista-texto]').textContent = !prueba && fueraDeDia
+      ? `Hoy no hay que pasar lista: ${ultimo > 1 ? `el día ${ultimo} de este grupo, «${APD.diaFinal(c)}», es el` : 'el curso y examen de este grupo es el'} ${APD.fechaLarga(G.fechaExamen(datos, g))}. Ese día, esta lista es su asistencia.`
+      : !prueba && conHuecos ? `Primero capture en «Asistencia» los días del curso que faltan; después pase lista aquí: esta lista es la asistencia ${deUltimo}.`
+        : `Esta lista es la asistencia ${deUltimo}. ${como}${fueraDeDia ? ' Versión de prueba: hoy no es ese día, pero puede pasar lista para probar.' : ''}`;
     // Fuera del sistema de prueba no se pasa lista otro día ni con días sin capturar
     if (!prueba && (fueraDeDia || conHuecos)) { $('[data-tabla]').hidden = true; $('[data-imprimir]').hidden = true; }
     const filas = G.personas(datos, g);

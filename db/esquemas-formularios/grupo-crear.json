@@ -1,6 +1,6 @@
 {
   "formulario": "grupo-crear.html",
-  "generado": "2026-10-24T15:19:42.529Z",
+  "generado": "2026-10-24T17:19:31.621Z",
   "campos": {
     "curso": {
       "etiqueta": "Curso",
@@ -52,19 +52,6 @@
       "opciones": [
         "instructor.ficticio",
         "instructor2.ficticio"
-      ],
-      "autocomplete": "off"
-    },
-    "hora_entrada": {
-      "etiqueta": "Hora de entrada",
-      "tipo": "select",
-      "requerido": false,
-      "formato": "hora",
-      "sensible": false,
-      "uso": "Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).",
-      "atributos": {},
-      "opciones": [
-        "09:00"
       ],
       "autocomplete": "off"
     }

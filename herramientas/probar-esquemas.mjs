@@ -61,8 +61,8 @@ for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.htm
 // base revisa además cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
 // Crear un grupo (bloque 74): desde el 24/10/2026, el paso a paso de «Grupos» (grupos.html, formulario «armar»; antes
 // «Programar un curso», programar.html, formulario «programar»): el curso (paso 1, de la lista de los cuatro), el primer
-// día (paso 2, de la semana elegida), el tipo de grupo (paso 3) y la hora y el instructor (paso 4), que son obligatorios
-// sólo para confirmar (la API y la base lo exigen: datos_para_confirmar; «Por asignar» deja el instructor vacío, P92).
+// día (paso 2, de la semana elegida), el tipo de grupo (paso 3) y el instructor (paso 4), obligatorio sólo para
+// confirmar; la hora de entrada no se elige: la API la toma del parámetro curso_hora_entrada (24/10/2026) (la API y la base lo exigen: datos_para_confirmar; «Por asignar» deja el instructor vacío, P92).
 // Elegir a las personas es una acción sobre una lista (apd.inscripcion_alta). Programar un grupo que ya existe usa
 // grupo-confirmar.
 // Material de estudio del personal (auditoría 2026-10-18, A 8.7): un solo formulario para agregar, editar y reemplazar;
@@ -360,13 +360,15 @@ caso('Grupo: armar un grupo sin curso, tipo de grupo ni primer día se rechaza',
 caso('Grupo: armar un grupo combinado con su curso y su primer día se acepta (por confirmar)', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026' }, true);
 caso('Grupo: otra integración se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'mixto', fecha_inicio: '02/11/2026' }, ['integracion']);
 caso('Grupo: un curso fuera de los cuatro se rechaza', 'grupo-crear', { curso: 'poda-intensivo', integracion: 'combinado', fecha_inicio: '02/11/2026' }, ['curso']);
-caso('Grupo: armar con hora e instructor de la lista se acepta (crear y confirmar)', 'grupo-crear', { curso: 'dictaminador-renovacion', integracion: 'especifico', fecha_inicio: '02/11/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' }, true);
-caso('Grupo: armar con una hora fuera de la lista se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', hora_entrada: '09:15' }, ['hora_entrada']);
+// La hora de entrada no se elige (decisión de Liber del 24/10/2026): el curso es de 9:00 a 15:00 y la API la toma del
+// parámetro curso_hora_entrada; el formulario ya no la manda, y si llega se rechaza como campo no declarado
+caso('Grupo: armar con instructor de la lista se acepta (crear y confirmar)', 'grupo-crear', { curso: 'dictaminador-renovacion', integracion: 'especifico', fecha_inicio: '02/11/2026', instructor: 'instructor.ficticio' }, true);
+caso('Grupo: armar enviando una hora de entrada se rechaza (la hora es la del curso)', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', hora_entrada: '09:00' }, ['hora_entrada']);
 caso('Grupo: armar con un instructor fuera de la lista se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', instructor: 'otra.persona' }, ['instructor']);
-const confirma = { fecha_inicio: '26/10/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' };
-caso('Grupo: confirmar con primer día, hora e instructor se acepta', 'grupo-confirmar', confirma, true);
-caso('Grupo: confirmar sin hora de entrada ni instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '26/10/2026' }, ['hora_entrada', 'instructor']);
-caso('Grupo: una hora de entrada fuera de la lista se rechaza', 'grupo-confirmar', { ...confirma, hora_entrada: '09:15' }, ['hora_entrada']);
+const confirma = { fecha_inicio: '26/10/2026', instructor: 'instructor.ficticio' };
+caso('Grupo: confirmar con primer día e instructor se acepta', 'grupo-confirmar', confirma, true);
+caso('Grupo: confirmar sin instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '26/10/2026' }, ['instructor']);
+caso('Grupo: confirmar enviando una hora de entrada se rechaza (la hora es la del curso)', 'grupo-confirmar', { ...confirma, hora_entrada: '09:00' }, ['hora_entrada']);
 caso('Grupo: dar de baja sin motivo se rechaza', 'grupo-baja', {}, ['motivo']);
 caso('Grupo: dar de baja con motivo se acepta', 'grupo-baja', { motivo: 'Pidió cambiar de fecha por trabajo.' }, true);
 caso('Grupo: cancelar sin motivo se rechaza', 'grupo-cancelar', {}, ['motivo']);
