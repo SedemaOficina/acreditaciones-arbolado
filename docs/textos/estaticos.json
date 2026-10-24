@@ -3712,32 +3712,6 @@
  {
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
-  "tipo": "Pregunta",
-  "texto": "Hora de entrada",
-  "cuando": "Siempre",
-  "seccion": "Confirmar",
-  "origen": ""
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Ayuda",
-  "texto": "El curso es de 9:00 a 15:00 todos sus días.",
-  "cuando": "Siempre",
-  "seccion": "Confirmar",
-  "origen": ""
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Indicación de lista",
-  "texto": "Elija",
-  "cuando": "Siempre",
-  "seccion": "Confirmar"
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
   "tipo": "Botón o enlace",
   "texto": "Atrás",
   "cuando": "Siempre",
@@ -3793,7 +3767,7 @@
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
   "tipo": "Ayuda",
-  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas, hora de entrada e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
+  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
   "cuando": "Siempre",
   "seccion": "Grupos programados",
   "origen": ""

@@ -1521,7 +1521,7 @@ async function personal(navegador, ancho, alto, sufijo) {
    Planeador: los cuatro cursos con aria-pressed y el curso en la dirección, el nombre calculado de cada grupo, las
    semanas; agregar a un grupo desde la espera, «Completar con las N que más esperan» y confirmar ahí mismo. Desde la
    ficha del grupo (espera.html ahora lleva a Grupos con ?grupo=) se completa el grupo sin fecha, se confirma (fecha a 7
-   días, hora de entrada de la lista, instructor) y se da de baja a una persona (regresa a integración con su fecha); un
+   días e instructor; la hora, la del curso) y se da de baja a una persona (regresa a integración con su fecha); un
    grupo de renovación programado sin confirmar se cancela; la persona ve su grupo en «Mis trámites». El instructor
    captura un día de asistencia. */
 async function caminosGrupos(navegador, ancho, alto, sufijo) {
@@ -1636,7 +1636,6 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   // Día/mes/año: el primer día del curso usa el formato «fecha-dma» del estándar (D9)
   const fechaMas = (n) => { const d = new Date(`${datos.fecha_corte}T12:00:00-06:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10).split('-').reverse().join('/'); };
   await pg.fill('#fecha_inicio', fechaMas(3));
-  await pg.selectOption('#hora_entrada', '09:00');
   await pg.selectOption('#instructor', 'instructor.ficticio');
   await pg.click('#confirmar [data-accion="enviar"]');
   await pg.waitForTimeout(300);
@@ -1650,7 +1649,9 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await pg.click('#confirmar [data-accion="enviar"]');
   await llega1;
   await pg.waitForSelector('[data-situacion] .estado');
-  comprueba(/Confirmado/.test(await texto('[data-situacion]')) && /09:00/.test(await texto('[data-datos]')), t('el grupo queda confirmado con su hora de entrada'));
+  // La hora no se elige (decisión del 24/10/2026): el grupo, que no tenía, toma la del parámetro curso_hora_entrada
+  const horaGuardada = await pg.evaluate(() => APD.cargar().then((d) => APD.hhmm(d.grupo.find((g) => g.folio === 'APD-G-2026-004').hora_entrada)));
+  comprueba(/Confirmado/.test(await texto('[data-situacion]')) && /09:00/.test(await texto('[data-datos]')) && horaGuardada === '09:00', t(`el grupo queda confirmado con su hora de entrada, la del curso (${horaGuardada})`));
   await sinDesborde(pg, t('grupo confirmado'));
   await captura(pg, `grupos-confirmado-${sufijo}`);
 
@@ -1938,8 +1939,8 @@ async function grupoPasoAPaso(navegador, ancho, alto, sufijo) {
 
   // ── Paso 4: resumen, instructor (con «Por asignar») y «Crear el grupo» ──
   const resumen = await texto('[data-resumen]');
-  comprueba(/Curso\s*Poda y derribo · nueva/.test(resumen) && /Semana\s*Del lunes/.test(resumen) && /De 9:00 a 15:00, los 5 días/.test(resumen) && /Examen final\s*El viernes/.test(resumen) && /Personas\s*5 de 25/.test(resumen)
-    && (await pg.$$eval('#instructor option', (l) => l[0].value === '' && l[0].textContent === 'Por asignar')), t('paso 4: el resumen dice curso, semana, horario, examen y personas; el instructor puede quedar «Por asignar»'));
+  comprueba(/Curso\s*Poda y derribo · nueva/.test(resumen) && /Semana\s*Del lunes/.test(resumen) && /Horario\s*De 9:00 a 15:00, de lunes a viernes/.test(resumen) && await pg.locator('#hora_entrada').count() === 0 && /Examen final\s*El viernes/.test(resumen) && /Personas\s*5 de 25/.test(resumen)
+    && (await pg.$$eval('#instructor option', (l) => l[0].value === '' && l[0].textContent === 'Por asignar')), t('paso 4: el resumen dice curso, semana, horario (fijo, sin menú de hora), examen y personas; el instructor puede quedar «Por asignar»'));
   await pg.selectOption('#instructor', '');
   comprueba(/Se crea por confirmar/.test(await texto('[data-queda]')) && /el instructor/.test(await texto('[data-queda]')) && /Por asignar/.test(await texto('[data-ayuda-instructor]')), t('paso 4: con «Por asignar» el grupo se crea por confirmar y lo dice antes (P92)'));
   await pg.selectOption('#instructor', 'instructor2.ficticio');
@@ -1954,10 +1955,10 @@ async function grupoPasoAPaso(navegador, ancho, alto, sufijo) {
 
   // ── Completar uno que ya existe desde la tabla: «Completar con la que más espera» y, para darle semana, el paso 2 ──
   const fila4 = '[data-programados] tr[data-grupo="APD-G-2026-004"]';
-  comprueba(/Sin semana/.test(await texto(fila4)) && /Semana, 1 persona, hora e instructor/.test(await texto(fila4)), t(`la tabla dice la situación («Sin semana») y lo que le falta al grupo («${await texto(fila4)}»)`));
+  comprueba(/Sin semana/.test(await texto(fila4)) && /Semana, 1 persona e instructor/.test(await texto(fila4)) && !/hora/i.test(await texto(fila4)), t(`la tabla dice la situación («Sin semana») y lo que le falta al grupo («${await texto(fila4)}»)`));
   await Promise.all([pg.waitForNavigation(), pg.click(`${fila4} button:has-text("Completar con la que más espera")`)]);
   await pg.waitForSelector('[data-hecho]:not(.pasos-btn) .aviso');
-  comprueba(/Se agregó 1 persona a «Poda nueva · sin fecha · APD-G-2026-004»/.test(await texto('[data-hecho]:not(.pasos-btn)')) && /5 de 25/.test(await texto(fila4)) && /Semana, hora e instructor/.test(await texto(fila4)),
+  comprueba(/Se agregó 1 persona a «Poda nueva · sin fecha · APD-G-2026-004»/.test(await texto('[data-hecho]:not(.pasos-btn)')) && /5 de 25/.test(await texto(fila4)) && /Semana e instructor/.test(await texto(fila4)),
     t(`«Completar con la que más espera» la agrega, lo dice y la fila queda con lo que le falta («${await texto('[data-hecho]:not(.pasos-btn)')}» · «${await texto(fila4)}»)`));
   await Promise.all([pg.waitForNavigation(), pg.click(`${fila4} a:has-text("Elegir semana")`)]);
   await listoGrupos(pg);
@@ -1967,10 +1968,12 @@ async function grupoPasoAPaso(navegador, ancho, alto, sufijo) {
   await siguientePaso(pg);
   await siguientePaso(pg);
   await pg.selectOption('#instructor', 'instructor.ficticio');
-  comprueba(/Queda confirmado/.test(await texto('[data-queda]')) && (await texto('[data-armar="crear"]')) === 'Confirmar el grupo', t('paso 4 del grupo que ya existe: con semana, 5 personas, hora e instructor, «Confirmar el grupo»'));
+  comprueba(/Queda confirmado/.test(await texto('[data-queda]')) && (await texto('[data-armar="crear"]')) === 'Confirmar el grupo', t('paso 4 del grupo que ya existe: con semana, 5 personas e instructor, «Confirmar el grupo»'));
   await Promise.all([pg.waitForURL(/grupo\.html\?folio=APD-G-2026-004/), pg.click('[data-armar="crear"]')]);
   await pg.waitForSelector('[data-hecho]:not(.pasos-btn) .aviso');
-  comprueba(/Grupo confirmado/.test(await texto('[data-hecho]:not(.pasos-btn)')) && /del 30 de noviembre al 4 de diciembre/.test(await texto('#t-grupo .grupo-nombre')), t('el grupo que ya existía queda confirmado en su semana, en su ficha'));
+  const hora004 = await pg.evaluate(() => APD.cargar().then((d) => APD.hhmm(d.grupo.find((g) => g.folio === 'APD-G-2026-004').hora_entrada)));
+  comprueba(/Grupo confirmado/.test(await texto('[data-hecho]:not(.pasos-btn)')) && /del 30 de noviembre al 4 de diciembre/.test(await texto('#t-grupo .grupo-nombre')) && hora004 === '09:00',
+    t(`el grupo que ya existía (sin hora) queda confirmado en su semana, en su ficha, con la hora del curso (${hora004})`));
   comprueba(!errores.length, t(`sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
   await c.close();
 
@@ -2107,15 +2110,16 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
   await siguientePaso(pg);
   comprueba(/Se crea por confirmar/.test(await texto('[data-queda]')) && /3 personas más/.test(await texto('[data-queda]')) && /del 16 al 20 de noviembre/.test(await texto('[data-resumen]')),
     t('paso 4 con 2 personas: el resumen lleva el nombre calculado y dice que se crearía por confirmar, con cuántas faltan'));
-  // Paso 4: instructor propuesto (libre esas fechas) y hora de entrada
+  // Paso 4: instructor propuesto (libre esas fechas); la hora no se elige: el horario va en el resumen (24/10/2026)
   comprueba(/libre esas fechas/.test(await pg.$eval('#instructor', (s) => s.selectedOptions[0].textContent)), t('paso 4: el instructor propuesto está libre esas fechas'));
+  comprueba(await pg.locator('#hora_entrada').count() === 0 && /Horario\s*De 9:00 a 15:00, de lunes a viernes/.test(await texto('[data-resumen]')), t('paso 4: sin menú de hora; el resumen dice «Horario: de 9:00 a 15:00, de lunes a viernes»'));
   await sinDesborde(pg, t('grupos, paso 4'));
   await captura(pg, `programar-error-${sufijo}`);
   await pg.click('#paso-confirmar [data-accion="atras"]');
   await pg.waitForFunction(() => FormKit.pasos.actual() === 2);
   await soloA(pg, cinco);
   await siguientePaso(pg);
-  comprueba(/Se crea confirmado/.test(await texto('[data-queda]')) && (await texto('[data-armar="crear"]')) === 'Crear el grupo' && await pg.isVisible('[data-armar="sin-confirmar"]'), t('con 5 personas, instructor y hora: «Se crea confirmado», con «Crear sin confirmar» aparte'));
+  comprueba(/Se crea confirmado/.test(await texto('[data-queda]')) && (await texto('[data-armar="crear"]')) === 'Crear el grupo' && await pg.isVisible('[data-armar="sin-confirmar"]'), t('con 5 personas e instructor: «Se crea confirmado», con «Crear sin confirmar» aparte'));
   await Promise.all([pg.waitForNavigation(), pg.click('[data-armar="crear"]')]);
   await pg.waitForSelector('[data-hecho]:not(.pasos-btn) .aviso');
   comprueba(/Grupo creado y confirmado: Poda nueva · del 16 al 20 de noviembre/.test(await texto('[data-hecho]:not(.pasos-btn)')) && /APD-G-2026-007 · 5 personas · entrada a las 09:00/.test(await texto('[data-hecho]:not(.pasos-btn)'))
@@ -3291,7 +3295,6 @@ async function romperDos(navegador) {
     await Promise.all([fb.waitForNavigation(), fb.click('#baja [data-accion="enviar"]')]);
     // Un lunes (desde la sesión del 23/10 el curso de cinco días empieza en lunes, P151)
     await fa.fill('#fecha_inicio', '02/11/2026');
-    await fa.selectOption('#hora_entrada', '09:00');
     await fa.selectOption('#instructor', 'instructor.ficticio');
     await fa.click('#confirmar [data-accion="enviar"]');
     await fa.waitForSelector('#confirmar [data-estado-envio]:not([hidden])', { timeout: 8000 }).catch(() => null);
@@ -3744,7 +3747,6 @@ async function fechas(navegador) {
   // (lo que se probaba al pegar en «Programar», que ya no tiene campo para escribir: la ficha del grupo lo conserva)
   comprueba(await pega(pg, '#fecha_inicio', ' 2026-11-09 ') === '09/11/2026', t('grupo: pegar « 2026-11-09 » deja 09/11/2026'));
   comprueba(await inserta(pg, '#fecha_inicio', '2026-11-02') === '02/11/2026', t('grupo: «2026-11-02» insertado de golpe deja 02/11/2026'));
-  await pg.selectOption('#hora_entrada', '09:00');
   await pg.selectOption('#instructor', 'instructor2.ficticio');
   await pg.click('#confirmar [data-accion="enviar"]');
   await pg.waitForURL(/hecho=confirmado|folio=APD-G-2026-004$/);
@@ -4208,12 +4210,14 @@ async function limpieza(navegador) {
     await pg.goto(BASE + url);
     await pg.waitForSelector(sel, { state: 'attached' });
     // «Grupos» agrega al nombre del instructor si está libre esas fechas: se comparan los valores
-    listas.push(JSON.stringify(await pg.evaluate(() => ['#instructor', '#hora_entrada'].map((s) => [...document.querySelectorAll(`${s} option`)].map((o) => o.value)))));
+    listas.push(JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('#instructor option')].map((o) => o.value))));
   }
+  // La hora del curso es fija (decisión de Liber del 24/10/2026): la ficha de un grupo por confirmar la dice como dato
+  const horario = await pg.textContent('[data-horario]');
+  comprueba(horario === 'Horario: de 9:00 a 15:00, de lunes a viernes.' && await pg.locator('#hora_entrada').count() === 0, t(`ficha del grupo: sin menú de hora y con el horario como dato («${horario}»)`));
   const nombresIguales = await pg.$$eval('#instructor option', (l) => l.filter((o) => o.value).every((o) => APD_PERSONAL.nombreInstructor(o.value) === o.textContent) && l.length > 1);
-  // La entrada del curso es a las 09:00 (de 9:00 a 15:00, sesión de trabajo del 23/10/2026)
-  comprueba(listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && /\["","09:00"\]/.test(listas[0]) && nombresIguales,
-    t('horas de entrada e instructores: la misma lista en la ficha del grupo y en «Grupos», con los instructores de APD_PERSONAL'));
+  comprueba(listas[0] === listas[1] && /instructor2\.ficticio/.test(listas[0]) && nombresIguales,
+    t('instructores: la misma lista en la ficha del grupo y en «Grupos», con los instructores de APD_PERSONAL'));
   comprueba(!/const MESES = \[/.test(leer('sitio/app/grupos.js')) && !/const MESES = \[/.test(leer('sitio/app/programar.js')) && !/nombreCurso/.test(fuentes), t('sin copias de MESES ni de nombreCurso (APD.MESES, APD.cursoLargo)'));
   await c.close();
   await estandarAlDia();
@@ -6468,8 +6472,8 @@ async function sesion23(navegador) {
     }
     for (const pagina of ['grupo.html', 'grupos.html']) {
       const h = await (await fetch(BASE + pagina)).text();
-      const horas = [...h.slice(h.indexOf('id="hora_entrada"')).split('</select>')[0].matchAll(/<option value="(\d\d:\d\d)">/g)].map((m) => m[1]);
-      comprueba(horas.join(' ') === '09:00' && /El curso es de 9:00 a 15:00/.test(h), t(`P91: en ${pagina} la entrada del grupo es a las 09:00 y la ayuda dice «de 9:00 a 15:00»`));
+      // La hora del curso es fija (decisión de Liber del 24/10/2026): ningún menú para elegirla
+      comprueba(!/id="hora_entrada"/.test(h), t(`P91: en ${pagina} no hay menú de hora de entrada (el curso es de 9:00 a 15:00)`));
     }
     const ins = datos.solicitud.find((x) => x.estado === 'inscrita' && datos.inscripcion.some((i) => i.solicitud_id === x.id && i.activa && (datos.grupo.find((g) => g.id === i.grupo_id) || {}).folio === 'APD-G-2026-003'));
     const persona = datos.solicitante.find((p) => p.id === ins.solicitante_id);

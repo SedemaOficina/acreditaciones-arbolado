@@ -1,6 +1,6 @@
 {
   "formulario": "grupo-confirmar.html",
-  "generado": "2026-10-24T03:39:28.071Z",
+  "generado": "2026-10-24T17:19:31.662Z",
   "campos": {
     "fecha_inicio": {
       "etiqueta": "Primer día del curso",
@@ -12,19 +12,6 @@
       "atributos": {
         "maxlength": "14"
       },
-      "autocomplete": "off"
-    },
-    "hora_entrada": {
-      "etiqueta": "Hora de entrada",
-      "tipo": "select",
-      "requerido": true,
-      "formato": "hora",
-      "sensible": false,
-      "uso": "Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).",
-      "atributos": {},
-      "opciones": [
-        "09:00"
-      ],
       "autocomplete": "off"
     },
     "instructor": {

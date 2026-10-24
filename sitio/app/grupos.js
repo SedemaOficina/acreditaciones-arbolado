@@ -14,8 +14,10 @@
      3. Quiénes van: la espera del curso con las que más esperan ya marcadas hasta el cupo (P.lasQueMasEsperan: prioridad
         desde 15 días, renovación por vencimiento con vencidas primero, bloques sólo de gobierno local y federal); las
         propuestas a la vista y el resto plegado (C3-01, decisión del 20/10).
-     4. Confirmar: el resumen, el instructor («Por asignar» mientras P92) y la hora; «Crear el grupo» lo crea confirmado si
-        tiene todo (mínimo de personas, semana a tiempo, hora e instructor) y, si no, por confirmar, y lo dice antes.
+     4. Confirmar: el resumen (con el horario, fijo: la hora de entrada no se elige y el grupo la toma del parámetro
+        curso_hora_entrada; decisión de Liber del 24/10/2026) y el instructor («Por asignar» mientras P92); «Crear el grupo»
+        lo crea confirmado si tiene todo (mínimo de personas, semana a tiempo e instructor) y, si no, por confirmar, y lo dice
+        antes.
    Grupos programados: una tabla por curso (folio con enlace a su ficha, semana, personas, situación y lo que falta) con
    «Completar con las N que más esperan», «Confirmar el grupo», «Elegir semana» o «Cambiar la semana» (abre el paso 2 con
    ese grupo) y «Agregar personas» (paso 3); «Grupos que ya terminaron», plegado.
@@ -48,7 +50,7 @@
   const ACTIVOS = ['en_integracion', 'confirmado', 'en_curso'];
   // El calendario va de este mes a tres más (decisión del 24/10/2026)
   const MESES_ADELANTE = 3;
-  // «a, b y c»; «e» antes de «i» o «hi» («hora e instructor»)
+  // «a, b y c»; «e» antes de «i» o «hi» («1 persona e instructor»)
   const y = (lista) => {
     if (lista.length < 2) return lista[0] || '';
     const ultimo = lista[lista.length - 1];
@@ -553,9 +555,7 @@
 
     /* ----- Paso 4 · confirmar ----- */
     const selInstructor = $('#instructor');
-    const selHora = $('#hora_entrada');
     if (gExistente && gExistente.instructor) selInstructor.value = gExistente.instructor;
-    selHora.value = gExistente && gExistente.hora_entrada ? APD.hhmm(gExistente.hora_entrada) : APD.hhmm(horaEntrada);
     // La propuesta: el primer instructor libre esas fechas (la asignación sigue pendiente, P92: «Por asignar» es válido)
     function proponInstructor() {
       if (gExistente && gExistente.instructor) return;
@@ -563,10 +563,9 @@
       selInstructor.value = libre ? libre.value : '';
     }
     proponInstructor();
-    for (const s of [selInstructor, selHora]) s.toggleAttribute('data-vacio', !s.value);
+    selInstructor.toggleAttribute('data-vacio', !selInstructor.value);
     let instructorTocado = Boolean(gExistente && gExistente.instructor);
     selInstructor.addEventListener('change', (e) => { if (e.isTrusted) { instructorTocado = true; sinGuardar = true; } pintaInstructores(); pintaResumen(); });
-    selHora.addEventListener('change', (e) => { if (e.isTrusted) sinGuardar = true; pintaResumen(); });
     function pintaInstructores() {
       const fin = inicio ? finDe(inicio) : null;
       for (const o of selInstructor.options) {
@@ -595,7 +594,6 @@
       else if (razon(inicio)) falta.push('otra semana');
       if (n < cc.cupo_minimo) falta.push(cc.cupo_minimo - n === 1 ? '1 persona más' : `${cc.cupo_minimo - n} personas más`);
       if (!selInstructor.value) falta.push('el instructor');
-      if (!selHora.value) falta.push('la hora de entrada');
       return falta;
     }
     function pintaResumen() {
@@ -610,7 +608,8 @@
         ['Grupo', titulo],
         ['Curso', APD.cursoLargo(...curso())],
         ['Semana', inicio ? (dur() > 1 ? `Del ${fechaLarga(inicio)} al ${fechaLarga(fin)}` : `El ${fechaLarga(inicio)}`) : 'Sin elegir'],
-        ['Horario', `De ${hm(horaEntrada)} a ${hm(horaSalida)}${dur() > 1 ? `, los ${dur()} días` : ''}`],
+        // La hora es fija (decisión de Liber del 24/10/2026): se muestra como dato, no se elige
+        ['Horario', `De ${hm(horaEntrada)} a ${hm(horaSalida)}${dur() > 1 ? ', de lunes a viernes' : ''}`],
         ['Lugar del curso', `Aula de capacitación del ${sede}`],
         [APD.diaFinal(cc) === 'Examen' ? 'Examen' : 'Examen final', inicio ? `El ${fechaLarga(fin)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
         ['Personas', `${n} de ${cc.cupo_maximo}${xG && elegidas().length ? ` (${plural(elegidas().length, 'nueva', 'nuevas')})` : ''}${n > cc.cupo_maximo ? ` · sobran ${n - cc.cupo_maximo}` : ''}`],
@@ -766,7 +765,8 @@
           consecuencias: [`Ya tiene el grupo ${suyo.g.folio}, con ${suyo.n} de ${suyo.g.cupo_maximo}, que recibe personas.`,
             `Con dos grupos de la misma organización, ninguno llega al mínimo. Para agregarlas a ese grupo, elija «No» y use «Agregarlas a ${suyo.g.folio}» en el paso 3.`],
           si: 'Sí, crear otro grupo', no: 'No' });
-        return sigue.then((si) => (si ? guarda({ ini, hora: d.hora_entrada || null, instructor: d.instructor || null, confirmar, tipoGrupo: integracion() }) : { rechazado: true }))
+        // La hora de entrada es la del curso (parámetro curso_hora_entrada; decisión de Liber del 24/10/2026)
+        return sigue.then((si) => (si ? guarda({ ini, hora: APD.hhmm(horaEntrada), instructor: d.instructor || null, confirmar, tipoGrupo: integracion() }) : { rechazado: true }))
           .finally(() => { if (libera) libera(); });
       },
       alEnviar(r) { if (r && r.rechazado) return; termina(r); },
@@ -922,7 +922,6 @@
       if (integra || pasada) {
         if (!g.fecha_inicio) falta.push('semana'); else if (pasada) falta.push('otra semana');
         if (faltaMin > 0) falta.push(faltaMin === 1 ? '1 persona' : `${faltaMin} personas`);
-        if (!g.hora_entrada) falta.push('hora');
         if (!g.instructor) falta.push('instructor');
       }
       const textoFalta = !integra && !pasada ? '—' : falta.length ? mayus(y(falta)) : 'Confirmarlo';
@@ -1002,17 +1001,17 @@
     function irConAviso(hecho, folio, n, no, k) {
       location.href = `grupos.html?curso=${k || clave || ''}&hecho=${hecho}&a=${encodeURIComponent(folio)}${n ? `&n=${n}` : ''}${no && no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
     }
-    /* «Confirmar el grupo»: si ya tiene fecha (a tiempo), hora e instructor, se confirma aquí con su confirmación; si le
+    /* «Confirmar el grupo»: si ya tiene fecha (a tiempo) e instructor, se confirma aquí con su confirmación; si le
        falta algo, lleva a su ficha, donde se completa */
     function botonConfirmar(x, k) {
       const { g } = x;
-      const listo = g.fecha_inicio && g.fecha_inicio >= minimo && g.hora_entrada && g.instructor && !P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, g.fecha_inicio, g.id);
+      const listo = g.fecha_inicio && g.fecha_inicio >= minimo && g.instructor && !P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, g.fecha_inicio, g.id);
       const nombre = `${x.calculado} · ${g.folio}`;
       if (!listo) return el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}#t-confirmar`, 'aria-label': `Confirmar el grupo: ${nombre}`, texto: 'Confirmar el grupo' });
       const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'aria-label': `Confirmar el grupo: ${nombre}`, texto: 'Confirmar el grupo' });
       b.addEventListener('click', () => {
         FormKit.confirma(b, { titulo: `¿Confirmar «${x.calculado}»?`,
-          consecuencias: [`${plural(x.n, 'persona', 'personas')}, entrada a las ${APD.hhmm(g.hora_entrada)}, con ${P.nombreInstructor(g.instructor)}.`,
+          consecuencias: [`${plural(x.n, 'persona', 'personas')}, de ${hm(horaEntrada)} a ${hm(horaSalida)}, con ${P.nombreInstructor(g.instructor)}.`,
             'Cada persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
             `Sigue recibiendo personas hasta el ${fechaCorta(APD.sumaDias(g.fecha_inicio, -1))}, sin pasar de ${g.cupo_maximo}.`],
           si: 'Sí, confirmar el grupo' })
@@ -1024,7 +1023,8 @@
             const deAhora = (d) => d.grupo.find((z) => z.id === g.id);
             P.guardaGrupoComprobado({
               antes: (d1) => P.razonNoConfirma(d1, deAhora(d1), g.fecha_inicio),
-              eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: g.fecha_inicio, hora_entrada: APD.hhmm(g.hora_entrada), instructor: g.instructor, por: P.REVISORA.usuario }),
+              // La hora de entrada es la del curso, también para un grupo que no la tenía (decisión de Liber del 24/10/2026)
+              eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: g.fecha_inicio, hora_entrada: APD.hhmm(horaEntrada), instructor: g.instructor, por: P.REVISORA.usuario }),
               comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'confirmado' ? null : P.razonNoConfirma(d2, deAhora(d2), g.fecha_inicio) || 'la base no lo confirmó')
             })
               .then(() => irConAviso('confirmado', g.folio, 0, null, k))
@@ -1058,7 +1058,7 @@
             `A partir del ${fechaLarga(g.fecha_inicio)}, el instructor pasa asistencia cada día y aplica el examen el último, en el PILARES.`);
         } else {
           if (falta > 0) sigue.push(`Complete al menos ${g.cupo_minimo} personas (${falta === 1 ? 'falta 1' : `faltan ${falta}`}).`);
-          if (!g.hora_entrada || !g.instructor) sigue.push('Elija el instructor y la hora de entrada.');
+          if (!g.instructor) sigue.push('Elija el instructor.');
           sigue.push(`Confírmelo aquí, en «Grupos programados», o en su ficha; el curso empieza al menos ${anticipacion} días después de confirmarlo.`);
         }
         aviso = { tono: quedo && !no.length ? 'ok' : 'advertencia', titulo: `${quedo ? 'Grupo creado y confirmado' : 'Grupo creado, por confirmar'}: ${x.calculado}`,

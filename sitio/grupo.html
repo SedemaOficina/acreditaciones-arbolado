@@ -78,7 +78,8 @@
     <div class="acciones-grupo" data-acciones></div>
   </section>
 
-  <!-- Confirmar: sólo con el mínimo de personas; la base exige 7 días de anticipación, fecha, hora e instructor -->
+  <!-- Confirmar: sólo con el mínimo de personas; la base exige 7 días de anticipación, fecha, hora e instructor (la hora,
+       la del curso: no se elige) -->
   <section class="tarjeta" aria-labelledby="t-confirmar" data-confirmar hidden>
     <h2 class="titulo-paso" id="t-confirmar">Para confirmar el grupo</h2>
     <p class="bajada">Al confirmar, cada persona ve en «Mis trámites» su grupo, las fechas del curso, la hora de entrada y dónde presentarse.</p>
@@ -94,17 +95,6 @@
              el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
         <div class="control-grupo control-corto control-con-calendario"><input class="control" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="14" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-fecha-inicio"><button type="button" class="control-calendario" data-calendario="fecha_inicio" aria-label="Elegir en el calendario: Primer día del curso"><svg class="icono" aria-hidden="true"><use href="#i-fecha"></use></svg></button><input class="control-calendario-nativo" type="date" tabindex="-1" aria-hidden="true"></div>
       </div>
-      <div class="campo" data-campo="hora_entrada" data-formato="hora" data-requerido data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
-        <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
-        <p class="ayuda" id="ay-hora-entrada">El curso es de 9:00 a 15:00, de lunes a viernes, todos sus días.</p>
-        <!-- Lista cerrada de 24 horas, como la hora de la cita (Liber, 2026-10-17). Sesión de trabajo del 23/10/2026 (P91): el
-             curso es de 9:00 a 15:00, así que la entrada es a las 09:00 (parámetros curso_hora_entrada y curso_hora_salida; la
-             base rechaza otra). autocomplete off: la elige quien arma el grupo. -->
-        <div class="select control-corto"><select class="control control-select" id="hora_entrada" name="hora_entrada" autocomplete="off" aria-describedby="ay-hora-entrada">
-            <option value="">Elija</option>
-            <option value="09:00">09:00</option>
-        </select></div>
-      </div>
       <div class="campo" data-campo="instructor" data-requerido data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
         <label class="etiqueta" for="instructor">Instructor</label>
         <p class="ayuda" id="ay-instructor">Puede cambiar durante el curso; cada día queda quién capturó la asistencia.</p>
@@ -116,6 +106,9 @@
             <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
         </select></div>
       </div>
+      <!-- La hora no se elige: el curso es de 9:00 a 15:00 (parámetros curso_hora_entrada y curso_hora_salida; decisión de
+           Liber del 24/10/2026); el grupo la toma del parámetro al confirmarse. La llena app/grupo.js. -->
+      <p class="texto-gris" data-horario></p>
       <p class="texto-gris" data-lugar></p>
       <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
       <div class="acciones">
