@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:8946/",
+  "base": "http://localhost:8952/",
   "estados": [
     [
       "inicio",
@@ -179,18 +179,11 @@
     ]
   ],
   "paginas": 89,
-  "presionados": 297,
+  "presionados": 301,
   "porTipo": {
-    "encimado": 1,
     "botón sin efecto visible": 1
   },
   "hallazgos": [
-    {
-      "estado": "revisar-dictaminador",
-      "vista": "escritorio",
-      "tipo": "encimado",
-      "detalle": "a.btn-enlace.visor-abrir «Abrir en otra pestaña (se abre en otra pestaña)» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (77×17 px)"
-    },
     {
       "estado": "corregir-observaciones",
       "vista": "escritorio",
