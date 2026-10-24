@@ -52,6 +52,8 @@
     // «personal», de usted
     vencida_renovable: { texto: 'Vencida · puedes renovarla', personal: 'Vencida · puede renovarla', tono: 'pend' },
     vencida_no_renovable: { texto: 'Vencida', tono: 'cerrado' },
+    // Cancelada por la Secretaría (P120, sesión de trabajo del 23/10/2026): terminada, en gris, como «Vencida»
+    cancelada: { texto: 'Cancelada', tono: 'cerrado' },
     no_emitida: { texto: 'Todavía no vigente', tono: 'marcha' }
   };
 
@@ -463,11 +465,51 @@
       .sort((a, b) => b.emitida_en.localeCompare(a.emitida_en));
     let desde = null;
     for (const a of podas) {
+      // Una cancelada corta la cuenta (P120): si es la de ese día, no hay poda vigente
+      if (canceladaAl(a, f)) { if (!desde) return null; break; }
       if (!desde) { if (f > a.vence_en) return null; desde = a.emitida_en; continue; }
       if (desde <= sumaMeses(a.vence_en, meses)) { if (a.emitida_en < desde) desde = a.emitida_en; } else break;
     }
     return desde;
   }
+  /* ----- Cancelación (P120) y reposición de la credencial (P140), sesión de trabajo del 23/10/2026 -----
+     ¿Estaba cancelada ese día? (apd.cancelada_al: el día de la cancelación, en la Ciudad de México, ya cuenta) */
+  function canceladaAl(a, fecha) { return Boolean(a && a.cancelada_en) && diaDe(a.cancelada_en) <= fecha; }
+  /* Perfiles del personal que pueden cancelar (parámetro perfiles_cancelan_acreditacion: instructor y administración) */
+  function perfilesCancelan(datos) { return String(parametroTexto(datos, 'perfiles_cancelan_acreditacion') || '').split(',').map((x) => x.trim()).filter(Boolean); }
+  /* Cada paso de la reposición, como lo ve la persona (de tú) y el personal (de usted) */
+  const REPOSICION = {
+    solicitada: { texto: 'Reposición: acta en revisión', personal: 'Acta por revisar', tono: 'marcha', tonoPersonal: 'pend' },
+    con_observaciones: { texto: 'Reposición: corrige tu acta', personal: 'Acta con observaciones', tono: 'pend', tonoPersonal: 'marcha' },
+    acta_aceptada: { texto: 'Reposición: recoge tu credencial', personal: 'Por entregar', tono: 'pend', tonoPersonal: 'pend' },
+    repuesta: { texto: 'Credencial repuesta', personal: 'Repuesta', tono: 'ok', tonoPersonal: 'ok' },
+    cancelada: { texto: 'Reposición cancelada', personal: 'Reposición cancelada', tono: 'cerrado', tonoPersonal: 'cerrado' }
+  };
+  const REPOSICION_ABIERTA = ['solicitada', 'con_observaciones', 'acta_aceptada'];
+  function estadoReposicion(r, paraPersonal) {
+    const e = REPOSICION[r.estado] || { texto: r.estado, tono: '' };
+    return estado(paraPersonal ? e.personal : e.texto, paraPersonal ? e.tonoPersonal : e.tono);
+  }
+  const reposicionesDe = (datos, a) => (datos.reposicion || []).filter((r) => r.acreditacion_id === a.id)
+    .sort((x, y) => String(y.solicitada_en).localeCompare(String(x.solicitada_en)));
+  const reposicionAbierta = (datos, a) => reposicionesDe(datos, a).find((r) => REPOSICION_ABIERTA.includes(r.estado)) || null;
+  /* ¿Se puede pedir hoy la reposición de esta credencial? Vigente, no cancelada, ya entregada (las del registro anterior se
+     entregaron fuera del sistema) y sin otra reposición abierta (apd.reposicion_alta). Devuelve el motivo si no. */
+  function porQueNoReponer(datos, a) {
+    const sit = situacion(datos, a);
+    if (!['vigente', 'por_vencer'].includes(sit)) return 'no_vigente';
+    if (a.origen === 'sistema' && !a.entregada_en) return 'sin_entrega';
+    if (reposicionAbierta(datos, a)) return 'en_curso';
+    return null;
+  }
+  /* La cuota de reposición vigente hoy (apd.cuota): { monto, texto } (texto «$88.00» o null si no hay monto vigente) */
+  function cuotaReposicion(datos) {
+    const c = (datos.cuota || []).find((x) => x.clave === 'reposicion_credencial') || {};
+    const vigente = c.monto != null && c.vigente_desde && c.vigente_desde <= hoy(datos);
+    return { monto: vigente ? Number(c.monto) : null, texto: vigente ? moneda(c.monto) : null, fundamento: c.fundamento || '', concepto: c.concepto || 'Reposición de la credencial' };
+  }
+  const moneda = (n) => Number(n).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+
   /* Sábados y domingos inhábiles (P150); el calendario de festivos de la Gaceta está pendiente */
   const esHabil = (iso) => { const d = new Date(`${String(iso).slice(0, 10)}T12:00:00Z`).getUTCDay(); return d !== 0 && d !== 6; };
   /* El quinto día del curso de primera vez es de repaso de conocimientos y examen final (sesión de trabajo del 23/10/2026);
@@ -1007,6 +1049,7 @@
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, parametroTexto, curso, sede, activa, limpia, opciones,
     podaContinuaDesde, esHabil, diaFinal,
+    perfilesCancelan, REPOSICION_ABIERTA, estadoReposicion, reposicionesDe, reposicionAbierta, porQueNoReponer, cuotaReposicion, moneda,
     el, lineaDatos, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, pintaAviso, tituloPasos, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano
   };

@@ -227,6 +227,19 @@
     { usuario: 'instructor2.ficticio', nombre: 'Instructor Ejemplo Dos' }
   ];
   const INSTRUCTORA = Object.assign({ perfil: 'Instructor' }, INSTRUCTORES[0]);
+  /* Perfil ficticio de la Dirección (perfil «administración» del acceso del SIA, P27): cancela acreditaciones con los
+     instructores (P120, sesión de trabajo del 23/10/2026). No es una persona real. */
+  const DIRECTORA = { usuario: 'direccion.prueba', nombre: 'Rosa Ejemplo Directora', perfil: 'Administración (Dirección)' };
+  /* El perfil con que entra la pantalla de acreditaciones en la prueba (?perfil=, lo pone el menú de pruebas): revisión y
+     cotejo, instructor o administración. En la etapa 3 lo da el acceso del SIA. */
+  const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, administracion: DIRECTORA };
+  function perfilDePrueba() {
+    const p = new URLSearchParams(global.location.search).get('perfil');
+    return PERFILES[p] ? p : 'revision_cotejo';
+  }
+  const quienEs = (perfil) => PERFILES[perfil] || REVISORA;
+  /* El nombre de una cuenta del personal (las ficticias de la prueba); si no es de ellas, la cuenta tal cual */
+  const nombreDeCuenta = (u) => ([REVISORA, DIRECTORA].find((x) => x.usuario === u) || {}).nombre || nombreInstructor(u);
   const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
   /* Cada evento lleva su uid, para retirarlo si la base no lo habría aplicado */
   const uid = () => (global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -542,12 +555,14 @@
   function pintaSesion(contenedor, actual, perfil) {
     if (!contenedor) return;
     const salir = el('a', { class: 'btn-enlace', href: 'index.html', texto: 'Salir' });
-    const quien = perfil === 'instructor' ? INSTRUCTORA : REVISORA;
+    const quien = quienEs(perfil);
     const enlace = (href, clave, texto) => el('a', { class: 'btn-enlace', href, 'aria-current': actual === clave ? 'page' : null, texto });
+    // «Acreditaciones» (consulta, cancelación y reposición; sesión de trabajo del 23/10/2026), con el perfil de la prueba
+    const acreditaciones = enlace(`acreditaciones.html${perfil && perfil !== 'revision_cotejo' ? `?perfil=${perfil}` : ''}`, 'acreditaciones', 'Acreditaciones');
     const enlaces = perfil === 'instructor'
-      ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen')]
+      ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen'), acreditaciones]
       : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
-        enlace('material-personal.html', 'material', 'Material de estudio')];
+        enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones];
     contenedor.replaceChildren(
       // El perfil no es un estado (auditoría 2026-10-18, B11 y D6): va como texto, no como etiqueta de estado
       el('p', { class: 'sesion-nombre' }, [document.createTextNode(quien.nombre), el('span', { class: 'sesion-perfil', texto: `Perfil: ${quien.perfil.toLowerCase()}` })]),
@@ -628,7 +643,7 @@
 
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     delDia, motivoDiaCita, vigilaDiaCita,
-    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, perfilDePrueba, quienEs, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas };
 }(window));

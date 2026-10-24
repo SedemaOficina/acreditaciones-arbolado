@@ -48,6 +48,21 @@ window.FORMKIT_OPCIONES = {
         situacion(`${r.numero} no está registrada`, 'cerrar'),
         el('p', { texto: 'Revisa que el número esté escrito tal como aparece en la credencial. Si es correcto, esta persona no tiene una acreditación de la Secretaría.' })
       );
+    } else if (f.situacion === 'Cancelada') {
+      // Cancelada por la Secretaría (P120, sesión de trabajo del 23/10/2026): en gris, como «Vencida», con el día de la
+      // cancelación y sin el motivo (la vista pública no lo trae)
+      caja.setAttribute('data-tono', 'terminado');
+      caja.replaceChildren(
+        situacion('Cancelada', 'archivo'),
+        APD.datosLista([
+          ['Nombre', f.nombre],
+          ['Acreditación', f.tipo],
+          ['Número de acreditación', f.numero],
+          ['Emitida el', APD.fechaCorta(f.emitida_en)],
+          ['Cancelada el', APD.fechaCorta(f.cancelada_el)]
+        ]),
+        el('p', { class: 'texto-gris', texto: 'La Secretaría canceló esta acreditación: con ella no se puede trabajar en el arbolado urbano.' })
+      );
     } else {
       const vigente = f.situacion === 'Vigente';
       caja.setAttribute('data-tono', vigente ? 'ok' : 'terminado');
