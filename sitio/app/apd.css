@@ -419,7 +419,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 /* Asistencia · propuesta A (decisión de Liber, 2026-10-18): la tira de los días y los dos botones del día. ✓ verde
    asistió, ✗ rojo faltó, aro punteado sin marcar, «?» sin capturar; la forma distingue además del color, y la tira se
    lee también por su texto (solo-lector). */
-.asis-leyenda { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-4); margin-block: var(--e-2) var(--e-3); color: var(--gris); font-size: var(--t-sm); }
+.asis-leyenda:not([hidden]) { display: flex; } /* con :not([hidden]): display: flex le ganaba al [hidden] del estándar */
+.asis-leyenda { flex-wrap: wrap; gap: var(--e-1) var(--e-4); margin-block: var(--e-2) var(--e-3); color: var(--gris); font-size: var(--t-sm); }
 .asis-leyenda > span { display: inline-flex; align-items: center; gap: var(--e-2); }
 .asis-marca { display: inline-flex; flex: none; align-items: center; justify-content: center; width: var(--e-4); height: var(--e-4); box-sizing: border-box; font-size: var(--t-base); font-weight: var(--peso-fuerte); line-height: 1; }
 .asis-si { color: var(--ok); }
@@ -440,7 +441,9 @@ body > main { flex: 1 0 auto; width: 100%; }
 .asis-opciones { margin: 0; padding: 0; border: 0; min-width: 0; }
 .asis-pregunta { margin-block-end: var(--e-1); padding: 0; font-size: var(--t-sm); color: var(--gris); }
 .asis-cerrada { font-size: var(--t-sm); color: var(--gris); }
-.asis-pie { display: grid; gap: var(--e-3); margin-block-start: var(--e-4); }
+/* Con :not([hidden]): display: grid le ganaba al [hidden] del estándar y «Guardar» se veía sin lista que guardar (renovación) */
+.asis-pie:not([hidden]) { display: grid; }
+.asis-pie { gap: var(--e-3); margin-block-start: var(--e-4); }
 .asis-totales { margin: 0; font-weight: var(--peso-medio); }
 .asis-otro-dia { margin-block: var(--e-4) var(--e-2); }
 /* Lo que se despliega como enlace («Corregir otro día», «Qué estudiar», «Cambiar este archivo»): un solo aspecto, azul y
