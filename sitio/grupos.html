@@ -8,12 +8,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Grupos · Personal · Acreditaciones de arbolado urbano</title>
-<meta name="description" content="Planeador de los grupos de cada curso: quién espera y las próximas semanas, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
+<meta name="description" content="Armar un grupo paso a paso (el curso, la semana, quiénes van y confirmar) y los grupos ya programados de cada curso, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/css/nucleo.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/pasos/pasos.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/fecha/fecha.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/acordeon/acordeon.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
@@ -33,53 +37,185 @@
 <main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
 
-  <!-- Planeador por curso (propuesta A, aprobada por Liber el 2026-10-18): elegir el curso; a un lado, quién espera; al
-       otro, sus próximas semanas con sus grupos. En teléfono, primero la espera. -->
-  <div class="plan-cabeza">
-    <div class="plan-cabeza-texto">
-      <h2 class="titulo-paso plan-titulo" id="t-grupos">Grupos</h2>
-      <p class="plan-hoy" data-hoy>Cargando los grupos…</p>
-    </div>
-    <a class="btn btn-primario plan-programar" href="programar.html" data-programar>Programar un curso</a>
+  <!-- «Grupos» como paso a paso (opción B1 de la maqueta «Grupos: propuestas de rediseño», decisión de Liber del
+       24/10/2026): un solo camino para armar un grupo (1. el curso, 2. la semana en un calendario por mes, 3. quiénes van,
+       4. confirmar) y, aparte, los grupos ya programados de cada curso. Sustituye al planeador por curso y a «Programar un
+       curso» (programar.html sólo trae aquí, con sus datos). La dirección guarda ?curso=&mes=&semana=&paso= (y ?grupo=
+       para completar o darle semana a un grupo que ya existe). -->
+  <div class="arm-cabeza">
+    <h2 class="titulo-paso plan-titulo" id="t-grupos">Grupos</h2>
+    <p class="bajada" data-bajada>Cargando los grupos…</p>
+    <a class="btn-enlace arm-ir-programados" href="#programados" data-ir-programados>Ver los grupos programados</a>
   </div>
-  <div class="plan-cursos" role="group" aria-label="Curso" data-cursos></div>
-  <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
-  <div class="plan-hecho" data-hecho hidden></div>
-  <!-- Se anuncia al cambiar de curso desde app/grupos.js (auditoría 2026-10-20, RI-04): no es región viva -->
-  <p class="resumen-filtro" data-cuenta></p>
 
-  <div class="plan">
-    <section class="plan-espera" aria-labelledby="t-espera">
-      <div class="plan-col-cabeza">
-        <h3 class="plan-col-titulo" id="t-espera">En espera</h3>
-        <span class="plan-col-nota" data-orden></span>
-      </div>
-      <!-- Si se llega desde un grupo («Agregar personas de la espera»), sólo ese grupo recibe -->
-      <div data-modo-grupo hidden></div>
-      <div class="plan-personas" data-personas></div>
-      <!-- Cuenta de elegidas y botones, fijos al pie de la columna mientras se recorre la lista -->
-      <div class="plan-barra" data-barra hidden>
-        <!-- Se anuncia al marcar o desmarcar desde app/grupos.js (RI-04): no es región viva -->
-        <p class="plan-barra-cuenta" id="plan-elegidas" data-elegidas>Ninguna elegida</p>
-        <!-- Lo que impidió agregar, junto a los botones (APD.pintaAviso) -->
-        <div data-error-eleccion hidden></div>
-        <div class="plan-barra-acciones" data-destinos></div>
-      </div>
-    </section>
+  <section class="arm" aria-labelledby="t-armar">
+    <h3 class="titulo-bloque arm-titulo" id="t-armar">Armar un grupo</h3>
+    <!-- Completar o darle semana a un grupo que ya existe (?grupo=), o un enlace guardado a uno que ya no recibe -->
+    <div data-modo-grupo hidden></div>
+    <!-- Barra de pasos del estándar (módulo pasos), sin .barra-fija: no queda pegada arriba (P177: pegajosa ocupa hasta un
+         tercio del alto en teléfono horizontal) -->
+    <div class="arm-barra" data-barra="Pasos para armar un grupo"></div>
+    <!-- Lo elegido hasta ahora (curso · semana · personas), como el resumen de cada paso hecho de la maqueta -->
+    <div class="arm-eleccion" data-eleccion hidden></div>
 
-    <section class="plan-semanas" aria-labelledby="t-semanas">
-      <div class="plan-col-cabeza">
-        <h3 class="plan-col-titulo" id="t-semanas">Próximas semanas</h3>
-        <span class="plan-col-nota" data-semanas-nota></span>
-      </div>
-      <div class="plan-semanas-lista" data-semanas></div>
-      <details class="plegable" data-terminados hidden>
-        <summary class="plegable-titulo" data-terminados-titulo>Grupos que ya terminaron</summary>
-        <ul class="plan-terminados-lista" data-terminados-lista></ul>
-      </details>
-    </section>
-  </div>
-  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas, hora de entrada e instructor, y recibe hasta <span data-cupo-max>25</span>. <span class="pendiente">Pendiente (P92): quién arma los grupos; hoy, el perfil de revisión y cotejo.</span></p>
+    <form id="armar" class="arm-form" data-formkit="manual" action="#" method="post">
+      <!-- Paso 1 · el curso -->
+      <section class="tarjeta arm-paso" data-paso data-titulo="El curso" id="paso-curso" hidden>
+        <h4 class="titulo-paso">¿Para qué curso?</h4>
+        <p class="bajada">Cada curso arma sus grupos por separado: nunca se mezclan.</p>
+        <fieldset class="grupo" data-campo="curso" data-requerido data-uso="Fijar el curso del grupo (apd.grupo.tipo_acreditacion y apd.grupo.modalidad).">
+          <legend class="etiqueta solo-lector">Curso</legend>
+          <!-- autocomplete off: lo elige quien arma el grupo. Cuántas esperan y la nota de cada curso las pone app/grupos.js -->
+          <div class="opciones arm-cursos">
+            <label class="opcion"><input class="opcion-input" type="radio" name="curso" autocomplete="off" value="poda-nueva"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Poda y derribo · nueva</span><span class="opcion-desc" data-espera-curso="poda-nueva"></span></label>
+            <label class="opcion"><input class="opcion-input" type="radio" name="curso" autocomplete="off" value="poda-renovacion"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Poda y derribo · renovación</span><span class="opcion-desc" data-espera-curso="poda-renovacion"></span></label>
+            <label class="opcion"><input class="opcion-input" type="radio" name="curso" autocomplete="off" value="dictaminador-nueva"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dictaminador técnico · nueva</span><span class="opcion-desc" data-espera-curso="dictaminador-nueva"></span></label>
+            <label class="opcion"><input class="opcion-input" type="radio" name="curso" autocomplete="off" value="dictaminador-renovacion"><span class="opcion-nombre"><svg class="icono opcion-marca" aria-hidden="true"><use href="#i-palomita"></use></svg>Dictaminador técnico · renovación</span><span class="opcion-desc" data-espera-curso="dictaminador-renovacion"></span></label>
+          </div>
+        </fieldset>
+        <div class="acciones">
+          <button type="button" class="btn btn-primario" data-accion="siguiente">Siguiente</button>
+        </div>
+      </section>
+
+      <!-- Paso 2 · la semana: calendario por mes con la columna «Semana» (Libre / No disponible y su motivo) y los grupos
+           pintados en sus días; a la derecha, la semana elegida con su horario y la leyenda -->
+      <section class="tarjeta arm-paso" data-paso data-titulo="La semana" id="paso-semana" hidden>
+        <h4 class="titulo-paso">¿Qué semana?</h4>
+        <p class="bajada" data-bajada-semana></p>
+        <div class="arm-semana-cuerpo">
+          <div class="arm-cal" data-calendario-curso>
+            <div class="cal-cabeza">
+              <button type="button" class="btn-icono cal-mes-boton" data-mes="-1" aria-label="Mes anterior"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg></button>
+              <h5 class="cal-mes" id="cal-mes" data-mes-nombre></h5>
+              <button type="button" class="btn-icono cal-mes-boton" data-mes="1" aria-label="Mes siguiente"><svg class="icono" aria-hidden="true"><use href="#i-flecha-der"></use></svg></button>
+            </div>
+            <!-- Los nombres de los días son sólo para la vista: cada semana dice sus fechas, si está libre o por qué no, y
+                 sus grupos -->
+            <div class="arm-cal-cabeza" aria-hidden="true"><span>Semana</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div>
+            <ol class="arm-cal-semanas" aria-labelledby="cal-mes" data-semanas></ol>
+          </div>
+          <div class="arm-cal-lado">
+            <div class="arm-elegida" data-semana-elegida>
+              <p class="arm-elegida-rotulo">Semana elegida</p>
+              <p class="arm-elegida-nombre" data-elegida-nombre>Ninguna todavía</p>
+              <p class="arm-elegida-horario" data-elegida-horario></p>
+              <!-- Curso de un día (renovación): el día dentro de la semana elegida -->
+              <div class="arm-dias" data-dias-curso hidden></div>
+              <!-- Fecha día/mes/año como en el resto del sitio (formato «fecha-dma» del estándar): la llena la semana elegida;
+                   el mínimo (7 días después de hoy) y el máximo los pone la página en data-min y data-max -->
+              <div class="campo arm-fecha" data-campo="fecha_inicio" data-formato="fecha-dma" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
+                <label class="etiqueta" for="fecha_inicio">Primer día del curso</label>
+                <p class="ayuda" id="ay-fecha-inicio">Se llena al elegir la semana en el calendario.</p>
+                <!-- autocomplete off: la fecha la elige quien arma el grupo, en el calendario. -->
+                <input class="control control-corto" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="14" placeholder="dd/mm/aaaa" autocomplete="off" readonly aria-describedby="ay-fecha-inicio">
+              </div>
+            </div>
+            <ul class="cal-leyenda arm-leyenda" aria-label="Qué significa cada color">
+              <li><span class="cal-muestra" data-muestra="libre" aria-hidden="true"></span><span>Semana libre: toque «Libre» para elegirla</span></li>
+              <li><span class="cal-muestra" data-muestra="elegida" aria-hidden="true"></span><span>El grupo nuevo</span></li>
+              <li><span class="cal-muestra" data-muestra="en_integracion" aria-hidden="true"></span><span>Grupo por confirmar</span></li>
+              <li><span class="cal-muestra" data-muestra="confirmado" aria-hidden="true"></span><span>Grupo confirmado</span></li>
+              <li><span class="cal-muestra" data-muestra="en_curso" aria-hidden="true"></span><span>Grupo en curso</span></li>
+              <li><span class="cal-muestra" data-muestra="concluido" aria-hidden="true"></span><span>Grupo que ya terminó</span></li>
+              <li><span class="cal-muestra" data-muestra="otro" aria-hidden="true"></span><span>Grupo de otro curso: también cuenta para el máximo</span></li>
+              <li><span class="cal-muestra" data-muestra="no" aria-hidden="true"></span><span data-leyenda-no>No disponible: ya pasó, faltan menos de 7 días o ya hay 2 grupos</span></li>
+              <li><span class="cal-muestra" data-muestra="finde" aria-hidden="true"></span><span>Sábado y domingo: no hay curso</span></li>
+              <li><span class="cal-muestra" data-muestra="inhabil" aria-hidden="true"></span><span>Día inhábil <span class="pendiente">[por confirmar con el calendario oficial de la Secretaría]</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Por qué no se puede o qué se eligió: se ve y se anuncia (FormKit.anuncia) -->
+        <p class="cal-estado" data-cal-estado hidden></p>
+        <div class="acciones">
+          <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+          <button type="button" class="btn btn-primario" data-accion="siguiente">Siguiente</button>
+        </div>
+      </section>
+
+      <!-- Paso 3 · quiénes van: elegir personas es una acción sobre una lista, no un dato del formulario (la base la revisa:
+           apd.inscripcion_alta) -->
+      <section class="tarjeta arm-paso" data-paso data-titulo="Quiénes van" id="paso-personas" hidden>
+        <h4 class="titulo-paso">¿Quiénes van?</h4>
+        <p class="bajada" data-propuesta></p>
+        <div data-ya-estan hidden></div>
+        <ul class="prog-personas" data-personas aria-label="Personas en espera"></ul>
+        <!-- Se ve siempre y se anuncia sólo al marcar o desmarcar (RI-04): no es región viva -->
+        <p class="arm-cuenta" data-cuenta-personas></p>
+        <p class="ayuda" data-ayuda-personas>Si hay más de 25, entran las que más esperan y las de una misma institución de gobierno van juntas; el resto sigue en espera para otra semana.</p>
+        <fieldset class="grupo" data-campo="integracion" data-requerido data-uso="Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).">
+          <legend class="etiqueta">¿De quiénes es el grupo?</legend>
+          <!-- autocomplete off: decisión de quien arma el grupo. -->
+          <div class="opciones-lista">
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="combinado" checked><span><span class="opcion-nombre">Combinado</span><span class="opcion-desc">Recibe personas de cualquier organización e independientes.</span></span></label>
+            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de una organización</span><span class="opcion-desc" data-especifico-desc>Recibe únicamente a la gente de esa organización: todas las elegidas tienen que ser de ella.</span></span></label>
+          </div>
+        </fieldset>
+        <!-- Si todas las elegidas son de una organización que ya tiene su grupo que recibe personas: se dice y se ofrece
+             agregarlas ahí (decisión 2 de la auditoría del 2026-10-19) -->
+        <div data-su-grupo hidden></div>
+        <!-- Lo que impide seguir (nadie elegido, más del cupo, otra organización), junto a los botones -->
+        <div data-error-personas hidden></div>
+        <div class="acciones">
+          <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+          <button type="button" class="btn btn-primario" data-accion="siguiente">Siguiente</button>
+        </div>
+      </section>
+
+      <!-- Paso 4 · confirmar: el resumen, el instructor y la hora; «Crear el grupo» -->
+      <section class="tarjeta arm-paso" data-paso data-titulo="Confirmar" id="paso-confirmar" hidden>
+        <h4 class="titulo-paso" data-titulo-confirmar>Revise y confirme</h4>
+        <div data-resumen></div>
+        <div class="fila arm-quien">
+          <div class="campo" data-campo="instructor" data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
+            <label class="etiqueta" for="instructor">Instructor</label>
+            <p class="ayuda" id="ay-instructor" data-ayuda-instructor>Se indica si ya tiene otro curso esas fechas.</p>
+            <!-- Versión de prueba: instructores ficticios. En la etapa 3 la API da las cuentas con perfil «instructor» (P27).
+                 «Por asignar»: la asignación de instructores sigue pendiente (P92); el grupo se crea, pero no se confirma
+                 sin instructor. autocomplete off: lo elige quien arma el grupo. -->
+            <div class="select"><select class="control control-select" id="instructor" name="instructor" autocomplete="off" aria-describedby="ay-instructor">
+                <option value="">Por asignar</option>
+                <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
+                <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
+            </select></div>
+          </div>
+          <div class="campo" data-campo="hora_entrada" data-formato="hora" data-uso="Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).">
+            <label class="etiqueta" for="hora_entrada">Hora de entrada</label>
+            <p class="ayuda" id="ay-hora-entrada">El curso es de 9:00 a 15:00 todos sus días.</p>
+            <!-- Lista cerrada de 24 horas, la misma de la ficha del grupo (Liber, 2026-10-17). Sesión de trabajo del 23/10/2026
+                 (P91): el curso es de 9:00 a 15:00, así que la entrada es a las 09:00. autocomplete off: la elige quien arma el grupo. -->
+            <div class="select control-corto"><select class="control control-select" id="hora_entrada" name="hora_entrada" autocomplete="off" aria-describedby="ay-hora-entrada">
+                <option value="">Elija</option>
+                <option value="09:00">09:00</option>
+            </select></div>
+          </div>
+        </div>
+        <!-- Cómo queda el grupo al guardarlo (confirmado o por confirmar, y qué le falta): cambia con lo que se elige -->
+        <div class="arm-queda" data-queda></div>
+        <!-- Lo que falta para crear o guardar, junto a los botones (FormKit.aviso) -->
+        <div data-falta hidden></div>
+        <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+        <div class="acciones">
+          <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+          <button type="submit" class="btn btn-secundario" data-armar="sin-confirmar" hidden>Crear sin confirmar</button>
+          <button type="submit" class="btn btn-primario" data-accion="enviar" data-armar="crear">Crear el grupo</button>
+        </div>
+      </section>
+    </form>
+  </section>
+
+  <section class="arm-programados" id="programados" aria-labelledby="t-programados">
+    <h3 class="titulo-bloque" id="t-programados" tabindex="-1">Grupos programados</h3>
+    <!-- Lo que se acaba de hacer (crear, completar, confirmar): aviso con su enlace a la ficha (FormKit.aviso) -->
+    <div class="plan-hecho" data-hecho hidden></div>
+    <p class="bajada" data-programados-bajada>Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta.</p>
+    <div data-programados></div>
+    <details class="plegable" data-terminados hidden>
+      <summary class="plegable-titulo" data-terminados-titulo>Grupos que ya terminaron</summary>
+      <div class="plegable-cuerpo"><ul class="plan-terminados-lista" data-terminados-lista></ul></div>
+    </details>
+  </section>
+  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas, hora de entrada e instructor, y recibe hasta <span data-cupo-max>25</span>. <span class="pendiente">Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.</span></p>
 </main>
 
 <footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
@@ -96,7 +232,10 @@
 <script src="app/mensajes-usted.js?v=0.67"></script>
 <script src="formkit/js/iconos.js?v=1.5.1"></script>
 <script src="formkit/js/formkit.core.js?v=1.5.1"></script>
+<script src="formkit/modulos/pasos/pasos.js?v=1.5.1"></script>
+<script src="formkit/modulos/fecha/fecha.js?v=1.5.1"></script>
 <script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
+<script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
 <script src="app/grupos.js?v=0.67"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->

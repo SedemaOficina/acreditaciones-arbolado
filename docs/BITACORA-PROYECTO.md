@@ -1520,3 +1520,14 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Anteproyecto de lineamientos 0.6 y registro de reforma de la NADF actualizados en el Proyecto (fuera del repositorio).
 - Pruebas: `probar-base` 372 (concurrencia 24), `probar-esquemas` 149, `probar-sitio` 1458, `probar-examen` 79,
   `probar-volumen` 111, `auditar-sitio` con los mismos 2 avisos en 85 pantallas.
+
+## 2026-10-24 · Bloque 92 · «Grupos» por pasos (opción B1)
+
+- Publicada la 0.67 (sesión del 23/10). Liber vio que «Grupos» no dejaba ver dónde se arma un grupo ni qué fechas están
+  libres. Se hicieron maquetas («Grupos: propuestas de rediseño») y eligió la B1: un paso a paso con calendario.
+- «Grupos» y «Programar un curso» quedan en un solo camino: el curso, la semana (calendario por mes con la columna
+  «Semana»: «Libre» con sus lugares o «No disponible» y su motivo, y los grupos existentes en sus días), quiénes van (las
+  que más esperan, con sus bloques) y confirmar. Los grupos programados, en una tabla con lo que le falta a cada uno y
+  sus acciones; «Programar un curso» redirige y conserva sus parámetros. La dirección guarda el paso.
+- Pruebas: `probar-sitio` 1599 (parte `SOLO=grupos`), `probar-volumen` 119 (112 en espera y 40 grupos),
+  `probar-esquemas` 151, `probar-examen` 79, `auditar-sitio` con los mismos 2 avisos en 89 pantallas.

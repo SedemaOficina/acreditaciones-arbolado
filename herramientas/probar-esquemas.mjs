@@ -59,12 +59,15 @@ for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.htm
 }
 // Un grupo (bloque 53): confirmar, dar de baja y cancelar están en la misma página; se toma cada formulario por su id. La
 // base revisa además cupos, anticipación, curso y organización (apd.grupo_cambio, apd.inscripcion_alta).
-// Crear un grupo (bloque 74): «Programar un curso» (programar.html, formulario «programar»): tipo de grupo y primer día;
-// hora e instructor son obligatorios sólo para confirmar (la API y la base lo exigen: datos_para_confirmar). Elegir a las
-// personas es una acción sobre una lista (apd.inscripcion_alta). Programar un grupo que ya existe usa grupo-confirmar.
+// Crear un grupo (bloque 74): desde el 24/10/2026, el paso a paso de «Grupos» (grupos.html, formulario «armar»; antes
+// «Programar un curso», programar.html, formulario «programar»): el curso (paso 1, de la lista de los cuatro), el primer
+// día (paso 2, de la semana elegida), el tipo de grupo (paso 3) y la hora y el instructor (paso 4), que son obligatorios
+// sólo para confirmar (la API y la base lo exigen: datos_para_confirmar; «Por asignar» deja el instructor vacío, P92).
+// Elegir a las personas es una acción sobre una lista (apd.inscripcion_alta). Programar un grupo que ya existe usa
+// grupo-confirmar.
 // Material de estudio del personal (auditoría 2026-10-18, A 8.7): un solo formulario para agregar, editar y reemplazar;
 // «modo» lo calcula la API por la ruta (alta o cambio), como aquí el caso con `_modo`.
-for (const [archivo, id, nombre] of [['programar.html', 'programar', 'grupo-crear'], ['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar'],
+for (const [archivo, id, nombre] of [['grupos.html', 'armar', 'grupo-crear'], ['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar'],
   ['material-personal.html', 'form-material', 'material'],
   // Ficha de una acreditación (sesión de trabajo del 23/10/2026): cancelarla (P120), revisar el acta y entregar la credencial
   // repuesta (P140). La base revisa además el perfil, la vigencia y el paso de la reposición (apd.acreditacion_cambio,
@@ -353,11 +356,13 @@ caso('Examen: un código con letras que se confunden (O, I, 0, 1) se rechaza', '
 caso('Examen: sin código se rechaza', 'examen-entrar', {}, ['codigo']);
 caso('Examen: suspender sin motivo se rechaza', 'examen-suspender', {}, ['motivo']);
 caso('Examen: suspender con su motivo se acepta', 'examen-suspender', { motivo: 'Consultó su teléfono durante el examen.' }, true);
-caso('Grupo: programar sin tipo de grupo ni primer día se rechaza', 'grupo-crear', {}, ['integracion', 'fecha_inicio']);
-caso('Grupo: programar un grupo combinado con su primer día se acepta (guardar sin confirmar)', 'grupo-crear', { integracion: 'combinado', fecha_inicio: '02/11/2026' }, true);
-caso('Grupo: otra integración se rechaza', 'grupo-crear', { integracion: 'mixto', fecha_inicio: '02/11/2026' }, ['integracion']);
-caso('Grupo: programar con hora e instructor de la lista se acepta (crear y confirmar)', 'grupo-crear', { integracion: 'especifico', fecha_inicio: '02/11/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' }, true);
-caso('Grupo: programar con una hora fuera de la lista se rechaza', 'grupo-crear', { integracion: 'combinado', fecha_inicio: '02/11/2026', hora_entrada: '09:15' }, ['hora_entrada']);
+caso('Grupo: armar un grupo sin curso, tipo de grupo ni primer día se rechaza', 'grupo-crear', {}, ['curso', 'integracion', 'fecha_inicio']);
+caso('Grupo: armar un grupo combinado con su curso y su primer día se acepta (por confirmar)', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026' }, true);
+caso('Grupo: otra integración se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'mixto', fecha_inicio: '02/11/2026' }, ['integracion']);
+caso('Grupo: un curso fuera de los cuatro se rechaza', 'grupo-crear', { curso: 'poda-intensivo', integracion: 'combinado', fecha_inicio: '02/11/2026' }, ['curso']);
+caso('Grupo: armar con hora e instructor de la lista se acepta (crear y confirmar)', 'grupo-crear', { curso: 'dictaminador-renovacion', integracion: 'especifico', fecha_inicio: '02/11/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' }, true);
+caso('Grupo: armar con una hora fuera de la lista se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', hora_entrada: '09:15' }, ['hora_entrada']);
+caso('Grupo: armar con un instructor fuera de la lista se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', instructor: 'otra.persona' }, ['instructor']);
 const confirma = { fecha_inicio: '26/10/2026', hora_entrada: '09:00', instructor: 'instructor.ficticio' };
 caso('Grupo: confirmar con primer día, hora e instructor se acepta', 'grupo-confirmar', confirma, true);
 caso('Grupo: confirmar sin hora de entrada ni instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '26/10/2026' }, ['hora_entrada', 'instructor']);

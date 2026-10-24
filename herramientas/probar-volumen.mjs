@@ -1,6 +1,7 @@
 // Pruebas de las pantallas del personal con volumen real (auditoría de tareas, 2026-10-17).
 // Genera el escenario de herramientas/escenario-volumen.mjs (65 por revisar, 40 citas en un día, 112 en espera,
 // grupos de 25, un día sin capturar, citas atrasadas y una pausa vencida) y lo sirve en lugar de datos/ficticios.json.
+// «Grupos» paso a paso (24/10/2026) se prueba además con 40 grupos (abajo).
 // Uso: node herramientas/probar-volumen.mjs [http://localhost:8765/]   (con el sitio servido)
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
@@ -157,28 +158,29 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     comprueba((await texto('[data-acciones]')).includes(`Agregar personas de Iztapalapa (${enEsperaIzta} en espera)`), t(`grupo de Iztapalapa: cuenta sólo a su gente en espera (${enEsperaIzta})`));
     comprueba(/Recibe personas hasta el/.test(await texto('[data-cupo-texto]')), t('grupo confirmado: dice hasta cuándo recibe y cuántos lugares quedan'));
     comprueba(/09:00/.test(await texto('[data-datos]')) && !/09:00:00/.test(await texto('[data-datos]')), t('grupo: la hora de entrada sin segundos'));
-    // Desde la ficha (la dirección vieja espera.html lleva a Grupos con el grupo): sólo su gente
-    await ir('espera.html?curso=poda-nueva&grupo=APD-G-2026-023', '.plan-persona input');
+    // Desde la ficha (la dirección vieja espera.html lleva a Grupos con el grupo, en el paso 3): sólo su gente
+    await ir('espera.html?curso=poda-nueva&grupo=APD-G-2026-023', '#paso-personas:not([hidden]) .plan-persona input');
     const orgs = await pg.$$eval('.plan-persona-org, .plan-bloque-nombre', (l) => l.map((x) => x.textContent));
-    comprueba(/grupos\.html\?curso=poda-nueva&grupo=APD-G-2026-023/.test(pg.url()) && (await pg.$$('.plan-persona input')).length === enEsperaIzta && orgs.every((x) => /^Iztapalapa/.test(x)),
-      t('espera desde el grupo de Iztapalapa: lleva a Grupos y sólo muestra a su gente'));
+    comprueba(/grupos\.html\?grupo=APD-G-2026-023/.test(pg.url()) && (await pg.$$('.plan-persona input')).length === enEsperaIzta && orgs.every((x) => /^Iztapalapa/.test(x)),
+      t('espera desde el grupo de Iztapalapa: lleva al paso 3 de Grupos con ese grupo y sólo muestra a su gente'));
 
   });
 
-  // A1-04 (auditoría 2026-10-19): «Programar» con toda la espera del curso, sin personas elegidas en «Grupos»
-  // (antes del planeador, que agrega dos personas a un grupo)
-  await paso('programar con toda la espera', async () => {
+  // A1-04 (auditoría 2026-10-19): armar un grupo con toda la espera del curso (paso 3 de «Grupos», antes «Programar»), antes
+  // del paso que agrega personas a un grupo
+  await paso('paso 3 con toda la espera', async () => {
     const espera = d.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva').length;
-    await ir('programar.html?curso=poda-nueva', '.cal-dia');
-    await pg.waitForSelector('[data-personas] .plan-casilla[value]');
+    await ir('grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) [data-personas] .plan-casilla[value]');
     const casillas = await pg.$$eval('[data-personas] .plan-casilla[value]', (l) => [l.length, l.filter((k) => k.checked).length]);
-    comprueba(casillas[0] === espera && casillas[1] > 0 && casillas[1] <= 25, t(`programar: lista a las ${casillas[0]} de ${espera} en espera y propone ${casillas[1]} (hasta 25)`));
+    comprueba(casillas[0] === espera && casillas[1] > 0 && casillas[1] <= 25 && new RegExp(`^${casillas[1]} de 25 lugares`).test(await texto('[data-cuenta-personas]')),
+      t(`paso 3: lista a las ${casillas[0]} de ${espera} en espera y propone ${casillas[1]} (hasta 25), con «${casillas[1]} de 25 lugares»`));
     // C3-01 (auditoría 2026-10-20; decisión de Liber, opción a): a la vista las propuestas; las demás, plegadas en
     // «Cambiar a quiénes van (N más en espera)», y al desplegarlo se ven y se eligen
     const vis = () => pg.$$eval('[data-personas] .plan-casilla[value]', (l) => l.filter((k) => k.checkVisibility()).map((k) => k.checked));
     const antes = await vis();
     const resumen = (await texto('[data-mas-espera] > summary.plegable-titulo')).trim();
-    const pantallas = await pg.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+    // Lo que mide el paso 3 (la lista y el tipo de grupo), en pantallas: «Grupos» lleva además la tabla de grupos programados
+    const pantallas = await pg.evaluate(() => document.querySelector('#paso-personas').getBoundingClientRect().height / innerHeight);
     await pg.click('[data-mas-espera] > summary');
     const despues = await vis();
     const folioOtra = await pg.getAttribute('[data-mas-espera] .plan-casilla[value]:not(:checked)', 'value');
@@ -186,32 +188,34 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await otra.check();
     comprueba(antes.length === casillas[1] && antes.every(Boolean) && resumen === `Cambiar a quiénes van (${espera - casillas[1]} más en espera)`
       && despues.length === espera && await otra.isChecked() && (tam !== 'teléfono' || pantallas < 8.5),
-      t(`C3-01: «Programar» abre con las ${antes.length} propuestas a la vista y «${resumen}» plegado (${pantallas.toFixed(1)} pantallas); al desplegarlo se ven las ${despues.length} y se eligen`));
-    await sinDesborde(`programar con ${espera} en espera`);
+      t(`C3-01: el paso 3 abre con las ${antes.length} propuestas a la vista y «${resumen}» plegado (${pantallas.toFixed(1)} pantallas); al desplegarlo se ven las ${despues.length} y se eligen`));
+    await sinDesborde(`paso 3 con ${espera} en espera`);
   });
 
   // C1-01 (auditoría 2026-10-20): arriba de la lista, cuántas son prioritarias (desde 15 días desde la sesión de trabajo del
   // 23/10/2026, P143; antes «31 días o más») y cuántos grupos nuevos alcanzan (M7). Antes del paso que agrega personas a un grupo.
-  await paso('planeador: cifras de la espera', async () => {
-    await ir('grupos.html?curso=poda-nueva', '.plan-persona');
+  // Desde el paso a paso (24/10/2026), en la opción del curso del paso 1, antes de elegirlo
+  await paso('cifras de la espera', async () => {
+    await ir('grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona');
     const n = (await pg.$$('.plan-persona')).length;
     const prio = await pg.$$eval('.plan-persona', (l) => l.filter((x) => /prioritaria/.test(x.textContent)).length);
     const nuevos = Math.floor(n / 25) + (n % 25 >= 5 ? 1 : 0);
-    const cuenta = (await texto('[data-cuenta]')).trim();
+    const cuenta = (await texto('[data-espera-curso="poda-nueva"]')).replace(/\s+/g, ' ').trim();
     const dias = (x) => Math.round((Date.parse(`${hoy}T12:00:00-06:00`) - Date.parse(`${new Date(x.lista_para_curso_en || x.estado_desde).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })}T12:00:00-06:00`)) / 86400000);
     const esperan = d.solicitud.filter((x) => x.estado === 'lista_para_curso' && x.tipo_acreditacion === 'poda' && x.modalidad === 'nueva');
     const prioDatos = esperan.filter((x) => dias(x) >= 15).length;
-    comprueba(n === esperan.length && prio === prioDatos && cuenta.includes(`${n} personas en espera (${prio} esperan 15 días o más)`) && cuenta.includes(`Alcanza para ${nuevos} grupos nuevos de hasta 25.`)
-      && (await pg.evaluate(() => document.querySelector('[data-cuenta]').compareDocumentPosition(document.querySelector('[data-personas]')) & Node.DOCUMENT_POSITION_FOLLOWING)),
-      t(`C1-01: arriba de la lista, «${cuenta}»`));
+    comprueba(n === esperan.length && prio === prioDatos && cuenta.includes(`${n} personas en espera`) && cuenta.includes(`${prio} esperan 15 días o más`) && cuenta.includes(`Alcanza para ${nuevos} grupos nuevos de hasta 25`)
+      && (await pg.evaluate(() => Boolean(document.querySelector('#paso-curso [data-espera-curso="poda-nueva"]')))),
+      t(`C1-01: el curso, en el paso 1, dice «${cuenta}»`));
   });
 
-  // C1-03 (auditoría 2026-10-20; decisión 11 b de Liber): en renovación, el planeador y «Programar» muestran los bloques
+  // C1-03 (auditoría 2026-10-20; decisión 11 b de Liber): en renovación, el paso 3 de «Grupos» (y la dirección vieja de
+  // «Programar», que lleva ahí) muestran los bloques
   // por su vencimiento más antiguo y, dentro, primero las vencidas; la propuesta toma primero a las vencidas (aunque
   // parta un bloque) y el encabezado dice ese orden
   await paso('espera de renovación', async () => {
     for (const pantalla of ['grupos', 'programar']) {
-      await ir(`${pantalla}.html?curso=poda-renovacion`, '.plan-persona');
+      await ir(pantalla === 'grupos' ? 'grupos.html?curso=poda-renovacion&paso=3' : 'programar.html?curso=poda-renovacion', '.plan-persona');
       const r = await pg.evaluate(() => {
         const unidades = [...document.querySelector('[data-personas]').children].map((n) => (n.matches('li') ? n.firstElementChild : n)).map((n) =>
           [...(n.matches('.plan-bloque') ? n.querySelectorAll('.plan-persona') : [n])].map((f) => { const m = f.textContent.match(/(Vencida|Vence) el (\d{2})\/(\d{2})\/(\d{4})/); return { vencida: m[1] === 'Vencida', iso: `${m[4]}-${m[3]}-${m[2]}` }; }));
@@ -226,46 +230,53 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     }
   });
 
-  await paso('planeador y programar', async () => {
-    // M2, M3, M4 y M7 con el planeador (propuesta A): toda la espera, todos los grupos que reciben y cada botón dice cuál
-    await ir('grupos.html?curso=poda-nueva', '.plan-grupo');
-    const destinos = await pg.$$eval('[data-destinos] button', (l) => l.map((b) => b.textContent));
+  await paso('grupos programados y su grupo', async () => {
+    // M2, M3, M4 y M7 desde el paso a paso (24/10/2026; antes, el planeador): todos los grupos que reciben están en «Grupos
+    // programados», cada uno con «Agregar personas» que dice cuál es
+    await ir('grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona');
+    const destinos = await pg.$$eval('[data-programados] a', (l) => l.filter((a) => /^Agregar personas/.test(a.textContent)).map((a) => a.getAttribute('aria-label')));
     comprueba(destinos.length === 5 && destinos.some((x) => /Iztapalapa/.test(x)) && destinos.some((x) => /Jardines Ejemplo del Norte/.test(x) && /APD-G-2026-021/.test(x)),
-      t('planeador: un botón por grupo que recibe, con su nombre (de quién es y sus fechas)'));
-    comprueba((await Promise.all(['APD-G-2026-004', 'APD-G-2026-005', 'APD-G-2026-021', 'APD-G-2026-022', 'APD-G-2026-023'].map((f) => pg.locator(`.plan-grupo[data-grupo="${f}"]`).count()))).every((n) => n === 1), t('planeador: todos los grupos que reciben están en su semana o en «Sin fecha»'));
-    comprueba((await pg.$$('.plan-semana[data-semana="2026-10-26"] .plan-grupo')).length === 2, t('planeador: una semana con dos grupos los muestra a los dos'));
-    comprueba(/falta 1 para confirmarlo|faltan 2 para confirmarlo/.test(await texto('.plan-grupo[data-grupo="APD-G-2026-021"]')), t('planeador: el grupo de Jardines dice cuántas le faltan'));
-    await pg.check('.plan-persona input');
-    comprueba(/1 elegida/.test(await texto('[data-elegidas]')), t('planeador: la barra lleva la cuenta de elegidas'));
-    await sinDesborde('planeador con 112 en espera');
+      t('Grupos programados: cada grupo que recibe lleva «Agregar personas», con su nombre (de quién es y sus fechas)'));
+    comprueba((await Promise.all(['APD-G-2026-004', 'APD-G-2026-005', 'APD-G-2026-021', 'APD-G-2026-022', 'APD-G-2026-023'].map((f) => pg.locator(`[data-programados] tr[data-grupo="${f}"]`).count()))).every((n) => n === 1), t('Grupos programados: están todos los grupos que reciben'));
+    const semana26 = await texto('.arm-semana[data-lunes="2026-10-26"]');
+    comprueba(/APD-G-2026-005/.test(semana26) && /APD-G-2026-023/.test(semana26) && /No disponible\s*Ya hay 2 grupos/.test(semana26), t('calendario: una semana con dos grupos los nombra a los dos y ya no está disponible («Ya hay 2 grupos»)'));
+    comprueba(/2 personas/.test(await texto('[data-programados] tr[data-grupo="APD-G-2026-021"]')), t('Grupos programados: el grupo de Jardines dice cuántas le faltan'));
+    await pg.locator('#paso-personas .plan-persona input:checked').first().uncheck();
+    comprueba(/^24 de 25 lugares/.test(await texto('[data-cuenta-personas]')), t('paso 3: la cuenta sigue lo que se marca («24 de 25 lugares»)'));
+    await sinDesborde('grupos con 112 en espera');
     // R4-03 (decisión 2 de la auditoría del 2026-10-19): el bloque de una organización dice «su grupo» y cuántas le faltan.
     // Desde la sesión de trabajo del 23/10/2026 sólo las instituciones de gobierno van en bloque: Iztapalapa (alcaldía) con
     // su grupo APD-G-2026-023; las de Jardines (empresa) van una por una y cada fila dice su grupo
+    await pg.click('[data-mas-espera] > summary');
     const cabIzta = (await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).find((x) => /^Iztapalapa/.test(x)) || '';
-    comprueba(/Su grupo APD-G-2026-023: 18 de 25, caben 7/.test(cabIzta), t(`planeador: el bloque de Iztapalapa dice «Su grupo APD-G-2026-023» y cuántas caben («${cabIzta.slice(0, 90)}»)`));
-    const filasJardines = await pg.$$eval('[data-personas] > .plan-persona', (l) => l.map((x) => x.textContent).filter((x) => /Jardines/.test(x)));
+    comprueba(/Su grupo APD-G-2026-023: 18 de 25, caben 7/.test(cabIzta), t(`paso 3: el bloque de Iztapalapa dice «Su grupo APD-G-2026-023» y cuántas caben («${cabIzta.slice(0, 90)}»)`));
+    const filasJardines = await pg.$$eval('[data-personas] .plan-persona', (l) => l.filter((x) => !x.closest('.plan-bloque')).map((x) => x.textContent).filter((x) => /Jardines/.test(x)));
     comprueba(filasJardines.length > 1 && filasJardines.every((x) => /Su grupo APD-G-2026-021: 3 de 25, le faltan 2 para el mínimo/.test(x))
       && !(await pg.$$eval('.plan-bloque-nombre', (l) => l.some((x) => /Jardines/.test(x.textContent)))),
-      t(`planeador: las ${filasJardines.length} de Jardines (empresa) van una por una, sin bloque, y cada una dice «Su grupo APD-G-2026-021»`));
+      t(`paso 3: las ${filasJardines.length} de Jardines (empresa) van una por una, sin bloque, y cada una dice «Su grupo APD-G-2026-021»`));
     comprueba((await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).some((x) => /grupo propio de 5; o van a un grupo combinado|Alcanza para un grupo propio/.test(x)),
-      t('planeador: el bloque de una organización sin grupo dice si alcanzan para uno propio'));
-    // … y «Programar» avisa antes de crearle un segundo grupo, y ofrece agregarlas al suyo
+      t('paso 3: el bloque de una organización sin grupo dice si alcanzan para uno propio'));
+    // … y el paso a paso avisa antes de crearle un segundo grupo, y ofrece agregarlas al suyo
     const jardines = d.organizacion.find((o) => /Jardines/.test(o.nombre));
     const dosJardines = d.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva' && s.organizacion_id === jardines.id).slice(0, 2).map((s) => s.folio);
-    await ir(`programar.html?curso=poda-nueva&personas=${dosJardines.join(',')}`, '.cal-dia');
+    await ir(`programar.html?curso=poda-nueva&personas=${dosJardines.join(',')}`, '#paso-personas:not([hidden]) .plan-persona');
     comprueba(await pg.isVisible('[data-su-grupo] .aviso') && /ya tiene su grupo/.test(await texto('[data-su-grupo]')) && /APD-G-2026-021/.test(await texto('[data-su-grupo]')),
-      t('programar: con personas de Jardines, avisa que ya tiene su grupo APD-G-2026-021'));
+      t('paso 3: con personas de Jardines, avisa que ya tiene su grupo APD-G-2026-021'));
     await pg.check('input[name="integracion"][value="especifico"]');
-    await pg.click('[data-programar="guardar"]');
+    await pg.click('#paso-personas [data-accion="siguiente"]');
+    await pg.waitForSelector('#paso-confirmar:not([hidden])');
+    await pg.click('[data-armar="crear"]');
     await pg.waitForSelector('dialog.dialogo-confirma[open]');
-    comprueba(/¿Crear otro grupo de Jardines/.test(await texto('dialog.dialogo-confirma[open]')), t('programar: crear un segundo grupo de Jardines pide confirmación'));
+    comprueba(/¿Crear otro grupo de Jardines/.test(await texto('dialog.dialogo-confirma[open]')), t('paso 4: crear un segundo grupo de Jardines pide confirmación'));
     await pg.click('dialog.dialogo-confirma[open] [data-r="no"]');
     await pg.waitForTimeout(300);
-    comprueba((await pg.evaluate(() => JSON.parse(localStorage.getItem('apd.personal.grupos') || '[]').filter((e) => e.tipo === 'crear').length)) === 0, t('programar: con «No» no se crea el segundo grupo'));
+    comprueba((await pg.evaluate(() => JSON.parse(localStorage.getItem('apd.personal.grupos') || '[]').filter((e) => e.tipo === 'crear').length)) === 0, t('paso 4: con «No» no se crea el segundo grupo'));
+    await pg.click('#paso-confirmar [data-accion="atras"]');
+    await pg.waitForSelector('#paso-personas:not([hidden]) [data-su-grupo] button');
     await Promise.all([pg.waitForURL(/grupo\.html/), pg.click('[data-su-grupo] button')]);
     await pg.waitForSelector('[data-filas] tr');
     comprueba(/grupo\.html\?folio=APD-G-2026-021/.test(pg.url()) && (await Promise.all(dosJardines.map((f) => pg.isVisible(`[data-filas] tr[data-folio="${f}"]`)))).every(Boolean),
-      t('programar: «Agregarlas a APD-G-2026-021» las agrega a su grupo y abre su ficha'));
+      t('paso 3: «Agregarlas a APD-G-2026-021» las agrega a su grupo y abre su ficha'));
 
   });
 
@@ -295,25 +306,23 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
   await ctx.close();
 }
 
-// B4-01, B1-01 y RI-01 (auditoría 2026-10-20; decisión 1 a y c): en «Grupos», con la espera de 66 personas, la barra de
-// elegidas no tapa la casilla enfocada en las tres computadoras. Se recorre con Tab (y con Mayúsculas+Tab) toda la
-// pantalla y se cuenta cada parada que queda oculta por completo por algo fijo o pegajoso (cinco puntos: el centro y las
-// cuatro esquinas, como foco-recorrido.mjs del revisor independiente). La barra, que aquí mide más de un cuarto de la
-// ventana, deja de ser fija.
+// B4-01, B1-01 y RI-01 (auditoría 2026-10-20; decisión 1 a y c): en «Grupos», con la espera de 66 personas, nada fijo
+// tapa la casilla enfocada en las tres computadoras. Desde el paso a paso del 24/10/2026 (opción B1) la barra fija de
+// elegidas ya no existe: el paso 3 lleva la lista (con «Cambiar a quiénes van» desplegado, las 66) y sus botones al final.
+// Se recorre con Tab (y con Mayúsculas+Tab) toda la pantalla y se cuenta cada parada que queda oculta por completo por algo
+// fijo o pegajoso (cinco puntos: el centro y las cuatro esquinas, como foco-recorrido.mjs del revisor independiente).
 for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
   const tam = `${w}×${h}`;
   const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
   await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
   const pg = await ctx.newPage();
   try {
-    await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
-    await pg.waitForSelector('.plan-persona input');
-    // La barra ya se ve y pasaron dos cuadros (su ResizeObserver ya la midió)
-    await pg.waitForSelector('.plan-barra:not([hidden])');
+    await pg.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
+    await pg.waitForSelector('#paso-personas:not([hidden]) .plan-persona input');
+    await pg.click('[data-mas-espera] > summary');
     await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
-    // El alto visible: fija, la barra se extiende por debajo de la ventana (sesión del 23/10, parte B) y esa parte no se ve
-    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); const r = b.getBoundingClientRect(); return { pos: getComputedStyle(b).position, alto: Math.min(r.bottom, innerHeight) - r.top }; });
-    comprueba(barra.alto <= h / 4 || barra.pos === 'static', `[${tam}] grupos con volumen: la barra de elegidas (${Math.round(barra.alto)} px, ${Math.round(barra.alto / h * 100)} % de la ventana) deja de ser fija si mide más de un cuarto`);
+    const pegajosos = await pg.evaluate(() => [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility()).length);
+    comprueba(pegajosos === 0, `[${tam}] grupos con volumen: en el paso 3 nada queda fijo ni pegajoso sobre la lista (la barra de elegidas ya no existe; ${pegajosos})`);
     for (const tecla of ['Tab', 'Shift+Tab']) {
       await pg.evaluate(() => { window.scrollTo(0, 0); document.activeElement && document.activeElement.blur(); });
       let paradas = 0; let casillas = 0; const ocultas = [];
@@ -335,10 +344,65 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
         if (m.tapado) ocultas.push(m.nombre);
       }
       await pg.evaluate(() => { window.__primero = null; });
-      comprueba(casillas >= 66 && ocultas.length === 0, `[${tam}] grupos con volumen, ${tecla}: ninguna de las ${paradas} paradas (${casillas} casillas) queda oculta por completo por la barra${ocultas.length ? `: ${ocultas.length}, p. ej. «${ocultas[0]}»` : ''}`);
+      comprueba(casillas >= 66 && ocultas.length === 0, `[${tam}] grupos con volumen, ${tecla}: ninguna de las ${paradas} paradas (${casillas} casillas) queda oculta por completo por algo fijo${ocultas.length ? `: ${ocultas.length}, p. ej. «${ocultas[0]}»` : ''}`);
     }
   } catch (e) { comprueba(false, `[${tam}] grupos con volumen, foco no oculto: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
   await ctx.close();
+}
+
+// «Grupos» paso a paso con 40 grupos (decisión del 24/10/2026): al escenario de volumen (112 en espera, 10 grupos) se le
+// agregan 30 grupos ficticios sin personas: 20 concluidos y 4 cancelados en los meses pasados y 6 por venir (dos en la
+// semana del 9 de noviembre, de dos cursos; uno el 16; uno de un día el 25; dos sin semana). La tabla de grupos
+// programados, «Grupos que ya terminaron» y el calendario los reflejan, sin desborde y en un tiempo razonable.
+{
+  const d40 = JSON.parse(JSON.stringify(d));
+  const base = d40.grupo.find((g) => g.folio === 'APD-G-2026-005');
+  let n = 100;
+  const agrega = (cambios) => { n += 1; d40.grupo.push(Object.assign({}, base, { id: `prueba-volumen-${n}`, folio: `APD-G-2026-${n}`, instructor: null, hora_entrada: null, fecha_inicio: null }, cambios)); };
+  const CURSOS = [['poda', 'nueva'], ['poda', 'renovacion'], ['dictaminador', 'nueva'], ['dictaminador', 'renovacion']];
+  for (let i = 0; i < 20; i++) {
+    const lunes = new Date(Date.UTC(2026, 2, 2 + 7 * i, 12)).toISOString().slice(0, 10);
+    const [tipo, modalidad] = CURSOS[i % 4];
+    agrega({ tipo_acreditacion: tipo, modalidad, estado: 'concluido', fecha_inicio: lunes, hora_entrada: '09:00:00', instructor: 'instructor.ficticio' });
+  }
+  for (let i = 0; i < 4; i++) agrega({ tipo_acreditacion: CURSOS[i][0], modalidad: CURSOS[i][1], estado: 'cancelado' });
+  agrega({ estado: 'confirmado', fecha_inicio: '2026-11-09', hora_entrada: '09:00:00', instructor: 'instructor.ficticio' });
+  agrega({ tipo_acreditacion: 'dictaminador', modalidad: 'nueva', estado: 'en_integracion', fecha_inicio: '2026-11-09' });
+  agrega({ estado: 'en_integracion', fecha_inicio: '2026-11-16' });
+  agrega({ tipo_acreditacion: 'poda', modalidad: 'renovacion', estado: 'en_integracion', fecha_inicio: '2026-11-25' });
+  agrega({ estado: 'en_integracion' });
+  agrega({ tipo_acreditacion: 'dictaminador', modalidad: 'nueva', estado: 'en_integracion' });
+  const cuerpo40 = JSON.stringify(d40);
+  const activos = d40.grupo.filter((g) => ['en_integracion', 'confirmado', 'en_curso'].includes(g.estado)).length;
+  const terminados = d40.grupo.filter((g) => ['concluido', 'cancelado'].includes(g.estado)).length;
+  for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritorio', { width: 1280, height: 900 }]]) {
+    const ctx = await navegador.newContext({ viewport: vp, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+    await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo40, contentType: 'application/json' }));
+    const pg = await ctx.newPage();
+    const errores = [];
+    pg.on('pageerror', (e) => errores.push(String(e)));
+    pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    try {
+      const t0 = Date.now();
+      await pg.goto(BASE + 'grupos.html?curso=poda-nueva&mes=2026-11&paso=2');
+      await pg.waitForSelector('#paso-semana:not([hidden]) .arm-semana');
+      await pg.waitForSelector('[data-programados] tr[data-grupo]');
+      const ms = Date.now() - t0;
+      const r = await pg.evaluate(() => ({ filas: document.querySelectorAll('[data-programados] tr[data-grupo]').length, terminados: (document.querySelector('[data-terminados-titulo]') || {}).textContent,
+        semana9: document.querySelector('.arm-semana[data-lunes="2026-11-09"]').textContent.replace(/\s+/g, ' '), semana16: document.querySelector('.arm-semana[data-lunes="2026-11-16"]').textContent.replace(/\s+/g, ' '),
+        sinSemana: [...document.querySelectorAll('[data-programados] tr[data-grupo]')].filter((f) => /Sin semana/.test(f.textContent)).length,
+        desborde: document.documentElement.scrollWidth > innerWidth + 1 }));
+      comprueba(d40.grupo.length === 40 && r.filas === activos && r.terminados === `Grupos que ya terminaron · ${terminados}` && r.sinSemana >= 3,
+        `[${tam}] grupos con 40 grupos: «Grupos programados» con los ${r.filas} activos (de ${activos}; ${r.sinSemana} sin semana) y «${r.terminados}»`);
+      comprueba(/No disponible\s*Ya hay 2 grupos/.test(r.semana9) && /otro curso/.test(r.semana9) && /1 lugar libre de 2/.test(r.semana16),
+        `[${tam}] grupos con 40 grupos: la semana del 9 de noviembre (2 grupos, uno de otro curso) no está disponible y la del 16 tiene 1 lugar libre de 2`);
+      comprueba(!r.desborde && ms < 6000 && !errores.length, `[${tam}] grupos con 40 grupos y 112 en espera: sin desborde, lista en ${ms} ms (tope 6 s)${errores.length ? `; errores: ${errores.slice(0, 2).join(' | ')}` : ''}`);
+      await pg.click('[data-terminados] > summary');
+      comprueba((await pg.$$('[data-terminados-lista] li')).length === terminados && await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `[${tam}] grupos con 40 grupos: «Grupos que ya terminaron», desplegado, lista los ${terminados} sin desborde`);
+    } catch (e) { comprueba(false, `[${tam}] grupos con 40 grupos: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+    await ctx.close();
+  }
 }
 
 // RI-09 y B4-03 (auditoría 2026-10-20): en «Asistencia» del grupo de 25 con el día 2 sin capturar, «Falta capturar el día
