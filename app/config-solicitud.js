@@ -17,9 +17,10 @@
      · dependencia_cdmx = otro + dependencia_cdmx_otra → institución con ese nombre;
      · alcaldia                                        → la de esa clave (lista de las 16);
      · dependencia_federal = cfe | otro (+ nombre)     → la de clave cfe o la del nombre escrito;
-     · educativa = unam | otro (+ nombre)              → la de clave unam o la del nombre escrito.
-   Estudios, en los dos tipos: nivel_estudios; con licenciatura o posgrado, carrera y estatus_estudios; con carrera
-   técnica, carrera_tecnica (escrita, sin catálogo).
+     · educativa = unam | chapingo | otro (+ nombre)   → la de clave unam o chapingo, o la del nombre escrito.
+   Estudios, en los dos tipos: nivel_estudios; con licenciatura o posgrado, carrera; en dictaminador con licenciatura,
+   estatus_estudios (en poda no se pregunta, sesión de trabajo del 23/10/2026: lo dice el auxiliar pedir_situacion); con
+   carrera técnica, carrera_tecnica (escrita, sin catálogo).
    Van tal cual; en dictaminador la base calcula
    perfil_academico y experiencia_minima (apd.perfil_academico) y liga la carrera a apd.carrera.
 
