@@ -67,7 +67,10 @@
     const barraPie = $('[data-barra]');
     const anchoFija = matchMedia('(min-width: 760px)');
     const ajustaBarra = () => {
-      const alto = barraPie.hidden ? 0 : barraPie.getBoundingClientRect().height;
+      // El alto visible: fija, la barra se extiende por debajo de la ventana (bottom negativo en app/apd.css) y esa parte
+      // no cuenta ni para el cuarto de la ventana ni para lo que se reserva
+      const extiende = barraPie.hasAttribute('data-suelta') ? 0 : Math.max(0, -parseFloat(getComputedStyle(barraPie).bottom) || 0);
+      const alto = barraPie.hidden ? 0 : Math.max(0, barraPie.getBoundingClientRect().height - (anchoFija.matches ? extiende : 0));
       const suelta = anchoFija.matches && alto > innerHeight / 4;
       const cambia = suelta !== barraPie.hasAttribute('data-suelta');
       barraPie.toggleAttribute('data-suelta', suelta);
