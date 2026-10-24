@@ -100,6 +100,17 @@ const ASISTE21 = `INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capt
 const SIN_ACRED = `(SELECT s.id FROM apd.solicitante s WHERE NOT EXISTS (SELECT 1 FROM apd.acreditacion a WHERE a.solicitante_id = s.id) ORDER BY s.curp LIMIT 1)`;
 const ACTIVA = `(SELECT id FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)`;
 const COMO = (tipo, usuario = 'prueba.automatica') => `SELECT set_config('apd.usuario', '${usuario}', true), set_config('apd.usuario_tipo', '${tipo}', true);`;
+// ── Cancelación (P120) y reposición (P140), sesión de trabajo del 23/10/2026 ──
+// Perfil del personal en el acceso del SIA (P27), como lo declara el backend
+const PERFIL = (perfil) => `SELECT set_config('apd.perfil', '${perfil}', true);`;
+// PD-2025-K100: poda vigente del registro anterior, sin trámite (vence el 19/11/2026)
+const ACRED_VIGENTE = `(SELECT id FROM apd.acreditacion WHERE numero = 'PD-2025-K100')`;
+const ACRED_CANCELADA = `(SELECT id FROM apd.acreditacion WHERE cancelada_en IS NOT NULL ORDER BY numero LIMIT 1)`;
+// La acreditación de la reposición ficticia en ese paso
+const REPOS = (estado) => `(SELECT acreditacion_id FROM apd.reposicion WHERE estado = '${estado}' ORDER BY solicitada_en LIMIT 1)`;
+const REPOSICION = (acred, tam = 1000) =>
+  `INSERT INTO apd.reposicion (acreditacion_id, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256)
+   VALUES (${acred}, 'perdida', 'prueba/' || gen_random_uuid(), 'acta.pdf', 'application/pdf', ${tam}, repeat('f', 64));`;
 // Bitácora: cuántos renglones deja una acción (E2-04)
 const B0 = `CREATE TEMP TABLE b0 AS SELECT count(*) AS n FROM apd.bitacora;`;
 const MAS = (n, accion) => `DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.bitacora) = (SELECT n FROM b0) + ${n};${accion ? ` ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = '${accion}' AND usuario = 'prueba.automatica');` : ''} END $$;`;
@@ -129,7 +140,7 @@ const casos = [
   ['La verificación pública no expone CURP ni contacto', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT array_agg(column_name::text ORDER BY ordinal_position) FROM information_schema.columns
               WHERE table_schema = 'apd' AND table_name = 'verificacion_publica')
-            = ARRAY['numero', 'nombre', 'tipo', 'emitida_en', 'vence_en', 'situacion']; END $$;`],
+            = ARRAY['numero', 'nombre', 'tipo', 'emitida_en', 'vence_en', 'situacion', 'cancelada_el']; END $$;`],
   ['El dictaminador sigue vigente hasta su fecha aunque su poda haya vencido (R43)', 'ok', null, `DO $$ BEGIN
      ASSERT apd.acreditacion_vigente(${DICT_SIN_PODA});
      ASSERT (SELECT situacion FROM apd.verificacion_publica WHERE numero = 'DT-2026-K107') = 'Vigente'; END $$;`],
@@ -1340,7 +1351,194 @@ const casos = [
      ASSERT (SELECT bool_and(obligatorio) FROM apd.requisito_curso WHERE requisito = 'comprobante_domicilio' AND modalidad = 'nueva'); END $$;`],
   // Montos (P16): cada concepto con su monto, su publicación y su fecha de inicio, editable sin programar
   ['Cada curso tiene su monto con la publicación que lo fija y desde cuándo aplica (P16)', 'ok', null, `DO $$ BEGIN
-     ASSERT (SELECT count(*) FROM apd.curso WHERE pago_monto > 0 AND coalesce(trim(pago_fundamento), '') <> '' AND pago_vigente_desde IS NOT NULL) = 4; END $$;`]
+     ASSERT (SELECT count(*) FROM apd.curso WHERE pago_monto > 0 AND coalesce(trim(pago_fundamento), '') <> '' AND pago_vigente_desde IS NOT NULL) = 4; END $$;`],
+
+  // ── Cancelación de una acreditación (P120, sesión de trabajo del 23/10/2026): instructores y directivos, con motivo y
+  //    fundamento; una cancelada no es vigente, no se renueva ni sirve de requisito ──
+  ['Cancelación: un instructor cancela una acreditación vigente con motivo y fundamento; la base pone quién y cuándo, y queda en la bitácora (P120)', 'ok', '2026-10-14 12:00', `
+     ${PERFIL('instructor')} ${B0}
+     UPDATE apd.acreditacion SET cancelacion_motivo = '  Motivo de la prueba automática.  ', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};
+     DO $$ BEGIN
+       ASSERT (SELECT cancelada_por = 'prueba.automatica' AND cancelada_en = '2026-10-14 12:00-06' AND cancelacion_motivo = 'Motivo de la prueba automática.'
+                 FROM apd.acreditacion WHERE id = ${ACRED_VIGENTE});
+       ASSERT apd.estado_acreditacion(${ACRED_VIGENTE}) = 'cancelada' AND NOT apd.acreditacion_vigente(${ACRED_VIGENTE});
+       ASSERT apd.acreditacion_vigente(${ACRED_VIGENTE}, '2026-10-13') AND apd.estado_acreditacion(${ACRED_VIGENTE}, '2026-10-13') = 'vigente';
+     END $$; ${MAS(1, 'cancelacion')}`],
+  ['Cancelación: la Dirección (perfil administración) también cancela (P120)', 'ok', '2026-10-14 12:00', `
+     ${PERFIL('administracion')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación: un perfil sin permiso (revisión y cotejo) no cancela (P120, P27)', { codigo: 'cancelacion_sin_permiso' }, '2026-10-14 12:00', `
+     ${PERFIL('revision_cotejo')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación: el personal sin perfil declarado no cancela (P120)', { codigo: 'cancelacion_sin_permiso' }, '2026-10-14 12:00', `
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación: la persona solicitante no cancela, aunque declare un perfil (P120)', { codigo: 'cancelacion_sin_permiso' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')} ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación sin motivo (menos de 10 caracteres) se rechaza (P120)', { codigo: 'cancelacion_sin_motivo' }, '2026-10-14 12:00', `
+     ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Corto', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación sin fundamento se rechaza (P120)', { codigo: 'cancelacion_sin_fundamento' }, '2026-10-14 12:00', `
+     ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '  ' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación de una acreditación vencida se rechaza: sólo se cancela una vigente (P120)', { codigo: 'cancelacion_no_vigente' }, '2026-10-14 12:00', `
+     ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_NO_RENOVABLE};`],
+  ['Una cancelación no se cambia ni se deshace (P120)', { codigo: 'acreditacion_ya_cancelada' }, '2026-10-14 12:00', `
+     ${PERFIL('administracion')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = NULL, cancelacion_fundamento = NULL WHERE id = ${ACRED_CANCELADA};`],
+  ['La fecha y quién canceló no los escribe la cuenta del servicio (P120)', { sqlstate: '42501' }, null, `
+     UPDATE apd.acreditacion SET cancelada_en = now(), cancelada_por = 'otra' WHERE id = ${ACRED_VIGENTE};`],
+  ['La ficticia cancelada: «Verificar» dice «Cancelada» con su día y sin el motivo ni el fundamento (P120)', 'ok', '2026-10-14 12:00', `DO $$ BEGIN
+     ASSERT (SELECT situacion = 'Cancelada' AND cancelada_el = '2026-10-08' FROM apd.verificacion_publica WHERE numero = (SELECT numero FROM apd.acreditacion WHERE id = ${ACRED_CANCELADA}));
+     ASSERT NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'apd' AND table_name = 'verificacion_publica'
+                         AND (column_name LIKE '%motivo%' OR column_name LIKE '%fundamento%' OR column_name LIKE '%por'));
+     ASSERT (SELECT count(*) FROM apd.verificacion_publica WHERE situacion = 'Cancelada') = (SELECT count(*) FROM apd.acreditacion WHERE cancelada_en IS NOT NULL);
+     ASSERT (SELECT cancelada_por = 'instructor.ficticio' FROM apd.acreditacion WHERE id = ${ACRED_CANCELADA}); END $$;`],
+  ['No se renueva una cancelada, aunque esté en su ventana de renovación (P120)', { codigo: 'renovacion_cancelada' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, acreditacion_anterior_id)
+     VALUES ((SELECT solicitante_id FROM apd.acreditacion WHERE id = ${ACRED_CANCELADA}), 'poda', 'renovacion', ${ACRED_CANCELADA});`],
+  ['Una cancelada no impide una solicitud nueva (si y cuándo puede volver a pedirla lo fija la Dirección Jurídica, P120)', 'ok', '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ((SELECT solicitante_id FROM apd.acreditacion WHERE id = ${ACRED_CANCELADA}), 'poda', 'nueva', 'preparatoria');`],
+  ['Una poda cancelada no sirve de requisito para la de dictaminador (P120)', { codigo: 'sin_poda_vigente' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
+     VALUES ((SELECT solicitante_id FROM apd.acreditacion WHERE id = ${ACRED_CANCELADA}), 'dictaminador', 'nueva', 'licenciatura');`],
+  ['Una cancelada corta la cuenta de los dos años de poda para pedir la de dictaminador (P120, sesión del 23/10)', 'ok', '2026-10-14 12:00', `
+     CREATE TEMP TABLE p AS SELECT solicitante_id AS id FROM apd.acreditacion WHERE tipo_acreditacion = 'poda' AND emitida_en = '2025-05-18' ORDER BY numero LIMIT 1;
+     DO $$ BEGIN ASSERT apd.poda_continua_desde((SELECT id FROM p)) = '2024-05-18'; END $$;
+     -- La del 18/05/2025 se cancela mientras estaba vigente (01/06/2025); la de 2026 sigue vigente
+     SELECT set_config('apd.ahora_simulado', '2025-06-01 10:00-06', true); ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]'
+      WHERE solicitante_id = (SELECT id FROM p) AND emitida_en = '2025-05-18';
+     SELECT set_config('apd.ahora_simulado', '2026-10-14 12:00-06', true);
+     DO $$ BEGIN
+       ASSERT apd.poda_vigente((SELECT id FROM p));
+       ASSERT apd.poda_continua_desde((SELECT id FROM p)) = '2026-05-18';
+       ASSERT apd.poda_continua_desde((SELECT id FROM p), '2025-05-20') = '2024-05-18'; END $$;`],
+  ['Con una cancelada en la cadena, la de dictaminador no se pide hasta juntar dos años después de ella (P120, sesión del 23/10)', { codigo: 'poda_menos_de_dos_anios' }, '2026-10-14 12:00', `
+     CREATE TEMP TABLE p AS SELECT solicitante_id AS id FROM apd.acreditacion WHERE tipo_acreditacion = 'poda' AND emitida_en = '2026-06-01' ORDER BY numero LIMIT 1;
+     SELECT set_config('apd.ahora_simulado', '2025-07-01 10:00-06', true); ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]'
+      WHERE solicitante_id = (SELECT id FROM p) AND emitida_en = '2025-06-01';
+     SELECT set_config('apd.ahora_simulado', '2026-10-14 12:00-06', true); ${COMO('solicitante', 'persona@ejemplo.local')}
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios) VALUES ((SELECT id FROM p), 'dictaminador', 'nueva', 'licenciatura');`],
+  ['La cancelación cierra la renovación que estaba en trámite, con el motivo (P120)', 'ok', '2026-10-14 12:00', `
+     ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_POR_VENCER};
+     DO $$ BEGIN
+       ASSERT (SELECT bool_and(estado = 'cancelada' AND motivo_cierre LIKE '%que se renovaba fue cancelada.') FROM apd.solicitud WHERE acreditacion_anterior_id = ${ACRED_POR_VENCER});
+       ASSERT EXISTS (SELECT 1 FROM apd.solicitud WHERE acreditacion_anterior_id = ${ACRED_POR_VENCER}); END $$;`],
+  ['No se emite la renovación aprobada de una acreditación que se canceló (P120)', { codigo: 'renovacion_de_cancelada' }, '2026-10-14 12:00', `
+     SET LOCAL session_replication_role = replica;
+     UPDATE apd.solicitud SET estado = 'aprobada' WHERE id = (SELECT id FROM apd.solicitud WHERE modalidad = 'renovacion' AND estado = 'lista_para_curso' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1);
+     UPDATE apd.acreditacion SET cancelada_en = now(), cancelada_por = 'x', cancelacion_motivo = 'Motivo de la prueba.', cancelacion_fundamento = 'x'
+      WHERE id = (SELECT acreditacion_anterior_id FROM apd.solicitud WHERE modalidad = 'renovacion' AND estado = 'aprobada' AND tipo_acreditacion = 'dictaminador');
+     SET LOCAL session_replication_role = origin;
+     INSERT INTO apd.acreditacion (solicitante_id, tipo_acreditacion, solicitud_id)
+     SELECT solicitante_id, 'dictaminador', id FROM apd.solicitud WHERE modalidad = 'renovacion' AND estado = 'aprobada' AND tipo_acreditacion = 'dictaminador';`, 'admin'],
+  ['Una acreditación cancelada no se entrega (P120)', { codigo: 'entrega_de_cancelada' }, '2026-10-14 12:00', `
+     CREATE TEMP TABLE a AS SELECT id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL ORDER BY numero LIMIT 1;
+     ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = (SELECT id FROM a);
+     ${FOTO_DOC(`(SELECT solicitud_id FROM apd.acreditacion WHERE id = (SELECT id FROM a))`)}
+     UPDATE apd.acreditacion SET entregada_en = '2026-10-14' WHERE id = (SELECT id FROM a);`],
+  ['Pueden cancelar los perfiles instructor y administración (parámetro editable, P120)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'perfiles_cancelan_acreditacion') = 'instructor,administracion'; END $$;`],
+
+  // ── Reposición de la credencial (P140, sesión de trabajo del 23/10/2026) ──
+  ['Reposición: la persona pide la de su credencial vigente con el acta; la base pone el estado, el nombre del acta y la bitácora (P140)', 'ok', '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')} ${B0}
+     ${REPOSICION(ACRED_VIGENTE)}
+     DO $$ BEGIN
+       ASSERT (SELECT estado = 'solicitada' AND acta_nombre_archivo LIKE 'ACTA DE PERDIDA O ROBO\\_%.pdf' AND solicitada_en = '2026-10-14 12:00-06' AND revisada_por IS NULL
+                 FROM apd.reposicion WHERE acreditacion_id = ${ACRED_VIGENTE});
+       ASSERT (SELECT count(*) FROM apd.bitacora) = (SELECT n FROM b0) + 1; END $$;`],
+  ['Reposición: el personal no la pide por la persona (P140)', { codigo: 'reposicion_de_la_persona' }, '2026-10-14 12:00', REPOSICION(ACRED_VIGENTE)],
+  ['Reposición de la credencial de una acreditación cancelada se rechaza (P140)', { codigo: 'reposicion_no_vigente' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')} ${REPOSICION(ACRED_CANCELADA)}`],
+  ['Reposición de una credencial del sistema que todavía no se entrega se rechaza (P140)', { codigo: 'reposicion_sin_entrega' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')} ${REPOSICION(`(SELECT id FROM apd.acreditacion WHERE origen = 'sistema' AND entregada_en IS NULL ORDER BY numero LIMIT 1)`)}`],
+  ['Reposición: una sola abierta por credencial (P140)', { codigo: 'reposicion_en_curso' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')} ${REPOSICION(REPOS('solicitada'))}`],
+  ['Reposición: un acta de más de 5 MB se rechaza (P140)', { codigo: 'archivo_grande' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')} ${REPOSICION(ACRED_VIGENTE, 5242881)}`],
+  ['Reposición: el personal acepta el acta y se fija la cuota vigente; un cambio de cuota posterior no la altera (P140)', 'ok', '2026-10-14 12:00', `
+     ${PERFIL('revision_cotejo')}
+     CREATE TEMP TABLE a AS SELECT ${REPOS('solicitada')} AS id;
+     UPDATE apd.reposicion SET estado = 'acta_aceptada' WHERE acreditacion_id = (SELECT id FROM a);
+     UPDATE apd.cuota SET monto = 95.00, vigente_desde = '2026-10-14', fundamento = 'Publicación de prueba.' WHERE clave = 'reposicion_credencial';
+     DO $$ BEGIN
+       ASSERT (SELECT pago_monto = 88.00 AND revisada_por = 'prueba.automatica' AND revisada_en = '2026-10-14 12:00-06' FROM apd.reposicion WHERE acreditacion_id = (SELECT id FROM a));
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_monto' AND entidad = 'cuota' AND detalle LIKE '88.00 → 95.00%'); END $$;`],
+  ['Reposición: la persona no revisa su propia acta (P140)', { codigo: 'reposicion_de_personal' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     UPDATE apd.reposicion SET estado = 'acta_aceptada' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: observar el acta sin decir qué corregir se rechaza (P140)', { codigo: 'observaciones_vacias' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET estado = 'con_observaciones', observacion = 'Corrige' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: con observaciones, la persona carga otra acta y vuelve a revisión; la bitácora conserva la anterior (P140)', 'ok', '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     CREATE TEMP TABLE antes AS SELECT acta_archivo_clave FROM apd.reposicion WHERE estado = 'con_observaciones';
+     UPDATE apd.reposicion SET estado = 'solicitada', motivo = 'robo', acta_archivo_clave = 'prueba/acta-corregida.pdf', acta_nombre_original = 'acta2.pdf', acta_sha256 = repeat('e', 64)
+      WHERE estado = 'con_observaciones';
+     DO $$ BEGIN
+       ASSERT (SELECT observacion = '' FROM apd.reposicion WHERE acta_archivo_clave = 'prueba/acta-corregida.pdf');
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'reposicion' AND detalle LIKE '%con_observaciones → solicitada%en lugar de ' || (SELECT acta_archivo_clave FROM antes) || '%'); END $$;`],
+  ['Reposición: volver a revisión sin cargar otra acta se rechaza (P140)', { codigo: 'acta_sin_cambio' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     UPDATE apd.reposicion SET estado = 'solicitada' WHERE estado = 'con_observaciones';`],
+  ['Reposición: el acta no se cambia si no tiene observaciones (P140)', { codigo: 'acta_fuera_de_turno' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     UPDATE apd.reposicion SET acta_archivo_clave = 'prueba/otra.pdf' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: credencial repuesta con la factura; la acreditación conserva número, emisión y vigencia (P140)', 'ok', '2026-10-14 12:00', `
+     CREATE TEMP TABLE a0 AS SELECT a.* FROM apd.acreditacion a WHERE id = ${REPOS('acta_aceptada')};
+     CREATE TEMP TABLE n0 AS SELECT count(*) AS n FROM apd.acreditacion;
+     UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = 'ejem760707ab1', factura_razon_social = ' PERSONA EJEMPLO ',
+       factura_folio_fiscal = 'abcdef01-2345-4678-9abc-def012345678' WHERE estado = 'acta_aceptada';
+     DO $$ BEGIN
+       ASSERT (SELECT repuesta_en = '2026-10-14' AND repuesta_por = 'prueba.automatica' AND factura_rfc = 'EJEM760707AB1' AND factura_folio_fiscal = 'ABCDEF01-2345-4678-9ABC-DEF012345678'
+                 FROM apd.reposicion WHERE acreditacion_id = (SELECT id FROM a0) AND estado = 'repuesta');
+       ASSERT (SELECT (a.numero, a.emitida_en, a.vence_en, a.entregada_en, a.solicitud_id) IS NOT DISTINCT FROM (a0.numero, a0.emitida_en, a0.vence_en, a0.entregada_en, a0.solicitud_id)
+                 FROM apd.acreditacion a, a0 WHERE a.id = a0.id);
+       ASSERT (SELECT count(*) FROM apd.acreditacion) = (SELECT n FROM n0);
+       ASSERT apd.estado_acreditacion((SELECT id FROM a0)) = 'vigente';
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'reposicion' AND entidad_id = (SELECT id FROM a0)::text AND detalle LIKE '%mismo número y vigencia'); END $$;`],
+  ['Reposición: sin los datos de la factura no se marca repuesta (P140)', { codigo: 'sin_factura' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = 'EJEM760707AB1' WHERE estado = 'acta_aceptada';`],
+  ['Reposición: el folio fiscal de una solicitud no se repite en una reposición (P140)', { codigo: 'folio_fiscal_repetido' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = 'EJEM760707AB1', factura_razon_social = 'PERSONA EJEMPLO',
+       factura_folio_fiscal = (SELECT factura_folio_fiscal FROM apd.solicitud WHERE factura_folio_fiscal IS NOT NULL ORDER BY folio LIMIT 1) WHERE estado = 'acta_aceptada';`],
+  ['Reposición: la factura no se captura antes de aceptar el acta (P140)', { codigo: 'factura_fuera_de_turno' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET factura_rfc = 'EJEM760707AB1' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: del acta en revisión no se pasa directo a repuesta (P140)', { codigo: 'transicion_reposicion' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = 'EJEM760707AB1', factura_razon_social = 'PERSONA EJEMPLO',
+       factura_folio_fiscal = 'ABCDEF01-2345-4678-9ABC-DEF012345678' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: una repuesta ya no cambia de estado (P140)', { codigo: 'transicion_reposicion' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET estado = 'cancelada', observacion = 'Motivo de la prueba.' WHERE estado = 'repuesta';`],
+  ['Reposición: cancelarla sin decir por qué se rechaza (P140)', { codigo: 'reposicion_sin_motivo' }, '2026-10-14 12:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     UPDATE apd.reposicion SET estado = 'cancelada' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: el motivo (pérdida o robo) sólo cambia al corregir el acta (P140)', { codigo: 'campo_inmutable' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET motivo = 'robo' WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: la acreditación y la fecha de la solicitud no las escribe la cuenta del servicio (P140)', { sqlstate: '42501' }, '2026-10-14 12:00', `
+     UPDATE apd.reposicion SET acreditacion_id = ${ACRED_VIGENTE}, solicitada_en = now() WHERE acreditacion_id = ${REPOS('solicitada')};`],
+  ['Reposición: nadie la borra (P140)', { sqlstate: '42501' }, null, `DELETE FROM apd.reposicion;`],
+  ['Cancelar la acreditación cancela la reposición abierta de su credencial (P120, P140)', 'ok', '2026-10-14 12:00', `
+     CREATE TEMP TABLE a AS SELECT ${REPOS('acta_aceptada')} AS id;
+     ${PERFIL('instructor')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = (SELECT id FROM a);
+     DO $$ BEGIN ASSERT (SELECT estado = 'cancelada' AND observacion = 'La acreditación se canceló.' FROM apd.reposicion WHERE acreditacion_id = (SELECT id FROM a)); END $$;`],
+  ['Cuota de reposición: la persona no la cambia (P140)', { codigo: 'cuota_de_personal' }, null, `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     UPDATE apd.cuota SET monto = 1 WHERE clave = 'reposicion_credencial';`],
+  ['Cuota de reposición: un monto sin la publicación que lo fija se rechaza (P140)', { sqlstate: '23514' }, null, `
+     UPDATE apd.cuota SET monto = 90, fundamento = NULL WHERE clave = 'reposicion_credencial';`],
+  ['Cuota de reposición: monto ficticio de $88.00 con su publicación, su fecha y la marca de confirmarlo con Finanzas (P140)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT monto = 88.00 AND vigente_desde = '2026-07-01' AND fundamento LIKE '%No. 1548 del 14/02/2025%[pendiente P140%Finanzas]%' FROM apd.cuota WHERE clave = 'reposicion_credencial');
+     ASSERT (SELECT array_agg(estado ORDER BY estado) FROM apd.reposicion) = ARRAY['acta_aceptada', 'con_observaciones', 'repuesta', 'solicitada']; END $$;`]
 ];
 
 let fallas = 0;

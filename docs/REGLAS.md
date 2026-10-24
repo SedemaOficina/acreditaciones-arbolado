@@ -56,11 +56,43 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 | `por_vencer` | Los 30 días naturales antes del vencimiento y el día del vencimiento (31 días; parámetro `dias_antes_renovacion` = 30) | Sí, y ya puede renovar |
 | `vencida_renovable` | Hasta un año después del vencimiento | **No** |
 | `vencida_no_renovable` | Después | **No**; tramita como nueva |
+| `cancelada` | Desde el día de su cancelación (P120, sesión de trabajo del 23/10/2026) | **No**; no se renueva |
 
 - Vence el día anterior al aniversario de la emisión. La renovada cuenta su año desde su propia emisión.
 - Dictaminador: sigue vigente hasta su propia fecha aunque la de poda venza antes.
-- La verificación pública (`apd.verificacion_publica`) sólo muestra número, nombre, tipo, fechas y «Vigente»
-  o «No vigente».
+- La verificación pública (`apd.verificacion_publica`) sólo muestra número, nombre, tipo, fechas y «Vigente»,
+  «No vigente» o «Cancelada» (con el día de la cancelación, sin el motivo ni el fundamento).
+
+## Cancelación de una acreditación (P120, sesión de trabajo del 23/10/2026)
+
+- La registran los instructores y la Dirección: el backend declara el perfil del personal (`apd.perfil`) y la base sólo
+  admite los del parámetro `perfiles_cancelan_acreditacion` (`instructor,administracion`, P27). La persona solicitante y
+  los demás perfiles reciben `cancelacion_sin_permiso`.
+- Sólo de una acreditación vigente ese día (`cancelacion_no_vigente`), con motivo de al menos 10 caracteres
+  (`cancelacion_sin_motivo`) y fundamento (`cancelacion_sin_fundamento`; mientras la Dirección Jurídica fija las causas,
+  «[Art. __, fracc. __]»). La base pone el día y quién (`cancelada_en`, `cancelada_por`: la cuenta del servicio no los
+  escribe); no se cambia ni se deshace (`acreditacion_ya_cancelada`) y queda en la bitácora con el motivo y el fundamento.
+- Una cancelada no es vigente desde ese día (`apd.cancelada_al`), no se renueva (`renovacion_cancelada`), no sirve de
+  requisito (la poda del dictaminador: `sin_poda_vigente`), corta la cuenta de los dos años de poda
+  (`apd.poda_continua_desde`) y no se entrega (`entrega_de_cancelada`). Al cancelarla, la base cancela su reposición
+  abierta y sus renovaciones en trámite, con el motivo; si la renovación ya estaba aprobada, no se emite
+  (`renovacion_de_cancelada`). No impide una solicitud nueva: si y cuándo se puede volver a pedir lo fija la Dirección
+  Jurídica (P120).
+
+## Reposición de la credencial (P140, sesión de trabajo del 23/10/2026)
+
+| Paso (`apd.reposicion.estado`) | Quién | Qué pide la base |
+|---|---|---|
+| → `solicitada` | La persona titular (`reposicion_de_la_persona`) | Acreditación vigente (`reposicion_no_vigente`), credencial ya entregada si es del sistema (`reposicion_sin_entrega`), una sola abierta (`reposicion_en_curso`; índice `reposicion_una_abierta`), acta PDF, JPG o PNG de hasta 5 MB (`archivo_grande`). La base nombra el acta (ACTA DE PERDIDA O ROBO_NOMBRE.ext) |
+| `solicitada` → `con_observaciones` | Personal (`reposicion_de_personal`) | Qué corregir, al menos 10 caracteres (`observaciones_vacias`) |
+| `con_observaciones` → `solicitada` | La persona | Otra acta (`acta_sin_cambio`); la bitácora conserva la anterior. El acta no cambia en otro paso (`acta_fuera_de_turno`) |
+| `solicitada` → `acta_aceptada` | Personal | Fija el monto de la cuota vigente ese día (`apd.cuota`, clave `reposicion_credencial`); un cambio posterior no lo altera |
+| `acta_aceptada` → `repuesta` | Personal, en el Vivero | La factura de la cuota: RFC válido, nombre y folio fiscal que no se repite con otra reposición ni con una solicitud (`sin_factura`, `folio_fiscal_repetido`; la factura no se captura en otro paso: `factura_fuera_de_turno`). La base pone el día y quién. La acreditación no cambia: mismo número, emisión y vigencia |
+| abierta → `cancelada` | Cualquiera, con motivo (`reposicion_sin_motivo`); la base, al cancelar la acreditación | — |
+
+Otro cambio de paso es `transicion_reposicion`; el motivo (pérdida o robo) sólo cambia al corregir el acta. La cuota la
+cambia sólo el personal (`cuota_de_personal`), con su publicación y su fecha de inicio (`cuota_monto_ck`), y queda en la
+bitácora.
 
 ## Grupos
 
@@ -184,8 +216,9 @@ primera, ve lo que hizo y, si ya no corresponde, recibe el error de su regla con
 | La inscripción (`inscripcion_alta`) | El grupo y la solicitud | Pasar del cupo máximo; la misma solicitud en dos grupos |
 | Fijar o cambiar la fecha de un grupo (`apd.comprobar_fechas_grupo`, sesión de trabajo del 23/10/2026) | Un candado de la transacción (`pg_advisory_xact_lock`) | Tres grupos al mismo tiempo cuando dos personas programan a la vez (`grupos_simultaneos`, P149) |
 | La asistencia (`asistencia_captura`) y el examen (`examen_captura`) | La inscripción | Examen de quien se dio de baja o sin el pase de lista del día del examen (`baja_con_examen`, `inscripcion_inactiva`, `asistencia_cerrada`, `sin_pase_de_lista`) |
+| Pedir y cambiar una reposición (`reposicion_alta`, `reposicion_cambio`; sesión de trabajo del 23/10/2026) | La acreditación | Dos reposiciones abiertas de la misma credencial (`reposicion_en_curso`); una credencial repuesta después de cancelada su acreditación (la cancelación cancela la reposición abierta) |
 
-`herramientas/probar-concurrencia.sh` lo comprueba con dos conexiones de la cuenta del servicio a la vez (21 escenarios).
+`herramientas/probar-concurrencia.sh` lo comprueba con dos conexiones de la cuenta del servicio a la vez (24 escenarios).
 
 Para el backend: si una transacción de revisión cambia la cita antes que los documentos y otra decide un documento al
 mismo tiempo, PostgreSQL puede encontrar un interbloqueo y abortar una de las dos (`40P01`, sin código `apd:`); la base

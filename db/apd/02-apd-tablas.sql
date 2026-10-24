@@ -54,6 +54,24 @@ COMMENT ON COLUMN apd.curso.pago_vigente_desde IS 'Desde cuándo aplica el monto
 COMMENT ON COLUMN apd.curso.activo IS 'Si se pueden abrir grupos de este curso';
 COMMENT ON COLUMN apd.curso.actualizado_en IS 'Último cambio';
 
+CREATE TABLE apd.cuota (
+  clave                      text          NOT NULL,
+  concepto                   text          NOT NULL,
+  monto                      numeric(10,2) NULL,
+  fundamento                 text          NULL,
+  vigente_desde              date          NULL,
+  actualizado_en             timestamptz   NOT NULL DEFAULT now(),
+  CONSTRAINT cuota_pk PRIMARY KEY (clave),
+  CONSTRAINT cuota_monto_ck CHECK (monto IS NULL OR (monto > 0 AND coalesce(trim(fundamento), '') <> '' AND vigente_desde IS NOT NULL))
+);
+COMMENT ON TABLE apd.cuota IS 'Cuotas que no son de un curso: hoy, la reposición de la credencial (P140, sesión de trabajo del 23/10/2026). Como el pago de cada curso: el monto lo actualiza el personal con la publicación que lo fija y desde cuándo aplica (cambia cada año); cada cambio queda en la bitácora.';
+COMMENT ON COLUMN apd.cuota.clave IS 'Qué se cobra: reposicion_credencial';
+COMMENT ON COLUMN apd.cuota.concepto IS 'Concepto que se muestra a la persona';
+COMMENT ON COLUMN apd.cuota.monto IS 'Monto en pesos. Vacío mientras no se capture';
+COMMENT ON COLUMN apd.cuota.fundamento IS 'Publicación que fija el monto vigente (fecha y número). Obligatorio si hay monto';
+COMMENT ON COLUMN apd.cuota.vigente_desde IS 'Desde cuándo aplica el monto vigente. Obligatorio si hay monto';
+COMMENT ON COLUMN apd.cuota.actualizado_en IS 'Último cambio';
+
 CREATE TABLE apd.requisito (
   clave                      text          NOT NULL,
   nombre                     text          NOT NULL,
@@ -275,6 +293,10 @@ CREATE TABLE apd.acreditacion (
   emitida_en                 date          NOT NULL,
   vence_en                   date          NOT NULL,
   entregada_en               date          NULL,
+  cancelada_en               timestamptz   NULL,
+  cancelacion_motivo         text          NULL,
+  cancelacion_fundamento     text          NULL,
+  cancelada_por              text          NULL,
   origen                     text          NOT NULL DEFAULT 'sistema',
   folio_origen               text          NULL,
   es_ficticio                boolean       NOT NULL DEFAULT false,
@@ -285,11 +307,12 @@ CREATE TABLE apd.acreditacion (
   CONSTRAINT acreditacion_origen_ck CHECK (origen IN ('sistema', 'kobo', 'papel')),
   CONSTRAINT acreditacion_origen_solicitud_ck CHECK ((origen = 'sistema') = (solicitud_id IS NOT NULL)),
   CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en)),
-  CONSTRAINT acreditacion_numero_serie_ck CHECK ((origen = 'sistema') = (numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$'))
+  CONSTRAINT acreditacion_numero_serie_ck CHECK ((origen = 'sistema') = (numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$')),
+  CONSTRAINT acreditacion_cancelacion_ck CHECK ((cancelada_en IS NULL) = (cancelada_por IS NULL) AND (cancelada_en IS NULL) = (cancelacion_motivo IS NULL) AND (cancelada_en IS NULL) = (cancelacion_fundamento IS NULL))
 );
 CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acreditacion, vence_en DESC);
 CREATE INDEX acreditacion_vence ON apd.acreditacion (vence_en);
-COMMENT ON TABLE apd.acreditacion IS 'Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.';
+COMMENT ON TABLE apd.acreditacion IS 'Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día. Una cancelada (P120, sesión de trabajo del 23/10/2026) lo está desde su cancelada_en: ya no es vigente, no se renueva ni sirve de requisito. La credencial se repone sin cambiar la acreditación (apd.reposicion).';
 COMMENT ON COLUMN apd.acreditacion.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.acreditacion.numero IS 'Número impreso en la credencial; lo asigna la base si no se migra (serie PD-AAAA-NNNN o DT-AAAA-NNNN, formato provisional: Liber lo definirá). Una migrada conserva el suyo, que nunca tiene la forma de la serie del sistema, para que no choque con una emisión';
 COMMENT ON COLUMN apd.acreditacion.solicitante_id IS 'Titular';
@@ -298,9 +321,77 @@ COMMENT ON COLUMN apd.acreditacion.solicitud_id IS 'Solicitud que la originó; v
 COMMENT ON COLUMN apd.acreditacion.emitida_en IS 'Fecha de emisión (Ciudad de México)';
 COMMENT ON COLUMN apd.acreditacion.vence_en IS 'Último día de vigencia: un año después de la emisión, menos un día. Lo calcula la base';
 COMMENT ON COLUMN apd.acreditacion.entregada_en IS 'Entrega en persona';
+COMMENT ON COLUMN apd.acreditacion.cancelada_en IS 'Cancelación de la acreditación (P120): desde ese día no es vigente. La pone la base al registrar el motivo y el fundamento';
+COMMENT ON COLUMN apd.acreditacion.cancelacion_motivo IS 'Por qué se canceló, al menos 10 caracteres. Lo lee la persona en «Mis trámites»; «Verificar» no lo muestra';
+COMMENT ON COLUMN apd.acreditacion.cancelacion_fundamento IS 'Fundamento de la cancelación: lineamientos y artículo, mientras los fije la Dirección Jurídica escrito como «[Art. __, fracc. __]» (P120)';
+COMMENT ON COLUMN apd.acreditacion.cancelada_por IS 'Cuenta del personal que la canceló (acceso), con perfil instructor o administración (parámetro perfiles_cancelan_acreditacion). La pone la base';
 COMMENT ON COLUMN apd.acreditacion.origen IS 'sistema, kobo o papel';
 COMMENT ON COLUMN apd.acreditacion.folio_origen IS 'Folio en el sistema de origen, para las migradas';
 COMMENT ON COLUMN apd.acreditacion.es_ficticio IS 'Dato de prueba';
+
+CREATE TABLE apd.reposicion (
+  id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
+  acreditacion_id            uuid          NOT NULL,
+  motivo                     text          NOT NULL,
+  acta_archivo_clave         text          NOT NULL,
+  acta_nombre_original       text          NOT NULL,
+  acta_nombre_archivo        text          NOT NULL DEFAULT '',
+  acta_tipo_mime             text          NOT NULL,
+  acta_tamano_bytes          integer       NOT NULL,
+  acta_sha256                text          NOT NULL,
+  estado                     text          NOT NULL DEFAULT 'solicitada',
+  estado_desde               timestamptz   NOT NULL DEFAULT now(),
+  observacion                text          NOT NULL DEFAULT '',
+  solicitada_en              timestamptz   NOT NULL DEFAULT now(),
+  revisada_por               text          NULL,
+  revisada_en                timestamptz   NULL,
+  pago_monto                 numeric(10,2) NULL,
+  factura_rfc                text          NULL,
+  factura_razon_social       text          NULL,
+  factura_folio_fiscal       text          NULL,
+  repuesta_en                date          NULL,
+  repuesta_por               text          NULL,
+  es_ficticio                boolean       NOT NULL DEFAULT false,
+  CONSTRAINT reposicion_pk PRIMARY KEY (id),
+  CONSTRAINT reposicion_acreditacion_fk FOREIGN KEY (acreditacion_id) REFERENCES apd.acreditacion (id),
+  CONSTRAINT reposicion_acta_uk UNIQUE (acta_archivo_clave),
+  CONSTRAINT reposicion_motivo_ck CHECK (motivo IN ('perdida', 'robo')),
+  CONSTRAINT reposicion_estado_ck CHECK (estado IN ('solicitada', 'con_observaciones', 'acta_aceptada', 'repuesta', 'cancelada')),
+  CONSTRAINT reposicion_mime_ck CHECK (acta_tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png')),
+  CONSTRAINT reposicion_tamano_ck CHECK (acta_tamano_bytes > 0),
+  CONSTRAINT reposicion_sha256_ck CHECK (acta_sha256 ~ '^[0-9a-f]{64}$'),
+  CONSTRAINT reposicion_observacion_ck CHECK (estado NOT IN ('con_observaciones', 'cancelada') OR length(trim(observacion)) > 0),
+  CONSTRAINT reposicion_factura_rfc_ck CHECK (factura_rfc IS NULL OR apd.rfc_valido(factura_rfc)),
+  CONSTRAINT reposicion_folio_fiscal_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'),
+  CONSTRAINT reposicion_repuesta_ck CHECK ((estado = 'repuesta') = (repuesta_en IS NOT NULL AND repuesta_por IS NOT NULL AND factura_rfc IS NOT NULL AND coalesce(trim(factura_razon_social), '') <> '' AND factura_folio_fiscal IS NOT NULL)),
+  CONSTRAINT reposicion_revisada_ck CHECK (estado IN ('solicitada', 'cancelada') OR (revisada_por IS NOT NULL AND revisada_en IS NOT NULL))
+);
+CREATE UNIQUE INDEX reposicion_una_abierta ON apd.reposicion (acreditacion_id) WHERE estado IN ('solicitada', 'con_observaciones', 'acta_aceptada');
+CREATE UNIQUE INDEX reposicion_folio_fiscal_uk ON apd.reposicion (factura_folio_fiscal) WHERE factura_folio_fiscal IS NOT NULL;
+CREATE INDEX reposicion_acreditacion ON apd.reposicion (acreditacion_id, solicitada_en);
+COMMENT ON TABLE apd.reposicion IS 'Reposición de la credencial de una acreditación vigente por pérdida o robo (P140, sesión de trabajo del 23/10/2026). La persona la pide desde «Mis trámites» con el acta que levantó; el personal revisa el acta (la acepta o le pone observaciones), y en el Vivero valida la factura de la cuota de reposición y entrega la credencial repuesta. La acreditación no cambia: mismo número, misma emisión y misma vigencia. El acta vive en el almacén, fuera de lo publicado; aquí sólo su clave. Sus cambios de estado los valida la base y quedan en la bitácora.';
+COMMENT ON COLUMN apd.reposicion.id IS 'Identificador interno';
+COMMENT ON COLUMN apd.reposicion.acreditacion_id IS 'Acreditación cuya credencial se repone';
+COMMENT ON COLUMN apd.reposicion.motivo IS 'perdida o robo';
+COMMENT ON COLUMN apd.reposicion.acta_archivo_clave IS 'Clave exacta del acta en el almacén, con sello propio. Al corregir, la nueva sustituye a la anterior (la bitácora conserva la anterior)';
+COMMENT ON COLUMN apd.reposicion.acta_nombre_original IS 'Nombre con que se cargó';
+COMMENT ON COLUMN apd.reposicion.acta_nombre_archivo IS 'Nombre con que se guarda y se descarga: ACTA DE PERDIDA O ROBO_NOMBRE COMPLETO.ext. Lo pone la base';
+COMMENT ON COLUMN apd.reposicion.acta_tipo_mime IS 'application/pdf, image/jpeg o image/png';
+COMMENT ON COLUMN apd.reposicion.acta_tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
+COMMENT ON COLUMN apd.reposicion.acta_sha256 IS 'Suma del archivo, para comprobar el almacén';
+COMMENT ON COLUMN apd.reposicion.estado IS 'solicitada (el acta está en revisión), con_observaciones (la persona carga otra acta), acta_aceptada (paga la cuota y recoge la credencial en el Vivero), repuesta o cancelada. Ver apd.reposicion_cambio()';
+COMMENT ON COLUMN apd.reposicion.estado_desde IS 'Desde cuándo está en el estado actual; lo pone la base';
+COMMENT ON COLUMN apd.reposicion.observacion IS 'Con observaciones: qué corregir del acta (lo ve la persona). Cancelada: por qué';
+COMMENT ON COLUMN apd.reposicion.solicitada_en IS 'Cuándo la pidió la persona; lo pone la base';
+COMMENT ON COLUMN apd.reposicion.revisada_por IS 'Cuenta del personal que revisó el acta (acceso). Lo pone la base';
+COMMENT ON COLUMN apd.reposicion.revisada_en IS 'Revisión del acta. Lo pone la base';
+COMMENT ON COLUMN apd.reposicion.pago_monto IS 'Monto de la cuota que se le indicó a la persona al aceptar su acta: el vigente ese día (apd.cuota). Un cambio posterior no lo altera. Lo pone la base';
+COMMENT ON COLUMN apd.reposicion.factura_rfc IS 'RFC de la factura de la cuota; lo captura el personal en el Vivero al entregar la credencial';
+COMMENT ON COLUMN apd.reposicion.factura_razon_social IS 'Nombre o razón social de la factura; lo captura el personal al entregar';
+COMMENT ON COLUMN apd.reposicion.factura_folio_fiscal IS 'Folio fiscal (UUID) de la factura; no se repite con el de otra reposición ni el de una solicitud';
+COMMENT ON COLUMN apd.reposicion.repuesta_en IS 'Entrega de la credencial repuesta (Ciudad de México). Lo pone la base';
+COMMENT ON COLUMN apd.reposicion.repuesta_por IS 'Cuenta del personal que la entregó. Lo pone la base';
+COMMENT ON COLUMN apd.reposicion.es_ficticio IS 'Dato de prueba';
 
 CREATE TABLE apd.solicitud (
   id                         uuid          NOT NULL DEFAULT gen_random_uuid(),

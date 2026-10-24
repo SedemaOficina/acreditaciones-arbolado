@@ -39,6 +39,8 @@ GRANT USAGE ON SCHEMA apd TO apd_api;
 GRANT SELECT ON apd.parametro TO apd_api;
 GRANT UPDATE (valor) ON apd.parametro TO apd_api;
 GRANT SELECT ON apd.curso TO apd_api;
+GRANT SELECT ON apd.cuota TO apd_api;
+GRANT UPDATE (concepto, monto, fundamento, vigente_desde) ON apd.cuota TO apd_api;
 GRANT UPDATE (nombre, dias_duracion, dias_minimos_asistencia, calificacion_minima, cupo_minimo, cupo_maximo, activo,
               pago_concepto, pago_monto, pago_fundamento, pago_vigente_desde)
   ON apd.curso TO apd_api;
@@ -86,9 +88,15 @@ GRANT SELECT, INSERT ON apd.asistencia TO apd_api;
 GRANT UPDATE (asistio, capturada_por) ON apd.asistencia TO apd_api;
 GRANT SELECT, INSERT ON apd.examen TO apd_api;
 
--- Padrón: se emite y se registra la entrega; nada más
+-- Padrón: se emite, se registra la entrega y se cancela con motivo y fundamento (P120; el día y quién los pone la base);
+-- nada más
 GRANT SELECT, INSERT ON apd.acreditacion TO apd_api;
-GRANT UPDATE (entregada_en) ON apd.acreditacion TO apd_api;
+GRANT UPDATE (entregada_en, cancelacion_motivo, cancelacion_fundamento) ON apd.acreditacion TO apd_api;
+-- Reposición de la credencial (P140): la pide la persona con su acta; el personal la revisa y la entrega con la factura.
+-- Nunca se borra
+GRANT SELECT, INSERT ON apd.reposicion TO apd_api;
+GRANT UPDATE (estado, observacion, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256,
+              factura_rfc, factura_razon_social, factura_folio_fiscal) ON apd.reposicion TO apd_api;
 
 -- Consultas
 GRANT SELECT ON apd.verificacion_publica, apd.bandeja_demanda, apd.vencidas_en_espera, apd.material_publico TO apd_api;

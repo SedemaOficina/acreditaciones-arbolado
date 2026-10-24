@@ -215,6 +215,36 @@ verifica "4c · A captura el examen; B corrige el día del examen a «faltó»" 
 nueva; prepara "$F4" "$ASISTE"; par "$F4" "$FALTA" "$EXAMEN"
 verifica "4d · A corrige el día del examen a «faltó»; B captura el examen" sin_pase_de_lista "$REGLA_EXAMEN" "$MIRA_EXAMEN"
 
+# ─────────────── 5 · Reposición de la credencial y cancelación (P120, P140; sesión de trabajo del 23/10/2026) ───────────────
+# a) La persona pide la reposición desde dos pestañas a la vez: sólo una queda abierta (candado sobre la acreditación en
+#    apd.reposicion_alta; el índice reposicion_una_abierta es la última defensa)
+# b) Un instructor cancela la acreditación mientras el personal entrega la credencial repuesta: o se entrega antes de la
+#    cancelación o la reposición queda cancelada, nunca repuesta después de cancelada (candado sobre la acreditación en
+#    apd.reposicion_cambio)
+F5='2026-10-14 12:00-06'
+K100="(SELECT id FROM apd.acreditacion WHERE numero = 'PD-2025-K100')"
+PIDE="SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+  INSERT INTO apd.reposicion (acreditacion_id, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256)
+  VALUES ($K100, 'perdida', 'prueba/' || gen_random_uuid(), 'acta.pdf', 'application/pdf', 1000, repeat('f', 64));"
+ACEPTADA="(SELECT acreditacion_id FROM apd.reposicion WHERE estado = 'acta_aceptada' ORDER BY solicitada_en LIMIT 1)"
+CANCELA="SELECT set_config('apd.perfil', 'instructor', true);
+  UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba de concurrencia.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = $ACEPTADA;"
+REPONE="UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = 'EJEM760707AB1', factura_razon_social = 'PERSONA EJEMPLO',
+  factura_folio_fiscal = 'ABCDEF01-2345-4678-9ABC-DEF012345678' WHERE estado = 'acta_aceptada';"
+REGLA_REPOS="SELECT NOT EXISTS (SELECT 1 FROM apd.reposicion r GROUP BY acreditacion_id HAVING count(*) FILTER (WHERE estado IN ('solicitada', 'con_observaciones', 'acta_aceptada')) > 1)
+  AND NOT EXISTS (SELECT 1 FROM apd.reposicion r JOIN apd.acreditacion a ON a.id = r.acreditacion_id
+                   WHERE r.estado = 'repuesta' AND a.cancelada_en IS NOT NULL AND r.estado_desde > a.cancelada_en)
+  AND NOT EXISTS (SELECT 1 FROM apd.reposicion r JOIN apd.acreditacion a ON a.id = r.acreditacion_id
+                   WHERE r.estado IN ('solicitada', 'con_observaciones', 'acta_aceptada') AND a.cancelada_en IS NOT NULL)"
+MIRA_REPOS="SELECT string_agg(a.numero || ':' || r.estado || ':' || coalesce(a.cancelada_en::text, 'sin cancelar'), ' ' ORDER BY a.numero) FROM apd.reposicion r JOIN apd.acreditacion a ON a.id = r.acreditacion_id"
+echo "== 5 · Reposición y cancelación"
+nueva; par "$F5" "$PIDE" "$PIDE"
+verifica "5a · La persona pide la reposición desde dos pestañas a la vez (P140)" reposicion_en_curso "$REGLA_REPOS" "$MIRA_REPOS"
+nueva; par "$F5" "$CANCELA" "$REPONE"
+verifica "5b · A cancela la acreditación; B entrega la credencial repuesta (P120, P140)" ok "$REGLA_REPOS" "$MIRA_REPOS"
+nueva; par "$F5" "$REPONE" "$CANCELA"
+verifica "5c · A entrega la credencial repuesta; B cancela la acreditación (P120, P140)" ok "$REGLA_REPOS" "$MIRA_REPOS"
+
 echo
 echo "$((total - fallas)) de $total escenarios de concurrencia correctos."
 [ "$fallas" -eq 0 ]

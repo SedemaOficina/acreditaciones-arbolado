@@ -534,6 +534,15 @@
    "programada_en": "2026-10-06T10:00:00-06:00"
   }
  ],
+ "cuota": [
+  {
+   "clave": "reposicion_credencial",
+   "monto": 88,
+   "concepto": "Reposición de la credencial de acreditación",
+   "fundamento": "Monto ficticio de prueba, vigente desde el 01/07/2026: el que cita el Aviso de la Gaceta Oficial No. 1548 del 14/02/2025 para «Reposición de acreditaciones», por tarjeta (clave 2.5.17.1) [pendiente P140: confirmar el monto vigente con Finanzas].",
+   "vigente_desde": "2026-07-01"
+  }
+ ],
  "curso": [
   {
    "activo": true,
@@ -7160,6 +7169,11 @@
    "descripcion": "Cómo pagar los derechos; se muestra a la persona con su cita y su referencia (decisión 2026-10-14)."
   },
   {
+   "clave": "perfiles_cancelan_acreditacion",
+   "valor": "instructor,administracion",
+   "descripcion": "Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y la Dirección (administración) (P120, sesión de trabajo del 23/10/2026)."
+  },
+  {
    "clave": "sede",
    "valor": "Vivero Nezahualcóyotl",
    "descripcion": "Lugar único de la cita de cotejo, del curso y de la entrega de acreditaciones (decisión 2026-10-16, Liber)."
@@ -10063,6 +10077,22 @@
    "solicitante_id": "15839f19-7331-4b9f-a6e3-4d635a887ac1"
   },
   {
+   "id": "e7c9f8ea-c188-41e3-a757-0362789811f7",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "47fb8fd8a5898d66480a728eb3e071845ad45246d45809da76d0363d16b4997c",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-15T08:45:00-06:00",
+   "cargada_por": "persona71@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/16152929-f298-4f02-a66c-ff0f6fb13ad0/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "nombre_archivo": "FOTOGRAFIA_VALERIA MODELO EJEMPLO.jpg",
+   "solicitante_id": "16152929-f298-4f02-a66c-ff0f6fb13ad0"
+  },
+  {
    "id": "7f2137c4-e400-411d-ae37-74626a50f325",
    "estado": "confirmada",
    "origen": "en_linea",
@@ -10237,6 +10267,22 @@
    "confirmada_por": "cotejo.ficticio",
    "nombre_archivo": "FOTOGRAFIA_XIMENA MODELO EJEMPLO.jpg",
    "solicitante_id": "4de12634-5f50-414f-a9cc-ebb97a1b3a92"
+  },
+  {
+   "id": "b9184752-c9ac-4020-a090-1e9e31345f53",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "68b8778c553873a1dac56b52a695ea2cb70f477f1dde7832810f9f0ffae4eb56",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-01T08:45:00-06:00",
+   "cargada_por": "persona68@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/5b0c933d-a037-4ac1-a7c4-3809d1e1350a/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "nombre_archivo": "FOTOGRAFIA_ZACARIAS SIMULADO SIMULADO.jpg",
+   "solicitante_id": "5b0c933d-a037-4ac1-a7c4-3809d1e1350a"
   },
   {
    "id": "18726ac2-c731-4f34-a9e7-077c01eb5008",
@@ -10863,6 +10909,22 @@
    "solicitante_id": "cf10898b-3a83-4c8d-a77b-99a6b53e7c62"
   },
   {
+   "id": "efc5048c-1c2f-4c6b-a7a8-a6d1b13b9a94",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "986268b2e2b1f5234fa1779e509b808b23e5afdbe28deae3915087cb228c0cf1",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-15T08:45:00-06:00",
+   "cargada_por": "persona70@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/d370e20c-46a8-48f6-a509-44c7e8470971/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "nombre_archivo": "FOTOGRAFIA_ULISES FICTICIO SIMULADO.jpg",
+   "solicitante_id": "d370e20c-46a8-48f6-a509-44c7e8470971"
+  },
+  {
    "id": "4962ba52-8979-4374-a8e2-025e5472859d",
    "estado": "confirmada",
    "origen": "en_linea",
@@ -10927,6 +10989,22 @@
    "solicitante_id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93"
   },
   {
+   "id": "09176e80-8570-491a-ab09-4e3fc5ae30cb",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "f8b78dbfa5bc8da2fdc2321ae5499b916806fcf769312299f38895f640e5c733",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-15T08:45:00-06:00",
+   "cargada_por": "persona69@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/e9fb9452-a277-4bf3-a54b-e1eccc99b62c/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "nombre_archivo": "FOTOGRAFIA_TERESA PRUEBA MODELO.jpg",
+   "solicitante_id": "e9fb9452-a277-4bf3-a54b-e1eccc99b62c"
+  },
+  {
    "id": "d05306ed-506b-4306-aa0d-99c431200303",
    "estado": "confirmada",
    "origen": "en_linea",
@@ -10959,6 +11037,22 @@
    "solicitante_id": "f6751d6b-222d-4983-ad69-1b9d2018e62a"
   },
   {
+   "id": "f6aaa763-adf2-4d4c-abee-f2d53723f4c6",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "8db145513c53bd3e1f5d74afb8642ffd18df12cb23bc2291d51a4a1605f1615a",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-15T08:45:00-06:00",
+   "cargada_por": "persona72@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/f6bca90a-f7db-4faa-ab2f-5105abb2d225/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "nombre_archivo": "FOTOGRAFIA_WENDY SIMULADO MUESTRA.jpg",
+   "solicitante_id": "f6bca90a-f7db-4faa-ab2f-5105abb2d225"
+  },
+  {
    "id": "911831f2-d1b1-443d-a02e-f970ca6d473a",
    "estado": "pendiente",
    "origen": "en_linea",
@@ -10989,6 +11083,104 @@
    "confirmada_por": "cotejo.ficticio",
    "nombre_archivo": "FOTOGRAFIA_GLORIA PRUEBA MODELO.jpg",
    "solicitante_id": "fbe2598f-e9f8-4ffd-a3ca-6d5838c6e924"
+  }
+ ],
+ "reposicion": [
+  {
+   "id": "665c38c8-a17b-4cf6-aa8f-c572c67cffda",
+   "estado": "solicitada",
+   "motivo": "perdida",
+   "pago_monto": null,
+   "acta_sha256": "8befd13a3e89bce04a71dafcfe64196b5611f29c2f50bb875b59c9ec631ada47",
+   "es_ficticio": true,
+   "factura_rfc": null,
+   "observacion": "",
+   "repuesta_en": null,
+   "revisada_en": null,
+   "estado_desde": "2026-10-13T18:30:00-06:00",
+   "repuesta_por": null,
+   "revisada_por": null,
+   "solicitada_en": "2026-10-13T18:30:00-06:00",
+   "acta_tipo_mime": "application/pdf",
+   "acreditacion_id": "2572cc39-e651-4080-a215-0a136e7d2eaf",
+   "acta_tamano_bytes": 248311,
+   "acta_archivo_clave": "ficticio/reposiciones/e9fb9452-a277-4bf3-a54b-e1eccc99b62c/acta-1.pdf",
+   "acta_nombre_archivo": "ACTA DE PERDIDA O ROBO_TERESA PRUEBA MODELO.pdf",
+   "acta_nombre_original": "acta.pdf",
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null
+  },
+  {
+   "id": "aa1f3ec5-5513-48c1-ad73-0057d8e1f418",
+   "estado": "repuesta",
+   "motivo": "robo",
+   "pago_monto": 88,
+   "acta_sha256": "91dcb8e2bf1efda346c8a1d76b365c88d1e204f775792d29c98c7caa0cd28753",
+   "es_ficticio": true,
+   "factura_rfc": "SIMW811218AB1",
+   "observacion": "",
+   "repuesta_en": "2026-10-02",
+   "revisada_en": "2026-09-29T12:30:00-06:00",
+   "estado_desde": "2026-10-02T11:00:00-06:00",
+   "repuesta_por": "revision.ficticia",
+   "revisada_por": "revision.ficticia",
+   "solicitada_en": "2026-09-28T18:30:00-06:00",
+   "acta_tipo_mime": "application/pdf",
+   "acreditacion_id": "41ca9fe0-683f-444d-a5dc-d2ffd974d96f",
+   "acta_tamano_bytes": 248311,
+   "acta_archivo_clave": "ficticio/reposiciones/f6bca90a-f7db-4faa-ab2f-5105abb2d225/acta-1.pdf",
+   "acta_nombre_archivo": "ACTA DE PERDIDA O ROBO_WENDY SIMULADO MUESTRA.pdf",
+   "acta_nombre_original": "acta.pdf",
+   "factura_folio_fiscal": "E3BAD026-3EEE-0980-7E39-51884FC68DC0",
+   "factura_razon_social": "WENDY SIMULADO MUESTRA"
+  },
+  {
+   "id": "48271197-c218-42a2-a314-390168309a03",
+   "estado": "con_observaciones",
+   "motivo": "robo",
+   "pago_monto": null,
+   "acta_sha256": "371ea8ca80e1f81d43eec43397494cc2bd52ef1b878a85bd0b9af389b2f071b6",
+   "es_ficticio": true,
+   "factura_rfc": null,
+   "observacion": "El acta no trae el sello ni la firma de la autoridad que la levantó.",
+   "repuesta_en": null,
+   "revisada_en": "2026-10-09T12:30:00-06:00",
+   "estado_desde": "2026-10-09T12:30:00-06:00",
+   "repuesta_por": null,
+   "revisada_por": "revision.ficticia",
+   "solicitada_en": "2026-10-08T18:30:00-06:00",
+   "acta_tipo_mime": "application/pdf",
+   "acreditacion_id": "838e58c2-4fc0-4066-ae45-fa9179e64b8f",
+   "acta_tamano_bytes": 248311,
+   "acta_archivo_clave": "ficticio/reposiciones/d370e20c-46a8-48f6-a509-44c7e8470971/acta-1.pdf",
+   "acta_nombre_archivo": "ACTA DE PERDIDA O ROBO_ULISES FICTICIO SIMULADO.pdf",
+   "acta_nombre_original": "acta.pdf",
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null
+  },
+  {
+   "id": "5fa942cc-f3c9-4e7a-aea9-933baface4ac",
+   "estado": "acta_aceptada",
+   "motivo": "perdida",
+   "pago_monto": 88,
+   "acta_sha256": "5f387080b8b7ea50b115bbd37e6dbec94071bbb0afe05e409c5a8c0b2531f6d0",
+   "es_ficticio": true,
+   "factura_rfc": null,
+   "observacion": "",
+   "repuesta_en": null,
+   "revisada_en": "2026-10-07T12:30:00-06:00",
+   "estado_desde": "2026-10-07T12:30:00-06:00",
+   "repuesta_por": null,
+   "revisada_por": "revision.ficticia",
+   "solicitada_en": "2026-10-06T18:30:00-06:00",
+   "acta_tipo_mime": "application/pdf",
+   "acreditacion_id": "8f1ab61c-b2fc-42cf-a24d-2eda73c6e746",
+   "acta_tamano_bytes": 248311,
+   "acta_archivo_clave": "ficticio/reposiciones/16152929-f298-4f02-a66c-ff0f6fb13ad0/acta-1.pdf",
+   "acta_nombre_archivo": "ACTA DE PERDIDA O ROBO_VALERIA MODELO EJEMPLO.pdf",
+   "acta_nombre_original": "acta.pdf",
+   "factura_folio_fiscal": null,
+   "factura_razon_social": null
   }
  ],
  "inscripcion": [
@@ -11732,6 +11924,26 @@
    "debe_cambiar_contrasena": false
   },
   {
+   "id": "d370e20c-46a8-48f6-a509-44c7e8470971",
+   "curp": "FISU791016HNECML02",
+   "sexo": "H",
+   "correo": "persona70@ejemplo.local",
+   "estado": "activa",
+   "nombre": "ULISES",
+   "telefono": "0000000070",
+   "creada_en": "2026-07-01T06:30:00-06:00",
+   "adscripcion": "independiente",
+   "es_ficticio": true,
+   "bloqueo_motivo": null,
+   "bloqueada_hasta": null,
+   "organizacion_id": null,
+   "primer_apellido": "FICTICIO",
+   "segundo_apellido": "SIMULADO",
+   "intentos_fallidos": 0,
+   "numero_expediente": null,
+   "debe_cambiar_contrasena": false
+  },
+  {
    "id": "061e78f9-f0bd-46c0-a3e5-a51800e8e919",
    "curp": "FISV851019HNECML08",
    "sexo": "H",
@@ -11941,6 +12153,26 @@
    "telefono": "0000000017",
    "creada_en": "2026-07-01T06:30:00-06:00",
    "adscripcion": null,
+   "es_ficticio": true,
+   "bloqueo_motivo": null,
+   "bloqueada_hasta": null,
+   "organizacion_id": null,
+   "primer_apellido": "MODELO",
+   "segundo_apellido": "EJEMPLO",
+   "intentos_fallidos": 0,
+   "numero_expediente": null,
+   "debe_cambiar_contrasena": false
+  },
+  {
+   "id": "16152929-f298-4f02-a66c-ff0f6fb13ad0",
+   "curp": "MOEV801117MNEDJL02",
+   "sexo": "M",
+   "correo": "persona71@ejemplo.local",
+   "estado": "activa",
+   "nombre": "VALERIA",
+   "telefono": "0000000071",
+   "creada_en": "2026-07-01T06:30:00-06:00",
+   "adscripcion": "independiente",
    "es_ficticio": true,
    "bloqueo_motivo": null,
    "bloqueada_hasta": null,
@@ -12372,6 +12604,26 @@
    "debe_cambiar_contrasena": false
   },
   {
+   "id": "e9fb9452-a277-4bf3-a54b-e1eccc99b62c",
+   "curp": "PUMT780915MNERDR00",
+   "sexo": "M",
+   "correo": "persona69@ejemplo.local",
+   "estado": "activa",
+   "nombre": "TERESA",
+   "telefono": "0000000069",
+   "creada_en": "2026-07-01T06:30:00-06:00",
+   "adscripcion": "independiente",
+   "es_ficticio": true,
+   "bloqueo_motivo": null,
+   "bloqueada_hasta": null,
+   "organizacion_id": null,
+   "primer_apellido": "PRUEBA",
+   "segundo_apellido": "MODELO",
+   "intentos_fallidos": 0,
+   "numero_expediente": null,
+   "debe_cambiar_contrasena": false
+  },
+  {
    "id": "b67eb5d7-c863-4900-a9d0-e4f3719bca06",
    "curp": "PUMU840918MNERDL07",
    "sexo": "M",
@@ -12592,6 +12844,26 @@
    "debe_cambiar_contrasena": false
   },
   {
+   "id": "f6bca90a-f7db-4faa-ab2f-5105abb2d225",
+   "curp": "SIMW811218HNEMSN08",
+   "sexo": "H",
+   "correo": "persona72@ejemplo.local",
+   "estado": "activa",
+   "nombre": "WENDY",
+   "telefono": "0000000072",
+   "creada_en": "2026-07-01T06:30:00-06:00",
+   "adscripcion": "independiente",
+   "es_ficticio": true,
+   "bloqueo_motivo": null,
+   "bloqueada_hasta": null,
+   "organizacion_id": null,
+   "primer_apellido": "SIMULADO",
+   "segundo_apellido": "MUESTRA",
+   "intentos_fallidos": 0,
+   "numero_expediente": null,
+   "debe_cambiar_contrasena": false
+  },
+  {
    "id": "8116fc20-d786-47f6-afa6-801a10f085b9",
    "curp": "SIMX871221HNEMSM01",
    "sexo": "H",
@@ -12630,6 +12902,26 @@
    "intentos_fallidos": 0,
    "numero_expediente": "EXP-2026-0018",
    "debe_cambiar_contrasena": false
+  },
+  {
+   "id": "5b0c933d-a037-4ac1-a7c4-3809d1e1350a",
+   "curp": "SISZ770814HNEMMC00",
+   "sexo": "H",
+   "correo": "persona68@ejemplo.local",
+   "estado": "activa",
+   "nombre": "ZACARÍAS",
+   "telefono": "0000000068",
+   "creada_en": "2026-07-01T06:30:00-06:00",
+   "adscripcion": "independiente",
+   "es_ficticio": true,
+   "bloqueo_motivo": null,
+   "bloqueada_hasta": null,
+   "organizacion_id": null,
+   "primer_apellido": "SIMULADO",
+   "segundo_apellido": "SIMULADO",
+   "intentos_fallidos": 0,
+   "numero_expediente": null,
+   "debe_cambiar_contrasena": false
   }
  ],
  "acreditacion": [
@@ -12640,11 +12932,15 @@
    "vence_en": "2026-10-29",
    "emitida_en": "2025-10-30",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-109",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "751cf4e1-256e-4484-a6e2-63d2235bb70b",
-   "tipo_acreditacion": "dictaminador"
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "1a918835-8d36-474d-a9bf-a3bd781f91dc",
@@ -12653,11 +12949,15 @@
    "vence_en": "2026-10-27",
    "emitida_en": "2025-10-28",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-133",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "49bf7af8-a3c7-4375-a792-4a11fd78deec",
-   "tipo_acreditacion": "dictaminador"
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "bde74203-f375-4b8f-a40b-6c1537bc1f1c",
@@ -12666,11 +12966,83 @@
    "vence_en": "2027-01-09",
    "emitida_en": "2026-01-10",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-107",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "184fea5a-b3c9-44f8-a76b-516117f3031c",
-   "tipo_acreditacion": "dictaminador"
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "ff7388a6-cf3c-4c6f-ab17-e265f84a19ff",
+   "numero": "DT-2026-K142",
+   "origen": "kobo",
+   "vence_en": "2027-03-22",
+   "emitida_en": "2026-03-23",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-142",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "e9fb9452-a277-4bf3-a54b-e1eccc99b62c",
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "a836e01f-b8ae-46c6-a579-77bb83425d6e",
+   "numero": "DT-2026-K144",
+   "origen": "kobo",
+   "vence_en": "2027-04-26",
+   "emitida_en": "2026-04-27",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-144",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "d370e20c-46a8-48f6-a509-44c7e8470971",
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "29c9f9c6-69c5-46b0-a6ac-358e012980fc",
+   "numero": "DT-2026-K146",
+   "origen": "kobo",
+   "vence_en": "2027-05-24",
+   "emitida_en": "2026-05-25",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-146",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "16152929-f298-4f02-a66c-ff0f6fb13ad0",
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "b06cbd3b-9710-4d7a-af46-875b438fe432",
+   "numero": "DT-2026-K148",
+   "origen": "kobo",
+   "vence_en": "2027-06-21",
+   "emitida_en": "2026-06-22",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-148",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "f6bca90a-f7db-4faa-ab2f-5105abb2d225",
+   "tipo_acreditacion": "dictaminador",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "d4b4fafc-2359-475d-a6c9-61e1c3961ca4",
@@ -12679,11 +13051,15 @@
    "vence_en": "2024-11-01",
    "emitida_en": "2023-11-02",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-128",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "253fd074-d2f6-4839-a31c-c71883650dd1",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "320e90d5-a2af-4a68-a5e6-9b3176267d72",
@@ -12692,11 +13068,15 @@
    "vence_en": "2024-03-05",
    "emitida_en": "2023-03-06",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-137",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "aa0e7387-9367-4125-aa0a-2c4431ae6bd4",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "36f9e407-f093-4bfd-aa4d-9f8b5d25cf9c",
@@ -12705,11 +13085,15 @@
    "vence_en": "2025-05-09",
    "emitida_en": "2024-05-10",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-105",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "a615e119-b885-4a9a-ae16-386dc9efaef8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "28c36c07-8baa-43ff-a73e-7aabeabc17e0",
@@ -12718,11 +13102,15 @@
    "vence_en": "2025-03-01",
    "emitida_en": "2024-03-02",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-110",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "1efa8fa5-7c04-43ed-a852-c82a836f52d4",
@@ -12731,11 +13119,15 @@
    "vence_en": "2025-04-19",
    "emitida_en": "2024-04-20",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-113",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "c3df68c5-2892-422a-a7e0-7db1fa8b4de6",
@@ -12744,11 +13136,15 @@
    "vence_en": "2025-05-10",
    "emitida_en": "2024-05-11",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-116",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "84a21dbf-161e-4044-a213-f660eeb0b14c",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "7166976b-eab6-42cf-ae69-5d7eadb4a7ec",
@@ -12757,11 +13153,15 @@
    "vence_en": "2025-05-17",
    "emitida_en": "2024-05-18",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-119",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "7c503a42-cddf-414b-aaba-4095565ac5ab",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "7556d73d-4ffc-40be-a582-e9a1e1ab48d8",
@@ -12770,11 +13170,15 @@
    "vence_en": "2025-02-15",
    "emitida_en": "2024-02-16",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-122",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "7340edb3-e49f-41d4-a5b6-cd856a503431",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "7bd896b5-e2d6-47a8-aff0-adc0440e56a7",
@@ -12783,11 +13187,15 @@
    "vence_en": "2025-01-18",
    "emitida_en": "2024-01-19",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-125",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "5cf5570b-4856-44e0-a28f-a688405c3564",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "55a6f91e-932d-4fa9-a676-c883cdab6c18",
@@ -12796,11 +13204,15 @@
    "vence_en": "2025-11-01",
    "emitida_en": "2024-11-02",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-129",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "253fd074-d2f6-4839-a31c-c71883650dd1",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "1c0c26c5-117e-408e-ac59-2bb4ab541ab6",
@@ -12809,11 +13221,15 @@
    "vence_en": "2025-05-31",
    "emitida_en": "2024-06-01",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-134",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "db3421b1-a000-4740-a2ea-956d7af1aec8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "97bb1d36-56c1-4c25-a54c-30af4f8969c5",
@@ -12822,11 +13238,15 @@
    "vence_en": "2026-11-19",
    "emitida_en": "2025-11-20",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-100",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "5079c00e-94c9-4b9c-a63d-63f110394d7d",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "2a117f55-f970-4329-af3f-17f9debcd686",
@@ -12835,11 +13255,15 @@
    "vence_en": "2026-10-24",
    "emitida_en": "2025-10-25",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-101",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "f6e48496-1699-4b15-af4a-e4270249e05f",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "81e325cf-f60f-461a-abf8-0120044a5e41",
@@ -12848,11 +13272,15 @@
    "vence_en": "2026-07-31",
    "emitida_en": "2025-08-01",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-102",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "5ea01eb2-de13-462a-a4ca-4667ef0a8b3c",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "78cc7601-756b-475b-ad44-b0ea348a7046",
@@ -12861,11 +13289,15 @@
    "vence_en": "2026-10-30",
    "emitida_en": "2025-10-31",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-103",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "67cf436a-a0ce-4d00-ae82-d0b40d575058",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "2cd32a40-ad73-4081-a0dd-398846b0dfc2",
@@ -12874,11 +13306,15 @@
    "vence_en": "2026-11-05",
    "emitida_en": "2025-11-06",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-104",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "a5f29365-181a-4c92-a268-4a4029c2c9f5",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "a22c6067-0a3f-4565-a296-35daf71d2203",
@@ -12887,11 +13323,15 @@
    "vence_en": "2026-05-31",
    "emitida_en": "2025-06-01",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-106",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "184fea5a-b3c9-44f8-a76b-516117f3031c",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "1a09c7ec-407e-4799-a821-6bc02151d62b",
@@ -12900,11 +13340,15 @@
    "vence_en": "2026-03-01",
    "emitida_en": "2025-03-02",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-111",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "4531dfd3-bce7-4e1e-a8e3-21ab0da913d8",
@@ -12913,11 +13357,15 @@
    "vence_en": "2026-04-19",
    "emitida_en": "2025-04-20",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-114",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "a0e0aeef-286b-49e2-a255-395d15d00e3d",
@@ -12926,11 +13374,15 @@
    "vence_en": "2026-05-10",
    "emitida_en": "2025-05-11",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-117",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "84a21dbf-161e-4044-a213-f660eeb0b14c",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "5d0bad9c-16f4-473f-ac72-3829f37bd8dd",
@@ -12939,11 +13391,15 @@
    "vence_en": "2026-05-17",
    "emitida_en": "2025-05-18",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-120",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "7c503a42-cddf-414b-aaba-4095565ac5ab",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "6ef19b92-1bd0-4769-ad8f-138123698a7b",
@@ -12952,11 +13408,15 @@
    "vence_en": "2026-02-15",
    "emitida_en": "2025-02-16",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-123",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "7340edb3-e49f-41d4-a5b6-cd856a503431",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "8ad6ad9c-79ec-40c2-ac00-d9783237d748",
@@ -12965,11 +13425,15 @@
    "vence_en": "2026-01-18",
    "emitida_en": "2025-01-19",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-126",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "5cf5570b-4856-44e0-a28f-a688405c3564",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "ba0929a5-ca1a-4a36-ab5a-b74e01b8b239",
@@ -12978,11 +13442,15 @@
    "vence_en": "2026-11-01",
    "emitida_en": "2025-11-02",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-130",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "253fd074-d2f6-4839-a31c-c71883650dd1",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "f5efae92-17d3-48e5-af9c-29de88349f61",
@@ -12991,11 +13459,15 @@
    "vence_en": "2026-10-19",
    "emitida_en": "2025-10-20",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-131",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "c24ef01c-4a68-45ae-abb3-afae6cfad886",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "83fe5a2e-f4d4-4db6-a547-57b89e4d5a69",
@@ -13004,11 +13476,15 @@
    "vence_en": "2026-08-31",
    "emitida_en": "2025-09-01",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-132",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "49bf7af8-a3c7-4375-a792-4a11fd78deec",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "1122e3e1-352c-43a5-aa2f-844693c5d3b8",
@@ -13017,11 +13493,15 @@
    "vence_en": "2026-05-31",
    "emitida_en": "2025-06-01",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-135",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "db3421b1-a000-4740-a2ea-956d7af1aec8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "b834340b-e9a0-4fbd-a2ce-5945a316fc2c",
@@ -13030,11 +13510,32 @@
    "vence_en": "2026-05-04",
    "emitida_en": "2025-05-05",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-138",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "aa0e7387-9367-4125-aa0a-2c4431ae6bd4",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "42589dc3-7e4a-4088-ad45-634b1ca332da",
+   "numero": "PD-2025-K140",
+   "origen": "kobo",
+   "vence_en": "2026-11-04",
+   "emitida_en": "2025-11-05",
+   "es_ficticio": true,
+   "cancelada_en": "2026-10-08T13:00:00-06:00",
+   "entregada_en": null,
+   "folio_origen": "KOBO-140",
+   "solicitud_id": null,
+   "cancelada_por": "instructor.ficticio",
+   "solicitante_id": "5b0c933d-a037-4ac1-a7c4-3809d1e1350a",
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": "Se documentó un derribo sin la autorización de la Secretaría en la visita de inspección del 06/10/2026.",
+   "cancelacion_fundamento": "Lineamientos para la acreditación de podadores y dictaminadores técnicos, [Art. __, fracc. __] [pendiente P120: lo fija la Dirección Jurídica]"
   },
   {
    "id": "c577bcb7-eb9b-406b-a636-6822b8f29d95",
@@ -13043,11 +13544,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": "2026-09-22",
    "folio_origen": null,
    "solicitud_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
+   "cancelada_por": null,
    "solicitante_id": "75ba2751-9798-44db-ac72-842d5c1b0c3f",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "0aae1a64-9164-4fe5-a6c5-64f975c78d34",
@@ -13056,11 +13561,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": "2026-09-22",
    "folio_origen": null,
    "solicitud_id": "94f1487a-3e47-4361-a972-7555eba72d13",
+   "cancelada_por": null,
    "solicitante_id": "c37c7829-b41c-4d37-a7d0-44d2628cb21e",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "b3874b33-1bd1-48a8-a36f-213e74d3a388",
@@ -13069,11 +13578,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": "2026-09-22",
    "folio_origen": null,
    "solicitud_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
+   "cancelada_por": null,
    "solicitante_id": "af0df2ec-006a-4fc4-a275-2f711aed3532",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "005bb18f-5f93-4815-ada4-251303a76a81",
@@ -13082,11 +13595,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": null,
    "solicitud_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
+   "cancelada_por": null,
    "solicitante_id": "75329da4-21e1-4f10-a07d-213a7ffda09a",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "e8b62757-66c2-408a-a35a-6192591eacf3",
@@ -13095,11 +13612,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": "2026-09-22",
    "folio_origen": null,
    "solicitud_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
+   "cancelada_por": null,
    "solicitante_id": "90c0ea92-100b-499c-aea9-ec9f2cbbc0f5",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "3be842d4-a81d-4ac3-a9ce-9fc6ce244051",
@@ -13108,11 +13629,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": "2026-09-22",
    "folio_origen": null,
    "solicitud_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
+   "cancelada_por": null,
    "solicitante_id": "7cfb2a2d-d797-42d4-a53c-94758ea964a9",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "ed40b3a3-77bf-4c1e-aa35-9f29931daf0e",
@@ -13121,11 +13646,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": null,
    "solicitud_id": "40667225-9eca-40ea-af57-1873c1fbb62f",
+   "cancelada_por": null,
    "solicitante_id": "e3ab3c6d-4b36-48eb-adbd-b0d002923d93",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "7ce20ecb-577d-43a5-a0d3-079c30066e3c",
@@ -13134,11 +13663,15 @@
    "vence_en": "2027-09-14",
    "emitida_en": "2026-09-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": "2026-09-22",
    "folio_origen": null,
    "solicitud_id": "4f024511-6131-4de3-adc7-53295f3154bc",
+   "cancelada_por": null,
    "solicitante_id": "c16b4c47-728c-4910-a5b9-efe26efe0d46",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "3ecab287-992d-41df-ade1-998e082a8ff4",
@@ -13147,11 +13680,15 @@
    "vence_en": "2027-02-14",
    "emitida_en": "2026-02-15",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-108",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "751cf4e1-256e-4484-a6e2-63d2235bb70b",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "2f70242b-7b3c-43f1-a791-0fc0405dc6e9",
@@ -13160,11 +13697,15 @@
    "vence_en": "2027-03-01",
    "emitida_en": "2026-03-02",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-112",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "46125d2f-4c2b-4879-a2a9-92ff953a7a16",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "8d2d3229-0d72-49fa-add6-f258bab31254",
@@ -13173,11 +13714,15 @@
    "vence_en": "2027-04-19",
    "emitida_en": "2026-04-20",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-115",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "422dd046-f04f-4a15-a7c6-a0ae14fe22b8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "98774004-c60d-4227-a0e7-3299eeae07f3",
@@ -13186,11 +13731,15 @@
    "vence_en": "2027-05-10",
    "emitida_en": "2026-05-11",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-118",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "84a21dbf-161e-4044-a213-f660eeb0b14c",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "edb698ca-959d-4ab6-a18f-69b7c67cb0da",
@@ -13199,11 +13748,15 @@
    "vence_en": "2027-05-17",
    "emitida_en": "2026-05-18",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-121",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "7c503a42-cddf-414b-aaba-4095565ac5ab",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "6c8d2c36-5fcc-45ac-af12-a5abe3c9e4a8",
@@ -13212,11 +13765,15 @@
    "vence_en": "2027-02-15",
    "emitida_en": "2026-02-16",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-124",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "7340edb3-e49f-41d4-a5b6-cd856a503431",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "cd048238-f849-4acd-a447-f85dd11cb3bf",
@@ -13225,11 +13782,15 @@
    "vence_en": "2027-01-18",
    "emitida_en": "2026-01-19",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-127",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "5cf5570b-4856-44e0-a28f-a688405c3564",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "927c1988-abcf-427c-a52d-62707cf3721d",
@@ -13238,11 +13799,15 @@
    "vence_en": "2027-05-31",
    "emitida_en": "2026-06-01",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-136",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "db3421b1-a000-4740-a2ea-956d7af1aec8",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   },
   {
    "id": "6d04d14e-5c22-4ceb-a3ae-5fe87759c5eb",
@@ -13251,11 +13816,83 @@
    "vence_en": "2027-05-03",
    "emitida_en": "2026-05-04",
    "es_ficticio": true,
+   "cancelada_en": null,
    "entregada_en": null,
    "folio_origen": "KOBO-139",
    "solicitud_id": null,
+   "cancelada_por": null,
    "solicitante_id": "aa0e7387-9367-4125-aa0a-2c4431ae6bd4",
-   "tipo_acreditacion": "poda"
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "2572cc39-e651-4080-a215-0a136e7d2eaf",
+   "numero": "PD-2026-K141",
+   "origen": "kobo",
+   "vence_en": "2027-03-08",
+   "emitida_en": "2026-03-09",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-141",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "e9fb9452-a277-4bf3-a54b-e1eccc99b62c",
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "838e58c2-4fc0-4066-ae45-fa9179e64b8f",
+   "numero": "PD-2026-K143",
+   "origen": "kobo",
+   "vence_en": "2027-04-12",
+   "emitida_en": "2026-04-13",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-143",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "d370e20c-46a8-48f6-a509-44c7e8470971",
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "8f1ab61c-b2fc-42cf-a24d-2eda73c6e746",
+   "numero": "PD-2026-K145",
+   "origen": "kobo",
+   "vence_en": "2027-05-10",
+   "emitida_en": "2026-05-11",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-145",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "16152929-f298-4f02-a66c-ff0f6fb13ad0",
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
+  },
+  {
+   "id": "41ca9fe0-683f-444d-a5dc-d2ffd974d96f",
+   "numero": "PD-2026-K147",
+   "origen": "kobo",
+   "vence_en": "2027-06-07",
+   "emitida_en": "2026-06-08",
+   "es_ficticio": true,
+   "cancelada_en": null,
+   "entregada_en": null,
+   "folio_origen": "KOBO-147",
+   "solicitud_id": null,
+   "cancelada_por": null,
+   "solicitante_id": "f6bca90a-f7db-4faa-ab2f-5105abb2d225",
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": null,
+   "cancelacion_fundamento": null
   }
  ],
  "organizacion": [
@@ -14253,6 +14890,10 @@
   "DT-2025-K109": "por_vencer",
   "DT-2025-K133": "por_vencer",
   "DT-2026-K107": "vigente",
+  "DT-2026-K142": "vigente",
+  "DT-2026-K144": "vigente",
+  "DT-2026-K146": "vigente",
+  "DT-2026-K148": "vigente",
   "PD-2023-K128": "vencida_no_renovable",
   "PD-2023-K137": "vencida_no_renovable",
   "PD-2024-K105": "vencida_no_renovable",
@@ -14281,6 +14922,7 @@
   "PD-2025-K132": "vencida_renovable",
   "PD-2025-K135": "vencida_renovable",
   "PD-2025-K138": "vencida_renovable",
+  "PD-2025-K140": "cancelada",
   "PD-2026-0001": "vigente",
   "PD-2026-0002": "vigente",
   "PD-2026-0003": "vigente",
@@ -14297,7 +14939,11 @@
   "PD-2026-K124": "vigente",
   "PD-2026-K127": "vigente",
   "PD-2026-K136": "vigente",
-  "PD-2026-K139": "vigente"
+  "PD-2026-K139": "vigente",
+  "PD-2026-K141": "vigente",
+  "PD-2026-K143": "vigente",
+  "PD-2026-K145": "vigente",
+  "PD-2026-K147": "vigente"
  },
  "verificacion_publica": [
   {
@@ -14306,7 +14952,8 @@
    "numero": "DT-2025-K109",
    "vence_en": "2026-10-29",
    "situacion": "Vigente",
-   "emitida_en": "2025-10-30"
+   "emitida_en": "2025-10-30",
+   "cancelada_el": null
   },
   {
    "tipo": "Dictaminador técnico",
@@ -14314,7 +14961,8 @@
    "numero": "DT-2025-K133",
    "vence_en": "2026-10-27",
    "situacion": "Vigente",
-   "emitida_en": "2025-10-28"
+   "emitida_en": "2025-10-28",
+   "cancelada_el": null
   },
   {
    "tipo": "Dictaminador técnico",
@@ -14322,7 +14970,44 @@
    "numero": "DT-2026-K107",
    "vence_en": "2027-01-09",
    "situacion": "Vigente",
-   "emitida_en": "2026-01-10"
+   "emitida_en": "2026-01-10",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Dictaminador técnico",
+   "nombre": "TERESA PRUEBA MODELO",
+   "numero": "DT-2026-K142",
+   "vence_en": "2027-03-22",
+   "situacion": "Vigente",
+   "emitida_en": "2026-03-23",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Dictaminador técnico",
+   "nombre": "ULISES FICTICIO SIMULADO",
+   "numero": "DT-2026-K144",
+   "vence_en": "2027-04-26",
+   "situacion": "Vigente",
+   "emitida_en": "2026-04-27",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Dictaminador técnico",
+   "nombre": "VALERIA MODELO EJEMPLO",
+   "numero": "DT-2026-K146",
+   "vence_en": "2027-05-24",
+   "situacion": "Vigente",
+   "emitida_en": "2026-05-25",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Dictaminador técnico",
+   "nombre": "WENDY SIMULADO MUESTRA",
+   "numero": "DT-2026-K148",
+   "vence_en": "2027-06-21",
+   "situacion": "Vigente",
+   "emitida_en": "2026-06-22",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14330,7 +15015,8 @@
    "numero": "PD-2023-K128",
    "vence_en": "2024-11-01",
    "situacion": "No vigente",
-   "emitida_en": "2023-11-02"
+   "emitida_en": "2023-11-02",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14338,7 +15024,8 @@
    "numero": "PD-2023-K137",
    "vence_en": "2024-03-05",
    "situacion": "No vigente",
-   "emitida_en": "2023-03-06"
+   "emitida_en": "2023-03-06",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14346,7 +15033,8 @@
    "numero": "PD-2024-K105",
    "vence_en": "2025-05-09",
    "situacion": "No vigente",
-   "emitida_en": "2024-05-10"
+   "emitida_en": "2024-05-10",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14354,7 +15042,8 @@
    "numero": "PD-2024-K110",
    "vence_en": "2025-03-01",
    "situacion": "No vigente",
-   "emitida_en": "2024-03-02"
+   "emitida_en": "2024-03-02",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14362,7 +15051,8 @@
    "numero": "PD-2024-K113",
    "vence_en": "2025-04-19",
    "situacion": "No vigente",
-   "emitida_en": "2024-04-20"
+   "emitida_en": "2024-04-20",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14370,7 +15060,8 @@
    "numero": "PD-2024-K116",
    "vence_en": "2025-05-10",
    "situacion": "No vigente",
-   "emitida_en": "2024-05-11"
+   "emitida_en": "2024-05-11",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14378,7 +15069,8 @@
    "numero": "PD-2024-K119",
    "vence_en": "2025-05-17",
    "situacion": "No vigente",
-   "emitida_en": "2024-05-18"
+   "emitida_en": "2024-05-18",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14386,7 +15078,8 @@
    "numero": "PD-2024-K122",
    "vence_en": "2025-02-15",
    "situacion": "No vigente",
-   "emitida_en": "2024-02-16"
+   "emitida_en": "2024-02-16",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14394,7 +15087,8 @@
    "numero": "PD-2024-K125",
    "vence_en": "2025-01-18",
    "situacion": "No vigente",
-   "emitida_en": "2024-01-19"
+   "emitida_en": "2024-01-19",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14402,7 +15096,8 @@
    "numero": "PD-2024-K129",
    "vence_en": "2025-11-01",
    "situacion": "No vigente",
-   "emitida_en": "2024-11-02"
+   "emitida_en": "2024-11-02",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14410,7 +15105,8 @@
    "numero": "PD-2024-K134",
    "vence_en": "2025-05-31",
    "situacion": "No vigente",
-   "emitida_en": "2024-06-01"
+   "emitida_en": "2024-06-01",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14418,7 +15114,8 @@
    "numero": "PD-2025-K100",
    "vence_en": "2026-11-19",
    "situacion": "Vigente",
-   "emitida_en": "2025-11-20"
+   "emitida_en": "2025-11-20",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14426,7 +15123,8 @@
    "numero": "PD-2025-K101",
    "vence_en": "2026-10-24",
    "situacion": "Vigente",
-   "emitida_en": "2025-10-25"
+   "emitida_en": "2025-10-25",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14434,7 +15132,8 @@
    "numero": "PD-2025-K102",
    "vence_en": "2026-07-31",
    "situacion": "No vigente",
-   "emitida_en": "2025-08-01"
+   "emitida_en": "2025-08-01",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14442,7 +15141,8 @@
    "numero": "PD-2025-K103",
    "vence_en": "2026-10-30",
    "situacion": "Vigente",
-   "emitida_en": "2025-10-31"
+   "emitida_en": "2025-10-31",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14450,7 +15150,8 @@
    "numero": "PD-2025-K104",
    "vence_en": "2026-11-05",
    "situacion": "Vigente",
-   "emitida_en": "2025-11-06"
+   "emitida_en": "2025-11-06",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14458,7 +15159,8 @@
    "numero": "PD-2025-K106",
    "vence_en": "2026-05-31",
    "situacion": "No vigente",
-   "emitida_en": "2025-06-01"
+   "emitida_en": "2025-06-01",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14466,7 +15168,8 @@
    "numero": "PD-2025-K111",
    "vence_en": "2026-03-01",
    "situacion": "No vigente",
-   "emitida_en": "2025-03-02"
+   "emitida_en": "2025-03-02",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14474,7 +15177,8 @@
    "numero": "PD-2025-K114",
    "vence_en": "2026-04-19",
    "situacion": "No vigente",
-   "emitida_en": "2025-04-20"
+   "emitida_en": "2025-04-20",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14482,7 +15186,8 @@
    "numero": "PD-2025-K117",
    "vence_en": "2026-05-10",
    "situacion": "No vigente",
-   "emitida_en": "2025-05-11"
+   "emitida_en": "2025-05-11",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14490,7 +15195,8 @@
    "numero": "PD-2025-K120",
    "vence_en": "2026-05-17",
    "situacion": "No vigente",
-   "emitida_en": "2025-05-18"
+   "emitida_en": "2025-05-18",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14498,7 +15204,8 @@
    "numero": "PD-2025-K123",
    "vence_en": "2026-02-15",
    "situacion": "No vigente",
-   "emitida_en": "2025-02-16"
+   "emitida_en": "2025-02-16",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14506,7 +15213,8 @@
    "numero": "PD-2025-K126",
    "vence_en": "2026-01-18",
    "situacion": "No vigente",
-   "emitida_en": "2025-01-19"
+   "emitida_en": "2025-01-19",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14514,7 +15222,8 @@
    "numero": "PD-2025-K130",
    "vence_en": "2026-11-01",
    "situacion": "Vigente",
-   "emitida_en": "2025-11-02"
+   "emitida_en": "2025-11-02",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14522,7 +15231,8 @@
    "numero": "PD-2025-K131",
    "vence_en": "2026-10-19",
    "situacion": "Vigente",
-   "emitida_en": "2025-10-20"
+   "emitida_en": "2025-10-20",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14530,7 +15240,8 @@
    "numero": "PD-2025-K132",
    "vence_en": "2026-08-31",
    "situacion": "No vigente",
-   "emitida_en": "2025-09-01"
+   "emitida_en": "2025-09-01",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14538,7 +15249,8 @@
    "numero": "PD-2025-K135",
    "vence_en": "2026-05-31",
    "situacion": "No vigente",
-   "emitida_en": "2025-06-01"
+   "emitida_en": "2025-06-01",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14546,7 +15258,17 @@
    "numero": "PD-2025-K138",
    "vence_en": "2026-05-04",
    "situacion": "No vigente",
-   "emitida_en": "2025-05-05"
+   "emitida_en": "2025-05-05",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Poda y derribo",
+   "nombre": "ZACARÍAS SIMULADO SIMULADO",
+   "numero": "PD-2025-K140",
+   "vence_en": "2026-11-04",
+   "situacion": "Cancelada",
+   "emitida_en": "2025-11-05",
+   "cancelada_el": "2026-10-08"
   },
   {
    "tipo": "Poda y derribo",
@@ -14554,7 +15276,8 @@
    "numero": "PD-2026-0001",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14562,7 +15285,8 @@
    "numero": "PD-2026-0002",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14570,7 +15294,8 @@
    "numero": "PD-2026-0003",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14578,7 +15303,8 @@
    "numero": "PD-2026-0004",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14586,7 +15312,8 @@
    "numero": "PD-2026-0005",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14594,7 +15321,8 @@
    "numero": "PD-2026-0006",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14602,7 +15330,8 @@
    "numero": "PD-2026-0007",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14610,7 +15339,8 @@
    "numero": "PD-2026-0008",
    "vence_en": "2027-09-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-09-15"
+   "emitida_en": "2026-09-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14618,7 +15348,8 @@
    "numero": "PD-2026-K108",
    "vence_en": "2027-02-14",
    "situacion": "Vigente",
-   "emitida_en": "2026-02-15"
+   "emitida_en": "2026-02-15",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14626,7 +15357,8 @@
    "numero": "PD-2026-K112",
    "vence_en": "2027-03-01",
    "situacion": "Vigente",
-   "emitida_en": "2026-03-02"
+   "emitida_en": "2026-03-02",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14634,7 +15366,8 @@
    "numero": "PD-2026-K115",
    "vence_en": "2027-04-19",
    "situacion": "Vigente",
-   "emitida_en": "2026-04-20"
+   "emitida_en": "2026-04-20",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14642,7 +15375,8 @@
    "numero": "PD-2026-K118",
    "vence_en": "2027-05-10",
    "situacion": "Vigente",
-   "emitida_en": "2026-05-11"
+   "emitida_en": "2026-05-11",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14650,7 +15384,8 @@
    "numero": "PD-2026-K121",
    "vence_en": "2027-05-17",
    "situacion": "Vigente",
-   "emitida_en": "2026-05-18"
+   "emitida_en": "2026-05-18",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14658,7 +15393,8 @@
    "numero": "PD-2026-K124",
    "vence_en": "2027-02-15",
    "situacion": "Vigente",
-   "emitida_en": "2026-02-16"
+   "emitida_en": "2026-02-16",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14666,7 +15402,8 @@
    "numero": "PD-2026-K127",
    "vence_en": "2027-01-18",
    "situacion": "Vigente",
-   "emitida_en": "2026-01-19"
+   "emitida_en": "2026-01-19",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14674,7 +15411,8 @@
    "numero": "PD-2026-K136",
    "vence_en": "2027-05-31",
    "situacion": "Vigente",
-   "emitida_en": "2026-06-01"
+   "emitida_en": "2026-06-01",
+   "cancelada_el": null
   },
   {
    "tipo": "Poda y derribo",
@@ -14682,7 +15420,44 @@
    "numero": "PD-2026-K139",
    "vence_en": "2027-05-03",
    "situacion": "Vigente",
-   "emitida_en": "2026-05-04"
+   "emitida_en": "2026-05-04",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Poda y derribo",
+   "nombre": "TERESA PRUEBA MODELO",
+   "numero": "PD-2026-K141",
+   "vence_en": "2027-03-08",
+   "situacion": "Vigente",
+   "emitida_en": "2026-03-09",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Poda y derribo",
+   "nombre": "ULISES FICTICIO SIMULADO",
+   "numero": "PD-2026-K143",
+   "vence_en": "2027-04-12",
+   "situacion": "Vigente",
+   "emitida_en": "2026-04-13",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Poda y derribo",
+   "nombre": "VALERIA MODELO EJEMPLO",
+   "numero": "PD-2026-K145",
+   "vence_en": "2027-05-10",
+   "situacion": "Vigente",
+   "emitida_en": "2026-05-11",
+   "cancelada_el": null
+  },
+  {
+   "tipo": "Poda y derribo",
+   "nombre": "WENDY SIMULADO MUESTRA",
+   "numero": "PD-2026-K147",
+   "vence_en": "2027-06-07",
+   "situacion": "Vigente",
+   "emitida_en": "2026-06-08",
+   "cancelada_el": null
   }
  ]
 }

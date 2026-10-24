@@ -41,8 +41,9 @@ function hashContrasena(clave) {
 function en(fecha, hora = '10:00') {
   emitir(`SELECT set_config('apd.ahora_simulado', ${q(`${fecha} ${hora}:00-06`)}, false)`);
 }
-function como(usuario, tipo) {
-  emitir(`SELECT set_config('apd.usuario', ${q(usuario)}, false), set_config('apd.usuario_tipo', ${q(tipo)}, false), set_config('apd.procedencia', '192.0.2.10', false)`);
+// perfil: el del acceso del SIA (P27), sólo para el personal; lo piden las reglas reservadas a ciertos perfiles (P120)
+function como(usuario, tipo, perfil = '') {
+  emitir(`SELECT set_config('apd.usuario', ${q(usuario)}, false), set_config('apd.usuario_tipo', ${q(tipo)}, false), set_config('apd.procedencia', '192.0.2.10', false), set_config('apd.perfil', ${q(perfil)}, false)`);
 }
 const REVISION = 'revision.ficticia';
 const COTEJO = 'cotejo.ficticio';
@@ -337,6 +338,13 @@ costo('poda', 'nueva', 1200, '2026-07-01');
 costo('poda', 'renovacion', 800, '2026-07-01');
 costo('dictaminador', 'nueva', 1800, '2026-07-01');
 costo('dictaminador', 'renovacion', 1000, '2026-07-01');
+// Cuota de reposición de la credencial (P140, sesión de trabajo del 23/10/2026). MONTO FICTICIO: el que cita para
+// «Reposición de acreditaciones» el Aviso de la Gaceta No. 1548 del 14/02/2025 (P140); el vigente lo confirma Finanzas
+en('2026-07-01', '08:00');
+como(ADMINISTRACION, 'personal', 'administracion');
+emitir(`UPDATE apd.cuota SET monto = 88.00, vigente_desde = '2026-07-01',
+  fundamento = 'Monto ficticio de prueba, vigente desde el 01/07/2026: el que cita el Aviso de la Gaceta Oficial No. 1548 del 14/02/2025 para «Reposición de acreditaciones», por tarjeta (clave 2.5.17.1) [pendiente P140: confirmar el monto vigente con Finanzas].'
+  WHERE clave = 'reposicion_credencial'`);
 
 // 1 · Grupo de poda (nueva) combinado y concluido en septiembre: aprobados, uno reprobado, uno sin derecho a examen
 const g1 = [];
@@ -674,6 +682,63 @@ migrar(conCorte, 'poda', '2023-03-06');   // venció el 05/03/2024; la ventana d
 migrar(conCorte, 'poda', '2025-05-05');   // nueva, fuera de la ventana: aquí empieza otra vez la cuenta
 migrar(conCorte, 'poda', '2026-05-04');
 activar(conCorte, '2026-10-05');
+
+// 9 · Cancelación de una acreditación (P120) y reposición de la credencial (P140), sesión de trabajo del 23/10/2026.
+// Cancelada: su poda estaría por vencer (vence el 04/11/2026), pero la canceló un instructor el 08/10: no la renueva y
+// «Verificar» la muestra cancelada, sin el motivo. El fundamento queda con su marca mientras lo fija la Dirección Jurídica.
+const cancelada = persona('acred-cancelada', { nombre: 'Zacarías', primer: 'Simulado', segundo: 'Simulado', sexo: 'H' });
+altaMigrada(cancelada);
+const aCancelada = migrar(cancelada, 'poda', '2025-11-05');
+activar(cancelada, '2026-09-01');
+en('2026-10-08', '13:00');
+como(INSTRUCTOR, 'personal', 'instructor');
+emitir(`UPDATE apd.acreditacion SET cancelacion_motivo = 'Se documentó un derribo sin la autorización de la Secretaría en la visita de inspección del 06/10/2026.',
+  cancelacion_fundamento = 'Lineamientos para la acreditación de podadores y dictaminadores técnicos, [Art. __, fracc. __] [pendiente P120: lo fija la Dirección Jurídica]'
+  WHERE id = ${q(aCancelada)}`);
+// Reposición de la credencial: cuatro personas con su poda y su dictaminador vigentes (del registro anterior), una en cada
+// paso: acta en revisión, acta con observaciones, acta aceptada (paga y recoge) y credencial repuesta
+const ACTA = (p, v = 1) => ({ clave: `ficticio/reposiciones/${p.id}/acta-${v}.pdf`, sha: `encode(sha256(convert_to(${q(p.id + 'acta' + v)}, 'UTF8')), 'hex')` });
+function pideReposicion(p, acred, fecha, motivo) {
+  en(fecha, '18:30');
+  como(p.correo, 'solicitante');
+  const a = ACTA(p);
+  emitir(`INSERT INTO apd.reposicion (id, acreditacion_id, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256, es_ficticio)
+  VALUES (${q(uuid('reposicion:' + p.clave))}, ${q(acred)}, ${q(motivo)}, ${q(a.clave)}, 'acta.pdf', 'application/pdf', 248311, ${a.sha}, true)`);
+}
+function revisaActa(p, fecha, estado, observacion = '') {
+  en(fecha, '12:30');
+  como(REVISION, 'personal', 'revision_cotejo');
+  emitir(`UPDATE apd.reposicion SET estado = ${q(estado)}, observacion = ${q(observacion)} WHERE id = ${q(uuid('reposicion:' + p.clave))}`);
+}
+const conReposicion = (clave, poda, dict) => {
+  const p = persona(clave);
+  altaMigrada(p);
+  const a = migrar(p, 'poda', poda);
+  migrar(p, 'dictaminador', dict);
+  activar(p, '2026-09-15');
+  return [p, a];
+};
+const [rSolicitada, aSolicitada] = conReposicion('repos-solicitada', '2026-03-09', '2026-03-23');
+pideReposicion(rSolicitada, aSolicitada, '2026-10-13', 'perdida');
+const [rObservada, aObservada] = conReposicion('repos-observada', '2026-04-13', '2026-04-27');
+pideReposicion(rObservada, aObservada, '2026-10-08', 'robo');
+revisaActa(rObservada, '2026-10-09', 'con_observaciones', 'El acta no trae el sello ni la firma de la autoridad que la levantó.');
+const [rAceptada, aAceptada] = conReposicion('repos-aceptada', '2026-05-11', '2026-05-25');
+pideReposicion(rAceptada, aAceptada, '2026-10-06', 'perdida');
+revisaActa(rAceptada, '2026-10-07', 'acta_aceptada');
+const [rRepuesta, aRepuesta] = conReposicion('repos-repuesta', '2026-06-08', '2026-06-22');
+pideReposicion(rRepuesta, aRepuesta, '2026-09-28', 'robo');
+revisaActa(rRepuesta, '2026-09-29', 'acta_aceptada');
+{
+  // En el Vivero: la factura de la cuota, a nombre de la persona (RFC ficticio de su CURP, como en el cotejo)
+  en('2026-10-02', '11:00');
+  como(REVISION, 'personal', 'revision_cotejo');
+  const h = createHash('md5').update('folio-fiscal:reposicion:' + rRepuesta.id).digest('hex').toUpperCase();
+  emitir(`UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = ${q(`${rRepuesta.curp.slice(0, 10)}AB1`)},
+    factura_razon_social = ${q([rRepuesta.nombre, rRepuesta.primer, rRepuesta.segundo].filter(Boolean).join(' ').toUpperCase())},
+    factura_folio_fiscal = ${q(`${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`)}
+    WHERE id = ${q(uuid('reposicion:' + rRepuesta.clave))}`);
+}
 
 // ── Material de estudio (decisión 2026-10-18, Liber) ──────────────────────────────────
 // No es ficticio: son los documentos de la Secretaría que subió Liber. En la versión de prueba el archivo está en

@@ -48,6 +48,8 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Hora de salida del curso, todos los días; se muestra a la persona con su grupo (P91, sesión de trabajo del 23/10/2026).'),
   ('informes_horario', 'de lunes a viernes, de 9:00 a 15:00',
    'Horario de informes de la Secretaría para aclaraciones del trámite; se muestra a la persona donde se le pide acudir o comunicarse. El teléfono y el correo están pendientes (P132, sesión de trabajo del 23/10/2026).'),
+  ('perfiles_cancelan_acreditacion', 'instructor,administracion',
+   'Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y la Dirección (administración) (P120, sesión de trabajo del 23/10/2026).'),
   ('minutos_bloqueo', '15',
    'Minutos que dura el bloqueo de la entrada al llegar a intentos_maximos; más intentos no lo alargan (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].');
 
@@ -61,6 +63,11 @@ INSERT INTO apd.curso (tipo_acreditacion, modalidad, nombre, dias_duracion, dias
   ('poda',         'renovacion', 'Poda y derribo · renovación',           1, 1, 7.0, 5, 25, 'Renovación de la acreditación de poda y derribo de arbolado urbano', NULL),
   ('dictaminador', 'nueva',      'Dictaminador técnico · solicitud nueva', 5, 4, 8.0, 5, 25, 'Acreditación de dictaminador técnico de arbolado urbano', NULL),
   ('dictaminador', 'renovacion', 'Dictaminador técnico · renovación',      1, 1, 8.0, 5, 25, 'Renovación de la acreditación de dictaminador técnico de arbolado urbano', NULL);
+
+-- Cuota de reposición de la credencial (P140, sesión de trabajo del 23/10/2026): configurable porque cambia cada año. El
+-- monto vigente lo confirma Finanzas [pendiente P140]; vacío hasta capturarlo con la publicación que lo fija.
+INSERT INTO apd.cuota (clave, concepto, monto) VALUES
+  ('reposicion_credencial', 'Reposición de la credencial de acreditación', NULL);
 
 INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('identificacion_oficial', 'Identificación oficial',

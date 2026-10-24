@@ -28,6 +28,7 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TABLAS = {
   parametro: 'clave',
   curso: 'tipo_acreditacion, modalidad',
+  cuota: 'clave',
   requisito: 'clave',
   requisito_curso: 'tipo_acreditacion, modalidad, orden',
   organizacion: 'nombre',
@@ -35,6 +36,7 @@ const TABLAS = {
   solicitante: 'curp',
   fotografia: 'solicitante_id, cargada_en',
   acreditacion: 'numero',
+  reposicion: 'acreditacion_id, solicitada_en',
   solicitud: 'folio',
   revision: 'solicitud_id, revisada_en',
   cita: 'solicitud_id, programada_en',
@@ -47,7 +49,7 @@ const TABLAS = {
   bitacora: 'fecha, accion, entidad_id'
 };
 // Se omiten la contraseña (nunca sale) y las fechas de instalación de los catálogos (cambian en cada carga)
-const OMITIR = { solicitante: ['contrasena_hash'], parametro: ['actualizado_en'], curso: ['actualizado_en'] };
+const OMITIR = { solicitante: ['contrasena_hash'], parametro: ['actualizado_en'], curso: ['actualizado_en'], cuota: ['actualizado_en'] };
 
 const partes = Object.entries(TABLAS).map(([tabla, orden]) => {
   const fila = OMITIR[tabla] ? `to_jsonb(t) - ${OMITIR[tabla].map((c) => `'${c}'`).join(' - ')}` : 'to_jsonb(t)';

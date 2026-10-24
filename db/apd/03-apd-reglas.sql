@@ -10,7 +10,9 @@
 -- Contexto de quien escribe. El backend lo declara al inicio de cada transacción:
 --   SELECT set_config('apd.usuario', '<cuenta>', true), set_config('apd.usuario_tipo', 'personal', true),
 --          set_config('apd.procedencia', '<dirección>', true);
--- y, cuando una regla pide motivo, set_config('apd.motivo', '<texto>', true).
+-- y, cuando una regla pide motivo, set_config('apd.motivo', '<texto>', true). Para el personal declara además su perfil del
+-- acceso del SIA (P27: revision_cotejo, instructor, emision, consulta o administracion) con
+-- set_config('apd.perfil', '<perfil>', true): lo piden las reglas reservadas a ciertos perfiles (la cancelación, P120).
 
 -- ───────────────────────────── Utilidades ─────────────────────────────
 
@@ -53,9 +55,12 @@ CREATE FUNCTION apd.nombre_estado(p_estado text) RETURNS text
     WHEN 'sin_pago' THEN 'Sin pago'
     WHEN 'no_se_presento' THEN 'No se presentó'
     WHEN 'no_es_la_persona' THEN 'No era la persona'
+    WHEN 'solicitada' THEN 'Acta en revisión'
+    WHEN 'acta_aceptada' THEN 'Acta aceptada'
+    WHEN 'repuesta' THEN 'Credencial repuesta'
     ELSE p_estado
   END $$;
-COMMENT ON FUNCTION apd.nombre_estado(text) IS 'Nombre en pantalla de un estado de solicitud, grupo o cita, para los mensajes de error.';
+COMMENT ON FUNCTION apd.nombre_estado(text) IS 'Nombre en pantalla de un estado de solicitud, grupo, cita o reposición, para los mensajes de error.';
 
 CREATE FUNCTION apd.parametro_texto(p_clave text) RETURNS text
   LANGUAGE plpgsql STABLE AS $$
@@ -182,6 +187,25 @@ BEGIN
 END $$;
 CREATE TRIGGER curso_cambio BEFORE UPDATE ON apd.curso
   FOR EACH ROW EXECUTE FUNCTION apd.curso_cambio();
+
+-- Cuotas que no son de un curso (la reposición de la credencial, P140, sesión de trabajo del 23/10/2026): como el costo
+-- de cada curso, el monto lo actualiza el personal con la publicación que lo fija y desde cuándo aplica (cambia cada año);
+-- queda en la bitácora. Una reposición con el acta ya aceptada conserva el monto que se le indicó (apd.reposicion.pago_monto).
+CREATE FUNCTION apd.cuota_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.actualizado_en := apd.ahora();
+  IF (NEW.concepto, NEW.monto, NEW.fundamento, NEW.vigente_desde) IS DISTINCT FROM (OLD.concepto, OLD.monto, OLD.fundamento, OLD.vigente_desde) THEN
+    IF apd.contexto('usuario_tipo') <> 'personal' THEN
+      PERFORM apd.error('cuota_de_personal', 'La cuota la actualiza el personal de la Secretaría');
+    END IF;
+    PERFORM apd.registrar('cambio_monto', 'cuota', NEW.clave,
+      format('%s → %s desde %s. %s', coalesce(OLD.monto::text, 'sin monto'), coalesce(NEW.monto::text, 'sin monto'),
+             coalesce(NEW.vigente_desde::text, '—'), coalesce(NEW.fundamento, '')));
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER cuota_cambio BEFORE UPDATE ON apd.cuota
+  FOR EACH ROW EXECUTE FUNCTION apd.cuota_cambio();
 
 -- Qué pide cada curso (apd.requisito_curso): agregar, quitar o cambiar un requisito cambia lo que se exige a cada
 -- solicitud, así que queda en la bitácora con lo que había (E2-04, auditoría 2026-10-19). El disparador se crea en
@@ -590,7 +614,15 @@ CREATE TRIGGER fotografia_cambio BEFORE UPDATE ON apd.fotografia
 --   · un año desde la emisión, sin efecto retroactivo; el último día vigente es el anterior al aniversario;
 --   · ventana de renovación: desde dias_antes_renovacion (30 naturales) antes del vencimiento hasta
 --     meses_despues_renovacion (12) después; pasado eso, se tramita como nueva;
---   · nadie opera sin acreditación vigente: el estado se CALCULA con la fecha, nunca se guarda.
+--   · nadie opera sin acreditación vigente: el estado se CALCULA con la fecha, nunca se guarda;
+--   · una cancelada (P120, sesión de trabajo del 23/10/2026) lo está desde el día de su cancelación: no es vigente, no se
+--     renueva y no sirve de requisito (la poda del dictaminador, la cuenta de los dos años).
+
+-- ¿Estaba cancelada ese día? (el día de la cancelación, en la Ciudad de México, ya cuenta)
+CREATE FUNCTION apd.cancelada_al(p_cancelada_en timestamptz, p_fecha date) RETURNS boolean
+  LANGUAGE sql IMMUTABLE AS $$
+  SELECT p_cancelada_en IS NOT NULL AND (p_cancelada_en AT TIME ZONE 'America/Mexico_City')::date <= p_fecha
+$$;
 
 CREATE FUNCTION apd.estado_acreditacion(p_id uuid, p_fecha date DEFAULT NULL) RETURNS text
   LANGUAGE plpgsql STABLE AS $$
@@ -603,13 +635,14 @@ BEGIN
   SELECT * INTO a FROM apd.acreditacion WHERE id = p_id;
   IF NOT FOUND THEN RETURN NULL; END IF;
   IF f < a.emitida_en THEN RETURN 'no_emitida'; END IF;
+  IF apd.cancelada_al(a.cancelada_en, f) THEN RETURN 'cancelada'; END IF;
   IF f < a.vence_en - antes THEN RETURN 'vigente'; END IF;
   IF f <= a.vence_en THEN RETURN 'por_vencer'; END IF;
   IF f <= a.vence_en + make_interval(months => meses) THEN RETURN 'vencida_renovable'; END IF;
   RETURN 'vencida_no_renovable';
 END $$;
 COMMENT ON FUNCTION apd.estado_acreditacion(uuid, date) IS
-  'vigente, por_vencer (ya se puede renovar), vencida_renovable, vencida_no_renovable (tramita como nueva) o no_emitida. Sólo por fechas; para saber si puede operar, apd.acreditacion_vigente().';
+  'vigente, por_vencer (ya se puede renovar), vencida_renovable, vencida_no_renovable (tramita como nueva), cancelada (P120) o no_emitida. Por fechas y cancelación; para saber si puede operar, apd.acreditacion_vigente().';
 
 -- ¿Tiene la persona una acreditación de poda vigente ese día?
 CREATE FUNCTION apd.poda_vigente(p_solicitante uuid, p_fecha date DEFAULT NULL) RETURNS boolean
@@ -617,14 +650,17 @@ CREATE FUNCTION apd.poda_vigente(p_solicitante uuid, p_fecha date DEFAULT NULL) 
   SELECT EXISTS (
     SELECT 1 FROM apd.acreditacion
      WHERE solicitante_id = p_solicitante AND tipo_acreditacion = 'poda'
-       AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en)
+       AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en
+       AND NOT apd.cancelada_al(cancelada_en, coalesce(p_fecha, apd.hoy())))
 $$;
 
 -- Desde cuándo tiene la persona la acreditación de poda sin interrupción, hasta ese día (sesión de trabajo del 23/10/2026:
 -- para pedir la de dictaminador hacen falta 2 años consecutivos). Se parte de la acreditación de poda vigente ese día y
 -- se va hacia atrás: la anterior cuenta si la siguiente se emitió a más tardar meses_despues_renovacion meses después de
 -- su vencimiento (la misma ventana de renovación tardía en la que todavía se renueva; pasada ésa, se tramita como nueva y
--- la cuenta empieza de nuevo). Devuelve la emisión de la primera de esa cadena, o NULL si ese día no tiene la poda vigente.
+-- la cuenta empieza de nuevo). Una cancelada (P120) corta la cuenta: si es la de ese día, no hay poda vigente; si es una
+-- anterior, la cadena empieza después de ella. Devuelve la emisión de la primera de esa cadena, o NULL si ese día no tiene
+-- la poda vigente.
 CREATE FUNCTION apd.poda_continua_desde(p_solicitante uuid, p_fecha date DEFAULT NULL) RETURNS date
   LANGUAGE plpgsql STABLE AS $$
 DECLARE
@@ -633,9 +669,13 @@ DECLARE
   desde date;
   a record;
 BEGIN
-  FOR a IN SELECT emitida_en, vence_en FROM apd.acreditacion
+  FOR a IN SELECT emitida_en, vence_en, cancelada_en FROM apd.acreditacion
             WHERE solicitante_id = p_solicitante AND tipo_acreditacion = 'poda' AND emitida_en <= f
             ORDER BY emitida_en DESC LOOP
+    IF apd.cancelada_al(a.cancelada_en, f) THEN
+      IF desde IS NULL THEN RETURN NULL; END IF;        -- la de ese día está cancelada: no hay poda vigente
+      EXIT;                                             -- una cancelada corta la cuenta
+    END IF;
     IF desde IS NULL THEN
       IF f > a.vence_en THEN RETURN NULL; END IF;       -- la más reciente ya no está vigente
       desde := a.emitida_en;
@@ -648,29 +688,33 @@ BEGIN
   RETURN desde;
 END $$;
 COMMENT ON FUNCTION apd.poda_continua_desde(uuid, date) IS
-  'Emisión de la primera acreditación de poda de la cadena sin cortes que llega a ese día (renovaciones dentro de la ventana de renovación tardía); NULL sin poda vigente.';
+  'Emisión de la primera acreditación de poda de la cadena sin cortes que llega a ese día (renovaciones dentro de la ventana de renovación tardía; una cancelada corta); NULL sin poda vigente.';
 
--- ¿Puede operar con esta acreditación ese día? Sólo cuentan sus propias fechas. La de dictaminador
+-- ¿Puede operar con esta acreditación ese día? Sólo cuentan sus propias fechas y su cancelación. La de dictaminador
 -- sigue vigente hasta su fecha aunque la de poda venza antes (corrección R43, 2026-10-14): la poda
 -- vigente se exige sólo al iniciar la solicitud.
 CREATE FUNCTION apd.acreditacion_vigente(p_id uuid, p_fecha date DEFAULT NULL) RETURNS boolean
   LANGUAGE sql STABLE AS $$
   SELECT EXISTS (SELECT 1 FROM apd.acreditacion
-                  WHERE id = p_id AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en)
+                  WHERE id = p_id AND coalesce(p_fecha, apd.hoy()) BETWEEN emitida_en AND vence_en
+                    AND NOT apd.cancelada_al(cancelada_en, coalesce(p_fecha, apd.hoy())))
 $$;
 
--- Lo único que ve el público al verificar: sin CURP, sin contacto, sin domicilio; «Vigente» o «No vigente».
--- Nunca «en renovación» ni «en trámite», que alguien podría leer como permiso para operar.
+-- Lo único que ve el público al verificar: sin CURP, sin contacto, sin domicilio; «Vigente», «No vigente» o «Cancelada»
+-- (P120, con el día de la cancelación y sin el motivo ni el fundamento). Nunca «en renovación» ni «en trámite», que
+-- alguien podría leer como permiso para operar.
 CREATE VIEW apd.verificacion_publica AS
   SELECT a.numero,
          concat_ws(' ', s.nombre, s.primer_apellido, s.segundo_apellido) AS nombre,
          CASE a.tipo_acreditacion WHEN 'poda' THEN 'Poda y derribo' ELSE 'Dictaminador técnico' END AS tipo,
          a.emitida_en,
          a.vence_en,
-         CASE WHEN apd.acreditacion_vigente(a.id) THEN 'Vigente' ELSE 'No vigente' END AS situacion
+         CASE WHEN apd.cancelada_al(a.cancelada_en, apd.hoy()) THEN 'Cancelada'
+              WHEN apd.acreditacion_vigente(a.id) THEN 'Vigente' ELSE 'No vigente' END AS situacion,
+         CASE WHEN apd.cancelada_al(a.cancelada_en, apd.hoy()) THEN (a.cancelada_en AT TIME ZONE 'America/Mexico_City')::date END AS cancelada_el
     FROM apd.acreditacion a
     JOIN apd.solicitante s ON s.id = a.solicitante_id;
-COMMENT ON VIEW apd.verificacion_publica IS 'Consulta pública por número de acreditación: sólo nombre, tipo, fechas y «Vigente»/«No vigente».';
+COMMENT ON VIEW apd.verificacion_publica IS 'Consulta pública por número de acreditación: sólo nombre, tipo, fechas y «Vigente»/«No vigente»/«Cancelada» (con su día, sin motivo).';
 
 -- ───────────────────────────── Acreditaciones ─────────────────────────────
 
@@ -710,6 +754,11 @@ BEGIN
     IF NEW.emitida_en <> apd.hoy() THEN
       PERFORM apd.error('emision_con_otra_fecha', 'La acreditación se emite con la fecha del día');
     END IF;
+    -- La renovación de una acreditación que se canceló mientras se tramitaba no se emite (P120): la cancelación cierra
+    -- los trámites abiertos que la renuevan (apd.acreditacion_cancelada); éste es el de una solicitud ya aprobada
+    IF s.modalidad = 'renovacion' AND EXISTS (SELECT 1 FROM apd.acreditacion x WHERE x.id = s.acreditacion_anterior_id AND x.cancelada_en IS NOT NULL) THEN
+      PERFORM apd.error('renovacion_de_cancelada', 'La acreditación que se renovaba fue cancelada: no se emite la renovación');
+    END IF;
     -- La poda vigente del dictaminador ya se comprobó al iniciar la solicitud; aquí no se repite (R39).
     -- El número es provisional: Liber definirá el formato del folio de la acreditación [pendiente].
     NEW.numero := (CASE NEW.tipo_acreditacion WHEN 'poda' THEN 'PD' ELSE 'DT' END) || '-'
@@ -737,21 +786,50 @@ END $$;
 CREATE TRIGGER acreditacion_emitida AFTER INSERT ON apd.acreditacion
   FOR EACH ROW EXECUTE FUNCTION apd.acreditacion_emitida();
 
--- Una acreditación emitida no se edita: sólo se registra, una vez, la entrega.
+-- Una acreditación emitida no se edita: sólo se registra, una vez, la entrega, y se cancela, una vez (P120).
 CREATE FUNCTION apd.acreditacion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE falta text;
 BEGIN
+  -- Cancelación (P120, sesión de trabajo del 23/10/2026): la registran instructores y directivos (los perfiles del
+  -- parámetro perfiles_cancelan_acreditacion, P27), con motivo y fundamento; sólo de una acreditación vigente ese día. La
+  -- base pone el día y quién; ya no se deshace ni se cambia.
+  IF (NEW.cancelada_en, NEW.cancelada_por, NEW.cancelacion_motivo, NEW.cancelacion_fundamento)
+     IS DISTINCT FROM (OLD.cancelada_en, OLD.cancelada_por, OLD.cancelacion_motivo, OLD.cancelacion_fundamento) THEN
+    IF OLD.cancelada_en IS NOT NULL THEN
+      PERFORM apd.error('acreditacion_ya_cancelada', format('La acreditación %s ya está cancelada: la cancelación no se cambia', OLD.numero));
+    END IF;
+    IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('usuario') = ''
+       OR NOT apd.contexto('perfil') = ANY (string_to_array(replace(apd.parametro_texto('perfiles_cancelan_acreditacion'), ' ', ''), ',')) THEN
+      PERFORM apd.error('cancelacion_sin_permiso', 'Sólo los instructores y la Dirección pueden cancelar una acreditación');
+    END IF;
+    IF length(trim(coalesce(NEW.cancelacion_motivo, ''))) < 10 THEN
+      PERFORM apd.error('cancelacion_sin_motivo', 'Escriba el motivo de la cancelación (al menos 10 caracteres)');
+    END IF;
+    IF trim(coalesce(NEW.cancelacion_fundamento, '')) = '' THEN
+      PERFORM apd.error('cancelacion_sin_fundamento', 'Escriba el fundamento de la cancelación');
+    END IF;
+    IF NOT apd.acreditacion_vigente(OLD.id) THEN
+      PERFORM apd.error('cancelacion_no_vigente', format('Sólo se cancela una acreditación vigente: la %s ya no lo está', OLD.numero));
+    END IF;
+    NEW.cancelacion_motivo := trim(NEW.cancelacion_motivo);
+    NEW.cancelacion_fundamento := trim(NEW.cancelacion_fundamento);
+    NEW.cancelada_en := apd.ahora();
+    NEW.cancelada_por := apd.contexto('usuario');
+  END IF;
   IF (NEW.numero, NEW.solicitante_id, NEW.tipo_acreditacion, NEW.solicitud_id, NEW.emitida_en, NEW.vence_en,
       NEW.origen, NEW.folio_origen, NEW.es_ficticio)
      IS DISTINCT FROM
      (OLD.numero, OLD.solicitante_id, OLD.tipo_acreditacion, OLD.solicitud_id, OLD.emitida_en, OLD.vence_en,
       OLD.origen, OLD.folio_origen, OLD.es_ficticio) THEN
-    PERFORM apd.error('acreditacion_inmutable', 'Una acreditación emitida no se modifica; sólo se registra su entrega');
+    PERFORM apd.error('acreditacion_inmutable', 'Una acreditación emitida no se modifica; sólo se registra su entrega o su cancelación');
   END IF;
   IF OLD.entregada_en IS NOT NULL AND NEW.entregada_en IS DISTINCT FROM OLD.entregada_en THEN
     PERFORM apd.error('entrega_ya_registrada', 'La entrega ya está registrada');
   END IF;
   IF NEW.entregada_en IS NOT NULL AND OLD.entregada_en IS NULL THEN
+    IF OLD.cancelada_en IS NOT NULL THEN
+      PERFORM apd.error('entrega_de_cancelada', 'Una acreditación cancelada no se entrega');
+    END IF;
     IF NEW.entregada_en > apd.hoy() THEN
       PERFORM apd.error('entrega_futura', 'La entrega no puede registrarse con fecha futura');
     END IF;
@@ -778,6 +856,184 @@ BEGIN
 END $$;
 CREATE TRIGGER acreditacion_cambio BEFORE UPDATE ON apd.acreditacion
   FOR EACH ROW EXECUTE FUNCTION apd.acreditacion_cambio();
+
+-- Lo que sigue a una cancelación (P120): queda en la bitácora con el motivo y el fundamento; la reposición abierta de su
+-- credencial se cancela (ya no hay credencial que reponer) y los trámites abiertos que la renuevan se cancelan con el motivo
+-- (una cancelada no se renueva; si la solicitud ya está aprobada, la emisión la rechaza: renovacion_de_cancelada).
+CREATE FUNCTION apd.acreditacion_cancelada() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.cancelada_en IS NULL AND NEW.cancelada_en IS NOT NULL THEN
+    PERFORM apd.registrar('cancelacion', 'acreditacion', NEW.id::text,
+      format('%s cancelada · motivo: %s · fundamento: %s', NEW.numero, NEW.cancelacion_motivo, NEW.cancelacion_fundamento));
+    UPDATE apd.reposicion SET estado = 'cancelada', observacion = 'La acreditación se canceló.'
+     WHERE acreditacion_id = NEW.id AND estado IN ('solicitada', 'con_observaciones', 'acta_aceptada');
+    UPDATE apd.solicitud SET estado = 'cancelada', motivo_cierre = format('La acreditación %s que se renovaba fue cancelada.', NEW.numero)
+     WHERE acreditacion_anterior_id = NEW.id AND modalidad = 'renovacion'
+       AND estado NOT IN ('aprobada', 'acreditada', 'no_acreditada', 'sin_derecho_examen', 'cancelada', 'concluida_sin_atender', 'rechazada');
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER acreditacion_cancelada AFTER UPDATE ON apd.acreditacion
+  FOR EACH ROW EXECUTE FUNCTION apd.acreditacion_cancelada();
+
+-- ───────────────────────────── Reposición de la credencial ─────────────────────────────
+-- P140, sesión de trabajo del 23/10/2026: la persona con su acreditación vigente pide la reposición de la credencial por
+-- pérdida o robo, con el acta que levantó; el personal revisa el acta (la acepta o le pone observaciones y la persona
+-- carga otra); con el acta aceptada, la persona paga la cuota de reposición (apd.cuota) y en el Vivero el personal valida
+-- la factura y le entrega la credencial repuesta. La acreditación no cambia: mismo número, misma emisión, misma vigencia.
+--   solicitada → acta_aceptada | con_observaciones (personal) → (con observaciones) solicitada, con otra acta (la persona)
+--   acta_aceptada → repuesta (personal, con la factura) · cualquiera abierta → cancelada (con motivo; la base, si se
+--   cancela la acreditación)
+CREATE FUNCTION apd.reposicion_alta() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE a apd.acreditacion;
+BEGIN
+  IF apd.contexto('usuario_tipo') <> 'solicitante' THEN
+    PERFORM apd.error('reposicion_de_la_persona', 'La reposición la pide la persona titular desde «Mis trámites»');
+  END IF;
+  SELECT * INTO a FROM apd.acreditacion WHERE id = NEW.acreditacion_id FOR UPDATE;
+  IF NOT apd.acreditacion_vigente(a.id) THEN
+    PERFORM apd.error('reposicion_no_vigente', 'Sólo se repone la credencial de una acreditación vigente');
+  END IF;
+  -- Una credencial del sistema que todavía no se recoge no se repone: se recoge (las migradas se entregaron fuera de él)
+  IF a.origen = 'sistema' AND a.entregada_en IS NULL THEN
+    PERFORM apd.error('reposicion_sin_entrega', 'Tu credencial todavía no se te entrega: recógela en el Vivero');
+  END IF;
+  IF EXISTS (SELECT 1 FROM apd.reposicion r WHERE r.acreditacion_id = a.id AND r.estado IN ('solicitada', 'con_observaciones', 'acta_aceptada')) THEN
+    PERFORM apd.error('reposicion_en_curso', 'Ya pediste la reposición de esta credencial: síguela en «Mis trámites»');
+  END IF;
+  IF NEW.acta_tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
+    PERFORM apd.error('archivo_grande', format('El acta pesa más de %s MB', apd.parametro_texto('tamano_maximo_archivo_bytes')::integer / 1048576));
+  END IF;
+  NEW.estado := 'solicitada';
+  NEW.observacion := '';
+  NEW.solicitada_en := apd.ahora();
+  NEW.estado_desde := NEW.solicitada_en;
+  NEW.revisada_por := NULL; NEW.revisada_en := NULL; NEW.pago_monto := NULL;
+  NEW.factura_rfc := NULL; NEW.factura_razon_social := NULL; NEW.factura_folio_fiscal := NULL;
+  NEW.repuesta_en := NULL; NEW.repuesta_por := NULL;
+  NEW.acta_nombre_archivo := apd.nombre_de_archivo('ACTA DE PERDIDA O ROBO', a.solicitante_id, NEW.acta_tipo_mime);
+  RETURN NEW;
+END $$;
+CREATE TRIGGER reposicion_alta BEFORE INSERT ON apd.reposicion
+  FOR EACH ROW EXECUTE FUNCTION apd.reposicion_alta();
+
+CREATE FUNCTION apd.reposicion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  tipo text := apd.contexto('usuario_tipo');
+  acta_cambia boolean := (NEW.acta_archivo_clave, NEW.acta_nombre_original, NEW.acta_tipo_mime, NEW.acta_tamano_bytes, NEW.acta_sha256)
+                         IS DISTINCT FROM (OLD.acta_archivo_clave, OLD.acta_nombre_original, OLD.acta_tipo_mime, OLD.acta_tamano_bytes, OLD.acta_sha256);
+  c apd.cuota;
+BEGIN
+  IF (NEW.id, NEW.acreditacion_id, NEW.solicitada_en, NEW.es_ficticio) IS DISTINCT FROM (OLD.id, OLD.acreditacion_id, OLD.solicitada_en, OLD.es_ficticio)
+     OR NEW.motivo IS DISTINCT FROM OLD.motivo AND NOT (OLD.estado = 'con_observaciones' AND NEW.estado = 'solicitada') THEN
+    PERFORM apd.error('campo_inmutable', 'La acreditación, el motivo y la fecha de la reposición no se cambian');
+  END IF;
+  -- Lo pone la base
+  NEW.estado_desde := OLD.estado_desde; NEW.revisada_por := OLD.revisada_por; NEW.revisada_en := OLD.revisada_en;
+  NEW.pago_monto := OLD.pago_monto; NEW.repuesta_en := OLD.repuesta_en; NEW.repuesta_por := OLD.repuesta_por;
+  NEW.acta_nombre_archivo := OLD.acta_nombre_archivo;
+  -- Candado sobre la acreditación (decisión 4 del 19/10/2026): una cancelación al mismo tiempo espera a este cambio, o
+  -- éste a ella, y la regla ve lo que hizo la otra (escenarios 5b y 5c de probar-concurrencia.sh)
+  PERFORM 1 FROM apd.acreditacion WHERE id = NEW.acreditacion_id FOR UPDATE;
+  IF NEW.estado <> OLD.estado AND NOT (OLD.estado, NEW.estado) IN (('solicitada', 'acta_aceptada'), ('solicitada', 'con_observaciones'), ('con_observaciones', 'solicitada'),
+                                      ('acta_aceptada', 'repuesta'), ('solicitada', 'cancelada'), ('con_observaciones', 'cancelada'), ('acta_aceptada', 'cancelada')) THEN
+    PERFORM apd.error('transicion_reposicion', format('Este cambio no está permitido: una reposición «%s» no puede pasar a «%s»',
+      apd.nombre_estado(OLD.estado), apd.nombre_estado(NEW.estado)));
+  END IF;
+  -- El acta sólo cambia cuando la persona la corrige; la factura, sólo al entregar la credencial
+  IF acta_cambia AND NOT (OLD.estado = 'con_observaciones' AND NEW.estado = 'solicitada') THEN
+    PERFORM apd.error('acta_fuera_de_turno', 'El acta sólo se cambia cuando tiene observaciones por corregir');
+  END IF;
+  IF (NEW.factura_rfc, NEW.factura_razon_social, NEW.factura_folio_fiscal) IS DISTINCT FROM (OLD.factura_rfc, OLD.factura_razon_social, OLD.factura_folio_fiscal)
+     AND NOT (OLD.estado = 'acta_aceptada' AND NEW.estado = 'repuesta') THEN
+    PERFORM apd.error('factura_fuera_de_turno', 'Los datos de la factura se capturan al entregar la credencial repuesta');
+  END IF;
+  IF NEW.estado = OLD.estado THEN
+    IF NEW.observacion IS DISTINCT FROM OLD.observacion THEN
+      PERFORM apd.error('transicion_reposicion', 'La observación se escribe al revisar el acta');
+    END IF;
+    RETURN NEW;
+  END IF;
+  CASE NEW.estado
+    WHEN 'acta_aceptada', 'con_observaciones' THEN
+      IF tipo <> 'personal' OR apd.contexto('usuario') = '' THEN
+        PERFORM apd.error('reposicion_de_personal', 'El acta la revisa el personal de la Secretaría');
+      END IF;
+      IF NOT apd.acreditacion_vigente(NEW.acreditacion_id) THEN
+        PERFORM apd.error('reposicion_no_vigente', 'Sólo se repone la credencial de una acreditación vigente');
+      END IF;
+      IF NEW.estado = 'con_observaciones' AND length(trim(NEW.observacion)) < 10 THEN
+        PERFORM apd.error('observaciones_vacias', 'Escriba qué debe corregir la persona en su acta (al menos 10 caracteres)');
+      END IF;
+      IF NEW.estado = 'acta_aceptada' THEN
+        NEW.observacion := '';
+        -- El monto que se le indica: el vigente hoy; un cambio posterior no lo altera
+        SELECT * INTO c FROM apd.cuota WHERE clave = 'reposicion_credencial';
+        NEW.pago_monto := CASE WHEN c.vigente_desde <= apd.hoy() THEN c.monto END;
+      END IF;
+      NEW.revisada_por := apd.contexto('usuario');
+      NEW.revisada_en := apd.ahora();
+    WHEN 'solicitada' THEN
+      IF tipo <> 'solicitante' THEN
+        PERFORM apd.error('reposicion_de_la_persona', 'El acta corregida la carga la persona titular desde «Mis trámites»');
+      END IF;
+      IF NOT acta_cambia OR NEW.acta_archivo_clave IS NOT DISTINCT FROM OLD.acta_archivo_clave THEN
+        PERFORM apd.error('acta_sin_cambio', 'Carga el acta corregida');
+      END IF;
+      IF NEW.acta_tamano_bytes > apd.parametro_texto('tamano_maximo_archivo_bytes')::integer THEN
+        PERFORM apd.error('archivo_grande', format('El acta pesa más de %s MB', apd.parametro_texto('tamano_maximo_archivo_bytes')::integer / 1048576));
+      END IF;
+      NEW.observacion := '';
+      NEW.acta_nombre_archivo := apd.nombre_de_archivo('ACTA DE PERDIDA O ROBO', (SELECT solicitante_id FROM apd.acreditacion WHERE id = NEW.acreditacion_id), NEW.acta_tipo_mime);
+    WHEN 'repuesta' THEN
+      IF tipo <> 'personal' OR apd.contexto('usuario') = '' THEN
+        PERFORM apd.error('reposicion_de_personal', 'La credencial repuesta la entrega el personal de la Secretaría');
+      END IF;
+      IF NOT apd.acreditacion_vigente(NEW.acreditacion_id) THEN
+        PERFORM apd.error('reposicion_no_vigente', 'Sólo se repone la credencial de una acreditación vigente');
+      END IF;
+      NEW.factura_rfc := upper(trim(NEW.factura_rfc));
+      NEW.factura_razon_social := trim(NEW.factura_razon_social);
+      NEW.factura_folio_fiscal := upper(trim(NEW.factura_folio_fiscal));
+      IF NEW.factura_rfc IS NULL OR NEW.factura_razon_social IS NULL OR NEW.factura_razon_social = '' OR NEW.factura_folio_fiscal IS NULL THEN
+        PERFORM apd.error('sin_factura', 'Capture el RFC, el nombre o razón social y el folio fiscal de la factura de la cuota');
+      END IF;
+      -- Un folio fiscal no se repite, tampoco con el de una solicitud
+      IF EXISTS (SELECT 1 FROM apd.solicitud WHERE factura_folio_fiscal = NEW.factura_folio_fiscal)
+         OR EXISTS (SELECT 1 FROM apd.reposicion WHERE factura_folio_fiscal = NEW.factura_folio_fiscal AND id <> NEW.id) THEN
+        PERFORM apd.error('folio_fiscal_repetido', 'Ese folio fiscal ya está registrado: revise la factura');
+      END IF;
+      NEW.repuesta_en := apd.hoy();
+      NEW.repuesta_por := apd.contexto('usuario');
+    WHEN 'cancelada' THEN
+      IF length(trim(NEW.observacion)) = 0 THEN
+        PERFORM apd.error('reposicion_sin_motivo', 'Diga por qué se cancela la reposición');
+      END IF;
+  END CASE;
+  NEW.estado_desde := apd.ahora();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER reposicion_cambio BEFORE UPDATE ON apd.reposicion
+  FOR EACH ROW EXECUTE FUNCTION apd.reposicion_cambio();
+
+CREATE FUNCTION apd.reposicion_registrar() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE n text := (SELECT numero FROM apd.acreditacion WHERE id = NEW.acreditacion_id);
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    PERFORM apd.registrar('reposicion', 'acreditacion', NEW.acreditacion_id::text,
+      format('%s · reposición pedida por %s · acta %s (%s)', n, CASE NEW.motivo WHEN 'robo' THEN 'robo' ELSE 'pérdida' END, NEW.acta_archivo_clave, NEW.acta_sha256));
+  ELSIF NEW.estado <> OLD.estado OR NEW.acta_archivo_clave <> OLD.acta_archivo_clave THEN
+    PERFORM apd.registrar('reposicion', 'acreditacion', NEW.acreditacion_id::text,
+      concat_ws(' · ', n, format('reposición %s → %s', OLD.estado, NEW.estado),
+        CASE WHEN NEW.acta_archivo_clave <> OLD.acta_archivo_clave THEN format('acta %s (%s) en lugar de %s (%s)', NEW.acta_archivo_clave, NEW.acta_sha256, OLD.acta_archivo_clave, OLD.acta_sha256) END,
+        nullif(NEW.observacion, ''),
+        CASE WHEN NEW.estado = 'acta_aceptada' THEN format('cuota %s', coalesce(NEW.pago_monto::text, 'sin monto')) END,
+        CASE WHEN NEW.estado = 'repuesta' THEN format('factura %s · %s · %s; credencial repuesta el %s, mismo número y vigencia', NEW.factura_rfc, NEW.factura_razon_social, NEW.factura_folio_fiscal, NEW.repuesta_en) END));
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER reposicion_registrar AFTER INSERT OR UPDATE ON apd.reposicion
+  FOR EACH ROW EXECUTE FUNCTION apd.reposicion_registrar();
 
 -- ───────────────────────────── Solicitudes ─────────────────────────────
 
@@ -878,6 +1134,10 @@ BEGIN
         to_char(previa.vence_en - apd.parametro_texto('dias_antes_renovacion')::integer, 'DD/MM/YYYY')));
     ELSIF estado_anterior = 'vencida_no_renovable' THEN
       PERFORM apd.error('renovacion_vencida', 'Tu acreditación venció hace más de un año: debes tramitarla como solicitud nueva');
+    ELSIF estado_anterior = 'cancelada' THEN
+      -- Una cancelada no se renueva (P120). Si puede volver a solicitarla como nueva y cuándo lo fija la Dirección Jurídica
+      -- (lineamientos, Cap. X): mientras, una cancelada no impide una solicitud nueva
+      PERFORM apd.error('renovacion_cancelada', 'Tu acreditación fue cancelada: no se puede renovar');
     END IF;
   ELSE
     -- Nueva: no si ya tiene una de ese tipo vigente o todavía renovable (deducido de «pasado el año se
