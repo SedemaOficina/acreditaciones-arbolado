@@ -240,6 +240,26 @@
     return true;
   }
 
+  /* Al reenviar con lo corregido, la confirmación es la de una corrección (sesión de trabajo del 23/10/2026, nuevo 6):
+     «Recibimos la corrección de tus documentos», no «Recibimos tu solicitud», con los pasos que siguen a una corrección.
+     El acuse del estándar sólo llena el folio y la fecha; el título, la etiqueta de la fecha y los pasos son de la página. */
+  function acuseDeCorreccion() {
+    const acuse = document.querySelector('[data-acuse]');
+    if (!acuse) return;
+    acuse.querySelector('.titulo-paso').textContent = 'Recibimos la corrección de tus documentos';
+    const bajada = acuse.querySelector('.bajada');
+    if (bajada) bajada.textContent = 'Tu solicitud conserva su folio: es la referencia de tu trámite.';
+    const fecha = acuse.querySelector('[data-acuse-fecha]');
+    const etq = fecha && fecha.parentElement.querySelector('.acuse-etq');
+    if (etq) etq.textContent = 'Corrección recibida el';
+    const pasos = acuse.querySelector('.secuencia');
+    if (pasos) pasos.replaceChildren(...[
+      'La Secretaría revisa los documentos que corregiste. Lo que ya te aceptó no lo vuelve a revisar.',
+      'Si lo corregido está en orden, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.',
+      'Si todavía falta algo, te lo indica en «Mis trámites» y lo vuelves a corregir en línea.'
+    ].map((texto) => el('li', { class: 'secuencia-item', texto })));
+  }
+
   /* Devuelve la solicitud que se continúa, o null si no se puede */
   function continua(datos, persona, folio) {
     const s = APD.solicitudesDe(datos, persona).find((x) => x.folio === folio);
@@ -273,6 +293,7 @@
     // Lo observado va primero en su paso, en el mismo orden entre sí (D2)
     for (const campo of observados.slice().reverse()) campo.parentElement.prepend(campo);
     const obs = docs.filter((d) => d.estado === 'con_observacion');
+    if (s.estado === 'con_observaciones') acuseDeCorreccion();
     if (obs.length) {
       document.querySelector('[data-observaciones-lista]').replaceChildren(...obs.map((d) => {
         const campo = form.querySelector(`[data-campo="doc_${s.tipo_acreditacion}_${s.modalidad}_${d.requisito}"]`);

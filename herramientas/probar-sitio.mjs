@@ -3137,7 +3137,7 @@ async function romperTres(navegador) {
     for (const campo of await pg.$$('#formulario [data-campo^="doc_"]')) if (await campo.isVisible()) await (await campo.$('input[type="file"]')).setInputFiles(PDF);
     const r = await envia(pg, '[data-hecho]:not([hidden])');
     comprueba(!r.listo && /Este navegador no permitió guardar tu documento de prueba/.test(r.aviso),
-      t(`A4: el documento que no se guardó no dice «Listo: ya cargaste el documento» («${r.aviso.slice(0, 90)}»)`));
+      t(`A4: el documento que no se guardó no dice «Recibimos la corrección de tus documentos» («${r.aviso.slice(0, 90)}»)`));
   });
 
   /* ── A5 · examen: la respuesta y el envío no se guardan (localStorage se llena a medio examen) ── */
@@ -5487,6 +5487,47 @@ async function sesion23(navegador) {
         t(`error 7: ${donde}, ${modo}: el día elegido en el calendario de «Resultado de la revisión» queda escrito (${await page.inputValue('#cita_fecha') || 'vacío'})`));
       await c.close();
     }
+  }
+
+  // Nuevo 6: al corregir documentos, la confirmación es la de una corrección. a) Reenviar con lo corregido (solicitud
+  // con observaciones): «Recibimos la corrección de tus documentos», con «Corrección recibida el» y los pasos de una
+  // corrección; una solicitud nueva sigue diciendo «Recibimos tu solicitud». b) El documento correcto de una cita en
+  // pausa (corregir.html): el mismo título y, como pasos, regresar con quien atiende, que revisa lo corregido.
+  {
+    const obsS = datos.solicitud.find((s) => s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda');
+    const { c, page, errores } = await nuevo(390, 844, obsS.solicitante_id);
+    await page.goto(BASE + `solicitud.html?folio=${obsS.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    for (const campo of await page.$$eval('[data-campo^="doc_"].doc-observado', (l) => l.map((x) => x.dataset.campo))) {
+      await page.setInputFiles(`[data-campo="${campo}"] [data-archivos] > input[type="file"]`, PDF);
+      await page.waitForSelector(`[data-campo="${campo}"] .lista-arch li[data-estado="listo"]`);
+    }
+    await siguiente(page);
+    await marcaCasillas(page);
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-acuse]:not([hidden])');
+    const acuse = await page.textContent('[data-acuse]');
+    comprueba(/Recibimos la corrección de tus documentos/.test(acuse) && !/Recibimos tu solicitud/.test(acuse) && /Corrección recibida el/.test(acuse)
+      && /revisa los documentos que corregiste/.test(acuse) && acuse.includes(obsS.folio) && !errores.length,
+      t(`nuevo 6: al reenviar ${obsS.folio} con lo corregido, «Recibimos la corrección de tus documentos» y los pasos de una corrección`));
+    const html = await page.evaluate(() => fetch('solicitud.html').then((r) => r.text()));
+    comprueba(/<h2 class="titulo-paso" tabindex="-1">Recibimos tu solicitud<\/h2>/.test(html), t('nuevo 6: una solicitud nueva sigue diciendo «Recibimos tu solicitud»'));
+    await c.close();
+  }
+  {
+    const cp = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+    const sp = datos.solicitud.find((x) => x.id === cp.solicitud_id);
+    const { c, page, errores } = await nuevo(1280, 900, sp.solicitante_id);
+    await page.goto(BASE + `corregir.html?folio=${sp.folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    for (const campo of await page.$$('#formulario [data-campo^="doc_"]')) if (await campo.isVisible()) await (await campo.$('input[type="file"]')).setInputFiles(PDF);
+    await page.waitForSelector('#formulario .lista-arch li[data-estado="listo"]');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-hecho]:not([hidden])');
+    const hecho = await page.textContent('[data-hecho]');
+    comprueba(/Recibimos la corrección de tus documentos/.test(hecho) && /revisa lo que corregiste/.test(hecho) && !/Listo: ya cargaste/.test(hecho) && !errores.length,
+      t(`nuevo 6: en la cita en pausa de ${sp.folio}, «Recibimos la corrección de tus documentos» y que quien atiende revisa lo corregido`));
+    await c.close();
   }
 }
 
