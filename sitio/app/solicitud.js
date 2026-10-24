@@ -188,8 +188,15 @@
 
   /* El curso que corresponde (tipo + nueva o renovación) va en el campo auxiliar «tramite»: de él dependen
      los documentos. Se informa a la persona; no se le pregunta. */
+  /* La situación de la licenciatura sólo se pregunta en dictaminador (sesión de trabajo del 23/10/2026): en poda no */
+  function pideSituacion() {
+    const tipo = (radios('tipo').find((x) => x.checked) || {}).value;
+    const v = tipo === 'dictaminador' && document.getElementById('nivel_estudios').value === 'licenciatura' ? 'si' : 'no';
+    if (document.getElementById('pedir_situacion').value !== v) ponValor('pedir_situacion', v);
+  }
   function ponTramite(tipo, modalidad, anterior, datos) {
     ponValor('tramite', tipo && modalidad ? `${tipo}_${modalidad}` : '');
+    pideSituacion();
     ponValor('anterior', anterior || '');
     const caja = document.querySelector('[data-modalidad-info]');
     if (!tipo || !modalidad) { caja.hidden = true; return; }
@@ -273,6 +280,7 @@
     ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
     // Estudios en los dos tipos (nivel; con licenciatura o posgrado, carrera y situación); experiencia, en dictaminador
     ponValor('nivel_estudios', s.nivel_estudios);
+    pideSituacion();
     const st = radios('estatus_estudios').find((x) => x.value === s.estatus_estudios);
     if (st) { st.checked = true; avisa(st); }
     ponValor('carrera', s.carrera);
@@ -472,6 +480,7 @@
     window.APD_SOLICITUD.usaCatalogo(datos);
     for (const ev of ['input', 'change']) {
       form.addEventListener(ev, (e) => {
+        if (e.target.name === 'nivel_estudios') pideSituacion();
         if (['nivel_estudios', 'estatus_estudios', 'carrera'].includes(e.target.name)) experiencia(datos);
       });
     }
@@ -489,6 +498,7 @@
     editarDesdeRevision();
     borrador(() => {
       alCambiarTipo();
+      pideSituacion();
       experiencia(datos);
       // Si lo recuperado deja a la persona en la revisión, se vuelve a pintar con lo de ahora
       const actual = FormKit.pasos.elementos[FormKit.pasos.actual()];

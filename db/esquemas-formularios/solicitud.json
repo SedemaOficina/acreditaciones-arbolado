@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-21T02:45:46.501Z",
+  "generado": "2026-10-24T03:39:27.697Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -146,9 +146,9 @@
       ],
       "autocomplete": "off",
       "si": {
-        "campo": "nivel_estudios",
+        "campo": "pedir_situacion",
         "valores": [
-          "licenciatura"
+          "si"
         ]
       },
       "condiciones": [
@@ -161,12 +161,22 @@
           ]
         },
         {
-          "campo": "nivel_estudios",
+          "campo": "pedir_situacion",
           "valores": [
-            "licenciatura"
+            "si"
           ]
         }
       ]
+    },
+    "pedir_situacion": {
+      "etiqueta": "pedir_situacion",
+      "tipo": "auxiliar",
+      "requerido": false,
+      "sensible": false,
+      "uso": "Preguntar la situación de la licenciatura sólo en dictaminador (en poda no se pregunta); lo calculan la página y el servidor.",
+      "atributos": {
+        "auxiliar": ""
+      }
     },
     "anios_experiencia": {
       "etiqueta": "Experiencia en manejo de arbolado",

@@ -77,11 +77,13 @@ const pdf = (n) => ({ nombre: `${n}.pdf`, size: 200000, type: 'application/pdf',
 // Como lo hará la API: los datos que calcula la página (data-auxiliar) no se reciben; el servidor los calcula con
 // validaPayload(…, { auxiliares }) (estándar 1.1.0). `calcula` devuelve todos los de un formulario a partir de lo
 // recibido y del contexto que tendrá la API en la base (el caso lo indica en claves que empiezan con «_»):
-//   · solicitud: tramite = tipo + modalidad; la modalidad la decide la base por el historial (`_modalidad`).
+//   · solicitud: tramite = tipo + modalidad; la modalidad la decide la base por el historial (`_modalidad`); la situación
+//     de la licenciatura sólo se pregunta en dictaminador (pedir_situacion; sesión de trabajo del 23/10/2026).
 function calcula(form, d, ctx) {
   d = { ...d, ...ctx };
   if (form === 'solicitud') {
-    return { tramite: d.tipo ? `${d.tipo}_${d._modalidad || 'nueva'}` : '' };
+    return { tramite: d.tipo ? `${d.tipo}_${d._modalidad || 'nueva'}` : '',
+      pedir_situacion: d.tipo === 'dictaminador' && d.nivel_estudios === 'licenciatura' ? 'si' : 'no' };
   }
   // Revisión documental del personal (etapa 2): el servidor calcula los auxiliares con la base (perfil de la
   // solicitud y documentos cargados) y con las decisiones recibidas, igual que app/revisar.js. El caso indica
@@ -206,7 +208,10 @@ caso('Experiencia: titulada en Biología, dos años se aceptan', 'solicitud', { 
 caso('Experiencia fuera de rango se rechaza', 'solicitud', { ...dictNueva, nivel_estudios: 'licenciatura', carrera: 'Biología', estatus_estudios: 'titulado', anios_experiencia: '80' }, ['anios_experiencia'], sieteDocs);
 // Un dato que calcula la página no se recibe: si el navegador lo manda, el envío se rechaza (estándar 1.1.0)
 caso('Solicitud: el curso calculado enviado por el navegador se rechaza', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '5', tramite: 'poda_nueva' }, ['tramite'], csf);
-caso('Poda: licenciatura pide la carrera y su situación', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera', 'estatus_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
+// En poda no se pregunta la situación de la licenciatura (sesión de trabajo del 23/10/2026): sólo la carrera
+caso('Poda: licenciatura pide la carrera, no su situación (sesión del 23/10)', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['carrera'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
+caso('Poda: con licenciatura y su carrera se acepta sin la situación (sesión del 23/10)', 'solicitud', { ...base, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', nivel_estudios: 'licenciatura', carrera: 'Biología', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, true, [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
+caso('Dictaminador: licenciatura sigue pidiendo su situación (sesión del 23/10)', 'solicitud', { ...dictNueva, nivel_estudios: 'licenciatura', carrera: 'Biología', anios_experiencia: '5' }, ['estatus_estudios'], sieteDocs);
 caso('Poda: sin nivel de estudios se rechaza', 'solicitud', { ...base, nivel_estudios: undefined, tipo: 'poda', _modalidad: 'renovacion', anterior: 'PD-2025-K106', doc_poda_renovacion_constancia_situacion_fiscal: 'c.pdf' }, ['nivel_estudios'], [pdf('doc_poda_renovacion_constancia_situacion_fiscal')]);
 caso('Posgrado: no se pregunta la situación del grado (se asume la licenciatura titulada)', 'solicitud', { ...dictRenov, nivel_estudios: 'doctorado', carrera: 'Biología', anios_experiencia: '2' }, true, csf);
 caso('Perfil: una carrera que no está en la lista se acepta (la clasifica la Secretaría)', 'solicitud', { ...dictRenov, nivel_estudios: 'maestria', carrera: 'Gestión Ambiental Urbana', estatus_estudios: 'en_curso', anios_experiencia: '5' }, true, csf);
@@ -229,6 +234,7 @@ caso('Cuenta: una alcaldía fuera del catálogo se rechaza', 'cuenta', cta({ ads
 caso('Cuenta: una alcaldía de la lista se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'alcaldia', alcaldia: 'tlahuac' }), true, conFoto);
 caso('Cuenta: institución educativa sin decir cuál se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa' }), ['institucion_educativa'], conFoto);
 caso('Cuenta: UNAM se acepta', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'unam' }), true, conFoto);
+caso('Cuenta: Universidad Autónoma Chapingo se acepta (sesión del 23/10)', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'chapingo' }), true, conFoto);
 caso('Cuenta: otra institución educativa sin su nombre se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'educativa', institucion_educativa: 'otro' }), ['institucion_educativa_otra'], conFoto);
 caso('Cuenta: la Dirección General «otro» ya no existe y se rechaza', 'cuenta', cta({ adscrito: 'si', tipo_adscripcion: 'dependencia_cdmx', dependencia_cdmx: 'sedema', direccion_sedema: 'otro' }), ['direccion_sedema'], conFoto);
 caso('Cuenta: independiente, lo que dependía de la adscripción no cuenta (se descarta)', 'cuenta', cta({ adscrito: 'no', tipo_adscripcion: 'alcaldia', alcaldia: 'Inventada' }), true, conFoto);
