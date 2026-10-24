@@ -5442,6 +5442,54 @@ async function pesoDatos(navegador) {
   await c.close();
 }
 
+/* ── Decisiones de la sesión de trabajo del 23/10/2026, parte A (SOLO=sesion23) ──
+   Cada bloque prueba una decisión de Liber del 23/10/2026 (docs/DECISIONES.md), en teléfono y en escritorio cuando la
+   pantalla cambia entre los dos. */
+async function sesion23(navegador) {
+  const t = (m) => `[sesión 23/10] ${m}`;
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+
+  // Error 7: en «Revisar» → «Resultado de la revisión» el calendario no dejaba elegir la fecha de la cita. El calendario
+  // del navegador, al elegir un día, manda primero «input» y después «change»; el acomodo de fechas pegadas (app/apd.js)
+  // tomaba ese «input» del <input type="date"> oculto, le escribía «dd/mm/aaaa» (que un campo de fecha no admite), el
+  // valor quedaba vacío y el «change» ya no llegaba. Se elige como lo hace el navegador (input y change), con el ratón y
+  // con el teclado (Enter en el botón), en teléfono y en escritorio; también en la ficha del grupo y en el cotejo.
+  const eligeEnCalendario = (page, campo, iso) => page.locator(`[data-campo="${campo}"] .control-calendario-nativo`).evaluate((n, v) => {
+    n.value = v;
+    n.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    n.dispatchEvent(new Event('change', { bubbles: true }));
+  }, iso);
+  const enviada = datos.solicitud.find((s) => s.estado === 'enviada' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva' && !datos.revision.some((r) => r.solicitud_id === s.id));
+  for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'escritorio']]) {
+    for (const modo of ['ratón', 'teclado']) {
+      const { c, page, errores } = await nuevo(ancho, alto);
+      await page.goto(BASE + `revisar.html?folio=${enviada.folio}`);
+      await page.waitForSelector('#formulario:not([hidden])');
+      for (const n of await page.$$eval('input[value="aceptado"]', (l) => l.filter((r) => r.checkVisibility()).map((r) => r.name))) await marcar(page, `input[name="${n}"][value="aceptado"]`);
+      await page.waitForSelector('[data-calendario="cita_fecha"]', { state: 'visible' });
+      if (modo === 'ratón') await page.click('[data-calendario="cita_fecha"]');
+      else { await page.focus('[data-calendario="cita_fecha"]'); await page.keyboard.press('Enter'); }
+      const min = await page.getAttribute('[data-campo="cita_fecha"]', 'data-min');
+      // Un día hábil (de lunes a viernes) dentro del rango
+      let dia = min;
+      while ([0, 6].includes(new Date(`${dia}T12:00:00Z`).getUTCDay())) dia = new Date(Date.parse(`${dia}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
+      await eligeEnCalendario(page, 'cita_fecha', dia);
+      comprueba(await page.inputValue('#cita_fecha') === dma(dia) && !errores.length,
+        t(`error 7: ${donde}, ${modo}: el día elegido en el calendario de «Resultado de la revisión» queda escrito (${await page.inputValue('#cita_fecha') || 'vacío'})`));
+      await c.close();
+    }
+  }
+}
+
 // El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
 const navegador = navegadorSinGoogle(await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}));
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
@@ -5501,6 +5549,7 @@ try {
   if (toca('continuidad')) await parte('mensajes y continuidad', () => continuidad(navegador));
   if (toca('tareas')) await parte('tareas y estados del personal', () => tareasPersonal(navegador));
   if (toca('visual')) await parte('sistema visual', () => sistemaVisual(navegador));
+  if (toca('sesion23')) await parte('sesión del 23/10', () => sesion23(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));
