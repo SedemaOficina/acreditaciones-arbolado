@@ -37,6 +37,14 @@
   const minus = (t) => t.charAt(0).toLocaleLowerCase('es-MX') + t.slice(1);
   const params = new URLSearchParams(location.search);
   const V = () => window.FORMKIT_VALIDACIONES;
+  /* Un espacio entre las piezas de un bloque (rótulo y dato, nombre y folio): no se ve (son bloques), pero el texto del
+     paso que está oculto se lee con sus palabras separadas («Grupo Poda nueva · del 2 al 6 de noviembre APD-G-…») */
+  const separa = (raiz) => {
+    for (const e of [raiz, ...raiz.querySelectorAll('*')]) {
+      for (const h of [...e.children].slice(1)) if (!(h.previousSibling && h.previousSibling.nodeType === 3)) h.before(document.createTextNode(' '));
+    }
+    return raiz;
+  };
   const ACTIVOS = ['en_integracion', 'confirmado', 'en_curso'];
   // El calendario va de este mes a tres más (decisión del 24/10/2026)
   const MESES_ADELANTE = 3;
@@ -243,7 +251,9 @@
         const delCurso = (g) => P.claveCurso(g.tipo_acreditacion, g.modalidad) === clave;
         const cuales = grupos.map((g) => `${g.folio} (${delCurso(g) ? SITUACION_DIA[g.estado] : `otro curso, ${SITUACION_DIA[g.estado]}`})`);
         // La columna «Semana»: sus fechas (visibles en teléfono), libre con su botón o no disponible con su motivo, y sus grupos
-        const cabeza = [el('span', { class: 'arm-semana-fechas', texto: `Semana ${minus(nombre)}` })];
+        // Las fechas y los grupos de la semana: para el lector de pantalla siempre (.solo-lector) y, a la vista, sólo en
+        // teléfono (en la rejilla se ven en sus días)
+        const cabeza = [el('span', { class: 'solo-lector', texto: `Semana ${minus(nombre)}.` }), el('span', { class: 'arm-semana-fechas', 'aria-hidden': 'true', texto: `Semana ${minus(nombre)}` })];
         if (!info.motivo) {
           const libreTxt = lugaresTexto(info.libres);
           const b = el('button', { type: 'button', class: 'arm-semana-elegir', 'data-lunes': lunes, 'aria-pressed': String(elegida),
@@ -256,7 +266,10 @@
             el('span', { class: 'arm-semana-estado', texto: 'No disponible' }),
             el('span', { class: 'arm-semana-lugares', texto: info.motivo.corto })]));
         }
-        if (cuales.length) cabeza.push(el('p', { class: 'arm-semana-grupos', texto: `${cuales.length === 1 ? 'Grupo' : 'Grupos'}: ${y(cuales)}` }));
+        if (cuales.length) {
+          const grupos = `${cuales.length === 1 ? 'Grupo' : 'Grupos'}: ${y(cuales)}`;
+          cabeza.push(el('span', { class: 'solo-lector', texto: `${grupos}.` }), el('p', { class: 'arm-semana-grupos', 'aria-hidden': 'true', texto: grupos }));
+        }
         const dias = [];
         for (let i = 0; i < 7; i++) {
           const d = APD.sumaDias(lunes, i);
@@ -280,10 +293,10 @@
           dias.push(el('div', { class: 'arm-dia', 'data-fecha': d, 'data-fuera': mesDe(d) !== mes ? 'si' : null, 'data-finde': finde ? 'si' : null, 'data-hoy': d === hoy ? 'si' : null }, [
             el('span', { class: 'arm-dia-num', texto: String(Number(d.slice(8))) }), ...marcas]));
         }
-        items.push(el('li', { class: 'arm-semana', 'data-lunes': lunes, 'data-libre': info.motivo ? 'no' : 'si', 'data-elegida': elegida ? 'si' : null }, [
+        items.push(separa(el('li', { class: 'arm-semana', 'data-lunes': lunes, 'data-libre': info.motivo ? 'no' : 'si', 'data-elegida': elegida ? 'si' : null }, [
           el('div', { class: 'arm-semana-cabeza' }, cabeza),
           el('div', { class: 'arm-semana-dias', 'aria-hidden': 'true' }, dias)
-        ]));
+        ])));
       }
       $('[data-semanas]').replaceChildren(...items);
       // En el primer mes y en el último el botón queda inactivo con aria-disabled, no con disabled: conserva el foco
@@ -298,7 +311,8 @@
       const final = APD.diaFinal(cc).toLowerCase();
       $('[data-bajada-semana]').textContent = confirmadoYa ? `${APD.cursoLargo(...curso())} · el grupo ya está confirmado: su semana no cambia aquí.`
         : `${APD.cursoLargo(...curso())} · ${dur() > 1 ? `lunes a viernes, de ${hm(horaEntrada)} a ${hm(horaSalida)}` : `un día, de ${hm(horaEntrada)} a ${hm(horaSalida)}`}. Puede haber ${maxSimultaneos} grupos al mismo tiempo, de cualquier curso; el curso empieza al menos ${anticipacion} días después de confirmarlo.`;
-      $('[data-elegida-nombre]').textContent = inicio ? nombreSemana(inicio) : gExistente ? 'Sin semana todavía' : 'Ninguna todavía';
+      // De cinco días, el nombre del grupo («Del 2 al 6 de noviembre»); de un día, la fecha larga del día
+      $('[data-elegida-nombre]').textContent = !inicio ? (gExistente ? 'Sin semana todavía' : 'Ninguna todavía') : dur() > 1 ? nombreSemana(inicio) : fechaLarga(inicio, { mayuscula: true });
       $('[data-elegida-horario]').textContent = !inicio ? (gExistente ? 'Toque «Libre» en la semana que quiere, o siga sin semana: el grupo la conserva como está.' : 'Toque «Libre» en la semana que quiere.')
         : dur() > 1 ? `Del ${fechaLarga(inicio)} al ${fechaLarga(finDe(inicio))}, de ${hm(horaEntrada)} a ${hm(horaSalida)}. El viernes, ${final} en el PILARES.`
           : `El ${fechaLarga(inicio)}, de ${hm(horaEntrada)} a ${hm(horaSalida)}, con el examen ese mismo día en el PILARES.`;
@@ -423,10 +437,33 @@
         filas.push({ x, k });
         return P.filaEspera(x, k, conOrg);
       };
+      /* «Su grupo» de cada organización (decisión 2 de la auditoría del 2026-10-19, Liber; DECISIONES, 17/10), como lo decía
+         el planeador: si ya tiene un grupo propio de este curso que recibe personas, se dice cuál y cuántas le faltan; si
+         no, si alcanzan para uno propio. Al armar un grupo nuevo (al completar uno, ya se sabe a cuál van). */
+      const reciben = gExistente ? [] : todos.filter((y) => y.recibe && y.g.integracion === 'especifico' && P.claveCurso(y.g.tipo_acreditacion, y.g.modalidad) === clave);
+      const suGrupoDe = (org) => (org ? reciben.find((y) => y.g.organizacion_id === org) || null : null);
+      const textoSuGrupo = (y) => {
+        const f = y.g.cupo_minimo - y.n;
+        return `Su grupo ${y.g.folio}: ${y.n} de ${y.g.cupo_maximo}${f > 0 ? `, le ${f === 1 ? 'falta 1' : `faltan ${f}`} para el mínimo` : `, caben ${y.lugar}`}`;
+      };
+      const situacionBloque = (b) => {
+        if (gExistente) return null;
+        const suyo = suGrupoDe(b.clave);
+        if (suyo) return estado(textoSuGrupo(suyo), suyo.n < suyo.g.cupo_minimo ? 'pend' : 'ok');
+        const f = cc.cupo_minimo - b.xs.length;
+        return f <= 0 ? estado('Alcanza para un grupo propio', 'ok')
+          : el('span', { class: 'plan-bloque-grupo', texto: `${f === 1 ? 'Falta 1' : `Faltan ${f}`} para un grupo propio de ${cc.cupo_minimo}; o van a un grupo combinado` });
+      };
       const items = P.bloquesEspera(espera).map((b, i) => {
-        if (!b.junta) return el('li', {}, [fila(b.xs[0], true)]);
+        if (!b.junta) {
+          // Sola de su organización, pero con su grupo: también se dice
+          const una = fila(b.xs[0], true);
+          const suyo = suGrupoDe(b.xs[0].s.organizacion_id);
+          if (suyo) una.append(el('span', { class: 'plan-persona-org' }, [estado(textoSuGrupo(suyo), suyo.n < suyo.g.cupo_minimo ? 'pend' : 'ok')]));
+          return el('li', {}, [una]);
+        }
         const propias = b.xs.map((x) => fila(x, false));
-        const { bloque, refleja } = P.bloqueEspera(b, `pb-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), null, () => cambioPersonas(true));
+        const { bloque, refleja } = P.bloqueEspera(b, `pb-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => cambioPersonas(true));
         refleja();
         return el('li', {}, [bloque]);
       });
@@ -569,7 +606,7 @@
       const borrador = { tipo_acreditacion: curso()[0], modalidad: curso()[1], fecha_inicio: inicio, integracion: integracion(), organizacion_id: integracion() === 'especifico' ? (gExistente ? gExistente.organizacion_id : orgDeElegidas()) : null };
       const titulo = el('span', { class: 'grupo-titulo' }, [el('span', { class: 'grupo-nombre', texto: APD.nombreGrupo(borrador, datos) }),
         el('span', { class: 'grupo-folio mono', texto: gExistente ? gExistente.folio : `${P.siguienteFolioGrupo(datos)} (lo asigna el sistema al guardar)` })]);
-      $('[data-resumen]').replaceChildren(APD.datosLista([
+      $('[data-resumen]').replaceChildren(separa(APD.datosLista([
         ['Grupo', titulo],
         ['Curso', APD.cursoLargo(...curso())],
         ['Semana', inicio ? (dur() > 1 ? `Del ${fechaLarga(inicio)} al ${fechaLarga(fin)}` : `El ${fechaLarga(inicio)}`) : 'Sin elegir'],
@@ -578,7 +615,7 @@
         [APD.diaFinal(cc) === 'Examen' ? 'Examen' : 'Examen final', inicio ? `El ${fechaLarga(fin)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
         ['Personas', `${n} de ${cc.cupo_maximo}${xG && elegidas().length ? ` (${plural(elegidas().length, 'nueva', 'nuevas')})` : ''}${n > cc.cupo_maximo ? ` · sobran ${n - cc.cupo_maximo}` : ''}`],
         ['Tipo de grupo', gExistente ? xG.integracion : integracion() === 'especifico' ? `Sólo de ${(elegidas()[0] || {}).organizacion || 'una organización'}` : 'Combinado']
-      ]));
+      ])));
       // Cómo queda al guardarlo y los botones según eso
       const falta = confirmadoYa ? [] : faltaParaConfirmar();
       const queda = $('[data-queda]');

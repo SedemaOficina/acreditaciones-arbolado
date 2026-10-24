@@ -15,7 +15,8 @@ const enviada = d.solicitud.filter((s) => s.estado === 'enviada' && s.folio >= '
 const cita = d.solicitud.filter((s) => s.estado === 'validada_en_linea' && s.cita_en && s.cita_en.startsWith(d.fecha_corte) && s.folio >= 'APD-S-2026-00500')[0].folio;
 const PANTALLAS = [
   ['revision', 'revision.html'], ['revisar', `revisar.html?folio=${enviada}`], ['citas', 'citas.html'], ['cotejo', `cotejo.html?folio=${cita}`],
-  ['grupos', 'grupos.html'], ['grupos-poda-renov', 'grupos.html?curso=poda-renovacion'], ['programar-poda-nueva', 'programar.html?curso=poda-nueva'],
+  // «Grupos» paso a paso (24/10/2026): el paso 1, la semana (renovación) y quiénes van (poda nueva); antes, el planeador y «Programar»
+  ['grupos', 'grupos.html'], ['grupos-poda-renov', 'grupos.html?curso=poda-renovacion&paso=2'], ['grupos-poda-nueva-personas', 'grupos.html?curso=poda-nueva&paso=3'],
   ['grupo-confirmado', 'grupo.html?folio=APD-G-2026-023'], ['grupo-integracion', 'grupo.html?folio=APD-G-2026-022'], ['grupo-en-curso', 'grupo.html?folio=APD-G-2026-020'],
   ['asistencia', 'asistencia.html?folio=APD-G-2026-020'], ['aplicar', 'aplicar.html']
 ];

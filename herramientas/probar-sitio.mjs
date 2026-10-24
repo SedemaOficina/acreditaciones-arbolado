@@ -1923,7 +1923,7 @@ async function grupoPasoAPaso(navegador, ancho, alto, sufijo) {
 
   // ── Paso 4: resumen, instructor (con «Por asignar») y «Crear el grupo» ──
   const resumen = await texto('[data-resumen]');
-  comprueba(/CursoPoda y derribo · nueva/.test(resumen) && /Semana\s*Del lunes/.test(resumen) && /De 9:00 a 15:00, los 5 días/.test(resumen) && /Examen final\s*El viernes/.test(resumen) && /Personas5 de 25/.test(resumen)
+  comprueba(/Curso\s*Poda y derribo · nueva/.test(resumen) && /Semana\s*Del lunes/.test(resumen) && /De 9:00 a 15:00, los 5 días/.test(resumen) && /Examen final\s*El viernes/.test(resumen) && /Personas\s*5 de 25/.test(resumen)
     && (await pg.$$eval('#instructor option', (l) => l[0].value === '' && l[0].textContent === 'Por asignar')), t('paso 4: el resumen dice curso, semana, horario, examen y personas; el instructor puede quedar «Por asignar»'));
   await pg.selectOption('#instructor', '');
   comprueba(/Se crea por confirmar/.test(await texto('[data-queda]')) && /el instructor/.test(await texto('[data-queda]')) && /Por asignar/.test(await texto('[data-ayuda-instructor]')), t('paso 4: con «Por asignar» el grupo se crea por confirmar y lo dice antes (P92)'));
@@ -1982,11 +1982,12 @@ async function grupoPasoAPaso(navegador, ancho, alto, sufijo) {
   }
 }
 
-/* ── «Programar un curso» en 3 pasos (propuesta B) y «Mis grupos de hoy» (propuesta D), 2026-10-18 ──
-   Desde Grupos con cinco personas elegidas («A un curso nuevo…»): error con menos de 5; el calendario no deja empezar
-   con otro curso igual esas fechas ni con menos de 7 días, se maneja con el teclado y llena el primer día; crear y
-   confirmar. Después, programar un grupo sin fecha que ya existe («Elegir semana»). El instructor ve «Mis grupos de hoy»
-   en «Asistencia» y en «Aplicar el examen». */
+/* ── Armar un grupo en «Grupos» (antes «Programar un curso», propuesta B; desde el 24/10/2026, el paso a paso de la
+   opción B1) y «Mis grupos de hoy» (propuesta D), 2026-10-18 ──
+   La dirección vieja de «Programar» con cinco personas lleva al paso 3 con ellas; con menos de 5 se crea por confirmar y se
+   dice antes; el calendario no deja empezar con menos de 7 días ni con 2 grupos esas fechas, se maneja con el teclado y
+   llena el primer día; crear y confirmar. Después, darle semana a un grupo sin fecha que ya existe («Elegir semana»). El
+   instructor ve «Mis grupos de hoy» en «Asistencia» y en «Aplicar el examen». */
 async function caminosProgramar(navegador, ancho, alto, sufijo) {
   const t = (m) => `[programar ${sufijo}] ${m}`;
   const c = await navegador.newContext({ timezoneId: ZONA, viewport: { width: ancho, height: alto } });
@@ -2667,8 +2668,11 @@ async function romper(navegador) {
   // B3 · el primer día ya no se escribe en «Grupos» (sale de la semana elegida: el campo es de sólo lectura); una fecha que
   // no existe escrita en la ficha del grupo se dice al momento
   comprueba(await pg.getAttribute('#fecha_inicio', 'readonly') !== null, t('F3 B3: en «Grupos» el primer día sale de la semana elegida (no se escribe)'));
-  await pg.goto(BASE + 'grupo.html?folio=APD-G-2026-005');
-  await pg.waitForSelector('#confirmar #fecha_inicio');
+  // (la ficha sólo deja confirmar con el mínimo: se agrega a una persona de la espera al grupo de 4)
+  await pg.evaluate(() => APD.cargar().then((d) => { const g = d.grupo.find((x) => x.folio === 'APD-G-2026-004'); const s = d.solicitud.find((x) => x.estado === 'lista_para_curso' && x.tipo_acreditacion === 'poda' && x.modalidad === 'nueva');
+    return APD_PERSONAL.guardaGrupo({ tipo: 'agregar', grupo_id: g.id, folios: [s.folio], por: APD_PERSONAL.REVISORA.usuario }); }));
+  await pg.goto(BASE + 'grupo.html?folio=APD-G-2026-004');
+  await pg.waitForSelector('#confirmar:not([hidden]) #fecha_inicio');
   await pg.fill('#fecha_inicio', '29/02/2027');
   await pg.locator('#fecha_inicio').blur();
   await pg.waitForTimeout(150);
@@ -3199,7 +3203,8 @@ async function romperDos(navegador) {
     await pb.waitForSelector('[data-hecho] .aviso, [data-estado-envio]:not([hidden])');
     const gs = await gruposPrueba(pa);
     const aDespues = gs.find((g) => g.folio === deA.folio);
-    const textoB = (await pb.textContent('[data-hecho]')) || '';
+    // El aviso de la segunda dice su propio folio; el de la primera sólo puede salir al explicar quién no entró (ya está en él)
+    const textoB = ((await pb.textContent('[data-hecho] .aviso-texto p')) || '').split(' de las que eligió no ')[0];
     comprueba(gs.length === 2 && new Set(gs.map((g) => g.folio)).size === 2 && JSON.stringify(aDespues) === JSON.stringify(deA) && !textoB.includes(deA.folio),
       t(`F3 A1: la segunda pestaña de «Grupos» crea su propio grupo y no sobrescribe el de la primera (${gs.map((g) => `${g.folio} ${g.instructor} ${g.hora}`).join('; ')})`));
     // La mezcla, como la base (grupo_folio_uk): un «crear» con el folio de otro grupo no se aplica, ni lo que lo acompaña
@@ -5420,6 +5425,8 @@ async function formatosFecha(navegador) {
   await visita('material-personal', 'material-personal.html');
   // «Grupos»: la semana elegida en el calendario, el resumen y lo que se dice al elegir (antes, «Programar»)
   await visita('grupos', 'grupos.html?curso=poda-nueva&semana=2026-11-02&mes=2026-11&paso=2', { ancho: 390, antes: (pg) => pg.waitForSelector('.arm-semana-elegir[aria-pressed="true"]') });
+  // La dirección vieja de «Programar» (sólo lleva a «Grupos» con su curso y su semana): lo que se ve al llegar
+  await visita('programar', 'programar.html?curso=poda-nueva&semana=2026-11-02', { antes: (pg) => pg.waitForSelector('#paso-semana:not([hidden]) .arm-semana-elegir[aria-pressed="true"]') });
   // El examen: pasar lista, entrar con el código y enviar; el resultado dice cuándo se envió
   {
     const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: 1280, height: 900 } });

@@ -55,10 +55,15 @@ const ESTADOS = [
   ['aplicar-examen', 'aplicar.html', null],
   ['bandeja-revision', 'revision.html', null],
   ['agenda-citas', 'citas.html', null],
+  // «Grupos» paso a paso (decisión del 24/10/2026): cada paso, el curso de un día y un grupo que ya existe. Lo que eran
+  // «programar» y «programar-sin-curso» son el paso 2 y el paso 1: programar.html sólo lleva a «Grupos» (como
+  // espera.html, no se recorre aquí: lo prueba probar-sitio)
   ['grupos', 'grupos.html', null],
-  ['grupos-renovacion', 'grupos.html?curso=poda-renovacion', null],
-  ['programar', 'programar.html?curso=poda-nueva', null],
-  ['programar-sin-curso', 'programar.html', null],
+  ['grupos-semana', 'grupos.html?curso=poda-nueva&paso=2', null],
+  ['grupos-renovacion', 'grupos.html?curso=poda-renovacion&paso=2', null],
+  ['grupos-paso-3', 'grupos.html?curso=poda-nueva&paso=3', null],
+  ['grupos-paso-4', 'grupos.html?curso=poda-nueva&paso=4', null],
+  ['grupos-grupo-existente', 'grupos.html?grupo=APD-G-2026-004&paso=3', null],
   ['grupo-integracion', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_integracion').folio}`, null],
   ['grupo-en-curso', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`, null],
   ['asistencia', 'asistencia.html', null],
@@ -198,7 +203,8 @@ function revisaEnPagina() {
   }
   // Botones visibles para la prueba de clics, con un selector estable. Los inactivos con aria-disabled (conservan el foco,
   // RI-02) tampoco se presionan: Playwright no los presiona y lo que hacen al tocarlos lo prueba probar-sitio (desde la
-  // sesión del 23/10 «Programar» abre en octubre, con casi todos sus días inactivos: sólo se empieza en lunes)
+  // sesión del 23/10 «Programar» abría en octubre con casi todos sus días inactivos; desde el 24/10, los días del curso de
+  // un día que no se pueden, en el paso 2 de «Grupos»)
   const botones = [...document.querySelectorAll('button,summary,[role=button],a[href^="#"]:not([href="#"])')].filter((el) => visible(el) && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
   r.botones = botones.map((el, i) => { el.dataset.auditoria = String(i); return { i, nombre: nombre(el) }; });
   return r;
@@ -225,7 +231,7 @@ for (const [vistaNombre, vista] of Object.entries({ ...VISTAS, ...VISTAS_EXTRA }
     const contexto = await navegador.newContext(vista);
     if (sesion) await contexto.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
     const page = await contexto.newPage();
-    // Una pantalla con cambios sin guardar pregunta antes de salir («Programar un curso», B5-02): al volver a cargarla
+    // Una pantalla con cambios sin guardar pregunta antes de salir («Grupos», antes «Programar un curso», B5-02): al volver a cargarla
     // para el botón siguiente se sale (sin esto, el diálogo se descartaba, la carga se cancelaba con ERR_ABORTED y la
     // auditoría se detenía desde la 0.59)
     let huboDialogo = false;
