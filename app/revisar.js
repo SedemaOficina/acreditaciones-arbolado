@@ -340,7 +340,7 @@
     const manana = APD.sumaDias(datos.fecha_corte, 1);
     // Límites del formato «fecha-dma»: el estándar los lee de data-min y data-max del campo (AAAA-MM-DD) y avisa con la
     // fecha en día/mes/año. Hasta meses_adelanto_cita meses (auditoría «intentar romperlo», F2 M4: se aceptaba el
-    // 31/12/9999); sábados y domingos no se bloquean: los días de atención los define el área (P69, P151)
+    // 31/12/9999); sábados y domingos no hay citas (sesión de trabajo del 23/10/2026): P.vigilaDiaCita
     const hasta = APD.sumaMeses(APD.hoy(datos), APD.mesesCita(datos));
     $('[data-campo="cita_fecha"]').dataset.min = manana;
     $('[data-campo="cita_fecha"]').dataset.max = hasta;
@@ -355,6 +355,9 @@
         return new Promise((ok, mal) => {
           const t = setTimeout(() => APD.cargar().then((ahora) => {
             const d = Object.assign({}, payload.datos, payload.datos.cita_fecha ? { cita_fecha: isoDe(payload.datos.cita_fecha) } : {});
+            // Las citas de cotejo son de lunes a viernes (sesión de trabajo del 23/10/2026; la base: cita_en_fin_de_semana)
+            const finDeSemana = d.cita_fecha ? P.motivoDiaCita(d.cita_fecha) : null;
+            if (finDeSemana) return mal({ mensaje: finDeSemana, errores: [{ campo: 'cita_fecha', mensaje: finDeSemana }] });
             const resultado = document.getElementById('resultado').value;
             // Lo guardado de ahora, justo antes de guardar: ¿sigue siendo la vuelta que se abrió?
             const s2 = ahora.solicitud.find((x) => x.folio === folio);
@@ -424,6 +427,8 @@
         FormKit.resultado($('[data-hecho]'), Object.assign({ quien: P.REVISORA.nombre }, desenlace));
       }
     });
+    // Un sábado o un domingo se dice junto a la fecha de la cita (sesión de trabajo del 23/10/2026)
+    P.vigilaDiaCita(form);
 
     /* Rechazar no tiene vuelta atrás: se confirma antes de enviar (módulo modal del estándar) */
     FormKit.ganchos.submit = (f, enviar) => {
