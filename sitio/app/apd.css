@@ -453,33 +453,8 @@ body > main { flex: 1 0 auto; width: 100%; }
 .grupo-bajada-datos { margin-block-start: var(--e-1); }
 .titulo-paso .grupo-folio { font-size: var(--t-sm); }
 
-/* Planeador: cabeza con la fecha de hoy y «Programar un curso»; los cuatro cursos como botones con aria-pressed */
-.plan-cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-3); margin-block-end: var(--e-4); }
-.plan-cabeza-texto { display: grid; gap: var(--e-1); min-width: 0; }
 .plan-titulo { margin: 0; }
-.plan-hoy { margin: 0; color: var(--gris); }
-.plan-cursos { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-block-end: var(--e-4); }
-.plan-curso {
-  display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); min-height: var(--objetivo-min);
-  padding: var(--e-1) var(--e-4); border: var(--b-1) solid var(--borde); border-radius: var(--r-pill); background: var(--blanco);
-  color: var(--texto); font: var(--peso-semi) var(--t-md)/var(--interlineado-compacto) var(--fuente-titulo); text-align: start; cursor: pointer;
-}
-/* El curso elegido, como lo elegido del estándar (fondo azul claro, sombra interior y palomita), no guinda: el guinda
-   relleno es del botón principal (auditoría 2026-10-20, C6-02 y C6-03) */
-.plan-curso-marca { display: none; }
-.plan-curso[aria-pressed="true"] { border-color: var(--azul); background: var(--azul-cl); color: var(--azul); box-shadow: inset 0 0 0 var(--b-1) var(--azul); }
-.plan-curso[aria-pressed="true"] .plan-curso-marca { display: inline-block; }
-.plan-curso:not([aria-pressed="true"]):hover { border-color: var(--azul); }
-.plan-curso-cifra { padding: 0 var(--e-2); border-radius: var(--r-pill); background: var(--fondo); font: var(--peso-fuerte) var(--t-sm)/var(--interlineado-cuerpo) var(--fuente-cuerpo); }
-.plan-curso-vencidas { font: var(--peso-medio) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--pend-txt); }
 .plan-hecho { margin-block-end: var(--e-4); }
-.plan { display: grid; gap: var(--e-5); align-items: start; }
-.plan-col-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-1) var(--e-3); }
-.plan-col-titulo { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); }
-.plan-col-nota { font-size: var(--t-sm); color: var(--gris); }
-/* En espera: una tarjeta con la lista y, fija al pie mientras se recorre, la cuenta de elegidas y los botones */
-.plan-espera { display: grid; gap: var(--e-3); padding: var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); min-width: 0; }
-.plan-personas { display: grid; gap: var(--e-2); }
 .plan-persona {
   display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--e-3); row-gap: var(--e-1); align-items: center;
   min-height: var(--objetivo-min); padding: var(--e-2) var(--e-3); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl);
@@ -497,104 +472,24 @@ body > main { flex: 1 0 auto; width: 100%; }
 .plan-bloque-cabeza { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--e-1) var(--e-3); min-height: var(--objetivo-min); cursor: pointer; }
 /* «Su grupo …» o si alcanzan para uno propio, debajo del nombre de la organización (decisión 2, 2026-10-19) */
 .plan-bloque-cabeza > :nth-child(3) { grid-column: 2; justify-self: start; }
-.plan-bloque-grupo { font-size: var(--t-sm); color: var(--gris); }
 .plan-bloque-cabeza > .casilla-input { margin: 0; }
 .plan-bloque-nombre { font: var(--peso-semi) var(--t-sm)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--dorado-txt); overflow-wrap: anywhere; }
-/* En teléfono la barra va al final de la lista (las pantallas del personal son para computadora; en teléfono sólo se
-   cuida que funcionen); desde 760 px queda fija al pie de la columna mientras se recorre la lista */
-.plan-barra { display: grid; gap: var(--e-2); padding-block: var(--e-3) var(--e-2); border-block-start: var(--b-1) solid var(--linea); background: var(--blanco); }
-.plan-barra[hidden] { display: none; }
-.plan-barra-cuenta { margin: 0; font-weight: var(--peso-fuerte); }
-.plan-barra-acciones { display: flex; flex-wrap: wrap; gap: var(--e-2); }
-.plan-barra-acciones .btn { width: auto; }
-/* Próximas semanas: una fila por semana (rótulo y su contenido) */
-.plan-semanas { display: grid; gap: var(--e-3); min-width: 0; }
-.plan-semanas-lista { display: grid; gap: var(--e-4); }
-.plan-semana { display: grid; gap: var(--e-2); }
-.plan-semana-titulo { display: grid; margin: 0; font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); }
-.plan-semana-fechas { font: var(--peso-normal) var(--t-sm)/var(--interlineado-compacto) var(--fuente-cuerpo); color: var(--gris); }
-.plan-semana-cuerpo { display: grid; gap: var(--e-2); min-width: 0; }
-.plan-grupo { display: grid; gap: var(--e-3); padding: var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); min-width: 0; }
-/* Por confirmar: lo dice su etiqueta; el dorado queda como filete (C6-05) */
-.plan-grupo[data-situacion="en_integracion"] { box-shadow: inset var(--b-4) 0 0 var(--dorado); }
-.plan-grupo-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--e-2) var(--e-3); }
-.plan-grupo-nombre { margin: 0; font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--texto); min-width: 0; }
-.plan-grupo-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
-.plan-grupo-acciones .btn { width: auto; }
-/* Cupo: un lugar por persona (25), lo ocupado, lo que falta para el mínimo (punteado) y lo libre */
-.plan-cupo { display: grid; gap: var(--e-2); }
-.plan-cupo-barra { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--b-2); }
-.plan-cupo-lugar { height: var(--e-3); border-radius: var(--b-2); background: var(--linea); }
-/* Lo ocupado, del mismo color que la barra de cupo de la ficha del grupo (.cupo-lleno; C6-05) */
-.plan-cupo-lugar[data-lugar="ocupado"] { background: var(--dorado); }
-.plan-cupo-lugar[data-lugar="minimo"] { background: var(--fondo); outline: var(--b-1) dashed var(--borde); outline-offset: calc(var(--b-1) * -1); }
-.plan-cupo-texto { margin: 0; font-size: var(--t-sm); }
-/* Semana libre: el enlace para programarla, o en una línea por qué no se puede */
-.plan-programar-semana {
-  display: flex; align-items: center; gap: var(--e-2); min-height: calc(var(--objetivo-min) + var(--e-2)); padding: 0 var(--e-4);
-  border: var(--b-1) dashed var(--guinda); border-radius: var(--r-caja); background: var(--blanco); color: var(--guinda);
-  font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); text-decoration: none;
-}
-.plan-programar-semana:hover { background: var(--guinda-cl); }
-.plan-semana-libre { display: grid; gap: var(--e-2); }
-.plan-semana-no { margin: 0; padding: var(--e-3) var(--e-4); border: var(--b-1) dashed var(--borde); border-radius: var(--r-caja); font-size: var(--t-sm); color: var(--gris); }
 /* «Grupos que ya terminaron»: el plegable del estándar (details.plegable; C6-06) */
 .plan-terminados-lista { display: grid; margin: 0; padding: 0 var(--e-4) var(--e-2); list-style: none; }
 .plan-terminado { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-3); padding-block: var(--e-2); border-block-start: var(--b-1) solid var(--linea); }
 .plan-pie { margin-block-start: var(--e-5); }
 
-/* Programar un curso: los tres pasos y, al lado, «Así quedaría» */
-.prog { display: grid; gap: var(--e-5); align-items: start; }
-.prog[hidden] { display: none; }
-.prog-pasos { display: grid; min-width: 0; }
-.prog-paso-titulo { margin-block: 0 var(--e-2); padding-block-start: 0; border-block-start: 0; }
-.prog-paso-num { color: var(--dorado-txt); }
-.prog-paso-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-1) var(--e-3); }
-.prog-propuesta { margin: 0 0 var(--e-3); font-size: var(--t-sm); color: var(--gris); }
-.prog-fecha { margin-block-start: var(--e-4); }
 .prog-personas { display: grid; gap: var(--e-2); margin: 0 0 var(--e-3); padding: 0; list-style: none; }
 .prog-ya-titulo { margin: 0 0 var(--e-1); font-weight: var(--peso-fuerte); }
 .prog-ya { margin: 0 0 var(--e-4); padding-inline-start: var(--e-5); list-style: disc; font-size: var(--t-sm); }
-.prog-cursos { display: grid; gap: var(--e-2); margin: 0; padding: 0; list-style: none; }
-.prog-resumen { display: grid; gap: var(--e-3); padding: var(--e-seccion); background: var(--blanco); border: var(--b-2) solid var(--guinda); border-radius: var(--r-caja); min-width: 0; }
-.prog-resumen > * { margin: 0; }
-.prog-resumen-titulo { font: var(--peso-fuerte) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
-.prog-resumen-nombre { font: var(--peso-semi) var(--t-md)/var(--interlineado-titulo) var(--fuente-titulo); }
-.prog-resumen-acciones { display: grid; gap: var(--e-2); }
-.prog-resumen-acciones .btn-primario { margin-inline-start: 0; }
-.prog-resumen-nota { font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--gris-cl); }
-/* Calendario del mes: un botón por día; el curso elegido resaltado con «inicia» y «examen» */
-.cal { display: grid; gap: var(--e-3); max-width: var(--ancho-dialogo); margin-block: var(--e-3) 0; }
+/* Calendario del paso 2 de «Grupos»: cabeza con el mes y sus flechas, estado y leyenda (el resto, .arm-*) */
 .cal-cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
 .cal-mes { margin: 0; font: var(--peso-semi) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); text-align: center; }
 .cal-mes-boton[aria-disabled="true"] { opacity: var(--op-inactivo); cursor: not-allowed; }
-.cal-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: var(--e-1); }
-.cal-tabla th { padding-block: var(--e-1); font-size: var(--t-xs); font-weight: var(--peso-fuerte); color: var(--gris); text-align: center; }
-.cal-tabla abbr { text-decoration: none; }
-.cal-tabla td { padding: 0; text-align: center; }
-.cal-dia {
-  display: grid; justify-items: center; align-content: center; gap: var(--b-2); width: 100%; min-height: calc(var(--objetivo-min) + var(--e-3));
-  padding: var(--e-1) 0; border: var(--b-1) solid var(--borde); border-radius: var(--r-ctrl); background: var(--blanco); color: var(--texto);
-  font-family: var(--fuente-cuerpo); cursor: pointer;
-}
-.cal-num { font-size: var(--t-base); font-weight: var(--peso-medio); line-height: 1; }
-/* La nota de la celda («inicia», «examen», «curso y examen», el folio de otro grupo) va a --t-xs, nunca menos. Por debajo
-   de 560 px la celda mide de 30 a 55 px y a 12 px no caben «examen» (42 px) ni un folio (62 px): ahí la celda no lleva
-   nota y abajo del calendario se dice «Inicia el … y examen el …» (.cal-fechas); la etiqueta de cada día lo conserva
-   para el lector (decisión de Liber del 21/10, C6-10 c). «Curso y examen» se parte en dos renglones. */
-.cal-nota { display: none; min-height: var(--t-xs); max-width: 100%; font-size: var(--t-xs); line-height: 1; color: var(--gris); overflow: hidden; }
-.cal-fechas { margin: 0; font-size: var(--t-sm); color: var(--texto); }
-.cal-dia:not([aria-disabled="true"]):hover { border-color: var(--azul); }
-.cal-dia[aria-disabled="true"] { border-style: dashed; border-color: var(--borde); background: var(--fondo); color: var(--gris); cursor: not-allowed; }
-.cal-dia[data-inhabil="si"] { border-color: var(--pend); background: var(--pend-bg); }
-/* Los días del curso elegido, como lo elegido del estándar; «inicia» y «examen» lo dice su nota (C6-02 y C6-03) */
-.cal-dia[data-rango] { border-color: var(--azul); background: var(--azul-cl); box-shadow: inset 0 0 0 var(--b-1) var(--azul); }
-.cal-dia[data-rango="inicio"] .cal-nota, .cal-dia[data-rango="fin"] .cal-nota { color: var(--azul); }
 .cal-estado { margin: 0; padding: var(--e-2) var(--e-3); border-radius: var(--r-ctrl); background: var(--fondo); font-size: var(--t-sm); }
 .cal-leyenda { display: grid; gap: var(--e-1); margin: 0; padding: 0; list-style: none; font-size: var(--t-sm); color: var(--gris); }
 .cal-leyenda li { display: flex; align-items: center; gap: var(--e-2); }
 .cal-muestra { flex: none; width: var(--e-4); height: var(--e-4); border: var(--b-1) solid var(--borde); border-radius: var(--b-2); }
-.cal-muestra[data-muestra="rango"] { border-color: var(--azul); background: var(--azul-cl); }
 .cal-muestra[data-muestra="no"] { border-style: dashed; border-color: var(--borde); background: var(--fondo); }
 .cal-muestra[data-muestra="inhabil"] { border-color: var(--pend); background: var(--pend-bg); }
 
@@ -716,42 +611,16 @@ body > main { flex: 1 0 auto; width: 100%; }
   .plan-persona { grid-template-columns: auto minmax(0, 1fr) auto; }
   .plan-persona-espera { grid-column: 3; grid-row: 1; justify-content: flex-end; }
   .plan-persona-org { grid-column: 2 / 4; }
-  .plan-programar { width: auto; }
-  .prog-cursos { display: flex; flex-wrap: wrap; }
-  .cal-nota { display: block; }
-  .cal-fechas { display: none; }
-  .prog-cursos .btn { width: auto; }
-  .prog-resumen .datos-par { grid-template-columns: minmax(0, calc(var(--e-11) + var(--e-4))) minmax(0, 1fr); }
   .hoy-grupo-accion { width: auto; justify-self: start; }
 }
 @media (min-width: 760px) {
-  /* Fija, la barra llega hasta el borde de la ventana y lo rebasa: se extiende por debajo de él tanto como un objetivo
-     (--objetivo-min, con el mismo relleno, y un margen negativo igual para que en su lugar normal no deje hueco). Así
-     cubre entera la casilla que queda a medias en el borde de abajo, igual que cubre las que quedan debajo de ella (de la
-     casilla cortada por el borde no se ve nada): antes la barra terminaba justo en el borde, la casilla asomaba fuera de
-     la ventana junto a los botones de la barra y axe la contaba como objetivo de menos de 24 px pegado a ellos
-     (target-size; sesión del 23/10, parte B). Lo que se ve no cambia; el alto que reserva la página (B4-01) es el visible
-     (app/grupos.js). */
-  .plan-barra { position: sticky; bottom: calc(-1 * var(--objetivo-min)); z-index: var(--z-lista);
-    padding-block-end: calc(var(--e-2) + var(--safe-inf) + var(--objetivo-min)); margin-block-end: calc(-1 * var(--objetivo-min)); }
-  /* Si la barra mide más de un cuarto de la ventana deja de ser fija (B4-01, decisión 1c del 20/10; app/grupos.js) */
-  .plan-barra[data-suelta] { position: static; padding-block-end: calc(var(--e-2) + var(--safe-inf)); margin-block-end: 0; }
-  .plan-semana { grid-template-columns: minmax(0, calc(var(--e-11) * 1.5)) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
-  .plan-semana-titulo { padding-block-start: var(--e-3); }
   .hoy-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 1024px) {
-  .plan { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
-  .prog { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
-  .prog-resumen { position: sticky; top: var(--e-4); }
-  /* Versión de prueba: «Así quedaría» va a la derecha, donde está fijo el botón «Menú de pruebas»; se le deja su lugar */
-  .modo-pruebas .prog { padding-inline-end: calc(var(--ancho-boton-min) + var(--e-4)); }
 }
 
 /* Colores forzados (alto contraste): el sistema impone sus colores y lo que se distinguía por el fondo se pierde. Lo
    elegido lleva el contorno del estándar (opciones.css, `Highlight`) también en las piezas propias (auditoría 2026-10-20,
    C6-01; relacionado con P35). La opción Sí/No de «Asistencia» ya es del estándar y trae el suyo. */
 @media (forced-colors: active) {
-  .plan-curso[aria-pressed="true"], .plan-persona:has(.casilla-input:checked), .cal-dia[data-rango] { outline: var(--b-3) solid Highlight; outline-offset: calc(var(--b-1) * -1); }
+  .arm-semana-elegir[aria-pressed="true"], .arm-dia-curso[aria-pressed="true"], .plan-persona:has(.casilla-input:checked) { outline: var(--b-3) solid Highlight; outline-offset: calc(var(--b-1) * -1); }
   .estado-atencion[data-plazo="atrasada"] { border-width: var(--b-2); }
 }
