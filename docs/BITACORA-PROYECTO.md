@@ -1500,3 +1500,23 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - **Presupuesto** (decisión del 20/10): el personal cumple; la persona aún no del todo (P195).
 - Pruebas: `probar-sitio` 1241 (parte nueva «peso»), `probar-examen` 79, `probar-volumen` 109, `probar-base` 303,
   `probar-esquemas` 131, `auditar-sitio` con los mismos 2 avisos en 65 pantallas.
+
+## 2026-10-23 · Bloque 91 · Sesión de trabajo del 23/10: decisiones del área aplicadas al sistema
+
+- Publicadas la 0.65 (peso) y la 0.66 (mapa de Google del Vivero en «Mis trámites», con la dirección confirmada).
+- Notas de la sesión de trabajo del 23/10 capturadas en el tablero de pendientes; Liber las toma como respuestas (P03:
+  sí se pide el comprobante de domicilio; P49: credencial sin huella ni antigüedad aunque se aparte de la NADF; P92 sigue
+  pendiente). Decisiones en DECISIONES (2026-10-23); 11 pendientes resueltos y P196 y P197 nuevos.
+- **Parte A.** Corregido el calendario de la fecha de la cita en «Revisar» (el campo se vaciaba al elegir el día).
+  «Recibimos la corrección de tus documentos». «Constancia de situación fiscal» de la persona solicitante (P196). La
+  solicitud de poda no pregunta la licenciatura. Dictaminador: 2 años consecutivos de poda (P197). Mayoría de edad.
+  Universidad Autónoma Chapingo. Citas de 9:30 a 14:30, curso de 9:00 a 15:00, informes de 9:00 a 15:00, de lunes a
+  viernes; cursos que empiezan en lunes; quinto día de repaso y examen final; máximo 2 grupos a la vez; prioridad desde
+  15 días; sólo gobierno local y federal en bloque.
+- **Parte B.** Cancelación de la acreditación por instructores y administración, con motivo y fundamento, en la base,
+  una pantalla nueva del personal («Acreditaciones» y su ficha), «Mis trámites» y «Verificar». Reposición de la
+  credencial: la persona carga el acta, el personal la revisa y valida la factura; misma acreditación, folio y vigencia;
+  cuota configurable (P140). La barra de «Grupos» ya no deja asomar casillas fuera de ella (0 de 456 tamaños).
+- Anteproyecto de lineamientos 0.6 y registro de reforma de la NADF actualizados en el Proyecto (fuera del repositorio).
+- Pruebas: `probar-base` 372 (concurrencia 24), `probar-esquemas` 149, `probar-sitio` 1458, `probar-examen` 79,
+  `probar-volumen` 111, `auditar-sitio` con los mismos 2 avisos en 85 pantallas.
