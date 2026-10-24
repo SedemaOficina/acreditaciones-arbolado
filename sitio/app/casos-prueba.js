@@ -30,7 +30,7 @@
   const PERFILES = [
     ['nueva', 'Persona nueva', [
       ['Sin cuenta todavía', [
-        ['nueva', 'Persona nueva, sin trámites', 'Hacer una solicitud desde cero.', null]
+        ['nueva', 'Persona nueva, sin trámites', 'Crear la cuenta paso por paso y hacer una solicitud desde cero.', null]
       ]]
     ]],
     ['poda', 'Podador (poda y derribo)', [
@@ -142,8 +142,8 @@
     ]],
     ['personal', 'Personal de la Secretaría', [
       ['Su papel', [
-        ['personal', 'Revisión documental', 'Revisar las solicitudes enviadas: validar, observar o rechazar.', null, 'revision.html'],
-        ['personal-citas', 'Citas de cotejo', 'Atender las citas del día: cotejo, pago, factura, pausa.', null, 'citas.html'],
+        ['personal', 'Revisión documental', 'Revisar las solicitudes enviadas paso por paso, un documento a la vez: validar con cita, observar o rechazar.', null, 'revision.html'],
+        ['personal-citas', 'Citas de cotejo', 'Atender las citas del día paso por paso: ¿es la persona?, documentos originales, pago y factura, resultado (pausa, inasistencia).', null, 'citas.html'],
         ['personal-grupos', 'Grupos del curso', 'Planear cada curso: quién espera, sus próximas semanas, completar y confirmar grupos.', null, 'grupos.html?curso=poda-nueva'],
         ['personal-programar', 'Programar un curso', 'Elegir la semana en el calendario, el instructor y la hora, y quiénes van; crear y confirmar el grupo.', null, 'programar.html?curso=poda-nueva'],
         ['personal-material', 'Material de estudio', 'Subir, reemplazar, publicar u ocultar los documentos para el examen.', null, 'material-personal.html'],
