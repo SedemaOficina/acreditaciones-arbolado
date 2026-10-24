@@ -30,6 +30,9 @@
       agregadas: [params.get('no') ? 'pend' : 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`,
         params.get('no') ? `${params.get('no').split(',').length === 1 ? '1 de las que eligió no entró: ya tenía grupo o el grupo se llenó' : `${params.get('no').split(',').length} de las que eligió no entraron: ya tenían grupo o el grupo se llenó`}.` : ''],
       confirmado: ['ok', 'Grupo confirmado', 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.'],
+      // Desde el paso a paso de «Grupos» sin confirmarlo: la semana, la hora y el instructor quedan como propuesta
+      propuesto: ['pend', 'Se guardaron los cambios del grupo', { texto: `Sigue por confirmar: su semana queda como propuesta${n ? ` y se ${n === 1 ? 'agregó 1 persona' : `agregaron ${n} personas`}` : ''}.`, pasos: [
+        'Complete lo que le falte: el mínimo de personas, la hora de entrada y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
       baja: ['ok', 'La persona salió del grupo', 'Regresó a la espera con su antigüedad.'],
       baja_integracion: ['pend', 'El grupo dejó de estar confirmado', { texto: 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta.', pasos: [
         'Agregue personas hasta completar el mínimo.', 'Vuelva a confirmar el grupo.'] }],
@@ -37,7 +40,9 @@
     };
     if (!textos[hecho]) return;
     const [tono, titulo, texto] = textos[hecho];
-    APD.pintaAviso($('[data-hecho]'), tono, titulo, texto, true);
+    // Un texto con sus pasos ({ texto, pasos }) va como la secuencia «Qué sigue» (APD.sigueEn): FormKit.aviso no recibe
+    // objetos y escribía «[object Object]» en «Grupo creado» y «El grupo dejó de estar confirmado»
+    APD.pintaAviso($('[data-hecho]'), tono, titulo, texto && typeof texto === 'object' ? APD.sigueEn(texto) : texto, true);
     // Que recargar la página no repita el aviso
     params.delete('hecho'); params.delete('n'); params.delete('no');
     history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
@@ -151,13 +156,18 @@
       const propia = g.integracion === 'especifico';
       const org = propia ? x.integracion.replace('De una organización · ', '') : '';
       const espera = P.enEspera(datos, g.tipo_acreditacion, g.modalidad).filter((y) => !propia || y.s.organizacion_id === g.organizacion_id).length;
-      if (espera) acciones.push(el('a', { class: 'btn btn-secundario', href: `grupos.html?curso=${P.claveCurso(g.tipo_acreditacion, g.modalidad)}&grupo=${encodeURIComponent(g.folio)}`,
+      // El paso 3 («Quiénes van») del paso a paso de «Grupos», con este grupo (decisión del 24/10/2026, opción B1)
+      if (espera) acciones.push(el('a', { class: 'btn btn-secundario', href: `grupos.html?grupo=${encodeURIComponent(g.folio)}&paso=3`,
         texto: propia ? `Agregar personas de ${org} (${espera} en espera)` : `Agregar personas de la espera (${espera} en espera)` }));
       else acciones.push(el('p', { class: 'texto-gris', texto: propia ? `Nadie de ${org} espera grupo en este curso por ahora.` : 'Nadie espera grupo en este curso por ahora.' }));
     } else if (abierto && x.n >= g.cupo_maximo) {
       acciones.push(el('p', { class: 'texto-gris', texto: `El grupo está lleno: ${g.cupo_maximo} personas.` }));
     } else if (g.estado === 'confirmado') {
       acciones.push(el('p', { class: 'texto-gris', texto: 'El curso ya empezó: el grupo no recibe más personas.' }));
+    }
+    // La semana en el calendario de «Grupos» (paso 2 del paso a paso, con este grupo; decisión del 24/10/2026)
+    if (g.estado === 'en_integracion') {
+      acciones.push(el('a', { class: 'btn btn-secundario', href: `grupos.html?grupo=${encodeURIComponent(g.folio)}&paso=2`, texto: g.fecha_inicio ? 'Cambiar la semana en el calendario' : 'Elegir la semana en el calendario' }));
     }
     if (g.estado === 'en_curso') {
       acciones.push(el('a', { class: 'btn btn-secundario', href: `asistencia.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Ver la asistencia' }));

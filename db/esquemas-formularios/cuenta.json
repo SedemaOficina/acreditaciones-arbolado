@@ -1,6 +1,6 @@
 {
   "formulario": "cuenta.html",
-  "generado": "2026-10-24T03:39:27.619Z",
+  "generado": "2026-10-24T14:42:48.881Z",
   "campos": {
     "nombre": {
       "etiqueta": "Nombre o nombres",
@@ -41,21 +41,6 @@
       },
       "autocomplete": "off"
     },
-    "fecha_nacimiento": {
-      "etiqueta": "Fecha de nacimiento",
-      "tipo": "texto",
-      "requerido": true,
-      "formato": "fecha-dma",
-      "sensible": true,
-      "uso": "Comprobar la CURP; no se guarda aparte porque ya está en ella.",
-      "finalidad": "Comprobar que la CURP corresponde a quien crea la cuenta.",
-      "atributos": {
-        "maxlength": "14",
-        "max": "hoy",
-        "noFutura": ""
-      },
-      "autocomplete": "bday"
-    },
     "curp": {
       "etiqueta": "CURP",
       "tipo": "texto",
@@ -66,7 +51,7 @@
       "finalidad": "Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona.",
       "atributos": {
         "maxlength": "24",
-        "deriva": "sexo=sexo"
+        "deriva": "fechaNacimiento=fecha_nacimiento sexo=sexo"
       },
       "autocomplete": "off",
       "cruzadas": [
@@ -105,6 +90,20 @@
         }
       ]
     },
+    "fecha_nacimiento": {
+      "etiqueta": "Fecha de nacimiento",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha-dma",
+      "sensible": true,
+      "uso": "Comprobar la CURP; se toma de ella y no se guarda aparte.",
+      "finalidad": "Comprobar que la CURP corresponde a quien crea la cuenta.",
+      "atributos": {
+        "max": "hoy",
+        "noFutura": ""
+      },
+      "autocomplete": "off"
+    },
     "sexo": {
       "etiqueta": "Sexo",
       "tipo": "texto",
@@ -113,20 +112,6 @@
       "uso": "Derivado de la CURP; no se pide por separado.",
       "finalidad": "Estadística de la población acreditada por sexo.",
       "atributos": {},
-      "autocomplete": "off"
-    },
-    "foto": {
-      "etiqueta": "Fotografía de frente",
-      "tipo": "archivos",
-      "requerido": true,
-      "sensible": true,
-      "uso": "Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.",
-      "finalidad": "Reconocer a la persona en la cita de cotejo y en el curso, y confirmar su identidad y su asistencia el día del examen.",
-      "atributos": {
-        "max": "1",
-        "extensiones": "jpg,jpeg,png",
-        "mb": "5"
-      },
       "autocomplete": "off"
     },
     "correo": {
@@ -143,7 +128,7 @@
       "autocomplete": "email"
     },
     "correo2": {
-      "etiqueta": "Confirma tu correo",
+      "etiqueta": "Escribe otra vez tu correo",
       "tipo": "texto",
       "requerido": true,
       "formato": "correo",
@@ -558,6 +543,20 @@
         }
       ]
     },
+    "foto": {
+      "etiqueta": "Fotografía de frente",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.",
+      "finalidad": "Reconocer a la persona en la cita de cotejo y en el curso, y confirmar su identidad y su asistencia el día del examen.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off"
+    },
     "contrasena": {
       "etiqueta": "Contraseña",
       "tipo": "texto",
@@ -572,7 +571,7 @@
       "autocomplete": "new-password"
     },
     "contrasena2": {
-      "etiqueta": "Confirma tu contraseña",
+      "etiqueta": "Escribe otra vez tu contraseña",
       "tipo": "texto",
       "requerido": true,
       "formato": "contrasena",

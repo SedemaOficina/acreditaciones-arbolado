@@ -1,6 +1,6 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-24T03:39:27.803Z",
+  "generado": "2026-10-24T14:43:04.529Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
@@ -143,7 +143,7 @@
       }
     },
     "se_presento": {
-      "etiqueta": "¿La persona se presentó a su cita?",
+      "etiqueta": "¿La persona está aquí?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -230,7 +230,7 @@
       ]
     },
     "coincide_identificacion_oficial": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -263,7 +263,7 @@
       ]
     },
     "diferencia_identificacion_oficial": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -302,7 +302,7 @@
       ]
     },
     "coincide_curp": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -335,7 +335,7 @@
       ]
     },
     "diferencia_curp": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -374,7 +374,7 @@
       ]
     },
     "coincide_comprobante_domicilio": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -407,7 +407,7 @@
       ]
     },
     "diferencia_comprobante_domicilio": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -446,7 +446,7 @@
       ]
     },
     "coincide_constancia_situacion_fiscal": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -479,7 +479,7 @@
       ]
     },
     "diferencia_constancia_situacion_fiscal": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -518,7 +518,7 @@
       ]
     },
     "coincide_comprobante_estudios": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -551,7 +551,7 @@
       ]
     },
     "diferencia_comprobante_estudios": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -590,7 +590,7 @@
       ]
     },
     "coincide_curriculum_vitae": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -623,7 +623,7 @@
       ]
     },
     "diferencia_curriculum_vitae": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -662,7 +662,7 @@
       ]
     },
     "coincide_comprobantes_experiencia": {
-      "etiqueta": "¿Coincide con el que trae la persona?",
+      "etiqueta": "¿El original es igual al que cargó?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -695,7 +695,7 @@
       ]
     },
     "diferencia_comprobantes_experiencia": {
-      "etiqueta": "¿Qué no coincide?",
+      "etiqueta": "¿Qué no es igual? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -767,7 +767,7 @@
       ]
     },
     "pago": {
-      "etiqueta": "¿Presentó el comprobante de pago por ese monto y con esa referencia?",
+      "etiqueta": "¿El comprobante es por ese monto y con esa referencia?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,

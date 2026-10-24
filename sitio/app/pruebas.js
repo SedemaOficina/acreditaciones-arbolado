@@ -126,21 +126,16 @@
   /* Correo ficticio propio de cada persona de prueba: un correo, una cuenta (decisión 2026-10-17) */
   const correoDe = (curp) => `prueba.${String(curp).toLowerCase()}@ejemplo.local`;
 
-  /* Fecha de nacimiento dentro de la CURP, como día/mes/año */
-  function fechaDeCurp(curp) {
-    const siglo = /\d/.test(curp[16]) ? '19' : '20';
-    return `${curp.slice(8, 10)}/${curp.slice(6, 8)}/${siglo}${curp.slice(4, 6)}`;
-  }
   /* Cuenta de una persona del registro anterior: sus datos del padrón y lo demás ficticio */
   function llenaMigrada(m) {
     pon('nombre', m.nombre); pon('primer_apellido', m.primer_apellido); pon('segundo_apellido', m.segundo_apellido || '');
-    pon('fecha_nacimiento', fechaDeCurp(m.curp)); pon('curp', m.curp);
+    pon('curp', m.curp); // la fecha de nacimiento y el sexo se toman de la CURP (decisión de Liber del 24/10/2026)
     pon('correo', correoDe(m.curp)); pon('correo2', correoDe(m.curp)); pon('telefono', '0000000099');
     pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
     adjuntaFoto(form.querySelector('[data-campo="foto"]'));
     elige('adscrito', 'no');
     marca('aviso'); marca('humano');
-    return `Formulario llenado con la CURP de ${APD.nombreCompleto(m)}. Presiona «Crear cuenta» para ver cómo se activa.`;
+    return `Formulario llenado con la CURP de ${APD.nombreCompleto(m)}. Avanza con «Siguiente» y presiona «Crear mi cuenta» para ver cómo se activa.`;
   }
   /* «Entrar» con un caso: llena CURP y contraseña y deja presionar «Entrar» */
   function llenaEntrar(p) {
@@ -153,7 +148,7 @@
     if (pagina === 'cuenta.html') {
       const p = personaNueva();
       pon('nombre', p.nombre); pon('primer_apellido', p.primer); pon('segundo_apellido', p.segundo);
-      pon('fecha_nacimiento', p.fecha.split('-').reverse().join('/')); pon('curp', p.curp);
+      pon('curp', p.curp); // la fecha de nacimiento y el sexo se toman de la CURP
       pon('correo', correoDe(p.curp)); pon('correo2', correoDe(p.curp)); pon('telefono', '0000000099');
       pon('contrasena', 'una frase larga de prueba'); pon('contrasena2', 'una frase larga de prueba');
       adjuntaFoto(form.querySelector('[data-campo="foto"]'));
@@ -189,11 +184,11 @@
   const PANTALLAS = [
     ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación'], ['material.html', 'Material de estudio']]],
     ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
-    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['grupos.html', 'Grupos'], ['programar.html?curso=poda-nueva', 'Programar un curso'], ['material-personal.html', 'Material de estudio (personal)']]],
+    ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['grupos.html', 'Grupos (armar un grupo)'], ['material-personal.html', 'Material de estudio (personal)']]],
     ['Instructor', [['asistencia.html', 'Asistencia'], ['aplicar.html', 'Aplicar el examen']]],
     ['Salón de cómputo', [['examen.html', 'Examen en línea']]]
   ];
-  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'programar.html': 'Programar un curso', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
+  const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'programar.html': 'Programar un curso (lleva a Grupos)', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
   const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'programar.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html'];
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)

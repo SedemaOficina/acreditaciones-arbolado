@@ -1520,3 +1520,24 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Anteproyecto de lineamientos 0.6 y registro de reforma de la NADF actualizados en el Proyecto (fuera del repositorio).
 - Pruebas: `probar-base` 372 (concurrencia 24), `probar-esquemas` 149, `probar-sitio` 1458, `probar-examen` 79,
   `probar-volumen` 111, `auditar-sitio` con los mismos 2 avisos en 85 pantallas.
+
+## 2026-10-24 · Bloque 92 · «Grupos» por pasos (opción B1)
+
+- Publicada la 0.67 (sesión del 23/10). Liber vio que «Grupos» no dejaba ver dónde se arma un grupo ni qué fechas están
+  libres. Se hicieron maquetas («Grupos: propuestas de rediseño») y eligió la B1: un paso a paso con calendario.
+- «Grupos» y «Programar un curso» quedan en un solo camino: el curso, la semana (calendario por mes con la columna
+  «Semana»: «Libre» con sus lugares o «No disponible» y su motivo, y los grupos existentes en sus días), quiénes van (las
+  que más esperan, con sus bloques) y confirmar. Los grupos programados, en una tabla con lo que le falta a cada uno y
+  sus acciones; «Programar un curso» redirige y conserva sus parámetros. La dirección guarda el paso.
+- Pruebas: `probar-sitio` 1599 (parte `SOLO=grupos`), `probar-volumen` 119 (112 en espera y 40 grupos),
+  `probar-esquemas` 151, `probar-examen` 79, `auditar-sitio` con los mismos 2 avisos en 89 pantallas.
+
+## 2026-10-24 · Bloque 93 · Revisar, cotejo y «Crea tu cuenta» por pasos
+
+- Liber pidió que las tareas se hagan por pasos para que las entienda cualquier persona, de cualquier escolaridad. Se
+  hicieron maquetas («Pantallas por pasos: propuestas») y las aprobó.
+- **Revisar una solicitud:** perfil (sólo dictaminador), un paso por cada documento con «¿El documento está bien?»,
+  resultado y fecha de la cita sólo si todo está bien. **Cita de cotejo:** ¿es la persona?, documentos originales, pago y
+  factura, resultado. **Crea tu cuenta:** quién eres, cómo te avisamos, tu fotografía, tu contraseña, revisa y crea; la
+  fecha de nacimiento y el sexo salen de la CURP. Con el módulo de pasos del estándar; la base no cambia.
+- Se une con «Grupos» por pasos (bloque 92). Pruebas: parte nueva `SOLO=pasos` en `probar-sitio`.

@@ -1,6 +1,6 @@
 {
   "formulario": "revisar.html",
-  "generado": "2026-10-24T03:39:27.763Z",
+  "generado": "2026-10-24T14:42:49.162Z",
   "campos": {
     "perfil_revision": {
       "etiqueta": "perfil_revision",
@@ -218,7 +218,7 @@
       ]
     },
     "decision_identificacion_oficial": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -251,7 +251,7 @@
       ]
     },
     "observacion_identificacion_oficial": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -292,7 +292,7 @@
       ]
     },
     "decision_curp": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -325,7 +325,7 @@
       ]
     },
     "observacion_curp": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -366,7 +366,7 @@
       ]
     },
     "decision_comprobante_domicilio": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -399,7 +399,7 @@
       ]
     },
     "observacion_comprobante_domicilio": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -440,7 +440,7 @@
       ]
     },
     "decision_constancia_situacion_fiscal": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -473,7 +473,7 @@
       ]
     },
     "observacion_constancia_situacion_fiscal": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -514,7 +514,7 @@
       ]
     },
     "decision_comprobante_estudios": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -547,7 +547,7 @@
       ]
     },
     "observacion_comprobante_estudios": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -588,7 +588,7 @@
       ]
     },
     "decision_curriculum_vitae": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -621,7 +621,7 @@
       ]
     },
     "observacion_curriculum_vitae": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -662,7 +662,7 @@
       ]
     },
     "decision_comprobantes_experiencia": {
-      "etiqueta": "¿El documento cumple?",
+      "etiqueta": "¿El documento está bien?",
       "tipo": "opcion",
       "requerido": true,
       "sensible": false,
@@ -695,7 +695,7 @@
       ]
     },
     "observacion_comprobantes_experiencia": {
-      "etiqueta": "¿Qué debe corregir la persona?",
+      "etiqueta": "¿Qué problema tiene? Lo que le diremos a la persona",
       "tipo": "textarea",
       "requerido": true,
       "formato": "texto",
@@ -731,6 +731,59 @@
           "campo": "decision_comprobantes_experiencia",
           "valores": [
             "con_observacion"
+          ]
+        }
+      ]
+    },
+    "mensaje_general": {
+      "etiqueta": "Mensaje para la persona (opcional)",
+      "tipo": "textarea",
+      "requerido": false,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Indicación general para la persona, además de las observaciones de cada documento (apd.revision.observacion_general).",
+      "atributos": {
+        "maxlength": "600"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "con_observaciones"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "con_observaciones"
+          ]
+        }
+      ]
+    },
+    "motivo_rechazo": {
+      "etiqueta": "Motivo del rechazo",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Explicar a la persona por qué se rechaza su solicitud; se le muestra tal cual (apd.revision.observacion_general y apd.solicitud.motivo_cierre).",
+      "atributos": {
+        "minlength": "20",
+        "maxlength": "600"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "resultado",
+        "valores": [
+          "rechazada"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "resultado",
+          "valores": [
+            "rechazada"
           ]
         }
       ]
@@ -794,59 +847,6 @@
           "campo": "resultado",
           "valores": [
             "validada"
-          ]
-        }
-      ]
-    },
-    "mensaje_general": {
-      "etiqueta": "Mensaje para la persona (opcional)",
-      "tipo": "textarea",
-      "requerido": false,
-      "formato": "texto",
-      "sensible": false,
-      "uso": "Indicación general para la persona, además de las observaciones de cada documento (apd.revision.observacion_general).",
-      "atributos": {
-        "maxlength": "600"
-      },
-      "autocomplete": "off",
-      "si": {
-        "campo": "resultado",
-        "valores": [
-          "con_observaciones"
-        ]
-      },
-      "condiciones": [
-        {
-          "campo": "resultado",
-          "valores": [
-            "con_observaciones"
-          ]
-        }
-      ]
-    },
-    "motivo_rechazo": {
-      "etiqueta": "Motivo del rechazo",
-      "tipo": "textarea",
-      "requerido": true,
-      "formato": "texto",
-      "sensible": false,
-      "uso": "Explicar a la persona por qué se rechaza su solicitud; se le muestra tal cual (apd.revision.observacion_general y apd.solicitud.motivo_cierre).",
-      "atributos": {
-        "minlength": "20",
-        "maxlength": "600"
-      },
-      "autocomplete": "off",
-      "si": {
-        "campo": "resultado",
-        "valores": [
-          "rechazada"
-        ]
-      },
-      "condiciones": [
-        {
-          "campo": "resultado",
-          "valores": [
-            "rechazada"
           ]
         }
       ]

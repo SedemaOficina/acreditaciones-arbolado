@@ -1,7 +1,22 @@
 {
   "formulario": "grupo-crear.html",
-  "generado": "2026-10-24T03:39:28.035Z",
+  "generado": "2026-10-24T15:19:42.529Z",
   "campos": {
+    "curso": {
+      "etiqueta": "Curso",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Fijar el curso del grupo (apd.grupo.tipo_acreditacion y apd.grupo.modalidad).",
+      "atributos": {},
+      "opciones": [
+        "poda-nueva",
+        "poda-renovacion",
+        "dictaminador-nueva",
+        "dictaminador-renovacion"
+      ],
+      "autocomplete": "off"
+    },
     "fecha_inicio": {
       "etiqueta": "Primer día del curso",
       "tipo": "texto",
@@ -12,6 +27,19 @@
       "atributos": {
         "maxlength": "14"
       },
+      "autocomplete": "off"
+    },
+    "integracion": {
+      "etiqueta": "¿De quiénes es el grupo?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).",
+      "atributos": {},
+      "opciones": [
+        "combinado",
+        "especifico"
+      ],
       "autocomplete": "off"
     },
     "instructor": {
@@ -37,19 +65,6 @@
       "atributos": {},
       "opciones": [
         "09:00"
-      ],
-      "autocomplete": "off"
-    },
-    "integracion": {
-      "etiqueta": "¿De quiénes es el grupo?",
-      "tipo": "opcion",
-      "requerido": true,
-      "sensible": false,
-      "uso": "Fijar si el grupo es de una sola organización o combinado (apd.grupo.integracion).",
-      "atributos": {},
-      "opciones": [
-        "combinado",
-        "especifico"
       ],
       "autocomplete": "off"
     }

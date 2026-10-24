@@ -270,18 +270,18 @@
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Título",
-  "texto": "Crea tu cuenta",
+  "texto": "¿Quién eres?",
   "cuando": "Siempre",
-  "seccion": "Crea tu cuenta",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Introducción",
-  "texto": "Una cuenta por persona, ligada a tu CURP. Ten a la mano tu CURP y una fotografía de frente, o tómala con tu teléfono. Si ya tuviste una acreditación de la Secretaría, la verás en tu historial.",
+  "texto": "Una cuenta por persona, ligada a tu CURP. Escribe tus datos como vienen en tu CURP. Si ya tuviste una acreditación de la Secretaría, la verás en tu historial.",
   "cuando": "Siempre",
-  "seccion": "Crea tu cuenta",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -290,7 +290,7 @@
   "tipo": "Aviso",
   "texto": "Versión de prueba: usa datos inventados No escribas tu CURP ni cargues tu fotografía real: el «Menú de pruebas» llena la cuenta con datos de ejemplo. Lo que cargues se guarda sólo en este navegador y se borra solo cuando pasan 7 días sin usar la prueba.",
   "cuando": "Siempre",
-  "seccion": "Crea tu cuenta",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -299,25 +299,7 @@
   "tipo": "Nota",
   "texto": "Las preguntas con * son obligatorias.",
   "cuando": "Siempre",
-  "seccion": "Crea tu cuenta",
-  "origen": ""
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "archivo": "cuenta.html",
-  "tipo": "Subtítulo",
-  "texto": "Tus datos",
-  "cuando": "Siempre",
-  "seccion": "Tus datos",
-  "origen": ""
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "archivo": "cuenta.html",
-  "tipo": "Ayuda",
-  "texto": "Escríbelos como aparecen en tu CURP. Si ya tuviste una acreditación de la Secretaría, se comparan con su registro anterior. Si no tienes segundo apellido, déjalo vacío.",
-  "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -326,7 +308,7 @@
   "tipo": "Pregunta",
   "texto": "Nombre o nombres",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -335,7 +317,7 @@
   "tipo": "Pregunta",
   "texto": "Primer apellido",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -344,25 +326,16 @@
   "tipo": "Pregunta",
   "texto": "Segundo apellido",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
-  "origen": ""
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "archivo": "cuenta.html",
-  "tipo": "Pregunta",
-  "texto": "Fecha de nacimiento",
-  "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Ayuda",
-  "texto": "Escribe día, mes y año; las diagonales se ponen solas. Ejemplo: 23/07/1985",
+  "texto": "Si no tienes segundo apellido, déjalo vacío.",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -371,7 +344,7 @@
   "tipo": "Pregunta",
   "texto": "CURP",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -380,16 +353,16 @@
   "tipo": "Ayuda",
   "texto": "18 caracteres. Si no la tienes a la mano, consúltala en gob.mx.",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Pregunta",
-  "texto": "Sexo",
+  "texto": "Fecha de nacimiento",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
@@ -398,52 +371,43 @@
   "tipo": "Ayuda",
   "texto": "Se toma de tu CURP.",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Pregunta",
-  "texto": "Fotografía de frente",
+  "texto": "Sexo",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
-  "origen": ""
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "archivo": "cuenta.html",
-  "tipo": "Ayuda",
-  "texto": "De frente, con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Con ella te reconocen en la cita, en el curso y el día del examen. No es la de tu credencial: esa te la toman cuando la recoges.",
-  "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Botón o enlace",
-  "texto": "Elegir fotografía",
+  "texto": "Siguiente",
   "cuando": "Siempre",
-  "seccion": "Tus datos",
+  "seccion": "Quién eres · ¿Quién eres?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
-  "tipo": "Botón o enlace",
-  "texto": "Tomar fotografía",
-  "cuando": "En teléfono o equipo con cámara",
-  "seccion": "Tus datos",
+  "tipo": "Título",
+  "texto": "¿Cómo te avisamos?",
+  "cuando": "Siempre",
+  "seccion": "Cómo te avisamos · ¿Cómo te avisamos?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
-  "tipo": "Subtítulo",
-  "texto": "Contacto",
+  "tipo": "Introducción",
+  "texto": "Aquí te llegarán tu cita, tu curso y tus resultados.",
   "cuando": "Siempre",
-  "seccion": "Contacto",
+  "seccion": "Cómo te avisamos · ¿Cómo te avisamos?",
   "origen": ""
  },
  {
@@ -452,16 +416,16 @@
   "tipo": "Pregunta",
   "texto": "Correo electrónico",
   "cuando": "Siempre",
-  "seccion": "Contacto",
+  "seccion": "Cómo te avisamos · ¿Cómo te avisamos?",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Pregunta",
-  "texto": "Confirma tu correo",
+  "texto": "Escribe otra vez tu correo",
   "cuando": "Siempre",
-  "seccion": "Contacto",
+  "seccion": "Cómo te avisamos · ¿Cómo te avisamos?",
   "origen": ""
  },
  {
@@ -470,7 +434,7 @@
   "tipo": "Pregunta",
   "texto": "Teléfono",
   "cuando": "Siempre",
-  "seccion": "Contacto",
+  "seccion": "Cómo te avisamos · ¿Cómo te avisamos?",
   "origen": ""
  },
  {
@@ -479,7 +443,7 @@
   "tipo": "Ayuda",
   "texto": "Diez dígitos, de preferencia un celular.",
   "cuando": "Siempre",
-  "seccion": "Contacto",
+  "seccion": "Cómo te avisamos · ¿Cómo te avisamos?",
   "origen": ""
  },
  {
@@ -488,7 +452,7 @@
   "tipo": "Subtítulo",
   "texto": "Tu adscripción",
   "cuando": "Siempre",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -497,7 +461,7 @@
   "tipo": "Pregunta",
   "texto": "¿Trabajas para alguna empresa, institución o dependencia?",
   "cuando": "Siempre",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -506,7 +470,7 @@
   "tipo": "Ayuda",
   "texto": "Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».",
   "cuando": "Siempre",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -515,7 +479,7 @@
   "tipo": "Opción",
   "texto": "Sí",
   "cuando": "Siempre",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -524,7 +488,7 @@
   "tipo": "Opción",
   "texto": "No, soy independiente",
   "cuando": "Siempre",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -533,7 +497,7 @@
   "tipo": "Pregunta",
   "texto": "¿De qué tipo es?",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -542,7 +506,7 @@
   "tipo": "Opción",
   "texto": "Empresa, consultoría o particular — Persona moral o física: empresas, consultoras o trabajo para un particular.",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -551,7 +515,7 @@
   "tipo": "Opción",
   "texto": "Dependencia del Gobierno de la Ciudad de México",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -560,7 +524,7 @@
   "tipo": "Opción",
   "texto": "Alcaldía",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -569,7 +533,7 @@
   "tipo": "Opción",
   "texto": "Dependencia del Gobierno Federal — Por ejemplo, la CFE.",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -578,7 +542,7 @@
   "tipo": "Opción",
   "texto": "Institución educativa — Por ejemplo, la UNAM o Chapingo.",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -587,7 +551,7 @@
   "tipo": "Pregunta",
   "texto": "Nombre de la empresa, consultoría o persona física",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -596,7 +560,7 @@
   "tipo": "Ayuda",
   "texto": "El nombre o la razón social, tal como aparece en su constancia de situación fiscal. Escribe las primeras letras: si ya está registrada, elígela de la lista; si no, escríbela completa.",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -605,7 +569,7 @@
   "tipo": "Pregunta",
   "texto": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -614,7 +578,7 @@
   "tipo": "Opción",
   "texto": "Secretaría de Obras y Servicios (SOBSE)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -623,7 +587,7 @@
   "tipo": "Opción",
   "texto": "Secretaría del Medio Ambiente (SEDEMA)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -632,7 +596,7 @@
   "tipo": "Opción",
   "texto": "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -641,7 +605,7 @@
   "tipo": "Opción",
   "texto": "Otra",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -650,7 +614,7 @@
   "tipo": "Pregunta",
   "texto": "Nombre de la dependencia",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Otra» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»; Si «¿A qué dependencia del Gobierno Federal perteneces?» es «Otra»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -659,7 +623,7 @@
   "tipo": "Pregunta",
   "texto": "¿A qué Dirección General de la SEDEMA perteneces?",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -668,7 +632,7 @@
   "tipo": "Opción",
   "texto": "Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -677,7 +641,7 @@
   "tipo": "Opción",
   "texto": "Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -686,7 +650,7 @@
   "tipo": "Opción",
   "texto": "Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -695,7 +659,7 @@
   "tipo": "Opción",
   "texto": "Dirección General de Vigilancia Ambiental (DGIVA)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -704,7 +668,7 @@
   "tipo": "Opción",
   "texto": "Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -713,7 +677,7 @@
   "tipo": "Opción",
   "texto": "Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -722,7 +686,7 @@
   "tipo": "Pregunta",
   "texto": "¿En qué alcaldía trabajas?",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -731,7 +695,7 @@
   "tipo": "Indicación de lista",
   "texto": "Elige la alcaldía",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción"
+  "seccion": "Cómo te avisamos · Tu adscripción"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -739,7 +703,7 @@
   "tipo": "Opción de lista",
   "texto": "Álvaro Obregón",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -748,7 +712,7 @@
   "tipo": "Opción de lista",
   "texto": "Azcapotzalco",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -757,7 +721,7 @@
   "tipo": "Opción de lista",
   "texto": "Benito Juárez",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -766,7 +730,7 @@
   "tipo": "Opción de lista",
   "texto": "Coyoacán",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -775,7 +739,7 @@
   "tipo": "Opción de lista",
   "texto": "Cuajimalpa de Morelos",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -784,7 +748,7 @@
   "tipo": "Opción de lista",
   "texto": "Cuauhtémoc",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -793,7 +757,7 @@
   "tipo": "Opción de lista",
   "texto": "Gustavo A. Madero",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -802,7 +766,7 @@
   "tipo": "Opción de lista",
   "texto": "Iztacalco",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -811,7 +775,7 @@
   "tipo": "Opción de lista",
   "texto": "Iztapalapa",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -820,7 +784,7 @@
   "tipo": "Opción de lista",
   "texto": "La Magdalena Contreras",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -829,7 +793,7 @@
   "tipo": "Opción de lista",
   "texto": "Miguel Hidalgo",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -838,7 +802,7 @@
   "tipo": "Opción de lista",
   "texto": "Milpa Alta",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -847,7 +811,7 @@
   "tipo": "Opción de lista",
   "texto": "Tláhuac",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -856,7 +820,7 @@
   "tipo": "Opción de lista",
   "texto": "Tlalpan",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -865,7 +829,7 @@
   "tipo": "Opción de lista",
   "texto": "Venustiano Carranza",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -874,7 +838,7 @@
   "tipo": "Opción de lista",
   "texto": "Xochimilco",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -883,7 +847,7 @@
   "tipo": "Pregunta",
   "texto": "¿A qué dependencia del Gobierno Federal perteneces?",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -892,7 +856,7 @@
   "tipo": "Opción",
   "texto": "Comisión Federal de Electricidad (CFE)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -901,7 +865,7 @@
   "tipo": "Pregunta",
   "texto": "¿A qué institución educativa perteneces?",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -910,7 +874,7 @@
   "tipo": "Opción",
   "texto": "Universidad Nacional Autónoma de México (UNAM)",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -919,7 +883,7 @@
   "tipo": "Opción",
   "texto": "Universidad Autónoma Chapingo",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
@@ -928,16 +892,106 @@
   "tipo": "Pregunta",
   "texto": "Nombre de la institución",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»; Si «¿A qué institución educativa perteneces?» es «Otra»",
-  "seccion": "Tu adscripción",
+  "seccion": "Cómo te avisamos · Tu adscripción",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
-  "tipo": "Subtítulo",
-  "texto": "Contraseña",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
   "cuando": "Siempre",
-  "seccion": "Contraseña",
+  "seccion": "Cómo te avisamos · Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Cómo te avisamos · Tu adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Título",
+  "texto": "Tu fotografía",
+  "cuando": "Siempre",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Pregunta",
+  "texto": "Fotografía de frente",
+  "cuando": "Siempre",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Ayuda",
+  "texto": "De frente, con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Con ella te reconocen en la cita, en el curso y el día del examen. No es la de tu credencial: esa te la toman cuando la recoges.",
+  "cuando": "Siempre",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Elegir fotografía",
+  "cuando": "Siempre",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Tomar fotografía",
+  "cuando": "En teléfono o equipo con cámara",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Tu fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Título",
+  "texto": "Tu contraseña",
+  "cuando": "Siempre",
+  "seccion": "Tu contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Introducción",
+  "texto": "La usarás con tu CURP para entrar.",
+  "cuando": "Siempre",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
@@ -946,7 +1000,7 @@
   "tipo": "Pregunta",
   "texto": "Contraseña",
   "cuando": "Siempre",
-  "seccion": "Contraseña",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
@@ -955,25 +1009,16 @@
   "tipo": "Ayuda",
   "texto": "Al menos 12 caracteres. Una frase que recuerdes es más segura que una palabra con símbolos.",
   "cuando": "Siempre",
-  "seccion": "Contraseña",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Pregunta",
-  "texto": "Confirma tu contraseña",
+  "texto": "Escribe otra vez tu contraseña",
   "cuando": "Siempre",
-  "seccion": "Contraseña",
-  "origen": ""
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "archivo": "cuenta.html",
-  "tipo": "Subtítulo",
-  "texto": "Antes de crear tu cuenta",
-  "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
@@ -982,7 +1027,7 @@
   "tipo": "Botón o enlace",
   "texto": "Leer el aviso de privacidad",
   "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
@@ -991,7 +1036,7 @@
   "tipo": "Pregunta",
   "texto": "Leí el aviso de privacidad",
   "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
@@ -1000,7 +1045,7 @@
   "tipo": "Pregunta",
   "texto": "No soy un programa automático",
   "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
@@ -1009,16 +1054,61 @@
   "tipo": "Ayuda",
   "texto": "Lo comprueba el sistema; no es una pregunta sobre tu trámite.",
   "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Tu contraseña",
   "origen": ""
  },
  {
   "pantalla": "Crea tu cuenta",
   "archivo": "cuenta.html",
   "tipo": "Botón o enlace",
-  "texto": "Crear cuenta",
+  "texto": "Atrás",
   "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Tu contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Revisar mis datos",
+  "cuando": "Siempre",
+  "seccion": "Tu contraseña",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Título",
+  "texto": "Revisa tus datos",
+  "cuando": "Siempre",
+  "seccion": "Revisa y crea · Revisa tus datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Introducción",
+  "texto": "Si algo no está bien, cámbialo antes de crear tu cuenta.",
+  "cuando": "Siempre",
+  "seccion": "Revisa y crea · Revisa tus datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Revisa y crea · Revisa tus datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "archivo": "cuenta.html",
+  "tipo": "Botón o enlace",
+  "texto": "Crear mi cuenta",
+  "cuando": "Siempre",
+  "seccion": "Revisa y crea · Revisa tus datos",
   "origen": ""
  },
  {
@@ -1027,7 +1117,7 @@
   "tipo": "Texto",
   "texto": "¿Ya tienes cuenta? Entra aquí.",
   "cuando": "Siempre",
-  "seccion": "Antes de crear tu cuenta",
+  "seccion": "Revisa tus datos",
   "origen": ""
  },
  {
@@ -3249,6 +3339,463 @@
   "texto": "Ir a Mis trámites",
   "cuando": "Siempre",
   "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Título",
+  "texto": "Grupos",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Introducción",
+  "texto": "Cargando los grupos…",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ver los grupos programados",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "Armar un grupo",
+  "cuando": "Siempre",
+  "seccion": "Armar un grupo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "¿Para qué curso?",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Introducción",
+  "texto": "Cada curso arma sus grupos por separado: nunca se mezclan.",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Poda y derribo · nueva — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Poda y derribo · renovación — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Dictaminador técnico · nueva — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Dictaminador técnico · renovación — ",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "El curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "¿Qué semana?",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Semana elegida",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Ninguna todavía",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "Primer día del curso",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Se llena al elegir la semana en el calendario.",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Semana libre: toque «Libre» para elegirla",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "El grupo nuevo",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo por confirmar",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo confirmado",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo en curso",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo que ya terminó",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Grupo de otro curso: también cuenta para el máximo",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "No disponible: ya pasó, faltan menos de 7 días o ya hay 2 grupos",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Sábado y domingo: no hay curso",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Día inhábil [por confirmar con el calendario oficial de la Secretaría]",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "La semana",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "¿Quiénes van?",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Si hay más de 25, entran las que más esperan y las de una misma institución de gobierno van juntas; el resto sigue en espera para otra semana.",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "¿De quiénes es el grupo?",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Combinado — Recibe personas de cualquier organización e independientes.",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción",
+  "texto": "Sólo de una organización — Recibe únicamente a la gente de esa organización: todas las elegidas tienen que ser de ella.",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Quiénes van",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "Revise y confirme",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "Instructor",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Se indica si ya tiene otro curso esas fechas.",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Indicación de lista",
+  "texto": "Por asignar",
+  "cuando": "Siempre",
+  "seccion": "Confirmar"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción de lista",
+  "texto": "Laura Ejemplo Instructora",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Opción de lista",
+  "texto": "Instructor Ejemplo Dos",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Pregunta",
+  "texto": "Hora de entrada",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "El curso es de 9:00 a 15:00 todos sus días.",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Indicación de lista",
+  "texto": "Elija",
+  "cuando": "Siempre",
+  "seccion": "Confirmar"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Crear sin confirmar",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Crear el grupo",
+  "cuando": "Siempre",
+  "seccion": "Confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
+  "texto": "Grupos programados",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Introducción",
+  "texto": "Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta.",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Título desplegable",
+  "texto": "Grupos que ya terminaron",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Ayuda",
+  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas, hora de entrada e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
   "origen": ""
  }
 ]

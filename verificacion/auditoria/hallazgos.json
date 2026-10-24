@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:8942/",
+  "base": "http://localhost:8946/",
   "estados": [
     [
       "inicio",
@@ -38,16 +38,24 @@
       "grupos.html"
     ],
     [
+      "grupos-semana",
+      "grupos.html?curso=poda-nueva&paso=2"
+    ],
+    [
       "grupos-renovacion",
-      "grupos.html?curso=poda-renovacion"
+      "grupos.html?curso=poda-renovacion&paso=2"
     ],
     [
-      "programar",
-      "programar.html?curso=poda-nueva"
+      "grupos-paso-3",
+      "grupos.html?curso=poda-nueva&paso=3"
     ],
     [
-      "programar-sin-curso",
-      "programar.html"
+      "grupos-paso-4",
+      "grupos.html?curso=poda-nueva&paso=4"
+    ],
+    [
+      "grupos-grupo-existente",
+      "grupos.html?grupo=APD-G-2026-004&paso=3"
     ],
     [
       "grupo-integracion",
@@ -170,8 +178,8 @@
       "reposicion.html?numero=PD-2026-K143"
     ]
   ],
-  "paginas": 85,
-  "presionados": 242,
+  "paginas": 89,
+  "presionados": 297,
   "porTipo": {
     "encimado": 1,
     "botón sin efecto visible": 1
