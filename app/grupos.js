@@ -40,7 +40,12 @@
   const ACTIVOS = ['en_integracion', 'confirmado', 'en_curso'];
   // El calendario va de este mes a tres más (decisión del 24/10/2026)
   const MESES_ADELANTE = 3;
-  const y = (lista) => (lista.length > 1 ? `${lista.slice(0, -1).join(', ')} y ${lista[lista.length - 1]}` : lista[0] || '');
+  // «a, b y c»; «e» antes de «i» o «hi» («hora e instructor»)
+  const y = (lista) => {
+    if (lista.length < 2) return lista[0] || '';
+    const ultimo = lista[lista.length - 1];
+    return `${lista.slice(0, -1).join(', ')} ${/^h?i(?![aeouáéóú])/i.test(ultimo) ? 'e' : 'y'} ${ultimo}`;
+  };
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'grupos');
@@ -136,7 +141,9 @@
       }
       // Un grupo que ya existe conserva su semana si todavía se puede
       if (!inicio && !avisoSemana && gExistente && gExistente.fecha_inicio && (confirmadoYa || !razon(gExistente.fecha_inicio))) inicio = gExistente.fecha_inicio;
-      if (!inicio && !confirmadoYa) inicio = primerElegible();
+      // Un grupo nuevo empieza con la primera semana que se puede (el sistema propone; usted ajusta). Un grupo que ya
+      // existe sin semana sigue sin ella hasta que se elija: completarlo no le pone una semana sin que se vea
+      if (!inicio && !gExistente) inicio = primerElegible();
     }
     mes = mesValido(params.get('mes')) ? params.get('mes') : mesDe(inicio || hoy);
     if (!mesValido(mes)) mes = mesMin;
@@ -179,6 +186,8 @@
     const estadoCal = $('[data-cal-estado]');
     const diga = (texto) => FormKit.anuncia(texto, { visible: estadoCal });
     const fi = $('#fecha_inicio');
+    // Un grupo que ya existe puede seguir sin semana (se completa con personas sin elegirla todavía)
+    if (gExistente && !gExistente.fecha_inicio) $('[data-campo="fecha_inicio"]').removeAttribute('data-requerido');
     $('[data-campo="fecha_inicio"]').dataset.min = minimo;
     $('[data-campo="fecha_inicio"]').dataset.max = maximo;
     // El nombre de la semana: el del grupo que se armaría (APD.nombreGrupo, «Del 2 al 6 de noviembre»)
@@ -262,7 +271,8 @@
             }
             if (inicio && d >= inicio && d <= finDe(inicio)) {
               const nuevo = gExistente ? gExistente.folio.replace(/^APD-/, '') : 'Nuevo grupo';
-              marcas.push(el('span', { class: 'arm-marca', 'data-situacion': 'elegida', texto: d === inicio ? (dur() > 1 ? nuevo : `${nuevo} · examen`) : d === finDe(inicio) ? 'Examen' : '' }));
+              // El curso de un día: su examen es ese mismo día (lo dice la semana elegida, a la derecha)
+              marcas.push(el('span', { class: 'arm-marca', 'data-situacion': 'elegida', texto: d === inicio ? nuevo : d === finDe(inicio) ? 'Examen' : '' }));
             }
           }
           if (d === hoy) marcas.push(el('span', { class: 'arm-hoy', texto: 'Hoy' }));
@@ -288,8 +298,8 @@
       const final = APD.diaFinal(cc).toLowerCase();
       $('[data-bajada-semana]').textContent = confirmadoYa ? `${APD.cursoLargo(...curso())} · el grupo ya está confirmado: su semana no cambia aquí.`
         : `${APD.cursoLargo(...curso())} · ${dur() > 1 ? `lunes a viernes, de ${hm(horaEntrada)} a ${hm(horaSalida)}` : `un día, de ${hm(horaEntrada)} a ${hm(horaSalida)}`}. Puede haber ${maxSimultaneos} grupos al mismo tiempo, de cualquier curso; el curso empieza al menos ${anticipacion} días después de confirmarlo.`;
-      $('[data-elegida-nombre]').textContent = inicio ? nombreSemana(inicio) : 'Ninguna todavía';
-      $('[data-elegida-horario]').textContent = !inicio ? 'Toque «Libre» en la semana que quiere.'
+      $('[data-elegida-nombre]').textContent = inicio ? nombreSemana(inicio) : gExistente ? 'Sin semana todavía' : 'Ninguna todavía';
+      $('[data-elegida-horario]').textContent = !inicio ? (gExistente ? 'Toque «Libre» en la semana que quiere, o siga sin semana: el grupo la conserva como está.' : 'Toque «Libre» en la semana que quiere.')
         : dur() > 1 ? `Del ${fechaLarga(inicio)} al ${fechaLarga(finDe(inicio))}, de ${hm(horaEntrada)} a ${hm(horaSalida)}. El viernes, ${final} en el PILARES.`
           : `El ${fechaLarga(inicio)}, de ${hm(horaEntrada)} a ${hm(horaSalida)}, con el examen ese mismo día en el PILARES.`;
       fi.value = inicio ? V().dmaDeIso(inicio) : '';
@@ -356,7 +366,15 @@
       if (['reload', 'back_forward'].includes((performance.getEntriesByType('navigation')[0] || {}).type)) guardadas = JSON.parse(sessionStorage.getItem(CLAVE_ELEGIDAS) || 'null');
       else sessionStorage.removeItem(CLAVE_ELEGIDAS);
     } catch (e) { /* sin almacenamiento: sólo en memoria */ }
-    const guardaElegidas = () => { try { sessionStorage.setItem(CLAVE_ELEGIDAS, JSON.stringify({ clave, grupo: gExistente ? gExistente.folio : '', folios: elegidas().map((x) => x.s.folio) })); } catch (e) { /* sin almacenamiento */ } };
+    /* Las elegidas de cada curso se conservan al cambiar de curso y volver (auditoría «intentar romperlo», F3 B7) */
+    const elegidasDe = new Map();
+    if (guardadas && guardadas.porCurso && guardadas.grupo === (gExistente ? gExistente.folio : '')) {
+      for (const [k, v] of Object.entries(guardadas.porCurso)) if (Array.isArray(v)) elegidasDe.set(k, new Set(v));
+    }
+    const guardaElegidas = () => {
+      if (clave) elegidasDe.set(clave, new Set(elegidas().map((x) => x.s.folio)));
+      try { sessionStorage.setItem(CLAVE_ELEGIDAS, JSON.stringify({ grupo: gExistente ? gExistente.folio : '', porCurso: Object.fromEntries([...elegidasDe].map(([k, v]) => [k, [...v]])) })); } catch (e) { /* sin almacenamiento */ }
+    };
     const pedidas = (params.get('personas') || '').split(',').map((f) => f.trim()).filter(Boolean);
     const propia = gExistente && gExistente.integracion === 'especifico' ? gExistente.organizacion_id : null;
     const esperaDe = () => (clave ? P.enEspera(datos, ...curso()).filter((x) => !propia || x.s.organizacion_id === propia) : []);
@@ -371,12 +389,12 @@
       const deUrl = desdeDireccion ? espera.filter((x) => pedidas.includes(x.s.folio)) : [];
       const yaNo = desdeDireccion ? pedidas.length - deUrl.length : 0;
       const falta = xG ? Math.max(0, xG.g.cupo_minimo - xG.n) : 0;
-      const sesion = desdeDireccion && guardadas && guardadas.clave === clave && guardadas.grupo === (gExistente ? gExistente.folio : '') ? guardadas.folios : null;
+      const recordadas = elegidasDe.get(clave) || null;
       const propuesta = pedidas.length && desdeDireccion ? deUrl
         : xG ? (falta ? P.lasQueMasEsperan(espera, Math.min(falta, xG.lugar), propia ? () => true : null) : [])
           : P.lasQueMasEsperan(espera, cc.cupo_maximo);
       propuestas = new Set(propuesta.map((x) => x.s.folio));
-      const marcadas = sesion ? new Set(sesion) : propuestas;
+      const marcadas = recordadas || propuestas;
       if (renov) $('[data-ayuda-personas]').textContent = `Si hay más de ${cc.cupo_maximo}, entran primero las que ya vencieron y después las que vencen antes, con las de una misma institución de gobierno juntas; el resto sigue en espera para otra semana.`;
       else $('[data-ayuda-personas]').textContent = `Si hay más de ${cc.cupo_maximo}, entran las que más esperan y las de una misma institución de gobierno van juntas; el resto sigue en espera para otra semana.`;
       // Si alguna de las que llegaron en la dirección ya no espera (ya tiene grupo), se dice y no se propone a nadie más
@@ -624,8 +642,8 @@
     const pasos = $$('[data-paso]', form);
     function impide(i) {
       if (i === 1) {
-        if (!inicio) return { campo: 'fecha_inicio', mensaje: 'Elija una semana libre en el calendario: toque «Libre» en la semana que quiere.' };
-        const r = !confirmadoYa && razon(inicio);
+        if (!inicio && !(gExistente && !gExistente.fecha_inicio)) return { campo: 'fecha_inicio', mensaje: 'Elija una semana libre en el calendario: toque «Libre» en la semana que quiere.' };
+        const r = !confirmadoYa && inicio && razon(inicio);
         if (r) return { campo: 'fecha_inicio', mensaje: `Esa semana ya no se puede: ${r.texto}. Elija otra.` };
       }
       if (i === 2) {
@@ -684,11 +702,11 @@
       enviar(payload) {
         avisoFalta.hidden = true;
         const d = payload.datos;
-        const ini = (V().isoDeDma(d.fecha_inicio) || d.fecha_inicio || inicio);
+        const ini = (V().isoDeDma(d.fecha_inicio || '') || d.fecha_inicio || inicio || null);
         const cc = c();
         const n = total();
         const falta = [];
-        const r = !confirmadoYa && razon(ini);
+        const r = !confirmadoYa && ini && razon(ini);
         if (r) { inst.marcaError('fecha_inicio', `Esa semana no se puede: ${r.texto}.`); falta.push(`otra semana: ${r.texto}`); }
         if (!gExistente && n < 1) falta.push('al menos una persona');
         if (confirmadoYa && !elegidas().length) falta.push('al menos una persona que agregar');
@@ -739,18 +757,20 @@
             id = `prueba-grupo:${folio}:${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
             lista.push({ tipo: 'crear', grupo_id: id, folio, tipo_acreditacion: curso()[0], modalidad: curso()[1], integracion: tipoGrupo, organizacion_id: tipoGrupo === 'especifico' ? orgDeElegidas() : null, folios, por });
           }
-          if (!confirmadoYa) lista.push({ tipo: 'proponer', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
+          // Sin semana (un grupo que ya existe y sigue sin ella) no se propone nada: sólo se agregan personas
+          if (!confirmadoYa && ini) lista.push({ tipo: 'proponer', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
           if (confirmar) lista.push({ tipo: 'confirmar', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
           return lista;
         },
         comprueba: (d2, d1) => {
           const g = d2.grupo.find((x) => x.id === id);
           if (!g) return 'otra pestaña creó un grupo con el mismo folio al mismo tiempo';
-          if (confirmadoYa) {
+          // A un grupo que ya existe: si no entró nadie de las elegidas, no se guarda nada y se dice quién y por qué (F3 M1)
+          if (gExistente && folios.length) {
             const antes = activasEn(d1, id);
-            return folios.some((f) => activasEn(d2, id).has(f) && !antes.has(f)) ? null : 'no se agregó a nadie: el grupo ya no recibe personas o ya tienen grupo';
+            if (!folios.some((f) => activasEn(d2, id).has(f) && !antes.has(f))) return `No se agregó a nadie: ${porQueNoEntraron(d2, g, folios)}`;
           }
-          return g.fecha_inicio === ini ? null : 'la fecha propuesta no se guardó';
+          return !ini || confirmadoYa || g.fecha_inicio === ini ? null : 'la fecha propuesta no se guardó';
         }
       }).then(({ datos: d2, antes: d1 }) => {
         const g = d2.grupo.find((x) => x.id === id);
@@ -769,7 +789,7 @@
       try { sessionStorage.removeItem(CLAVE_ELEGIDAS); } catch (e) { /* sin almacenamiento */ }
       const no = fuera.length ? `&no=${fuera.map(encodeURIComponent).join(',')}` : '';
       if (!gExistente) { location.replace(`grupos.html?curso=${clave}&hecho=creado&a=${encodeURIComponent(g.folio)}${no}`); return; }
-      const hecho = g.estado === 'confirmado' && !confirmadoYa ? 'confirmado' : entraron.length && (confirmadoYa || g.fecha_inicio === gExistente.fecha_inicio) ? 'agregadas' : 'propuesto';
+      const hecho = g.estado === 'confirmado' && !confirmadoYa ? 'confirmado' : entraron.length && (confirmadoYa || (g.fecha_inicio || null) === (gExistente.fecha_inicio || null)) ? 'agregadas' : 'propuesto';
       location.replace(`grupo.html?folio=${encodeURIComponent(g.folio)}&hecho=${hecho}&n=${entraron.length}${no}`);
     }
 
@@ -897,10 +917,10 @@
       if (x.recibe) acciones.push(el('a', { class: 'btn-enlace', href: `grupos.html?grupo=${encodeURIComponent(g.folio)}&paso=3`, 'aria-label': `Agregar personas: ${nombre}`, texto: 'Agregar personas' }));
       const semana = g.fecha_inicio ? (fin && fin !== g.fecha_inicio ? `Del ${fechaCorta(g.fecha_inicio)} al ${fechaCorta(fin)}` : `El ${fechaCorta(g.fecha_inicio)}`) : 'Sin semana';
       return el('tr', { 'data-grupo': g.folio, 'data-situacion': g.estado }, [
-        el('td', {}, [el('a', { class: 'mono', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `${g.folio}: ver la ficha de ${x.calculado}`, texto: g.folio }),
+        el('td', {}, [el('a', { class: 'btn-enlace mono', href: `grupo.html?folio=${encodeURIComponent(g.folio)}`, 'aria-label': `${g.folio}: ver la ficha de ${x.calculado}`, texto: g.folio }),
           el('span', { class: 'arm-prog-tipo', texto: g.integracion === 'especifico' ? x.integracion.replace('De una organización · ', '') : 'Combinado' })]),
         el('td', { texto: semana }),
-        el('td', { texto: `${x.n} de ${g.cupo_maximo}` }),
+        el('td', { texto: `${x.n} de ${g.cupo_maximo}${x.lugar <= 0 ? ' · lleno' : ''}` }),
         el('td', {}, [situacion]),
         el('td', { texto: textoFalta }),
         el('td', { 'data-etiqueta-oculta': '' }, [el('div', { class: 'arm-prog-acciones' }, acciones)])
@@ -1005,7 +1025,7 @@
           sigue.push(`Confírmelo aquí, en «Grupos programados», o en su ficha; el curso empieza al menos ${anticipacion} días después de confirmarlo.`);
         }
         aviso = { tono: quedo && !no.length ? 'ok' : 'advertencia', titulo: `${quedo ? 'Grupo creado y confirmado' : 'Grupo creado, por confirmar'}: ${x.calculado}`,
-          texto: [el('p', { texto: `${linea}${quedo ? '' : ' La fecha queda como propuesta: las personas todavía no la ven como segura.'}` }), enlace], pasos: sigue };
+          texto: [el('p', { texto: `${linea}${quedo ? '' : ' La fecha queda como propuesta: las personas todavía no la ven como segura.'}` }), enlace, APD.tituloPasos()], pasos: sigue };
       } else if (hecho === 'agregadas') {
         // n: las que de verdad entraron (lo leído después de guardar); no: las que no, con su razón (F3 M1)
         const resto = falta > 0 ? `Le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.`
