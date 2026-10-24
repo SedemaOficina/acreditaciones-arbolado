@@ -82,6 +82,11 @@ p { margin: 0; }
 .reco { display: grid; gap: 2px; padding: 10px 12px; background: var(--dorado-suave); border-radius: var(--r); max-width: 78ch; }
 .reco .etiqueta { color: color-mix(in srgb, var(--dorado) 70%, var(--tinta)); }
 .reco.lin { background: transparent; border: 1px solid var(--dorado-suave); }
+.reco.anterior { background: var(--hecho-suave); }
+.reco.anterior .etiqueta { color: var(--tinta-2); }
+.incorporados { margin-top: 12px; }
+.incorporados summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.incorporados .nuevo { opacity: 0.85; }
 .marcas { display: flex; flex-wrap: wrap; gap: 6px; }
 .marca { font: 500 0.8rem/1 var(--f-cuerpo); padding: 8px 12px; min-height: 36px; border-radius: var(--r); border: 1px solid var(--linea-fuerte); background: var(--superficie); color: var(--tinta); cursor: pointer; }
 .marca[data-v="acepto"][aria-pressed="true"] { background: var(--ok-suave); border-color: var(--ok); color: var(--ok); }
@@ -117,6 +122,7 @@ tbody tr:last-child td { border-bottom: 0; }
     <h1>Pendientes del sistema</h1>
     <p class="bajada">Todo lo que falta decidir o hacer, agrupado por quién lo decide. Cada pendiente trae mi recomendación. Márcalo y, si decides otra cosa o tienes duda, escribe tu respuesta: yo la leo y la aplico en la base, las pantallas y los documentos.</p>
     <div class="avance" id="avance" aria-live="polite"></div>
+    <p class="aviso" id="corte-aplicado" hidden></p>
     <p class="guardado" id="guardado">Conectando para guardar tus marcas…</p>
   </header>
 
@@ -151,6 +157,10 @@ tbody tr:last-child td { border-bottom: 0; }
       <button class="boton ancho" type="submit" id="nuevo-guardar">Agregar pendiente</button>
     </form>
     <ul class="nuevos" id="nuevos"></ul>
+    <details class="incorporados" id="incorporados" hidden>
+      <summary id="incorporados-titulo">Ya incorporados</summary>
+      <ul class="nuevos" id="incorporados-lista"></ul>
+    </details>
   </section>
 
   <section class="panel" aria-labelledby="t-resueltos">
@@ -179,8 +189,21 @@ tbody tr:last-child td { border-bottom: 0; }
   (function () { var f = String(DATOS.actualizado || '').split('-'); var c = document.getElementById('corte'); if (c && f.length === 3) c.textContent = 'pendientes al ' + f[2] + '/' + f[1] + '/' + f[0]; })();
 
   var MARCAS = { acepto: 'Acepto la recomendación', otra: 'Decido otra cosa', duda: 'Tengo duda', resuelto: 'Ya está resuelto' };
-  var FILTROS = [['todos', 'Todos'], ['sin_marcar', 'Sin marcar'], ['acepto', 'Aceptados'], ['otra', 'Otra decisión'], ['duda', 'Con duda'], ['resuelto', 'Resueltos'], ['datos', 'Antes de datos reales']];
-  var estado = {}, nuevos = [], db = null, filtroEstado = 'todos', filtroGrupo = 'todos';
+  var FILTROS = [['todos', 'Todos'], ['sin_marcar', 'Por responder'], ['acepto', 'Aceptados'], ['otra', 'Otra decisión'], ['duda', 'Con duda'], ['resuelto', 'Resueltos'], ['datos', 'Antes de datos reales']];
+  var estado = {}, nuevos = [], incorporados = [], anteriores = {}, db = null, filtroEstado = 'sin_marcar', filtroGrupo = 'todos';
+  // Lo marcado y agregado hasta esta fecha ya se aplicó: se muestra como respuesta anterior y el pendiente
+  // vuelve a «Por responder» con su recomendación al día.
+  var CORTE = String(DATOS.aplicado_hasta || '');
+  function aplicada(iso) { return !!(CORTE && iso && String(iso) <= CORTE); }
+  function diaCdmx(iso) {
+    try { return new Date(iso).toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', day: '2-digit', month: '2-digit', year: 'numeric' }); }
+    catch (e) { return String(iso).slice(0, 10); }
+  }
+  if (CORTE) {
+    var ca = document.getElementById('corte-aplicado');
+    ca.textContent = 'Lo que marcaste y agregaste hasta el ' + diaCdmx(CORTE) + ' ya está aplicado. Abajo ves primero lo que falta responder; cada pendiente muestra, si la hubo, tu respuesta anterior.';
+    ca.hidden = false;
+  }
   var aviso = document.getElementById('guardado');
   var nombreGrupo = {};
   DATOS.grupos.forEach(function (g) { nombreGrupo[g.id] = g.nombre; });
@@ -252,6 +275,10 @@ tbody tr:last-child td { border-bottom: 0; }
       ]),
       el('div', { class: 'reco' }, [el('span', { class: 'etiqueta', text: 'Recomendación' }), el('p', { text: p.recomendacion })]),
       p.lineamientos ? el('div', { class: 'reco lin' }, [el('span', { class: 'etiqueta', text: 'Lineamientos' }), el('p', { text: p.lineamientos })]) : null,
+      anteriores[p.id] ? el('div', { class: 'reco anterior' }, [
+        el('span', { class: 'etiqueta', text: 'Tu respuesta del ' + diaCdmx(anteriores[p.id].en) + ' · ya aplicada' }),
+        el('p', { text: (anteriores[p.id].marca ? MARCAS[anteriores[p.id].marca] + (anteriores[p.id].nota ? ': ' : '') : '') + (anteriores[p.id].nota || '') })
+      ]) : null,
       marcas,
       el('label', { class: 'nota-lbl', for: idNota, text: 'Tu respuesta' }),
       nota
@@ -280,7 +307,7 @@ tbody tr:last-child td { border-bottom: 0; }
     DATOS.pendientes.forEach(function (p) { var m = (estado[p.id] || {}).marca; if (c[m] !== undefined) c[m]++; });
     var sin = DATOS.pendientes.length - c.acepto - c.otra - c.duda - c.resuelto;
     var a = document.getElementById('avance'); a.textContent = '';
-    [['', sin, 'sin marcar'], ['acepto', c.acepto, 'aceptados'], ['otra', c.otra, 'otra decisión'], ['duda', c.duda, 'con duda'], ['resuelto', c.resuelto, 'resueltos'], ['', nuevos.length, 'nuevos']].forEach(function (x) {
+    [['', sin, 'por responder'], ['acepto', c.acepto, 'aceptados'], ['otra', c.otra, 'otra decisión'], ['duda', c.duda, 'con duda'], ['resuelto', c.resuelto, 'resueltos'], ['', nuevos.length, 'nuevos']].forEach(function (x) {
       a.appendChild(el('span', { class: 'cifra ' + x[0] }, [el('b', { text: String(x[1]) }), document.createTextNode(x[2])]));
     });
     pintarResumen();
@@ -310,6 +337,13 @@ tbody tr:last-child td { border-bottom: 0; }
         db ? quitar : null
       ]));
     });
+    var det = document.getElementById('incorporados'), li = document.getElementById('incorporados-lista');
+    li.textContent = '';
+    incorporados.forEach(function (n) {
+      li.appendChild(el('li', { class: 'nuevo' }, [el('div', { class: 'texto' }, [el('p', { text: n.texto }), el('span', { class: 'chip', text: (nombreGrupo[n.grupo] || n.grupo) + ' · agregado el ' + diaCdmx(n.creado_en) })])]));
+    });
+    document.getElementById('incorporados-titulo').textContent = 'Ya incorporados (' + incorporados.length + ')';
+    det.hidden = !incorporados.length;
     pintarAvance();
   }
 
@@ -366,14 +400,20 @@ tbody tr:last-child td { border-bottom: 0; }
       db.collection('pendientes_marcas').onSnapshot(function (snap) {
         snap.docs.forEach(function (doc) {
           var v = doc.data() || {};
-          if (!cola[doc.id] && !escribiendo[doc.id]) estado[doc.id] = { marca: v.marca || '', nota: v.nota || '' };
+          if (cola[doc.id] || escribiendo[doc.id]) return;
+          if (aplicada(v.actualizado_en)) {
+            if (v.marca || v.nota) anteriores[doc.id] = { marca: v.marca || '', nota: v.nota || '', en: v.actualizado_en };
+            estado[doc.id] = { marca: '', nota: '' };
+          } else estado[doc.id] = { marca: v.marca || '', nota: v.nota || '' };
         });
         var activo = document.activeElement;
         if (!(activo && activo.tagName === 'TEXTAREA' && activo.id.indexOf('nota-') === 0)) pintarGrupos();
         pintarAvance();
       }, function () { aviso.textContent = 'Se perdió la conexión con el guardado. Recarga la página.'; });
       db.collection('pendientes_nuevos').onSnapshot(function (snap) {
-        nuevos = snap.docs.map(function (doc) { var v = doc.data() || {}; return { id: doc.id, texto: v.texto || '', grupo: v.grupo || '', bloquea: v.bloquea || 'no' }; });
+        var todos = snap.docs.map(function (doc) { var v = doc.data() || {}; return { id: doc.id, texto: v.texto || '', grupo: v.grupo || '', bloquea: v.bloquea || 'no', creado_en: v.creado_en || '' }; });
+        nuevos = todos.filter(function (n) { return !aplicada(n.creado_en); });
+        incorporados = todos.filter(function (n) { return aplicada(n.creado_en); });
         pintarNuevos();
       }, function () {});
     });

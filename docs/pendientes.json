@@ -635,14 +635,6 @@
       "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). Los Rnn viven en un artefacto privado; pasar al repositorio la tabla Rnn → regla → fila de DECISIONES, o citar la fila de DECISIONES."
     },
     {
-      "id": "P164",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-19",
-      "titulo": "Con la poda por vencer, «Mis trámites» muestra dos botones principales",
-      "recomendacion": "Punto abierto de la auditoría del 18/10 sin número (auditoría 19/10, R4-05). «Iniciar una solicitud» y «Renovar» compiten; decidir cuál es la acción principal."
-    },
-    {
       "id": "P165",
       "grupo": "liber",
       "bloquea": "no",
@@ -907,6 +899,15 @@
       "titulo": "Dictaminador: qué cuenta como «dos años consecutivos» con la acreditación de poda",
       "recomendacion": "Sesión de trabajo del 23/10/2026: para pedir por primera vez la de dictaminador hace falta la de poda y derribo durante al menos 2 años consecutivos. El sistema lo aplica así (propuesta para confirmar): se cuenta desde la emisión de la primera acreditación de poda de una cadena sin cortes que llega al día de la solicitud, y la de poda debe estar vigente ese día; una renovación emitida dentro de la ventana de renovación tardía (hasta meses_despues_renovacion, 12 meses, después del vencimiento) no corta la cuenta; una tramitada como nueva después de esa ventana la empieza otra vez. La renovación de dictaminador sigue pidiendo sólo la poda vigente. Los años son el parámetro anios_poda_dictaminador. Confirmar con la Dirección y llevarlo a los lineamientos (requisitos del dictaminador).",
       "lineamientos": "Anteproyecto 0.5: requisitos del dictaminador. Por incorporar."
+    },
+    {
+      "id": "P198",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Siguiente pantalla del personal que pasa a paso a paso",
+      "recomendacion": "Ya están por pasos «Grupos», «Revisar una solicitud», «Cita de cotejo» y «Crea tu cuenta», y la asistencia avanza día por día hasta el pase de lista del día 5. Opciones: (a) «Aplicar el examen» completo (pase de lista, abrir el examen, seguir el avance, cerrar y ver resultados); (b) «Entregar la credencial» (verificar identidad, imprimir, firmar de recibido); (c) «Corregir documentos» y «Reposición» de la persona. Recomendación: (a), porque es la pantalla que se usa el día de más presión, con el grupo completo en el salón.",
+      "lineamientos": ""
     }
   ],
   "resueltos": [
@@ -1556,6 +1557,13 @@
       "titulo": "Firma, huella digital y antigüedad consecutiva en la credencial (Norma 5.5)",
       "como": "Ya no aplica (sesión de trabajo del 23/10/2026, P49): la credencial no lleva huella digital ni antigüedad, aunque se aparte del numeral 5.5 de la NADF-001-RNAT-2015 (los lineamientos lo señalan para la Dirección Jurídica). El sistema no recaba huella ni calcula antigüedad, así que no hay dato biométrico que tratar. La firma de la persona y la de la persona titular de la Secretaría siguen en el diseño de la credencial (P49).",
       "fecha": "2026-10-23"
+    },
+    {
+      "id": "P164",
+      "titulo": "Con la poda por vencer, «Mis trámites» mostraba dos botones principales (P164)",
+      "como": "Un botón principal por pantalla (decisión del 21/10): en «Mis trámites» va primero la solicitud en curso, luego «Renovar» y luego «Iniciar una solicitud»",
+      "fecha": "2026-10-21"
     }
-  ]
+  ],
+  "aplicado_hasta": "2026-10-24T05:59:59.000Z"
 }
