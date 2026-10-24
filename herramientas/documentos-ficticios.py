@@ -26,6 +26,8 @@ DOCUMENTOS = {
     "comprobante_estudios": ("Comprobante de estudios", ["Título o constancia", "Reverso con registro"]),
     "curriculum_vitae": ("Currículum vitae", ["Datos y formación", "Experiencia", "Cursos y referencias"]),
     "comprobantes_experiencia": ("Comprobantes de experiencia", ["Constancia laboral 1", "Constancia laboral 2", "Constancia laboral 3", "Contrato de servicios", "Carta de recomendación"]),
+    # El acta que carga la persona para pedir la reposición de su credencial (P140, sesión de trabajo del 23/10/2026)
+    "acta_reposicion": ("Acta por pérdida o robo de la credencial", ["Acta", "Hoja de firmas"]),
 }
 
 GRIS = HexColor("#55585A")

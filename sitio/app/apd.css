@@ -38,6 +38,10 @@
 .ficha-cita { padding: var(--e-1) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
 .ficha-cita .datos { border-block-start: 0; }
 .ficha-cita .datos-par:last-child { border-block-end: 0; }
+/* La reposición de la credencial dentro de la ficha de su acreditación (P140, sesión del 23/10/2026), como la cita */
+.ficha-reposicion { display: grid; gap: var(--e-2); padding: var(--e-3) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
+.ficha-reposicion p { margin: 0; }
+.ficha-subtitulo { font: var(--peso-semi) var(--t-base)/var(--interlineado-titulo) var(--fuente-titulo); margin: 0; }
 /* Mapa de Google de la sede, en «Dónde es» de «Mis trámites» (decisión 2026-10-23, P68): al ancho de su tarjeta, sin
    desbordar a 320 px, y de alto fijo para que la página no salte cuando el mapa se carga (loading="lazy") */
 .mapa-sede { display: block; inline-size: 100%; block-size: clamp(16rem, 45vw, 24rem); border: var(--b-1) solid var(--linea); border-radius: var(--r-ctrl); background: var(--fondo); }

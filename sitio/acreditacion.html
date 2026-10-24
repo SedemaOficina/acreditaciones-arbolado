@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.66">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Acreditación · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Ficha de una acreditación para el personal: su situación, su cancelación y la reposición de su credencial. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/opciones/opciones.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
+<link rel="stylesheet" href="app/apd.css?v=0.66">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="477" height="96" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+  <p><a class="btn-atras" href="acreditaciones.html" data-volver><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Acreditaciones</a></p>
+  <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
+  <div data-hecho hidden></div>
+
+  <!-- Ficha de una acreditación (sesión de trabajo del 23/10/2026): su situación y su titular; la cancelación, para los
+       instructores y la Dirección (P120), y la reposición de su credencial (P140). -->
+  <section class="tarjeta" aria-labelledby="t-acreditacion">
+    <div class="grupo-cabeza">
+      <div>
+        <h2 class="titulo-paso" id="t-acreditacion">Acreditación</h2>
+        <p class="bajada" data-bajada>Cargando la acreditación…</p>
+      </div>
+      <span data-situacion></span>
+    </div>
+    <div data-datos></div>
+    <div data-cancelacion></div>
+    <div class="acciones acciones-izq" data-acciones></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-reposicion" data-reposicion hidden>
+    <div class="grupo-cabeza">
+      <h2 class="titulo-paso" id="t-reposicion">Reposición de la credencial</h2>
+      <span data-reposicion-situacion></span>
+    </div>
+    <div data-reposicion-datos></div>
+
+    <!-- Revisar el acta: aceptarla o decir qué debe corregir la persona (apd.reposicion_cambio) -->
+    <form id="acta" data-formkit="manual" action="#" method="post" aria-labelledby="t-acta" hidden>
+      <h3 class="titulo-bloque" id="t-acta">Revisar el acta</h3>
+      <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
+      <fieldset class="grupo" data-campo="decision" data-requerido data-uso="Registrar si el acta comprueba la pérdida o el robo (apd.reposicion.estado).">
+        <legend class="etiqueta">¿El acta comprueba la pérdida o el robo?</legend>
+        <!-- autocomplete off: decisión de quien revisa; el navegador no tiene un valor que proponer. -->
+        <div class="opciones-lista opciones-en-linea">
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision" autocomplete="off" value="acta_aceptada"><span><span class="opcion-nombre">Sí, aceptarla</span><span class="opcion-desc">La persona paga la cuota y recoge su credencial.</span></span></label>
+          <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="decision" autocomplete="off" value="con_observaciones"><span><span class="opcion-nombre">No, tiene observaciones</span><span class="opcion-desc">La persona carga el acta corregida.</span></span></label>
+        </div>
+      </fieldset>
+      <div class="campo" data-campo="observacion" data-requerido data-si="decision=con_observaciones" data-uso="Decirle a la persona qué debe corregir de su acta; se le muestra tal cual (apd.reposicion.observacion).">
+        <label class="etiqueta" for="observacion">¿Qué debe corregir la persona?</label>
+        <p class="ayuda" id="ay-observacion">Al menos 10 caracteres. La persona lo lee dirigido a ella, de tú.</p>
+        <!-- autocomplete off: texto de quien revisa. -->
+        <textarea class="control" id="observacion" name="observacion" rows="3" minlength="10" maxlength="400" autocomplete="off" aria-describedby="ay-observacion"></textarea>
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones acciones-izq">
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Registrar la revisión del acta</button>
+      </div>
+    </form>
+
+    <!-- Entregar la credencial repuesta en el Vivero: con la factura de la cuota validada (apd.reposicion_cambio) -->
+    <form id="entrega" data-formkit="manual" action="#" method="post" aria-labelledby="t-entrega" hidden>
+      <h3 class="titulo-bloque" id="t-entrega">Entregar la credencial repuesta</h3>
+      <p class="ayuda ayuda-bloque">Cuando la persona llegue con su pago: verifique su identificación oficial, valide la factura de la cuota de reposición y capture sus datos. La credencial repuesta lleva el mismo número y la misma vigencia.</p>
+      <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
+      <div class="campo" data-campo="factura_rfc" data-formato="rfc" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura de la cuota de reposición." data-uso="RFC de la factura (apd.reposicion.factura_rfc).">
+        <label class="etiqueta" for="factura_rfc">RFC a cuyo favor se emitió</label>
+        <p class="ayuda">El de la persona titular, como en su constancia de situación fiscal: 13 caracteres.</p>
+        <!-- autocomplete off: es el dato de la factura que tiene a la vista, no de quien llena. -->
+        <input class="control control-corto" id="factura_rfc" name="factura_rfc" type="text" maxlength="20" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="campo" data-campo="factura_razon_social" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura de la cuota de reposición." data-uso="Nombre o razón social de la factura (apd.reposicion.factura_razon_social).">
+        <label class="etiqueta" for="factura_razon_social">Nombre</label>
+        <!-- autocomplete off: es el dato de la factura, no de quien llena. -->
+        <input class="control" id="factura_razon_social" name="factura_razon_social" type="text" maxlength="200" autocomplete="off">
+      </div>
+      <div class="campo" data-campo="factura_folio_fiscal" data-formato="folio-fiscal" data-requerido data-uso="Folio fiscal de la factura, para su seguimiento; no se repite (apd.reposicion.factura_folio_fiscal).">
+        <label class="etiqueta" for="factura_folio_fiscal">Folio fiscal</label>
+        <p class="ayuda">También se llama UUID (Identificador Universalmente Único). Son los 36 caracteres que trae la factura, con sus guiones.</p>
+        <!-- autocomplete off: es el dato de la factura. -->
+        <input class="control" id="factura_folio_fiscal" name="factura_folio_fiscal" type="text" maxlength="45" autocomplete="off" spellcheck="false">
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones acciones-izq">
+        <button type="submit" class="btn btn-primario" data-accion="enviar">Registrar la entrega</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Cancelar la acreditación: diálogo de confirmación con motivo y fundamento. El foco inicial va al motivo, como en los
+       diálogos de baja y cancelación de un grupo (excepción a la decisión del 17/10, registrada el 20/10/2026). -->
+  <dialog class="dialogo dialogo-confirma" id="dlg-cancelar" aria-labelledby="t-cancelar">
+    <form id="cancelar" data-formkit="manual" action="#" method="post">
+      <h2 class="titulo-bloque dialogo-titulo" id="t-cancelar" data-cancelar-titulo>¿Cancelar la acreditación?</h2>
+      <p class="dialogo-consecuencias-titulo">Qué pasará:</p>
+      <ul class="dialogo-consecuencias" data-cancelar-de></ul>
+      <p class="dialogo-irreversible"><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>No se puede deshacer.</p>
+      <div class="campo" data-campo="motivo" data-requerido data-formato="texto" data-uso="Registrar por qué se cancela la acreditación; lo lee la persona (apd.acreditacion.cancelacion_motivo).">
+        <label class="etiqueta" for="motivo-cancelar">Motivo</label>
+        <p class="ayuda" id="ay-motivo-cancelar">Por qué se cancela, al menos 10 caracteres. La persona lo lee en «Mis trámites»; «Verificar» no lo muestra.</p>
+        <!-- autocomplete off: lo escribe el personal; no hay nada que proponer. -->
+        <textarea class="control" id="motivo-cancelar" name="motivo" rows="3" minlength="10" maxlength="400" autocomplete="off" aria-describedby="ay-motivo-cancelar"></textarea>
+      </div>
+      <div class="campo" data-campo="fundamento" data-requerido data-formato="texto" data-uso="Registrar en qué se funda la cancelación (apd.acreditacion.cancelacion_fundamento).">
+        <label class="etiqueta" for="fundamento-cancelar">Fundamento</label>
+        <p class="ayuda" id="ay-fundamento-cancelar">Los lineamientos y el artículo en que se funda. Mientras la Dirección Jurídica fija las causas, escriba el artículo como «[Art. __, fracc. __]».</p>
+        <!-- autocomplete off: lo escribe el personal. -->
+        <input class="control" id="fundamento-cancelar" name="fundamento" type="text" maxlength="300" autocomplete="off" aria-describedby="ay-fundamento-cancelar">
+      </div>
+      <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
+      <div class="acciones dialogo-acciones">
+        <button type="button" class="btn btn-secundario" data-cierra-dialogo>Volver sin cambios</button>
+        <button type="submit" class="btn btn-peligro" data-accion="enviar">Sí, cancelar la acreditación</button>
+      </div>
+    </form>
+  </dialog>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.66"></script>
+<script src="app/apd.js?v=0.66"></script>
+<!-- Versión de prueba: lo registrado en este navegador, con sus archivos. -->
+<script src="app/archivos-prueba.js?v=0.66"></script>
+<script src="app/personal.js?v=0.66"></script>
+<script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
+<script src="app/mensajes-usted.js?v=0.66"></script>
+<script src="formkit/js/iconos.js?v=1.5.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.5.1"></script>
+<script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<script src="app/acreditacion.js?v=0.66"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.66"></script>
+<script src="app/pruebas.js?v=0.66"></script>
+<script src="app/version-visible.js?v=0.66"></script>
+</body>
+</html>

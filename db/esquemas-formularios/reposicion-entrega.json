@@ -1,0 +1,45 @@
+{
+  "formulario": "reposicion-entrega.html",
+  "generado": "2026-10-24T07:04:56.541Z",
+  "campos": {
+    "factura_rfc": {
+      "etiqueta": "RFC a cuyo favor se emitió",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "rfc",
+      "sensible": true,
+      "uso": "RFC de la factura (apd.reposicion.factura_rfc).",
+      "finalidad": "Registrar a favor de quién se emitió la factura de la cuota de reposición.",
+      "atributos": {
+        "maxlength": "20"
+      },
+      "autocomplete": "off"
+    },
+    "factura_razon_social": {
+      "etiqueta": "Nombre",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Nombre o razón social de la factura (apd.reposicion.factura_razon_social).",
+      "finalidad": "Registrar a favor de quién se emitió la factura de la cuota de reposición.",
+      "atributos": {
+        "maxlength": "200"
+      },
+      "autocomplete": "off"
+    },
+    "factura_folio_fiscal": {
+      "etiqueta": "Folio fiscal",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "folio-fiscal",
+      "sensible": false,
+      "uso": "Folio fiscal de la factura, para su seguimiento; no se repite (apd.reposicion.factura_folio_fiscal).",
+      "atributos": {
+        "maxlength": "45"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

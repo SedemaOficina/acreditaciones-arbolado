@@ -24,7 +24,10 @@ sólo se cuida que funcionen. La asistencia y el examen se cuidan en los dos tam
 | Examen en línea (persona) | `sitio/examen.html` · `app/examen.js` | En las computadoras del salón, sin cuenta: entrar con el código → ¿eres tú? → instrucciones → una pregunta por pantalla (reloj, avance, mapa de preguntas, marcar para revisar) → revisar y enviar → calificación y qué sigue. Una recarga o el cambio de computadora vuelven al examen con lo contestado. Por ahora sólo se diseña la interfaz: todas las preguntas son de opción múltiple con cuatro opciones de texto; el examen real y su página se construyen después (decisión de Liber, 18/10/2026) |
 | Lo común del examen | `app/examen-servidor.js` · `app/examen-grupo.js` · `app/codigo-examen.js` · `datos/examen-ficticio.js` | Servidor simulado del examen (códigos, orden por persona, respuestas, tiempo, calificación, suspensión, reposición), quién presenta el examen de un grupo, formato propio del código y banco ficticio (10 preguntas de cultura general en los dos exámenes, 60 minutos; el real nunca entra al repositorio, P85) |
 | Material de estudio (personal) | `sitio/material-personal.html` · `app/material-personal.js` | Agregar un PDF (hasta 30 MB), editar datos y apartados, reemplazar el archivo (no borra el anterior), publicar u ocultar (ocultar pide confirmación) |
-| Lo común | `app/personal.js` | Perfil ficticio «revisión y cotejo», cabecera del personal, espera y vuelta de cada solicitud, citas de cotejo y su situación, siguiente expediente, decisiones de la prueba en el navegador |
+| Acreditaciones (sesión de trabajo del 23/10/2026) | `sitio/acreditaciones.html` · `app/acreditaciones.js` | Pantalla nueva: no había otra del personal que mostrara las acreditaciones de una persona. «Reposiciones por atender» (acta por revisar, por entregar y esperando el acta corregida) y el padrón, con búsqueda por número, nombre o CURP; cada fila abre la ficha. En la prueba, el perfil llega en `?perfil=` (`instructor` o `administracion`; sin él, revisión y cotejo) |
+| Una acreditación | `sitio/acreditacion.html?numero=…` · `app/acreditacion.js` | Situación, titular, fechas, origen y entrega. «Cancelar acreditación» (P120) sólo para instructores y la Dirección y sólo si está vigente: diálogo de confirmación con sus consecuencias, motivo (10 caracteres o más) y fundamento, con el foco en el motivo (excepción del 20/10/2026). Cancelada: cuándo, quién, el motivo y el fundamento. Reposición de la credencial (P140): el acta (ver), revisarla (aceptarla u observaciones) y, con el acta aceptada, entregar la credencial repuesta con la factura de la cuota (RFC, nombre y folio fiscal) |
+| Reposición de tu credencial (persona) | `sitio/reposicion.html?numero=…` · `app/reposicion.js` | Desde «Mis trámites» («Pedir la reposición de tu credencial»), de tú: qué pasó (pérdida o robo) y el acta (PDF, JPG o PNG de hasta 5 MB, módulo `archivos`); con observaciones, carga el acta corregida. «Mis trámites» muestra cada paso y, con el acta aceptada, la cuota y «Dónde es» |
+| Lo común | `app/personal.js` | Perfiles ficticios «revisión y cotejo», «instructor» y «administración (Dirección)», cabecera del personal (con «Acreditaciones»), espera y vuelta de cada solicitud, citas de cotejo y su situación, siguiente expediente, decisiones de la prueba en el navegador |
 
 En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la pantalla de cada papel; también está en «Ir a otra pantalla».
 
@@ -201,8 +204,17 @@ cancelar (motivo). Esquemas `grupo-crear.json` (desde el bloque 74, del formular
 instructor de un grupo por confirmar, que la base ya admite). Elegir personas de la espera y capturar la asistencia son
 acciones sobre listas, no formularios de datos: la base las revisa (`apd.inscripcion_alta`, `apd.asistencia_captura`).
 
+Cancelación y reposición (sesión de trabajo del 23/10/2026): cuatro formularios del estándar, que arrancan a mano. En
+`acreditacion.html`: cancelar (diálogo; motivo y fundamento), revisar el acta (decisión y, con observaciones, qué
+corregir) y entregar la credencial repuesta (factura con los formatos `rfc` y `folio-fiscal`); en `reposicion.html`, el de
+la persona (motivo y acta). Esquemas `acreditacion-cancelar.json`, `reposicion-acta.json`, `reposicion-entrega.json` y
+`reposicion.json` (14 casos). En la prueba, lo registrado va en «apd.acreditaciones» (una lista de eventos) y el acta en
+IndexedDB; `app/archivos-prueba.js` (`aplicaAcreditaciones`) lo aplica como la base.
+
 ## 4. Lo que falta
 
+- Cancelación: causas, audiencia, notificación y si se puede volver a solicitar (P120, Dirección Jurídica). Reposición:
+  monto vigente de la cuota y horario para recogerla (P140, Finanzas).
 - Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); dirección del Vivero Nezahualcóyotl (P68);
   motivos frecuentes y quién fija la fecha (P64).
 - Visor de documentos: en la prueba muestra el archivo cargado en el navegador o un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.

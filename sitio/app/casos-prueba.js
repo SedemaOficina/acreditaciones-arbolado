@@ -79,7 +79,23 @@
         ['renov-espera', 'Renovación con cotejo terminado, en espera de curso', 'Ver una renovación que ya pasó el cotejo.',
           (p, s) => s && s.modalidad === 'renovacion' && s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda'],
         ['no-renovable', 'Vencida hace más de un año', 'Ver que ya no se renueva: se tramita como solicitud nueva.',
-          (p, s, acs, d) => acs.some((a) => sit(d, a) === 'vencida_no_renovable')]
+          (p, s, acs, d) => acs.some((a) => sit(d, a) === 'vencida_no_renovable')],
+        // Cancelada por la Secretaría (P120, sesión de trabajo del 23/10/2026)
+        ['acred-cancelada', 'Acreditación cancelada por la Secretaría', 'Ver que ya no está vigente, el motivo y el fundamento, y que no aparece «Renovar».',
+          (p, s, acs, d) => acs.some((a) => sit(d, a) === 'cancelada')]
+      ]],
+      /* Reposición de la credencial por pérdida o robo (P140, sesión de trabajo del 23/10/2026) */
+      ['Reposición de la credencial', [
+        ['repos-puede', 'Credencial vigente: pedir su reposición', 'Pedir la reposición por pérdida o robo, con el acta que levantó.',
+          (p, s, acs, d) => !activa(d, p) && acs.some((a) => !A().porQueNoReponer(d, a)) && !acs.some((a) => A().reposicionesDe(d, a).length)],
+        ['repos-solicitada', 'Pidió la reposición: acta en revisión', 'Ver que la Secretaría revisa su acta.',
+          (p, s, acs, d) => acs.some((a) => (A().reposicionAbierta(d, a) || {}).estado === 'solicitada')],
+        ['repos-observada', 'Reposición con observaciones en el acta', 'Ver qué corregir y cargar el acta corregida.',
+          (p, s, acs, d) => acs.some((a) => (A().reposicionAbierta(d, a) || {}).estado === 'con_observaciones')],
+        ['repos-aceptada', 'Acta aceptada: pagar y recoger la credencial', 'Ver la cuota de reposición y dónde recoger la credencial.',
+          (p, s, acs, d) => acs.some((a) => (A().reposicionAbierta(d, a) || {}).estado === 'acta_aceptada')],
+        ['repos-repuesta', 'Credencial repuesta', 'Ver la fecha de la reposición: la acreditación conserva su número y su vigencia.',
+          (p, s, acs, d) => acs.some((a) => (A().reposicionesDe(d, a)[0] || {}).estado === 'repuesta')]
       ]],
       ['Terminada sin acreditación', [
         ['no-acreditada', 'No acreditada (calificación menor a la mínima)', 'Ver el resultado del examen.', (p, s) => s && s.estado === 'no_acreditada'],
@@ -132,7 +148,11 @@
         ['personal-programar', 'Programar un curso', 'Elegir la semana en el calendario, el instructor y la hora, y quiénes van; crear y confirmar el grupo.', null, 'programar.html?curso=poda-nueva'],
         ['personal-material', 'Material de estudio', 'Subir, reemplazar, publicar u ocultar los documentos para el examen.', null, 'material-personal.html'],
         ['personal-asistencia', 'Instructor: asistencia', 'Capturar la asistencia de cada día del curso.', null, 'asistencia.html'],
-        ['personal-examen', 'Instructor: aplicar el examen', 'Pasar lista el último día (cuenta como asistencia) y seguir el examen.', null, 'aplicar.html']
+        ['personal-examen', 'Instructor: aplicar el examen', 'Pasar lista el último día (cuenta como asistencia) y seguir el examen.', null, 'aplicar.html'],
+        // Sesión de trabajo del 23/10/2026: reposición de credenciales (P140) y cancelación por instructores y directivos (P120)
+        ['personal-acreditaciones', 'Acreditaciones: reposición de credenciales', 'Revisar el acta y entregar la credencial repuesta con la factura de la cuota.', null, 'acreditaciones.html'],
+        ['personal-cancelar-instructor', 'Instructor: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento.', null, 'acreditaciones.html?perfil=instructor'],
+        ['personal-cancelar-direccion', 'Dirección: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento (perfil de administración).', null, 'acreditaciones.html?perfil=administracion']
       ]]
     ]]
   ];

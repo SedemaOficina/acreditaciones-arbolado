@@ -44,6 +44,8 @@ const enviadaPoda = sol('enviada', (s) => s.tipo_acreditacion === 'poda');
 const unMes = new Date(`${datos.fecha_corte}T12:00:00Z`); unMes.setUTCMonth(unMes.getUTCMonth() + 1);
 const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id)
   && !datos.acreditacion.some((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda' && a.vence_en > unMes.toISOString().slice(0, 10)));
+const canc = datos.acreditacion.find((a) => a.cancelada_en);
+const enPaso = (e) => { const r = (datos.reposicion || []).find((x) => x.estado === e); return r ? datos.acreditacion.find((a) => a.id === r.acreditacion_id) : null; };
 const ESTADOS = [
   ['inicio', 'index.html', null],
   ['crear-cuenta', 'cuenta.html', null],
@@ -79,7 +81,18 @@ const ESTADOS = [
   pBorr && ['solicitud-borrador', `solicitud.html?folio=${borr.folio}`, pBorr],
   sinTramite && ['solicitud-nueva', 'solicitud.html', sinTramite.id],
   (sinTramite || { id: pCita }) && ['mi-perfil', 'datos.html', (sinTramite || { id: pCita }).id],
-  pCita && ['corregir-sin-pausa', 'corregir.html', pCita]
+  pCita && ['corregir-sin-pausa', 'corregir.html', pCita],
+  // Cancelación (P120) y reposición de la credencial (P140), sesión de trabajo del 23/10/2026
+  ['acreditaciones', 'acreditaciones.html', null],
+  ['acreditacion-vigente-instructor', 'acreditacion.html?numero=PD-2025-K100&perfil=instructor', null],
+  canc && ['acreditacion-cancelada', `acreditacion.html?numero=${canc.numero}`, null],
+  enPaso('solicitada') && ['acreditacion-acta-por-revisar', `acreditacion.html?numero=${enPaso('solicitada').numero}`, null],
+  enPaso('acta_aceptada') && ['acreditacion-por-entregar', `acreditacion.html?numero=${enPaso('acta_aceptada').numero}`, null],
+  canc && ['tramites-cancelada', 'tramites.html', canc.solicitante_id],
+  enPaso('con_observaciones') && ['tramites-reposicion-observada', 'tramites.html', enPaso('con_observaciones').solicitante_id],
+  enPaso('acta_aceptada') && ['tramites-reposicion-aceptada', 'tramites.html', enPaso('acta_aceptada').solicitante_id],
+  enPaso('repuesta') && ['reposicion-pedir', `reposicion.html?numero=${enPaso('repuesta').numero}`, enPaso('repuesta').solicitante_id],
+  enPaso('con_observaciones') && ['reposicion-corregir', `reposicion.html?numero=${enPaso('con_observaciones').numero}`, enPaso('con_observaciones').solicitante_id]
 ].filter(Boolean);
 
 const hallazgos = [];

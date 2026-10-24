@@ -25,7 +25,8 @@ await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
 // Textos de usted de las pantallas del personal (desde la 1.3.2 todos viven en «mensajes», P95): el servidor los recibe
 // igual, con validaPayload(…, { mensajes })
 await import(pathToFileURL(join(raiz, 'sitio/app/mensajes-usted.js')).href);
-const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar', 'material']);
+const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar', 'material',
+  'acreditacion-cancelar', 'reposicion-acta', 'reposicion-entrega']);
 let ultimo = null;
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
 const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
@@ -33,7 +34,8 @@ const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalT
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir']) {
+// La reposición de la credencial (persona; P140, sesión de trabajo del 23/10/2026)
+for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir', 'reposicion']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
@@ -63,7 +65,11 @@ for (const [archivo, nombre] of [['examen.html', 'examen-entrar'], ['aplicar.htm
 // Material de estudio del personal (auditoría 2026-10-18, A 8.7): un solo formulario para agregar, editar y reemplazar;
 // «modo» lo calcula la API por la ruta (alta o cambio), como aquí el caso con `_modo`.
 for (const [archivo, id, nombre] of [['programar.html', 'programar', 'grupo-crear'], ['grupo.html', 'confirmar', 'grupo-confirmar'], ['grupo.html', 'baja', 'grupo-baja'], ['grupo.html', 'cancelar', 'grupo-cancelar'],
-  ['material-personal.html', 'form-material', 'material']]) {
+  ['material-personal.html', 'form-material', 'material'],
+  // Ficha de una acreditación (sesión de trabajo del 23/10/2026): cancelarla (P120), revisar el acta y entregar la credencial
+  // repuesta (P140). La base revisa además el perfil, la vigencia y el paso de la reposición (apd.acreditacion_cambio,
+  // apd.reposicion_cambio).
+  ['acreditacion.html', 'cancelar', 'acreditacion-cancelar'], ['acreditacion.html', 'acta', 'reposicion-acta'], ['acreditacion.html', 'entrega', 'reposicion-entrega']]) {
   const m = readFileSync(join(raiz, 'sitio', archivo), 'utf8').match(new RegExp(`<form id="${id}"[\\s\\S]*?</form>`));
   const html = join(temporal, `${nombre}.html`);
   writeFileSync(html, `<!DOCTYPE html><html lang="es-MX"><body>${m[0]}</body></html>`);
@@ -371,6 +377,24 @@ caso('Material: «para» fuera de la lista se rechaza', 'material', { _modo: 'nu
 caso('Material: editar los datos no pide el archivo', 'material', { _modo: 'editar', titulo: material.titulo, edicion: material.edicion, descripcion: material.descripcion, para: 'poda' }, true);
 caso('Material: reemplazar pide sólo el archivo', 'material', { _modo: 'reemplazar' }, ['archivo']);
 caso('Material: reemplazar con el PDF se acepta', 'material', { _modo: 'reemplazar' }, true, pdfMaterial);
+
+// Cancelación de una acreditación (P120) y reposición de la credencial (P140), sesión de trabajo del 23/10/2026
+caso('Cancelación: sin motivo ni fundamento se rechaza', 'acreditacion-cancelar', {}, ['motivo', 'fundamento']);
+caso('Cancelación: un motivo de menos de 10 caracteres se rechaza', 'acreditacion-cancelar', { motivo: 'Corto', fundamento: '[Art. __, fracc. __]' }, ['motivo']);
+caso('Cancelación: con motivo y fundamento se acepta', 'acreditacion-cancelar', { motivo: 'Se documentó un derribo sin autorización.', fundamento: 'Lineamientos, [Art. __, fracc. __]' }, true);
+const acta = [{ nombre: 'acta.pdf', size: 200000, type: 'application/pdf', campo: 'acta' }];
+caso('Reposición: sin motivo ni acta se rechaza', 'reposicion', {}, ['motivo', 'acta']);
+caso('Reposición: con motivo y el acta en PDF se acepta', 'reposicion', { motivo: 'perdida' }, true, acta);
+caso('Reposición: el acta en foto (JPG) se acepta', 'reposicion', { motivo: 'robo' }, true, [{ nombre: 'acta.jpg', size: 900000, type: 'image/jpeg', campo: 'acta' }]);
+caso('Reposición: un acta en Word se rechaza', 'reposicion', { motivo: 'robo' }, ['acta'], [{ nombre: 'acta.docx', size: 20000, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', campo: 'acta' }]);
+caso('Reposición: un acta de más de 5 MB se rechaza', 'reposicion', { motivo: 'robo' }, ['acta'], [{ nombre: 'acta.pdf', size: 6 * 1048576, type: 'application/pdf', campo: 'acta' }]);
+caso('Reposición: un motivo fuera de la lista se rechaza', 'reposicion', { motivo: 'extravio' }, ['motivo'], acta);
+caso('Reposición: aceptar el acta se acepta', 'reposicion-acta', { decision: 'acta_aceptada' }, true);
+caso('Reposición: observar el acta sin decir qué corregir se rechaza', 'reposicion-acta', { decision: 'con_observaciones' }, ['observacion']);
+caso('Reposición: observar el acta con lo que debe corregir se acepta', 'reposicion-acta', { decision: 'con_observaciones', observacion: 'Falta la hoja de firmas del acta.' }, true);
+caso('Reposición: entregar sin factura se rechaza', 'reposicion-entrega', {}, ['factura_rfc', 'factura_razon_social', 'factura_folio_fiscal']);
+caso('Reposición: entregar con la factura se acepta', 'reposicion-entrega', { factura_rfc: 'EJEM760707AB1', factura_razon_social: 'PERSONA EJEMPLO', factura_folio_fiscal: '0A1B2C3D-4E5F-4A6B-8C7D-9E0F1A2B3C4D' }, true);
+caso('Reposición: un folio fiscal mal escrito se rechaza', 'reposicion-entrega', { factura_rfc: 'EJEM760707AB1', factura_razon_social: 'PERSONA EJEMPLO', factura_folio_fiscal: '12345' }, ['factura_folio_fiscal']);
 
 console.log(fallas ? `\n${fallas} caso(s) fallido(s).` : '\nTodos los casos correctos.');
 process.exit(fallas ? 1 : 0);

@@ -3599,7 +3599,20 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
   const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
   const sCorregir = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
   pantallas.push([`corregir.html?folio=${sCorregir.folio}`], [`corregir.html?folio=${sCorregir.folio}`, 'con errores']);
-  for (const [url, estado] of pantallas) {
+  // Cancelación (P120) y reposición de la credencial (P140), sesión del 23/10/2026: las pantallas del personal y las de la
+  // persona, con la sesión de quien está en cada paso (tercer elemento)
+  const enPaso = (e) => datos.acreditacion.find((a) => a.id === datos.reposicion.find((r) => r.estado === e).acreditacion_id);
+  const canc = datos.acreditacion.find((a) => a.cancelada_en);
+  pantallas.push(['acreditaciones.html'], ['acreditacion.html?numero=PD-2025-K100&perfil=instructor'], ['acreditacion.html?numero=PD-2025-K100&perfil=instructor', 'diálogo de cancelación'],
+    ['acreditacion.html?numero=PD-2025-K100&perfil=instructor', 'cancelación con errores'], [`acreditacion.html?numero=${canc.numero}`],
+    [`acreditacion.html?numero=${enPaso('solicitada').numero}`], [`acreditacion.html?numero=${enPaso('solicitada').numero}`, 'acta con errores'],
+    [`acreditacion.html?numero=${enPaso('acta_aceptada').numero}`], [`acreditacion.html?numero=${enPaso('acta_aceptada').numero}`, 'entrega con errores'],
+    ['verificar.html', 'cancelada'],
+    ['tramites.html', null, canc.solicitante_id], ['tramites.html', null, enPaso('con_observaciones').solicitante_id], ['tramites.html', null, enPaso('acta_aceptada').solicitante_id],
+    [`reposicion.html?numero=${enPaso('repuesta').numero}`, null, enPaso('repuesta').solicitante_id], [`reposicion.html?numero=${enPaso('repuesta').numero}`, 'con errores', enPaso('repuesta').solicitante_id],
+    [`reposicion.html?numero=${enPaso('con_observaciones').numero}`, null, enPaso('con_observaciones').solicitante_id]);
+  for (const [url, estado, sesion] of pantallas) {
+    if (sesion) await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sesion);
     if (url.startsWith('corregir.html')) await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), sCorregir.solicitante_id);
     await page.goto(BASE + url);
     if (url.startsWith('corregir.html')) await page.waitForSelector('#formulario:not([hidden])');
@@ -3621,6 +3634,17 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     }
     else if (estado === 'visor') { await page.click('[data-ver="curriculum_vitae"]'); await page.waitForSelector('.visor-lienzo'); }
     else if (estado === 'cita futura') await page.waitForSelector('[data-futura]:not([hidden])');
+    else if (estado === 'diálogo de cancelación' || estado === 'cancelación con errores') {
+      await page.click('button:has-text("Cancelar acreditación")');
+      await page.waitForSelector('#dlg-cancelar[open]');
+      if (estado === 'cancelación con errores') { await page.click('#dlg-cancelar [data-accion="enviar"]'); await page.waitForSelector('#motivo-cancelar[aria-invalid="true"]'); }
+    } else if (estado === 'acta con errores') { await page.click('#acta [data-accion="enviar"]'); await page.waitForSelector('#acta [aria-invalid="true"]'); }
+    else if (estado === 'entrega con errores') { await page.click('#entrega [data-accion="enviar"]'); await page.waitForSelector('#entrega [aria-invalid="true"]'); }
+    else if (estado === 'cancelada') {
+      await page.fill('#numero', canc.numero);
+      await page.click('[data-accion="enviar"]');
+      await page.waitForSelector('[data-verificacion]:not([hidden])');
+    }
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
@@ -3670,7 +3694,8 @@ async function politicaContenido(navegador) {
     if (!m || (h.match(/Content-Security-Policy/g) || []).length !== 1) { malas.push(p); continue; }
     politicas.add(m[1]);
   }
-  comprueba(paginas.length === 21 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
+  // 21 hasta la sesión del 23/10/2026, parte B: más «Acreditaciones», «Una acreditación» y «Reposición de tu credencial»
+  comprueba(paginas.length === 24 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
   /* Excepción documentada (decisión del 23/10/2026, P68): la página con el mapa de Google de la sede (data-mapa-sede; sólo
      «Mis trámites») agrega frame-src con los dos dominios del mapa y nada más; las demás, la política estricta sin cambio */
   const conMapa = paginas.filter((p) => /\sdata-mapa-sede[\s>]/.test(readFileSync(join(raiz, 'sitio', p), 'utf8')));
@@ -3746,7 +3771,9 @@ async function mapaSede(navegador) {
     if (s.estado === 'acreditada' && datos.acreditacion.some((a) => a.solicitud_id === s.id) && !entregada(s)) return 'entrega';
     return null;
   };
-  const lugaresDe = (p, d = datos) => new Set(d.solicitud.filter((s) => s.solicitante_id === p.id).map(aQueVa).filter(Boolean));
+  // También va a la entrega quien tiene la reposición de su credencial con el acta aceptada (P140, sesión del 23/10/2026)
+  const reponeEnSede = (p, d) => (d.reposicion || []).some((r) => r.estado === 'acta_aceptada' && d.acreditacion.some((a) => a.id === r.acreditacion_id && a.solicitante_id === p.id));
+  const lugaresDe = (p, d = datos) => new Set(d.solicitud.filter((s) => s.solicitante_id === p.id).map(aQueVa).concat(reponeEnSede(p, d) ? ['entrega'] : []).filter(Boolean));
   const activas = datos.solicitante.filter((p) => p.estado === 'activa');
   const conLugar = (k) => activas.find((p) => { const l = lugaresDe(p); return l.size === 1 && l.has(k); });
   const sinLugar = activas.find((p) => !lugaresDe(p).size && datos.solicitud.some((s) => s.solicitante_id === p.id));
@@ -5840,6 +5867,381 @@ async function sesion23(navegador) {
   });
 }
 
+/* ── Cancelación de una acreditación (P120, P49; sesión de trabajo del 23/10/2026, parte B; SOLO=cancelacion) ──
+   Los instructores y la Dirección cancelan una acreditación vigente desde su ficha («Acreditaciones»), con motivo y
+   fundamento en un diálogo de confirmación (foco en el motivo, de usted); el perfil de revisión y cotejo no puede.
+   «Verificar» la muestra «Cancelada» (gris, sin el motivo); la persona la ve en «Mis trámites» cancelada, con el motivo,
+   de tú, y sin «Renovar»; una renovación en trámite se cancela. La credencial ya no menciona huella ni antigüedad (P49). */
+async function cancelacion(navegador) {
+  const t = (m) => `[cancelación] ${m}`;
+  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  const sesionDe = (page, id) => page.evaluate((x) => localStorage.setItem('apd.sesion', JSON.stringify({ id: x })), id);
+  const cancelada = datos.acreditacion.find((a) => a.cancelada_en);
+  const vigente = datos.acreditacion.find((a) => a.numero === 'PD-2025-K100');
+  const conRenovacion = datos.acreditacion.find((a) => datos.solicitud.some((s) => s.acreditacion_anterior_id === a.id && s.estado === 'enviada') && ['vigente', 'por_vencer'].includes(datos.estado_acreditacion[a.numero]));
+  const vencida = datos.acreditacion.find((a) => datos.estado_acreditacion[a.numero] === 'vencida_no_renovable');
+  const verifica = async (page, numero) => {
+    await page.goto(BASE + 'verificar.html');
+    await page.fill('#numero', numero);
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-verificacion]:not([hidden])');
+    return { texto: await page.textContent('[data-verificacion]'), tono: await page.getAttribute('[data-verificacion]', 'data-tono') };
+  };
+
+  comprueba(datos.estado_acreditacion[cancelada.numero] === 'cancelada' && datos.verificacion_publica.find((v) => v.numero === cancelada.numero).situacion === 'Cancelada'
+    && !('cancelacion_motivo' in datos.verificacion_publica[0]), t(`ficticios: ${cancelada.numero} cancelada por un instructor; la vista pública dice «Cancelada» y no trae el motivo`));
+
+  // «Verificar»: «Cancelada» en gris (familia terminado, como «Vencida»), con su día y sin el motivo ni el fundamento
+  for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'escritorio']]) {
+    await bloque(`verificar ${donde}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto);
+      const v = await verifica(page, cancelada.numero);
+      comprueba(/^Cancelada/.test(v.texto.trim()) && v.tono === 'terminado' && /Cancelada el\s*08\/10\/2026/.test(v.texto) && /no se puede trabajar/.test(v.texto)
+        && !v.texto.includes(cancelada.cancelacion_motivo.slice(0, 30)) && !/Vigente|Fundamento|Motivo/.test(v.texto) && !errores.length,
+        t(`${donde}: «Verificar» muestra ${cancelada.numero} «Cancelada», en gris, con su día y sin el motivo`));
+      await sinDesborde(page, t(`verificar cancelada en ${donde}`));
+      await c.close();
+    });
+  }
+
+  // «Mis trámites» de la persona: cancelada, con el motivo y el fundamento, de tú, sin «Renovar» ni reposición
+  for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'escritorio']]) {
+    await bloque(`mis trámites ${donde}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, cancelada.solicitante_id);
+      await page.goto(BASE + 'tramites.html');
+      await page.waitForSelector('[data-acreditaciones] .ficha');
+      const ficha = page.locator('[data-acreditaciones] .ficha', { hasText: cancelada.numero });
+      const txt = await ficha.textContent();
+      comprueba(await ficha.locator('.estado-terminado', { hasText: 'Cancelada' }).count() === 1 && txt.includes(cancelada.cancelacion_motivo) && /\[Art\. __, fracc\. __\]/.test(txt)
+        && !/pendiente P120/.test(txt) && /ya no puedes trabajar con ella y no se puede renovar/.test(txt) && /Cancelada el\s*08\/10\/2026/.test(txt)
+        && await ficha.locator('a', { hasText: /Renovar|reposición/ }).count() === 0 && !errores.length,
+        t(`${donde}: «Mis trámites» muestra la acreditación cancelada, con el motivo y el fundamento, de tú, sin «Renovar» ni reposición`));
+      await sinDesborde(page, t(`mis trámites cancelada en ${donde}`));
+      await c.close();
+    });
+  }
+
+  // Sin permiso: el perfil de revisión y cotejo (el de la prueba por omisión) no ve «Cancelar acreditación»; en una vencida
+  // nadie lo ve
+  await bloque('sin permiso', async () => {
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + `acreditacion.html?numero=${vigente.numero}`);
+    await page.waitForSelector('[data-situacion] .estado');
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y la Dirección pueden cancelar una acreditación/.test(await page.textContent('[data-acciones]')) && !errores.length,
+      t('perfil de revisión y cotejo: no ve «Cancelar acreditación» y la ficha dice quién puede'));
+    await page.goto(BASE + `acreditacion.html?numero=${vencida.numero}&perfil=instructor`);
+    await page.waitForSelector('[data-situacion] .estado');
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0, t(`instructor: una vencida (${vencida.numero}) no se cancela`));
+    await page.goto(BASE + `acreditacion.html?numero=${cancelada.numero}&perfil=administracion`);
+    await page.waitForSelector('[data-situacion] .estado');
+    const ficha = await page.textContent('main');
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Cancelación/.test(ficha) && /Laura Ejemplo Instructora/.test(ficha) && ficha.includes(cancelada.cancelacion_motivo),
+      t('Dirección: la cancelada muestra cuándo, quién, el motivo y el fundamento, y ya no se cancela otra vez'));
+    await c.close();
+  });
+
+  // Un instructor cancela una vigente: diálogo del estándar, foco en el motivo, motivo y fundamento obligatorios, de usted;
+  // luego «Verificar», la ficha y «Mis trámites» la muestran cancelada
+  for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'escritorio']]) {
+    await bloque(`instructor cancela ${donde}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto);
+      await page.goto(BASE + 'acreditaciones.html?perfil=instructor');
+      await page.waitForSelector('[data-filas] tr');
+      await page.fill('#buscar', vigente.numero);
+      await page.waitForFunction((n) => [...document.querySelectorAll('[data-filas] tr')].filter((x) => !x.hidden).length === 1 && document.querySelector('[data-filas] tr:not([hidden])').dataset.numero === n, vigente.numero);
+      await page.click(`[data-filas] tr[data-numero="${vigente.numero}"] a`);
+      await page.waitForURL(/acreditacion\.html\?numero=.*perfil=instructor/);
+      const boton = page.locator('button', { hasText: 'Cancelar acreditación' });
+      await boton.click();
+      await page.waitForSelector('#dlg-cancelar[open]');
+      const dlg = await page.textContent('#dlg-cancelar');
+      comprueba(await page.evaluate(() => document.activeElement && document.activeElement.id === 'motivo-cancelar') && /¿Cancelar la acreditación PD-2025-K100/.test(dlg)
+        && /«Verificar» la muestra como «Cancelada», sin el motivo/.test(dlg) && /No se puede deshacer/.test(dlg) && /Volver sin cambios/.test(dlg) && /Sí, cancelar la acreditación/.test(dlg),
+        t(`${donde}: «Cancelar acreditación» abre el diálogo de confirmación con sus consecuencias y el foco en el motivo`));
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => !document.getElementById('dlg-cancelar').open);
+      comprueba(await page.evaluate(() => document.activeElement && document.activeElement.textContent === 'Cancelar acreditación'), t(`${donde}: Escape cierra el diálogo sin cambios y el foco regresa al botón`));
+      await boton.click();
+      await page.waitForSelector('#dlg-cancelar[open]');
+      await page.click('#dlg-cancelar [data-accion="enviar"]');
+      await page.waitForSelector('#motivo-cancelar[aria-invalid="true"]');
+      comprueba(await page.getAttribute('#fundamento-cancelar', 'aria-invalid') === 'true' && await page.isVisible('#dlg-cancelar[open]'), t(`${donde}: sin motivo ni fundamento no se cancela y los dos se marcan`));
+      await page.fill('#motivo-cancelar', 'Corto');
+      await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
+      await page.click('#dlg-cancelar [data-accion="enviar"]');
+      await page.waitForTimeout(300);
+      comprueba(await page.getAttribute('#motivo-cancelar', 'aria-invalid') === 'true' && await page.isVisible('#dlg-cancelar[open]'), t(`${donde}: un motivo de menos de 10 caracteres no se acepta`));
+      await page.fill('#motivo-cancelar', 'Podó sin autorización en la visita de prueba.');
+      await page.click('#dlg-cancelar [data-accion="enviar"]');
+      await page.waitForURL(/acreditacion\.html\?numero=PD-2025-K100/);
+      await page.waitForSelector('[data-hecho]:not([hidden])');
+      const ficha = await page.textContent('main');
+      comprueba(/Acreditación cancelada/.test(ficha) && await page.locator('[data-situacion] .estado-terminado', { hasText: 'Cancelada' }).count() === 1 && /Laura Ejemplo Instructora/.test(ficha)
+        && /Podó sin autorización/.test(ficha) && await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && !errores.length,
+        t(`${donde}: cancelada por el instructor; la ficha dice «Cancelada», quién y el motivo`));
+      const v = await verifica(page, vigente.numero);
+      comprueba(/^Cancelada/.test(v.texto.trim()) && v.tono === 'terminado' && !/Podó sin autorización/.test(v.texto), t(`${donde}: «Verificar» ya la muestra «Cancelada», sin el motivo`));
+      // Su titular la ve cancelada en «Mis trámites» (en la prueba, el mismo navegador)
+      const titular = datos.solicitante.find((p) => p.id === vigente.solicitante_id);
+      if (titular.estado === 'activa') {
+        await sesionDe(page, titular.id);
+        await page.goto(BASE + 'tramites.html');
+        await page.waitForSelector('[data-acreditaciones] .ficha');
+        comprueba(/Podó sin autorización/.test(await page.textContent('[data-acreditaciones]')), t(`${donde}: la persona la ve cancelada en «Mis trámites», con el motivo`));
+      }
+      await c.close();
+    });
+  }
+
+  // La Dirección cancela una acreditación con su renovación en trámite: el diálogo lo dice y la renovación se cancela; la
+  // persona no puede renovarla
+  await bloque('dirección y renovación', async () => {
+    const { c, page, errores } = await nuevo(1280, 900);
+    const renov = datos.solicitud.find((s) => s.acreditacion_anterior_id === conRenovacion.id && s.estado === 'enviada');
+    await page.goto(BASE + `acreditacion.html?numero=${conRenovacion.numero}&perfil=administracion`);
+    await page.click('button:has-text("Cancelar acreditación")');
+    await page.waitForSelector('#dlg-cancelar[open]');
+    comprueba(new RegExp(`Su renovación en trámite \\(folio ${renov.folio}\\) se cancela`).test(await page.textContent('#dlg-cancelar')), t(`Dirección: el diálogo avisa que la renovación ${renov.folio} se cancela`));
+    await page.fill('#motivo-cancelar', 'Motivo de la prueba de la Dirección.');
+    await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
+    await page.click('#dlg-cancelar [data-accion="enviar"]');
+    await page.waitForSelector('[data-hecho]:not([hidden])');
+    comprueba(/Rosa Ejemplo Directora/.test(await page.textContent('main')), t('Dirección (perfil administración): cancela, y la ficha la registra a su nombre'));
+    await page.goto(BASE + 'revision.html');
+    await page.waitForLoadState('networkidle');
+    comprueba(!(await page.textContent('main')).includes(renov.folio), t(`la renovación ${renov.folio} ya no está por revisar`));
+    const p = datos.solicitante.find((x) => x.id === conRenovacion.solicitante_id);
+    if (p.estado === 'activa') {
+      await sesionDe(page, p.id);
+      await page.goto(BASE + 'tramites.html');
+      await page.waitForSelector('[data-acreditaciones] .ficha');
+      const txt = await page.textContent('main');
+      comprueba(/que se renovaba fue cancelada/.test(txt) && await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() === 0, t('la persona ve su renovación cancelada, con el motivo, y no puede renovar la cancelada'));
+    }
+    comprueba(!errores.length, t(`Dirección: sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+    await c.close();
+  });
+
+  // P49: la credencial dice que puede ser cancelada conforme a los lineamientos y ya no menciona huella ni antigüedad
+  await bloque('P49', async () => {
+    const { c, page } = await nuevo(390, 844);
+    await page.goto(BASE + 'index.html');
+    comprueba(/puede ser cancelada conforme a los lineamientos/.test(await page.textContent('main')), t('P49: el inicio dice que la credencial puede ser cancelada conforme a los lineamientos'));
+    await c.close();
+    const sitio = join(raiz, 'sitio');
+    const archivos = readdirSync(sitio).filter((f) => f.endsWith('.html')).map((f) => join(sitio, f)).concat(readdirSync(join(sitio, 'app')).filter((f) => f.endsWith('.js')).map((f) => join(sitio, 'app', f)));
+    const con = archivos.filter((f) => /huella digital|huella dactilar|antigüedad consecutiva|años de antigüedad/i.test(readFileSync(f, 'utf8')));
+    comprueba(!con.length, t(`P49: ninguna pantalla menciona huella digital ni antigüedad de la credencial${con.length ? ': ' + con.join(', ') : ''}`));
+  });
+}
+
+/* ── Reposición de la credencial (P140; sesión de trabajo del 23/10/2026, parte B; SOLO=reposicion) ──
+   La persona con su acreditación vigente pide la reposición desde «Mis trámites» con el acta (PDF o foto, de hasta 5 MB,
+   con el módulo de archivos del estándar); el personal revisa el acta en la ficha de la acreditación (observaciones o la
+   acepta) y, en el Vivero, valida la factura de la cuota y marca la credencial repuesta: mismo número y misma vigencia. */
+async function reposicionCredencial(navegador) {
+  const t = (m) => `[reposición] ${m}`;
+  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  const enEstado = (e) => { const r = datos.reposicion.find((x) => x.estado === e); return datos.acreditacion.find((a) => a.id === r.acreditacion_id); };
+  const repuesta = enEstado('repuesta');
+  const persona = (a) => datos.solicitante.find((p) => p.id === a.solicitante_id);
+  const fichaDe = (page, numero) => page.locator('[data-acreditaciones] .ficha', { hasText: numero });
+
+  comprueba(['solicitada', 'con_observaciones', 'acta_aceptada', 'repuesta'].every((e) => datos.reposicion.some((r) => r.estado === e))
+    && datos.cuota.find((c) => c.clave === 'reposicion_credencial').monto === 88 && /pendiente P140/.test(datos.cuota[0].fundamento),
+    t('ficticios: una reposición en cada paso y la cuota ficticia de $88.00 marcada por confirmar con Finanzas'));
+  const claves = APD_CASOS_PRUEBA.claves();
+  comprueba(['repos-puede', 'repos-solicitada', 'repos-observada', 'repos-aceptada', 'repos-repuesta', 'acred-cancelada', 'personal-acreditaciones', 'personal-cancelar-instructor', 'personal-cancelar-direccion'].every((k) => claves.includes(k)),
+    t('menú de pruebas: casos de la reposición (pidió, acta en revisión, con observaciones, aceptada, repuesta), de la cancelada y del personal'));
+
+  // Los ficticios, en «Mis trámites», en teléfono y en escritorio: cada paso con su etiqueta, de tú
+  const PASOS = [['solicitada', 'Reposición: acta en revisión', 'estado-proceso', /La Secretaría revisa tu acta/],
+    ['con_observaciones', 'Reposición: corrige tu acta', 'estado-atencion', /Tu acta: el acta no trae el sello/],
+    ['acta_aceptada', 'Reposición: recoge tu credencial', 'estado-atencion', /Paga la cuota de reposición: \$88\.00/]];
+  for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'escritorio']]) {
+    for (const [e, etiqueta, clase, texto] of PASOS) {
+      await bloque(`${e} ${donde}`, async () => {
+        const a = enEstado(e);
+        const { c, page, errores } = await nuevo(ancho, alto, a.solicitante_id);
+        await page.goto(BASE + 'tramites.html');
+        await page.waitForSelector('[data-acreditaciones] .ficha');
+        const f = fichaDe(page, a.numero);
+        comprueba(await f.locator(`.${clase}`, { hasText: etiqueta }).count() === 1 && texto.test(await f.textContent()) && !errores.length,
+          t(`${donde}: «${etiqueta}» en la ficha de ${a.numero}`));
+        if (e === 'con_observaciones') comprueba(await f.locator('a.btn-primario', { hasText: 'Cargar el acta corregida' }).count() === 1, t(`${donde}: con observaciones, «Cargar el acta corregida» es la acción principal`));
+        if (e === 'acta_aceptada') comprueba(await page.isVisible('[data-mapa-sede]') && /la entrega de tu credencial/i.test(await page.textContent('[data-mapa-sede]')), t(`${donde}: con el acta aceptada, «Dónde es» dice dónde recoger la credencial`));
+        comprueba(await f.locator('a', { hasText: 'Pedir la reposición' }).count() === 0, t(`${donde}: con una reposición abierta no se pide otra para ${a.numero}`));
+        await sinDesborde(page, t(`mis trámites ${e} en ${donde}`));
+        await c.close();
+      });
+    }
+  }
+
+  // Recorrido completo, en teléfono la persona y en escritorio el personal, en el mismo navegador
+  await bloque('recorrido', async () => {
+    const p = persona(repuesta);
+    const antes = { ...repuesta };
+    const tel = await nuevo(390, 844, p.id);
+    const { page } = tel;
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-acreditaciones] .ficha');
+    comprueba(/Credencial repuesta el\s*02\/10\/2026/.test(await fichaDe(page, repuesta.numero).textContent()), t('la credencial repuesta en los ficticios dice cuándo se repuso'));
+    await fichaDe(page, repuesta.numero).locator('a', { hasText: 'Pedir la reposición de tu credencial' }).click();
+    await page.waitForURL(/reposicion\.html\?numero=/);
+    await page.waitForSelector('#formulario:not([hidden])');
+    const form = await page.textContent('#formulario');
+    comprueba(/Pide la reposición de tu credencial/.test(form) && /\$88\.00/.test(form) && /mismo número y la misma vigencia/.test(form) && /En PDF o en foto \(JPG o PNG\), de hasta 5 MB/.test(form),
+      t('teléfono: la reposición dice la cuota, que la nueva lleva el mismo número y vigencia, y los formatos del acta'));
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[aria-invalid="true"]');
+    comprueba(await page.locator('[data-campo="motivo"] .err').count() > 0 && /obligatori|Elige|Selecciona|Carga/i.test(await page.textContent('[data-campo="acta"]')), t('teléfono: sin motivo ni acta no se pide'));
+    // Un acta de más de 5 MB se rechaza en la zona de carga (módulo de archivos del estándar)
+    await page.setInputFiles('[data-campo="acta"] [data-archivos] > input[type="file"]', { name: 'acta-grande.pdf', mimeType: 'application/pdf', buffer: Buffer.concat([PDF.buffer, Buffer.alloc(5.5 * 1024 * 1024, 32)]) });
+    await page.waitForSelector('[data-campo="acta"] [data-rechazos] *');
+    comprueba(/pasa del máximo de 5 MB/.test(await page.textContent('[data-campo="acta"] [data-rechazos]')), t('teléfono: un acta de más de 5 MB se rechaza'));
+    // En foto (PNG) también se acepta; se queda la última
+    await page.setInputFiles('[data-campo="acta"] [data-archivos] > input[type="file"]', FOTO);
+    await page.waitForSelector('[data-campo="acta"] .lista-arch li[data-estado="listo"]');
+    comprueba(true, t('teléfono: el acta en foto (PNG) se acepta'));
+    await marcar(page, 'input[name="motivo"][value="robo"]');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-hecho]:not([hidden])');
+    comprueba(/Recibimos tu solicitud de reposición/.test(await page.textContent('[data-hecho]')) && /La Secretaría revisa tu acta/.test(await page.textContent('[data-hecho]')), t('teléfono: «Recibimos tu solicitud de reposición», con qué sigue'));
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-acreditaciones] .ficha');
+    comprueba(/Reposición: acta en revisión/.test(await fichaDe(page, repuesta.numero).textContent()) && /por robo/.test(await fichaDe(page, repuesta.numero).textContent()), t('teléfono: «Mis trámites» la muestra con el acta en revisión'));
+
+    // El personal, en escritorio (otra pestaña del mismo navegador): observaciones al acta
+    const esc = await tel.c.newPage();
+    await esc.setViewportSize({ width: 1280, height: 900 });
+    const errEsc = [];
+    esc.on('pageerror', (e) => errEsc.push(String(e)));
+    await esc.goto(BASE + 'acreditaciones.html');
+    await esc.waitForSelector(`[data-filas-reposiciones] tr[data-numero="${repuesta.numero}"]`);
+    comprueba(/Acta por revisar/.test(await esc.textContent(`[data-filas-reposiciones] tr[data-numero="${repuesta.numero}"]`)), t('escritorio: «Reposiciones por atender» la lista con el acta por revisar'));
+    await esc.click(`[data-filas-reposiciones] tr[data-numero="${repuesta.numero}"] a`);
+    await esc.waitForSelector('#acta:not([hidden])');
+    comprueba(/blob:/.test(await esc.getAttribute('[data-ver-acta]', 'href') || '') || await esc.waitForFunction(() => /^blob:/.test(document.querySelector('[data-ver-acta]').href)).then(() => true, () => false),
+      t('escritorio: «Ver el acta» abre la que cargó la persona en este navegador'));
+    await esc.click('#acta [data-accion="enviar"]');
+    await esc.waitForSelector('#acta [aria-invalid="true"]');
+    await marcar(esc, '#acta input[name="decision"][value="con_observaciones"]');
+    await esc.fill('#observacion', 'El acta no se lee completa: falta la hoja de firmas.');
+    await esc.click('#acta [data-accion="enviar"]');
+    await esc.waitForSelector('[data-hecho]:not([hidden])');
+    comprueba(/Observaciones del acta registradas/.test(await esc.textContent('[data-hecho]')), t('escritorio: sin decidir no se registra; con observaciones, sí'));
+
+    // La persona corrige el acta
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-acreditaciones] .ficha');
+    const f = fichaDe(page, repuesta.numero);
+    comprueba(/Tu acta: el acta no se lee completa: falta la hoja de firmas/.test(await f.textContent()), t('teléfono: la persona lee la observación de su acta, de tú'));
+    await f.locator('a', { hasText: 'Cargar el acta corregida' }).click();
+    await page.waitForSelector('#formulario:not([hidden])');
+    comprueba(/Carga tu acta corregida/.test(await page.textContent('#formulario')) && await page.isChecked('input[name="motivo"][value="robo"]'), t('teléfono: «Carga tu acta corregida», con su motivo'));
+    await page.setInputFiles('[data-campo="acta"] [data-archivos] > input[type="file"]', PDF);
+    await page.waitForSelector('[data-campo="acta"] .lista-arch li[data-estado="listo"]');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-hecho]:not([hidden])');
+    comprueba(/Recibimos tu acta corregida/.test(await page.textContent('[data-hecho]')), t('teléfono: «Recibimos tu acta corregida»'));
+
+    // El personal la acepta: se fija la cuota vigente
+    await esc.goto(BASE + `acreditacion.html?numero=${repuesta.numero}`);
+    await esc.waitForSelector('#acta:not([hidden])');
+    await marcar(esc, '#acta input[name="decision"][value="acta_aceptada"]');
+    await esc.click('#acta [data-accion="enviar"]');
+    await esc.waitForFunction(() => /Acta aceptada/.test((document.querySelector('[data-hecho]:not([hidden])') || {}).textContent || ''));
+    await esc.waitForSelector('#entrega:not([hidden])');
+    comprueba(/Acta aceptada/.test(await esc.textContent('[data-hecho]')) && /Cuota de reposición indicada\s*\$88\.00/.test(await esc.textContent('[data-reposicion-datos]')), t('escritorio: acta aceptada con la cuota de $88.00'));
+    await page.goto(BASE + 'tramites.html');
+    await page.waitForSelector('[data-acreditaciones] .ficha');
+    comprueba(/Reposición: recoge tu credencial/.test(await fichaDe(page, repuesta.numero).textContent()) && /\$88\.00/.test(await fichaDe(page, repuesta.numero).textContent()), t('teléfono: la persona ve cuánto pagar y dónde recoger su credencial'));
+
+    // En el Vivero: la factura (RFC inválido, folio fiscal repetido de una solicitud, y la buena) y la credencial repuesta
+    await esc.fill('#factura_rfc', 'XXXX');
+    await esc.fill('#factura_razon_social', APD_NOMBRE(p));
+    await esc.fill('#factura_folio_fiscal', datos.solicitud.find((s) => s.factura_folio_fiscal).factura_folio_fiscal);
+    await esc.click('#entrega [data-accion="enviar"]');
+    await esc.waitForSelector('#factura_rfc[aria-invalid="true"]');
+    await esc.fill('#factura_rfc', `${p.curp.slice(0, 10)}AB1`);
+    await esc.click('#entrega [data-accion="enviar"]');
+    await esc.waitForSelector('#factura_folio_fiscal[aria-invalid="true"]');
+    comprueba(/ya está registrado/.test(await esc.textContent('[data-campo="factura_folio_fiscal"]')), t('escritorio: un RFC inválido y un folio fiscal ya registrado no se aceptan'));
+    await esc.fill('#factura_folio_fiscal', '0A1B2C3D-4E5F-4A6B-8C7D-9E0F1A2B3C4D');
+    await esc.click('#entrega [data-accion="enviar"]');
+    // La página se vuelve a abrir con su aviso: se espera el de la entrega (el de «Acta aceptada» ya estaba a la vista)
+    await esc.waitForFunction(() => /Credencial repuesta/.test((document.querySelector('[data-hecho]:not([hidden])') || {}).textContent || '') && document.querySelector('[data-reposicion-datos] dl'));
+    const ficha = await esc.textContent('main');
+    comprueba(/Credencial repuesta/.test(await esc.textContent('[data-hecho]')) && /Credencial repuesta el\s*14\/10\/2026/.test(ficha) && /0A1B2C3D-4E5F-4A6B-8C7D-9E0F1A2B3C4D/.test(ficha)
+      && ficha.includes(`Número de acreditación${antes.numero}`) && ficha.includes(`Emitida el${dma(antes.emitida_en)}`) && ficha.includes(`Vence el${dma(antes.vence_en)}`) && !errEsc.length,
+      t(`escritorio: credencial repuesta con la factura; la acreditación conserva su número, su emisión y su vigencia${errEsc.length ? ': ' + errEsc.join(' | ') : ''}`));
+    await page.goto(BASE + 'verificar.html');
+    await page.fill('#numero', antes.numero);
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-verificacion]:not([hidden])');
+    comprueba(new RegExp(`Vigente hasta el ${dma(antes.vence_en)}`).test(await page.textContent('[data-verificacion]')), t('«Verificar» la sigue mostrando vigente hasta la misma fecha'));
+    comprueba(!tel.errores.length, t(`recorrido sin errores en la consola${tel.errores.length ? ': ' + tel.errores.join(' | ') : ''}`));
+    await tel.c.close();
+  });
+
+  // Cancelar una acreditación con su reposición abierta la cancela también (sale de «Reposiciones por atender»)
+  await bloque('cancelar con reposición', async () => {
+    const a = enEstado('acta_aceptada');
+    const { c, page, errores } = await nuevo(1280, 900);
+    await page.goto(BASE + `acreditacion.html?numero=${a.numero}&perfil=instructor`);
+    await page.click('button:has-text("Cancelar acreditación")');
+    await page.waitForSelector('#dlg-cancelar[open]');
+    comprueba(/La reposición de su credencial que está en trámite se cancela/.test(await page.textContent('#dlg-cancelar')), t('el diálogo avisa que la reposición en trámite se cancela'));
+    await page.fill('#motivo-cancelar', 'Motivo de la prueba con reposición.');
+    await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
+    await page.click('#dlg-cancelar [data-accion="enviar"]');
+    await page.waitForSelector('[data-hecho]:not([hidden])');
+    comprueba(/Reposición cancelada/.test(await page.textContent('[data-reposicion-situacion]')) && await page.isHidden('#entrega'), t('la reposición queda cancelada y ya no se entrega'));
+    await page.goto(BASE + 'acreditaciones.html');
+    await page.waitForSelector('[data-cuenta-reposiciones]');
+    await page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cuenta-reposiciones]').textContent));
+    comprueba(await page.locator(`[data-filas-reposiciones] tr[data-numero="${a.numero}"]`).count() === 0 && !errores.length, t('ya no está en «Reposiciones por atender»'));
+    await c.close();
+  });
+
+  // Una credencial del sistema todavía no entregada no se repone; la de una cancelada, tampoco
+  await bloque('no se repone', async () => {
+    const sinEntrega = datos.acreditacion.find((a) => a.origen === 'sistema' && !a.entregada_en && persona(a).estado === 'activa');
+    const { c, page } = await nuevo(390, 844, sinEntrega.solicitante_id);
+    await page.goto(BASE + `reposicion.html?numero=${sinEntrega.numero}`);
+    await page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cargando]').textContent));
+    comprueba(/todavía no se te entrega/.test(await page.textContent('[data-cargando]')) && await page.isHidden('#formulario'), t('una credencial que todavía no se entrega no se repone: se recoge'));
+    await c.close();
+    const canc = datos.acreditacion.find((a) => a.cancelada_en);
+    const r2 = await nuevo(390, 844, canc.solicitante_id);
+    await r2.page.goto(BASE + `reposicion.html?numero=${canc.numero}`);
+    await r2.page.waitForFunction(() => !/Cargando/.test(document.querySelector('[data-cargando]').textContent));
+    comprueba(/no está vigente/.test(await r2.page.textContent('[data-cargando]')), t('la credencial de una acreditación cancelada no se repone'));
+    await r2.c.close();
+  });
+}
+const APD_NOMBRE = (p) => [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' ').toUpperCase();
+
 // El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
 const navegador = navegadorSinGoogle(await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}));
 // Cada parte corre aunque otra se detenga (auditoría 2026-10-19, A1-02): antes, la primera parte que se detenía
@@ -5901,6 +6303,8 @@ try {
   if (toca('tareas')) await parte('tareas y estados del personal', () => tareasPersonal(navegador));
   if (toca('visual')) await parte('sistema visual', () => sistemaVisual(navegador));
   if (toca('sesion23')) await parte('sesión del 23/10', () => sesion23(navegador));
+  if (toca('cancelacion')) await parte('cancelación de acreditaciones', () => cancelacion(navegador));
+  if (toca('reposicion')) await parte('reposición de credenciales', () => reposicionCredencial(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

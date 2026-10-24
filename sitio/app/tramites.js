@@ -16,8 +16,61 @@
     return ultima && o.disponible && o.modalidad === 'renovacion';
   };
 
-  function fichaAcreditacion(datos, a, op) {
+  /* Cancelada por la Secretaría (P120, sesión de trabajo del 23/10/2026): «Cancelada» en gris, con el día, el motivo y el
+     fundamento, de tú; sin «Renovar» (una cancelada no se renueva) ni reposición */
+  function fichaCancelada(datos, a) {
+    const v = APD.vigencia('cancelada');
+    return el('article', { class: 'ficha' }, [
+      el('div', { class: 'ficha-cabeza' }, [el('h4', { class: 'ficha-titulo', texto: APD.TIPOS[a.tipo_acreditacion] }), estado(v.texto, v.tono)]),
+      datosLista([
+        ['Número de acreditación', a.numero],
+        ['Emitida el', fechaCorta(a.emitida_en)],
+        ['Cancelada el', fechaCorta(a.cancelada_en)],
+        ['Motivo', APD.paraTi(a.cancelacion_motivo)],
+        ['Fundamento', APD.limpia(a.cancelacion_fundamento)],
+        ['Origen', a.origen === 'kobo' ? 'Registro anterior de la Secretaría' : '']
+      ]),
+      el('p', { class: 'ficha-sigue', texto: 'La Secretaría canceló tu acreditación: ya no puedes trabajar con ella y no se puede renovar.' })
+    ]);
+  }
+  /* Reposición de la credencial (P140, sesión de trabajo del 23/10/2026): en qué va, qué te toca y, si se puede, «Pedir la
+     reposición de tu credencial». Devuelve { partes, acciones }. */
+  const MOTIVO_REPOSICION = { perdida: 'pérdida', robo: 'robo' };
+  function reposicion(datos, a, lugares) {
+    const partes = [];
+    const acciones = [];
+    const r = APD.reposicionAbierta(datos, a);
+    const ultima = APD.reposicionesDe(datos, a)[0];
+    if (r) {
+      const caja = [el('div', { class: 'ficha-cabeza' }, [el('h5', { class: 'ficha-subtitulo', texto: 'Reposición de tu credencial' }), APD.estadoReposicion(r)]),
+        el('p', { texto: `La pediste el ${fechaCorta(r.solicitada_en)} por ${MOTIVO_REPOSICION[r.motivo] || r.motivo}.` })];
+      if (r.estado === 'solicitada') caja.push(el('p', { class: 'ficha-sigue', texto: 'La Secretaría revisa tu acta. Si algo falta, te lo indica aquí; si está completa, te dice cuánto pagar y dónde recoger tu credencial.' }));
+      if (r.estado === 'con_observaciones') {
+        caja.push(el('p', { class: 'con-renglones', texto: APD.observacionDe('Tu acta', r.observacion) }),
+          el('p', { class: 'ficha-sigue', texto: 'Carga el acta corregida para que la Secretaría la revise otra vez.' }));
+        acciones.push(el('a', { class: 'btn btn-primario', href: `reposicion.html?numero=${encodeURIComponent(a.numero)}`, texto: 'Cargar el acta corregida' }));
+      }
+      if (r.estado === 'acta_aceptada') {
+        const monto = r.pago_monto != null ? APD.moneda(r.pago_monto) : null;
+        lugares.add('entrega');
+        caja.push(el('div', { class: 'ficha-sigue' }, APD.sigueEn({ texto: 'La Secretaría aceptó tu acta.', pasos: [
+          monto ? `Paga la cuota de reposición: ${monto}, e imprime tu comprobante.` : 'Paga la cuota de reposición e imprime tu comprobante.',
+          `Acude a la oficina del ${APD.sede(datos).nombre} con tu identificación oficial y tu comprobante de pago.`,
+          'Ahí la Secretaría valida tu factura y te entrega tu credencial, con el mismo número y la misma vigencia.'] })),
+        el('p', { class: 'pendiente', texto: 'Pendiente: días y horario para recoger la credencial repuesta.' }));
+      }
+      partes.push(el('div', { class: 'ficha-reposicion' }, caja));
+    } else if (ultima && ultima.estado === 'repuesta') {
+      partes.push(datosLista([['Credencial repuesta el', fechaCorta(ultima.repuesta_en)]]));
+    }
+    // Si la pierdes o te la roban: con la acreditación vigente y la credencial ya entregada
+    if (!APD.porQueNoReponer(datos, a)) acciones.push(el('a', { class: 'btn btn-secundario', href: `reposicion.html?numero=${encodeURIComponent(a.numero)}`, texto: 'Pedir la reposición de tu credencial' }));
+    return { partes, acciones };
+  }
+
+  function fichaAcreditacion(datos, a, op, lugares) {
     const sit = APD.situacion(datos, a);
+    if (sit === 'cancelada') return fichaCancelada(datos, a);
     // «Vencida · puedes renovarla» sólo si aparece «Renovar»; si no, «Vencida» (decisión de Liber del 21/10, C6-05 a)
     const v = APD.vigencia(sit, { renovable: porRenovar(datos, a, op) });
     const ficha = el('article', { class: 'ficha' }, [
@@ -33,8 +86,12 @@
         ['Origen', a.origen === 'kobo' ? 'Registro anterior de la Secretaría' : '']
       ])
     ]);
+    const repos = reposicion(datos, a, lugares);
+    ficha.append(...repos.partes);
+    // Las acciones de la reposición van después de «Renovar» (la acción que toca, D26), en la misma fila
+    const conReposicion = () => { if (repos.acciones.length) ficha.append(el('div', { class: 'ficha-acciones' }, repos.acciones)); return ficha; };
     const ultima = APD.acreditacionesDe(datos, { id: a.solicitante_id }).find((x) => x.tipo_acreditacion === a.tipo_acreditacion) === a;
-    if (!ultima) return ficha;
+    if (!ultima) return conReposicion();
     const o = op[a.tipo_acreditacion];
     if (o.disponible && o.modalidad === 'renovacion') {
       const limite = APD.sumaMeses(a.vence_en, APD.parametro(datos, 'meses_despues_renovacion') || 12);
@@ -43,7 +100,8 @@
         : `Ya no está vigente: no puedes trabajar con ella. Puedes renovarla hasta el ${fechaCorta(limite)}.` }));
       ficha.append(el('div', { class: 'ficha-acciones' }, [
         // Es la acción que toca: botón principal (D26)
-        el('a', { class: 'btn btn-primario', href: `solicitud.html?tipo=${a.tipo_acreditacion}`, texto: 'Renovar' })
+        el('a', { class: 'btn btn-primario', href: `solicitud.html?tipo=${a.tipo_acreditacion}`, texto: 'Renovar' }),
+        ...repos.acciones.splice(0)
       ]));
     } else if (sit === 'vencida_no_renovable') {
       ficha.append(el('p', { class: 'ficha-sigue', texto: 'Venció hace más de un año: para obtenerla de nuevo haces una solicitud nueva.' }));
@@ -53,7 +111,7 @@
     } else if (!o.disponible && o.motivo && sit === 'vigente') {
       ficha.append(el('p', { class: 'ficha-sigue texto-gris', texto: o.motivo.replace(/^Tu acreditación \S+ vence el [^.]+\. /, '') }));
     }
-    return ficha;
+    return conReposicion();
   }
 
   function grupoDe(datos, s) {
@@ -382,8 +440,10 @@
     const op = APD.opciones(datos, persona, []);
 
     const acs = APD.acreditacionesDe(datos, persona);
+    // La reposición con el acta aceptada también lleva a la sede (P140): «Dónde es» la cuenta
+    const lugares = new Set();
     document.querySelector('[data-acreditaciones]').replaceChildren(...(acs.length
-      ? acs.slice().sort((x, y) => Number(porRenovar(datos, y, op)) - Number(porRenovar(datos, x, op))).map((a) => fichaAcreditacion(datos, a, op))
+      ? acs.slice().sort((x, y) => Number(porRenovar(datos, y, op)) - Number(porRenovar(datos, x, op))).map((a) => fichaAcreditacion(datos, a, op, lugares))
       : [el('p', { class: 'vacio', texto: 'Todavía no tienes acreditaciones.' })]));
     // Antes de empezar (sesión de trabajo del 23/10/2026): la de dictaminador pide la de poda durante al menos dos años
     // consecutivos; quien todavía no los tiene sabe desde cuándo podrá pedirla
@@ -402,7 +462,6 @@
     // Una sola acción principal: iniciar una solicitud nueva, si hay algo que se pueda pedir como nueva
     const puedeNueva = ['poda', 'dictaminador'].some((t) => op[t].disponible && op[t].modalidad === 'nueva');
     // Un solo texto para «sin solicitudes en curso», con la guía de cómo empezar si se puede (D14)
-    const lugares = new Set();
     document.querySelector('[data-solicitudes]').replaceChildren(...(enCurso.length
       ? enCurso.map((s) => fichaSolicitud(datos, s, persona, lugares))
       : [el('p', { class: 'vacio', texto: `No tienes solicitudes en curso.${puedeNueva ? ' Para empezar, presiona «Iniciar una solicitud».' : op.poda.clave === 'menor_de_edad' ? ` ${op.poda.motivo}` : ''}` })]));
