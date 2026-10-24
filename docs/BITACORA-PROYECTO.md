@@ -1541,3 +1541,13 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   factura, resultado. **Crea tu cuenta:** quién eres, cómo te avisamos, tu fotografía, tu contraseña, revisa y crea; la
   fecha de nacimiento y el sexo salen de la CURP. Con el módulo de pasos del estándar; la base no cambia.
 - Se une con «Grupos» por pasos (bloque 92). Pruebas: parte nueva `SOLO=pasos` en `probar-sitio`.
+
+## 2026-10-24 · Bloque 94 · Horario fijo y asistencia hasta el pase de lista
+
+- Publicada la 0.68 (tareas por pasos). Liber probó la versión publicada y reportó dos cosas.
+- **Horario fijo.** El curso es de 9:00 a 15:00 (parámetros): en «Grupos» y en la ficha del grupo ya no hay menú de hora
+  de entrada; se muestra el horario y el grupo la toma del parámetro. Lo que le falta a un grupo ya no incluye «hora».
+- **Asistencia día por día.** Al guardar un día, un botón principal lleva al siguiente («Seguir con el día N+1») y, al
+  guardar el penúltimo, al pase de lista del último día en «Aplicar el examen», que ahora empieza por «Día 5 de 5 · Pase
+  de lista en el salón de cómputo». «Asistencia» muestra la lista del último día; en la renovación hay un solo botón.
+- Pruebas: `probar-sitio` con las partes `SOLO=asistencia5`, `probar-esquemas` 151 (sin `hora_entrada`).
