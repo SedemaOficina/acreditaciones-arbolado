@@ -15,7 +15,9 @@ const PAGINAS = [
   ['index.html', 'Inicio'], ['cuenta.html', 'Crea tu cuenta'], ['entrar.html', 'Entrar'], ['datos.html', 'Mi perfil'],
   ['solicitud.html', 'Solicitud'], ['tramites.html', 'Mis trámites'], ['verificar.html', 'Verificar una acreditación'],
   // También las que se agregaron después de la lista (auditoría 2026-10-18, A 8.4)
-  ['corregir.html', 'Cargar el documento correcto'], ['material.html', 'Material de estudio']
+  ['corregir.html', 'Cargar el documento correcto'], ['material.html', 'Material de estudio'],
+  // Reposición de la credencial (P140, sesión de trabajo del 23/10/2026)
+  ['reposicion.html', 'Reposición de tu credencial']
 ];
 // Bloques que sólo aparecen en ciertos casos (atributo → condición en palabras)
 const OCULTOS = {

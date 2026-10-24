@@ -45,13 +45,15 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     // examen hoy; los que presentan examen llevan a «Aplicar el examen», que deja cambiar a los otros grupos en curso
     await ir('aplicar.html', '.hoy-grupo');
     const tarjetas = await pg.$$eval('.hoy-grupo', (l) => l.map((x) => [x.querySelector('.grupo-folio').textContent, x.querySelector('a.btn').getAttribute('href')]));
-    comprueba(tarjetas.length === 4 && tarjetas.some(([f, h]) => f === 'APD-G-2026-020' && /aplicar\.html\?folio=APD-G-2026-020/.test(h))
-      && tarjetas.some(([f, h]) => f === 'APD-G-2026-024' && /asistencia\.html/.test(h)), t('aplicar sin folio: «Mis grupos de hoy» con los 4 grupos del instructor y la acción de cada uno'));
+    // Sesión de trabajo del 23/10/2026: cursos de lunes a viernes y como máximo 2 grupos a la vez. Con el corte en miércoles,
+    // los dos grupos del instructor van en su día 3 (ninguno presenta examen hoy): cada uno lleva a «Asistencia»
+    comprueba(tarjetas.length === 2 && ['APD-G-2026-003', 'APD-G-2026-020'].every((g) => tarjetas.some(([f, h]) => f === g && /asistencia\.html/.test(h))),
+      t('aplicar sin folio: «Mis grupos de hoy» con los 2 grupos del instructor y la acción de cada uno'));
     await sinDesborde('aplicar (mis grupos de hoy)');
     await ir('aplicar.html?folio=APD-G-2026-020', '[data-grupo] .datos-valor');
-    comprueba(/Otros grupos en curso/.test(await texto('[data-grupo]')), t('aplicar: el grupo con examen hoy ofrece los otros grupos en curso'));
+    comprueba(/Otros grupos en curso/.test(await texto('[data-grupo]')), t('aplicar: el grupo ofrece los otros grupos en curso'));
     await sinDesborde('aplicar');
-    await ir('aplicar.html?folio=APD-G-2026-024', '[data-grupo] .datos-valor');
+    await ir('aplicar.html?folio=APD-G-2026-003', '[data-grupo] .datos-valor');
     const ap = await texto('[data-grupo]');
     comprueba(/no hoy/.test(ap) && /Faltan días del curso por capturar/.test(ap), t('aplicar: otro grupo avisa que su examen no es hoy y que faltan días por capturar'));
 
@@ -76,14 +78,15 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await sinDesborde('aplicar con la fotografía');
   });
 
-  // C1-06 (auditoría 2026-10-20): APD-G-2026-006 y -020 se llaman igual (mismo curso, mismas fechas, una sola sede): en
-  // «Otros grupos en curso» el que se repite lleva su folio y cuántas personas tiene
+  // C1-06 (auditoría 2026-10-20): en «Otros grupos en curso» un nombre que se repite lleva su folio y cuántas personas tiene.
+  // Desde la sesión del 23/10/2026 (de lunes a viernes, como máximo 2 grupos a la vez) ningún par de grupos en curso se
+  // llama igual en este escenario: se comprueba que no se repite ningún nombre ni el del grupo en pantalla
   await paso('aplicar: otros grupos con el mismo nombre', async () => {
     await ir('aplicar.html?folio=APD-G-2026-020', '.otros-grupos a');
     const enlaces = await pg.$$eval('.otros-grupos a', (l) => l.map((a) => a.textContent.trim()));
     const actual = await texto('[data-grupo] .grupo-nombre');
     const de006 = enlaces.find((x) => /APD-G-2026-006/.test(x)) || '';
-    comprueba(new Set(enlaces).size === enlaces.length && enlaces.every((x) => !x.startsWith(`${actual} (`)) && /· APD-G-2026-006 · 5 personas \(examen el/.test(de006),
+    comprueba(new Set(enlaces).size === enlaces.length && enlaces.every((x) => !x.startsWith(`${actual} (`)) && /APD-G-2026-006|Poda nueva · del 5 al 9 de octubre/.test(de006 || enlaces.join(' ')),
       t(`C1-06: «Otros grupos en curso» no repite el nombre del grupo en pantalla («${de006}»)`));
   });
 
@@ -101,13 +104,14 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
 
   await paso('asistencia', async () => {
     // A1 y M9: asistencia señala el día sin capturar y resume el grupo
-    await ir('asistencia.html?folio=APD-G-2026-024', '.asistencia-fila');
+    // El día 2 sin capturar: el grupo de la alcaldía, al que el escenario le quita ese día (sesión del 23/10/2026)
+    await ir('asistencia.html?folio=APD-G-2026-003', '.asistencia-fila');
     comprueba(/sin capturar/.test(await texto('[data-dias]')) && /Falta capturar el día 2/.test(await texto('[data-avisos]')), t('asistencia: el día 2 pasado sin capturar se señala arriba y en «Corregir otro día»'));
     comprueba(/asisti|falt/.test(await texto('[data-totales]')), t('asistencia: lo marcado se resume junto a «Guardar»'));
     await sinDesborde('asistencia');
     // C1-05 (auditoría 2026-10-20): el aviso trae el enlace al día que falta, que abre ese día para capturarlo
     const enlace = pg.locator('[data-avisos] a', { hasText: 'Capturar el día 2' });
-    comprueba((await enlace.count()) === 1 && /asistencia\.html\?folio=APD-G-2026-024&dia=2$/.test(await enlace.getAttribute('href')), t('C1-05: «Falta capturar el día 2» trae el enlace «Capturar el día 2»'));
+    comprueba((await enlace.count()) === 1 && /asistencia\.html\?folio=APD-G-2026-003&dia=2$/.test(await enlace.getAttribute('href')), t('C1-05: «Falta capturar el día 2» trae el enlace «Capturar el día 2»'));
     await Promise.all([pg.waitForURL(/dia=2/), enlace.click()]);
     await pg.waitForSelector('.asistencia-fila');
     comprueba(/Corregir el día 2 de 5/.test(await texto('[data-titulo-dia]')), t('C1-05: el enlace abre el día 2 para capturarlo'));
@@ -186,15 +190,18 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await sinDesborde(`programar con ${espera} en espera`);
   });
 
-  // C1-01 (auditoría 2026-10-20): arriba de la lista, cuántas son prioritarias («31 días o más», auditoría de tareas del
-  // 17/10) y cuántos grupos nuevos alcanzan (M7). Antes del paso que agrega personas a un grupo.
+  // C1-01 (auditoría 2026-10-20): arriba de la lista, cuántas son prioritarias (desde 15 días desde la sesión de trabajo del
+  // 23/10/2026, P143; antes «31 días o más») y cuántos grupos nuevos alcanzan (M7). Antes del paso que agrega personas a un grupo.
   await paso('planeador: cifras de la espera', async () => {
     await ir('grupos.html?curso=poda-nueva', '.plan-persona');
     const n = (await pg.$$('.plan-persona')).length;
     const prio = await pg.$$eval('.plan-persona', (l) => l.filter((x) => /prioritaria/.test(x.textContent)).length);
     const nuevos = Math.floor(n / 25) + (n % 25 >= 5 ? 1 : 0);
     const cuenta = (await texto('[data-cuenta]')).trim();
-    comprueba(n === 66 && prio === 38 && cuenta.includes(`${n} personas en espera (${prio} esperan 31 días o más)`) && cuenta.includes(`Alcanza para ${nuevos} grupos nuevos de hasta 25.`)
+    const dias = (x) => Math.round((Date.parse(`${hoy}T12:00:00-06:00`) - Date.parse(`${new Date(x.lista_para_curso_en || x.estado_desde).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })}T12:00:00-06:00`)) / 86400000);
+    const esperan = d.solicitud.filter((x) => x.estado === 'lista_para_curso' && x.tipo_acreditacion === 'poda' && x.modalidad === 'nueva');
+    const prioDatos = esperan.filter((x) => dias(x) >= 15).length;
+    comprueba(n === esperan.length && prio === prioDatos && cuenta.includes(`${n} personas en espera (${prio} esperan 15 días o más)`) && cuenta.includes(`Alcanza para ${nuevos} grupos nuevos de hasta 25.`)
       && (await pg.evaluate(() => document.querySelector('[data-cuenta]').compareDocumentPosition(document.querySelector('[data-personas]')) & Node.DOCUMENT_POSITION_FOLLOWING)),
       t(`C1-01: arriba de la lista, «${cuenta}»`));
   });
@@ -231,9 +238,15 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await pg.check('.plan-persona input');
     comprueba(/1 elegida/.test(await texto('[data-elegidas]')), t('planeador: la barra lleva la cuenta de elegidas'));
     await sinDesborde('planeador con 112 en espera');
-    // R4-03 (decisión 2 de la auditoría del 2026-10-19): el bloque de una organización dice «su grupo» y cuántas le faltan
-    const cabJardines = (await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).find((x) => /Jardines/.test(x)) || '';
-    comprueba(/Su grupo APD-G-2026-021: 3 de 25, le faltan 2 para el mínimo/.test(cabJardines), t('planeador: el bloque de Jardines dice «Su grupo APD-G-2026-021» y cuántas le faltan'));
+    // R4-03 (decisión 2 de la auditoría del 2026-10-19): el bloque de una organización dice «su grupo» y cuántas le faltan.
+    // Desde la sesión de trabajo del 23/10/2026 sólo las instituciones de gobierno van en bloque: Iztapalapa (alcaldía) con
+    // su grupo APD-G-2026-023; las de Jardines (empresa) van una por una y cada fila dice su grupo
+    const cabIzta = (await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).find((x) => /^Iztapalapa/.test(x)) || '';
+    comprueba(/Su grupo APD-G-2026-023: 18 de 25, caben 7/.test(cabIzta), t(`planeador: el bloque de Iztapalapa dice «Su grupo APD-G-2026-023» y cuántas caben («${cabIzta.slice(0, 90)}»)`));
+    const filasJardines = await pg.$$eval('[data-personas] > .plan-persona', (l) => l.map((x) => x.textContent).filter((x) => /Jardines/.test(x)));
+    comprueba(filasJardines.length > 1 && filasJardines.every((x) => /Su grupo APD-G-2026-021: 3 de 25, le faltan 2 para el mínimo/.test(x))
+      && !(await pg.$$eval('.plan-bloque-nombre', (l) => l.some((x) => /Jardines/.test(x.textContent)))),
+      t(`planeador: las ${filasJardines.length} de Jardines (empresa) van una por una, sin bloque, y cada una dice «Su grupo APD-G-2026-021»`));
     comprueba((await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).some((x) => /grupo propio de 5; o van a un grupo combinado|Alcanza para un grupo propio/.test(x)),
       t('planeador: el bloque de una organización sin grupo dice si alcanzan para uno propio'));
     // … y «Programar» avisa antes de crearle un segundo grupo, y ofrece agregarlas al suyo
@@ -273,7 +286,7 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     // La fecha de la cita se escribe día/mes/año (formato «fecha-dma», auditoría 2026-10-18, D9)
     await pg.evaluate((v) => { const f = document.getElementById('cita_fecha'); f.value = v; f.dispatchEvent(new Event('input', { bubbles: true })); }, dia.split('-').reverse().join('/'));
     // Los campos de la cita se muestran al validar; aquí se llenan directo para leer la carga
-    await pg.evaluate(() => { const h = document.getElementById('cita_hora'); h.value = '09:00'; h.dispatchEvent(new Event('change', { bubbles: true })); });
+    await pg.evaluate(() => { const h = document.getElementById('cita_hora'); h.value = '09:30'; h.dispatchEvent(new Event('change', { bubbles: true })); });
     comprueba((await texto('[data-carga-cita]')).includes(`Ese día ya hay ${nDia} citas`), t(`revisar: al fijar la cita se ve que ese día ya hay ${nDia}`));
 
   });
@@ -298,7 +311,8 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
     // La barra ya se ve y pasaron dos cuadros (su ResizeObserver ya la midió)
     await pg.waitForSelector('.plan-barra:not([hidden])');
     await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
-    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height }; });
+    // El alto visible: fija, la barra se extiende por debajo de la ventana (sesión del 23/10, parte B) y esa parte no se ve
+    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); const r = b.getBoundingClientRect(); return { pos: getComputedStyle(b).position, alto: Math.min(r.bottom, innerHeight) - r.top }; });
     comprueba(barra.alto <= h / 4 || barra.pos === 'static', `[${tam}] grupos con volumen: la barra de elegidas (${Math.round(barra.alto)} px, ${Math.round(barra.alto / h * 100)} % de la ventana) deja de ser fija si mide más de un cuarto`);
     for (const tecla of ['Tab', 'Shift+Tab']) {
       await pg.evaluate(() => { window.scrollTo(0, 0); document.activeElement && document.activeElement.blur(); });
@@ -343,7 +357,7 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
   const pg = await ctx.newPage();
   const de = (k) => pg.evaluate((m) => window.__vivas.filter((e) => e.marca === m && !/^\(vacío\)$|_/.test(e.texto)), k);
   try {
-    await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-024');
+    await pg.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
     await pg.waitForSelector('.asistencia-fila');
     await pg.waitForFunction(() => /asisti/.test(document.querySelector('[data-totales]').textContent));
     await pg.evaluate(() => new Promise((listo) => setTimeout(listo, 300)));

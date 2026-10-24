@@ -1,6 +1,6 @@
 {
   "formulario": "grupo-crear.html",
-  "generado": "2026-10-19T06:27:57.254Z",
+  "generado": "2026-10-24T03:39:28.035Z",
   "campos": {
     "fecha_inicio": {
       "etiqueta": "Primer día del curso",
@@ -36,13 +36,7 @@
       "uso": "Fijar la hora de entrada del curso, la misma todos los días (apd.grupo.hora_entrada).",
       "atributos": {},
       "opciones": [
-        "07:00",
-        "07:30",
-        "08:00",
-        "08:30",
-        "09:00",
-        "09:30",
-        "10:00"
+        "09:00"
       ],
       "autocomplete": "off"
     },

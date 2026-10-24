@@ -56,12 +56,14 @@
   <section class="seccion" aria-labelledby="t-como">
     <h2 class="titulo-bloque" id="t-como">Cómo es el trámite</h2>
     <ol class="pasos-tramite">
-      <li>Creas tu cuenta con tu CURP y una fotografía de frente. Cada persona hace su propio trámite.</li>
+      <li>Creas tu cuenta con tu CURP y una fotografía de frente. Cada persona hace su propio trámite y necesita tener <span data-param="edad_minima">18</span> años cumplidos el día de su solicitud.</li>
       <li>Llenas tu solicitud y cargas tus documentos en PDF.</li>
       <li>La Secretaría revisa tus documentos. Si algo falta, te lo indica y lo corriges en línea.</li>
       <li>Acudes a tu cita de cotejo con los mismos documentos, impresos, y con tu comprobante de pago. Ahí la Secretaría confirma tu fotografía, emite tu factura y, si es tu primer trámite, abre tu expediente físico.</li>
-      <li>Cuando se reúne un grupo, la Secretaría te asigna a un curso: <span data-duraciones>de 5 días la primera vez y de 1 día la renovación</span>.</li>
+      <li>Cuando se reúne un grupo, la Secretaría te asigna a un curso: <span data-duraciones>de 5 días la primera vez y de 1 día la renovación</span>, de lunes a viernes, de <span data-param-texto="curso_hora_entrada">9:00</span> a <span data-param-texto="curso_hora_salida">15:00</span>. En el curso de primera vez, el quinto día es de repaso de conocimientos y examen final.</li>
       <li>Al terminar el curso presentas el examen en computadora, a libro cerrado: prepáralo con el <a href="material.html">material de estudio</a>. Conoces tu calificación al momento. Si lo apruebas, ese mismo día recoges tu credencial: ahí te toman la fotografía que lleva y firmas el comprobante de recepción.</li>
+      <!-- Credencial (P49 y P140, sesión de trabajo del 23/10/2026): puede ser cancelada conforme a los lineamientos; si se pierde o la roban, se repone -->
+      <li>Tu credencial dice que la acreditación puede ser cancelada conforme a los lineamientos. Si la pierdes o te la roban, pide su reposición en «Mis trámites» con el acta que levantaste: la nueva lleva el mismo número y la misma vigencia.</li>
     </ol>
   </section>
 
@@ -72,7 +74,8 @@
       <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
       <p class="aviso-texto">Mientras tu acreditación no esté vigente no puedes trabajar en el arbolado, aunque tu renovación esté en trámite.</p>
     </div>
-    <p>Para la acreditación de dictaminador técnico necesitas tener vigente la de poda y derribo al momento del trámite.</p>
+    <!-- Dictaminador (sesión de trabajo del 23/10/2026): la poda durante al menos 2 años consecutivos, y vigente -->
+    <p>Para la acreditación de dictaminador técnico necesitas la de poda y derribo durante al menos <strong data-param="anios_poda_dictaminador">2</strong> años consecutivos, y vigente al momento del trámite. Si renovaste tu acreditación de poda dentro del plazo para renovarla (hasta <span data-param="meses_despues_renovacion">12</span> meses después de que venció), no se interrumpe la cuenta; si la tramitaste como nueva, la cuenta empieza otra vez.</p>
   </section>
 
   <section class="seccion" aria-labelledby="t-requisitos">

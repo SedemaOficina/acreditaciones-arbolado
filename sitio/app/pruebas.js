@@ -200,12 +200,13 @@
   /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
   const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
   const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
-  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7 };
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7,
+    'acreditaciones.html': 7, 'acreditacion.html': 7, 'reposicion.html': 7 };
   const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
   /* Lo guardado en este navegador (auditoría 2026-10-18, C 1.1): lo cuenta archivos-prueba.js, que también lo borra */
-  const VACIO = { cuentas: 0, envios: 0, fotos: 0, documentos: 0, borradores: 0, borradorArchivos: 0, perfiles: 0, material: 0, revisiones: 0, cotejos: 0, grupos: 0, lista: 0, examenes: 0, otras: 0 };
+  const VACIO = { cuentas: 0, envios: 0, fotos: 0, documentos: 0, borradores: 0, borradorArchivos: 0, perfiles: 0, material: 0, revisiones: 0, cotejos: 0, grupos: 0, lista: 0, examenes: 0, acreditaciones: 0, otras: 0 };
   function guardado() {
     if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve(VACIO);
     return APD_ARCHIVOS_PRUEBA.guardado().catch(() => VACIO);
@@ -220,7 +221,9 @@
     ['revisiones', '1 revisión', 'revisiones'], ['cotejos', '1 cita de cotejo atendida', 'citas de cotejo atendidas'],
     ['grupos', '1 cambio en grupos o asistencia', 'cambios en grupos o asistencia'],
     ['lista', '1 pase de lista del examen', 'pases de lista del examen'], ['examenes', '1 código de examen', 'códigos de examen'],
-    ['material', '1 cambio en el material de estudio', 'cambios en el material de estudio']
+    ['material', '1 cambio en el material de estudio', 'cambios en el material de estudio'],
+    // Cancelaciones y reposiciones de credencial (sesión de trabajo del 23/10/2026)
+    ['acreditaciones', '1 cancelación o paso de una reposición', 'cancelaciones o pasos de reposiciones']
   ];
   function textoGuardado(g) {
     const partes = TEXTOS_GUARDADO.filter(([k]) => g[k]).map(([k, uno, varios]) => (g[k] === 1 ? uno : `${g[k]} ${varios}`)

@@ -41,8 +41,9 @@ function hashContrasena(clave) {
 function en(fecha, hora = '10:00') {
   emitir(`SELECT set_config('apd.ahora_simulado', ${q(`${fecha} ${hora}:00-06`)}, false)`);
 }
-function como(usuario, tipo) {
-  emitir(`SELECT set_config('apd.usuario', ${q(usuario)}, false), set_config('apd.usuario_tipo', ${q(tipo)}, false), set_config('apd.procedencia', '192.0.2.10', false)`);
+// perfil: el del acceso del SIA (P27), sólo para el personal; lo piden las reglas reservadas a ciertos perfiles (P120)
+function como(usuario, tipo, perfil = '') {
+  emitir(`SELECT set_config('apd.usuario', ${q(usuario)}, false), set_config('apd.usuario_tipo', ${q(tipo)}, false), set_config('apd.procedencia', '192.0.2.10', false), set_config('apd.perfil', ${q(perfil)}, false)`);
 }
 const REVISION = 'revision.ficticia';
 const COTEJO = 'cotejo.ficticio';
@@ -219,12 +220,13 @@ function cotejar(s, fecha) {
   en(fecha, '10:30');
   como(COTEJO, 'personal');
   // En la cita se verifica el pago, la Secretaría emite la factura y su personal carga el PDF y captura
-  // RFC, nombre o razón social y folio fiscal (a la organización, o a la propia persona con RFC genérico)
+  // RFC, nombre y folio fiscal. La factura es a nombre de la persona solicitante, con los datos de su constancia de
+  // situación fiscal (sesión de trabajo del 23/10/2026): su RFC ficticio sale de su CURP (las 4 letras y la fecha)
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
   VALUES (${q(uuid(`factura:${s.id}`))}, ${q(s.id)}, 'factura_pago', ${q(`ficticio/${s.id}/factura.pdf`)}, 'factura.pdf', 'application/pdf', 84211,
     encode(sha256(convert_to(${q(s.id + 'factura')}, 'UTF8')), 'hex'))`);
-  const rfc = s.org ? `EJE0101${Object.keys(ORG).indexOf(s.org) + 10}AB1` : 'XAXX010101000';
-  const razon = s.org ? ORG[s.org].nombre : `${s.persona.nombre} ${s.persona.primer}`;
+  const rfc = `${s.persona.curp.slice(0, 10)}AB1`;
+  const razon = [s.persona.nombre, s.persona.primer, s.persona.segundo].filter(Boolean).join(' ').toUpperCase();
   const h = createHash('md5').update('folio-fiscal:' + s.id).digest('hex').toUpperCase();
   const folio = `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
   // Frente a la persona y su identificación, el personal confirma su fotografía (una vez por persona)
@@ -336,6 +338,13 @@ costo('poda', 'nueva', 1200, '2026-07-01');
 costo('poda', 'renovacion', 800, '2026-07-01');
 costo('dictaminador', 'nueva', 1800, '2026-07-01');
 costo('dictaminador', 'renovacion', 1000, '2026-07-01');
+// Cuota de reposición de la credencial (P140, sesión de trabajo del 23/10/2026). MONTO FICTICIO: el que cita para
+// «Reposición de acreditaciones» el Aviso de la Gaceta No. 1548 del 14/02/2025 (P140); el vigente lo confirma Finanzas
+en('2026-07-01', '08:00');
+como(ADMINISTRACION, 'personal', 'administracion');
+emitir(`UPDATE apd.cuota SET monto = 88.00, vigente_desde = '2026-07-01',
+  fundamento = 'Monto ficticio de prueba, vigente desde el 01/07/2026: el que cita el Aviso de la Gaceta Oficial No. 1548 del 14/02/2025 para «Reposición de acreditaciones», por tarjeta (clave 2.5.17.1) [pendiente P140: confirmar el monto vigente con Finanzas].'
+  WHERE clave = 'reposicion_credencial'`);
 
 // 1 · Grupo de poda (nueva) combinado y concluido en septiembre: aprobados, uno reprobado, uno sin derecho a examen
 const g1 = [];
@@ -411,15 +420,18 @@ altaMigrada(dictRenov);
 migrar(dictRenov, 'poda', '2026-02-15');
 const a5 = migrar(dictRenov, 'dictaminador', '2025-10-30');
 
+// Quien pide la de dictaminador por primera vez tiene la de poda al menos 2 años consecutivos (sesión de trabajo del
+// 23/10/2026): el registro anterior trae sus acreditaciones de poda de cada año, renovadas sin corte
+const cadenaPoda = (p, ultima) => [-2, -1, 0].forEach((k) => migrar(p, 'poda', `${Number(ultima.slice(0, 4)) + k}${ultima.slice(4)}`));
 const dictNuevo1 = persona('dictaminador-nuevo-1');
 altaMigrada(dictNuevo1);
-migrar(dictNuevo1, 'poda', '2026-03-02');
+cadenaPoda(dictNuevo1, '2026-03-02');
 const dictNuevo2 = persona('dictaminador-nuevo-2');
 altaMigrada(dictNuevo2);
-migrar(dictNuevo2, 'poda', '2026-04-20');
+cadenaPoda(dictNuevo2, '2026-04-20');
 const dictObs = persona('dictaminador-observado');
 altaMigrada(dictObs);
-migrar(dictObs, 'poda', '2026-05-11');
+cadenaPoda(dictObs, '2026-05-11');
 
 // Renovación vencida, en espera desde el 1 de septiembre: prioridad y «vencida en espera»
 const sVencida = solicitud('renov-vencida', vencidaEspera, 'poda', 'renovacion', { fecha: '2026-08-25', anterior: a2 });
@@ -451,11 +463,16 @@ hastaLista(sDictR, { envio: '2026-10-01', validacion: '2026-10-02', cita: '2026-
 const sDictObs = solicitud('dict-observado', dictObs, 'dictaminador', 'nueva', { fecha: '2026-10-06', estatus: 'concluido', carrera: 'Biología', anios: 5.5 });
 enviar(sDictObs, '2026-10-06');
 observar(sDictObs, '2026-10-08', 'comprobantes_experiencia', 'Las constancias no indican el periodo ni las funciones realizadas en manejo de arbolado.');
-// Un aprobado del grupo de septiembre ya pide dictaminador (tiene la poda que acaba de recibir)
-const sDictG1 = solicitud('dict-g1', g1[1].persona, 'dictaminador', 'nueva', { fecha: '2026-10-10', nivel: 'maestria', carrera: 'Ingeniería Ambiental', anios: 5 });
+// Del registro anterior, con maestría, pide dictaminador (con su poda desde 2024, sin corte). Hasta el 23/10/2026 lo pedía
+// un aprobado del grupo de septiembre, que ya no puede: su poda es de septiembre de 2026 (le faltan los 2 años)
+const dictMaestria = persona('dictaminador-maestria');
+altaMigrada(dictMaestria);
+cadenaPoda(dictMaestria, '2026-05-18');
+const sDictG1 = solicitud('dict-g1', dictMaestria, 'dictaminador', 'nueva', { fecha: '2026-10-10', nivel: 'maestria', carrera: 'Ingeniería Ambiental', anios: 5 });
 enviar(sDictG1, '2026-10-10');
 
-// 3 · Grupo de poda específico de una alcaldía, en curso (cinco días desde el 13/10): día 1 capturado, una falta
+// 3 · Grupo de poda específico de una alcaldía, en curso (cinco días, de lunes a viernes, desde el 12/10; hasta el
+//     23/10/2026 empezaba el martes 13/10, y el curso caía en sábado): días 1 y 2 capturados, una falta; hoy es el día 3
 const g4 = [];
 for (let i = 0; i < 11; i++) {
   const p = persona('g4-' + i);
@@ -466,9 +483,10 @@ for (let i = 0; i < 11; i++) {
 }
 const G4 = grupo('g4', 'poda', 'nueva', '2026-10-01', 'oriente');
 inscribir(G4, g4.slice(0, 10), '2026-10-01');
-programar(G4, '2026-10-02', '2026-10-13');
-estadoGrupo(G4, '2026-10-13', 'en_curso');
-asistencia(g4.slice(0, 10), 1, '2026-10-13', [g4[4]]);
+programar(G4, '2026-10-02', '2026-10-12');
+estadoGrupo(G4, '2026-10-12', 'en_curso');
+asistencia(g4.slice(0, 10), 1, '2026-10-12', [g4[4]]);
+asistencia(g4.slice(0, 10), 2, '2026-10-13');
 // El undécimo de la alcaldía queda en la bandeja: el grupo específico se llenó con diez por fecha de cita
 
 // 4 · Grupo combinado de poda en integración, por debajo del mínimo (4 de 5); dos más siguen en la bandeja
@@ -544,13 +562,13 @@ enviar(sReenvia, '2026-10-08', '19:00');
 
 const dictTrunca = persona('dictaminador-trunca');
 altaMigrada(dictTrunca);
-migrar(dictTrunca, 'poda', '2026-02-16');
+cadenaPoda(dictTrunca, '2026-02-16');
 const sDictTrunca = solicitud('dict-trunca', dictTrunca, 'dictaminador', 'nueva', { fecha: '2026-10-13', estatus: 'trunco', carrera: 'Biología', anios: 6 });
 enviar(sDictTrunca, '2026-10-13');
 
 const dictRechazo = persona('dictaminador-rechazado');
 altaMigrada(dictRechazo);
-migrar(dictRechazo, 'poda', '2026-01-19');
+cadenaPoda(dictRechazo, '2026-01-19');
 const sDictRechazo = solicitud('dict-rechazado', dictRechazo, 'dictaminador', 'nueva', { fecha: '2026-10-02', nivel: 'preparatoria', anios: 9 });
 enviar(sDictRechazo, '2026-10-02');
 rechazar(sDictRechazo, '2026-10-07', 'Tu comprobante de estudios confirma la preparatoria como último grado. Para la acreditación de dictaminador técnico se requiere al menos carrera técnica, carta de pasante o licenciatura. Puedes iniciar una solicitud nueva si cuentas con otro grado de estudios.');
@@ -615,7 +633,9 @@ en('2026-10-06', '16:00');
 como(COTEJO, 'personal');
 emitir(`UPDATE apd.grupo SET instructor = ${q(INSTRUCTOR)}, fecha_inicio = '2026-10-26', hora_entrada = '09:00' WHERE id = ${q(G5.id)}`);
 
-// Aprobada hoy: grupo de cinco días que termina en la fecha de corte, con su examen
+// Aprobada: grupo de cinco días, de lunes a viernes (5 al 9/10), con su examen el viernes; el personal todavía no lo
+// concluye. Hasta el 23/10/2026 empezaba el sábado 10/10 y terminaba en la fecha de corte (sábados y domingos ya no hay
+// cursos, P151)
 const g6 = [];
 for (let i = 0; i < 5; i++) {
   const p = persona('g6-' + i);
@@ -626,15 +646,16 @@ for (let i = 0; i < 5; i++) {
 }
 const G6 = grupo('g6', 'poda', 'nueva', '2026-09-25');
 inscribir(G6, g6, '2026-09-25');
-programar(G6, '2026-10-01', '2026-10-10');
-estadoGrupo(G6, '2026-10-10', 'en_curso');
-['2026-10-10', '2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14'].forEach((f, i) => asistencia(g6, i + 1, f));
-g6.forEach((s6, i) => examen(s6, '2026-10-14', i === 4 ? 6.5 : 8.5));
+programar(G6, '2026-09-28', '2026-10-05');
+estadoGrupo(G6, '2026-10-05', 'en_curso');
+['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'].forEach((f, i) => asistencia(g6, i + 1, f));
+g6.forEach((s6, i) => examen(s6, '2026-10-09', i === 4 ? 6.5 : 8.5));
 
-// Podador con su acreditación por vencer y sin trámite: ve «Renovar»
+// Podador con su acreditación por vencer y sin trámite: ve «Renovar». Desde la sesión del 23/10 tiene la poda desde
+// 2023, sin cortes: también puede iniciar la de dictaminador («Iniciar una solicitud» queda como secundario, P164)
 const porVencer = persona('por-vencer-libre');
 altaMigrada(porVencer);
-migrar(porVencer, 'poda', '2025-11-02');
+cadenaPoda(porVencer, '2025-11-02');
 activar(porVencer, '2026-10-01');
 // Del registro anterior, sin cuenta y con la poda por vencer: activa su cuenta y hace su primera renovación con todos
 // los documentos (decisión 2026-10-18)
@@ -647,6 +668,77 @@ altaMigrada(dictPodaVencida);
 migrar(dictPodaVencida, 'poda', '2025-09-01');
 migrar(dictPodaVencida, 'dictaminador', '2025-10-28');
 activar(dictPodaVencida, '2026-09-15');
+
+// Para pedir la de dictaminador (sesión de trabajo del 23/10/2026), casos del menú de pruebas: con 2 años o más de poda
+// sin corte, puede; con un corte (renovó después de la ventana de renovación tardía), la cuenta empieza otra vez y todavía
+// no puede, aunque sume más de 2 años; con menos de 2 años, como las personas del grupo de septiembre, tampoco.
+const dosAnios = persona('poda-dos-anios');
+altaMigrada(dosAnios);
+cadenaPoda(dosAnios, '2026-06-01');
+activar(dosAnios, '2026-10-05');
+const conCorte = persona('poda-con-corte');
+altaMigrada(conCorte);
+migrar(conCorte, 'poda', '2023-03-06');   // venció el 05/03/2024; la ventana de renovación cerraba el 05/03/2025
+migrar(conCorte, 'poda', '2025-05-05');   // nueva, fuera de la ventana: aquí empieza otra vez la cuenta
+migrar(conCorte, 'poda', '2026-05-04');
+activar(conCorte, '2026-10-05');
+
+// 9 · Cancelación de una acreditación (P120) y reposición de la credencial (P140), sesión de trabajo del 23/10/2026.
+// Cancelada: su poda estaría por vencer (vence el 04/11/2026), pero la canceló un instructor el 08/10: no la renueva y
+// «Verificar» la muestra cancelada, sin el motivo. El fundamento queda con su marca mientras lo fija la Dirección Jurídica.
+const cancelada = persona('acred-cancelada', { nombre: 'Zacarías', primer: 'Simulado', segundo: 'Simulado', sexo: 'H' });
+altaMigrada(cancelada);
+const aCancelada = migrar(cancelada, 'poda', '2025-11-05');
+activar(cancelada, '2026-09-01');
+en('2026-10-08', '13:00');
+como(INSTRUCTOR, 'personal', 'instructor');
+emitir(`UPDATE apd.acreditacion SET cancelacion_motivo = 'Se documentó un derribo sin la autorización de la Secretaría en la visita de inspección del 06/10/2026.',
+  cancelacion_fundamento = 'Lineamientos para la acreditación de podadores y dictaminadores técnicos, [Art. __, fracc. __] [pendiente P120: lo fija la Dirección Jurídica]'
+  WHERE id = ${q(aCancelada)}`);
+// Reposición de la credencial: cuatro personas con su poda y su dictaminador vigentes (del registro anterior), una en cada
+// paso: acta en revisión, acta con observaciones, acta aceptada (paga y recoge) y credencial repuesta
+const ACTA = (p, v = 1) => ({ clave: `ficticio/reposiciones/${p.id}/acta-${v}.pdf`, sha: `encode(sha256(convert_to(${q(p.id + 'acta' + v)}, 'UTF8')), 'hex')` });
+function pideReposicion(p, acred, fecha, motivo) {
+  en(fecha, '18:30');
+  como(p.correo, 'solicitante');
+  const a = ACTA(p);
+  emitir(`INSERT INTO apd.reposicion (id, acreditacion_id, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256, es_ficticio)
+  VALUES (${q(uuid('reposicion:' + p.clave))}, ${q(acred)}, ${q(motivo)}, ${q(a.clave)}, 'acta.pdf', 'application/pdf', 248311, ${a.sha}, true)`);
+}
+function revisaActa(p, fecha, estado, observacion = '') {
+  en(fecha, '12:30');
+  como(REVISION, 'personal', 'revision_cotejo');
+  emitir(`UPDATE apd.reposicion SET estado = ${q(estado)}, observacion = ${q(observacion)} WHERE id = ${q(uuid('reposicion:' + p.clave))}`);
+}
+const conReposicion = (clave, poda, dict) => {
+  const p = persona(clave);
+  altaMigrada(p);
+  const a = migrar(p, 'poda', poda);
+  migrar(p, 'dictaminador', dict);
+  activar(p, '2026-09-15');
+  return [p, a];
+};
+const [rSolicitada, aSolicitada] = conReposicion('repos-solicitada', '2026-03-09', '2026-03-23');
+pideReposicion(rSolicitada, aSolicitada, '2026-10-13', 'perdida');
+const [rObservada, aObservada] = conReposicion('repos-observada', '2026-04-13', '2026-04-27');
+pideReposicion(rObservada, aObservada, '2026-10-08', 'robo');
+revisaActa(rObservada, '2026-10-09', 'con_observaciones', 'El acta no trae el sello ni la firma de la autoridad que la levantó.');
+const [rAceptada, aAceptada] = conReposicion('repos-aceptada', '2026-05-11', '2026-05-25');
+pideReposicion(rAceptada, aAceptada, '2026-10-06', 'perdida');
+revisaActa(rAceptada, '2026-10-07', 'acta_aceptada');
+const [rRepuesta, aRepuesta] = conReposicion('repos-repuesta', '2026-06-08', '2026-06-22');
+pideReposicion(rRepuesta, aRepuesta, '2026-09-28', 'robo');
+revisaActa(rRepuesta, '2026-09-29', 'acta_aceptada');
+{
+  // En el Vivero: la factura de la cuota, a nombre de la persona (RFC ficticio de su CURP, como en el cotejo)
+  en('2026-10-02', '11:00');
+  como(REVISION, 'personal', 'revision_cotejo');
+  const h = createHash('md5').update('folio-fiscal:reposicion:' + rRepuesta.id).digest('hex').toUpperCase();
+  emitir(`UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = ${q(`${rRepuesta.curp.slice(0, 10)}AB1`)},
+    factura_razon_social = ${q([rRepuesta.nombre, rRepuesta.primer, rRepuesta.segundo].filter(Boolean).join(' ').toUpperCase())},
+    factura_folio_fiscal = ${q(`${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`)}
+    WHERE id = ${q(uuid('reposicion:' + rRepuesta.clave))}`);
+}
 
 // ── Material de estudio (decisión 2026-10-18, Liber) ──────────────────────────────────
 // No es ficticio: son los documentos de la Secretaría que subió Liber. En la versión de prueba el archivo está en

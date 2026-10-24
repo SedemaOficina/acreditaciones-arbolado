@@ -1,0 +1,36 @@
+{
+  "formulario": "reposicion.html",
+  "generado": "2026-10-24T07:04:56.048Z",
+  "campos": {
+    "motivo": {
+      "etiqueta": "¿Qué pasó con tu credencial?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si la credencial se perdió o la robaron (apd.reposicion.motivo).",
+      "atributos": {},
+      "opciones": [
+        "perdida",
+        "robo"
+      ],
+      "autocomplete": "off"
+    },
+    "acta": {
+      "etiqueta": "Acta que levantaste por la pérdida o el robo",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Comprobar la pérdida o el robo de la credencial (apd.reposicion.acta_archivo_clave).",
+      "finalidad": "Reponer la credencial de una acreditación vigente.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "pdf,jpg,jpeg,png",
+        "mb": "5",
+        "nombreArchivo": "ACTA DE PERDIDA O ROBO"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

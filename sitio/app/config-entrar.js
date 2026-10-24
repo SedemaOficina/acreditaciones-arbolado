@@ -41,7 +41,7 @@ window.FORMKIT_OPCIONES = {
               // a quien ya dio la contraseña correcta. Pendiente (P79): cómo se comunica con la Dirección.
               if (p.estado === 'bloqueada') {
                 return mal({ titulo: 'Tu cuenta está bloqueada', pendiente: 'Pendiente (P79): a quién acudir para aclararlo.',
-                  mensaje: 'En tu cita de cotejo no se pudo confirmar tu identidad. La Secretaría lo está aclarando; mientras, no puedes entrar.' });
+                  mensaje: 'En tu cita de cotejo no se pudo confirmar tu identidad. La Secretaría lo está aclarando; mientras, no puedes entrar. Informes en la Secretaría: de lunes a viernes, de 9:00 a 15:00.' });
               }
               // Si el navegador no deja guardar la sesión, se dice: volvía a «Entrar» sin ningún mensaje (F4 M1)
               if (!APD.guardaSesion({ id: p.id })) return mal({ titulo: 'No pudiste entrar', mensaje: APD.textoNoGuardo('tu sesión de prueba') });

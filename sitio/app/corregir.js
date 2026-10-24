@@ -83,8 +83,12 @@
       alFallar(e) { APD.muestraRechazo(e, form); },
       alEnviar() {
         form.hidden = true;
-        FormKit.resultado($('[data-hecho]'), { tono: 'ok', titulo: 'Listo: ya cargaste el documento',
-          pasos: ['Imprime el documento que cargaste.', `Regresa con la persona que te atiende en el ${APD.sede(datos).nombre}.`, 'Ahí termina tu cotejo.'] });
+        // Es una corrección, no una solicitud nueva (sesión de trabajo del 23/10/2026, nuevo 6): lo dice el título y los
+        // pasos son los de la corrección: quien te atiende revisa lo que corregiste y ahí sigue tu cotejo
+        FormKit.resultado($('[data-hecho]'), { tono: 'ok', titulo: 'Recibimos la corrección de tus documentos',
+          pasos: [pausa.docs.length === 1 ? 'Imprime el documento que corregiste.' : 'Imprime los documentos que corregiste.',
+            `Regresa hoy con la persona que te atiende en el ${APD.sede(datos).nombre}: revisa lo que corregiste contra el impreso.`,
+            'Si coincide, ahí mismo termina tu cotejo y quedas en espera de grupo del curso.'] });
       }
     });
   }).catch(() => falla('No se pudo cargar tu información. Intenta de nuevo más tarde.'));

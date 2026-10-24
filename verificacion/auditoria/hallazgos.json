@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:8765/",
+  "base": "http://localhost:8942/",
   "estados": [
     [
       "inicio",
@@ -62,6 +62,14 @@
       "asistencia.html"
     ],
     [
+      "grupo-cancelado",
+      "grupo.html?folio=APD-G-2026-002"
+    ],
+    [
+      "asistencia-grupo",
+      "asistencia.html?folio=APD-G-2026-003"
+    ],
+    [
       "material",
       "material.html"
     ],
@@ -120,12 +128,52 @@
     [
       "corregir-sin-pausa",
       "corregir.html"
+    ],
+    [
+      "acreditaciones",
+      "acreditaciones.html"
+    ],
+    [
+      "acreditacion-vigente-instructor",
+      "acreditacion.html?numero=PD-2025-K100&perfil=instructor"
+    ],
+    [
+      "acreditacion-cancelada",
+      "acreditacion.html?numero=PD-2025-K140"
+    ],
+    [
+      "acreditacion-acta-por-revisar",
+      "acreditacion.html?numero=PD-2026-K141"
+    ],
+    [
+      "acreditacion-por-entregar",
+      "acreditacion.html?numero=PD-2026-K145"
+    ],
+    [
+      "tramites-cancelada",
+      "tramites.html"
+    ],
+    [
+      "tramites-reposicion-observada",
+      "tramites.html"
+    ],
+    [
+      "tramites-reposicion-aceptada",
+      "tramites.html"
+    ],
+    [
+      "reposicion-pedir",
+      "reposicion.html?numero=PD-2026-K147"
+    ],
+    [
+      "reposicion-corregir",
+      "reposicion.html?numero=PD-2026-K143"
     ]
   ],
-  "paginas": 60,
-  "presionados": 201,
+  "paginas": 85,
+  "presionados": 242,
   "porTipo": {
-    "encimado": 2,
+    "encimado": 1,
     "botón sin efecto visible": 1
   },
   "hallazgos": [
@@ -133,13 +181,7 @@
       "estado": "revisar-dictaminador",
       "vista": "escritorio",
       "tipo": "encimado",
-      "detalle": "a.btn-enlace.visor-abrir «Abrir en otra pestaña (se abre en otra pestaña)» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (77×15 px)"
-    },
-    {
-      "estado": "cotejo",
-      "vista": "escritorio",
-      "tipo": "encimado",
-      "detalle": "p.visor-pagina «Hoja 1 de 2» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (77×6 px)"
+      "detalle": "a.btn-enlace.visor-abrir «Abrir en otra pestaña (se abre en otra pestaña)» × button.btn.btn-secundario.menu-pruebas-boton «Menú de pruebas» (77×17 px)"
     },
     {
       "estado": "corregir-observaciones",

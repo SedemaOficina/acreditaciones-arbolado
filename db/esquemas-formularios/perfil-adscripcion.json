@@ -1,6 +1,6 @@
 {
   "formulario": "adscripcion.html",
-  "generado": "2026-10-17T19:04:46.284Z",
+  "generado": "2026-10-24T03:39:27.906Z",
   "campos": {
     "adscrito": {
       "etiqueta": "¿Trabajas para alguna empresa, institución o dependencia?",
@@ -322,6 +322,7 @@
       "atributos": {},
       "opciones": [
         "unam",
+        "chapingo",
         "otro"
       ],
       "autocomplete": "off",

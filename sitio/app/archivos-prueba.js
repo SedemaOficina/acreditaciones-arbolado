@@ -14,7 +14,9 @@
      · grupos, sus cambios y la asistencia («apd.personal.grupos», una lista de eventos en orden);
      · el pase de lista del día del examen («apd.examen.lista») y los exámenes en línea («apd.examen.c.<código>»,
        app/examen-servidor.js): la calificación llega a la solicitud como la llevaría la base (apd.examen);
-     · el material de estudio que sube el personal (IndexedDB «material»).
+     · el material de estudio que sube el personal (IndexedDB «material»);
+     · la cancelación de acreditaciones y la reposición de credenciales («apd.acreditaciones», una lista de eventos en orden;
+       el acta de la reposición, en IndexedDB «documentos» con el folio «reposicion:<número>»; sesión del 23/10/2026).
    APD.cargar() los suma a los datos ficticios con mezcla() y mezclaMaterial(), así que todas las pantallas —«Mis
    trámites», «Mi perfil», la bandeja, las citas, los grupos, la asistencia, el examen y el material— ven lo mismo.
    Lo que la base rechazaría, aquí no cambia nada: la mezcla aplica a cada evento las reglas de la base en el momento en
@@ -43,6 +45,7 @@
     revisiones: 'apd.personal.revisiones',
     cotejos: 'apd.personal.cotejos',
     grupos: 'apd.personal.grupos',
+    acreditaciones: 'apd.acreditaciones',
     lista: 'apd.examen.lista',
     examen: 'apd.examen.c.',
     latido: 'apd.examen.latido.',
@@ -145,6 +148,17 @@
   const comoLista = (t) => Object.fromEntries(Object.entries(esObjeto(t) ? t : {}).map(([f, v]) => [f, Array.isArray(v) ? v : [v]]));
   const listaPorFolio = (clave) => comoLista(leeLs(clave, {}));
   const eventosGrupos = () => { const v = leeLs(CLAVES.grupos, []); return Array.isArray(v) ? v : []; };
+  const eventosAcreditaciones = () => { const v = leeLs(CLAVES.acreditaciones, []); return Array.isArray(v) ? v : []; };
+  /* Un evento de cancelación o de reposición (P120, P140), con su hora real «en». Devuelve el evento guardado, o null si el
+     navegador no lo permitió (la pantalla lo dice, bloque 3) */
+  function guardaEventoAcreditacion(e) {
+    const ev = Object.assign({ en: new Date().toISOString() }, e);
+    try { global.localStorage.setItem(CLAVES.acreditaciones, JSON.stringify(eventosAcreditaciones().concat([ev]))); return ev; } catch (x) { return null; }
+  }
+  /* Retira un evento que la base no habría aplicado (se reconoce por su hora real «en») */
+  function retiraEventoAcreditacion(en) {
+    try { global.localStorage.setItem(CLAVES.acreditaciones, JSON.stringify(eventosAcreditaciones().filter((x) => !esObjeto(x) || x.en !== en))); } catch (x) { /* sin almacenamiento */ }
+  }
   const paseDeLista = () => { const v = leeLs(CLAVES.lista, {}); return esObjeto(v) ? v : {}; };
   function clavesLs(prefijo) { try { return Object.keys(global.localStorage).filter((k) => k.startsWith(prefijo)); } catch (e) { return []; } }
   /* dañado(): se llama por cada código que no tiene forma de registro (F4 A6); uno de otro banco se ignora sin contarlo */
@@ -367,6 +381,7 @@
         perfiles: Object.keys(leePerfiles()).length,
         material: mat.length,
         revisiones: cuantos(CLAVES.revisiones), cotejos: cuantos(CLAVES.cotejos), grupos: eventosGrupos().length,
+        acreditaciones: eventosAcreditaciones().length,
         lista: Object.keys(paseDeLista()).length, examenes: clavesLs(CLAVES.examen).length,
         // Cualquier otra clave de la prueba (por ejemplo, una señal de pantalla abierta del examen)
         otras: clavesLs('apd.').filter((k) => ![CLAVES.sesion, CLAVES.ultimoUso, CLAVES.inicio].includes(k) && !k.startsWith(BORRADOR_LS)).length
@@ -561,6 +576,91 @@
     }
   }
 
+  /* Cancelación de acreditaciones (P120) y reposición de credenciales (P140), sesión de trabajo del 23/10/2026: una lista
+     de eventos en orden, cada uno aplicado como lo dejaría la base (apd.acreditacion_cambio, apd.acreditacion_cancelada,
+     apd.reposicion_alta y apd.reposicion_cambio); lo que la base rechazaría, aquí no cambia nada. Tipos:
+       cancelar { numero, motivo, fundamento, perfil, por } · reposicion { numero, motivo, acta } · acta { numero,
+       resultado: acta_aceptada | con_observaciones, observacion, por } · acta_corregida { numero, motivo, acta } ·
+       repuesta { numero, factura_rfc, factura_razon_social, factura_folio_fiscal, por }
+     acta: { nombre, tipo, tamano, en } (el archivo, en IndexedDB «documentos», folio «reposicion:<número>», requisito
+     «acta_reposicion» y la hora en). */
+  const ABIERTAS_REPOSICION = ['solicitada', 'con_observaciones', 'acta_aceptada'];
+  const CIERRA_RENOVACION = ['borrador', 'enviada', 'con_observaciones', 'validada_en_linea', 'lista_para_curso', 'inscrita'];
+  function aplicaAcreditaciones(d, eventos, t, danado) {
+    if (!eventos.length) return;
+    const APD = global.APD;
+    d.acreditacion = d.acreditacion.slice();
+    d.reposicion = (d.reposicion || []).slice();
+    d.estado_acreditacion = Object.assign({}, d.estado_acreditacion);
+    d.verificacion_publica = (d.verificacion_publica || []).slice();
+    const sit = (a) => d.estado_acreditacion[a.numero];
+    const vigente = (a) => ['vigente', 'por_vencer'].includes(sit(a));
+    const texto = (x) => String(x || '').trim();
+    const persona = (a) => d.solicitante.find((p) => p.id === a.solicitante_id) || {};
+    for (const e of eventos.slice().sort((x, y) => t.ms(x.en) - t.ms(y.en))) {
+      const i = d.acreditacion.findIndex((a) => a.numero === e.numero);
+      if (i < 0) { danado(); continue; }
+      const a = d.acreditacion[i];
+      const en = t.alCorte(e.en);
+      const ri = d.reposicion.findIndex((r) => r.acreditacion_id === a.id && ABIERTAS_REPOSICION.includes(r.estado));
+      const ponR = (cambios) => { d.reposicion[ri] = Object.assign({}, d.reposicion[ri], cambios, { estado_desde: en }); };
+      const acta = (x) => (esObjeto(x) ? { acta_archivo_clave: `reposicion:${a.numero}|acta_reposicion|${x.en}`, acta_nombre_original: texto(x.nombre) || 'acta.pdf',
+        acta_tipo_mime: x.tipo || 'application/pdf', acta_tamano_bytes: Number(x.tamano) || 0, acta_en: x.en,
+        acta_nombre_archivo: APD.nombreDeArchivo('ACTA DE PERDIDA O ROBO', persona(a), x.nombre) } : null);
+      switch (e.tipo) {
+        case 'cancelar': {
+          // Sólo instructores y la Dirección, con motivo (10 caracteres) y fundamento, de una vigente y una sola vez
+          if (a.cancelada_en || !vigente(a) || !APD.perfilesCancelan(d).includes(e.perfil) || texto(e.motivo).length < 10 || !texto(e.fundamento)) break;
+          d.acreditacion[i] = Object.assign({}, a, { cancelada_en: en, cancelada_por: e.por || '', cancelacion_motivo: texto(e.motivo), cancelacion_fundamento: texto(e.fundamento) });
+          d.estado_acreditacion[a.numero] = 'cancelada';
+          d.verificacion_publica = d.verificacion_publica.map((v) => (v.numero === a.numero ? Object.assign({}, v, { situacion: 'Cancelada', cancelada_el: APD.diaDe(en) }) : v));
+          if (ri >= 0) ponR({ estado: 'cancelada', observacion: 'La acreditación se canceló.' });
+          // La renovación en trámite se cancela con el motivo; sale de su grupo y su cita abierta se cierra
+          d.solicitud = d.solicitud.map((s) => {
+            if (s.acreditacion_anterior_id !== a.id || s.modalidad !== 'renovacion' || !CIERRA_RENOVACION.includes(s.estado)) return s;
+            const motivo = `La acreditación ${a.numero} que se renovaba fue cancelada.`;
+            d.inscripcion = d.inscripcion.map((x) => (x.solicitud_id === s.id && x.activa ? Object.assign({}, x, { activa: false, baja_en: en, motivo_baja: `Solicitud cancelada: ${motivo}` }) : x));
+            d.cita = d.cita.map((c) => (c.solicitud_id === s.id && ['pendiente', 'en_pausa'].includes(c.resultado) ? Object.assign({}, c, { resultado: 'cancelada', observacion: `Solicitud cancelada: ${motivo}`, atendida_en: en }) : c));
+            return Object.assign({}, s, { estado: 'cancelada', estado_desde: en, motivo_cierre: motivo, cotejo_pausa: null });
+          });
+          break;
+        }
+        case 'reposicion': {
+          const x = acta(e.acta);
+          if (!x || APD.porQueNoReponer(d, a) || !['perdida', 'robo'].includes(e.motivo)) break;
+          d.reposicion.push(Object.assign({ id: `prueba:reposicion:${a.numero}:${e.en}`, acreditacion_id: a.id, motivo: e.motivo, estado: 'solicitada', estado_desde: en,
+            observacion: '', solicitada_en: en, revisada_por: null, revisada_en: null, pago_monto: null, factura_rfc: null, factura_razon_social: null,
+            factura_folio_fiscal: null, repuesta_en: null, repuesta_por: null, es_ficticio: true, de_prueba: true }, x));
+          break;
+        }
+        case 'acta': {
+          if (ri < 0 || d.reposicion[ri].estado !== 'solicitada' || !vigente(a)) break;
+          if (e.resultado === 'con_observaciones' && texto(e.observacion).length >= 10) ponR({ estado: 'con_observaciones', observacion: texto(e.observacion), revisada_por: e.por || '', revisada_en: en });
+          else if (e.resultado === 'acta_aceptada') ponR({ estado: 'acta_aceptada', observacion: '', revisada_por: e.por || '', revisada_en: en, pago_monto: APD.cuotaReposicion(d).monto });
+          break;
+        }
+        case 'acta_corregida': {
+          const x = acta(e.acta);
+          if (!x || ri < 0 || d.reposicion[ri].estado !== 'con_observaciones' || !['perdida', 'robo'].includes(e.motivo)) break;
+          ponR(Object.assign({ estado: 'solicitada', motivo: e.motivo, observacion: '' }, x));
+          break;
+        }
+        case 'repuesta': {
+          if (ri < 0 || d.reposicion[ri].estado !== 'acta_aceptada' || !vigente(a)) break;
+          const rfc = texto(e.factura_rfc).toUpperCase();
+          const folio = texto(e.factura_folio_fiscal).toUpperCase();
+          const razon = texto(e.factura_razon_social);
+          // Un folio fiscal no se repite, tampoco con el de una solicitud (apd.reposicion_cambio: folio_fiscal_repetido)
+          if (!rfc || !folio || !razon || d.solicitud.some((s) => s.factura_folio_fiscal === folio) || d.reposicion.some((r) => r.factura_folio_fiscal === folio)) break;
+          ponR({ estado: 'repuesta', factura_rfc: rfc, factura_razon_social: razon, factura_folio_fiscal: folio, repuesta_en: APD.diaDe(en), repuesta_por: e.por || '' });
+          break;
+        }
+        default:
+          danado();
+      }
+    }
+  }
+
   function mezcla(datos) {
     let danados = 0;
     const danado = () => { danados += 1; };
@@ -592,7 +692,8 @@
       const docsDe = {};
       for (const a of docs) (docsDe[a.folio] = docsDe[a.folio] || []).push(a);
       const folios = [...new Set([...registros.map((r) => r.folio), ...Object.keys(docsDe), ...Object.keys(revisiones), ...Object.keys(cotejos)])];
-      if (!listaCuentas.length && !folios.length && !Object.keys(perfiles).length && !eventosGrupo.length) return Object.assign({}, datos, { prueba_ignorados: danados });
+      const eventosAcred = conForma(eventosAcreditaciones(), (e) => conTexto(e, 'tipo') && conTexto(e, 'en') && conTexto(e, 'numero'));
+      if (!listaCuentas.length && !folios.length && !Object.keys(perfiles).length && !eventosGrupo.length && !eventosAcred.length) return Object.assign({}, datos, { prueba_ignorados: danados });
       const d = Object.assign({}, datos, { solicitud: datos.solicitud.slice(), solicitante: datos.solicitante.slice(), documento: datos.documento.slice(),
         revision: datos.revision.slice(), fotografia: datos.fotografia.slice(), cita: (datos.cita || []).slice(),
         grupo: datos.grupo.slice(), inscripcion: datos.inscripcion.slice(), asistencia: datos.asistencia.slice(), examen: (datos.examen || []).slice(),
@@ -883,6 +984,8 @@
       }
       // Grupos, asistencia, pase de lista y examen, después: una solicitud llega a la espera de grupo con su cotejo terminado
       aplicaGrupos(d, eventosGrupo, t, deshace);
+      // Cancelaciones y reposiciones, al final: cancelar cierra la renovación en trámite (apd.acreditacion_cancelada)
+      aplicaAcreditaciones(d, eventosAcred, t, danado);
       d.prueba_ignorados = danados;
       return d;
     }).catch((e) => {
@@ -899,6 +1002,6 @@
     CLAVES, caduca, comoLista, listaPorFolio, eventosGrupos, alCambiar, avisaCambio, alCorte, PREGUNTAS_BANCO,
     guardaEnvio, retiraEnvio, guardaDocumento, quitaDocumento, documentos, borraDocumentos, guardaFoto, foto,
     guardaCuenta, cuenta, contrasenaValida, guardaPerfil, borraTodo, borraPestana, guardado, mezcla,
-    guardaMaterial, mezclaMaterial, ignorados
+    guardaMaterial, mezclaMaterial, ignorados, eventosAcreditaciones, guardaEventoAcreditacion, retiraEventoAcreditacion
   };
 }(window));

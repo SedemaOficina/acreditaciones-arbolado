@@ -9,6 +9,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 
 - [`parametro`](#parametro) — Valores que gobiernan reglas del sistema y que la administración puede cambiar sin programar. Cada cambio queda en la bitácora.
 - [`curso`](#curso) — Los cuatro cursos: tipo de acreditación por modalidad. Guarda duración, asistencia mínima, calificación mínima y cupos vigentes; un grupo copia los cupos al crearse.
+- [`cuota`](#cuota) — Cuotas que no son de un curso: hoy, la reposición de la credencial (P140, sesión de trabajo del 23/10/2026). Como el pago de cada curso: el monto lo actualiza el personal con la publicación que lo fija y desde cuándo aplica (cambia cada año); cada cambio queda en la bitácora.
 - [`requisito`](#requisito) — Catálogo de requisitos. Un requisito es un documento que se carga o un registro que el sistema comprueba en su propio padrón.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
 - [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
@@ -16,7 +17,8 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
 - [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en el curso; quien aplica el examen la usa para confirmar su identidad y su asistencia, por eso debe verse clara. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta (en la cita no se toma otra). No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
-- [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
+- [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día. Una cancelada (P120, sesión de trabajo del 23/10/2026) lo está desde su cancelada_en: ya no es vigente, no se renueva ni sirve de requisito. La credencial se repone sin cambiar la acreditación (apd.reposicion).
+- [`reposicion`](#reposicion) — Reposición de la credencial de una acreditación vigente por pérdida o robo (P140, sesión de trabajo del 23/10/2026). La persona la pide desde «Mis trámites» con el acta que levantó; el personal revisa el acta (la acepta o le pone observaciones), y en el Vivero valida la factura de la cuota de reposición y entrega la credencial repuesta. La acreditación no cambia: mismo número, misma emisión y misma vigencia. El acta vive en el almacén, fuera de lo publicado; aquí sólo su clave. Sus cambios de estado los valida la base y quedan en la bitácora.
 - [`solicitud`](#solicitud) — Un trámite: una persona, un curso. El expediente físico es de la persona (apd.solicitante.numero_expediente), no del trámite. Sus cambios de estado los valida la base y quedan en la bitácora.
 - [`revision`](#revision) — Cada ronda de revisión documental en línea, con su resultado. Permite contar cuántas vueltas dio un expediente.
 - [`cita`](#cita) — Cada cita de cotejo presencial y lo que pasó en ella (decisiones 2026-10-17, Liber). La crea la base al validar la solicitud o al cambiar su cita; la cierra el personal: atendida, en pausa (un documento no coincidió y la persona trae el correcto ese mismo día), con observaciones, sin pago, no se presentó o no era la persona. Si la solicitud se cancela con la cita abierta, la base la cierra como cancelada, con el motivo (decisión 8, 2026-10-19). La solicitud guarda en cita_en la cita vigente.
@@ -73,6 +75,24 @@ Restricciones e índices:
 - `CONSTRAINT curso_calificacion_ck CHECK (calificacion_minima BETWEEN 0 AND 10)`
 - `CONSTRAINT curso_cupo_ck CHECK (cupo_minimo >= 1 AND cupo_minimo <= cupo_maximo)`
 - `CONSTRAINT curso_pago_ck CHECK (pago_monto IS NULL OR (pago_monto > 0 AND coalesce(trim(pago_fundamento), '') <> '' AND pago_vigente_desde IS NOT NULL))`
+
+## cuota
+
+Cuotas que no son de un curso: hoy, la reposición de la credencial (P140, sesión de trabajo del 23/10/2026). Como el pago de cada curso: el monto lo actualiza el personal con la publicación que lo fija y desde cuándo aplica (cambia cada año); cada cambio queda en la bitácora.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `clave` | `text` | Sí | Qué se cobra: reposicion_credencial |
+| `concepto` | `text` | Sí | Concepto que se muestra a la persona |
+| `monto` | `numeric(10,2)` | No | Monto en pesos. Vacío mientras no se capture |
+| `fundamento` | `text` | No | Publicación que fija el monto vigente (fecha y número). Obligatorio si hay monto |
+| `vigente_desde` | `date` | No | Desde cuándo aplica el monto vigente. Obligatorio si hay monto |
+| `actualizado_en` | `timestamptz` | Sí | Último cambio (por omisión: `now()`) |
+
+Restricciones e índices:
+
+- `CONSTRAINT cuota_pk PRIMARY KEY (clave)`
+- `CONSTRAINT cuota_monto_ck CHECK (monto IS NULL OR (monto > 0 AND coalesce(trim(fundamento), '') <> '' AND vigente_desde IS NOT NULL))`
 
 ## requisito
 
@@ -262,7 +282,7 @@ Restricciones e índices:
 
 ## acreditacion
 
-Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día.
+Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día. Una cancelada (P120, sesión de trabajo del 23/10/2026) lo está desde su cancelada_en: ya no es vigente, no se renueva ni sirve de requisito. La credencial se repone sin cambiar la acreditación (apd.reposicion).
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
@@ -274,6 +294,10 @@ Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su e
 | `emitida_en` | `date` | Sí | Fecha de emisión (Ciudad de México) |
 | `vence_en` | `date` | Sí | Último día de vigencia: un año después de la emisión, menos un día. Lo calcula la base |
 | `entregada_en` | `date` | No | Entrega en persona |
+| `cancelada_en` | `timestamptz` | No | Cancelación de la acreditación (P120): desde ese día no es vigente. La pone la base al registrar el motivo y el fundamento |
+| `cancelacion_motivo` | `text` | No | Por qué se canceló, al menos 10 caracteres. Lo lee la persona en «Mis trámites»; «Verificar» no lo muestra |
+| `cancelacion_fundamento` | `text` | No | Fundamento de la cancelación: lineamientos y artículo, mientras los fije la Dirección Jurídica escrito como «[Art. __, fracc. __]» (P120) |
+| `cancelada_por` | `text` | No | Cuenta del personal que la canceló (acceso), con perfil instructor o administración (parámetro perfiles_cancelan_acreditacion). La pone la base |
 | `origen` | `text` | Sí | sistema, kobo o papel (por omisión: `'sistema'`) |
 | `folio_origen` | `text` | No | Folio en el sistema de origen, para las migradas |
 | `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
@@ -288,8 +312,57 @@ Restricciones e índices:
 - `CONSTRAINT acreditacion_origen_solicitud_ck CHECK ((origen = 'sistema') = (solicitud_id IS NOT NULL))`
 - `CONSTRAINT acreditacion_fechas_ck CHECK (vence_en > emitida_en AND (entregada_en IS NULL OR entregada_en >= emitida_en))`
 - `CONSTRAINT acreditacion_numero_serie_ck CHECK ((origen = 'sistema') = (numero ~ '^(PD|DT)-[0-9]{4}-[0-9]{4}$'))`
+- `CONSTRAINT acreditacion_cancelacion_ck CHECK ((cancelada_en IS NULL) = (cancelada_por IS NULL) AND (cancelada_en IS NULL) = (cancelacion_motivo IS NULL) AND (cancelada_en IS NULL) = (cancelacion_fundamento IS NULL))`
 - `CREATE INDEX acreditacion_titular ON apd.acreditacion (solicitante_id, tipo_acreditacion, vence_en DESC)`
 - `CREATE INDEX acreditacion_vence ON apd.acreditacion (vence_en)`
+
+## reposicion
+
+Reposición de la credencial de una acreditación vigente por pérdida o robo (P140, sesión de trabajo del 23/10/2026). La persona la pide desde «Mis trámites» con el acta que levantó; el personal revisa el acta (la acepta o le pone observaciones), y en el Vivero valida la factura de la cuota de reposición y entrega la credencial repuesta. La acreditación no cambia: mismo número, misma emisión y misma vigencia. El acta vive en el almacén, fuera de lo publicado; aquí sólo su clave. Sus cambios de estado los valida la base y quedan en la bitácora.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
+| `acreditacion_id` | `uuid` | Sí | Acreditación cuya credencial se repone |
+| `motivo` | `text` | Sí | perdida o robo |
+| `acta_archivo_clave` | `text` | Sí | Clave exacta del acta en el almacén, con sello propio. Al corregir, la nueva sustituye a la anterior (la bitácora conserva la anterior) |
+| `acta_nombre_original` | `text` | Sí | Nombre con que se cargó |
+| `acta_nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: ACTA DE PERDIDA O ROBO_NOMBRE COMPLETO.ext. Lo pone la base (por omisión: `''`) |
+| `acta_tipo_mime` | `text` | Sí | application/pdf, image/jpeg o image/png |
+| `acta_tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
+| `acta_sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
+| `estado` | `text` | Sí | solicitada (el acta está en revisión), con_observaciones (la persona carga otra acta), acta_aceptada (paga la cuota y recoge la credencial en el Vivero), repuesta o cancelada. Ver apd.reposicion_cambio() (por omisión: `'solicitada'`) |
+| `estado_desde` | `timestamptz` | Sí | Desde cuándo está en el estado actual; lo pone la base (por omisión: `now()`) |
+| `observacion` | `text` | Sí | Con observaciones: qué corregir del acta (lo ve la persona). Cancelada: por qué (por omisión: `''`) |
+| `solicitada_en` | `timestamptz` | Sí | Cuándo la pidió la persona; lo pone la base (por omisión: `now()`) |
+| `revisada_por` | `text` | No | Cuenta del personal que revisó el acta (acceso). Lo pone la base |
+| `revisada_en` | `timestamptz` | No | Revisión del acta. Lo pone la base |
+| `pago_monto` | `numeric(10,2)` | No | Monto de la cuota que se le indicó a la persona al aceptar su acta: el vigente ese día (apd.cuota). Un cambio posterior no lo altera. Lo pone la base |
+| `factura_rfc` | `text` | No | RFC de la factura de la cuota; lo captura el personal en el Vivero al entregar la credencial |
+| `factura_razon_social` | `text` | No | Nombre o razón social de la factura; lo captura el personal al entregar |
+| `factura_folio_fiscal` | `text` | No | Folio fiscal (UUID) de la factura; no se repite con el de otra reposición ni el de una solicitud |
+| `repuesta_en` | `date` | No | Entrega de la credencial repuesta (Ciudad de México). Lo pone la base |
+| `repuesta_por` | `text` | No | Cuenta del personal que la entregó. Lo pone la base |
+| `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
+
+Restricciones e índices:
+
+- `CONSTRAINT reposicion_pk PRIMARY KEY (id)`
+- `CONSTRAINT reposicion_acreditacion_fk FOREIGN KEY (acreditacion_id) REFERENCES apd.acreditacion (id)`
+- `CONSTRAINT reposicion_acta_uk UNIQUE (acta_archivo_clave)`
+- `CONSTRAINT reposicion_motivo_ck CHECK (motivo IN ('perdida', 'robo'))`
+- `CONSTRAINT reposicion_estado_ck CHECK (estado IN ('solicitada', 'con_observaciones', 'acta_aceptada', 'repuesta', 'cancelada'))`
+- `CONSTRAINT reposicion_mime_ck CHECK (acta_tipo_mime IN ('application/pdf', 'image/jpeg', 'image/png'))`
+- `CONSTRAINT reposicion_tamano_ck CHECK (acta_tamano_bytes > 0)`
+- `CONSTRAINT reposicion_sha256_ck CHECK (acta_sha256 ~ '^[0-9a-f]{64}$')`
+- `CONSTRAINT reposicion_observacion_ck CHECK (estado NOT IN ('con_observaciones', 'cancelada') OR length(trim(observacion)) > 0)`
+- `CONSTRAINT reposicion_factura_rfc_ck CHECK (factura_rfc IS NULL OR apd.rfc_valido(factura_rfc))`
+- `CONSTRAINT reposicion_folio_fiscal_ck CHECK (factura_folio_fiscal IS NULL OR factura_folio_fiscal ~ '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')`
+- `CONSTRAINT reposicion_repuesta_ck CHECK ((estado = 'repuesta') = (repuesta_en IS NOT NULL AND repuesta_por IS NOT NULL AND factura_rfc IS NOT NULL AND coalesce(trim(factura_razon_social), '') <> '' AND factura_folio_fiscal IS NOT NULL))`
+- `CONSTRAINT reposicion_revisada_ck CHECK (estado IN ('solicitada', 'cancelada') OR (revisada_por IS NOT NULL AND revisada_en IS NOT NULL))`
+- `CREATE UNIQUE INDEX reposicion_una_abierta ON apd.reposicion (acreditacion_id) WHERE estado IN ('solicitada', 'con_observaciones', 'acta_aceptada')`
+- `CREATE UNIQUE INDEX reposicion_folio_fiscal_uk ON apd.reposicion (factura_folio_fiscal) WHERE factura_folio_fiscal IS NOT NULL`
+- `CREATE INDEX reposicion_acreditacion ON apd.reposicion (acreditacion_id, solicitada_en)`
 
 ## solicitud
 
@@ -312,7 +385,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `carrera` | `text` | No | Con licenciatura o posgrado, en poda y en dictaminador: la carrera que estudió, elegida del catálogo o escrita |
 | `carrera_id` | `uuid` | No | Carrera en el catálogo apd.carrera; la pone la base (si la escrita no existe, la agrega sin grupo) |
 | `carrera_tecnica` | `text` | No | Con carrera técnica, en poda y en dictaminador: el nombre de la carrera técnica, escrito; sin catálogo (decisión 2026-10-17, Liber) |
-| `estatus_estudios` | `text` | No | Sólo con licenciatura, en poda y en dictaminador: situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado). Con posgrado no se pregunta: se asume la licenciatura titulada (decisión 2026-10-18) |
+| `estatus_estudios` | `text` | No | Sólo en dictaminador con licenciatura (en poda no se pregunta ni se guarda: sesión de trabajo del 23/10/2026): situación de ese grado (en_curso, trunco, concluido —carta de pasante o 100 % de créditos— o titulado). Con posgrado no se pregunta: se asume la licenciatura titulada (decisión 2026-10-18) |
 | `perfil_academico` | `text` | No | Lo calcula la base con nivel, estatus y grupo de la carrera (apd.perfil_academico): licenciatura_afin, disciplina_afin, pasante, tecnica, por_clasificar o no_cumple. No impide enviar: el personal lo revisa en la revisión documental |
 | `experiencia_minima` | `numeric(3,1)` | No | Años de experiencia que pide el perfil; la calcula la base: 2 con licenciatura o posgrado en carrera principal o afín; 5 en todo lo demás, también cuando lo decide el personal (por clasificar o no cumple) |
 | `anios_experiencia` | `numeric(4,1)` | No | Sólo dictaminador: años de experiencia en manejo de arbolado declarados; los documentos los comprueban |
@@ -463,7 +536,7 @@ Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con e
 | `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo |
 | `sede` | `text` | No | Instalación de la Secretaría; obligatoria para confirmar |
 | `fecha_inicio` | `date` | No | Primer día; obligatoria para confirmar |
-| `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. Falta la hora de salida y si cambia el día del examen (P91) |
+| `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. El curso es de 9:00 a 15:00 (P91, sesión de trabajo del 23/10/2026): entre curso_hora_entrada y antes de curso_hora_salida; la salida no se guarda por grupo |
 | `estado` | `text` | Sí | en_integracion, confirmado, en_curso, concluido o cancelado (por omisión: `'en_integracion'`) |
 | `estado_desde` | `timestamptz` | Sí | Desde cuándo; lo pone la base (por omisión: `now()`) |
 | `motivo_cancelacion` | `text` | No | Obligatorio al cancelar |

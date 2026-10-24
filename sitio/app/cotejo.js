@@ -382,7 +382,7 @@
     }
     /* La cita nueva: desde el día siguiente al de hoy (fecha simulada del corte) y nunca antes de la que se perdió; hasta
        meses_adelanto_cita meses (F2 A6 y M4). El formato «fecha-dma» del estándar lee data-min y data-max (AAAA-MM-DD) y
-       los dice en día/mes/año. Sábados y domingos no se bloquean: los días de atención los define el área (P69, P151). */
+       los dice en día/mes/año. Sábados y domingos no hay citas (sesión de trabajo del 23/10/2026): P.vigilaDiaCita. */
     const base = diaCita > hoy ? diaCita : hoy;
     const manana = APD.sumaDias(base, 1);
     const hasta = APD.sumaMeses(hoy, APD.mesesCita(datos));
@@ -403,6 +403,9 @@
         return new Promise((ok, mal) => {
           const t = setTimeout(() => APD.cargar().then((ahora) => {
             const d = Object.assign({}, payload.datos, payload.datos.cita_fecha ? { cita_fecha: isoDe(payload.datos.cita_fecha) } : {});
+            // Las citas de cotejo son de lunes a viernes (sesión de trabajo del 23/10/2026; la base: cita_en_fin_de_semana)
+            const finDeSemana = d.cita_fecha ? P.motivoDiaCita(d.cita_fecha) : null;
+            if (finDeSemana) return mal({ mensaje: finDeSemana, errores: [{ campo: 'cita_fecha', mensaje: finDeSemana }] });
             const resultado = document.getElementById('resultado').value;
             // Como lo hará la API: una cita que todavía no llega no se registra (F2 A6), y al retomar una pausa sólo
             // «coincide» el documento que la persona volvió a cargar, leído ahora, no al abrir la página (F2 A7)
@@ -521,6 +524,8 @@
         if (resultado === 'no_es_la_persona') $('[data-hecho] [data-resultado-acciones]').before(el('p', { class: 'pendiente', texto: 'Pendiente (P79): a quién de la Dirección se avisa y por qué medio.' }));
       }
     });
+    // Un sábado o un domingo se dice junto a la fecha de la cita nueva (sesión de trabajo del 23/10/2026)
+    P.vigilaDiaCita(form);
 
     /* Cerrar la solicitud o no atender a la persona no tiene vuelta atrás: se confirma (módulo modal del estándar) */
     FormKit.ganchos.submit = (f, enviar) => {

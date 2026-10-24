@@ -2,10 +2,14 @@
 // (Antes en docs/auditoria-tareas/; se pasó a herramientas/ el 2026-10-18, auditoría A 8.5.)
 // Toma sitio/datos/ficticios.json y le agrega, clonando registros existentes con datos ficticios:
 //  · 60 solicitudes en la bandeja de revisión (enviadas en las últimas 3 semanas, de los cuatro cursos)
-//  · 40 citas de cotejo el día de corte (09:00 a 14:00) y 30 más en los días siguientes
+//  · 40 citas de cotejo el día de corte (09:30 a 14:30) y 30 más en los días hábiles siguientes
 //  · 100 personas en espera de grupo, repartidas en cuatro cursos y ~18 adscripciones (organizaciones grandes y cola larga)
-//  · 1 grupo de 25 personas en su último día (asistencia de los días 1 a 4 capturada, con faltas)
+//  · 1 grupo de 25 personas en su día 3 (empezó el lunes; asistencia de los días 1 y 2 capturada, con faltas)
 //  · 3 grupos más en integración y confirmados
+// Sesión de trabajo del 23/10/2026: citas de 9:30 a 14:30 y de lunes a viernes; cursos de lunes a viernes (el de 5 días
+// empieza en lunes) y como máximo 2 grupos al mismo tiempo. Por eso el grupo de 25 ya no está en su último día (el corte es
+// miércoles) y el caso «día 2 sin capturar» (A1) es el grupo de la alcaldía de los ficticios (APD-G-2026-003), al que aquí
+// se le quita la asistencia del día 2: un tercer grupo esa semana ya no se puede.
 // Uso: node herramientas/escenario-volumen.mjs <ficticios.json> <salida.json>
 import { readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -18,6 +22,11 @@ const azar = () => { semilla = (semilla * 16807) % 2147483647; return (semilla -
 const elige = (l) => l[Math.floor(azar() * l.length)];
 const dia = (n, hora = '10:00') => { const f = new Date(`${corte}T12:00:00-06:00`); f.setDate(f.getDate() + n); return `${f.toISOString().slice(0, 10)}T${hora}:00-06:00`; };
 const soloDia = (n) => dia(n).slice(0, 10);
+// El n-ésimo día hábil (de lunes a viernes) después del corte
+const habil = (iso) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+function diaHabil(n, hora) { let k = 0; let i = 0; while (k < n) { i += 1; if (habil(soloDia(i))) k += 1; } return dia(i, hora); }
+// Días desde el lunes de la semana del corte (0 si el corte es lunes)
+const desdeLunes = (new Date(`${corte}T12:00:00Z`).getUTCDay() + 6) % 7;
 
 const NOMBRES = ['ANA', 'BRUNO', 'CARLA', 'DANIEL', 'ELENA', 'FERNANDO', 'GABRIELA', 'HUGO', 'IRMA', 'JORGE', 'KARLA', 'LEONEL', 'MIRIAM', 'NOE', 'OFELIA', 'PEDRO', 'RAQUEL', 'SAUL', 'TERESA', 'URIEL', 'VERONICA', 'WILFRIDO', 'YOLANDA', 'ZACARIAS', 'ROSA MARIA', 'JUAN CARLOS', 'MARIA JOSE', 'JOSE LUIS'];
 const APELLIDOS = ['EJEMPLO', 'MUESTRA', 'PRUEBA', 'FICTICIO', 'SIMULADO', 'MODELO', 'ENSAYO', 'MAQUETA'];
@@ -82,12 +91,12 @@ reparte(60).forEach(([tipo, modalidad], i) => {
   if (i % 6 === 0) d.revision.push({ id: randomUUID(), revisor: 'revision.ficticia', resultado: 'con_observaciones', revisada_en: dia(-22), solicitud_id: s.id, observacion_general: '' });
 });
 
-// 2) Citas: 40 hoy (09:00 a 14:00, cada 30 min) y 30 en los 6 días siguientes
-const HORAS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00'];
+// 2) Citas: 40 hoy (09:30 a 14:30, cada 30 min) y 30 en los 6 días hábiles siguientes
+const HORAS = ['09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30'];
 for (let i = 0; i < 70; i++) {
   const [tipo, modalidad] = reparte(70)[i];
   const b = base('validada_en_linea', 'poda', 'nueva');
-  const en = i < 40 ? dia(0, HORAS[i % HORAS.length]) : dia(1 + (i % 6), HORAS[i % HORAS.length]);
+  const en = i < 40 ? dia(0, HORAS[i % HORAS.length]) : diaHabil(1 + (i % 6), HORAS[i % HORAS.length]);
   const s = clona(b, { estado: 'validada_en_linea', tipo, modalidad, o: azar() < 0.4 ? otraOrg() : null, enviada: dia(-12), desde: dia(-5), extra: { cita_en: en } });
   d.cita.push({ creada_en: dia(-5), resultado: 'pendiente', pausada_en: null, atendida_en: null, observacion: '', atendida_por: null, solicitud_id: s.id, programada_en: en });
 }
@@ -110,16 +119,16 @@ for (let i = 0; i < 100; i++) {
   enEspera.push(s);
 }
 
-// 4) Grupo de 25 en su último día (inició hace 4 días); asistencia de los días 1 a 4, con faltas
+// 4) Grupo de 25 que empezó el lunes de esta semana; asistencia de los días anteriores al corte, con faltas
 const g = { id: randomUUID(), sede: 'Vivero Nezahualcóyotl', folio: 'APD-G-2026-020', estado: 'en_curso', creado_en: dia(-20), modalidad: 'nueva', instructor: 'instructor.ficticio',
-  cupo_maximo: 25, cupo_minimo: 5, es_ficticio: true, integracion: 'combinado', estado_desde: dia(-4, '08:30'), fecha_inicio: soloDia(-4), hora_entrada: '09:00:00', organizacion_id: null,
+  cupo_maximo: 25, cupo_minimo: 5, es_ficticio: true, integracion: 'combinado', estado_desde: dia(-desdeLunes, '08:30'), fecha_inicio: soloDia(-desdeLunes), hora_entrada: '09:00:00', organizacion_id: null,
   tipo_acreditacion: 'poda', motivo_cancelacion: null };
 d.grupo.push(g);
 for (let i = 0; i < 25; i++) {
   const s = clona(base('inscrita', 'poda', 'nueva'), { estado: 'inscrita', tipo: 'poda', modalidad: 'nueva', o: bolsa[Math.floor(azar() * bolsa.length)], enviada: dia(-40), desde: dia(-10) });
   const ins = { id: randomUUID(), activa: true, baja_en: null, grupo_id: g.id, inscrita_en: dia(-10), motivo_baja: null, solicitud_id: s.id };
   d.inscripcion.push(ins);
-  for (let k = 1; k <= 4; k++) d.asistencia.push({ dia: k, asistio: !(i % 7 === 0 && k <= 2) && !(i % 11 === 0 && k === 3), capturada_en: dia(-5 + k, '18:30'), capturada_por: 'instructor.ficticio', inscripcion_id: ins.id });
+  for (let k = 1; k <= desdeLunes; k++) d.asistencia.push({ dia: k, asistio: !(i % 7 === 0 && k <= 2) && !(i % 11 === 0 && k === 3), capturada_en: dia(-desdeLunes - 1 + k, '18:30'), capturada_por: 'instructor.ficticio', inscripcion_id: ins.id });
 }
 
 // 5) Más grupos: uno en integración de Jardines (3), uno combinado en integración (12), uno confirmado de Iztapalapa (18)
@@ -138,19 +147,16 @@ grupoCon('APD-G-2026-022', 'en_integracion', 'combinado', null, 12, null);
 grupoCon('APD-G-2026-023', 'confirmado', 'especifico', org('Iztapalapa'), 18, soloDia(12));
 
 // 6) Casos de la auditoría de tareas: un grupo en su día 3 con el día 2 sin capturar (A1), tres citas de hace dos días
-//    sin registrar (A3) y una cita en pausa de ayer (M6)
-const g2 = { id: randomUUID(), sede: 'Vivero Nezahualcóyotl', folio: 'APD-G-2026-024', estado: 'en_curso', creado_en: dia(-15), modalidad: 'nueva', instructor: 'instructor.ficticio',
-  cupo_maximo: 25, cupo_minimo: 5, es_ficticio: true, integracion: 'combinado', estado_desde: dia(-2, '08:30'), fecha_inicio: soloDia(-2), hora_entrada: '09:00:00', organizacion_id: null,
-  tipo_acreditacion: 'poda', motivo_cancelacion: null };
-d.grupo.push(g2);
-for (let i = 0; i < 8; i++) {
-  const s = clona(base('inscrita', 'poda', 'nueva'), { estado: 'inscrita', tipo: 'poda', modalidad: 'nueva', o: bolsa[Math.floor(azar() * bolsa.length)], enviada: dia(-30), desde: dia(-6) });
-  const ins = { id: randomUUID(), activa: true, baja_en: null, grupo_id: g2.id, inscrita_en: dia(-6), motivo_baja: null, solicitud_id: s.id };
-  d.inscripcion.push(ins);
-  d.asistencia.push({ dia: 1, asistio: true, capturada_en: dia(-2, '18:30'), capturada_por: 'instructor.ficticio', inscripcion_id: ins.id });
+//    sin registrar (A3) y una cita en pausa de ayer (M6). El grupo del día 2 sin capturar es el de la alcaldía de los
+//    ficticios (APD-G-2026-003, del lunes 12 al viernes 16/10): aquí se le quita la asistencia del día 2. Hasta el
+//    23/10/2026 era un grupo aparte (APD-G-2026-024), que hoy sería el tercero de la semana (máximo 2, P149).
+{
+  const g3 = d.grupo.find((x) => x.folio === 'APD-G-2026-003');
+  const ins3 = new Set(d.inscripcion.filter((i) => i.grupo_id === g3.id).map((i) => i.id));
+  d.asistencia = d.asistencia.filter((a) => !(ins3.has(a.inscripcion_id) && a.dia === 2));
 }
 for (let i = 0; i < 4; i++) {
-  const en = dia(-2, HORAS[i]);
+  const en = dia(-2, HORAS[i]); // el lunes 12/10, a las 9:30, 10:00, 10:30 y 11:00
   const s = clona(base('validada_en_linea', 'poda', 'nueva'), { estado: 'validada_en_linea', tipo: 'poda', modalidad: 'nueva', o: null, enviada: dia(-15), desde: dia(-8), extra: { cita_en: en } });
   if (i === 3) {
     s.cita_en = dia(-1, '10:00');

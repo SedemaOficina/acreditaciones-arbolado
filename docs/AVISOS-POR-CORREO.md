@@ -56,6 +56,8 @@ Prioridad:
 | A3 bis | El día que vence | Que desde hoy no puede ejercerla y que puede renovar hasta un año después, con el enlace para iniciar la renovación (P121) | Recomendable (propuesta) |
 | A4 | Vencida, todavía renovable | Que puede renovar hasta un año después del vencimiento | Recomendable |
 | A5 | Un mes antes de que termine el año para renovar | Que después tendrá que tramitar una nueva | Recomendable |
+| A6 | Acreditación cancelada (P120, sesión del 23/10/2026) | Que la Secretaría canceló su acreditación, desde cuándo, el motivo y el fundamento, y que ya no puede trabajar con ella ni renovarla; si tenía una renovación o una reposición en trámite, que se cancelaron. Cómo se notifica y la garantía de audiencia los fija la Dirección Jurídica (P120) | Indispensable |
+| A7 | Reposición de la credencial (P140, sesión del 23/10/2026) | Según el paso: el acta tiene observaciones (qué corregir); el acta se aceptó (la cuota y dónde recoger la credencial); la credencial se repuso (el mismo número y la misma vigencia) | Indispensable (observaciones y acta aceptada); recomendable (repuesta) |
 
 ## 6. Al personal y a la Dirección
 

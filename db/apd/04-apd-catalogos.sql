@@ -8,8 +8,8 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Días naturales antes del vencimiento desde los que se puede renovar (decisión 2026-10-14).'),
   ('meses_despues_renovacion', '12',
    'Meses después del vencimiento durante los que todavía se renueva; pasado ese plazo se tramita como nueva (decisión 2026-10-14).'),
-  ('dias_alerta_espera', '31',
-   'Días de espera sin grupo a partir de los que la solicitud se marca como prioritaria (decisión 2026-10-14).'),
+  ('dias_alerta_espera', '15',
+   'Días de espera sin grupo a partir de los que la solicitud se marca como prioritaria: la Secretaría asigna grupo en 15 días si se completa el cupo mínimo (P143, sesión de trabajo del 23/10/2026; antes 31).'),
   ('tamano_maximo_archivo_bytes', '5242880',
    'Tamaño máximo de cada documento cargado: 5 MB (corrección de Liber al mapa, R12, 2026-10-14).'),
   ('tamano_maximo_material_bytes', '31457280',
@@ -32,6 +32,24 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Ubicación de la sede en el mapa: «latitud,longitud» en grados decimales (la que confirmó Liber con su enlace de Google Maps). De aquí salen el mapa de Google y el enlace «Abrir en Google Maps» de «Mis trámites»; vacía, no se muestra mapa (decisión 2026-10-23, Liber).'),
   ('intentos_maximos', '5',
    'Intentos de entrada fallidos seguidos con los que la cuenta se bloquea (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].'),
+  ('edad_minima', '18',
+   'Años cumplidos que necesita la persona, el día de su solicitud, para las dos acreditaciones; se calculan con la fecha de nacimiento de su CURP (P138, sesión de trabajo del 23/10/2026).'),
+  ('anios_poda_dictaminador', '2',
+   'Años consecutivos con la acreditación de poda y derribo que se necesitan para solicitar por primera vez la de dictaminador; una renovación dentro de la ventana de renovación tardía (meses_despues_renovacion) no corta la cuenta (sesión de trabajo del 23/10/2026).'),
+  ('grupos_simultaneos_maximo', '2',
+   'Grupos que puede haber al mismo tiempo, de cualquier curso (P149, sesión de trabajo del 23/10/2026).'),
+  ('cita_hora_desde', '09:30',
+   'Primera hora de las citas de cotejo, de lunes a viernes (P69, sesión de trabajo del 23/10/2026).'),
+  ('cita_hora_hasta', '14:30',
+   'Última hora de las citas de cotejo, de lunes a viernes (P69, sesión de trabajo del 23/10/2026).'),
+  ('curso_hora_entrada', '09:00',
+   'Hora de entrada del curso, todos los días; la primera que se puede elegir para un grupo (P91, sesión de trabajo del 23/10/2026).'),
+  ('curso_hora_salida', '15:00',
+   'Hora de salida del curso, todos los días; se muestra a la persona con su grupo (P91, sesión de trabajo del 23/10/2026).'),
+  ('informes_horario', 'de lunes a viernes, de 9:00 a 15:00',
+   'Horario de informes de la Secretaría para aclaraciones del trámite; se muestra a la persona donde se le pide acudir o comunicarse. El teléfono y el correo están pendientes (P132, sesión de trabajo del 23/10/2026).'),
+  ('perfiles_cancelan_acreditacion', 'instructor,administracion',
+   'Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y la Dirección (administración) (P120, sesión de trabajo del 23/10/2026).'),
   ('minutos_bloqueo', '15',
    'Minutos que dura el bloqueo de la entrada al llegar a intentos_maximos; más intentos no lo alargan (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].');
 
@@ -46,15 +64,23 @@ INSERT INTO apd.curso (tipo_acreditacion, modalidad, nombre, dias_duracion, dias
   ('dictaminador', 'nueva',      'Dictaminador técnico · solicitud nueva', 5, 4, 8.0, 5, 25, 'Acreditación de dictaminador técnico de arbolado urbano', NULL),
   ('dictaminador', 'renovacion', 'Dictaminador técnico · renovación',      1, 1, 8.0, 5, 25, 'Renovación de la acreditación de dictaminador técnico de arbolado urbano', NULL);
 
+-- Cuota de reposición de la credencial (P140, sesión de trabajo del 23/10/2026): configurable porque cambia cada año. El
+-- monto vigente lo confirma Finanzas [pendiente P140]; vacío hasta capturarlo con la publicación que lo fija.
+INSERT INTO apd.cuota (clave, concepto, monto) VALUES
+  ('reposicion_credencial', 'Reposición de la credencial de acreditación', NULL);
+
 INSERT INTO apd.requisito (clave, nombre, descripcion, forma, momento) VALUES
   ('identificacion_oficial', 'Identificación oficial',
    'Vigente y con fotografía: credencial para votar, pasaporte, cartilla militar o cédula profesional.', 'documento', 'en_linea'),
   ('curp', 'Clave Única de Registro de Población (CURP)',
    'En formato actualizado.', 'documento', 'en_linea'),
   ('comprobante_domicilio', 'Comprobante de domicilio',
-   'De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses. [pendiente] la Dirección debe declarar su uso.', 'documento', 'en_linea'),
+   'De luz, agua, telefonía o internet, con antigüedad no mayor a tres meses.', 'documento', 'en_linea'),
+  -- La de la persona solicitante, reciente (sesión de trabajo del 23/10/2026, P196): de ella se toman nombre, régimen y
+  -- domicilio fiscal para la factura. Cuántos días de antigüedad se aceptan está pendiente (P196): mientras, «del mes en
+  -- curso», sin número en la base.
   ('constancia_situacion_fiscal', 'Constancia de situación fiscal',
-   'Actualizada, a favor de la persona física o moral a la que la Secretaría emitirá la factura del pago de derechos.', 'documento', 'en_linea'),
+   'Tuya, como persona solicitante, emitida en el mes en curso. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago. [pendiente P196: cuántos días de antigüedad se aceptan]', 'documento', 'en_linea'),
   ('factura_pago', 'Factura del pago de derechos',
    'La emite la Secretaría en la cita presencial, después de verificar el pago. Su personal carga el PDF y captura RFC, nombre o razón social y folio fiscal. Sin factura no se asigna curso. Concepto y monto del derecho conforme a la Gaceta Oficial [pendiente].', 'documento', 'cotejo'),
   ('poda_anterior', 'Acreditación de poda y derribo a renovar',
@@ -101,7 +127,8 @@ INSERT INTO apd.requisito_curso (tipo_acreditacion, modalidad, requisito, orden,
   ('dictaminador', 'nueva',      'comprobante_domicilio',       3, true,  ''),
   ('dictaminador', 'nueva',      'constancia_situacion_fiscal', 4, true,  ''),
   ('dictaminador', 'nueva',      'factura_pago',                5, true,  ''),
-  ('dictaminador', 'nueva',      'poda_vigente',                6, true,  ''),
+  -- Y durante al menos dos años consecutivos (sesión de trabajo del 23/10/2026; parámetro anios_poda_dictaminador)
+  ('dictaminador', 'nueva',      'poda_vigente',                6, true,  'Y durante al menos dos años consecutivos.'),
   ('dictaminador', 'nueva',      'comprobante_estudios',        7, true,  ''),
   ('dictaminador', 'nueva',      'curriculum_vitae',            8, true,  ''),
   ('dictaminador', 'nueva',      'comprobantes_experiencia',    9, true,  'Dos años con licenciatura titulada en Biología, Ingeniería Forestal, Ingeniería Agrónoma o carrera afín; cinco con carta de pasante, carrera técnica o disciplina afín.'),
@@ -146,6 +173,7 @@ INSERT INTO apd.organizacion (tipo, clave, nombre) VALUES
   ('dependencia_cdmx',    'paot',   'Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)'),
   ('dependencia_federal', 'cfe',    'Comisión Federal de Electricidad (CFE)'),
   ('educativa',           'unam',   'Universidad Nacional Autónoma de México (UNAM)'),
+  ('educativa',           'chapingo', 'Universidad Autónoma Chapingo'),   -- sesión de trabajo del 23/10/2026
   ('alcaldia', 'alvaro_obregon',      'Álvaro Obregón'),
   ('alcaldia', 'azcapotzalco',        'Azcapotzalco'),
   ('alcaldia', 'benito_juarez',       'Benito Juárez'),

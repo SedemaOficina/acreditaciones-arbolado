@@ -178,6 +178,22 @@
     h.addEventListener('change', pinta);
     pinta();
   }
+  /* Las citas de cotejo son de lunes a viernes (sesión de trabajo del 23/10/2026, P150; la base: cita_en_fin_de_semana). El
+     calendario del navegador no deja quitar sábados y domingos: un día así se dice junto al campo al elegirlo o escribirlo,
+     y al guardar se rechaza con su error. Devuelve el motivo para un día AAAA-MM-DD, o null. */
+  const CITA_FIN_DE_SEMANA = 'Las citas de cotejo son de lunes a viernes: elija otro día.';
+  const motivoDiaCita = (iso) => (/^\d{4}-\d{2}-\d{2}$/.test(iso || '') && !APD.esHabil(iso) ? CITA_FIN_DE_SEMANA : null);
+  function vigilaDiaCita(form) {
+    const f = document.getElementById('cita_fecha');
+    if (!f || !form) return;
+    const revisa = () => {
+      const V = global.FORMKIT_VALIDACIONES;
+      const m = motivoDiaCita((V && V.isoDeDma && V.isoDeDma(f.value)) || '');
+      if (m) global.FormKit.marcaError('cita_fecha', m);
+    };
+    // Después de las validaciones del estándar (que se registraron antes, al iniciar el formulario)
+    for (const ev of ['change', 'focusout', 'input']) form.addEventListener(ev, (e) => { if (e.target === f) revisa(); });
+  }
   /* Día de una cita (AAAA-MM-DD) y su hora (HH:MM), en hora de la Ciudad de México */
   const diaDe = APD.diaDe;
   const horaDe = APD.hora;
@@ -211,6 +227,19 @@
     { usuario: 'instructor2.ficticio', nombre: 'Instructor Ejemplo Dos' }
   ];
   const INSTRUCTORA = Object.assign({ perfil: 'Instructor' }, INSTRUCTORES[0]);
+  /* Perfil ficticio de la Dirección (perfil «administración» del acceso del SIA, P27): cancela acreditaciones con los
+     instructores (P120, sesión de trabajo del 23/10/2026). No es una persona real. */
+  const DIRECTORA = { usuario: 'direccion.prueba', nombre: 'Rosa Ejemplo Directora', perfil: 'Administración (Dirección)' };
+  /* El perfil con que entra la pantalla de acreditaciones en la prueba (?perfil=, lo pone el menú de pruebas): revisión y
+     cotejo, instructor o administración. En la etapa 3 lo da el acceso del SIA. */
+  const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, administracion: DIRECTORA };
+  function perfilDePrueba() {
+    const p = new URLSearchParams(global.location.search).get('perfil');
+    return PERFILES[p] ? p : 'revision_cotejo';
+  }
+  const quienEs = (perfil) => PERFILES[perfil] || REVISORA;
+  /* El nombre de una cuenta del personal (las ficticias de la prueba); si no es de ellas, la cuenta tal cual */
+  const nombreDeCuenta = (u) => ([REVISORA, DIRECTORA].find((x) => x.usuario === u) || {}).nombre || nombreInstructor(u);
   const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
   /* Cada evento lleva su uid, para retirarlo si la base no lo habría aplicado */
   const uid = () => (global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -250,6 +279,9 @@
     if (g.estado !== 'en_integracion') return `el grupo ya está «${x.situacion.texto}»`;
     if (x.n < g.cupo_minimo) return `el grupo tiene ${APD.plural(x.n, 'persona', 'personas')} y el mínimo es ${g.cupo_minimo}`;
     if (fechaInicio && fechaInicio < primerDiaPosible(datos)) return `el curso debe empezar al menos ${APD.parametro(datos, 'dias_anticipacion_grupo') || 7} días después de confirmarlo`;
+    // Sábados y domingos sin curso y como máximo 2 grupos al mismo tiempo (sesión de trabajo del 23/10/2026)
+    const r = fechaInicio ? razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, fechaInicio, g.id) : null;
+    if (r && ['fin_de_semana', 'simultaneos'].includes(r.clave)) return `el ${APD.fechaCorta(fechaInicio)} no se puede: ${r.texto}`;
     return null;
   }
 
@@ -266,10 +298,13 @@
   }
 
   /* Personas en espera de grupo de un curso: de la que más espera a la más reciente; desde dias_alerta_espera días es
-     prioritaria. En renovación, por la fecha en que vence su acreditación (decisión 2026-10-14). */
+     prioritaria (15 desde la sesión de trabajo del 23/10/2026, P143: la Secretaría asigna grupo en 15 días si se completa
+     el cupo mínimo; antes 31). En renovación, por la fecha en que vence su acreditación (decisión 2026-10-14). Cada una
+     dice si su institución es de gobierno local o federal: sólo ésas se agrupan en bloque (bloquesEspera). */
   function enEspera(datos, tipo, modalidad) {
     const hoy = APD.hoy(datos);
-    const alerta = APD.parametro(datos, 'dias_alerta_espera') || 31;
+    const alerta = APD.parametro(datos, 'dias_alerta_espera') || 15;
+    const tipoOrg = Object.fromEntries((datos.organizacion || []).map((o) => [o.id, o.tipo]));
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const lista = datos.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === tipo && s.modalidad === modalidad).map((s) => {
       const desde = s.lista_para_curso_en || s.estado_desde;
@@ -277,11 +312,15 @@
       const ant = s.acreditacion_anterior_id ? datos.acreditacion.find((a) => a.id === s.acreditacion_anterior_id) : null;
       const vence = ant ? ant.vence_en : null;
       return { s, p: persona[s.solicitante_id] || {}, organizacion: organizacionDe(datos, s), desde, dias: n, prioritaria: n >= alerta,
-        vence, vencida: vence ? vence < hoy : false };
+        vence, vencida: vence ? vence < hoy : false, gobierno: esGobierno(tipoOrg[s.organizacion_id]) };
     });
     return lista.sort((a, b) => (modalidad === 'renovacion' && a.vence && b.vence ? a.vence.localeCompare(b.vence) : 0)
       || String(a.desde).localeCompare(String(b.desde)) || a.s.folio.localeCompare(b.s.folio));
   }
+
+  /* Gobierno local (dependencias de la Ciudad de México y alcaldías) o federal: el tipo de la institución en el catálogo
+     (apd.es_gobierno). Sólo éstas se agrupan en bloque en la espera (sesión de trabajo del 23/10/2026). */
+  const esGobierno = (tipo) => ['dependencia_cdmx', 'alcaldia', 'dependencia_federal'].includes(tipo);
 
   /* Un grupo con su curso, sus personas y su situación */
   const SITUACION_GRUPO = {
@@ -337,29 +376,43 @@
     const p = (datos.parametro || []).find((x) => x.clave === 'dias_inhabiles');
     return p ? String(p.valor || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s)) : [];
   }
-  /* Los grupos de un curso que ocupan alguna de esas fechas (sin los cancelados ni los concluidos) */
+  /* Los grupos activos (sin los cancelados ni los concluidos) */
   const ACTIVOS = ['en_integracion', 'confirmado', 'en_curso'];
   const traslapa = (a1, a2, b1, b2) => a1 <= b2 && b1 <= a2;
-  function choques(datos, tipo, modalidad, desde, hasta, exceptoId) {
-    return datos.grupo.filter((g) => g.id !== exceptoId && g.tipo_acreditacion === tipo && g.modalidad === modalidad && ACTIVOS.includes(g.estado)
-      && g.fecha_inicio && traslapa(desde, hasta, g.fecha_inicio, APD.ultimoDia(datos, g)));
-  }
   /* Los grupos que ese instructor da en esas fechas, de cualquier curso */
   function ocupado(datos, usuario, desde, hasta, exceptoId) {
     return datos.grupo.filter((g) => g.id !== exceptoId && g.instructor === usuario && ACTIVOS.includes(g.estado)
       && g.fecha_inicio && traslapa(desde, hasta, g.fecha_inicio, APD.ultimoDia(datos, g)));
   }
+  /* Los grupos activos, de cualquier curso, que tienen clase un día (P149: como máximo grupos_simultaneos_maximo a la vez) */
+  function delDia(datos, dia, exceptoId) {
+    return datos.grupo.filter((g) => g.id !== exceptoId && ACTIVOS.includes(g.estado) && g.fecha_inicio && g.fecha_inicio <= dia && dia <= APD.ultimoDia(datos, g));
+  }
+  /* El día más ocupado de esas fechas: los grupos que ya tienen clase ese día */
+  function simultaneos(datos, desde, hasta, exceptoId) {
+    let peor = [];
+    for (let d = desde; d <= hasta; d = APD.sumaDias(d, 1)) { const g = delDia(datos, d, exceptoId); if (g.length > peor.length) peor = g; }
+    return peor;
+  }
   /* ¿Puede empezar ahí un curso? → null o la razón (para el calendario y para el error del formulario). La razón va sin «:»
      propios, entre paréntesis: quien la usa la pone después de los suyos («El lunes ya no se puede: …»; auditoría
-     2026-10-20, C5-04, eran dos «:» seguidos) */
+     2026-10-20, C5-04, eran dos «:» seguidos). Sesión de trabajo del 23/10/2026: ningún día del curso en sábado ni domingo
+     (el de 5 días empieza en lunes, P151) y como máximo grupos_simultaneos_maximo grupos al mismo tiempo (P149), como la base
+     (apd.comprobar_fechas_grupo). */
   function razonNoInicio(datos, tipo, modalidad, inicio, exceptoId) {
     const c = APD.curso(datos, tipo, modalidad);
     const fin = APD.sumaDias(inicio, c.dias_duracion - 1);
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     if (inicio < primerDiaPosible(datos)) return { clave: 'anticipacion', texto: `faltan menos de ${anticipacion} días (el curso empieza al menos ${anticipacion} días después de confirmarlo)` };
     if (inicio > ultimoDiaPosible(datos)) return { clave: 'lejana', texto: `falta más de un año (el curso empieza a más tardar un año después de hoy, el ${APD.fechaCorta(ultimoDiaPosible(datos))})` };
-    const otro = choques(datos, tipo, modalidad, inicio, fin, exceptoId)[0];
-    if (otro) return { clave: 'otro_curso', texto: `ya hay un curso de ${APD.cursoCorto(tipo, modalidad).toLowerCase()} esas fechas (${APD.nombreGrupo(otro, datos, { sinCurso: true }).toLowerCase()}, ${otro.folio})`, grupo: otro };
+    for (let d = inicio; d <= fin; d = APD.sumaDias(d, 1)) {
+      if (!APD.esHabil(d)) return { clave: 'fin_de_semana', texto: c.dias_duracion > 1 ? `el curso de ${c.dias_duracion} días va de lunes a viernes (empieza en lunes)` : 'no hay cursos en sábado ni domingo' };
+    }
+    const maximo = APD.parametro(datos, 'grupos_simultaneos_maximo') || 2;
+    const ocupan = simultaneos(datos, inicio, fin, exceptoId);
+    if (ocupan.length >= maximo) {
+      return { clave: 'simultaneos', texto: `ya hay ${APD.plural(ocupan.length, 'grupo', 'grupos')} esas fechas (${ocupan.map((g) => g.folio).join(', ')}) y como máximo hay ${maximo} al mismo tiempo`, grupo: ocupan[0] };
+    }
     const inhabiles = diasInhabiles(datos);
     const dia = inhabiles.find((d) => d >= inicio && d <= fin);
     if (dia) return { clave: 'inhabil', texto: `el ${APD.fechaCorta(dia)} es día inhábil [por confirmar con el calendario oficial]` };
@@ -367,15 +420,17 @@
   }
   /* Bloques de la espera (propuesta A): las personas de una misma organización van juntas, en un bloque que ocupa el
      lugar de quien más espera de ellas; las demás (independientes o solas de su organización), una por una, en su orden.
+     Desde la sesión de trabajo del 23/10/2026, sólo las instituciones de gobierno local y federal se agrupan en bloque
+     (x.gobierno, de enEspera): empresas, particulares e instituciones educativas van una por una en el orden general.
      En renovación (decisión 11 b de Liber, auditoría 2026-10-20, C1-03) la lista ya va por vencimiento: cada bloque
      ocupa el lugar de la primera de su gente en vencer (su vencimiento más antiguo) y, dentro, van primero las que ya
      vencieron. Así conviven «por vencimiento» (DECISIONES, 14/10) y «agrupada por adscripción» (DECISIONES, 17/10). */
   function bloquesEspera(lista) {
     const cuenta = {};
-    for (const x of lista) if (x.s.organizacion_id) cuenta[x.s.organizacion_id] = (cuenta[x.s.organizacion_id] || 0) + 1;
+    for (const x of lista) if (x.s.organizacion_id && x.gobierno) cuenta[x.s.organizacion_id] = (cuenta[x.s.organizacion_id] || 0) + 1;
     const bloques = [];
     for (const x of lista) {
-      const org = x.s.organizacion_id;
+      const org = x.gobierno ? x.s.organizacion_id : null;
       if (org && cuenta[org] > 1) {
         let b = bloques.find((y) => y.clave === org);
         if (!b) { b = { clave: org, nombre: x.organizacion, junta: true, xs: [] }; bloques.push(b); }
@@ -402,7 +457,7 @@
     // En un grupo de una organización, o si todas las que esperan son de la misma, no hay a quién no separar: se toman
     // una por una, en su orden (auditoría «intentar romperlo», F3 M4: un bloque de 13 no cabía en 2 lugares y no se
     // proponía a nadie)
-    const orgs = new Set(candidatas.map((x) => x.s.organizacion_id || null));
+    const orgs = new Set(candidatas.map((x) => (x.gobierno && x.s.organizacion_id) || null));
     if (filtro || (orgs.size === 1 && !orgs.has(null))) return candidatas.slice(0, Math.max(0, n));
     const elegidas = [];
     for (const b of bloquesEspera(candidatas)) {
@@ -444,7 +499,9 @@
     const c = APD.curso(datos, g.tipo_acreditacion, g.modalidad);
     const n = dias(g.fecha_inicio, APD.hoy(datos)) + 1;
     if (n < 1 || n > c.dias_duracion) return null;
-    return { n, de: c.dias_duracion, examen: n === c.dias_duracion, texto: n === c.dias_duracion ? (c.dias_duracion > 1 ? `Día ${n} de ${n} · examen hoy` : 'Curso y examen hoy') : `Día ${n} de ${c.dias_duracion}` };
+    // El quinto día del curso de primera vez: repaso de conocimientos y examen final (sesión de trabajo del 23/10/2026)
+    const final = APD.diaFinal(c) === 'Examen' ? 'examen hoy' : `${APD.diaFinal(c).toLowerCase()} hoy`;
+    return { n, de: c.dias_duracion, examen: n === c.dias_duracion, texto: n === c.dias_duracion ? (c.dias_duracion > 1 ? `Día ${n} de ${n} · ${final}` : 'Curso y examen hoy') : `Día ${n} de ${c.dias_duracion}` };
   }
   /* «Mis grupos de hoy» del instructor: sus grupos en curso con clase o examen hoy; y los próximos (confirmados o por
      confirmar con fecha) */
@@ -474,7 +531,7 @@
       return el('li', { class: 'hoy-grupo' }, [
         el('div', { class: 'hoy-grupo-cabeza' }, [
           el('h3', { class: 'hoy-grupo-nombre', id: idN }, [APD.grupoTitulo(g, datos)]),
-          estado(d.examen ? 'Examen hoy' : d.texto, d.examen ? 'pend' : 'marcha')
+          estado(d.examen ? (APD.diaFinal(x.c) === 'Examen' ? 'Examen hoy' : `${APD.diaFinal(x.c)} hoy`) : d.texto, d.examen ? 'pend' : 'marcha')
         ]),
         APD.lineaDatos([lugar, APD.hhmm(g.hora_entrada), APD.plural(x.n, 'persona', 'personas')]),
         el('a', { class: `btn ${i === principal ? 'btn-primario' : 'btn-secundario'} hoy-grupo-accion`, href, 'aria-describedby': idN }, [
@@ -498,12 +555,14 @@
   function pintaSesion(contenedor, actual, perfil) {
     if (!contenedor) return;
     const salir = el('a', { class: 'btn-enlace', href: 'index.html', texto: 'Salir' });
-    const quien = perfil === 'instructor' ? INSTRUCTORA : REVISORA;
+    const quien = quienEs(perfil);
     const enlace = (href, clave, texto) => el('a', { class: 'btn-enlace', href, 'aria-current': actual === clave ? 'page' : null, texto });
+    // «Acreditaciones» (consulta, cancelación y reposición; sesión de trabajo del 23/10/2026), con el perfil de la prueba
+    const acreditaciones = enlace(`acreditaciones.html${perfil && perfil !== 'revision_cotejo' ? `?perfil=${perfil}` : ''}`, 'acreditaciones', 'Acreditaciones');
     const enlaces = perfil === 'instructor'
-      ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen')]
+      ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen'), acreditaciones]
       : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
-        enlace('material-personal.html', 'material', 'Material de estudio')];
+        enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones];
     contenedor.replaceChildren(
       // El perfil no es un estado (auditoría 2026-10-18, B11 y D6): va como texto, no como etiqueta de estado
       el('p', { class: 'sesion-nombre' }, [document.createTextNode(quien.nombre), el('span', { class: 'sesion-perfil', texto: `Perfil: ${quien.perfil.toLowerCase()}` })]),
@@ -546,7 +605,9 @@
     };
     const $$ = (s) => marco.querySelector(s);
     const dias = Array.from({ length: ultimo }, (_, k) => k + 1);
-    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fechaCorta(fechaDia(n))}${n === ultimo && ultimo > 1 ? ' · examen' : ''}`), 'Días', 'Examen']
+    // El último día: «examen» o, en el curso de primera vez, «repaso de conocimientos y examen final» (sesión del 23/10/2026)
+    const final = APD.diaFinal(c).toLowerCase();
+    $$('[data-conc-encabezado]').replaceChildren(...['Persona', ...dias.map((n) => `${APD.fechaCorta(fechaDia(n))}${n === ultimo && ultimo > 1 ? ` · ${final}` : ''}`), 'Días', 'Examen']
       .map((t) => el('th', { scope: 'col', texto: t })));
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const sols = Object.fromEntries(datos.solicitud.map((s) => [s.id, s]));
@@ -580,8 +641,9 @@
     marco.dispatchEvent(new CustomEvent('formkit:tabla'));
   }
 
-  global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, choques, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
-    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+  global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
+    delDia, motivoDiaCita, vigilaDiaCita,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, perfilDePrueba, quienEs, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas };
 }(window));

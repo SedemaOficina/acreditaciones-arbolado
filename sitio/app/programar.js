@@ -10,7 +10,8 @@
      2. ¿Quién lo da y a qué hora? Instructor (dice si ya tiene otro curso esas fechas) y hora de entrada de la misma
         lista cerrada que la ficha del grupo.
      3. ¿Quiénes van? La propuesta: las que más esperan, hasta 25, con las prioritarias primero y las de una misma
-        organización juntas (P.lasQueMasEsperan); o las elegidas en «Grupos».
+        organización juntas (P.lasQueMasEsperan; desde la sesión de trabajo del 23/10/2026, sólo las instituciones de
+        gobierno local y federal van juntas); o las elegidas en «Grupos».
    «Así quedaría» resume el grupo con su nombre calculado (APD.nombreGrupo). «Crear y confirmar el grupo» exige lo de
    confirmar (mínimo de personas, primer día a tiempo, hora e instructor) y dice qué falta; «Guardar sin confirmar» lo deja
    en integración con su fecha como propuesta. Se guarda con los eventos de siempre (APD_PERSONAL.guardaGrupo: crear,
@@ -78,15 +79,16 @@
     const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     // La leyenda dice los días de anticipación del parámetro, como la regla (auditoría 2026-10-19, R4-15)
-    $('[data-leyenda-no]').textContent = `No se puede: menos de ${anticipacion} días u otro curso igual esas fechas`;
+    // Sesión de trabajo del 23/10/2026: sábados y domingos no hay cursos (P151) y como máximo hay N grupos a la vez (P149)
+    $('[data-leyenda-no]').textContent = `No se puede: menos de ${anticipacion} días, sábado o domingo, o ya hay ${APD.parametro(datos, 'grupos_simultaneos_maximo') || 2} grupos esas fechas`;
     const inhabiles = new Set(P.diasInhabiles(datos));
     const excepto = gExistente ? gExistente.id : null;
     const razon = (d) => P.razonNoInicio(datos, tipo, modalidad, d, excepto);
     const finDe = (d) => APD.sumaDias(d, dur - 1);
     const sede = APD.sede(datos).nombre;
     $('[data-ayuda-semana]').textContent = dur > 1
-      ? `Toque el día en que empieza (de preferencia, un lunes). El curso dura ${dur} días seguidos; el examen es el último, en el PILARES. Desde el ${fechaCorta(minimo)}: ${anticipacion} días después de hoy; hasta el ${fechaCorta(maximo)}, un año después.`
-      : `Toque el día del curso. Dura un día y el examen es ese mismo día, en el PILARES. Desde el ${fechaCorta(minimo)}: ${anticipacion} días después de hoy; hasta el ${fechaCorta(maximo)}, un año después.`;
+      ? `Toque el lunes en que empieza: el curso va de lunes a viernes, de 9:00 a 15:00 (${dur} días); el último es de ${APD.diaFinal(c).toLowerCase()}, en el PILARES. Desde el ${fechaCorta(minimo)}: ${anticipacion} días después de hoy; hasta el ${fechaCorta(maximo)}, un año después.`
+      : `Toque el día del curso, de lunes a viernes. Dura un día, de 9:00 a 15:00, y el examen es ese mismo día, en el PILARES. Desde el ${fechaCorta(minimo)}: ${anticipacion} días después de hoy; hasta el ${fechaCorta(maximo)}, un año después.`;
 
     /* ----- Paso 1 · calendario ----- */
     const fi = $('#fecha_inicio');
@@ -123,7 +125,7 @@
       const base = fechaLarga(d);
       // El curso de un día también dice su examen, como lo decía la nota «curso y examen» (C6-10 c)
       if (d === inicio) return `${base}: empieza el curso elegido${dur > 1 ? `, que termina el ${fechaLarga(finDe(inicio))}` : ', con su examen ese mismo día'}`;
-      if (enRango) return `${base}: día ${k} de ${dur} del curso elegido${k === dur ? ', examen' : ''}`;
+      if (enRango) return `${base}: día ${k} de ${dur} del curso elegido${k === dur ? `, ${APD.diaFinal(c).toLowerCase()}` : ''}`;
       if (r) return `${base}: no se puede empezar, ${r.texto}`;
       return `${base}: se puede empezar`;
     }
@@ -145,7 +147,8 @@
           const r = razon(d);
           const enRango = Boolean(inicio) && d >= inicio && d <= fin;
           const k = enRango ? Math.round((new Date(`${d}T12:00:00-06:00`) - new Date(`${inicio}T12:00:00-06:00`)) / 86400000) + 1 : 0;
-          const otro = !enRango && P.choques(datos, tipo, modalidad, d, d, excepto)[0];
+          // La nota del día: el folio de un grupo que ya tiene clase ese día, de cualquier curso (como máximo 2 a la vez, P149)
+          const otro = !enRango && P.delDia(datos, d, excepto)[0];
           const nota = enRango ? (d === inicio ? (dur > 1 ? 'inicia' : 'curso y examen') : d === fin ? 'examen' : '')
             : inhabiles.has(d) ? 'inhábil' : otro ? otro.folio.replace(/^APD-/, '') : d === hoy ? 'hoy' : '';
           const b = el('button', { type: 'button', class: 'cal-dia', 'data-fecha': d, tabindex: d === foco ? '0' : '-1',
@@ -162,7 +165,7 @@
       // En teléfono la celda no lleva nota: lo dice esta línea, con la fecha larga y sin hora (decisión de Liber del 21/10,
       // C6-10 c; en escritorio la oculta apd.css)
       const fechas = $('[data-cal-fechas]');
-      fechas.textContent = !inicio ? '' : dur > 1 ? `Inicia el ${fechaLarga(inicio)} y examen el ${fechaLarga(fin)}.` : `Curso y examen el ${fechaLarga(inicio)}.`;
+      fechas.textContent = !inicio ? '' : dur > 1 ? `Inicia el ${fechaLarga(inicio)}; ${APD.diaFinal(c).toLowerCase()} el ${fechaLarga(fin)}.` : `Curso y examen el ${fechaLarga(inicio)}.`;
       fechas.hidden = !inicio;
       // En el mes actual y en el último permitido el botón queda inactivo con aria-disabled, no con disabled: conserva el
       // foco (auditoría 2026-10-20, RI-02; como los botones de envío, abajo)
@@ -299,15 +302,15 @@
     // se dice y no se propone a nadie más (auditoría «intentar romperlo», F3 M5: se marcaban 18 que nadie eligió)
     const yaNo = pedidas.length - deUrl.length;
     const propuestas = new Set((pedidas.length || gExistente ? deUrl : P.lasQueMasEsperan(espera, c.cupo_maximo)).map((x) => x.s.folio));
-    if (modalidad === 'renovacion') $('[data-ayuda-personas]').textContent = `Si hay más de ${c.cupo_maximo}, entran primero las que ya vencieron y después las que vencen antes, con las de una misma organización juntas; el resto sigue en espera para otra semana.`;
+    if (modalidad === 'renovacion') $('[data-ayuda-personas]').textContent = `Si hay más de ${c.cupo_maximo}, entran primero las que ya vencieron y después las que vencen antes, con las de una misma institución de gobierno juntas; el resto sigue en espera para otra semana.`;
     $('[data-propuesta]').textContent = yaNo
       ? `${yaNo === pedidas.length ? (yaNo === 1 ? 'La persona que eligió en «Grupos» ya no está en espera: ya tiene grupo.' : `Las ${yaNo} que eligió en «Grupos» ya no están en espera: ya tienen grupo.`)
         : `${yaNo} de las ${pedidas.length} que eligió en «Grupos» ya no ${yaNo === 1 ? 'está' : 'están'} en espera: ya ${yaNo === 1 ? 'tiene' : 'tienen'} grupo. Quedan marcadas las demás.`} No se propone a nadie más: marque a quien quiera agregar.`
       : deUrl.length ? `Las ${deUrl.length === 1 ? 'que eligió' : `${deUrl.length} que eligió`} en «Grupos»; puede agregar o quitar.`
         : gExistente ? 'Marque a quien quiera agregar de la espera.'
           // En renovación, primero las que ya vencieron (decisión 11 b, auditoría 2026-10-20, C1-03; P.lasQueMasEsperan)
-          : modalidad === 'renovacion' ? `Propuesta: hasta ${c.cupo_maximo}, primero las que ya vencieron y después las que vencen antes, con las de una misma organización juntas.`
-            : 'Propuesta: las que más esperan, hasta 25, primero las prioritarias y las de una misma organización juntas.';
+          : modalidad === 'renovacion' ? `Propuesta: hasta ${c.cupo_maximo}, primero las que ya vencieron y después las que vencen antes, con las de una misma institución de gobierno juntas.`
+            : 'Propuesta: las que más esperan, hasta 25, primero las prioritarias y las de una misma institución de gobierno juntas.';
     if (gExistente) {
       const ya = $('[data-ya-estan]');
       ya.hidden = false;

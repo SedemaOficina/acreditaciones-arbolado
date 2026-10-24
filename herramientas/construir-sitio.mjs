@@ -188,6 +188,13 @@ const enLinea = [...new Map(datos.requisito_curso
   .filter((rc) => requisito[rc.requisito].forma === 'documento' && requisito[rc.requisito].momento === 'en_linea')
   .sort((x, y) => x.orden - y.orden)
   .map((rc) => [rc.requisito, requisito[rc.requisito]])).values()];
+// Lo que el personal revisa de un documento, además de su nombre (sesión de trabajo del 23/10/2026, P196): la constancia
+// de situación fiscal es de la persona solicitante, reciente («del mes en curso» mientras se fija cuántos días de
+// antigüedad se aceptan) y de ella salen los datos de la factura. Va en la revisión y en el cotejo.
+const NOTA_PERSONAL = {
+  constancia_situacion_fiscal: 'Debe ser de la persona solicitante y reciente: del mes en curso <span class="pendiente">[pendiente P196: cuántos días de antigüedad se aceptan]</span>. De ella se toman su nombre, su régimen y su domicilio fiscal para la factura.'
+};
+const notaPersonal = (k, sangria) => (NOTA_PERSONAL[k] ? `\n${sangria}<p class="ayuda">${NOTA_PERSONAL[k]}</p>` : '');
 const revisionDocs = enLinea.map((r) => {
   const k = r.clave;
   return `        <div data-si="revisar_${k}=si">
@@ -196,7 +203,7 @@ const revisionDocs = enLinea.map((r) => {
               <h4 class="doc-titulo">${esc(r.nombre)}</h4>
               <span class="estado estado-atencion" data-doc-estado>Por revisar</span>
             </div>
-            <p class="doc-archivo" data-doc-archivo></p>
+            <p class="doc-archivo" data-doc-archivo></p>${notaPersonal(k, '            ')}
             <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver documento<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
             <!-- Aceptado en una revisión anterior y sin cambios: no se vuelve a decidir, salvo que quien revisa lo reabra (2026-10-18) -->
             <p class="doc-previo" data-doc-previo hidden>Se aceptó en una revisión anterior y la persona no lo cambió: no hace falta revisarlo otra vez. <button type="button" class="btn-enlace" data-reabrir="${k}">Revisarlo de nuevo<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
@@ -249,7 +256,7 @@ const cotejoDocs = enLinea.map((r) => {
             <h4 class="doc-titulo">${esc(r.nombre)}</h4>
             <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
-          <p class="doc-archivo" data-doc-archivo></p>
+          <p class="doc-archivo" data-doc-archivo></p>${notaPersonal(k, '          ')}
           <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="${k}">Ver lo que cargó<span class="solo-lector">: ${esc(r.nombre)}</span></button></p>
           <fieldset class="grupo" data-campo="coincide_${k}" data-requerido data-uso="Registrar si «${esc(r.nombre)}» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>

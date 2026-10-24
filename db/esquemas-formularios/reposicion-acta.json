@@ -1,0 +1,48 @@
+{
+  "formulario": "reposicion-acta.html",
+  "generado": "2026-10-24T07:04:56.508Z",
+  "campos": {
+    "decision": {
+      "etiqueta": "¿El acta comprueba la pérdida o el robo?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Registrar si el acta comprueba la pérdida o el robo (apd.reposicion.estado).",
+      "atributos": {},
+      "opciones": [
+        "acta_aceptada",
+        "con_observaciones"
+      ],
+      "autocomplete": "off"
+    },
+    "observacion": {
+      "etiqueta": "¿Qué debe corregir la persona?",
+      "tipo": "textarea",
+      "requerido": true,
+      "formato": "texto",
+      "sensible": false,
+      "uso": "Decirle a la persona qué debe corregir de su acta; se le muestra tal cual (apd.reposicion.observacion).",
+      "atributos": {
+        "minlength": "10",
+        "maxlength": "400"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "decision",
+        "valores": [
+          "con_observaciones"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "decision",
+          "valores": [
+            "con_observaciones"
+          ]
+        }
+      ]
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

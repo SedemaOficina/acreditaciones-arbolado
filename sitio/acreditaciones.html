@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.66">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Acreditaciones · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Consulta de las acreditaciones, su cancelación y la reposición de credenciales, para el personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
+<link rel="stylesheet" href="app/apd.css?v=0.66">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="477" height="96" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+
+  <!-- Consulta del padrón para el personal (sesión de trabajo del 23/10/2026): desde aquí se abre la ficha de una
+       acreditación para cancelarla (P120) o atender la reposición de su credencial (P140). No había otra pantalla del
+       personal que mostrara las acreditaciones de una persona. -->
+  <section class="tarjeta" aria-labelledby="t-reposiciones">
+    <h2 class="titulo-paso" id="t-reposiciones">Reposiciones por atender</h2>
+    <p class="bajada">Credenciales que sus titulares pidieron reponer por pérdida o robo: revise el acta y, cuando la persona llegue con su pago, valide la factura y entréguele su credencial.</p>
+    <!-- La cuenta se escribe al cargar (no es región viva) -->
+    <p class="resumen-filtro" data-cuenta-reposiciones>Cargando las reposiciones…</p>
+    <div class="tabla-marco" data-tabla data-clave="numero" data-reposiciones-tabla>
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector">Reposiciones de credencial por atender</caption>
+        <thead><tr><th scope="col">Persona</th><th scope="col">Número de acreditación</th><th scope="col">Pedida el</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+        <tbody data-filas-reposiciones></tbody>
+      </table>
+      <p class="tabla-vacia" data-tabla-vacia hidden>No hay reposiciones por atender.</p>
+    </div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-acreditaciones">
+    <h2 class="titulo-paso" id="t-acreditaciones">Acreditaciones</h2>
+    <p class="bajada">Busque una acreditación por su número, o por el nombre o la CURP de su titular, y abra su ficha.</p>
+
+    <!-- La búsqueda no se envía: sólo ordena la vista. -->
+    <form id="filtros" class="filtros-bandeja" data-formkit role="search" aria-label="Buscar una acreditación" action="#">
+      <div class="campo" data-campo="buscar" data-uso="Encontrar una acreditación; no se guarda.">
+        <label class="etiqueta" for="buscar">Buscar una acreditación</label>
+        <p class="ayuda">Número de acreditación (PD-… o DT-…), nombre o CURP.</p>
+        <!-- autocomplete off: búsqueda de quien consulta; no es un dato suyo. -->
+        <input class="control" id="buscar" name="buscar" type="search" maxlength="60" autocomplete="off" spellcheck="false">
+      </div>
+    </form>
+    <!-- La cuenta se anuncia una vez al terminar de escribir desde app/acreditaciones.js: no es región viva -->
+    <p class="resumen-filtro" data-cuenta>Cargando las acreditaciones…</p>
+
+    <div class="tabla-marco" data-tabla data-clave="numero" data-acreditaciones-tabla>
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector" data-leyenda>Acreditaciones</caption>
+        <thead><tr><th scope="col">Número de acreditación</th><th scope="col">Titular</th><th scope="col">Acreditación</th><th scope="col">Situación</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+      <p class="tabla-vacia" data-tabla-vacia hidden>Ninguna acreditación coincide con la búsqueda. Revise lo que escribió.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.66"></script>
+<script src="app/apd.js?v=0.66"></script>
+<!-- Versión de prueba: lo registrado en este navegador. -->
+<script src="app/archivos-prueba.js?v=0.66"></script>
+<script src="app/personal.js?v=0.66"></script>
+<script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
+<script src="app/mensajes-usted.js?v=0.66"></script>
+<script src="formkit/js/iconos.js?v=1.5.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.5.1"></script>
+<script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<script src="app/acreditaciones.js?v=0.66"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.66"></script>
+<script src="app/pruebas.js?v=0.66"></script>
+<script src="app/version-visible.js?v=0.66"></script>
+</body>
+</html>

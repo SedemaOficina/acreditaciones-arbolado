@@ -177,12 +177,24 @@ verifica "2d · A da de baja a una persona; B confirma el grupo" cupo_minimo "$R
 nueva; prepara "$F2" "$CINCO INSERT INTO apd.inscripcion (solicitud_id, grupo_id) VALUES ($(S 00039), $G5); $CONFIRMA"
 par "$F2" "$(BAJA 00037)" "$(BAJA 00038)"
 verifica "2e · Dos bajas a la vez en un grupo confirmado de 6 (RI-01)" ok "$REGLA_GRUPOS" "$MIRA_GRUPOS"
+# Sesión de trabajo del 23/10/2026 (P149): como máximo 2 grupos al mismo tiempo. APD-G-2026-005 ya tiene la semana del
+# 26/10; dos personas crean a la vez otro grupo esa semana: sin el candado de apd.comprobar_fechas_grupo, cada una contaría
+# un solo grupo y quedarían tres
+OTRO_GRUPO() { echo "INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('$1', 'nueva', 'combinado', '2026-10-26');"; }
+REGLA_SIMULTANEOS="SELECT NOT EXISTS (SELECT 1 FROM generate_series('2026-10-01'::date, '2026-12-31'::date, interval '1 day') d
+   WHERE (SELECT count(*) FROM apd.grupo g JOIN apd.curso c USING (tipo_acreditacion, modalidad)
+           WHERE g.estado IN ('en_integracion', 'confirmado', 'en_curso') AND g.fecha_inicio IS NOT NULL
+             AND d::date BETWEEN g.fecha_inicio AND g.fecha_inicio + c.dias_duracion - 1) > 2)"
+MIRA_SIMULTANEOS="SELECT string_agg(folio || ':' || estado || ':' || coalesce(fecha_inicio::text, '-'), ' ' ORDER BY folio) FROM apd.grupo WHERE fecha_inicio >= '2026-10-19'"
+nueva; par "$F2" "$(OTRO_GRUPO dictaminador)" "$(OTRO_GRUPO poda)"
+verifica "2f · Dos personas crean a la vez otro grupo en una semana que ya tiene uno (P149)" grupos_simultaneos "$REGLA_SIMULTANEOS" "$MIRA_SIMULTANEOS"
 
 # ─────────────── 4 · Examen frente a baja y frente a corrección de asistencia (APD-S-2026-00021, grupo 003) ───────────────
-F4='2026-10-17 10:00-06'
+# El grupo 003 va del lunes 12 al viernes 16/10 (sesión del 23/10/2026: de lunes a viernes), con los días 1 y 2 capturados
+F4='2026-10-16 10:00-06'
 INS="(SELECT i.id FROM apd.inscripcion i JOIN apd.solicitud s ON s.id = i.solicitud_id WHERE s.folio = 'APD-S-2026-00021' AND i.activa)"
-ASISTE="INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT $INS, d, true, 'preparacion' FROM generate_series(2, 5) d;"
-EXAMEN="INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ($INS, '2026-10-17', 9.0, current_setting('apd.usuario'));"
+ASISTE="INSERT INTO apd.asistencia (inscripcion_id, dia, asistio, capturada_por) SELECT $INS, d, true, 'preparacion' FROM generate_series(3, 5) d;"
+EXAMEN="INSERT INTO apd.examen (inscripcion_id, presentado_en, calificacion, capturado_por) VALUES ($INS, '2026-10-16', 9.0, current_setting('apd.usuario'));"
 BAJA21="UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Baja solicitada' WHERE id = $INS;"
 FALTA="UPDATE apd.asistencia SET asistio = false, capturada_por = current_setting('apd.usuario') WHERE inscripcion_id = $INS AND dia = 5;"
 REGLA_EXAMEN="SELECT NOT EXISTS (SELECT 1 FROM apd.examen e JOIN apd.inscripcion i ON i.id = e.inscripcion_id
@@ -202,6 +214,36 @@ nueva; prepara "$F4" "$ASISTE"; par "$F4" "$EXAMEN" "$FALTA"
 verifica "4c · A captura el examen; B corrige el día del examen a «faltó»" asistencia_cerrada "$REGLA_EXAMEN" "$MIRA_EXAMEN"
 nueva; prepara "$F4" "$ASISTE"; par "$F4" "$FALTA" "$EXAMEN"
 verifica "4d · A corrige el día del examen a «faltó»; B captura el examen" sin_pase_de_lista "$REGLA_EXAMEN" "$MIRA_EXAMEN"
+
+# ─────────────── 5 · Reposición de la credencial y cancelación (P120, P140; sesión de trabajo del 23/10/2026) ───────────────
+# a) La persona pide la reposición desde dos pestañas a la vez: sólo una queda abierta (candado sobre la acreditación en
+#    apd.reposicion_alta; el índice reposicion_una_abierta es la última defensa)
+# b) Un instructor cancela la acreditación mientras el personal entrega la credencial repuesta: o se entrega antes de la
+#    cancelación o la reposición queda cancelada, nunca repuesta después de cancelada (candado sobre la acreditación en
+#    apd.reposicion_cambio)
+F5='2026-10-14 12:00-06'
+K100="(SELECT id FROM apd.acreditacion WHERE numero = 'PD-2025-K100')"
+PIDE="SELECT set_config('apd.usuario_tipo', 'solicitante', true);
+  INSERT INTO apd.reposicion (acreditacion_id, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256)
+  VALUES ($K100, 'perdida', 'prueba/' || gen_random_uuid(), 'acta.pdf', 'application/pdf', 1000, repeat('f', 64));"
+ACEPTADA="(SELECT acreditacion_id FROM apd.reposicion WHERE estado = 'acta_aceptada' ORDER BY solicitada_en LIMIT 1)"
+CANCELA="SELECT set_config('apd.perfil', 'instructor', true);
+  UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba de concurrencia.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = $ACEPTADA;"
+REPONE="UPDATE apd.reposicion SET estado = 'repuesta', factura_rfc = 'EJEM760707AB1', factura_razon_social = 'PERSONA EJEMPLO',
+  factura_folio_fiscal = 'ABCDEF01-2345-4678-9ABC-DEF012345678' WHERE estado = 'acta_aceptada';"
+REGLA_REPOS="SELECT NOT EXISTS (SELECT 1 FROM apd.reposicion r GROUP BY acreditacion_id HAVING count(*) FILTER (WHERE estado IN ('solicitada', 'con_observaciones', 'acta_aceptada')) > 1)
+  AND NOT EXISTS (SELECT 1 FROM apd.reposicion r JOIN apd.acreditacion a ON a.id = r.acreditacion_id
+                   WHERE r.estado = 'repuesta' AND a.cancelada_en IS NOT NULL AND r.estado_desde > a.cancelada_en)
+  AND NOT EXISTS (SELECT 1 FROM apd.reposicion r JOIN apd.acreditacion a ON a.id = r.acreditacion_id
+                   WHERE r.estado IN ('solicitada', 'con_observaciones', 'acta_aceptada') AND a.cancelada_en IS NOT NULL)"
+MIRA_REPOS="SELECT string_agg(a.numero || ':' || r.estado || ':' || coalesce(a.cancelada_en::text, 'sin cancelar'), ' ' ORDER BY a.numero) FROM apd.reposicion r JOIN apd.acreditacion a ON a.id = r.acreditacion_id"
+echo "== 5 · Reposición y cancelación"
+nueva; par "$F5" "$PIDE" "$PIDE"
+verifica "5a · La persona pide la reposición desde dos pestañas a la vez (P140)" reposicion_en_curso "$REGLA_REPOS" "$MIRA_REPOS"
+nueva; par "$F5" "$CANCELA" "$REPONE"
+verifica "5b · A cancela la acreditación; B entrega la credencial repuesta (P120, P140)" ok "$REGLA_REPOS" "$MIRA_REPOS"
+nueva; par "$F5" "$REPONE" "$CANCELA"
+verifica "5c · A entrega la credencial repuesta; B cancela la acreditación (P120, P140)" ok "$REGLA_REPOS" "$MIRA_REPOS"
 
 echo
 echo "$((total - fallas)) de $total escenarios de concurrencia correctos."

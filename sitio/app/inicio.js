@@ -9,6 +9,11 @@
       const v = APD.parametro(datos, nodo.dataset.param);
       if (v !== null) nodo.textContent = String(v);
     }
+    // Las horas del curso, como H:MM (parámetros curso_hora_entrada y curso_hora_salida, P91)
+    for (const nodo of document.querySelectorAll('[data-param-texto]')) {
+      const v = APD.parametroTexto(datos, nodo.dataset.paramTexto);
+      if (v) nodo.textContent = v.replace(/^0(\d):/, '$1:');
+    }
     const nueva = APD.curso(datos, 'poda', 'nueva');
     const renov = APD.curso(datos, 'poda', 'renovacion');
     const dur = document.querySelector('[data-duraciones]');

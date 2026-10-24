@@ -188,8 +188,15 @@
 
   /* El curso que corresponde (tipo + nueva o renovación) va en el campo auxiliar «tramite»: de él dependen
      los documentos. Se informa a la persona; no se le pregunta. */
+  /* La situación de la licenciatura sólo se pregunta en dictaminador (sesión de trabajo del 23/10/2026): en poda no */
+  function pideSituacion() {
+    const tipo = (radios('tipo').find((x) => x.checked) || {}).value;
+    const v = tipo === 'dictaminador' && document.getElementById('nivel_estudios').value === 'licenciatura' ? 'si' : 'no';
+    if (document.getElementById('pedir_situacion').value !== v) ponValor('pedir_situacion', v);
+  }
   function ponTramite(tipo, modalidad, anterior, datos) {
     ponValor('tramite', tipo && modalidad ? `${tipo}_${modalidad}` : '');
+    pideSituacion();
     ponValor('anterior', anterior || '');
     const caja = document.querySelector('[data-modalidad-info]');
     if (!tipo || !modalidad) { caja.hidden = true; return; }
@@ -240,6 +247,26 @@
     return true;
   }
 
+  /* Al reenviar con lo corregido, la confirmación es la de una corrección (sesión de trabajo del 23/10/2026, nuevo 6):
+     «Recibimos la corrección de tus documentos», no «Recibimos tu solicitud», con los pasos que siguen a una corrección.
+     El acuse del estándar sólo llena el folio y la fecha; el título, la etiqueta de la fecha y los pasos son de la página. */
+  function acuseDeCorreccion() {
+    const acuse = document.querySelector('[data-acuse]');
+    if (!acuse) return;
+    acuse.querySelector('.titulo-paso').textContent = 'Recibimos la corrección de tus documentos';
+    const bajada = acuse.querySelector('.bajada');
+    if (bajada) bajada.textContent = 'Tu solicitud conserva su folio: es la referencia de tu trámite.';
+    const fecha = acuse.querySelector('[data-acuse-fecha]');
+    const etq = fecha && fecha.parentElement.querySelector('.acuse-etq');
+    if (etq) etq.textContent = 'Corrección recibida el';
+    const pasos = acuse.querySelector('.secuencia');
+    if (pasos) pasos.replaceChildren(...[
+      'La Secretaría revisa los documentos que corregiste. Lo que ya te aceptó no lo vuelve a revisar.',
+      'Si lo corregido está en orden, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.',
+      'Si todavía falta algo, te lo indica en «Mis trámites» y lo vuelves a corregir en línea.'
+    ].map((texto) => el('li', { class: 'secuencia-item', texto })));
+  }
+
   /* Devuelve la solicitud que se continúa, o null si no se puede */
   function continua(datos, persona, folio) {
     const s = APD.solicitudesDe(datos, persona).find((x) => x.folio === folio);
@@ -253,6 +280,7 @@
     ponTramite(s.tipo_acreditacion, s.modalidad, ant ? ant.numero : '', datos);
     // Estudios en los dos tipos (nivel; con licenciatura o posgrado, carrera y situación); experiencia, en dictaminador
     ponValor('nivel_estudios', s.nivel_estudios);
+    pideSituacion();
     const st = radios('estatus_estudios').find((x) => x.value === s.estatus_estudios);
     if (st) { st.checked = true; avisa(st); }
     ponValor('carrera', s.carrera);
@@ -273,6 +301,7 @@
     // Lo observado va primero en su paso, en el mismo orden entre sí (D2)
     for (const campo of observados.slice().reverse()) campo.parentElement.prepend(campo);
     const obs = docs.filter((d) => d.estado === 'con_observacion');
+    if (s.estado === 'con_observaciones') acuseDeCorreccion();
     if (obs.length) {
       document.querySelector('[data-observaciones-lista]').replaceChildren(...obs.map((d) => {
         const campo = form.querySelector(`[data-campo="doc_${s.tipo_acreditacion}_${s.modalidad}_${d.requisito}"]`);
@@ -451,6 +480,7 @@
     window.APD_SOLICITUD.usaCatalogo(datos);
     for (const ev of ['input', 'change']) {
       form.addEventListener(ev, (e) => {
+        if (e.target.name === 'nivel_estudios') pideSituacion();
         if (['nivel_estudios', 'estatus_estudios', 'carrera'].includes(e.target.name)) experiencia(datos);
       });
     }
@@ -468,6 +498,7 @@
     editarDesdeRevision();
     borrador(() => {
       alCambiarTipo();
+      pideSituacion();
       experiencia(datos);
       // Si lo recuperado deja a la persona en la revisión, se vuelve a pintar con lo de ahora
       const actual = FormKit.pasos.elementos[FormKit.pasos.actual()];

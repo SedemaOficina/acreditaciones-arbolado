@@ -65,7 +65,7 @@ window.FORMKIT_OPCIONES = {
             // Registro anterior (Kobo): además de la CURP, el nombre, con una letra de tolerancia (P14)
             if (!coincideConRegistro(d, existente)) {
               const NO = 'No coincide con el nombre que tiene la Secretaría para esta CURP.';
-              return mal({ mensaje: 'Tu nombre no coincide con el que tiene la Secretaría para esta CURP en su registro anterior. Revisa tu nombre y tus apellidos; si están bien escritos, acude a la Secretaría para aclararlo. Pendiente: teléfono y correo para estas aclaraciones (P132).',
+              return mal({ mensaje: 'Tu nombre no coincide con el que tiene la Secretaría para esta CURP en su registro anterior. Revisa tu nombre y tus apellidos; si están bien escritos, acude a la Secretaría para aclararlo: informes de lunes a viernes, de 9:00 a 15:00 (parámetro informes_horario). Pendiente: teléfono y correo para estas aclaraciones (P132).',
                 errores: [{ campo: 'nombre', mensaje: NO }, { campo: 'primer_apellido', mensaje: NO }] });
             }
           }
