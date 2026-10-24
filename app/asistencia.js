@@ -7,7 +7,8 @@
    Sin folio, el grupo en curso del instructor (si tiene varios, los lista). Los días que ya pasaron se capturan y se
    pueden corregir mientras el curso siga; los que no han ocurrido no se capturan (como la base, apd.asistencia_captura).
    El último día es el del examen: su asistencia se registra al pasar lista en el salón de cómputo («Aplicar el examen»),
-   no aquí (P94). No se guarda un día con alguien sin marcar. Asistencia mínima del curso: R33 y R35.
+   no aquí (P94). Al guardar un día, el aviso trae lo que sigue como un paso a paso: «Seguir con el día N» o, antes del
+   último, «Ir al día 5: pase de lista en el salón de cómputo» (reporte de Liber del 24/10/2026). No se guarda un día con alguien sin marcar. Asistencia mínima del curso: R33 y R35.
    ACCESO SIMULADO: perfil ficticio «instructor» (P27). En la prueba se guarda en «apd.personal.grupos»; un día que aún no
    llega (sólo la prueba lo permite) va marcado «simulada», porque la base lo rechaza (dia_futuro; auditoría C 3.4). */
 (function () {
@@ -111,10 +112,32 @@
       avisos.push(falta);
     }
     $('[data-avisos]').replaceChildren(...avisos);
-    if (examenHoy) {
+    /* El último día: su asistencia es el pase de lista del salón de cómputo, en «Aplicar el examen» (P94). Se dice aquí
+       cuando es hoy y, si ya se pasó lista, cuánto quedó: cuenta como la asistencia de ese día (reporte de Liber del
+       24/10/2026). La renovación (curso de un día) sólo tiene ese día: se va directo a «Aplicar» con un botón. */
+    const aplicarHref = `aplicar.html?folio=${encodeURIComponent(g.folio)}`;
+    const nombreFinal = APD.diaFinal(c) === 'Examen' ? 'examen' : APD.diaFinal(c).toLowerCase();
+    const enLista = personas.map((f) => capturada(f.i.id, ultimoDia)).filter((v) => v !== null);
+    const notas = [];
+    if (examenHoy) notas.push(ultimoDia === 1 ? 'Hoy es el curso y el examen: la asistencia de hoy se registra al pasar lista en el salón de cómputo, en «Aplicar el examen».'
+      : `Hoy es el día ${ultimoDia}, ${nombreFinal}: la asistencia de hoy se registra al pasar lista en el salón de cómputo, en «Aplicar el examen».`);
+    if (enLista.length) {
+      const si = enLista.filter(Boolean).length;
+      const no = enLista.length - si;
+      const partes = [`${si} ${si === 1 ? 'presente' : 'presentes'}`].concat(no ? [`${no} no ${no === 1 ? 'llegó' : 'llegaron'}`] : [])
+        .concat(personas.length - enLista.length ? [`${personas.length - enLista.length} por pasar lista`] : []);
+      notas.push(`Día ${ultimoDia}${ultimoDia > 1 ? `, ${nombreFinal}` : ''}: la lista del salón de cómputo cuenta como la asistencia de ese día (${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}).`);
+    }
+    if (notas.length) {
       $('[data-ultimo-dia]').hidden = false;
-      // En el curso de primera vez, el último día es de repaso de conocimientos y examen final (sesión del 23/10/2026)
-      $('[data-ultimo-dia]').textContent = `Hoy es ${APD.diaFinal(c) === 'Examen' ? 'el examen' : `el día de ${APD.diaFinal(c).toLowerCase()}`}: la asistencia de hoy se registra al pasar lista en el salón de cómputo, en «Aplicar el examen».`;
+      $('[data-ultimo-dia]').textContent = notas.join(' ');
+    }
+    // Ir al pase de lista: botón principal si no hay lista que capturar aquí (renovación); secundario el día del examen de un
+    // curso de varios días, junto a la lista de un día anterior (un solo botón principal por pantalla, C6-02)
+    if (examenHoy || (prueba && ultimoDia === 1)) {
+      $('[data-ir-aplicar]').hidden = false;
+      $('[data-ir-aplicar]').replaceChildren(el('a', { class: `btn ${ultimoDia === 1 ? 'btn-primario' : 'btn-secundario'}`, href: aplicarHref }, [
+        document.createTextNode(ultimoDia === 1 ? 'Ir al pase de lista en el salón de cómputo' : `Ir al día ${ultimoDia}: pase de lista en el salón de cómputo`), APD.icono('flecha-der')]));
     }
 
     /* Corregir otro día: los días ya ocurridos, salvo el que está en pantalla */
@@ -133,7 +156,7 @@
       const enlaces = [];
       for (let n = 1; n <= ultimoDia; n++) {
         const examen = n === ultimoDia;
-        const texto = `Día ${n} · ${fechaCorta(diaDe(n))}${examen ? ` · ${APD.diaFinal(c).toLowerCase()}` : listo(n) ? ' · capturado' : ''}`;
+        const texto = `Día ${n} · ${fechaCorta(diaDe(n))}${examen ? ` · ${APD.diaFinal(c).toLowerCase()}${listo(n) ? ' · lista pasada' : ''}` : listo(n) ? ' · capturado' : ''}`;
         const href = examen ? `aplicar.html?folio=${encodeURIComponent(g.folio)}` : `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${n}`;
         enlaces.push(n === dia ? el('strong', { 'aria-current': 'page', texto }) : el('a', { href, texto }));
       }
@@ -141,21 +164,34 @@
       $('[data-recorrido-dias]').replaceChildren(...enlaces.flatMap((e, i) => (i ? [document.createTextNode(' · '), e] : [e])));
     }
 
-    /* Hecho: aviso tras guardar */
+    /* Hecho: aviso tras guardar, con lo que sigue como un paso a paso (reporte de Liber del 24/10/2026): el día siguiente
+       si ya ocurrió (o en la versión de prueba) o, si el siguiente es el último, su pase de lista en «Aplicar el examen»;
+       un botón principal y el foco en él. Fuera de la prueba, un día que todavía no llega dice cuándo se captura. */
+    function loQueSigue(n) {
+      const m = n + 1;
+      const llego = diaDe(m) <= hoy || prueba;
+      if (m >= ultimoDia) {
+        return llego ? { boton: [aplicarHref, `Ir al día ${ultimoDia}: pase de lista en el salón de cómputo`] }
+          : { texto: `El día ${ultimoDia} (${nombreFinal}) es el ${fechaLarga(diaDe(ultimoDia))}: ese día se pasa lista en el salón de cómputo, en «Aplicar el examen».` };
+      }
+      // El día de hoy, sin ?dia (F3 B1: al corregir un día anterior se vuelve al de hoy, sin «(simulado)»)
+      if (llego) return { boton: [m === deHoy ? `asistencia.html?folio=${encodeURIComponent(g.folio)}` : `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${m}`, `Seguir con el día ${m}${m === deHoy ? ' (hoy)' : ''}`] };
+      return { texto: `El día ${m} se captura el ${fechaLarga(diaDe(m))}.` };
+    }
     if (params.get('hecho') === 'asistencia' && dia) {
-      // En la prueba, guardar lleva al día siguiente (?guardado = el día que se guardó); en el SIA se queda en el día
       const n = Number(params.get('guardado') || params.get('dia'));
       const asistieron = personas.filter((f) => capturada(f.i.id, n) === true).length;
-      // «(simulado)» sólo en un día que todavía no llega; al corregir un día anterior se vuelve al de hoy (F3 B1)
-      const sigue = n === dia ? (prueba && n === ultimoDia - 1 ? ' Lo que sigue es el examen, el último día.' : '')
-        : dia === deHoy ? ` Sigue el día de hoy (día ${dia}).` : diaDe(dia) > hoy ? ` Sigue el día ${dia} (simulado).` : ` Sigue el día ${dia}.`;
       const noEntraron = Number(params.get('cerradas')) || 0;
-      APD.pintaAviso($('[data-hecho]'), 'ok', `Asistencia del día ${n} guardada`,
-        `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.${sigue}${noEntraron ? ` ${noEntraron === 1 ? 'A 1 persona no se le cambió' : `A ${noEntraron} personas no se les cambió`}: ya presentó el examen.` : ''}`, true);
-      if (prueba && n === ultimoDia - 1) {
-        $('[data-hecho]').append(el('p', { class: 'nota-prueba' }, [document.createTextNode('Versión de prueba: '),
-          el('a', { href: `aplicar.html?folio=${encodeURIComponent(g.folio)}`, texto: `ir a «Aplicar el examen» (día ${ultimoDia})` })]));
+      const sigue = loQueSigue(n);
+      const cuerpo = [el('p', { id: 'hecho-texto', texto: `${plural(asistieron, 'persona asistió', 'personas asistieron')} y ${plural(personas.length - asistieron, 'faltó', 'faltaron')}. Puede corregirla mientras siga el curso.${noEntraron ? ` ${noEntraron === 1 ? 'A 1 persona no se le cambió' : `A ${noEntraron} personas no se les cambió`}: ya presentó el examen.` : ''}${sigue.texto ? ` ${sigue.texto}` : ''}` })];
+      if (sigue.boton) {
+        cuerpo.push(el('div', { class: 'acciones acciones-izq' }, [el('a', { class: 'btn btn-primario', href: sigue.boton[0], 'data-siguiente': '', 'aria-describedby': 'hecho-titulo hecho-texto' },
+          [document.createTextNode(sigue.boton[1]), APD.icono('flecha-der')])]));
       }
+      const aviso = APD.pintaAviso($('[data-hecho]'), 'ok', `Asistencia del día ${n} guardada`, cuerpo, !sigue.boton);
+      const titulo = aviso.querySelector('.aviso-titulo');
+      if (titulo) titulo.id = 'hecho-titulo';
+      if (sigue.boton) aviso.querySelector('[data-siguiente]').focus();
       params.delete('hecho');
       params.delete('guardado');
       params.delete('cerradas');
@@ -163,11 +199,13 @@
     }
 
     if (!dia) {
-      $('[data-titulo-dia]').textContent = examenHoy ? `Día ${ultimoDia} de ${ultimoDia} · ${APD.diaFinal(c).toLowerCase()}` : 'Todavía no hay días por capturar';
+      $('[data-titulo-dia]').textContent = examenHoy || (prueba && ultimoDia === 1) ? `Día ${ultimoDia} de ${ultimoDia} · ${APD.diaFinal(c).toLowerCase()}` : 'Todavía no hay días por capturar';
       if (!examenHoy) {
         $('[data-ultimo-dia]').hidden = false;
-        $('[data-ultimo-dia]').textContent = `El curso empieza el ${fechaLarga(g.fecha_inicio)}.`;
+        $('[data-ultimo-dia]').textContent = [`El curso empieza el ${fechaLarga(g.fecha_inicio)}.${prueba && ultimoDia === 1 ? ' Versión de prueba: puede pasar lista desde ahora para probar.' : ''}`].concat(notas).join(' ');
       }
+      // Sin lista que capturar aquí, la leyenda de las marcas sobra
+      $('[data-leyenda]').hidden = true;
       $('[data-acciones]').hidden = true;
       return;
     }
@@ -287,13 +325,10 @@
       // Un día que aún no llega sólo se captura en la prueba: va marcado «simulada» (C 3.4)
       P.guardaGrupo(Object.assign({ tipo: 'asistencia', grupo_id: g.id, dia, lista, por: P.INSTRUCTORA.usuario }, futuro ? { simulada: true, fecha_dia: diaDe(dia) } : {})).then(() => {
         sinGuardar = false;
-        // Versión de prueba: pasa al día siguiente del curso (el examen no se captura aquí). En el SIA se queda en el
-        // día: los días que no han pasado no se capturan (decisión de Liber, 2026-10-18)
-        // Al corregir un día anterior a hoy se vuelve al de hoy (F3 B1)
+        // Se queda en el día guardado, con lo que sigue en el aviso (botón «Seguir con el día N» o «Ir al día 5…»; reporte
+        // de Liber del 24/10/2026). Antes, la prueba pasaba sola al día siguiente y del día 4 no se seguía al pase de lista.
         const extra = cerradas ? `&cerradas=${cerradas}` : '';
-        if (diaDe(dia) < hoy && deHoy) { location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&hecho=asistencia&guardado=${dia}${extra}`; return; }
-        const siguiente = prueba && dia + 1 < ultimoDia ? dia + 1 : dia;
-        location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${siguiente}&hecho=asistencia&guardado=${dia}${extra}`;
+        location.href = `asistencia.html?folio=${encodeURIComponent(g.folio)}&dia=${dia}&hecho=asistencia&guardado=${dia}${extra}`;
       }).catch(() => {
         libera();
         APD.pintaAviso(aviso, 'error', 'No se pudo guardar la asistencia', 'Lo marcado sigue aquí; intente de nuevo.', true);
