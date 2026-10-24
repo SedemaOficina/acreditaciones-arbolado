@@ -227,7 +227,9 @@
       for (let lunes = P.lunesDe(primero); lunes <= ultimo; lunes = APD.sumaDias(lunes, 7)) {
         const info = semanaInfo(lunes);
         const elegida = lunes === lunesElegido;
-        const nombre = nombreDeLaSemana(lunes);
+        // Con su año, también el de este año («Elegir la semana del 2 al 6 de noviembre de 2026»); el nombre del grupo lo
+        // lleva sólo si es otro (APD.nombreGrupo)
+        const nombre = /\d{4}$/.test(nombreDeLaSemana(lunes)) ? nombreDeLaSemana(lunes) : `${nombreDeLaSemana(lunes)} de ${info.viernes.slice(0, 4)}`;
         const grupos = [...new Set([0, 1, 2, 3, 4].flatMap((i) => pintadosEn(APD.sumaDias(lunes, i))))];
         const delCurso = (g) => P.claveCurso(g.tipo_acreditacion, g.modalidad) === clave;
         const cuales = grupos.map((g) => `${g.folio} (${delCurso(g) ? SITUACION_DIA[g.estado] : `otro curso, ${SITUACION_DIA[g.estado]}`})`);

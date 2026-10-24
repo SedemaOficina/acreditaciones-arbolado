@@ -40,7 +40,9 @@
     };
     if (!textos[hecho]) return;
     const [tono, titulo, texto] = textos[hecho];
-    APD.pintaAviso($('[data-hecho]'), tono, titulo, texto, true);
+    // Un texto con sus pasos ({ texto, pasos }) va como la secuencia «Qué sigue» (APD.sigueEn): FormKit.aviso no recibe
+    // objetos y escribía «[object Object]» en «Grupo creado» y «El grupo dejó de estar confirmado»
+    APD.pintaAviso($('[data-hecho]'), tono, titulo, texto && typeof texto === 'object' ? APD.sigueEn(texto) : texto, true);
     // Que recargar la página no repita el aviso
     params.delete('hecho'); params.delete('n'); params.delete('no');
     history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
