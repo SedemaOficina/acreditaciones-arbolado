@@ -616,9 +616,17 @@ body > main { flex: 1 0 auto; width: 100%; }
   .hoy-grupo-accion { width: auto; justify-self: start; }
 }
 @media (min-width: 760px) {
-  .plan-barra { position: sticky; bottom: 0; z-index: var(--z-lista); padding-block-end: calc(var(--e-2) + var(--safe-inf)); }
+  /* Fija, la barra llega hasta el borde de la ventana y lo rebasa: se extiende por debajo de él tanto como un objetivo
+     (--objetivo-min, con el mismo relleno, y un margen negativo igual para que en su lugar normal no deje hueco). Así
+     cubre entera la casilla que queda a medias en el borde de abajo, igual que cubre las que quedan debajo de ella (de la
+     casilla cortada por el borde no se ve nada): antes la barra terminaba justo en el borde, la casilla asomaba fuera de
+     la ventana junto a los botones de la barra y axe la contaba como objetivo de menos de 24 px pegado a ellos
+     (target-size; sesión del 23/10, parte B). Lo que se ve no cambia; el alto que reserva la página (B4-01) es el visible
+     (app/grupos.js). */
+  .plan-barra { position: sticky; bottom: calc(-1 * var(--objetivo-min)); z-index: var(--z-lista);
+    padding-block-end: calc(var(--e-2) + var(--safe-inf) + var(--objetivo-min)); margin-block-end: calc(-1 * var(--objetivo-min)); }
   /* Si la barra mide más de un cuarto de la ventana deja de ser fija (B4-01, decisión 1c del 20/10; app/grupos.js) */
-  .plan-barra[data-suelta] { position: static; }
+  .plan-barra[data-suelta] { position: static; padding-block-end: calc(var(--e-2) + var(--safe-inf)); margin-block-end: 0; }
   .plan-semana { grid-template-columns: minmax(0, calc(var(--e-11) * 1.5)) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
   .plan-semana-titulo { padding-block-start: var(--e-3); }
   .hoy-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -3624,19 +3624,11 @@ async function accesibilidad(navegador, ancho = 390, alto = 844) {
     else if (estado) await page.click(url.startsWith('solicitud') ? `${pasoVisible} [data-accion="siguiente"]` : '[data-accion="enviar"]');
     await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
     await page.evaluate(axe); // por el protocolo del navegador: la política de contenido no deja scripts en línea
-    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr. En «Grupos» de escritorio, una
-    // casilla que en esa posición de la página queda debajo de la barra fija de abajo (.plan-barra, sticky) no se
-    // cuenta en target-size: axe mide el espacio libre con la barra encima y depende de dónde caiga el borde de la
-    // ventana (sesión del 23/10: con las empresas ya una por una, una casilla cayó justo ahí); al desplazarse, la barra
-    // la deja libre
-    const v = await page.evaluate(async () => {
-      const barra = document.querySelector('.plan-barra');
-      const fija = barra && !barra.hidden && getComputedStyle(barra).position === 'sticky' ? barra.getBoundingClientRect() : null;
-      const tapada = (sel) => { const e = fija && document.querySelector(sel); if (!e) return false; const r = e.getBoundingClientRect(); return r.bottom > fija.top && r.top < fija.bottom; };
-      return (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
-        .map((x) => ({ ...x, nodes: x.id === 'target-size' ? x.nodes.filter((n) => !tapada(n.target[0])) : x.nodes })).filter((x) => x.nodes.length)
-        .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`);
-    });
+    // Cada violación con el marcado del elemento, para saber cuál es sin volver a correr. Sin excepciones: las casillas de
+    // «Grupos» que quedan debajo de la barra fija también cuentan (sesión del 23/10, parte B: la barra ya cubre entera la
+    // casilla que el borde de la ventana corta; app/apd.css)
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 200)).join(' || ')}`));
     comprueba(v.length === 0, `[accesibilidad ${ancho} px] ${url}${estado ? ' ' + estado : ''}${v.length ? ': ' + v.join(', ') : ''}`);
   }
   await page.close();
@@ -4253,7 +4245,8 @@ async function focoAccesibilidad(navegador) {
     await page.goto(BASE + 'grupos.html?curso=poda-nueva');
     await page.waitForSelector('.plan-barra:not([hidden])');
     await dosCuadros(page);
-    const barra = await page.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height, reserva: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0 }; });
+    // El alto visible de la barra: fija, se extiende por debajo de la ventana (sesión del 23/10, parte B) y esa parte no se ve
+    const barra = await page.evaluate(() => { const b = document.querySelector('.plan-barra'); const r = b.getBoundingClientRect(); return { pos: getComputedStyle(b).position, alto: Math.min(r.bottom, innerHeight) - r.top, reserva: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0 }; });
     comprueba(barra.pos === 'sticky' && barra.reserva >= barra.alto, `[${w}×${h}] B4-01: la barra de elegidas sigue fija (${Math.round(barra.alto)} px) y la página reserva su alto al desplazarse (${barra.reserva} px)`);
     let casillas = 0; const ocultas = [];
     for (let k = 0; k < 80; k++) {

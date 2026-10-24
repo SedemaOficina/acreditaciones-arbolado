@@ -311,7 +311,8 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
     // La barra ya se ve y pasaron dos cuadros (su ResizeObserver ya la midió)
     await pg.waitForSelector('.plan-barra:not([hidden])');
     await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
-    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); return { pos: getComputedStyle(b).position, alto: b.getBoundingClientRect().height }; });
+    // El alto visible: fija, la barra se extiende por debajo de la ventana (sesión del 23/10, parte B) y esa parte no se ve
+    const barra = await pg.evaluate(() => { const b = document.querySelector('.plan-barra'); const r = b.getBoundingClientRect(); return { pos: getComputedStyle(b).position, alto: Math.min(r.bottom, innerHeight) - r.top }; });
     comprueba(barra.alto <= h / 4 || barra.pos === 'static', `[${tam}] grupos con volumen: la barra de elegidas (${Math.round(barra.alto)} px, ${Math.round(barra.alto / h * 100)} % de la ventana) deja de ser fija si mide más de un cuarto`);
     for (const tecla of ['Tab', 'Shift+Tab']) {
       await pg.evaluate(() => { window.scrollTo(0, 0); document.activeElement && document.activeElement.blur(); });
