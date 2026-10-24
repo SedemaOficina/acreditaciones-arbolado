@@ -11,8 +11,11 @@
      · Si no presenta el comprobante de pago: no se termina el cotejo; se le da otra cita y conserva el monto.
      · Con todo en orden y la factura cargada, la solicitud pasa a «En espera de grupo» y se abre el expediente de la
        persona (si es su primer trámite).
-   Una sola acción principal, cuyo texto cambia con el resultado. Cerrar la solicitud o no atender a la persona piden
-   confirmación.
+   Por pasos (decisión de Liber del 24/10/2026; módulo «pasos» del Estándar 1.5.1): «¿Es la persona?» (llegada e
+   identidad), «Documentos originales», «Pago y factura» y «Resultado», con el resumen antes de registrar. Si no se
+   presentó o no es la persona, de «¿Es la persona?» se pasa a «Resultado»; si un documento no es igual, de «Documentos
+   originales» también. Al retomar una pausa no hay primer paso. Una sola acción para registrar, en «Resultado», cuyo
+   texto cambia con el resultado. Cerrar la solicitud o no atender a la persona piden confirmación.
 
    Campos auxiliares que calcula la página (y el servidor por su cuenta, con apd.cita y los documentos):
    pedir_llegada, pedir_identidad, pedir_documentos, cotejar_<requisito>, pedir_hoy, pedir_pago, pedir_factura y resultado.
@@ -102,11 +105,14 @@
     const iniciales = `${(p.nombre || '').charAt(0)}${(p.primer_apellido || '').charAt(0)}`;
     const foto = el('div', { class: 'perfil-foto perfil-foto-chica' }, [el('span', { class: 'perfil-iniciales', 'aria-hidden': 'true', texto: iniciales })]);
     $('[data-iniciales]').textContent = iniciales;
+    $('[data-nombre-persona]').textContent = nombre;
     if (typeof APD_ARCHIVOS_PRUEBA !== 'undefined') APD_ARCHIVOS_PRUEBA.foto(p.curp).then((r) => {
       if (!r || !r.blob) return;
       const url = URL.createObjectURL(r.blob);
       foto.append(el('img', { class: 'perfil-imagen', src: url, alt: `Fotografía de ${nombre}` }));
+      // Al retomar una pausa no hay paso «¿Es la persona?» (se quita antes de iniciar): no hay dónde poner la grande
       const grande = $('[data-foto-grande]');
+      if (!grande) return;
       grande.dataset.conImagen = 'si';
       grande.append(el('img', { class: 'perfil-imagen', src: url, alt: `Fotografía de la cuenta de ${nombre}` }));
     });
@@ -136,7 +142,7 @@
         el('p', { class: 'aviso-titulo', texto: `Cotejo en pausa desde el ${fechaLarga(diaPausa, { hora: APD.hora(pausa.real) })}` }),
         el('p', { texto: `No coincidió: ${lista(nombres)}. La identidad y los demás documentos ya se cotejaron.` }),
         el('p', { texto: faltan.length
-          ? `La persona todavía no carga: ${lista(faltan)}. Mientras no lo cargue, sólo puede marcar «No coincide»; si no lo carga hoy, marque «No: regresa con observaciones».`
+          ? `La persona todavía no carga: ${lista(faltan)}. Mientras no lo cargue, sólo puede marcar «No es igual»; si no lo carga hoy, marque «No: regresa con observaciones».`
           : 'La persona ya cargó el documento nuevo: compárelo con el que trae.' })
       );
     }
@@ -166,8 +172,8 @@
       const d = docs.find((x) => x.requisito === art.dataset.doc);
       if (d) pintaDoc(art, d);
     }
-    /* Al retomar, el documento que no coincidió sólo puede «coincidir» si la persona cargó otro (F2 A7): sin él, «Sí,
-       coincide» queda deshabilitado y lo dicen el aviso de arriba y la etiqueta del documento */
+    /* Al retomar, el documento que no coincidió sólo puede «coincidir» si la persona cargó otro (F2 A7): sin él, «Sí, es
+       igual» queda deshabilitado y lo dicen el aviso de arriba y la etiqueta del documento */
     function bloqueaSinNuevo() {
       if (!retoma) return;
       for (const k of pausa.docs) {
@@ -202,9 +208,9 @@
     if (retoma) {
       const ya = docs.map((d) => d.requisito).filter((k) => !pausa.docs.includes(k)).map((k) => req[k].nombre);
       if (ya.length) { $('[data-ya-coincidieron]').textContent = `Ya coincidieron en la cita: ${lista(ya)}.`; $('[data-ya-coincidieron]').hidden = false; }
-      $('[data-docs-titulo]').textContent = '1. Documentos que no coincidieron';
-      $('#t-pago').textContent = '2. Pago';
-      $('#t-factura').textContent = '3. Factura';
+      $('[data-docs-titulo]').textContent = '¿Los originales que no coincidieron ya son iguales?';
+      // La persona ya está y su identidad ya se comprobó: no hay paso «¿Es la persona?»
+      $('[data-paso-persona]').remove();
     }
 
     /* ----- Pago: lo que se le indicó al darle la cita ----- */
@@ -218,7 +224,6 @@
 
     /* ----- Lo que calcula la página ----- */
     let calculando = false;
-    let iniciada = false; // el resumen se anuncia sólo después de pintar la página
     function recalcula() {
       if (calculando) return; // los auxiliares que se ajustan aquí disparan «change»: no se recalcula dentro
       calculando = true;
@@ -249,7 +254,7 @@
       for (const art of $$('[data-doc]', form)) {
         const v = elegido(`coincide_${art.dataset.doc}`);
         // Etiqueta con icono de su familia: coincide (logro); por cotejar y no coincide (le toca actuar, D7)
-        $('[data-doc-estado]', art).replaceWith(APD.estado(v === 'si' ? 'Coincide' : v === 'no' ? 'No coincide' : 'Por cotejar', v === 'si' ? 'ok' : 'pend'));
+        $('[data-doc-estado]', art).replaceWith(APD.estado(v === 'si' ? 'Es igual' : v === 'no' ? 'No es igual' : 'Por cotejar', v === 'si' ? 'ok' : 'pend'));
         $('.doc-cabeza .estado', art).setAttribute('data-doc-estado', '');
       }
 
@@ -272,13 +277,34 @@
         cerrar: 'Es su segunda inasistencia: la solicitud se cierra y el trámite termina sin acreditación. La persona puede iniciar una solicitud nueva.',
         no_es_la_persona: 'No se atiende la cita. La cuenta queda bloqueada y se avisa a la Dirección para aclararlo.'
       };
-      // Un anuncio por acción (auditoría 2026-10-20, B4-03): el resumen no es región viva; se escribe y se anuncia sólo
-      // cuando cambia por algo que hizo quien atiende (al marcar que un documento coincide, junto con el siguiente)
+      // Un anuncio por acción (auditoría 2026-10-20, B4-03): el resumen no es región viva; se lee al llegar a «Resultado»,
+      // que el módulo de pasos anuncia
       const resumen = faltan.length && ['', 'terminado', 'otra_cita'].includes(resultado) ? `Falta indicar ${lista(faltan)}.` : TEXTOS[resultado] || '';
-      if ($('[data-resumen]').textContent !== resumen) {
-        $('[data-resumen]').textContent = resumen;
-        if (iniciada && resumen) FormKit.anuncia(resumen);
+      if ($('[data-resumen]').textContent !== resumen) $('[data-resumen]').textContent = resumen;
+      // Lo de cada paso, antes de registrar
+      const iguales = coinciden.filter((x) => x === 'si').length;
+      const filas = [
+        retoma ? null : ['¿Es la persona?', presente === 'no' ? 'No se presentó' : ident === 'misma' ? 'Sí es la persona' : ident === 'no_es' ? 'No es la persona' : 'Por revisar', presente === 'no' || ident === 'no_es' ? 'cerrado' : ident === 'misma' ? 'ok' : 'pend'],
+        conDocs ? ['Documentos originales', sinCotejar ? `${iguales + noCoinciden} de ${aCotejar.length} cotejados` : noCoinciden ? (noCoinciden === 1 ? '1 no es igual' : `${noCoinciden} no son iguales`) : 'Todos son iguales', !sinCotejar && !noCoinciden ? 'ok' : 'pend'] : null,
+        conDocs && !noCoinciden ? ['Pago', elegido('pago') === 'si' ? 'El pago está bien' : elegido('pago') === 'no' ? 'No trae el pago o no coincide' : 'Por revisar', elegido('pago') === 'si' ? 'ok' : 'pend'] : null
+      ].filter(Boolean);
+      const firma = JSON.stringify(filas);
+      const ul = $('[data-resumen-lista]');
+      if (ul.dataset.firma !== firma) { // sin cambios no se vuelve a escribir
+        ul.dataset.firma = firma;
+        ul.replaceChildren(...filas.map(([que, como, tono]) => el('li', { class: 'resumen-pasos-fila' }, [el('span', { class: 'resumen-pasos-nombre', texto: que }), APD.estado(como, tono)])));
       }
+      // Los pasos que no hacen falta lo dicen (si se abren desde la barra)
+      const sinAtender = presente === 'no' || ident === 'no_es';
+      $('[data-docs-no-hace-falta]').hidden = !sinAtender;
+      $('[data-pago-no-hace-falta]').hidden = !(sinAtender || noCoinciden);
+      $('[data-pago-no-hace-falta-texto]').textContent = sinAtender ? 'No hace falta ver el pago: la cita no se atiende.'
+        : 'No hace falta ver el pago todavía: un documento no es igual. El pago y la factura se ven cuando todos lo sean.';
+      // El botón de cada paso dice a dónde lleva
+      const sigPersona = $('[data-paso-persona] [data-accion="siguiente"]', form);
+      if (sigPersona) sigPersona.textContent = sinAtender ? 'Ver el resultado' : 'Cotejar los documentos';
+      const sigDocs = $('[data-paso][data-titulo="Documentos originales"] [data-accion="siguiente"]', form);
+      if (sigDocs) sigDocs.textContent = noCoinciden ? 'Ver el resultado' : 'Ver el pago';
       // Sin nada que cotejar (no se presentó o no es la persona), el visor no sigue mostrando un documento (D32)
       if ((presente === 'no' || ident === 'no_es') && hayVisor()) {
         const visor = $('[data-visor]');
@@ -336,25 +362,9 @@
       }
     });
 
-    /* Al marcar que un documento coincide, se pasa al siguiente sin cotejar (como en la revisión documental) */
-    const suave = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    form.addEventListener('change', (e) => {
-      const r = e.target;
-      if (!e.isTrusted || !r.name || !r.name.startsWith('coincide_') || r.value !== 'si') return;
-      const actual = r.name.slice(9);
-      const orden = aCotejar.filter((k) => archivos[k]);
-      const i = orden.indexOf(actual);
-      const siguiente = orden.slice(i + 1).find((k) => !elegido(`coincide_${k}`)) || orden.slice(0, i).find((k) => !elegido(`coincide_${k}`));
-      if (!siguiente) return;
-      if (hayVisor() && FormKit.visor.enComputadora()) ver(siguiente, null);
-      // El foco va al título del documento que se muestra (como en la revisión documental, RI-06) y se anuncia una vez el
-      // avance con el siguiente documento (B4-03)
-      const art = $(`[data-doc="${siguiente}"]`, form);
-      const titulo = $('.doc-titulo', art);
-      if (titulo) { titulo.tabIndex = -1; titulo.focus({ preventScroll: true }); }
-      art.scrollIntoView({ behavior: suave, block: 'start' });
-      FormKit.anuncia(`${$('[data-resumen]').textContent} Siguiente documento: ${archivos[siguiente].titulo}.`);
-    });
+    /* Los documentos van juntos en su paso «Documentos originales» (decisión de Liber del 24/10/2026): al marcar uno ya no
+       se mueve el foco ni el visor (cada uno tiene su «Ver lo que cargó»); el visor anunciaba «Cargando el documento…»
+       con cada respuesta (un anuncio por acción, B4-03; P181). */
 
     /* Una cita de un día que todavía no llega se atiende ese día (auditoría «intentar romperlo», F2 A6; la base:
        cita_futura): sin formulario, con su fecha. En la versión de prueba la fecha simulada no avanza: se puede atender
@@ -375,8 +385,10 @@
         $('[data-futura]').hidden = true;
         form.hidden = false;
         $('[data-estado]').replaceChildren(APD.estado('Cita simulada', 'pend'));
-        const primero = $('#formulario input:not([type="hidden"]):not([disabled])');
-        if (primero) primero.focus();
+        $('[data-con-formulario]').hidden = false;
+        // El foco va al título del primer paso, como al cambiar de paso
+        const h = $('[data-paso]:not([hidden]) .titulo-paso', form);
+        if (h) { h.tabIndex = -1; h.focus(); }
       });
       $('[data-futura]').hidden = false;
     }
@@ -391,11 +403,28 @@
     $('[data-cita-desde]').textContent = fechaCorta(manana);
     $('[data-cita-hasta]').textContent = fechaCorta(hasta);
     // Retomar una pausa empieza en los documentos: la nota de obligatorias va en esa tarjeta (D33)
-    $('[data-leyenda-llegada]').hidden = retoma;
     $('[data-leyenda-docs]').hidden = !retoma;
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     form.hidden = pausaVencida || futura;
+    $('[data-con-formulario]').hidden = form.hidden;
+    /* ----- Los pasos (decisión de Liber del 24/10/2026) ----- */
+    const pasosDom = () => $$('[data-paso]', form);
+    const atrasPrimero = $('[data-accion="atras"]', pasosDom()[0]);
+    if (atrasPrimero) atrasPrimero.remove();
+    const indice = (titulo) => pasosDom().findIndex((x) => x.dataset.titulo === titulo);
+    /* En computadora, al llegar a «Documentos originales» el visor muestra el primero por cotejar; en los demás pasos se
+       cierra. La página lo abre sola: no se anuncia (P181). */
+    form.addEventListener('formkit:paso', (e) => {
+      if (!hayVisor() || !FormKit.visor.enComputadora()) return;
+      if (e.detail.paso.dataset.titulo === 'Documentos originales' && document.getElementById('pedir_documentos').value === 'si') {
+        const k = aCotejar.find((x) => archivos[x] && !elegido(`coincide_${x}`)) || aCotejar.find((x) => archivos[x]);
+        if (k) ver(k, null);
+        return;
+      }
+      const visor = $('[data-visor]');
+      if (visor && visor.open) visor.close();
+    });
     $('[data-cargando]').hidden = true;
     bloqueaSinNuevo();
     const instancia = FormKit.iniciar(form, {
@@ -434,7 +463,7 @@
               if (sinNuevo.length) {
                 pintaRetoma();
                 bloqueaSinNuevo();
-                const mensaje = 'La persona todavía no carga el documento nuevo: sólo puede marcar «No coincide».';
+                const mensaje = 'La persona todavía no carga el documento nuevo: sólo puede marcar «No es igual».';
                 return mal({ mensaje, errores: sinNuevo.map((k) => ({ campo: `coincide_${k}`, mensaje })) });
               }
             }
@@ -506,6 +535,7 @@
         };
         const [tono, titulo, texto, pasos] = HECHO[resultado];
         form.hidden = true;
+        $('[data-con-formulario]').hidden = true;
         sinGuardar = false;
         // Lo de la cita que ya no es cierto se quita (el aviso de pausa no queda encima del resultado)
         $('[data-retoma]').hidden = true;
@@ -520,18 +550,22 @@
         const visor = $('[data-visor]');
         if (visor && visor.open) visor.close();
         $('[data-estado]').replaceChildren(APD.estado({ ok: 'Atendida', proceso: 'En pausa', atencion: 'Cita nueva', rechazo: 'Cerrada' }[tono], tono));
-        FormKit.resultado($('[data-hecho]'), { tono, titulo, texto, pasos, quien: P.REVISORA.nombre });
-        if (resultado === 'no_es_la_persona') $('[data-hecho] [data-resultado-acciones]').before(el('p', { class: 'pendiente', texto: 'Pendiente (P79): a quién de la Dirección se avisa y por qué medio.' }));
+        FormKit.resultado($('section[data-resultado]'), { tono, titulo, texto, pasos, quien: P.REVISORA.nombre });
+        if (resultado === 'no_es_la_persona') $('section[data-resultado] [data-resultado-acciones]').before(el('p', { class: 'pendiente', texto: 'Pendiente (P79): a quién de la Dirección se avisa y por qué medio.' }));
       }
     });
     // Un sábado o un domingo se dice junto a la fecha de la cita nueva (sesión de trabajo del 23/10/2026)
     P.vigilaDiaCita(form);
 
-    /* Cerrar la solicitud o no atender a la persona no tiene vuelta atrás: se confirma (módulo modal del estándar) */
+    /* Registrar es el último paso («Resultado»); Enter en un paso intermedio avanza (módulo «pasos»). Cerrar la solicitud o
+       no atender a la persona no tiene vuelta atrás: se confirma (módulo modal del estándar) */
+    const submitPasos = FormKit.ganchos.submit;
     FormKit.ganchos.submit = (f, enviar) => {
+      if (f !== form) return submitPasos ? submitPasos(f, enviar) : false;
       const resultado = document.getElementById('resultado').value;
-      if (f !== form || !['cerrar', 'no_es_la_persona'].includes(resultado)) return false;
-      if (instancia.valida().length) return false; // con errores, el núcleo muestra el resumen
+      const ultimo = FormKit.pasos.actual() === FormKit.pasos.total - 1;
+      if (!ultimo || !['cerrar', 'no_es_la_persona'].includes(resultado)) return submitPasos(f, enviar);
+      if (instancia.valida().length) { enviar(); return true; } // con errores, el módulo abre el paso y muestra el resumen
       const boton = $('[data-accion="enviar"]', form);
       const CONFIRMA = {
         cerrar: { titulo: `¿Cerrar la solicitud ${s.folio}?`, si: 'Sí, cerrar la solicitud',
@@ -542,9 +576,26 @@
       FormKit.confirma(boton, Object.assign({ peligro: true, irreversible: resultado === 'cerrar' }, CONFIRMA)).then((si) => { if (si) enviar(); });
       return true;
     };
+    /* Lo que no hace falta se salta: si no se presentó o no es la persona, de «¿Es la persona?» a «Resultado»; si un
+       documento no es igual, de «Documentos originales» a «Resultado» (sin pago). «Atrás» regresa por el mismo camino. */
+    form.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-accion="siguiente"],[data-accion="atras"]');
+      if (!b) return;
+      const paso = b.closest('[data-paso]');
+      const resultado = document.getElementById('resultado').value;
+      const sinAtender = ['no_se_presento', 'cerrar', 'no_es_la_persona'].includes(resultado);
+      const sinPago = document.getElementById('pedir_pago').value !== 'si' && document.getElementById('pedir_documentos').value === 'si';
+      const iRes = indice('Resultado');
+      let destino = -1;
+      if (b.dataset.accion === 'siguiente' && paso.hasAttribute('data-paso-persona') && sinAtender) destino = iRes;
+      else if (b.dataset.accion === 'siguiente' && paso.dataset.titulo === 'Documentos originales' && sinPago) destino = iRes;
+      else if (b.dataset.accion === 'atras' && paso.dataset.titulo === 'Resultado' && sinAtender) destino = 0;
+      else if (b.dataset.accion === 'atras' && paso.dataset.titulo === 'Resultado' && sinPago) destino = indice('Documentos originales');
+      if (destino < 0) return;
+      e.stopPropagation();
+      FormKit.pasos.ir(destino);
+    }, true);
 
-    // En computadora el visor abre de entrada el primer documento por cotejar
-    if (aCotejar[0] && hayVisor() && FormKit.visor.enComputadora()) ver(aCotejar.find((k) => archivos[k]), null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
     /* Recargar o salir a mitad del cotejo pierde lo capturado: el navegador lo advierte mientras haya algo sin registrar
@@ -555,6 +606,5 @@
     form.addEventListener('change', marcaCambio);
     window.addEventListener('beforeunload', (e) => { if (sinGuardar) { e.preventDefault(); e.returnValue = ''; } });
     recalcula();
-    iniciada = true;
   }).catch(() => falla('No se pudo cargar la cita. Intente de nuevo más tarde.'));
 }());
