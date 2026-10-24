@@ -809,7 +809,16 @@
     'folio-fiscal': (t) => String(t).replace(/\s+/g, ''),
     'numero-acreditacion': (t) => String(t).trim()
   };
-  const formatoDe = (c) => { const campo = c && c.closest && c.closest('[data-campo][data-formato]'); return campo ? campo.dataset.formato : ''; };
+  /* Sólo el control donde se escribe: el <input type="date"> oculto del calendario vive dentro del mismo campo y no se
+     acomoda. Error 7 de la sesión del 23/10/2026: al elegir un día, el calendario del navegador manda «input» con
+     AAAA-MM-DD; esto lo tomaba por una fecha pegada y le escribía dd/mm/aaaa, que un campo de fecha no admite: el valor
+     quedaba vacío, el «change» ya no llegaba y el día elegido no se escribía en «Resultado de la revisión» (ni en el
+     cotejo ni en la ficha del grupo). */
+  const formatoDe = (c) => {
+    if (!c || !c.closest || c.type === 'date' || (c.classList && c.classList.contains('control-calendario-nativo'))) return '';
+    const campo = c.closest('[data-campo][data-formato]');
+    return campo ? campo.dataset.formato : '';
+  };
   document.addEventListener('paste', (e) => {
     const c = e.target;
     if (!(c instanceof global.HTMLInputElement)) return;
