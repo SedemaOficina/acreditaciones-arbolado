@@ -41,7 +41,7 @@
     <h2 class="titulo-paso" id="t-asistencia" data-titulo-dia>Asistencia</h2>
     <div class="bajada" data-bajada></div>
     <p class="ayuda" data-regla></p>
-    <div class="asis-leyenda" aria-hidden="true">
+    <div class="asis-leyenda" aria-hidden="true" data-leyenda>
       <span><span class="asis-marca asis-si">✓</span>asistió</span>
       <span><span class="asis-marca asis-no">✗</span>faltó</span>
       <span><span class="asis-marca asis-hoy"></span>sin marcar</span>
@@ -49,6 +49,8 @@
     </div>
     <div data-avisos></div>
     <p class="ayuda ayuda-bloque" data-ultimo-dia hidden></p>
+    <!-- El último día se pasa lista en el salón de cómputo, en «Aplicar el examen»: el botón lleva ahí (reporte de Liber del 24/10/2026) -->
+    <div class="acciones acciones-izq" data-ir-aplicar hidden></div>
 
     <div data-personas aria-labelledby="t-asistencia"></div>
     <div class="asis-pie" data-acciones>
