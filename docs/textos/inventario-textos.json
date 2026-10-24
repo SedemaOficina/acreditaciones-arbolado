@@ -188,6 +188,17 @@
  },
  {
   "pantalla": "Inicio",
+  "seccion": "Cómo es el trámite",
+  "tipo": "Texto",
+  "cuando": "Siempre",
+  "texto": "Tu credencial dice que la acreditación puede ser cancelada conforme a los lineamientos. Si la pierdes o te la roban, pide su reposición en «Mis trámites» con el acta que levantaste: la nueva lleva el mismo número y la misma vigencia.",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/index.html)",
+  "obs": "",
+  "id": "T018"
+ },
+ {
+  "pantalla": "Inicio",
   "seccion": "Cuándo renovar",
   "tipo": "Título",
   "cuando": "Siempre",
@@ -195,7 +206,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "",
-  "id": "T018"
+  "id": "T019"
  },
  {
   "pantalla": "Inicio",
@@ -206,7 +217,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "",
-  "id": "T019"
+  "id": "T020"
  },
  {
   "pantalla": "Inicio",
@@ -217,7 +228,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "",
-  "id": "T020"
+  "id": "T021"
  },
  {
   "pantalla": "Inicio",
@@ -228,7 +239,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "",
-  "id": "T021"
+  "id": "T022"
  },
  {
   "pantalla": "Inicio",
@@ -239,7 +250,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "",
-  "id": "T022"
+  "id": "T023"
  },
  {
   "pantalla": "Inicio",
@@ -250,7 +261,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "",
-  "id": "T023"
+  "id": "T024"
  },
  {
   "pantalla": "Inicio",
@@ -261,7 +272,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/index.html)",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T024"
+  "id": "T025"
  },
  {
   "pantalla": "Inicio",
@@ -272,7 +283,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/inicio.js)",
   "obs": "",
-  "id": "T025"
+  "id": "T026"
  },
  {
   "pantalla": "Inicio",
@@ -283,7 +294,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/inicio.js)",
   "obs": "",
-  "id": "T026"
+  "id": "T027"
  },
  {
   "pantalla": "Inicio",
@@ -294,7 +305,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/inicio.js)",
   "obs": "",
-  "id": "T027"
+  "id": "T028"
  },
  {
   "pantalla": "Inicio",
@@ -305,7 +316,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/inicio.js)",
   "obs": "",
-  "id": "T028"
+  "id": "T029"
  },
  {
   "pantalla": "Inicio",
@@ -316,7 +327,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/inicio.js)",
   "obs": "",
-  "id": "T029"
+  "id": "T030"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -327,7 +338,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T030"
+  "id": "T031"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -338,7 +349,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T031"
+  "id": "T032"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -349,7 +360,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T032"
+  "id": "T033"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -360,7 +371,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T033"
+  "id": "T034"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -371,7 +382,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T034"
+  "id": "T035"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -382,7 +393,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T035"
+  "id": "T036"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -393,7 +404,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T036"
+  "id": "T037"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -404,7 +415,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T037"
+  "id": "T038"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -415,7 +426,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T038"
+  "id": "T039"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -426,7 +437,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T039"
+  "id": "T040"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -437,7 +448,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T040"
+  "id": "T041"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -448,7 +459,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T041"
+  "id": "T042"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -459,7 +470,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T042"
+  "id": "T043"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -470,7 +481,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T043"
+  "id": "T044"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -481,7 +492,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T044"
+  "id": "T045"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -492,7 +503,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T045"
+  "id": "T046"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -503,7 +514,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T046"
+  "id": "T047"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -514,7 +525,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T047"
+  "id": "T048"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -525,7 +536,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T048"
+  "id": "T049"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -536,7 +547,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T049"
+  "id": "T050"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -547,7 +558,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T050"
+  "id": "T051"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -558,7 +569,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T051"
+  "id": "T052"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -569,7 +580,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T052"
+  "id": "T053"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -580,7 +591,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T053"
+  "id": "T054"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -591,7 +602,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T054"
+  "id": "T055"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -599,17 +610,6 @@
   "tipo": "Subtítulo",
   "cuando": "Siempre",
   "texto": "Contacto",
-  "quien": "Persona solicitante",
-  "donde": "Página (sitio/cuenta.html)",
-  "obs": "",
-  "id": "T055"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Contacto",
-  "tipo": "Pregunta",
-  "cuando": "Siempre",
-  "texto": "Correo electrónico",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
@@ -620,7 +620,7 @@
   "seccion": "Contacto",
   "tipo": "Pregunta",
   "cuando": "Siempre",
-  "texto": "Confirma tu correo",
+  "texto": "Correo electrónico",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
@@ -631,11 +631,22 @@
   "seccion": "Contacto",
   "tipo": "Pregunta",
   "cuando": "Siempre",
-  "texto": "Teléfono",
+  "texto": "Confirma tu correo",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
   "id": "T058"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Contacto",
+  "tipo": "Pregunta",
+  "cuando": "Siempre",
+  "texto": "Teléfono",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/cuenta.html)",
+  "obs": "",
+  "id": "T059"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -646,7 +657,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T059"
+  "id": "T060"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -657,7 +668,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T060"
+  "id": "T061"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -668,7 +679,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T061"
+  "id": "T062"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -676,17 +687,6 @@
   "tipo": "Ayuda",
   "cuando": "Siempre",
   "texto": "Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».",
-  "quien": "Persona solicitante",
-  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
-  "obs": "",
-  "id": "T062"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Tu adscripción",
-  "tipo": "Opción",
-  "cuando": "Siempre",
-  "texto": "Sí",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -697,7 +697,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Siempre",
-  "texto": "No, soy independiente",
+  "texto": "Sí",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -706,9 +706,9 @@
  {
   "pantalla": "Crea tu cuenta",
   "seccion": "Tu adscripción",
-  "tipo": "Pregunta",
-  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "texto": "¿De qué tipo es?",
+  "tipo": "Opción",
+  "cuando": "Siempre",
+  "texto": "No, soy independiente",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -717,9 +717,9 @@
  {
   "pantalla": "Crea tu cuenta",
   "seccion": "Tu adscripción",
-  "tipo": "Opción",
+  "tipo": "Pregunta",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "texto": "Empresa, consultoría o particular — Persona moral o física: empresas, consultoras o trabajo para un particular.",
+  "texto": "¿De qué tipo es?",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -730,7 +730,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "texto": "Dependencia del Gobierno de la Ciudad de México",
+  "texto": "Empresa, consultoría o particular — Persona moral o física: empresas, consultoras o trabajo para un particular.",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -741,7 +741,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "texto": "Alcaldía",
+  "texto": "Dependencia del Gobierno de la Ciudad de México",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -752,7 +752,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "texto": "Dependencia del Gobierno Federal — Por ejemplo, la CFE.",
+  "texto": "Alcaldía",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -763,11 +763,22 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
-  "texto": "Institución educativa — Por ejemplo, la UNAM o Chapingo.",
+  "texto": "Dependencia del Gobierno Federal — Por ejemplo, la CFE.",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
   "id": "T070"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Tu adscripción",
+  "tipo": "Opción",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "texto": "Institución educativa — Por ejemplo, la UNAM o Chapingo.",
+  "quien": "Persona solicitante",
+  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
+  "obs": "",
+  "id": "T071"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -778,7 +789,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T071"
+  "id": "T072"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -789,7 +800,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T072"
+  "id": "T073"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -797,17 +808,6 @@
   "tipo": "Pregunta",
   "cuando": "Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
   "texto": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
-  "quien": "Persona solicitante",
-  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
-  "obs": "",
-  "id": "T073"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Tu adscripción",
-  "tipo": "Opción",
-  "cuando": "Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "texto": "Secretaría de Obras y Servicios (SOBSE)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -818,7 +818,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "texto": "Secretaría del Medio Ambiente (SEDEMA)",
+  "texto": "Secretaría de Obras y Servicios (SOBSE)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -829,11 +829,22 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
-  "texto": "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+  "texto": "Secretaría del Medio Ambiente (SEDEMA)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
   "id": "T076"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Tu adscripción",
+  "tipo": "Opción",
+  "cuando": "Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "texto": "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+  "quien": "Persona solicitante",
+  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
+  "obs": "",
+  "id": "T077"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -844,7 +855,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T077"
+  "id": "T078"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -855,7 +866,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T078"
+  "id": "T079"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -863,17 +874,6 @@
   "tipo": "Pregunta",
   "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
   "texto": "¿A qué Dirección General de la SEDEMA perteneces?",
-  "quien": "Persona solicitante",
-  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
-  "obs": "",
-  "id": "T079"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Tu adscripción",
-  "tipo": "Opción",
-  "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "texto": "Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -884,7 +884,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "texto": "Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)",
+  "texto": "Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -895,7 +895,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "texto": "Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)",
+  "texto": "Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -906,7 +906,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "texto": "Dirección General de Vigilancia Ambiental (DGIVA)",
+  "texto": "Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -917,7 +917,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "texto": "Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)",
+  "texto": "Dirección General de Vigilancia Ambiental (DGIVA)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -928,11 +928,22 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
-  "texto": "Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)",
+  "texto": "Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
   "id": "T085"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Tu adscripción",
+  "tipo": "Opción",
+  "cuando": "Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "texto": "Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)",
+  "quien": "Persona solicitante",
+  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
+  "obs": "",
+  "id": "T086"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -943,7 +954,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T086"
+  "id": "T087"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -951,17 +962,6 @@
   "tipo": "Indicación de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
   "texto": "Elige la alcaldía",
-  "quien": "Persona solicitante",
-  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
-  "obs": "",
-  "id": "T087"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Tu adscripción",
-  "tipo": "Opción de lista",
-  "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Álvaro Obregón",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -972,7 +972,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Azcapotzalco",
+  "texto": "Álvaro Obregón",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -983,7 +983,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Benito Juárez",
+  "texto": "Azcapotzalco",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -994,7 +994,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Coyoacán",
+  "texto": "Benito Juárez",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1005,7 +1005,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Cuajimalpa de Morelos",
+  "texto": "Coyoacán",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1016,7 +1016,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Cuauhtémoc",
+  "texto": "Cuajimalpa de Morelos",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1027,7 +1027,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Gustavo A. Madero",
+  "texto": "Cuauhtémoc",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1038,7 +1038,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Iztacalco",
+  "texto": "Gustavo A. Madero",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1049,7 +1049,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Iztapalapa",
+  "texto": "Iztacalco",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1060,7 +1060,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "La Magdalena Contreras",
+  "texto": "Iztapalapa",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1071,7 +1071,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Miguel Hidalgo",
+  "texto": "La Magdalena Contreras",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1082,7 +1082,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Milpa Alta",
+  "texto": "Miguel Hidalgo",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1093,7 +1093,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Tláhuac",
+  "texto": "Milpa Alta",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1104,7 +1104,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Tlalpan",
+  "texto": "Tláhuac",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1115,7 +1115,7 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Venustiano Carranza",
+  "texto": "Tlalpan",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1126,11 +1126,22 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción de lista",
   "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
-  "texto": "Xochimilco",
+  "texto": "Venustiano Carranza",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
   "id": "T103"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Tu adscripción",
+  "tipo": "Opción de lista",
+  "cuando": "Si «¿De qué tipo es?» es «Alcaldía»",
+  "texto": "Xochimilco",
+  "quien": "Persona solicitante",
+  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
+  "obs": "",
+  "id": "T104"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1141,7 +1152,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T104"
+  "id": "T105"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1152,7 +1163,7 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T105"
+  "id": "T106"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1160,17 +1171,6 @@
   "tipo": "Pregunta",
   "cuando": "Si «¿De qué tipo es?» es «Institución educativa»",
   "texto": "¿A qué institución educativa perteneces?",
-  "quien": "Persona solicitante",
-  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
-  "obs": "",
-  "id": "T106"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Tu adscripción",
-  "tipo": "Opción",
-  "cuando": "Si «¿De qué tipo es?» es «Institución educativa»",
-  "texto": "Universidad Nacional Autónoma de México (UNAM)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
@@ -1181,11 +1181,22 @@
   "seccion": "Tu adscripción",
   "tipo": "Opción",
   "cuando": "Si «¿De qué tipo es?» es «Institución educativa»",
-  "texto": "Universidad Autónoma Chapingo",
+  "texto": "Universidad Nacional Autónoma de México (UNAM)",
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
   "id": "T108"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Tu adscripción",
+  "tipo": "Opción",
+  "cuando": "Si «¿De qué tipo es?» es «Institución educativa»",
+  "texto": "Universidad Autónoma Chapingo",
+  "quien": "Persona solicitante",
+  "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
+  "obs": "",
+  "id": "T109"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1196,23 +1207,12 @@
   "quien": "Persona solicitante",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T109"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Contraseña",
-  "tipo": "Subtítulo",
-  "cuando": "Siempre",
-  "texto": "Contraseña",
-  "quien": "Persona solicitante",
-  "donde": "Página (sitio/cuenta.html)",
-  "obs": "",
   "id": "T110"
  },
  {
   "pantalla": "Crea tu cuenta",
   "seccion": "Contraseña",
-  "tipo": "Pregunta",
+  "tipo": "Subtítulo",
   "cuando": "Siempre",
   "texto": "Contraseña",
   "quien": "Persona solicitante",
@@ -1223,13 +1223,24 @@
  {
   "pantalla": "Crea tu cuenta",
   "seccion": "Contraseña",
+  "tipo": "Pregunta",
+  "cuando": "Siempre",
+  "texto": "Contraseña",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/cuenta.html)",
+  "obs": "",
+  "id": "T112"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Contraseña",
   "tipo": "Ayuda",
   "cuando": "Siempre",
   "texto": "Al menos 12 caracteres. Una frase que recuerdes es más segura que una palabra con símbolos.",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T112"
+  "id": "T113"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1240,7 +1251,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T113"
+  "id": "T114"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1251,7 +1262,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T114"
+  "id": "T115"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1259,17 +1270,6 @@
   "tipo": "Botón o enlace",
   "cuando": "Siempre",
   "texto": "Leer el aviso de privacidad",
-  "quien": "Persona solicitante",
-  "donde": "Página (sitio/cuenta.html)",
-  "obs": "",
-  "id": "T115"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Antes de crear tu cuenta",
-  "tipo": "Pregunta",
-  "cuando": "Siempre",
-  "texto": "Leí el aviso de privacidad",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
@@ -1280,11 +1280,22 @@
   "seccion": "Antes de crear tu cuenta",
   "tipo": "Pregunta",
   "cuando": "Siempre",
-  "texto": "No soy un programa automático",
+  "texto": "Leí el aviso de privacidad",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
   "id": "T117"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Antes de crear tu cuenta",
+  "tipo": "Pregunta",
+  "cuando": "Siempre",
+  "texto": "No soy un programa automático",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/cuenta.html)",
+  "obs": "",
+  "id": "T118"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1295,7 +1306,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T118"
+  "id": "T119"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1306,7 +1317,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T119"
+  "id": "T120"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1317,7 +1328,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T120"
+  "id": "T121"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1328,7 +1339,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T121"
+  "id": "T122"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1339,7 +1350,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T122"
+  "id": "T123"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1350,7 +1361,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T123"
+  "id": "T124"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1361,7 +1372,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T124"
+  "id": "T125"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1372,7 +1383,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T125"
+  "id": "T126"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1380,17 +1391,6 @@
   "tipo": "Título",
   "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
   "texto": "Aviso de privacidad simplificado",
-  "quien": "Persona solicitante",
-  "donde": "Página (sitio/cuenta.html)",
-  "obs": "",
-  "id": "T126"
- },
- {
-  "pantalla": "Crea tu cuenta",
-  "seccion": "Aviso de privacidad simplificado",
-  "tipo": "Texto",
-  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
-  "texto": "La Secretaría del Medio Ambiente recaba tu nombre, CURP (y de ella tu sexo), fotografía de frente, correo, teléfono y la institución para la que trabajas, si es el caso, para crear tu cuenta, tramitar tu acreditación, reconocerte en la cita, el curso y el examen, avisarte el avance y llevar el padrón de personas acreditadas. Al entregarte la credencial te toma otra fotografía, que es la que se imprime en ella.",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
@@ -1401,11 +1401,22 @@
   "seccion": "Aviso de privacidad simplificado",
   "tipo": "Texto",
   "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
+  "texto": "La Secretaría del Medio Ambiente recaba tu nombre, CURP (y de ella tu sexo), fotografía de frente, correo, teléfono y la institución para la que trabajas, si es el caso, para crear tu cuenta, tramitar tu acreditación, reconocerte en la cita, el curso y el examen, avisarte el avance y llevar el padrón de personas acreditadas. Al entregarte la credencial te toma otra fotografía, que es la que se imprime en ella.",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/cuenta.html)",
+  "obs": "",
+  "id": "T128"
+ },
+ {
+  "pantalla": "Crea tu cuenta",
+  "seccion": "Aviso de privacidad simplificado",
+  "tipo": "Texto",
+  "cuando": "Al abrir la ventana «Aviso de privacidad simplificado»",
   "texto": "Fundamento: [Art. __, fracc. __]. Pendiente: lo completa la Unidad de Transparencia.",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "Lo completa la Unidad de Transparencia; no se inventa la cita.",
-  "id": "T128"
+  "id": "T129"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1416,7 +1427,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/cuenta.html)",
   "obs": "",
-  "id": "T129"
+  "id": "T130"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1427,7 +1438,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/config-cuenta.js)",
   "obs": "",
-  "id": "T130"
+  "id": "T131"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1438,7 +1449,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/config-cuenta.js)",
   "obs": "",
-  "id": "T131"
+  "id": "T132"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1449,7 +1460,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (cruzada curp-nombre, sitio/formkit/js/validaciones.config.js)",
   "obs": "",
-  "id": "T132"
+  "id": "T133"
  },
  {
   "pantalla": "Crea tu cuenta",
@@ -1460,7 +1471,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (cruzada curp-segundo-apellido, sitio/formkit/js/validaciones.config.js)",
   "obs": "",
-  "id": "T133"
+  "id": "T134"
  },
  {
   "pantalla": "Entrar",
@@ -1471,7 +1482,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
-  "id": "T134"
+  "id": "T135"
  },
  {
   "pantalla": "Entrar",
@@ -1482,7 +1493,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
-  "id": "T135"
+  "id": "T136"
  },
  {
   "pantalla": "Entrar",
@@ -1490,17 +1501,6 @@
   "tipo": "Nota",
   "cuando": "Siempre",
   "texto": "Las preguntas con * son obligatorias.",
-  "quien": "Persona solicitante",
-  "donde": "Página (sitio/entrar.html)",
-  "obs": "",
-  "id": "T136"
- },
- {
-  "pantalla": "Entrar",
-  "seccion": "Entra a tu cuenta",
-  "tipo": "Pregunta",
-  "cuando": "Siempre",
-  "texto": "CURP",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
@@ -1511,11 +1511,22 @@
   "seccion": "Entra a tu cuenta",
   "tipo": "Pregunta",
   "cuando": "Siempre",
-  "texto": "Contraseña",
+  "texto": "CURP",
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
   "id": "T138"
+ },
+ {
+  "pantalla": "Entrar",
+  "seccion": "Entra a tu cuenta",
+  "tipo": "Pregunta",
+  "cuando": "Siempre",
+  "texto": "Contraseña",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/entrar.html)",
+  "obs": "",
+  "id": "T139"
  },
  {
   "pantalla": "Entrar",
@@ -1526,7 +1537,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
-  "id": "T139"
+  "id": "T140"
  },
  {
   "pantalla": "Entrar",
@@ -1537,7 +1548,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
-  "id": "T140"
+  "id": "T141"
  },
  {
   "pantalla": "Entrar",
@@ -1548,7 +1559,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "Falta definir quién atiende la recuperación de contraseña (pendiente).",
-  "id": "T141"
+  "id": "T142"
  },
  {
   "pantalla": "Entrar",
@@ -1559,7 +1570,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/entrar.html)",
   "obs": "",
-  "id": "T142"
+  "id": "T143"
  },
  {
   "pantalla": "Entrar",
@@ -1570,7 +1581,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/config-entrar.js)",
   "obs": "",
-  "id": "T143"
+  "id": "T144"
  },
  {
   "pantalla": "Entrar",
@@ -1581,17 +1592,6 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/config-entrar.js)",
   "obs": "",
-  "id": "T144"
- },
- {
-  "pantalla": "Pantallas con cuenta",
-  "seccion": "Cabecera de sesión",
-  "tipo": "Botón o enlace",
-  "cuando": "Con sesión iniciada",
-  "texto": "Mis trámites",
-  "quien": "Persona solicitante",
-  "donde": "Código del sitio (sitio/app/apd.js)",
-  "obs": "",
   "id": "T145"
  },
  {
@@ -1599,7 +1599,7 @@
   "seccion": "Cabecera de sesión",
   "tipo": "Botón o enlace",
   "cuando": "Con sesión iniciada",
-  "texto": "Mis datos",
+  "texto": "Mis trámites",
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
@@ -1610,11 +1610,22 @@
   "seccion": "Cabecera de sesión",
   "tipo": "Botón o enlace",
   "cuando": "Con sesión iniciada",
-  "texto": "Salir",
+  "texto": "Mis datos",
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
   "id": "T147"
+ },
+ {
+  "pantalla": "Pantallas con cuenta",
+  "seccion": "Cabecera de sesión",
+  "tipo": "Botón o enlace",
+  "cuando": "Con sesión iniciada",
+  "texto": "Salir",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/apd.js)",
+  "obs": "",
+  "id": "T148"
  },
  {
   "pantalla": "Mis trámites",
@@ -1625,7 +1636,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "",
-  "id": "T148"
+  "id": "T149"
  },
  {
   "pantalla": "Mis trámites",
@@ -1636,7 +1647,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T149"
+  "id": "T150"
  },
  {
   "pantalla": "Mis trámites",
@@ -1647,7 +1658,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "",
-  "id": "T150"
+  "id": "T151"
  },
  {
   "pantalla": "Mis trámites",
@@ -1658,7 +1669,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "",
-  "id": "T151"
+  "id": "T152"
  },
  {
   "pantalla": "Mis trámites",
@@ -1669,7 +1680,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "",
-  "id": "T152"
+  "id": "T153"
  },
  {
   "pantalla": "Mis trámites",
@@ -1680,7 +1691,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "",
-  "id": "T153"
+  "id": "T154"
  },
  {
   "pantalla": "Mis trámites",
@@ -1691,7 +1702,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/tramites.html)",
   "obs": "",
-  "id": "T154"
+  "id": "T155"
  },
  {
   "pantalla": "Mis trámites",
@@ -1702,7 +1713,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T155"
+  "id": "T156"
  },
  {
   "pantalla": "Mis trámites",
@@ -1713,7 +1724,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T156"
+  "id": "T157"
  },
  {
   "pantalla": "Mis trámites",
@@ -1724,7 +1735,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T157"
+  "id": "T158"
  },
  {
   "pantalla": "Mis trámites",
@@ -1735,7 +1746,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T158"
+  "id": "T159"
  },
  {
   "pantalla": "Mis trámites",
@@ -1746,7 +1757,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T159"
+  "id": "T160"
  },
  {
   "pantalla": "Mis trámites",
@@ -1757,7 +1768,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T160"
+  "id": "T161"
  },
  {
   "pantalla": "Mis trámites",
@@ -1768,7 +1779,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T161"
+  "id": "T162"
  },
  {
   "pantalla": "Mis trámites",
@@ -1779,7 +1790,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T162"
+  "id": "T163"
  },
  {
   "pantalla": "Mis trámites",
@@ -1790,7 +1801,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T163"
+  "id": "T164"
  },
  {
   "pantalla": "Mis trámites",
@@ -1801,7 +1812,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T164"
+  "id": "T165"
  },
  {
   "pantalla": "Mis trámites",
@@ -1812,7 +1823,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T165"
+  "id": "T166"
  },
  {
   "pantalla": "Mis trámites",
@@ -1823,7 +1834,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T166"
+  "id": "T167"
  },
  {
   "pantalla": "Mis trámites",
@@ -1834,7 +1845,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T167"
+  "id": "T168"
  },
  {
   "pantalla": "Mis trámites",
@@ -1845,7 +1856,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T168"
+  "id": "T169"
  },
  {
   "pantalla": "Mis trámites",
@@ -1856,7 +1867,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T169"
+  "id": "T170"
  },
  {
   "pantalla": "Mis trámites",
@@ -1867,7 +1878,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T170"
+  "id": "T171"
  },
  {
   "pantalla": "Mis trámites",
@@ -1878,7 +1889,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T171"
+  "id": "T172"
  },
  {
   "pantalla": "Mis trámites",
@@ -1889,7 +1900,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T172"
+  "id": "T173"
  },
  {
   "pantalla": "Mis trámites",
@@ -1900,7 +1911,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T173"
+  "id": "T174"
  },
  {
   "pantalla": "Mis trámites",
@@ -1911,7 +1922,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T174"
+  "id": "T175"
  },
  {
   "pantalla": "Mis trámites",
@@ -1922,7 +1933,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T175"
+  "id": "T176"
  },
  {
   "pantalla": "Mis trámites",
@@ -1933,7 +1944,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T176"
+  "id": "T177"
  },
  {
   "pantalla": "Mis trámites",
@@ -1944,7 +1955,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T177"
+  "id": "T178"
  },
  {
   "pantalla": "Mis trámites",
@@ -1955,7 +1966,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T178"
+  "id": "T179"
  },
  {
   "pantalla": "Mis trámites",
@@ -1966,7 +1977,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T179"
+  "id": "T180"
  },
  {
   "pantalla": "Mis trámites",
@@ -1977,7 +1988,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T180"
+  "id": "T181"
  },
  {
   "pantalla": "Mis trámites",
@@ -1988,7 +1999,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T181"
+  "id": "T182"
  },
  {
   "pantalla": "Mis trámites",
@@ -1999,7 +2010,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T182"
+  "id": "T183"
  },
  {
   "pantalla": "Mis trámites",
@@ -2010,7 +2021,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T183"
+  "id": "T184"
  },
  {
   "pantalla": "Mis trámites",
@@ -2021,7 +2032,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T184"
+  "id": "T185"
  },
  {
   "pantalla": "Mis trámites",
@@ -2032,7 +2043,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T185"
+  "id": "T186"
  },
  {
   "pantalla": "Mis trámites",
@@ -2043,7 +2054,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T186"
+  "id": "T187"
  },
  {
   "pantalla": "Mis trámites",
@@ -2054,7 +2065,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T187"
+  "id": "T188"
  },
  {
   "pantalla": "Mis trámites",
@@ -2065,7 +2076,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T188"
+  "id": "T189"
  },
  {
   "pantalla": "Mis trámites",
@@ -2076,7 +2087,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T189"
+  "id": "T190"
  },
  {
   "pantalla": "Mis trámites",
@@ -2087,7 +2098,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T190"
+  "id": "T191"
  },
  {
   "pantalla": "Mis trámites",
@@ -2098,7 +2109,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T191"
+  "id": "T192"
  },
  {
   "pantalla": "Mis trámites",
@@ -2109,7 +2120,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T192"
+  "id": "T193"
  },
  {
   "pantalla": "Mis trámites",
@@ -2120,7 +2131,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T193"
+  "id": "T194"
  },
  {
   "pantalla": "Mis trámites",
@@ -2131,7 +2142,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T194"
+  "id": "T195"
  },
  {
   "pantalla": "Mis trámites",
@@ -2142,7 +2153,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T195"
+  "id": "T196"
  },
  {
   "pantalla": "Mis trámites",
@@ -2153,7 +2164,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T196"
+  "id": "T197"
  },
  {
   "pantalla": "Mis trámites",
@@ -2164,7 +2175,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T197"
+  "id": "T198"
  },
  {
   "pantalla": "Mis trámites",
@@ -2175,7 +2186,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T198"
+  "id": "T199"
  },
  {
   "pantalla": "Mis trámites",
@@ -2186,7 +2197,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T199"
+  "id": "T200"
  },
  {
   "pantalla": "Mis trámites",
@@ -2197,7 +2208,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T200"
+  "id": "T201"
  },
  {
   "pantalla": "Mis trámites",
@@ -2208,17 +2219,6 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T201"
- },
- {
-  "pantalla": "Mis trámites",
-  "seccion": "Mis solicitudes · acreditación emitida",
-  "tipo": "Etiqueta de dato",
-  "cuando": "Acreditación emitida",
-  "texto": "Número de acreditación",
-  "quien": "Persona solicitante",
-  "donde": "Código del sitio (sitio/app/tramites.js)",
-  "obs": "",
   "id": "T202"
  },
  {
@@ -2226,7 +2226,7 @@
   "seccion": "Mis solicitudes · acreditación emitida",
   "tipo": "Etiqueta de dato",
   "cuando": "Acreditación emitida",
-  "texto": "Inicio de vigencia",
+  "texto": "Número de acreditación",
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
@@ -2237,11 +2237,22 @@
   "seccion": "Mis solicitudes · acreditación emitida",
   "tipo": "Etiqueta de dato",
   "cuando": "Acreditación emitida",
-  "texto": "Fin de vigencia",
+  "texto": "Inicio de vigencia",
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
   "id": "T204"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis solicitudes · acreditación emitida",
+  "tipo": "Etiqueta de dato",
+  "cuando": "Acreditación emitida",
+  "texto": "Fin de vigencia",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T205"
  },
  {
   "pantalla": "Mis trámites",
@@ -2252,7 +2263,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T205"
+  "id": "T206"
  },
  {
   "pantalla": "Mis trámites",
@@ -2263,7 +2274,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T206"
+  "id": "T207"
  },
  {
   "pantalla": "Mis trámites",
@@ -2274,7 +2285,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T207"
+  "id": "T208"
  },
  {
   "pantalla": "Mis trámites",
@@ -2285,7 +2296,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T208"
+  "id": "T209"
  },
  {
   "pantalla": "Mis trámites",
@@ -2296,7 +2307,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T209"
+  "id": "T210"
  },
  {
   "pantalla": "Mis trámites",
@@ -2307,7 +2318,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T210"
+  "id": "T211"
  },
  {
   "pantalla": "Mis trámites",
@@ -2318,7 +2329,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T211"
+  "id": "T212"
  },
  {
   "pantalla": "Mis trámites",
@@ -2329,7 +2340,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T212"
+  "id": "T213"
  },
  {
   "pantalla": "Mis trámites",
@@ -2340,7 +2351,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T213"
+  "id": "T214"
  },
  {
   "pantalla": "Mis trámites",
@@ -2351,7 +2362,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T214"
+  "id": "T215"
  },
  {
   "pantalla": "Mis trámites",
@@ -2362,7 +2373,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T215"
+  "id": "T216"
  },
  {
   "pantalla": "Mis trámites",
@@ -2373,7 +2384,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T216"
+  "id": "T217"
  },
  {
   "pantalla": "Mis trámites",
@@ -2384,7 +2395,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T217"
+  "id": "T218"
  },
  {
   "pantalla": "Mis trámites",
@@ -2395,7 +2406,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T218"
+  "id": "T219"
  },
  {
   "pantalla": "Mis trámites",
@@ -2406,7 +2417,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T219"
+  "id": "T220"
  },
  {
   "pantalla": "Mis trámites",
@@ -2417,7 +2428,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T220"
+  "id": "T221"
  },
  {
   "pantalla": "Mis trámites",
@@ -2428,7 +2439,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T221"
+  "id": "T222"
  },
  {
   "pantalla": "Mis trámites",
@@ -2439,7 +2450,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T222"
+  "id": "T223"
  },
  {
   "pantalla": "Mis trámites",
@@ -2450,7 +2461,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T223"
+  "id": "T224"
  },
  {
   "pantalla": "Mis trámites",
@@ -2461,7 +2472,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T224"
+  "id": "T225"
  },
  {
   "pantalla": "Mis trámites",
@@ -2472,7 +2483,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T225"
+  "id": "T226"
  },
  {
   "pantalla": "Mis trámites",
@@ -2483,7 +2494,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T226"
+  "id": "T227"
  },
  {
   "pantalla": "Mis trámites",
@@ -2494,7 +2505,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T227"
+  "id": "T228"
  },
  {
   "pantalla": "Mis trámites",
@@ -2505,7 +2516,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T228"
+  "id": "T229"
  },
  {
   "pantalla": "Mis trámites",
@@ -2516,7 +2527,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T229"
+  "id": "T230"
  },
  {
   "pantalla": "Mis trámites",
@@ -2527,7 +2538,106 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/tramites.js)",
   "obs": "",
-  "id": "T230"
+  "id": "T231"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · vigencia",
+  "tipo": "Estado",
+  "cuando": "Cancelada por la Secretaría",
+  "texto": "Cancelada",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/apd.js)",
+  "obs": "",
+  "id": "T232"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · cancelada",
+  "tipo": "Etiqueta de dato",
+  "cuando": "Cancelada",
+  "texto": "Cancelada el · Motivo · Fundamento",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T233"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · cancelada",
+  "tipo": "Texto",
+  "cuando": "Cancelada",
+  "texto": "La Secretaría canceló tu acreditación: ya no puedes trabajar con ella y no se puede renovar.",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T234"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · reposición",
+  "tipo": "Botón o enlace",
+  "cuando": "Vigente y con la credencial ya entregada",
+  "texto": "Pedir la reposición de tu credencial",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T235"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · reposición",
+  "tipo": "Estado",
+  "cuando": "Reposición pedida",
+  "texto": "Reposición: acta en revisión · Reposición: corrige tu acta · Reposición: recoge tu credencial · Credencial repuesta",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/apd.js)",
+  "obs": "",
+  "id": "T236"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · reposición",
+  "tipo": "Texto",
+  "cuando": "Acta en revisión",
+  "texto": "La Secretaría revisa tu acta. Si algo falta, te lo indica aquí; si está completa, te dice cuánto pagar y dónde recoger tu credencial.",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T237"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · reposición",
+  "tipo": "Botón o enlace",
+  "cuando": "Acta con observaciones",
+  "texto": "Cargar el acta corregida",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T238"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · reposición",
+  "tipo": "Pasos",
+  "cuando": "Acta aceptada",
+  "texto": "Paga la cuota de reposición: $…, e imprime tu comprobante. · Acude a la oficina del Vivero Nezahualcóyotl con tu identificación oficial y tu comprobante de pago. · Ahí la Secretaría valida tu factura y te entrega tu credencial, con el mismo número y la misma vigencia.",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T239"
+ },
+ {
+  "pantalla": "Mis trámites",
+  "seccion": "Mis acreditaciones · reposición",
+  "tipo": "Aviso pendiente",
+  "cuando": "Acta aceptada",
+  "texto": "Pendiente: días y horario para recoger la credencial repuesta.",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/tramites.js)",
+  "obs": "",
+  "id": "T240"
  },
  {
   "pantalla": "Solicitud",
@@ -2538,7 +2648,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T231"
+  "id": "T241"
  },
  {
   "pantalla": "Solicitud",
@@ -2549,7 +2659,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T232"
+  "id": "T242"
  },
  {
   "pantalla": "Solicitud",
@@ -2560,7 +2670,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T233"
+  "id": "T243"
  },
  {
   "pantalla": "Solicitud",
@@ -2571,7 +2681,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T234"
+  "id": "T244"
  },
  {
   "pantalla": "Solicitud",
@@ -2582,7 +2692,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T235"
+  "id": "T245"
  },
  {
   "pantalla": "Solicitud",
@@ -2593,7 +2703,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T236"
+  "id": "T246"
  },
  {
   "pantalla": "Solicitud",
@@ -2604,7 +2714,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T237"
+  "id": "T247"
  },
  {
   "pantalla": "Solicitud",
@@ -2615,7 +2725,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T238"
+  "id": "T248"
  },
  {
   "pantalla": "Solicitud",
@@ -2626,7 +2736,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T239"
+  "id": "T249"
  },
  {
   "pantalla": "Solicitud",
@@ -2637,7 +2747,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T240"
+  "id": "T250"
  },
  {
   "pantalla": "Solicitud",
@@ -2648,7 +2758,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T241"
+  "id": "T251"
  },
  {
   "pantalla": "Solicitud",
@@ -2659,7 +2769,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T242"
+  "id": "T252"
  },
  {
   "pantalla": "Solicitud",
@@ -2670,7 +2780,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T243"
+  "id": "T253"
  },
  {
   "pantalla": "Solicitud",
@@ -2681,7 +2791,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T244"
+  "id": "T254"
  },
  {
   "pantalla": "Solicitud",
@@ -2692,7 +2802,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T245"
+  "id": "T255"
  },
  {
   "pantalla": "Solicitud",
@@ -2703,7 +2813,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T246"
+  "id": "T256"
  },
  {
   "pantalla": "Solicitud",
@@ -2714,7 +2824,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T247"
+  "id": "T257"
  },
  {
   "pantalla": "Solicitud",
@@ -2725,7 +2835,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T248"
+  "id": "T258"
  },
  {
   "pantalla": "Solicitud",
@@ -2736,7 +2846,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T249"
+  "id": "T259"
  },
  {
   "pantalla": "Solicitud",
@@ -2747,7 +2857,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T250"
+  "id": "T260"
  },
  {
   "pantalla": "Solicitud",
@@ -2758,7 +2868,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T251"
+  "id": "T261"
  },
  {
   "pantalla": "Solicitud",
@@ -2769,7 +2879,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T252"
+  "id": "T262"
  },
  {
   "pantalla": "Solicitud",
@@ -2780,7 +2890,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T253"
+  "id": "T263"
  },
  {
   "pantalla": "Solicitud",
@@ -2791,7 +2901,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T254"
+  "id": "T264"
  },
  {
   "pantalla": "Solicitud",
@@ -2802,7 +2912,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T255"
+  "id": "T265"
  },
  {
   "pantalla": "Solicitud",
@@ -2813,7 +2923,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T256"
+  "id": "T266"
  },
  {
   "pantalla": "Solicitud",
@@ -2824,7 +2934,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T257"
+  "id": "T267"
  },
  {
   "pantalla": "Solicitud",
@@ -2835,7 +2945,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T258"
+  "id": "T268"
  },
  {
   "pantalla": "Solicitud",
@@ -2846,7 +2956,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T259"
+  "id": "T269"
  },
  {
   "pantalla": "Solicitud",
@@ -2857,7 +2967,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T260"
+  "id": "T270"
  },
  {
   "pantalla": "Solicitud",
@@ -2868,7 +2978,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T261"
+  "id": "T271"
  },
  {
   "pantalla": "Solicitud",
@@ -2879,7 +2989,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T262"
+  "id": "T272"
  },
  {
   "pantalla": "Solicitud",
@@ -2890,7 +3000,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T263"
+  "id": "T273"
  },
  {
   "pantalla": "Solicitud",
@@ -2901,7 +3011,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T264"
+  "id": "T274"
  },
  {
   "pantalla": "Solicitud",
@@ -2912,7 +3022,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T265"
+  "id": "T275"
  },
  {
   "pantalla": "Solicitud",
@@ -2923,7 +3033,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T266"
+  "id": "T276"
  },
  {
   "pantalla": "Solicitud",
@@ -2934,7 +3044,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T267"
+  "id": "T277"
  },
  {
   "pantalla": "Solicitud",
@@ -2945,7 +3055,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T268"
+  "id": "T278"
  },
  {
   "pantalla": "Solicitud",
@@ -2956,7 +3066,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T269"
+  "id": "T279"
  },
  {
   "pantalla": "Solicitud",
@@ -2967,7 +3077,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T270"
+  "id": "T280"
  },
  {
   "pantalla": "Solicitud",
@@ -2978,7 +3088,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T271"
+  "id": "T281"
  },
  {
   "pantalla": "Solicitud",
@@ -2989,7 +3099,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T272"
+  "id": "T282"
  },
  {
   "pantalla": "Solicitud",
@@ -3000,7 +3110,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T273"
+  "id": "T283"
  },
  {
   "pantalla": "Solicitud",
@@ -3011,7 +3121,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T274"
+  "id": "T284"
  },
  {
   "pantalla": "Solicitud",
@@ -3022,7 +3132,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T275"
+  "id": "T285"
  },
  {
   "pantalla": "Solicitud",
@@ -3033,7 +3143,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T276"
+  "id": "T286"
  },
  {
   "pantalla": "Solicitud",
@@ -3044,7 +3154,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T277"
+  "id": "T287"
  },
  {
   "pantalla": "Solicitud",
@@ -3055,7 +3165,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T278"
+  "id": "T288"
  },
  {
   "pantalla": "Solicitud",
@@ -3066,7 +3176,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T279"
+  "id": "T289"
  },
  {
   "pantalla": "Solicitud",
@@ -3077,7 +3187,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T280"
+  "id": "T290"
  },
  {
   "pantalla": "Solicitud",
@@ -3088,7 +3198,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T281"
+  "id": "T291"
  },
  {
   "pantalla": "Solicitud",
@@ -3099,7 +3209,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T282"
+  "id": "T292"
  },
  {
   "pantalla": "Solicitud",
@@ -3110,7 +3220,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T283"
+  "id": "T293"
  },
  {
   "pantalla": "Solicitud",
@@ -3121,7 +3231,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T284"
+  "id": "T294"
  },
  {
   "pantalla": "Solicitud",
@@ -3132,7 +3242,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T285"
+  "id": "T295"
  },
  {
   "pantalla": "Solicitud",
@@ -3143,7 +3253,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T286"
+  "id": "T296"
  },
  {
   "pantalla": "Solicitud",
@@ -3154,7 +3264,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T287"
+  "id": "T297"
  },
  {
   "pantalla": "Solicitud",
@@ -3165,7 +3275,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T288"
+  "id": "T298"
  },
  {
   "pantalla": "Solicitud",
@@ -3176,7 +3286,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T289"
+  "id": "T299"
  },
  {
   "pantalla": "Solicitud",
@@ -3187,7 +3297,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T290"
+  "id": "T300"
  },
  {
   "pantalla": "Solicitud",
@@ -3198,7 +3308,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T291"
+  "id": "T301"
  },
  {
   "pantalla": "Solicitud",
@@ -3209,7 +3319,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T292"
+  "id": "T302"
  },
  {
   "pantalla": "Solicitud",
@@ -3220,7 +3330,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T293"
+  "id": "T303"
  },
  {
   "pantalla": "Solicitud",
@@ -3231,7 +3341,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T294"
+  "id": "T304"
  },
  {
   "pantalla": "Solicitud",
@@ -3242,7 +3352,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T295"
+  "id": "T305"
  },
  {
   "pantalla": "Solicitud",
@@ -3253,7 +3363,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T296"
+  "id": "T306"
  },
  {
   "pantalla": "Solicitud",
@@ -3264,7 +3374,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T297"
+  "id": "T307"
  },
  {
   "pantalla": "Solicitud",
@@ -3275,7 +3385,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T298"
+  "id": "T308"
  },
  {
   "pantalla": "Solicitud",
@@ -3286,7 +3396,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T299"
+  "id": "T309"
  },
  {
   "pantalla": "Solicitud",
@@ -3297,7 +3407,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T300"
+  "id": "T310"
  },
  {
   "pantalla": "Solicitud",
@@ -3308,7 +3418,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T301"
+  "id": "T311"
  },
  {
   "pantalla": "Solicitud",
@@ -3319,7 +3429,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T302"
+  "id": "T312"
  },
  {
   "pantalla": "Solicitud",
@@ -3330,7 +3440,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T303"
+  "id": "T313"
  },
  {
   "pantalla": "Solicitud",
@@ -3341,7 +3451,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T304"
+  "id": "T314"
  },
  {
   "pantalla": "Solicitud",
@@ -3352,7 +3462,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T305"
+  "id": "T315"
  },
  {
   "pantalla": "Solicitud",
@@ -3363,7 +3473,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T306"
+  "id": "T316"
  },
  {
   "pantalla": "Solicitud",
@@ -3374,7 +3484,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T307"
+  "id": "T317"
  },
  {
   "pantalla": "Solicitud",
@@ -3385,7 +3495,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T308"
+  "id": "T318"
  },
  {
   "pantalla": "Solicitud",
@@ -3396,7 +3506,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T309"
+  "id": "T319"
  },
  {
   "pantalla": "Solicitud",
@@ -3407,7 +3517,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T310"
+  "id": "T320"
  },
  {
   "pantalla": "Solicitud",
@@ -3418,7 +3528,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T311"
+  "id": "T321"
  },
  {
   "pantalla": "Solicitud",
@@ -3429,7 +3539,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T312"
+  "id": "T322"
  },
  {
   "pantalla": "Solicitud",
@@ -3440,7 +3550,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T313"
+  "id": "T323"
  },
  {
   "pantalla": "Solicitud",
@@ -3451,7 +3561,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T314"
+  "id": "T324"
  },
  {
   "pantalla": "Solicitud",
@@ -3462,7 +3572,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T315"
+  "id": "T325"
  },
  {
   "pantalla": "Solicitud",
@@ -3473,7 +3583,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T316"
+  "id": "T326"
  },
  {
   "pantalla": "Solicitud",
@@ -3484,7 +3594,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T317"
+  "id": "T327"
  },
  {
   "pantalla": "Solicitud",
@@ -3495,7 +3605,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T318"
+  "id": "T328"
  },
  {
   "pantalla": "Solicitud",
@@ -3506,7 +3616,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T319"
+  "id": "T329"
  },
  {
   "pantalla": "Solicitud",
@@ -3517,7 +3627,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T320"
+  "id": "T330"
  },
  {
   "pantalla": "Solicitud",
@@ -3528,7 +3638,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T321"
+  "id": "T331"
  },
  {
   "pantalla": "Solicitud",
@@ -3539,7 +3649,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T322"
+  "id": "T332"
  },
  {
   "pantalla": "Solicitud",
@@ -3550,7 +3660,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T323"
+  "id": "T333"
  },
  {
   "pantalla": "Solicitud",
@@ -3561,7 +3671,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T324"
+  "id": "T334"
  },
  {
   "pantalla": "Solicitud",
@@ -3572,7 +3682,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T325"
+  "id": "T335"
  },
  {
   "pantalla": "Solicitud",
@@ -3583,7 +3693,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T326"
+  "id": "T336"
  },
  {
   "pantalla": "Solicitud",
@@ -3594,7 +3704,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T327"
+  "id": "T337"
  },
  {
   "pantalla": "Solicitud",
@@ -3605,7 +3715,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T328"
+  "id": "T338"
  },
  {
   "pantalla": "Solicitud",
@@ -3616,7 +3726,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T329"
+  "id": "T339"
  },
  {
   "pantalla": "Solicitud",
@@ -3627,7 +3737,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T330"
+  "id": "T340"
  },
  {
   "pantalla": "Solicitud",
@@ -3638,7 +3748,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "Lo completa la Unidad de Transparencia; no se inventa la cita.",
-  "id": "T331"
+  "id": "T341"
  },
  {
   "pantalla": "Solicitud",
@@ -3649,7 +3759,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/solicitud.html)",
   "obs": "",
-  "id": "T332"
+  "id": "T342"
  },
  {
   "pantalla": "Solicitud",
@@ -3660,7 +3770,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T333"
+  "id": "T343"
  },
  {
   "pantalla": "Solicitud",
@@ -3671,7 +3781,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T334"
+  "id": "T344"
  },
  {
   "pantalla": "Solicitud",
@@ -3682,7 +3792,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T335"
+  "id": "T345"
  },
  {
   "pantalla": "Solicitud",
@@ -3693,7 +3803,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T336"
+  "id": "T346"
  },
  {
   "pantalla": "Solicitud",
@@ -3704,7 +3814,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T337"
+  "id": "T347"
  },
  {
   "pantalla": "Solicitud",
@@ -3715,7 +3825,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T338"
+  "id": "T348"
  },
  {
   "pantalla": "Solicitud",
@@ -3726,7 +3836,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T339"
+  "id": "T349"
  },
  {
   "pantalla": "Solicitud",
@@ -3737,7 +3847,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/apd.js)",
   "obs": "",
-  "id": "T340"
+  "id": "T350"
  },
  {
   "pantalla": "Solicitud",
@@ -3748,7 +3858,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T341"
+  "id": "T351"
  },
  {
   "pantalla": "Solicitud",
@@ -3759,7 +3869,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T342"
+  "id": "T352"
  },
  {
   "pantalla": "Solicitud",
@@ -3770,7 +3880,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T343"
+  "id": "T353"
  },
  {
   "pantalla": "Solicitud",
@@ -3781,7 +3891,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T344"
+  "id": "T354"
  },
  {
   "pantalla": "Solicitud",
@@ -3792,7 +3902,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T345"
+  "id": "T355"
  },
  {
   "pantalla": "Solicitud",
@@ -3803,7 +3913,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T346"
+  "id": "T356"
  },
  {
   "pantalla": "Solicitud",
@@ -3814,7 +3924,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T347"
+  "id": "T357"
  },
  {
   "pantalla": "Solicitud",
@@ -3825,7 +3935,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T348"
+  "id": "T358"
  },
  {
   "pantalla": "Solicitud",
@@ -3836,7 +3946,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T349"
+  "id": "T359"
  },
  {
   "pantalla": "Solicitud",
@@ -3847,7 +3957,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T350"
+  "id": "T360"
  },
  {
   "pantalla": "Solicitud",
@@ -3858,7 +3968,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T351"
+  "id": "T361"
  },
  {
   "pantalla": "Mis datos",
@@ -3869,7 +3979,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/datos.js)",
   "obs": "",
-  "id": "T352"
+  "id": "T362"
  },
  {
   "pantalla": "Mis datos",
@@ -3880,7 +3990,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/datos.js)",
   "obs": "",
-  "id": "T353"
+  "id": "T363"
  },
  {
   "pantalla": "Mis datos",
@@ -3891,7 +4001,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/datos.js)",
   "obs": "",
-  "id": "T354"
+  "id": "T364"
  },
  {
   "pantalla": "Mis datos",
@@ -3902,7 +4012,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/datos.js)",
   "obs": "",
-  "id": "T355"
+  "id": "T365"
  },
  {
   "pantalla": "Mis datos",
@@ -3913,7 +4023,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/datos.js)",
   "obs": "",
-  "id": "T356"
+  "id": "T366"
  },
  {
   "pantalla": "Mis datos",
@@ -3924,7 +4034,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/datos.js)",
   "obs": "",
-  "id": "T357"
+  "id": "T367"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -3935,7 +4045,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/verificar.html)",
   "obs": "",
-  "id": "T358"
+  "id": "T368"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -3946,7 +4056,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/verificar.html)",
   "obs": "",
-  "id": "T359"
+  "id": "T369"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -3957,7 +4067,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/verificar.html)",
   "obs": "",
-  "id": "T360"
+  "id": "T370"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -3968,7 +4078,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/verificar.html)",
   "obs": "",
-  "id": "T361"
+  "id": "T371"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -3979,7 +4089,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/verificar.html)",
   "obs": "",
-  "id": "T362"
+  "id": "T372"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -3990,7 +4100,18 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/verificar.html)",
   "obs": "",
-  "id": "T363"
+  "id": "T373"
+ },
+ {
+  "pantalla": "Verificar una acreditación",
+  "seccion": "Resultado",
+  "tipo": "Estado",
+  "cuando": "Acreditación cancelada",
+  "texto": "Cancelada · Cancelada el DD/MM/AAAA · La Secretaría canceló esta acreditación: con ella no se puede trabajar en el arbolado urbano.",
+  "quien": "Cualquier persona (público)",
+  "donde": "Código del sitio (sitio/app/config-verificar.js)",
+  "obs": "",
+  "id": "T374"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -4001,7 +4122,7 @@
   "quien": "Cualquier persona (público)",
   "donde": "Código del sitio (sitio/app/config-verificar.js)",
   "obs": "",
-  "id": "T364"
+  "id": "T375"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -4012,7 +4133,7 @@
   "quien": "Cualquier persona (público)",
   "donde": "Código del sitio (sitio/app/config-verificar.js)",
   "obs": "",
-  "id": "T365"
+  "id": "T376"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -4023,7 +4144,7 @@
   "quien": "Cualquier persona (público)",
   "donde": "Código del sitio (sitio/app/config-verificar.js)",
   "obs": "",
-  "id": "T366"
+  "id": "T377"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -4034,7 +4155,7 @@
   "quien": "Cualquier persona (público)",
   "donde": "Código del sitio (sitio/app/config-verificar.js)",
   "obs": "",
-  "id": "T367"
+  "id": "T378"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -4045,7 +4166,7 @@
   "quien": "Cualquier persona (público)",
   "donde": "Código del sitio (sitio/app/config-verificar.js)",
   "obs": "",
-  "id": "T368"
+  "id": "T379"
  },
  {
   "pantalla": "Verificar una acreditación",
@@ -4056,7 +4177,7 @@
   "quien": "Cualquier persona (público)",
   "donde": "Código del sitio (sitio/app/config-verificar.js)",
   "obs": "",
-  "id": "T369"
+  "id": "T380"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4067,7 +4188,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T370"
+  "id": "T381"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4078,7 +4199,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T371"
+  "id": "T382"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4089,7 +4210,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T372"
+  "id": "T383"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4100,7 +4221,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T373"
+  "id": "T384"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4111,7 +4232,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T374"
+  "id": "T385"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4122,7 +4243,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T375"
+  "id": "T386"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4133,7 +4254,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T376"
+  "id": "T387"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4144,7 +4265,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T377"
+  "id": "T388"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4155,7 +4276,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T378"
+  "id": "T389"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4166,7 +4287,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T379"
+  "id": "T390"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4177,7 +4298,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T380"
+  "id": "T391"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4188,7 +4309,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T381"
+  "id": "T392"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4199,7 +4320,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T382"
+  "id": "T393"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4210,7 +4331,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T383"
+  "id": "T394"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4221,7 +4342,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T384"
+  "id": "T395"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4232,7 +4353,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T385"
+  "id": "T396"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4243,7 +4364,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T386"
+  "id": "T397"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4254,7 +4375,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T387"
+  "id": "T398"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4265,7 +4386,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T388"
+  "id": "T399"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4276,7 +4397,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T389"
+  "id": "T400"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4287,7 +4408,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T390"
+  "id": "T401"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4298,7 +4419,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T391"
+  "id": "T402"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4309,7 +4430,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T392"
+  "id": "T403"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4320,7 +4441,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T393"
+  "id": "T404"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4331,7 +4452,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T394"
+  "id": "T405"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4342,7 +4463,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T395"
+  "id": "T406"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4353,7 +4474,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T396"
+  "id": "T407"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4364,7 +4485,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T397"
+  "id": "T408"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4375,7 +4496,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T398"
+  "id": "T409"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4386,7 +4507,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T399"
+  "id": "T410"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4397,7 +4518,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T400"
+  "id": "T411"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4408,7 +4529,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T401"
+  "id": "T412"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4419,7 +4540,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T402"
+  "id": "T413"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4430,7 +4551,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T403"
+  "id": "T414"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4441,7 +4562,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T404"
+  "id": "T415"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4452,7 +4573,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T405"
+  "id": "T416"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4463,7 +4584,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T406"
+  "id": "T417"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4474,7 +4595,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T407"
+  "id": "T418"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4485,7 +4606,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T408"
+  "id": "T419"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4496,7 +4617,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T409"
+  "id": "T420"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4507,7 +4628,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T410"
+  "id": "T421"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4518,7 +4639,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T411"
+  "id": "T422"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4529,7 +4650,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T412"
+  "id": "T423"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4540,7 +4661,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T413"
+  "id": "T424"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4551,7 +4672,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T414"
+  "id": "T425"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4562,7 +4683,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T415"
+  "id": "T426"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4573,7 +4694,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T416"
+  "id": "T427"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4584,7 +4705,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T417"
+  "id": "T428"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4595,7 +4716,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T418"
+  "id": "T429"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4606,7 +4727,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T419"
+  "id": "T430"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4617,7 +4738,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T420"
+  "id": "T431"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4628,7 +4749,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T421"
+  "id": "T432"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4639,7 +4760,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T422"
+  "id": "T433"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4650,7 +4771,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T423"
+  "id": "T434"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4661,7 +4782,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T424"
+  "id": "T435"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4672,7 +4793,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T425"
+  "id": "T436"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4683,7 +4804,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T426"
+  "id": "T437"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4694,7 +4815,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T427"
+  "id": "T438"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4705,7 +4826,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T428"
+  "id": "T439"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4716,7 +4837,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T429"
+  "id": "T440"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4727,7 +4848,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T430"
+  "id": "T441"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4738,7 +4859,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T431"
+  "id": "T442"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4749,7 +4870,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T432"
+  "id": "T443"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4760,7 +4881,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T433"
+  "id": "T444"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4771,7 +4892,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T434"
+  "id": "T445"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4782,7 +4903,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T435"
+  "id": "T446"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4793,7 +4914,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T436"
+  "id": "T447"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4804,7 +4925,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T437"
+  "id": "T448"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4815,7 +4936,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T438"
+  "id": "T449"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4826,7 +4947,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T439"
+  "id": "T450"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4837,7 +4958,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T440"
+  "id": "T451"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4848,7 +4969,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T441"
+  "id": "T452"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4859,7 +4980,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T442"
+  "id": "T453"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4870,7 +4991,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T443"
+  "id": "T454"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4881,7 +5002,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T444"
+  "id": "T455"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4892,7 +5013,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T445"
+  "id": "T456"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4903,7 +5024,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T446"
+  "id": "T457"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4914,7 +5035,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T447"
+  "id": "T458"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4925,7 +5046,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T448"
+  "id": "T459"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4936,7 +5057,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T449"
+  "id": "T460"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4947,7 +5068,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T450"
+  "id": "T461"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4958,7 +5079,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T451"
+  "id": "T462"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4969,7 +5090,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T452"
+  "id": "T463"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4980,7 +5101,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T453"
+  "id": "T464"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -4991,7 +5112,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T454"
+  "id": "T465"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5002,7 +5123,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T455"
+  "id": "T466"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5013,7 +5134,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T456"
+  "id": "T467"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5024,7 +5145,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T457"
+  "id": "T468"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5035,7 +5156,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T458"
+  "id": "T469"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5046,7 +5167,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T459"
+  "id": "T470"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5057,7 +5178,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T460"
+  "id": "T471"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5068,7 +5189,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T461"
+  "id": "T472"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5079,7 +5200,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T462"
+  "id": "T473"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5090,7 +5211,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T463"
+  "id": "T474"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5101,7 +5222,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T464"
+  "id": "T475"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5112,7 +5233,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T465"
+  "id": "T476"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5123,7 +5244,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T466"
+  "id": "T477"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5134,7 +5255,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T467"
+  "id": "T478"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5145,7 +5266,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T468"
+  "id": "T479"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5156,7 +5277,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T469"
+  "id": "T480"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5167,7 +5288,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T470"
+  "id": "T481"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5178,7 +5299,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T471"
+  "id": "T482"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5189,7 +5310,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T472"
+  "id": "T483"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5200,7 +5321,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T473"
+  "id": "T484"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5211,7 +5332,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T474"
+  "id": "T485"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5222,7 +5343,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T475"
+  "id": "T486"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5233,7 +5354,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T476"
+  "id": "T487"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5244,7 +5365,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T477"
+  "id": "T488"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5255,7 +5376,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T478"
+  "id": "T489"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5266,7 +5387,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T479"
+  "id": "T490"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5277,7 +5398,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T480"
+  "id": "T491"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5288,7 +5409,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T481"
+  "id": "T492"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5299,7 +5420,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T482"
+  "id": "T493"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5310,7 +5431,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T483"
+  "id": "T494"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5321,7 +5442,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T484"
+  "id": "T495"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5332,7 +5453,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T485"
+  "id": "T496"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5343,7 +5464,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T486"
+  "id": "T497"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5354,7 +5475,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T487"
+  "id": "T498"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5365,7 +5486,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T488"
+  "id": "T499"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5376,7 +5497,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T489"
+  "id": "T500"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5387,7 +5508,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T490"
+  "id": "T501"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5398,7 +5519,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T491"
+  "id": "T502"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5409,7 +5530,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T492"
+  "id": "T503"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5420,7 +5541,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T493"
+  "id": "T504"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5431,7 +5552,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T494"
+  "id": "T505"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5442,7 +5563,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T495"
+  "id": "T506"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5453,7 +5574,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T496"
+  "id": "T507"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5464,7 +5585,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T497"
+  "id": "T508"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5475,7 +5596,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T498"
+  "id": "T509"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5486,7 +5607,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T499"
+  "id": "T510"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5497,7 +5618,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T500"
+  "id": "T511"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5508,7 +5629,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T501"
+  "id": "T512"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5519,7 +5640,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T502"
+  "id": "T513"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5530,7 +5651,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T503"
+  "id": "T514"
  },
  {
   "pantalla": "Mensajes del formulario (estándar)",
@@ -5541,7 +5662,7 @@
   "quien": "Persona solicitante",
   "donde": "Estándar de formularios (validaciones.config.js); se cambia en el estándar o se sobrescribe en el proyecto",
   "obs": "",
-  "id": "T504"
+  "id": "T515"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5552,7 +5673,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T505"
+  "id": "T516"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5563,7 +5684,18 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T506"
+  "id": "T517"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «cuota_de_personal»",
+  "texto": "La cuota la actualiza el personal de la Secretaría",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T518"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5574,7 +5706,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T507"
+  "id": "T519"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5585,7 +5717,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T508"
+  "id": "T520"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5596,7 +5728,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T509"
+  "id": "T521"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5607,7 +5739,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T510"
+  "id": "T522"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5618,7 +5750,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T511"
+  "id": "T523"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5629,7 +5761,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T512"
+  "id": "T524"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5640,7 +5772,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T513"
+  "id": "T525"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5651,7 +5783,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T514"
+  "id": "T526"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5662,7 +5794,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T515"
+  "id": "T527"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5673,7 +5805,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T516"
+  "id": "T528"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5684,7 +5816,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T517"
+  "id": "T529"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5695,7 +5827,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T518"
+  "id": "T530"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5706,7 +5838,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T519"
+  "id": "T531"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5717,7 +5849,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T520"
+  "id": "T532"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5728,7 +5860,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T521"
+  "id": "T533"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5739,7 +5871,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T522"
+  "id": "T534"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5750,7 +5882,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T523"
+  "id": "T535"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5761,7 +5893,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T524"
+  "id": "T536"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5772,7 +5904,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T525"
+  "id": "T537"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5783,7 +5915,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T526"
+  "id": "T538"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5794,7 +5926,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T527"
+  "id": "T539"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5805,7 +5937,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T528"
+  "id": "T540"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5816,7 +5948,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T529"
+  "id": "T541"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5827,7 +5959,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T530"
+  "id": "T542"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5838,7 +5970,18 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T531"
+  "id": "T543"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «renovacion_de_cancelada»",
+  "texto": "La acreditación que se renovaba fue cancelada: no se emite la renovación",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T544"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5849,18 +5992,73 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T532"
+  "id": "T545"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «acreditacion_ya_cancelada»",
+  "texto": "La acreditación … ya está cancelada: la cancelación no se cambia",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T546"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «cancelacion_sin_permiso»",
+  "texto": "Sólo los instructores y la Dirección pueden cancelar una acreditación",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T547"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «cancelacion_sin_motivo»",
+  "texto": "Escriba el motivo de la cancelación (al menos 10 caracteres)",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T548"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «cancelacion_sin_fundamento»",
+  "texto": "Escriba el fundamento de la cancelación",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T549"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «cancelacion_no_vigente»",
+  "texto": "Sólo se cancela una acreditación vigente: la … ya no lo está",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T550"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
   "seccion": "Reglas de la base",
   "tipo": "Error",
   "cuando": "Regla «acreditacion_inmutable»",
-  "texto": "Una acreditación emitida no se modifica; sólo se registra su entrega",
+  "texto": "Una acreditación emitida no se modifica; sólo se registra su entrega o su cancelación",
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T533"
+  "id": "T551"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5871,7 +6069,18 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T534"
+  "id": "T552"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «entrega_de_cancelada»",
+  "texto": "Una acreditación cancelada no se entrega",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T553"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5882,7 +6091,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T535"
+  "id": "T554"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5893,7 +6102,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T536"
+  "id": "T555"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5904,7 +6113,205 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T537"
+  "id": "T556"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_de_la_persona»",
+  "texto": "La reposición la pide la persona titular desde «Mis trámites»",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T557"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_no_vigente»",
+  "texto": "Sólo se repone la credencial de una acreditación vigente",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T558"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_sin_entrega»",
+  "texto": "Tu credencial todavía no se te entrega: recógela en el Vivero",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T559"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_en_curso»",
+  "texto": "Ya pediste la reposición de esta credencial: síguela en «Mis trámites»",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T560"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «archivo_grande»",
+  "texto": "El acta pesa más de … MB",
+  "quien": "Persona solicitante",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T561"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «campo_inmutable»",
+  "texto": "La acreditación, el motivo y la fecha de la reposición no se cambian",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T562"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «transicion_reposicion»",
+  "texto": "Este cambio no está permitido: una reposición «…» no puede pasar a «…»",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T563"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «acta_fuera_de_turno»",
+  "texto": "El acta sólo se cambia cuando tiene observaciones por corregir",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T564"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «factura_fuera_de_turno»",
+  "texto": "Los datos de la factura se capturan al entregar la credencial repuesta",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T565"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «transicion_reposicion»",
+  "texto": "La observación se escribe al revisar el acta",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T566"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_de_personal»",
+  "texto": "El acta la revisa el personal de la Secretaría",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T567"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «observaciones_vacias»",
+  "texto": "Escriba qué debe corregir la persona en su acta (al menos 10 caracteres)",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T568"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_de_la_persona»",
+  "texto": "El acta corregida la carga la persona titular desde «Mis trámites»",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T569"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «acta_sin_cambio»",
+  "texto": "Carga el acta corregida",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T570"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_de_personal»",
+  "texto": "La credencial repuesta la entrega el personal de la Secretaría",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T571"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «sin_factura»",
+  "texto": "Capture el RFC, el nombre o razón social y el folio fiscal de la factura de la cuota",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T572"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «folio_fiscal_repetido»",
+  "texto": "Ese folio fiscal ya está registrado: revise la factura",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T573"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «reposicion_sin_motivo»",
+  "texto": "Diga por qué se cancela la reposición",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T574"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5915,7 +6322,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T538"
+  "id": "T575"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5926,7 +6333,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T539"
+  "id": "T576"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5937,7 +6344,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T540"
+  "id": "T577"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5948,7 +6355,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T541"
+  "id": "T578"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5959,7 +6366,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T542"
+  "id": "T579"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5970,7 +6377,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T543"
+  "id": "T580"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5981,7 +6388,18 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T544"
+  "id": "T581"
+ },
+ {
+  "pantalla": "Mensajes al guardar o enviar",
+  "seccion": "Reglas de la base",
+  "tipo": "Error",
+  "cuando": "Regla «renovacion_cancelada»",
+  "texto": "Tu acreditación fue cancelada: no se puede renovar",
+  "quien": "Personal de la Secretaría",
+  "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
+  "obs": "",
+  "id": "T582"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -5992,7 +6410,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T545"
+  "id": "T583"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6003,7 +6421,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T546"
+  "id": "T584"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6014,7 +6432,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T547"
+  "id": "T585"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6025,7 +6443,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T548"
+  "id": "T586"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6036,7 +6454,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T549"
+  "id": "T587"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6047,7 +6465,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T550"
+  "id": "T588"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6058,7 +6476,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T551"
+  "id": "T589"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6069,7 +6487,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T552"
+  "id": "T590"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6080,7 +6498,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T553"
+  "id": "T591"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6091,7 +6509,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T554"
+  "id": "T592"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6102,7 +6520,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T555"
+  "id": "T593"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6113,7 +6531,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T556"
+  "id": "T594"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6124,7 +6542,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T557"
+  "id": "T595"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6135,7 +6553,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T558"
+  "id": "T596"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6146,7 +6564,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T559"
+  "id": "T597"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6157,7 +6575,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T560"
+  "id": "T598"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6168,7 +6586,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T561"
+  "id": "T599"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6179,7 +6597,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T562"
+  "id": "T600"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6190,7 +6608,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T563"
+  "id": "T601"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6201,7 +6619,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T564"
+  "id": "T602"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6212,7 +6630,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T565"
+  "id": "T603"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6223,7 +6641,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T566"
+  "id": "T604"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6234,7 +6652,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T567"
+  "id": "T605"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6245,7 +6663,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T568"
+  "id": "T606"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6256,7 +6674,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T569"
+  "id": "T607"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6267,7 +6685,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T570"
+  "id": "T608"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6278,7 +6696,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T571"
+  "id": "T609"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6289,7 +6707,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T572"
+  "id": "T610"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6300,7 +6718,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T573"
+  "id": "T611"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6311,7 +6729,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T574"
+  "id": "T612"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6322,7 +6740,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T575"
+  "id": "T613"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6333,7 +6751,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T576"
+  "id": "T614"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6344,7 +6762,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T577"
+  "id": "T615"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6355,7 +6773,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T578"
+  "id": "T616"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6366,7 +6784,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T579"
+  "id": "T617"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6377,7 +6795,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T580"
+  "id": "T618"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6388,7 +6806,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T581"
+  "id": "T619"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6399,7 +6817,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T582"
+  "id": "T620"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6410,7 +6828,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T583"
+  "id": "T621"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6421,7 +6839,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T584"
+  "id": "T622"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6432,7 +6850,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T585"
+  "id": "T623"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6443,7 +6861,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T586"
+  "id": "T624"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6454,7 +6872,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T587"
+  "id": "T625"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6465,7 +6883,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T588"
+  "id": "T626"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6476,7 +6894,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T589"
+  "id": "T627"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6487,7 +6905,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T590"
+  "id": "T628"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6498,7 +6916,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T591"
+  "id": "T629"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6509,7 +6927,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T592"
+  "id": "T630"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6520,7 +6938,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T593"
+  "id": "T631"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6531,7 +6949,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T594"
+  "id": "T632"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6542,7 +6960,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T595"
+  "id": "T633"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6553,7 +6971,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T596"
+  "id": "T634"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6564,7 +6982,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T597"
+  "id": "T635"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6575,7 +6993,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T598"
+  "id": "T636"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6586,7 +7004,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T599"
+  "id": "T637"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6597,7 +7015,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T600"
+  "id": "T638"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6608,7 +7026,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T601"
+  "id": "T639"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6619,7 +7037,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T602"
+  "id": "T640"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6630,7 +7048,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T603"
+  "id": "T641"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6641,7 +7059,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T604"
+  "id": "T642"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6652,7 +7070,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T605"
+  "id": "T643"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6663,7 +7081,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T606"
+  "id": "T644"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6674,7 +7092,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T607"
+  "id": "T645"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6685,7 +7103,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T608"
+  "id": "T646"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6696,7 +7114,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T609"
+  "id": "T647"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6707,7 +7125,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T610"
+  "id": "T648"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6718,7 +7136,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T611"
+  "id": "T649"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6729,7 +7147,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T612"
+  "id": "T650"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6740,7 +7158,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T613"
+  "id": "T651"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6751,7 +7169,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T614"
+  "id": "T652"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6762,7 +7180,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T615"
+  "id": "T653"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6773,7 +7191,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T616"
+  "id": "T654"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6784,7 +7202,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T617"
+  "id": "T655"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6795,7 +7213,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T618"
+  "id": "T656"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6806,7 +7224,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T619"
+  "id": "T657"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6817,7 +7235,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T620"
+  "id": "T658"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6828,7 +7246,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T621"
+  "id": "T659"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6839,7 +7257,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T622"
+  "id": "T660"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6850,7 +7268,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T623"
+  "id": "T661"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6861,7 +7279,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T624"
+  "id": "T662"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6872,7 +7290,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T625"
+  "id": "T663"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6883,7 +7301,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T626"
+  "id": "T664"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6894,7 +7312,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T627"
+  "id": "T665"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6905,7 +7323,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T628"
+  "id": "T666"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6916,7 +7334,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T629"
+  "id": "T667"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6927,7 +7345,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T630"
+  "id": "T668"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6938,7 +7356,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T631"
+  "id": "T669"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6949,7 +7367,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T632"
+  "id": "T670"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6960,7 +7378,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T633"
+  "id": "T671"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6971,7 +7389,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T634"
+  "id": "T672"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6982,7 +7400,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T635"
+  "id": "T673"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -6993,7 +7411,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T636"
+  "id": "T674"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7004,7 +7422,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T637"
+  "id": "T675"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7015,7 +7433,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T638"
+  "id": "T676"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7026,7 +7444,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T639"
+  "id": "T677"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7037,7 +7455,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T640"
+  "id": "T678"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7048,7 +7466,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T641"
+  "id": "T679"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7059,7 +7477,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T642"
+  "id": "T680"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7070,7 +7488,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T643"
+  "id": "T681"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7081,7 +7499,7 @@
   "quien": "Persona solicitante",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T644"
+  "id": "T682"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7092,7 +7510,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T645"
+  "id": "T683"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7103,7 +7521,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T646"
+  "id": "T684"
  },
  {
   "pantalla": "Mensajes al guardar o enviar",
@@ -7114,7 +7532,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Base de datos (db/apd/03-apd-reglas.sql)",
   "obs": "",
-  "id": "T647"
+  "id": "T685"
  },
  {
   "pantalla": "Mi perfil",
@@ -7125,7 +7543,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T648"
+  "id": "T686"
  },
  {
   "pantalla": "Mi perfil",
@@ -7136,7 +7554,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T649"
+  "id": "T687"
  },
  {
   "pantalla": "Mi perfil",
@@ -7147,7 +7565,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T650"
+  "id": "T688"
  },
  {
   "pantalla": "Mi perfil",
@@ -7158,7 +7576,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T651"
+  "id": "T689"
  },
  {
   "pantalla": "Mi perfil",
@@ -7169,7 +7587,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T652"
+  "id": "T690"
  },
  {
   "pantalla": "Mi perfil",
@@ -7180,7 +7598,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T653"
+  "id": "T691"
  },
  {
   "pantalla": "Mi perfil",
@@ -7191,7 +7609,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T654"
+  "id": "T692"
  },
  {
   "pantalla": "Mi perfil",
@@ -7202,7 +7620,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T655"
+  "id": "T693"
  },
  {
   "pantalla": "Mi perfil",
@@ -7213,7 +7631,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T656"
+  "id": "T694"
  },
  {
   "pantalla": "Mi perfil",
@@ -7224,7 +7642,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T657"
+  "id": "T695"
  },
  {
   "pantalla": "Mi perfil",
@@ -7235,7 +7653,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T658"
+  "id": "T696"
  },
  {
   "pantalla": "Mi perfil",
@@ -7246,7 +7664,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T659"
+  "id": "T697"
  },
  {
   "pantalla": "Mi perfil",
@@ -7257,7 +7675,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T660"
+  "id": "T698"
  },
  {
   "pantalla": "Mi perfil",
@@ -7268,7 +7686,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T661"
+  "id": "T699"
  },
  {
   "pantalla": "Mi perfil",
@@ -7279,7 +7697,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T662"
+  "id": "T700"
  },
  {
   "pantalla": "Mi perfil",
@@ -7290,7 +7708,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T663"
+  "id": "T701"
  },
  {
   "pantalla": "Mi perfil",
@@ -7301,7 +7719,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T664"
+  "id": "T702"
  },
  {
   "pantalla": "Mi perfil",
@@ -7312,7 +7730,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T665"
+  "id": "T703"
  },
  {
   "pantalla": "Mi perfil",
@@ -7323,7 +7741,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T666"
+  "id": "T704"
  },
  {
   "pantalla": "Mi perfil",
@@ -7334,7 +7752,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T667"
+  "id": "T705"
  },
  {
   "pantalla": "Mi perfil",
@@ -7345,7 +7763,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T668"
+  "id": "T706"
  },
  {
   "pantalla": "Mi perfil",
@@ -7356,7 +7774,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T669"
+  "id": "T707"
  },
  {
   "pantalla": "Mi perfil",
@@ -7367,7 +7785,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T670"
+  "id": "T708"
  },
  {
   "pantalla": "Mi perfil",
@@ -7378,7 +7796,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T671"
+  "id": "T709"
  },
  {
   "pantalla": "Mi perfil",
@@ -7389,7 +7807,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T672"
+  "id": "T710"
  },
  {
   "pantalla": "Mi perfil",
@@ -7400,7 +7818,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T673"
+  "id": "T711"
  },
  {
   "pantalla": "Mi perfil",
@@ -7411,7 +7829,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T674"
+  "id": "T712"
  },
  {
   "pantalla": "Mi perfil",
@@ -7422,7 +7840,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T675"
+  "id": "T713"
  },
  {
   "pantalla": "Mi perfil",
@@ -7433,7 +7851,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T676"
+  "id": "T714"
  },
  {
   "pantalla": "Mi perfil",
@@ -7444,7 +7862,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T677"
+  "id": "T715"
  },
  {
   "pantalla": "Mi perfil",
@@ -7455,7 +7873,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T678"
+  "id": "T716"
  },
  {
   "pantalla": "Mi perfil",
@@ -7466,7 +7884,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T679"
+  "id": "T717"
  },
  {
   "pantalla": "Mi perfil",
@@ -7477,7 +7895,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T680"
+  "id": "T718"
  },
  {
   "pantalla": "Mi perfil",
@@ -7488,7 +7906,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T681"
+  "id": "T719"
  },
  {
   "pantalla": "Mi perfil",
@@ -7499,7 +7917,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T682"
+  "id": "T720"
  },
  {
   "pantalla": "Mi perfil",
@@ -7510,7 +7928,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T683"
+  "id": "T721"
  },
  {
   "pantalla": "Mi perfil",
@@ -7521,7 +7939,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T684"
+  "id": "T722"
  },
  {
   "pantalla": "Mi perfil",
@@ -7532,7 +7950,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T685"
+  "id": "T723"
  },
  {
   "pantalla": "Mi perfil",
@@ -7543,7 +7961,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T686"
+  "id": "T724"
  },
  {
   "pantalla": "Mi perfil",
@@ -7554,7 +7972,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T687"
+  "id": "T725"
  },
  {
   "pantalla": "Mi perfil",
@@ -7565,7 +7983,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T688"
+  "id": "T726"
  },
  {
   "pantalla": "Mi perfil",
@@ -7576,7 +7994,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T689"
+  "id": "T727"
  },
  {
   "pantalla": "Mi perfil",
@@ -7587,7 +8005,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T690"
+  "id": "T728"
  },
  {
   "pantalla": "Mi perfil",
@@ -7598,7 +8016,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T691"
+  "id": "T729"
  },
  {
   "pantalla": "Mi perfil",
@@ -7609,7 +8027,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T692"
+  "id": "T730"
  },
  {
   "pantalla": "Mi perfil",
@@ -7620,7 +8038,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T693"
+  "id": "T731"
  },
  {
   "pantalla": "Mi perfil",
@@ -7631,7 +8049,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T694"
+  "id": "T732"
  },
  {
   "pantalla": "Mi perfil",
@@ -7642,7 +8060,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T695"
+  "id": "T733"
  },
  {
   "pantalla": "Mi perfil",
@@ -7653,7 +8071,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T696"
+  "id": "T734"
  },
  {
   "pantalla": "Mi perfil",
@@ -7664,7 +8082,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T697"
+  "id": "T735"
  },
  {
   "pantalla": "Mi perfil",
@@ -7675,7 +8093,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T698"
+  "id": "T736"
  },
  {
   "pantalla": "Mi perfil",
@@ -7686,7 +8104,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T699"
+  "id": "T737"
  },
  {
   "pantalla": "Mi perfil",
@@ -7697,7 +8115,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T700"
+  "id": "T738"
  },
  {
   "pantalla": "Mi perfil",
@@ -7708,7 +8126,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T701"
+  "id": "T739"
  },
  {
   "pantalla": "Mi perfil",
@@ -7719,7 +8137,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T702"
+  "id": "T740"
  },
  {
   "pantalla": "Mi perfil",
@@ -7730,7 +8148,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T703"
+  "id": "T741"
  },
  {
   "pantalla": "Mi perfil",
@@ -7741,7 +8159,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T704"
+  "id": "T742"
  },
  {
   "pantalla": "Mi perfil",
@@ -7752,7 +8170,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T705"
+  "id": "T743"
  },
  {
   "pantalla": "Mi perfil",
@@ -7763,7 +8181,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T706"
+  "id": "T744"
  },
  {
   "pantalla": "Mi perfil",
@@ -7774,7 +8192,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T707"
+  "id": "T745"
  },
  {
   "pantalla": "Mi perfil",
@@ -7785,7 +8203,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T708"
+  "id": "T746"
  },
  {
   "pantalla": "Mi perfil",
@@ -7796,7 +8214,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T709"
+  "id": "T747"
  },
  {
   "pantalla": "Mi perfil",
@@ -7807,7 +8225,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T710"
+  "id": "T748"
  },
  {
   "pantalla": "Mi perfil",
@@ -7818,7 +8236,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T711"
+  "id": "T749"
  },
  {
   "pantalla": "Mi perfil",
@@ -7829,7 +8247,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T712"
+  "id": "T750"
  },
  {
   "pantalla": "Mi perfil",
@@ -7840,7 +8258,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T713"
+  "id": "T751"
  },
  {
   "pantalla": "Mi perfil",
@@ -7851,7 +8269,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T714"
+  "id": "T752"
  },
  {
   "pantalla": "Mi perfil",
@@ -7862,7 +8280,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T715"
+  "id": "T753"
  },
  {
   "pantalla": "Mi perfil",
@@ -7873,7 +8291,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T716"
+  "id": "T754"
  },
  {
   "pantalla": "Mi perfil",
@@ -7884,7 +8302,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T717"
+  "id": "T755"
  },
  {
   "pantalla": "Mi perfil",
@@ -7895,7 +8313,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T718"
+  "id": "T756"
  },
  {
   "pantalla": "Mi perfil",
@@ -7906,7 +8324,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T719"
+  "id": "T757"
  },
  {
   "pantalla": "Mi perfil",
@@ -7917,7 +8335,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T720"
+  "id": "T758"
  },
  {
   "pantalla": "Mi perfil",
@@ -7928,7 +8346,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T721"
+  "id": "T759"
  },
  {
   "pantalla": "Mi perfil",
@@ -7939,7 +8357,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T722"
+  "id": "T760"
  },
  {
   "pantalla": "Mi perfil",
@@ -7950,7 +8368,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/datos.html)",
   "obs": "",
-  "id": "T723"
+  "id": "T761"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -7961,7 +8379,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T724"
+  "id": "T762"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -7972,7 +8390,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T725"
+  "id": "T763"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -7983,7 +8401,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T726"
+  "id": "T764"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -7994,7 +8412,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T727"
+  "id": "T765"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8005,7 +8423,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T728"
+  "id": "T766"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8016,7 +8434,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T729"
+  "id": "T767"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8027,7 +8445,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T730"
+  "id": "T768"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8038,7 +8456,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T731"
+  "id": "T769"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8049,7 +8467,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T732"
+  "id": "T770"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8060,7 +8478,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T733"
+  "id": "T771"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8071,7 +8489,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T734"
+  "id": "T772"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8082,7 +8500,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T735"
+  "id": "T773"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8093,7 +8511,7 @@
   "quien": "Persona solicitante",
   "donde": "Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)",
   "obs": "",
-  "id": "T736"
+  "id": "T774"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8104,7 +8522,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T737"
+  "id": "T775"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8115,7 +8533,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T738"
+  "id": "T776"
  },
  {
   "pantalla": "Cargar el documento correcto",
@@ -8126,7 +8544,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/corregir.html)",
   "obs": "",
-  "id": "T739"
+  "id": "T777"
  },
  {
   "pantalla": "Material de estudio",
@@ -8137,7 +8555,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T740"
+  "id": "T778"
  },
  {
   "pantalla": "Material de estudio",
@@ -8148,7 +8566,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T741"
+  "id": "T779"
  },
  {
   "pantalla": "Material de estudio",
@@ -8159,7 +8577,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T742"
+  "id": "T780"
  },
  {
   "pantalla": "Material de estudio",
@@ -8170,7 +8588,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T743"
+  "id": "T781"
  },
  {
   "pantalla": "Material de estudio",
@@ -8181,7 +8599,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T744"
+  "id": "T782"
  },
  {
   "pantalla": "Material de estudio",
@@ -8192,7 +8610,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T745"
+  "id": "T783"
  },
  {
   "pantalla": "Material de estudio",
@@ -8203,7 +8621,7 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T746"
+  "id": "T784"
  },
  {
   "pantalla": "Material de estudio",
@@ -8214,6 +8632,193 @@
   "quien": "Persona solicitante",
   "donde": "Página (sitio/material.html)",
   "obs": "",
-  "id": "T747"
+  "id": "T785"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "—",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Mis trámites",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T786"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "—",
+  "tipo": "Introducción",
+  "cuando": "Siempre",
+  "texto": "Cargando tu acreditación…",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "Texto momentáneo mientras cargan los datos.",
+  "id": "T787"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Título",
+  "cuando": "Siempre",
+  "texto": "Pide la reposición de tu credencial",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T788"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Introducción",
+  "cuando": "Siempre",
+  "texto": "Si perdiste tu credencial o te la robaron, carga el acta que levantaste. La Secretaría la revisa y te dice cuánto pagar y dónde recoger tu credencial nueva.",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T789"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Nota",
+  "cuando": "Siempre",
+  "texto": "Las preguntas con * son obligatorias.",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T790"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Pregunta",
+  "cuando": "Siempre",
+  "texto": "¿Qué pasó con tu credencial?",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T791"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Opción",
+  "cuando": "Siempre",
+  "texto": "La perdí",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T792"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Opción",
+  "cuando": "Siempre",
+  "texto": "Me la robaron",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T793"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Pregunta",
+  "cuando": "Siempre",
+  "texto": "Acta que levantaste por la pérdida o el robo",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T794"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Ayuda",
+  "cuando": "Siempre",
+  "texto": "En PDF o en foto (JPG o PNG), de hasta 5 MB. Que se lean completos tu nombre, la fecha y los datos de quien la levantó.",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T795"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Elegir archivo",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T796"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Pedir la reposición",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T797"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Texto",
+  "cuando": "Siempre",
+  "texto": "Versión de prueba: el acta se guarda sólo en este navegador.",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T798"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Pide la reposición de tu credencial",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Ir a Mis trámites",
+  "quien": "Persona solicitante",
+  "donde": "Página (sitio/reposicion.html)",
+  "obs": "",
+  "id": "T799"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Resultado",
+  "tipo": "Título",
+  "cuando": "Al pedirla o al cargar el acta corregida",
+  "texto": "Recibimos tu solicitud de reposición · Recibimos tu acta corregida",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/reposicion.js)",
+  "obs": "",
+  "id": "T800"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Resultado",
+  "tipo": "Pasos",
+  "cuando": "Al pedirla",
+  "texto": "La Secretaría revisa tu acta. · Te indica en «Mis trámites» si debes corregir algo o, si está completa, cuánto pagar. · Pagas la cuota de reposición y recoges tu credencial en la oficina del Vivero Nezahualcóyotl, con el mismo número y la misma vigencia.",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/reposicion.js)",
+  "obs": "",
+  "id": "T801"
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "seccion": "Acreditación",
+  "tipo": "Error",
+  "cuando": "Credencial del sistema que todavía no se entrega",
+  "texto": "Tu credencial todavía no se te entrega: recógela en la oficina del Vivero. La reposición es para una credencial que ya recibiste y perdiste o te robaron.",
+  "quien": "Persona solicitante",
+  "donde": "Código del sitio (sitio/app/reposicion.js)",
+  "obs": "",
+  "id": "T802"
  }
 ]

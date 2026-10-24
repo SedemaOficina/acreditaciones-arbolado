@@ -143,6 +143,15 @@
  {
   "pantalla": "Inicio",
   "archivo": "index.html",
+  "tipo": "Texto",
+  "texto": "Tu credencial dice que la acreditación puede ser cancelada conforme a los lineamientos. Si la pierdes o te la roban, pide su reposición en «Mis trámites» con el acta que levantaste: la nueva lleva el mismo número y la misma vigencia.",
+  "cuando": "Siempre",
+  "seccion": "Cómo es el trámite",
+  "origen": ""
+ },
+ {
+  "pantalla": "Inicio",
+  "archivo": "index.html",
   "tipo": "Título",
   "texto": "Cuándo renovar",
   "cuando": "Siempre",
@@ -3114,6 +3123,132 @@
   "texto": "Todavía no hay material publicado. Vuelve a consultar más adelante.",
   "cuando": "Siempre",
   "seccion": "Material de estudio",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Botón o enlace",
+  "texto": "Mis trámites",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Introducción",
+  "texto": "Cargando tu acreditación…",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Título",
+  "texto": "Pide la reposición de tu credencial",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Introducción",
+  "texto": "Si perdiste tu credencial o te la robaron, carga el acta que levantaste. La Secretaría la revisa y te dice cuánto pagar y dónde recoger tu credencial nueva.",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Nota",
+  "texto": "Las preguntas con * son obligatorias.",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Pregunta",
+  "texto": "¿Qué pasó con tu credencial?",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Opción",
+  "texto": "La perdí",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Opción",
+  "texto": "Me la robaron",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Pregunta",
+  "texto": "Acta que levantaste por la pérdida o el robo",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Ayuda",
+  "texto": "En PDF o en foto (JPG o PNG), de hasta 5 MB. Que se lean completos tu nombre, la fecha y los datos de quien la levantó.",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Botón o enlace",
+  "texto": "Elegir archivo",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Botón o enlace",
+  "texto": "Pedir la reposición",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Texto",
+  "texto": "Versión de prueba: el acta se guarda sólo en este navegador.",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
+  "origen": ""
+ },
+ {
+  "pantalla": "Reposición de tu credencial",
+  "archivo": "reposicion.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ir a Mis trámites",
+  "cuando": "Siempre",
+  "seccion": "Pide la reposición de tu credencial",
   "origen": ""
  }
 ]

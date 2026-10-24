@@ -265,7 +265,7 @@
       "bloquea": "datos reales",
       "desde": "2026-10-14",
       "titulo": "Diseño de la credencial: sin huella ni antigüedad, con la leyenda de cancelación",
-      "recomendacion": "Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. Lineamientos (18/10/2026): la NADF-001-RNAT-2015, numeral 5.5, exige además nombre, firma, huella digital y fotografía de la persona; folio; fecha de expedición; vigencia; antigüedad consecutiva; nombre y firma de la persona titular de la Secretaría; fundamento legal; la leyenda literal de la norma; tipo y logotipos. El diseño debe incluirlos (P137). Decisión en la sesión de trabajo del 23/10/2026 (Liber, 23/10/2026): la credencial no lleva huella digital ni año de antigüedad, y dice que puede ser cancelada conforme a los lineamientos. Liber lo decidió aunque se aparta del numeral 5.5 de la NADF-001-RNAT-2015: los lineamientos lo señalan para la Dirección Jurídica. Falta el diseño final y la especificación de la foto.",
+      "recomendacion": "Definir fondo, encuadre y tamaño de la foto, y los datos impresos: nombre, número, tipo, emisión y vencimiento, más un código QR que abra la verificación pública. Sin CURP ni contacto. Lineamientos (18/10/2026): la NADF-001-RNAT-2015, numeral 5.5, exige además nombre, firma, huella digital y fotografía de la persona; folio; fecha de expedición; vigencia; antigüedad consecutiva; nombre y firma de la persona titular de la Secretaría; fundamento legal; la leyenda literal de la norma; tipo y logotipos. El diseño debe incluirlos (P137). Decisión en la sesión de trabajo del 23/10/2026 (Liber, 23/10/2026): la credencial no lleva huella digital ni año de antigüedad, y dice que puede ser cancelada conforme a los lineamientos. Liber lo decidió aunque se aparta del numeral 5.5 de la NADF-001-RNAT-2015: los lineamientos lo señalan para la Dirección Jurídica. Falta el diseño final y la especificación de la foto. Hecho (sesión del 23/10/2026, parte B): ninguna pantalla, texto ni dato ficticio menciona huella digital ni antigüedad de la credencial (lo comprueba probar-sitio, SOLO=cancelacion), el sistema no las captura ni las calcula (P137 resuelto: ya no aplica) y el inicio dice que la credencial puede ser cancelada conforme a los lineamientos. El sistema no imprime ni dibuja la credencial: la leyenda, la firma de la persona y la de la persona titular de la Secretaría, el fundamento y los logotipos van en el diseño, que sigue pendiente.",
       "lineamientos": "Anteproyecto 0.5: Arts. 13 y 44; Anexo 3. Cambia: la Norma 5.5 exige firma, huella, antigüedad, firma de la Titular, fundamento, leyenda y logotipos."
     },
     {
@@ -428,8 +428,8 @@
       "grupo": "direccion",
       "bloquea": "no",
       "desde": "2026-10-17",
-      "titulo": "Cancelación de una acreditación: procedimiento y garantía de audiencia",
-      "recomendacion": "Recomendación aprobada por Liber para registrar (2026-10-17). Hoy una acreditación sólo vence: si la persona hace una poda indebida, «Verificar» la sigue mostrando vigente y la acreditación pierde fuerza como instrumento de control. Que la Dirección, con la Dirección Jurídica, defina: (1) causales de suspensión (temporal) y de revocación (definitiva); (2) quién inicia el procedimiento y con qué pruebas; (3) garantía de audiencia: plazo para que la persona responda y presente pruebas; (4) quién resuelve y cómo se notifica; (5) efectos: duración de la suspensión, si quien fue revocado puede volver a solicitar y cuándo; (6) fundamento [Art. __, fracc. __], sin inventar números. Lo que haría el sistema: estados «suspendida» y «revocada» de la acreditación con motivo, fundamento, fechas de inicio, audiencia y resolución, y registro en la bitácora; «Verificar» los muestra como no vigentes («Suspendida hasta el …» / «Revocada»); la persona lo ve en «Mis trámites» y por correo; no se renueva una acreditación suspendida o revocada. Conviene resolverlo antes de publicar un padrón o de que las alcaldías consulten la vigencia. El anteproyecto de lineamientos (Cap. X) ya redacta causas, proporcionalidad, audiencia, suspensión provisional, resolución, efectos y medios de defensa, con valores propuestos. Sesión de trabajo del 23/10/2026: instructores y directivos pueden cancelar una acreditación. El sistema agrega la cancelación con motivo y fundamento, y «Verificar» la muestra como cancelada. Falta que la Dirección Jurídica fije causas, audiencia y notificación (lineamientos, Cap. X).",
+      "titulo": "Cancelación de una acreditación: causas, audiencia, notificación y efectos (el sistema ya la registra)",
+      "recomendacion": "Recomendación aprobada por Liber para registrar (2026-10-17). Hoy una acreditación sólo vence: si la persona hace una poda indebida, «Verificar» la sigue mostrando vigente y la acreditación pierde fuerza como instrumento de control. Que la Dirección, con la Dirección Jurídica, defina: (1) causales de suspensión (temporal) y de revocación (definitiva); (2) quién inicia el procedimiento y con qué pruebas; (3) garantía de audiencia: plazo para que la persona responda y presente pruebas; (4) quién resuelve y cómo se notifica; (5) efectos: duración de la suspensión, si quien fue revocado puede volver a solicitar y cuándo; (6) fundamento [Art. __, fracc. __], sin inventar números. Lo que haría el sistema: estados «suspendida» y «revocada» de la acreditación con motivo, fundamento, fechas de inicio, audiencia y resolución, y registro en la bitácora; «Verificar» los muestra como no vigentes («Suspendida hasta el …» / «Revocada»); la persona lo ve en «Mis trámites» y por correo; no se renueva una acreditación suspendida o revocada. Conviene resolverlo antes de publicar un padrón o de que las alcaldías consulten la vigencia. El anteproyecto de lineamientos (Cap. X) ya redacta causas, proporcionalidad, audiencia, suspensión provisional, resolución, efectos y medios de defensa, con valores propuestos. Sesión de trabajo del 23/10/2026: instructores y directivos pueden cancelar una acreditación. El sistema agrega la cancelación con motivo y fundamento, y «Verificar» la muestra como cancelada. Falta que la Dirección Jurídica fije causas, audiencia y notificación (lineamientos, Cap. X). Hecho en el sistema (sesión del 23/10/2026, parte B): la acreditación vigente se cancela desde su ficha en «Acreditaciones» (pantalla nueva del personal), con motivo (al menos 10 caracteres) y fundamento, en un diálogo de confirmación; la base guarda el día, quién, el motivo y el fundamento (apd.acreditacion: cancelada_en, cancelada_por, cancelacion_motivo y cancelacion_fundamento), lo deja en la bitácora y sólo lo admite de los perfiles del parámetro perfiles_cancelan_acreditacion (instructor y administración, P27); la persona solicitante y los demás perfiles no pueden. Una cancelada no es vigente, no se renueva, no sirve de requisito (la poda del dictaminador) y corta la cuenta de los dos años (P197); su renovación en trámite y la reposición de su credencial se cancelan; si la renovación ya estaba aprobada, no se emite. «Verificar» la muestra «Cancelada», con su día y sin el motivo; la persona la ve en «Mis trámites» con el motivo y el fundamento. Falta, de la Dirección con la Dirección Jurídica (lineamientos, Cap. X): las causas, la garantía de audiencia, cómo se notifica (el aviso por correo, P23), el fundamento ([Art. __, fracc. __] en los ficticios), si existe la suspensión temporal y si quien tuvo una cancelada puede volver a solicitarla y cuándo (hoy el sistema no lo impide: una cancelada no bloquea una solicitud nueva).",
       "lineamientos": "Anteproyecto 0.5: Cap. X. Redactado."
     },
     {
@@ -485,15 +485,6 @@
       "lineamientos": "Anteproyecto 0.5: Anexo 4. Propuesta."
     },
     {
-      "id": "P137",
-      "grupo": "liber",
-      "bloquea": "datos reales",
-      "desde": "2026-10-18",
-      "titulo": "Firma, huella digital y antigüedad consecutiva en la credencial (Norma 5.5)",
-      "recomendacion": "Sistema: capturarlas en la entrega y calcular la antigüedad. La huella digital es un dato personal sensible (información biométrica, Ley de Protección de Datos Personales en Posesión de Sujetos Obligados de la Ciudad de México de 2026, art. 3, fracc. X): se recaba sólo en la entrega, con el consentimiento expreso de la persona en el comprobante de recepción (art. 14), y el aviso de privacidad la identifica como sensible (art. 23, fracc. II). Jurídico confirma si aplica la excepción del art. 15, fracc. I.",
-      "lineamientos": "Anteproyecto 0.5: Art. 44; Anexo 3."
-    },
-    {
       "id": "P139",
       "grupo": "liber",
       "bloquea": "lanzamiento",
@@ -504,11 +495,11 @@
     },
     {
       "id": "P140",
-      "grupo": "liber",
+      "grupo": "finanzas",
       "bloquea": "no",
       "desde": "2026-10-18",
-      "titulo": "Reposición de la credencial: monto vigente y validación de la factura",
-      "recomendacion": "Sistema: función nueva. Cuota: el Aviso de la Gaceta No. 1548 del 14/02/2025 fija «Reposición de acreditaciones», por tarjeta, $88.00 con IVA (clave 2.5.17.1; auditoría del 19/10/2026, G1-02); confirmar vigencia con Finanzas. Sesión de trabajo del 23/10/2026: el sistema tiene una acción de reposición en la que la persona carga el acta levantada (por pérdida o robo) y el personal valida la factura; el monto es configurable porque cambia cada año. Falta confirmar el monto vigente con Finanzas.",
+      "titulo": "Reposición de la credencial: monto vigente de la cuota y horario de entrega (el sistema ya la atiende)",
+      "recomendacion": "Sistema: función nueva. Cuota: el Aviso de la Gaceta No. 1548 del 14/02/2025 fija «Reposición de acreditaciones», por tarjeta, $88.00 con IVA (clave 2.5.17.1; auditoría del 19/10/2026, G1-02); confirmar vigencia con Finanzas. Sesión de trabajo del 23/10/2026: el sistema tiene una acción de reposición en la que la persona carga el acta levantada (por pérdida o robo) y el personal valida la factura; el monto es configurable porque cambia cada año. Falta confirmar el monto vigente con Finanzas. Hecho en el sistema (sesión del 23/10/2026, parte B): la persona con su acreditación vigente y su credencial ya entregada (las del registro anterior se entregaron fuera del sistema) pide la reposición desde «Mis trámites» (pantalla «Reposición de tu credencial»), por pérdida o robo, con el acta en PDF o en foto de hasta 5 MB; el personal revisa el acta en la ficha de la acreditación («Acreditaciones»): la acepta o le pone observaciones y la persona carga la corregida; con el acta aceptada, la persona paga y en el Vivero el personal captura la factura de la cuota (RFC, nombre y folio fiscal, que no se repite) y marca la credencial repuesta: misma acreditación, mismo número y misma vigencia (apd.reposicion). La cuota es configurable (apd.cuota, con su publicación y su fecha de inicio, como el costo de los cursos): en los ficticios, $88.00 marcado [pendiente P140: confirmar el monto vigente con Finanzas]. Falta: el monto vigente (Finanzas) y los días y el horario para recoger la credencial repuesta (la pantalla los marca pendientes). En la entrega no se toma otra fotografía ni se firma otro comprobante: confirmar si la credencial repuesta lleva la misma foto.",
       "lineamientos": "Anteproyecto 0.5: Cap. II."
     },
     {
@@ -1558,6 +1549,12 @@
       "id": "P151",
       "titulo": "¿Se pueden dar cursos en sábado y domingo?",
       "como": "Sesión de trabajo del 23/10/2026: no hay cursos en sábado ni domingo. El curso de 5 días va de lunes a viernes; «Programar un curso» sólo ofrece lunes como primer día.",
+      "fecha": "2026-10-23"
+    },
+    {
+      "id": "P137",
+      "titulo": "Firma, huella digital y antigüedad consecutiva en la credencial (Norma 5.5)",
+      "como": "Ya no aplica (sesión de trabajo del 23/10/2026, P49): la credencial no lleva huella digital ni antigüedad, aunque se aparte del numeral 5.5 de la NADF-001-RNAT-2015 (los lineamientos lo señalan para la Dirección Jurídica). El sistema no recaba huella ni calcula antigüedad, así que no hay dato biométrico que tratar. La firma de la persona y la de la persona titular de la Secretaría siguen en el diseño de la credencial (P49).",
       "fecha": "2026-10-23"
     }
   ]

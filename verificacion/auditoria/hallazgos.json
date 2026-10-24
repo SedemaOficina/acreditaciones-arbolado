@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:8941/",
+  "base": "http://localhost:8942/",
   "estados": [
     [
       "inicio",
@@ -128,10 +128,50 @@
     [
       "corregir-sin-pausa",
       "corregir.html"
+    ],
+    [
+      "acreditaciones",
+      "acreditaciones.html"
+    ],
+    [
+      "acreditacion-vigente-instructor",
+      "acreditacion.html?numero=PD-2025-K100&perfil=instructor"
+    ],
+    [
+      "acreditacion-cancelada",
+      "acreditacion.html?numero=PD-2025-K140"
+    ],
+    [
+      "acreditacion-acta-por-revisar",
+      "acreditacion.html?numero=PD-2026-K141"
+    ],
+    [
+      "acreditacion-por-entregar",
+      "acreditacion.html?numero=PD-2026-K145"
+    ],
+    [
+      "tramites-cancelada",
+      "tramites.html"
+    ],
+    [
+      "tramites-reposicion-observada",
+      "tramites.html"
+    ],
+    [
+      "tramites-reposicion-aceptada",
+      "tramites.html"
+    ],
+    [
+      "reposicion-pedir",
+      "reposicion.html?numero=PD-2026-K147"
+    ],
+    [
+      "reposicion-corregir",
+      "reposicion.html?numero=PD-2026-K143"
     ]
   ],
-  "paginas": 65,
-  "presionados": 210,
+  "paginas": 85,
+  "presionados": 242,
   "porTipo": {
     "encimado": 1,
     "botón sin efecto visible": 1
