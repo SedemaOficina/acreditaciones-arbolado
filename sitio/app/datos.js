@@ -57,7 +57,7 @@
     if (p.adscripcion === 'privada') pon('empresa_nombre', nombre);
     else if (p.adscripcion === 'alcaldia') pon('alcaldia', clave);
     else if (p.adscripcion === 'educativa') {
-      if (clave === 'unam') marca('institucion_educativa', 'unam');
+      if (['unam', 'chapingo'].includes(clave)) marca('institucion_educativa', clave);
       else { marca('institucion_educativa', 'otro'); pon('institucion_educativa_otra', nombre); }
     } else if (p.adscripcion === 'dependencia_federal') {
       if (clave === 'cfe') marca('dependencia_federal', 'cfe');
