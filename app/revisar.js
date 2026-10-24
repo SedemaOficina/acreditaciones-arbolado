@@ -7,7 +7,11 @@
        estudios para que la persona corrija su grado (opción C).
      · Si no se rechaza: cada documento cargado se acepta u observa. Con alguna observación, la solicitud
        regresa a la persona; con todo aceptado, se valida y se asigna la cita de cotejo.
-   Una sola acción principal, cuyo texto cambia con el resultado. Rechazar pide confirmación.
+   Por pasos (decisión de Liber del 24/10/2026; módulo «pasos» del Estándar 1.5.1): perfil (sólo dictaminador), un paso
+   por cada documento que trae la solicitud con «¿El documento está bien?», «Resultado» con el resumen y «Fecha de la
+   cita» sólo si todo está bien. Una pregunta por pantalla; el foco va al título de cada paso y el módulo lo anuncia una
+   vez (RI-03, RI-04, RI-06). Una sola acción para registrar, cuyo texto cambia con el resultado; rechazar pide
+   confirmación.
 
    Campos auxiliares que calcula la página (y el servidor por su cuenta): perfil_revision, resultado y
    revisar_<requisito> (si el documento está cargado y no se rechaza por perfil).
@@ -38,8 +42,8 @@
   // Concuerda con el grado: «licenciatura trunca», «maestría titulada», «doctorado titulado»
   const estatusDe = (nivel, estatus) => (['licenciatura', 'maestria'].includes(nivel) ? ESTATUS_LIC : ESTATUS)[estatus] || '';
   const RESULTADOS = {
-    validada: { boton: 'Validar y asignar la cita', clase: 'btn-primario' },
-    con_observaciones: { boton: 'Enviar observaciones a la persona', clase: 'btn-primario' },
+    validada: { boton: 'Validar y dar la cita', clase: 'btn-primario' },
+    con_observaciones: { boton: 'Enviar las observaciones a la persona', clase: 'btn-primario' },
     rechazada: { boton: 'Rechazar la solicitud', clase: 'btn-peligro-contorno' },
     '': { boton: 'Registrar la revisión', clase: 'btn-primario' }
   };
@@ -123,9 +127,7 @@
     ])])]));
     // En una renovación sólo la constancia fiscal es obligatoria; lo demás se carga si la persona lo actualizó
     // (decisión 2026-10-14): se dice aquí para que no parezca que faltan documentos
-    if (s.modalidad === 'renovacion') {
-      $('[data-docs-ayuda]').textContent = 'Es una renovación: sólo la constancia de situación fiscal es obligatoria. Los demás documentos se revisaron en su trámite anterior y aparecen aquí sólo si la persona los actualizó. Abra cada documento y acéptelo, o escriba lo que debe corregir la persona.';
-    }
+    $('[data-renovacion]').hidden = s.modalidad !== 'renovacion';
     $('[data-cabeza]').hidden = false;
 
     /* ----- Revisiones anteriores ----- */
@@ -166,18 +168,19 @@
       $('[data-no-cumple-motivo]').textContent = ['licenciatura'].includes(s.nivel_estudios)
         ? `declaró una licenciatura ${ESTATUS_LIC[s.estatus_estudios].replace(' (pasante)', '')}, y el lineamiento pide al menos carta de pasante.`
         : `declaró ${(NIVELES[s.nivel_estudios] || '').toLowerCase()} como último grado, y el lineamiento pide al menos carrera técnica, carta de pasante o licenciatura.`;
-      $('[data-perfil]').hidden = false;
-      $('[data-leyenda-docs]').hidden = true;
-    }
+    } else $('[data-perfil]').remove(); // sin perfil que revisar, no hay ese paso
 
     /* ----- Documentos ----- */
     // En la prueba, cada requisito tiene un PDF ficticio de varias hojas (herramientas/documentos-ficticios.py); en la
     // etapa 3 la API entrega el archivo de esta solicitud.
     const archivos = {};
+    // Todos los requisitos que se cargan en línea (sus auxiliares quedan aunque se quite el paso)
+    const todos = $$('input[data-auxiliar][id^="revisar_"]', form).map((i) => i.id.slice('revisar_'.length));
     for (const art of $$('[data-doc]', form)) {
       const k = art.dataset.doc;
       const d = docs.find((x) => x.requisito === k);
-      if (!d) continue;
+      // Un paso por documento que trae la solicitud: el de un requisito que no cargó no aparece
+      if (!d) { art.closest('[data-paso]').remove(); continue; }
       const nombre = d.nombre_archivo || APD.nombreDeArchivo((req[k] && req[k].nombre_archivo) || k.toUpperCase(), p, d.nombre_original);
       // Un archivo cargado en este navegador (versión de prueba) se ve tal cual; si no, el PDF ficticio del requisito
       archivos[k] = d.blob
@@ -204,7 +207,6 @@
 
     /* ----- Lo que calcula la página: qué se revisa y el resultado ----- */
     let calculando = false;
-    let iniciada = false; // el resumen se anuncia sólo después de pintar la página
     function recalcula() {
       if (calculando) return; // los auxiliares que se ajustan aquí disparan «change»: no se recalcula dentro
       calculando = true;
@@ -225,9 +227,9 @@
           }
         }
       }
-      const cargados = docs.map((d) => d.requisito);
+      const cargados = todos.filter((k) => docs.some((d) => d.requisito === k)); // en el orden de los pasos
       const decide = (k) => !previos.has(k) || reabiertos.has(k);
-      for (const k of $$('[data-doc]', form).map((a) => a.dataset.doc)) {
+      for (const k of todos) {
         const revisa = !rechazo && cargados.includes(k);
         ponValor(`revisar_${k}`, revisa ? 'si' : 'no');
         ponValor(`decidir_${k}`, revisa && decide(k) ? 'si' : 'no');
@@ -252,6 +254,7 @@
         const k = art.dataset.doc;
         const antes = !decide(k);
         $('[data-doc-previo]', art).hidden = !antes;
+        $('[data-doc-sin-revision]', art).hidden = !rechazo;
         art.classList.toggle('doc-aceptado-antes', antes);
         const dec = antes ? 'aceptado' : elegido(`decision_${k}`);
         // Etiqueta con icono de su familia: por revisar y con observación (le toca actuar, auditoría 2026-10-18, D7),
@@ -260,30 +263,49 @@
         $('[data-doc-estado]', art).replaceWith(APD.estado(antes ? 'Aceptado antes' : dec === 'aceptado' ? 'Aceptado' : dec === 'con_observacion' ? 'Con observación' : 'Por revisar', tono));
         $('.doc-cabeza .estado', art).setAttribute('data-doc-estado', '');
       }
-      $('[data-docs-rechazo]').hidden = !rechazo;
-      $('[data-docs-ayuda]').hidden = rechazo;
       // Experiencia que se pide, según la clasificación elegida
       const dd = $('[data-minimo]');
       if (dd && perfil === 'por_clasificar') {
         const c = elegido('clasificacion');
         dd.textContent = c === 'afin' ? '2 años (carrera afín)' : c === 'disciplina_afin' ? '5 años (disciplina afín)' : c === 'no_afin' ? 'No cumple el perfil: se rechaza' : `${Number(s.experiencia_minima)} años, mientras la carrera no se clasifique`;
       }
-      // Lo que antes sólo se anunciaba al lector de pantalla también se ve (hallazgo P117): con todo decidido, lo dice.
-      // Un anuncio por acción (auditoría 2026-10-20, RI-03 y RI-04): el resumen no es región viva; cuando cambia por algo
-      // que hizo quien revisa se anuncia una vez (al aceptar, junto con el siguiente documento, en avanza)
-      const resumen = rechazo ? 'La solicitud se rechaza por el perfil.'
+      // Resumen antes de confirmar (paso «Resultado»): lo decidido en cada documento. Se lee al llegar al paso, que el
+      // módulo anuncia: no se anuncia en cada decisión (un anuncio por acción, RI-03 y RI-04)
+      const resumen = rechazo ? 'La solicitud se rechaza por el perfil: sus documentos no se revisan.'
         : hechos === cargados.length && cargados.length
-          ? `Los ${cargados.length} documentos están revisados${observados ? `: ${observados} con observación` : ''}. Elija abajo cómo termina la revisión.`
-          : `${hechos} de ${cargados.length} documentos revisados${observados ? ` · ${observados} con observación` : ''}.`;
-      if ($('[data-resumen]').textContent !== resumen) {
-        $('[data-resumen]').textContent = resumen;
-        if (iniciada) FormKit.anuncia(resumen);
+          ? `Los ${cargados.length} documentos están revisados${observados ? `: ${observados} con un problema` : ''}.`
+          : `${hechos} de ${cargados.length} documentos revisados${observados ? ` · ${observados} con un problema` : ''}.`;
+      if ($('[data-resumen]').textContent !== resumen) $('[data-resumen]').textContent = resumen;
+      const filas = rechazo ? [] : cargados.map((k) => {
+        const antes = !decide(k);
+        const dec = antes ? 'aceptado' : elegido(`decision_${k}`);
+        const obs = dec === 'con_observacion' ? (document.getElementById(`observacion_${k}`) || {}).value || '' : '';
+        return [req[k] ? req[k].nombre : k, antes ? 'Aceptado antes' : dec === 'aceptado' ? 'Está bien' : dec === 'con_observacion' ? 'Tiene un problema' : 'Sin revisar', dec === 'aceptado' ? 'ok' : 'pend', obs];
+      });
+      const lista = $('[data-resumen-lista]');
+      const firma = JSON.stringify(filas);
+      if (lista.dataset.firma !== firma) { // sin cambios no se vuelve a escribir
+        lista.dataset.firma = firma;
+        lista.replaceChildren(...filas.map(([nombre, estado, tono, obs]) => el('li', { class: 'resumen-pasos-fila' }, [
+          el('span', { class: 'resumen-pasos-nombre', texto: nombre }), APD.estado(estado, tono), obs ? el('span', { class: 'resumen-pasos-detalle', texto: obs }) : null
+        ].filter(Boolean))));
       }
+      // El botón para registrar va en el paso donde termina la revisión: «Fecha de la cita» si se valida; «Resultado» si
+      // regresa con observaciones o se rechaza. Con él va el aviso de envío fallido, que el núcleo busca en el formulario.
       const r = RESULTADOS[resultado];
       const boton = $('[data-accion="enviar"]', form);
+      const lugar = ['con_observaciones', 'rechazada'].includes(resultado) ? $('[data-acciones-resultado]', form) : $('[data-acciones-cita]', form);
+      if (boton && lugar && boton.parentNode !== lugar && boton.getAttribute('aria-busy') !== 'true') {
+        lugar.append(boton);
+        lugar.before($('[data-estado-envio]', form));
+      }
       if (boton.getAttribute('aria-busy') !== 'true') boton.textContent = r.boton;
       boton.classList.toggle('btn-primario', r.clase === 'btn-primario');
       boton.classList.toggle('btn-peligro-contorno', r.clase === 'btn-peligro-contorno');
+      // «Elegir la fecha de la cita» sólo si la solicitud queda validada; en el paso de la cita, por qué no hace falta
+      const aCita = $('[data-si-validada]', form);
+      if (aCita) aCita.hidden = resultado !== 'validada';
+      $('[data-cita-no-hace-falta]', form).hidden = resultado === 'validada' || !resultado;
     }
 
     /* Ver documento: en el visor, con todas sus hojas; el documento que se ve queda señalado en la lista y su botón dice
@@ -308,14 +330,13 @@
     }
     const global_visor = () => Boolean(window.FormKit && FormKit.visor);
     /* Falla del estándar, registrada como P181 (RS-03): el visor anuncia su acercamiento y «Hoja 1 de N» (aria-live)
-       cada vez que carga un documento. Cuando lo abre la página sola (el primero al entrar o el siguiente al aceptar), se
-       callan: ya se anuncia «Siguiente documento: …» (RI-04, un anuncio por decisión). Vuelven a anunciarse en cuanto quien
+       cada vez que carga un documento. Cuando lo abre la página sola (al llegar al paso de un documento), se
+       callan: ya se anuncia el paso (RI-04, un anuncio por acción). Vuelven a anunciarse en cuanto quien
        revisa usa el visor o pide un documento con su botón. */
     const vivasVisor = $$('[data-visor-pagina], [data-visor-zoom]');
     function callaVisor(si) { for (const n of vivasVisor) n.setAttribute('aria-live', si ? 'off' : 'polite'); }
     const visorNodo = $('[data-visor]');
     if (visorNodo) for (const ev of ['pointerdown', 'keydown', 'wheel', 'focusin']) visorNodo.addEventListener(ev, () => callaVisor(false));
-    const global_matchMedia = (q) => window.matchMedia(q).matches;
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-ver]');
       if (b) ver(b.dataset.ver, b);
@@ -348,7 +369,32 @@
     $('[data-cita-hasta]').textContent = fechaCorta(hasta);
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
+    /* ----- Los pasos (decisión de Liber del 24/10/2026) -----
+       Antes de iniciar el formulario: ya se quitaron los pasos que no aplican (perfil y documentos que no trae). El
+       primer paso no lleva «Atrás» y lleva la nota de obligatorias (D33); el último documento lleva a «Resultado». */
+    const pasosDom = () => $$('[data-paso]', form);
+    const primerPaso = pasosDom()[0];
+    const atrasPrimero = $('[data-accion="atras"]', primerPaso);
+    if (atrasPrimero) atrasPrimero.remove();
+    const leyenda = $('[data-leyenda]', primerPaso);
+    if (leyenda) leyenda.hidden = false;
+    const pasosDoc = $$('[data-paso-doc]', form);
+    if (pasosDoc.length) $('[data-accion="siguiente"]', pasosDoc[pasosDoc.length - 1]).textContent = 'Ver el resultado';
+    const iResultado = pasosDom().findIndex((x) => x.dataset.titulo === 'Resultado');
+    /* Al llegar a un documento, en computadora el visor lo muestra al lado (P171; en teléfono se abre con «Ver
+       documento», a pantalla completa). En el perfil, el comprobante de estudios, con el que se decide. En «Resultado» y
+       en la cita, el visor se cierra. La página lo abre sola: el visor no se anuncia (P181, RS-03). */
+    form.addEventListener('formkit:paso', (e) => {
+      const paso = e.detail.paso;
+      const k = paso.dataset.pasoDoc || (paso.hasAttribute('data-perfil') && ['por_clasificar', 'no_cumple'].includes(perfil) ? 'comprobante_estudios' : '');
+      if (!global_visor() || !FormKit.visor.enComputadora()) return;
+      if (k && archivos[k]) { ver(k, null); return; }
+      const visor = $('[data-visor]');
+      if (!k && visor && visor.open) visor.close();
+    });
+
     form.hidden = false;
+    $('[data-con-formulario]').hidden = false;
     $('[data-cargando]').hidden = true;
     const instancia = FormKit.iniciar(form, {
       enviar(payload, { signal }) {
@@ -411,6 +457,7 @@
             texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` }
         }[resultado];
         form.hidden = true;
+        $('[data-con-formulario]').hidden = true;
         sinGuardar = false;
         // La cabecera dice la situación nueva, no «En revisión documental» (auditoría 2026-10-18, D8)
         const nueva = { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' }[resultado];
@@ -424,17 +471,22 @@
           acciones.prepend(el('a', { class: 'btn btn-primario', 'data-siguiente': '', href: `revisar.html?folio=${encodeURIComponent(siguiente.folio)}`, texto: 'Revisar la siguiente' }));
           acciones.before(el('p', { class: 'texto-gris', texto: `Siguiente en la bandeja: ${siguiente.folio}, en espera desde el ${fechaCorta(siguiente.estado_desde)}.` }));
         }
-        FormKit.resultado($('[data-hecho]'), Object.assign({ quien: P.REVISORA.nombre }, desenlace));
+        FormKit.resultado($('section[data-resultado]') /* no [data-hecho]: el módulo «pasos» lo pone en los botones de su barra */, Object.assign({ quien: P.REVISORA.nombre }, desenlace));
       }
     });
     // Un sábado o un domingo se dice junto a la fecha de la cita (sesión de trabajo del 23/10/2026)
     P.vigilaDiaCita(form);
 
-    /* Rechazar no tiene vuelta atrás: se confirma antes de enviar (módulo modal del estándar) */
+    /* Registrar: el botón está en el paso donde termina la revisión. Enter en un paso intermedio avanza (módulo «pasos»);
+       en ese paso registra. Rechazar no tiene vuelta atrás: se confirma antes (módulo modal del estándar). */
+    const submitPasos = FormKit.ganchos.submit;
     FormKit.ganchos.submit = (f, enviar) => {
-      if (f !== form || document.getElementById('resultado').value !== 'rechazada') return false;
-      if (instancia.valida().length) return false; // con errores, el núcleo muestra el resumen
+      if (f !== form) return submitPasos ? submitPasos(f, enviar) : false;
       const boton = $('[data-accion="enviar"]', form);
+      const paso = FormKit.pasos.elementos[FormKit.pasos.actual()];
+      if (!paso.contains(boton)) return submitPasos(f, enviar);
+      if (document.getElementById('resultado').value !== 'rechazada') { enviar(); return true; }
+      if (instancia.valida().length) { enviar(); return true; } // con errores, el módulo abre el paso y muestra el resumen
       FormKit.confirma(boton, {
         titulo: `¿Rechazar la solicitud ${s.folio}?`,
         consecuencias: [`${APD.nombreCompleto(p)} verá el motivo en «Mis trámites».`, 'La solicitud se cierra sin acreditación; la persona puede iniciar una nueva.'],
@@ -442,13 +494,16 @@
       }).then((si) => { if (si) enviar(); });
       return true;
     };
+    /* Si se rechaza por el perfil, los documentos no se revisan: del perfil se pasa a «Resultado» y de ahí se regresa al
+       perfil (los pasos de los documentos lo dicen si se abren desde la barra). */
+    form.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-accion="siguiente"],[data-accion="atras"]');
+      if (!b || document.getElementById('resultado').value !== 'rechazada' || iResultado < 0) return;
+      const paso = b.closest('[data-paso]');
+      if (b.dataset.accion === 'siguiente' && paso.hasAttribute('data-perfil')) { e.stopPropagation(); FormKit.pasos.ir(iResultado); }
+      else if (b.dataset.accion === 'atras' && paso === pasosDom()[iResultado] && pasosDom()[0].hasAttribute('data-perfil')) { e.stopPropagation(); FormKit.pasos.ir(0); }
+    }, true);
 
-    // En computadora el visor abre de entrada el primer documento
-    // (si hay que decidir el perfil, el comprobante de estudios, que es con lo que se decide)
-    const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k]);
-    // (en la 2.ª vuelta, el primero por decidir: lo aceptado antes no se vuelve a revisar)
-    const primero = ['por_clasificar', 'no_cumple'].includes(perfil) && archivos.comprobante_estudios ? 'comprobante_estudios' : orden.find((k) => !previos.has(k)) || orden[0];
-    if (primero && global_visor() && FormKit.visor.enComputadora()) ver(primero, null);
     form.addEventListener('change', recalcula);
     form.addEventListener('input', (e) => { if (e.target.type === 'radio') recalcula(); });
 
@@ -460,17 +515,7 @@
     form.addEventListener('change', marcaCambio);
     window.addEventListener('beforeunload', (e) => { if (sinGuardar) { e.preventDefault(); e.returnValue = ''; } });
 
-    /* Al aceptar un documento, se pasa al siguiente sin decidir (decisión 2026-10-16): en computadora el visor lo muestra
-       y la lista lo trae a la vista; con todo decidido, se va al resultado. Sólo con una decisión de quien revisa (no con
-       las que marca la página). Al observar no se avanza solo, porque hay que escribir qué corregir: «Listo, ir al
-       siguiente» lleva al siguiente cuando la observación ya está escrita (decisión 2026-10-17). */
-    const suave = global_matchMedia('(prefers-reduced-motion: reduce)') ? 'auto' : 'smooth';
-    form.addEventListener('change', (e) => {
-      const r = e.target;
-      if (!e.isTrusted || !r.name || !r.name.startsWith('decision_') || r.value !== 'aceptado') return;
-      avanza(r.name.replace('decision_', ''));
-    });
-    // Reabrir un documento aceptado antes: vuelve a pedir su decisión
+    /* Reabrir un documento aceptado antes: vuelve a pedir su decisión, en su mismo paso */
     form.addEventListener('click', (e) => {
       const b = e.target.closest('[data-reabrir]');
       if (!b) return;
@@ -479,35 +524,6 @@
       const primero = $(`input[name="decision_${b.dataset.reabrir}"]`, form);
       if (primero) primero.focus();
     });
-    form.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-seguir]');
-      if (!b) return;
-      const k = b.dataset.seguir;
-      const texto = document.getElementById(`observacion_${k}`);
-      if (texto.value.trim().length < 10) {
-        // El error se ve junto al campo, no sólo se anuncia (hallazgo P117)
-        FormKit.marcaError(`observacion_${k}`, 'Antes de seguir, escriba qué debe corregir la persona (al menos 10 caracteres).');
-        texto.focus();
-        return;
-      }
-      avanza(k);
-    });
-    function avanza(actual) {
-      const orden = $$('[data-doc]', form).map((x) => x.dataset.doc).filter((k) => archivos[k] && document.getElementById(`decidir_${k}`).value === 'si');
-      const pendiente = (k) => !elegido(`decision_${k}`);
-      const i = orden.indexOf(actual);
-      const siguiente = orden.slice(i + 1).find(pendiente) || orden.slice(0, i).find(pendiente);
-      // El foco va con lo que se muestra: el título del siguiente documento o el del resultado (auditoría 2026-10-20,
-      // RI-06: la página se desplazaba y el foco se quedaba en la opción ya contestada, fuera de la ventana). Con todo
-      // decidido, «Los N documentos están revisados» ya lo anunció el resumen (RI-03).
-      const lleva = (titulo, bloque) => { titulo.tabIndex = -1; titulo.focus({ preventScroll: true }); bloque.scrollIntoView({ behavior: suave, block: 'start' }); };
-      if (!siguiente) { lleva($('#t-resultado'), $('#t-resultado')); return; }
-      const art = $(`[data-doc="${siguiente}"]`, form);
-      if (global_visor() && FormKit.visor.enComputadora()) ver(siguiente, null);
-      lleva($('.doc-titulo', art), art);
-      FormKit.anuncia(`${$('[data-resumen]').textContent} Siguiente documento: ${archivos[siguiente].titulo}.`);
-    }
     recalcula();
-    iniciada = true;
   }).catch(() => falla('No se pudo cargar la solicitud. Intente de nuevo más tarde.'));
 }());
