@@ -224,6 +224,7 @@
             <span class="estado estado-atencion" data-doc-estado>Por cotejar</span>
           </div>
           <p class="doc-archivo" data-doc-archivo></p>
+          <p class="ayuda">Debe ser de la persona solicitante y reciente: del mes en curso <span class="pendiente">[pendiente P196: cuántos días de antigüedad se aceptan]</span>. De ella se toman su nombre, su régimen y su domicilio fiscal para la factura.</p>
           <p class="doc-ver"><button type="button" class="btn btn-secundario btn-chico" data-ver="constancia_situacion_fiscal">Ver lo que cargó<span class="solo-lector">: Constancia de situación fiscal</span></button></p>
           <fieldset class="grupo" data-campo="coincide_constancia_situacion_fiscal" data-requerido data-uso="Registrar si «Constancia de situación fiscal» que trae la persona coincide con el que cargó en línea.">
             <legend class="etiqueta">¿Coincide con el que trae la persona?</legend>
@@ -343,7 +344,7 @@
     <div data-si="pedir_factura=si">
     <section class="tarjeta" aria-labelledby="t-factura">
       <h3 class="titulo-paso" id="t-factura">4. Factura</h3>
-      <p class="ayuda ayuda-bloque">La Secretaría emite la factura del pago; cárguela aquí y capture sus datos como aparecen en ella.</p>
+      <p class="ayuda ayuda-bloque">La Secretaría emite la factura del pago a nombre de la persona solicitante, con los datos de su constancia de situación fiscal (nombre, régimen y domicilio fiscal); cárguela aquí y capture sus datos como aparecen en ella.</p>
       <div class="campo" data-campo="factura_pago" data-requerido data-max="1" data-extensiones="pdf" data-mb="5" data-nombre-archivo="FACTURA DEL PAGO"
            data-sensible data-finalidad="Comprobar el pago de derechos del trámite." data-uso="Guardar la factura del pago en el expediente (apd.documento, requisito factura_pago).">
         <span class="etiqueta" id="et-factura_pago">Factura</span>
@@ -362,12 +363,12 @@
       </div>
       <div class="campo" data-campo="factura_rfc" data-formato="rfc" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura del pago." data-uso="RFC de la factura (apd.solicitud.factura_rfc).">
         <label class="etiqueta" for="factura_rfc">RFC a cuyo favor se emitió</label>
-        <p class="ayuda">12 caracteres si es empresa; 13 si es persona.</p>
+        <p class="ayuda">El de la persona solicitante, como en su constancia de situación fiscal: 13 caracteres.</p>
         <!-- autocomplete off: es el dato de la factura que tiene a la vista, no de quien llena. -->
         <input class="control control-corto" id="factura_rfc" name="factura_rfc" type="text" maxlength="20" autocomplete="off" spellcheck="false">
       </div>
       <div class="campo" data-campo="factura_razon_social" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura del pago." data-uso="Nombre o razón social de la factura (apd.solicitud.factura_razon_social).">
-        <label class="etiqueta" for="factura_razon_social">Nombre o razón social</label>
+        <label class="etiqueta" for="factura_razon_social">Nombre</label>
         <!-- autocomplete off: es el dato de la factura, no de quien llena. -->
         <input class="control" id="factura_razon_social" name="factura_razon_social" type="text" maxlength="200" autocomplete="off">
       </div>
@@ -393,7 +394,7 @@
                mínimo (mañana) lo pone la página en data-min. -->
           <div class="campo" data-campo="cita_fecha" data-formato="fecha-dma" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_fecha">Fecha de la cita nueva</label>
-            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, del <span data-cita-desde></span> al <span data-cita-hasta></span>; las diagonales se ponen solas. También puede elegirla en el calendario.</p>
+            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, de lunes a viernes, del <span data-cita-desde></span> al <span data-cita-hasta></span>; las diagonales se ponen solas. También puede elegirla en el calendario.</p>
             <!-- autocomplete off: la fecha la elige quien atiende. -->
             <!-- Calendario (Liber, 18/10/2026): se escribe día/mes/año o se elige en el calendario del navegador, que llena
                  el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
@@ -401,12 +402,12 @@
           </div>
           <div class="campo" data-campo="cita_hora" data-formato="hora" data-requerido data-uso="Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_hora">Hora</label>
-            <p class="ayuda" id="ay-cita-hora">De 24 horas. <span class="pendiente">Horarios y días de prueba: los horarios y si hay citas en sábado y domingo los define el área (P69, P151).</span></p>
-            <!-- Lista cerrada de horarios (Liber, 2026-10-17): sin texto libre. Se sustituye por los horarios de citas que
-                 defina el área (P69). autocomplete off: la hora la elige quien atiende. -->
+            <p class="ayuda" id="ay-cita-hora">De 24 horas, de 9:30 a 14:30. <span class="pendiente">Pendiente (P69): cuánto dura cada cita y cuántas caben por horario.</span></p>
+            <!-- Lista cerrada de horarios (Liber, 2026-10-17): sin texto libre. Sesión de trabajo del 23/10/2026 (P69): las
+                 citas de cotejo son de 9:30 a 14:30, de lunes a viernes (parámetros cita_hora_desde y cita_hora_hasta; la base
+                 rechaza otra hora y los sábados y domingos). autocomplete off: la hora la elige quien atiende. -->
             <div class="select control-corto"><select class="control control-select" id="cita_hora" name="cita_hora" autocomplete="off" aria-describedby="ay-cita-hora">
               <option value="">Elija</option>
-              <option value="09:00">09:00</option>
               <option value="09:30">09:30</option>
               <option value="10:00">10:00</option>
               <option value="10:30">10:30</option>
@@ -417,6 +418,7 @@
               <option value="13:00">13:00</option>
               <option value="13:30">13:30</option>
               <option value="14:00">14:00</option>
+              <option value="14:30">14:30</option>
             </select></div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 {
   "formulario": "cotejo.html",
-  "generado": "2026-10-19T06:27:56.770Z",
+  "generado": "2026-10-24T03:39:27.803Z",
   "campos": {
     "pedir_llegada": {
       "etiqueta": "pedir_llegada",
@@ -850,7 +850,7 @@
       ]
     },
     "factura_razon_social": {
-      "etiqueta": "Nombre o razón social",
+      "etiqueta": "Nombre",
       "tipo": "texto",
       "requerido": true,
       "sensible": true,
@@ -938,7 +938,6 @@
       "uso": "Fijar la hora de la cita nueva de cotejo (apd.solicitud.cita_en).",
       "atributos": {},
       "opciones": [
-        "09:00",
         "09:30",
         "10:00",
         "10:30",
@@ -948,7 +947,8 @@
         "12:30",
         "13:00",
         "13:30",
-        "14:00"
+        "14:00",
+        "14:30"
       ],
       "autocomplete": "off",
       "si": {
