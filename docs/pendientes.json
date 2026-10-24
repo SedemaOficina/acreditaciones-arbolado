@@ -908,6 +908,69 @@
       "titulo": "Siguiente pantalla del personal que pasa a paso a paso",
       "recomendacion": "Ya están por pasos «Grupos», «Revisar una solicitud», «Cita de cotejo» y «Crea tu cuenta», y la asistencia avanza día por día hasta el pase de lista del día 5. Opciones: (a) «Aplicar el examen» completo (pase de lista, abrir el examen, seguir el avance, cerrar y ver resultados); (b) «Entregar la credencial» (verificar identidad, imprimir, firmar de recibido); (c) «Corregir documentos» y «Reposición» de la persona. Recomendación: (a), porque es la pantalla que se usa el día de más presión, con el grupo completo en el salón.",
       "lineamientos": ""
+    },
+    {
+      "id": "P199",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-24",
+      "titulo": "Plazos ya decididos (P02) que todavía no están en el sistema",
+      "recomendacion": "En la sesión del 23/10 se aceptaron 10 días hábiles para revisar, 20 para atender observaciones y la cita dentro de los 20 siguientes (P02), pero la base aún no los tiene como parámetros: «Mis trámites» dice «Fecha por definir» y la bandeja de revisión marca la espera con los valores de prueba de 3 y 10 días. Recomendación: cargarlos como parámetros editables, mostrar la fecha límite en «Mis trámites» y usar esos plazos en las alertas de la bandeja.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P200",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Fecha de nacimiento: se toma de la CURP y ya no se escribe",
+      "recomendacion": "La decisión del 14/10 decía que la persona escribe su fecha de nacimiento y el sistema la compara con la CURP. Desde el 24/10 («Crea tu cuenta» por pasos) la fecha y el sexo se toman de la CURP y no se preguntan. Recomendación: confirmarlo y registrarlo como decisión; la mayoría de edad (P138) se comprueba con esa fecha.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P201",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-24",
+      "titulo": "Quién puede cancelar una acreditación: ¿«administración» son los directivos?",
+      "recomendacion": "Se decidió el 23/10 que cancelan instructores y directivos (P120). En el sistema, el permiso está en el parámetro perfiles_cancelan_acreditacion con los perfiles «instructor» y «administración». Opciones: (a) «administración» equivale a directivos y se deja así; (b) crear un perfil «directivo» distinto de la administración del sistema. Recomendación: (b) si quien administra el sistema no es quien decide cancelaciones.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P202",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Grupo específico de una sola organización: ¿sólo para gobierno?",
+      "recomendacion": "El 23/10 se decidió que sólo las instituciones de gobierno local y federal acceden a grupos en bloque. Hoy «Grupos» permite crear un grupo específico de cualquier organización (empresa, escuela). Opciones: (a) limitar el grupo específico a dependencias de la Ciudad, alcaldías y dependencias federales; (b) dejarlo abierto y que «en bloque» sólo signifique la solicitud conjunta. Recomendación: (a), para que la regla se cumpla en la pantalla.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P203",
+      "grupo": "liber",
+      "bloquea": "etapa 2",
+      "desde": "2026-10-24",
+      "titulo": "Pantalla del personal para emitir la acreditación y registrar la entrega",
+      "recomendacion": "La entrega el mismo día del examen está decidida (R40), con fotografía de la credencial y comprobante firmado, pero no hay pantalla del personal para emitir ni para registrar la entrega. Recomendación: construirla por pasos (verificar identidad, emitir, tomar la fotografía, imprimir y firmar el comprobante, registrar la entrega), junto con P198.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P204",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Último día vigente: el día anterior al aniversario",
+      "recomendacion": "La regla R41 (emitida el 25/10/2025, vigente hasta el 24/10/2026) nació como propuesta y en el mapa del trámite se pasó a decisión por la del 19/10 sobre el 29 de febrero. Recomendación: confirmarla como decisión.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P205",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-24",
+      "titulo": "Cita de cotejo: ¿hasta cuántos meses después se puede dar?",
+      "recomendacion": "El sistema acepta una cita nueva hasta 6 meses después (propuesta al construir). Con el plazo aceptado en P02 (cita dentro de los 20 días hábiles siguientes a la validación), conviene alinear el límite. Opciones: (a) 20 días hábiles; (b) dejar 6 meses para casos excepcionales. Recomendación: (a), con el plazo como parámetro.",
+      "lineamientos": ""
     }
   ],
   "resueltos": [
