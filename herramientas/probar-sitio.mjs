@@ -384,6 +384,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await siguiente(page);
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
     t('documentos: la CURP trae el enlace oficial para obtenerla'));
+  comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_constancia_situacion_fiscal"] .ayuda a', 'href') === 'https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf',
+    t('documentos: la constancia de situación fiscal trae el enlace del SAT para generarla'));
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"]', 'data-extensiones') === 'pdf', t('documentos: sólo se aceptan en PDF'));
   await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', FOTO);
   comprueba(await page.locator('[data-campo="doc_poda_nueva_curp"] [data-rechazos] *').count() > 0, t('documentos: una imagen se rechaza con su motivo'));
