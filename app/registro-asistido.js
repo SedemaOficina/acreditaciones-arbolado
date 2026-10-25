@@ -59,6 +59,8 @@
         return { aviso: 'S5', momento: s.estado_desde, datos: { ...base, cita_en: s.cita_en, pago_monto: s.pago_monto != null ? s.pago_monto : c.pago_monto, pago_referencia: s.pago_referencia, pago_concepto: c.pago_concepto } };
       }
       case 'concluida_sin_atender':
+        // Se agotaron las oportunidades de corrección (ajustes del equipo, 25/10/2026): la base deja S7
+        if (APD.cerradaSinOportunidades(s)) return { aviso: 'S7', momento: s.estado_desde, datos: { ...base, motivo: s.motivo_cierre } };
         return APD.cerradaPorInasistencia(s) ? { aviso: 'T2', momento: s.estado_desde, datos: { ...base, resultado: 'cerrada' } } : { aviso: 'S4', momento: s.estado_desde, datos: base };
       case 'rechazada': return { aviso: 'S6', momento: s.estado_desde, datos: { ...base, motivo: s.motivo_cierre } };
       case 'lista_para_curso': {
@@ -107,7 +109,7 @@
 
   /* ----- Lo que se le dice por teléfono, de tú (catálogo de docs/AVISOS-POR-CORREO.md) ----- */
   const TITULO = {
-    S2: 'Solicitud con observaciones', S4: 'Cerrada por no corregir a tiempo', S5: 'Cita de cotejo', S6: 'Solicitud rechazada',
+    S2: 'Solicitud con observaciones', S4: 'Cerrada por no corregir a tiempo', S5: 'Cita de cotejo', S6: 'Solicitud rechazada', S7: 'Cerrada: sin más oportunidades de corrección',
     T2: 'Resultado de la cita de cotejo', T3: 'Cuenta bloqueada por identidad', G1: 'Grupo asignado', G2: 'Cambio en su grupo',
     G4: 'Resultado del examen', A1: 'Acreditación entregada', A6: 'Acreditación cancelada', A7: 'Reposición de la credencial'
   };
@@ -125,13 +127,17 @@
     switch (a.aviso) {
       case 'S2': {
         const docs = (datos.documento || []).filter((x) => x.solicitud_id === a.solicitud_id && x.vigente && x.estado === 'con_observacion').map((x) => nombreDoc(datos, x.requisito));
-        return `A ${folio} le falta corregir algo${docs.length ? `: ${docs.join(', ')}` : ''}. Ven ${lugar(datos)}, para que te digamos qué falta y lo corrijamos contigo. Hay un plazo para corregir.`;
+        // Cuántas oportunidades le quedan o que es la última (ajustes del equipo, 25/10/2026), como el correo S2
+        const s = datos.solicitud.find((x) => x.id === a.solicitud_id);
+        const op = s && APD.oportunidades(datos, s);
+        return `A ${folio} le falta corregir algo${docs.length ? `: ${docs.join(', ')}` : ''}. Ven ${lugar(datos)}, para que te digamos qué falta y lo corrijamos contigo. Hay un plazo para corregir.${op && !op.cotejo ? ` ${op.texto}${op.detalle ? ` ${op.detalle}` : ''}` : ''}`;
       }
       case 'S4': return `${Folio} se cerró porque las correcciones no se hicieron a tiempo. Si quieres, puedes iniciar una nueva ${lugar(datos)}.`;
       case 'S5': {
         const pago = d.pago_monto ? `el comprobante del pago de ${APD.moneda(d.pago_monto)} con la referencia ${d.pago_referencia}` : 'el comprobante de tu pago (el monto y la referencia te los damos en la ventanilla)';
         return `Tus documentos están completos. Tu cita de cotejo es el ${cuando(d.cita_en)}, en el ${APD.sede(datos).nombre}. Lleva los mismos documentos impresos, tu identificación oficial y ${pago}.`;
       }
+      case 'S7': return `${Folio} se cerró porque, después de tu última oportunidad para corregir, tus documentos siguieron con observaciones. No pagaste nada y puedes iniciar una solicitud nueva ${lugar(datos)}.`;
       case 'S6': return `${Folio} no se aceptó: ${APD.paraTi(d.motivo) || 'tu perfil no cumple los requisitos'}. Si tienes dudas, ven ${lugar(datos)}.`;
       case 'T2':
         switch (d.resultado) {
@@ -242,7 +248,12 @@
       case 'borrador': return ['Tu solicitud todavía no se envía: falta terminar de capturarla contigo.'];
       case 'enviada': return ['La Secretaría está revisando tus documentos.', 'Si falta algo, te avisamos por teléfono y lo corregimos aquí contigo; si todo está bien, te damos una cita de cotejo.'];
       case 'con_observaciones': return [`A tu solicitud le falta corregir ${obs.length === 1 ? 'un documento' : 'algunos documentos'}:`,
-        ...obs.map((x) => APD.observacionDe(nombreDoc(datos, x.requisito), APD.paraTi(x.observacion))), 'Lo corregimos aquí contigo. Hay un plazo para corregir.'];
+        ...obs.map((x) => APD.observacionDe(nombreDoc(datos, x.requisito), APD.paraTi(x.observacion))), 'Lo corregimos aquí contigo. Hay un plazo para corregir.',
+        // Cuántas oportunidades le quedan, o que es la última (ajustes del equipo, 25/10/2026)
+        ...(() => { const op = APD.oportunidades(datos, s); return op ? [op.detalle ? `${op.texto} ${op.detalle}` : op.texto] : []; })()];
+      case 'concluida_sin_atender':
+        if (APD.cerradaSinOportunidades(s)) return ['Tu solicitud se cerró porque, después de tu última oportunidad para corregir, tus documentos siguieron con observaciones.', 'No pagaste nada y puedes iniciar una solicitud nueva aquí mismo.'];
+        return plano(e.sigue);
       case 'validada_en_linea': {
         if (s.cotejo_pausa) return [`Tu cita está en pausa: trae hoy el documento que faltó (${(s.cotejo_pausa.docs || []).map((k) => nombreDoc(datos, k)).join(', ')}).`];
         const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad) || {};
