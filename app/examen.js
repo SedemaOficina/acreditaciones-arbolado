@@ -22,6 +22,11 @@
    se envía lo pendiente y luego sigue donde se quedó; en otra computadora manda lo que tiene el servidor. «Enviar mis
    respuestas» no se permite con respuestas sin enviar. El tiempo lo sigue llevando el servidor.
 
+   El reloj se detiene durante un corte (decisión de Liber del 25/10/2026): mientras el examen está en curso, la página
+   manda al servidor una señal de vida con su código cada pocos segundos (senal_cada_ms, del servidor). Sin conexión, el
+   reloj de la pantalla se detiene y lo dice; al volver, primero se envía lo pendiente y después la señal, con la que el
+   servidor reanuda el tiempo. El tiempo que se muestra sale siempre de lo que responde el servidor.
+
    Lectura en voz alta (ajustes del equipo, 25/10/2026: lectura en voz alta): con speechSynthesis y una voz en español
    (es-MX o, si no hay, cualquier es-*), a velocidad un poco menor que la normal: la pregunta con sus opciones, cada
    opción sola, las instrucciones de entrada y de inicio, y «¿Eres tú?». Sin síntesis de voz o sin voz en español, los
@@ -191,8 +196,9 @@
     }
     if (!ex) return;
     const alFinal = () => { if (terminarAlVolver) { const m = terminarAlVolver; terminarAlVolver = ''; termina(m); return true; } return false; };
-    if (!pendientes()) { alFinal(); return; }
-    enviaPendientes().then((n) => {
+    if (ex.situacion !== 'contestando') { alFinal(); return; }
+    // Lo pendiente y después la señal, que reanuda el tiempo en el servidor (decisión del 25/10/2026)
+    reanuda().then((n) => {
       volvio();
       const g = $('[data-guardado]');
       if (n || g.dataset.sinRed) g.textContent = 'Volvió la conexión: tus respuestas ya se enviaron.';
@@ -203,10 +209,47 @@
     }, (e) => { if (deConexion(e)) { sinRed = true; programaReintento(); } });
   }
   function volvio() { sinRed = false; espera = 2000; }
+
+  /* ----- Señal de vida y reloj detenido durante un corte (decisión de Liber del 25/10/2026) ----- */
+  const DETENIDO = 'Sin conexión: el tiempo de tu examen está detenido. Sigue contestando; vuelve a correr cuando regrese la conexión.';
+  let senalCada = 0;
+  /* Lo pendiente primero y después la señal: con ella el servidor reanuda el tiempo y dice cuánto queda */
+  function reanuda() {
+    if (!ex || ex.situacion !== 'contestando') return Promise.resolve(0);
+    const codigo = ex.codigo;
+    let enviadas = 0;
+    return enviaPendientes().then((n) => { enviadas = n; return API.senal(codigo); }).then((v) => {
+      if (ex && ex.codigo === codigo) tiempoDe(v);
+      return enviadas;
+    }, (e) => { if (deConexion(e)) detenReloj(); throw e; });
+  }
+  /* El tiempo que dice el servidor; si el examen ya no está en curso, la pantalla se pone al día */
+  function tiempoDe(v) {
+    if (!v || v.situacion !== 'contestando') { refresca(); return; }
+    ex.restante_ms = v.restante_ms;
+    ex.pausa = v.pausa;
+    const aviso = $('[data-aviso-tiempo]');
+    if (aviso.textContent === DETENIDO) aviso.textContent = '';
+    arrancaReloj();
+  }
+  /* Sin conexión: el reloj de la pantalla se detiene (el servidor deja de contar sin señal) y se dice */
+  function detenReloj() {
+    sinRed = true;
+    paraReloj();
+    $('[data-aviso-tiempo]').textContent = DETENIDO;
+    programaReintento();
+  }
+  function arrancaSenal(v) {
+    const cada = (v && v.senal_cada_ms) || 12000;
+    if (senalCada) clearInterval(senalCada);
+    senalCada = setInterval(() => { if (ex && ex.situacion === 'contestando' && !sinRed) reanuda().catch(() => {}); }, cada);
+  }
   window.addEventListener('online', () => { espera = 2000; reintenta(); });
   /* La línea tranquila de cuando no hay conexión, junto a la pregunta */
   function avisaSinRed() {
     sinRed = true;
+    // Sin conexión, el tiempo se detiene (decisión de Liber del 25/10/2026)
+    detenReloj();
     const g = $('[data-guardado]');
     g.textContent = 'Sin conexión por ahora: tu respuesta quedó en esta computadora y se enviará cuando vuelva la conexión. Puedes seguir contestando.';
     g.dataset.sinRed = '1';
@@ -264,6 +307,9 @@
     if (v.situacion === 'suspendido') return pintaSuspendido();
     if (v.situacion === 'contestando') {
       arrancaReloj();
+      // La señal de vida, ya con lo pendiente enviado: el servidor reanuda el tiempo si estaba detenido
+      arrancaSenal(v);
+      if (!sinRed) reanuda().catch(() => {});
       const libre = ex.preguntas.findIndex((p) => !ex.respuestas[p.clave]);
       pintaPregunta(libre < 0 ? ex.preguntas.length - 1 : libre);
       $('[data-guardado]').textContent = recarga ? '' : 'Continúas donde te quedaste: tus respuestas están guardadas.';
@@ -310,7 +356,7 @@
   const deAlmacenamiento = (e) => Boolean(e && e.motivo === 'almacenamiento');
   $('[data-empezar]').addEventListener('click', () => {
     avisoNoGuardo('instrucciones', null);
-    API.iniciar(ex.codigo).then((v) => { ex = v; arrancaReloj(); pintaPregunta(0); }, (e) => avisoNoGuardo('instrucciones', e));
+    API.iniciar(ex.codigo).then((v) => { ex = v; arrancaReloj(); arrancaSenal(v); pintaPregunta(0); }, (e) => avisoNoGuardo('instrucciones', e));
   });
 
   /* ----- 4 · Preguntas ----- */
@@ -501,17 +547,28 @@
     if (enviando) return;
     enviando = true;
     // Si no quedó registrado, no hay resultado: se dice en la revisión, con lo contestado (F4 A5)
-    API.terminar(ex.codigo, motivo).then((v) => { ex = v; enviando = false; volvio(); for (const c of codigosDe(v)) Pend.borra(c); pintaResultado(); }, (err) => {
+    const codigo = ex.codigo;
+    API.terminar(codigo, motivo).then((v) => {
+      enviando = false;
+      volvio();
+      // Si mientras tanto la pantalla ya se puso al día (refresca) y la persona salió, no se vuelve a abrir el resultado
+      if (!ex || ex.codigo !== codigo) return;
+      // Al servidor todavía le queda tiempo (lo tuvo detenido durante un corte): el examen sigue con el que dice
+      if (v.situacion === 'contestando') { ex = conPendientes(Object.assign(v, { repone_a: v.repone_a || ex.repone_a })); tiempoDe(v); return; }
+      ex = v; for (const c of codigosDe(v)) Pend.borra(c); pintaResultado();
+    }, (err) => {
       enviando = false;
       if (deConexion(err)) {
         // Sin conexión: al acabarse el tiempo, se envía solo cuando vuelva; si lo envió la persona, vuelve a presionar
         paraReloj();
+        if (motivo !== 'tiempo') $('[data-aviso-tiempo]').textContent = DETENIDO;
         if (motivo === 'tiempo') terminarAlVolver = 'tiempo';
         sinRed = true;
         programaReintento();
         if ($('[data-vista="revision"]').hidden) pintaRevision();
         APD.pintaAviso($('[data-vista="revision"] [data-aviso-falla]'), 'pend', motivo === 'tiempo' ? 'Se acabó el tiempo' : 'Tu examen todavía no se envía',
-          motivo === 'tiempo' ? 'No hay conexión: tu examen se envía solo en cuanto vuelva. Tus respuestas no se pierden.'
+          // Sin conexión el servidor detiene el tiempo (decisión del 25/10/2026): al volver dice si todavía queda
+          motivo === 'tiempo' ? 'No hay conexión. Tus respuestas no se pierden: cuando vuelva la conexión, si todavía te queda tiempo sigues contestando; si no, tu examen se envía solo.'
             : 'No hay conexión. Tus respuestas no se pierden: cuando vuelva la conexión, presiona otra vez «Enviar mis respuestas».', true);
         return;
       }

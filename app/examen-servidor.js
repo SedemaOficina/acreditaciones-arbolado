@@ -41,6 +41,20 @@
    todo lo que pide la pantalla de la persona falla así hasta pruebas.conexion(true),
    que además avisa a la página con el evento «online».
 
+   El reloj se detiene durante un corte (decisión de Liber del 25/10/2026). La
+   pantalla de la persona manda una señal de vida con su código cada
+   senal_cada_s segundos (senal()). El servidor cuenta el tiempo sólo mientras
+   recibe señales: si pasan más de sin_senal_s segundos sin señal, deja de
+   contar desde la última y reanuda al llegar la siguiente, que la pantalla
+   manda después de enviar lo que quedó pendiente. Cada pausa queda en la
+   bitácora del examen (inicio, fin y duración). La pausa acumulada de una
+   persona tiene un tope (tope_pausa_min): al pasarlo, el tiempo vuelve a
+   correr y quien aplica decide (P214). Quien aplica ve «Sin conexión desde las
+   HH:MM» y el tiempo que lleva detenido. El tiempo que muestra la pantalla sale
+   siempre del servidor. En la prueba, el reloj del servidor se puede adelantar
+   (pruebas.adelantar) y los parámetros se pueden cambiar (pruebas.parametros).
+   El contrato para el servidor del SIA está en docs/EXAMEN-SEB.md, sección 5.
+
    EN EL SIA: la página nunca recibe la clave de respuestas. Aquí el banco
    ficticio (datos/examen-ficticio.js) viaja a la página sólo porque no hay
    servidor; preguntas() entrega las preguntas sin la clave, como la API.
@@ -58,6 +72,12 @@
   const VIVA_MS = 12000;              // una pantalla que no avisa en este tiempo se da por cerrada
   const RETARDO = 150; // simula la red
   const SIN_RED = 'apd.examen.prueba.sin_conexion'; // sólo la prueba: esta pestaña «sin conexión»
+  const RELOJ = 'apd.examen.prueba.reloj';            // sólo la prueba: cuánto se adelantó el reloj del servidor (ms)
+  const PARAMS = 'apd.examen.prueba.parametros';      // sólo la prueba: parámetros cambiados
+  /* Parámetros del reloj durante un corte (decisión de Liber del 25/10/2026; en el SIA, de apd.parametro): cada cuántos
+     segundos manda la pantalla su señal de vida, cuántos segundos sin señal detienen el tiempo y el tope de la pausa
+     acumulada por persona, en minutos (P214) */
+  const PARAMETROS = { senal_cada_s: 12, sin_senal_s: 30, tope_pausa_min: 30 };
   const BANCO = global.APD_EXAMEN_BANCO;
 
   const leeDe = (k) => { try { return JSON.parse(global.localStorage.getItem(k) || '{}'); } catch (e) { return {}; } };
@@ -96,7 +116,16 @@
   /* Falta de conexión simulada (sólo la prueba): la llamada no llega al servidor */
   const sinConexion = () => { try { return global.sessionStorage.getItem(SIN_RED) === '1'; } catch (e) { return false; } };
   const NO_LLEGA = 'No hay conexión con el servidor en este momento.';
-  const ahora = () => new Date().toISOString();
+  /* El reloj del servidor: el de la computadora, más lo que la prueba lo haya adelantado */
+  const ahoraMs = () => { let d = 0; try { d = Number(global.localStorage.getItem(RELOJ)) || 0; } catch (e) { d = 0; } return Date.now() + d; };
+  const ahora = () => new Date(ahoraMs()).toISOString();
+  const iso = (ms) => new Date(ms).toISOString();
+  const aMs = (x) => new Date(x).getTime();
+  const parametros = () => {
+    const p = Object.assign({}, PARAMETROS);
+    for (const [k, v] of Object.entries(leeDe(PARAMS))) if (k in p && Number(v) > 0) p[k] = Number(v);
+    return p;
+  };
   const responde = (valor) => new Promise((ok) => setTimeout(() => ok(valor), RETARDO));
   const falla = (campo, mensaje, motivo) => new Promise((ok, mal) => setTimeout(() => mal({ campo, mensaje, motivo }), RETARDO));
   /* El navegador no guardó (almacenamiento bloqueado o lleno; auditoría «intentar romperlo», F4 A5 y M3): la API
@@ -136,9 +165,45 @@
   /* Opciones: al azar */
   const ordenDe = (k, r) => revuelve(Object.keys(reactivo(k).opciones), r);
   const limiteMs = (reg) => reg.minutos * 60000;
-  function restanteMs(reg) {
+  const topeMs = () => parametros().tope_pausa_min * 60000;
+  /* La pausa abierta (decisión de Liber del 25/10/2026): un examen en curso sin señal de su pantalla desde hace más de
+     sin_senal_s segundos está detenido desde la última señal. null si no lo está. */
+  function pausaAbierta(reg, t = ahoraMs()) {
+    if (!reg.iniciado_en || reg.terminado_en || reg.suspendido || reg.reemplazado_por) return null;
+    const desde = aMs(reg.senal_en || reg.iniciado_en);
+    return t - desde > parametros().sin_senal_s * 1000 ? { desde, ms: t - desde } : null;
+  }
+  /* El tiempo detenido que cuenta: las pausas cerradas más la abierta, hasta el tope por persona */
+  function detenidoMs(reg, t = ahoraMs()) {
+    const p = pausaAbierta(reg, t);
+    return Math.min(topeMs(), (reg.pausa_ms || 0) + (p ? p.ms : 0));
+  }
+  function restanteMs(reg, t = ahoraMs()) {
     if (!reg.iniciado_en) return limiteMs(reg);
-    return Math.max(0, new Date(reg.iniciado_en).getTime() + limiteMs(reg) - Date.now());
+    return Math.max(0, aMs(reg.iniciado_en) + limiteMs(reg) + detenidoMs(reg, t) - t);
+  }
+  /* Cierra la pausa abierta (al llegar una señal o al cerrarse el examen) y la anota en la bitácora del examen: inicio, fin,
+     duración, cuánto de ella detuvo el tiempo y, si pasó el tope, cuándo */
+  function cierraPausa(reg, t, como) {
+    const p = pausaAbierta(reg, t);
+    if (!p) return null;
+    const antes = Math.min(topeMs(), reg.pausa_ms || 0);
+    reg.pausa_ms = (reg.pausa_ms || 0) + p.ms;
+    const detuvo = Math.min(topeMs(), reg.pausa_ms) - antes;
+    const nota = { evento: 'pausa', inicio: iso(p.desde), fin: iso(t), duracion_ms: p.ms, detenido_ms: detuvo, termino: como };
+    if (detuvo < p.ms) nota.tope_en = iso(p.desde + detuvo);
+    reg.bitacora = (reg.bitacora || []).concat([nota]);
+    return nota;
+  }
+  /* Lo que se sabe del tiempo detenido: la pausa abierta (desde cuándo y cuánto lleva), el total y si pasó el tope */
+  function pausaDe(reg, t = ahoraMs()) {
+    const p = pausaAbierta(reg, t);
+    const total = detenidoMs(reg, t);
+    return {
+      abierta: p ? { desde: iso(p.desde), ms: p.ms } : null,
+      detenido_ms: total, tope: total >= topeMs(),
+      pausas: (reg.bitacora || []).filter((b) => b.evento === 'pausa').length
+    };
   }
   /* Situación de un código: sin_empezar, contestando, terminado, suspendido, reemplazado */
   function situacion(reg) {
@@ -154,8 +219,12 @@
     reg.aciertos = aciertos;
     reg.calificacion = Math.floor((aciertos / reg.preguntas.length) * 100) / 10; // un decimal, sin redondear hacia arriba (P86)
     reg.aprobado = reg.calificacion >= reg.minima;
-    // Al agotarse el tiempo, la hora de cierre es la del límite, aunque se detecte después
-    reg.terminado_en = motivo === 'tiempo' ? new Date(new Date(reg.iniciado_en).getTime() + limiteMs(reg)).toISOString() : ahora();
+    // Al agotarse el tiempo, la hora de cierre es la del límite (con el tiempo detenido), aunque se detecte después
+    const t = ahoraMs();
+    const fin = motivo === 'tiempo' ? Math.min(t, aMs(reg.iniciado_en) + limiteMs(reg) + detenidoMs(reg, t)) : t;
+    // Una pausa abierta (después del tope) se cierra en la bitácora con el examen
+    cierraPausa(reg, fin, motivo);
+    reg.terminado_en = iso(fin);
     reg.motivo_fin = motivo;
     return reg;
   }
@@ -179,6 +248,8 @@
     const v = {
       codigo: reg.codigo, situacion: situacion(reg), persona: reg.persona, examen: reg.examen, grupo: reg.grupo,
       minutos: reg.minutos, minima: reg.minima, iniciado_en: reg.iniciado_en, restante_ms: restanteMs(reg),
+      // Cada cuánto manda la pantalla su señal de vida y el tiempo detenido por falta de conexión (decisión del 25/10/2026)
+      senal_cada_ms: parametros().senal_cada_s * 1000, pausa: pausaDe(reg),
       respuestas: Object.assign({}, reg.respuestas), marcadas: reg.marcadas.slice(), preguntas,
       // El código al que repone: lo que quedó pendiente en esta computadora con el anterior se envía con éste
       repone_a: reg.repone_a || null
@@ -199,6 +270,8 @@
         const l = leeLatido(r.codigo);
         return Object.assign({}, r, {
           situacion: situacion(r), restante_ms: restanteMs(r),
+          // Sin conexión desde la última señal y el tiempo detenido (decisión de Liber del 25/10/2026)
+          pausa: pausaDe(r), bitacora: (r.bitacora || []).slice(),
           contestadas: Object.keys(r.respuestas).length, total: r.preguntas.length,
           voz: l && l.voz === false && Date.now() - l.t < VIVA_MS ? false : null
         });
@@ -218,7 +291,7 @@
         codigo, inscripcion_id, folio, persona, grupo, examen: { tipo, modalidad },
         minutos: ex.minutos, minima, preguntas, orden_opciones,
         generado_en: ahora(), generado_por: por, iniciado_en: null, respuestas: {}, marcadas: [], salidas: 0,
-        otro_equipo: 0,
+        otro_equipo: 0, senal_en: null, pausa_ms: 0, bitacora: [],
         terminado_en: null, suspendido: null, reemplazado_por: null
       };
       if (!escribe(t)) return noGuarda('codigo');
@@ -249,6 +322,7 @@
       const reg = alDia(t, codigo);
       if (!reg || reg.reemplazado_por) return falla(null, 'Ese código ya no está vigente.');
       if (reg.terminado_en) return falla(null, 'Ese examen ya se envió y ya está calificado: no se puede suspender.');
+      cierraPausa(reg, ahoraMs(), 'suspendido');
       reg.suspendido = { motivo: String(motivo || '').trim(), en: ahora(), por };
       if (!escribe(t)) return noGuarda('cambio');
       return responde(reg);
@@ -292,6 +366,23 @@
       ponLatido(codigo, equipo, Date.now(), info);
       return { ok: true };
     },
+    /* Señal de vida de la pantalla con su código (decisión de Liber del 25/10/2026): el servidor cuenta el tiempo sólo
+       mientras llegan. Si había una pausa abierta (más de sin_senal_s segundos sin señal), se cierra, queda en la bitácora
+       del examen y el tiempo se reanuda. La pantalla la manda cada senal_cada_s segundos y, al volver la conexión, después
+       de enviar lo que quedó pendiente. Responde lo que ve la persona, con el tiempo que le queda. */
+    senal(codigo) {
+      if (sinConexion()) return falla(null, NO_LLEGA, 'conexion');
+      const t = lee();
+      const reg = alDia(t, codigo);
+      if (!reg) return falla(null, 'Ese código no existe.', 'no_existe');
+      if (situacion(reg) === 'contestando') {
+        const ms = ahoraMs();
+        cierraPausa(reg, ms, 'senal');
+        reg.senal_en = iso(ms);
+        if (!escribe(t)) return noGuarda('cambio');
+      }
+      return responde(vista(reg));
+    },
     /* Al terminar o salir, la pantalla suelta el código */
     suelta(codigo, equipo) {
       const l = leeLatido(codigo);
@@ -303,6 +394,7 @@
       const reg = alDia(t, codigo);
       if (!reg || situacion(reg) !== 'sin_empezar') return responde(reg ? vista(reg) : null);
       reg.iniciado_en = ahora();
+      reg.senal_en = reg.iniciado_en;
       if (!escribe(t)) return noGuarda('inicio');
       return responde(vista(reg));
     },
@@ -343,6 +435,9 @@
       const reg = t[codigo];
       if (!reg) return falla(null, 'Ese código no existe.');
       if (situacion(reg) === 'contestando') {
+        // «Se acabó el tiempo» lo decide el servidor: si a la pantalla se le acabó pero el servidor tuvo el tiempo detenido
+        // (decisión del 25/10/2026), el examen sigue y la pantalla toma el tiempo que queda
+        if (motivo === 'tiempo' && restanteMs(reg) > 0) return responde(vista(reg));
         cierra(reg, motivo === 'tiempo' || restanteMs(reg) === 0 ? 'tiempo' : 'enviado');
         if (!escribe(t)) return noGuarda('envio');
       }
@@ -363,7 +458,9 @@
         const t = lee();
         const reg = t[codigo];
         if (!reg || situacion(reg) !== 'contestando') return false;
-        reg.iniciado_en = new Date(Date.now() - limiteMs(reg) + n * 60000).toISOString();
+        const ms = ahoraMs();
+        reg.iniciado_en = iso(ms - limiteMs(reg) - detenidoMs(reg, ms) + n * 60000);
+        reg.senal_en = iso(ms);
         return escribe(t);
       },
       /* Contesta: «bien» todas correctas, «azar» al azar, «reprobar» una de cada tres correcta */
@@ -378,7 +475,20 @@
         });
         return escribe(t);
       },
-      iniciar(codigo) { const t = lee(); const reg = t[codigo]; if (reg && !reg.iniciado_en) { reg.iniciado_en = ahora(); escribe(t); } },
+      iniciar(codigo) { const t = lee(); const reg = t[codigo]; if (reg && !reg.iniciado_en) { reg.iniciado_en = ahora(); reg.senal_en = reg.iniciado_en; escribe(t); } },
+      /* Adelanta el reloj del servidor ms milisegundos (decisión del 25/10/2026: probar la pausa sin esperar). Con
+         conSenal (un código), como si su pantalla hubiera mandado su señal todo ese tiempo */
+      adelantar(ms, conSenal) {
+        try { global.localStorage.setItem(RELOJ, String((Number(global.localStorage.getItem(RELOJ)) || 0) + ms)); } catch (e) { return false; }
+        if (conSenal) {
+          const t = lee();
+          const reg = t[conSenal];
+          if (reg && situacion(reg) === 'contestando') { reg.senal_en = ahora(); escribe(t); }
+        }
+        return true;
+      },
+      /* Cambia los parámetros del reloj (senal_cada_s, sin_senal_s, tope_pausa_min); sin argumento, los de siempre */
+      parametros(p) { return p ? escribeEn(PARAMS, Object.assign(leeDe(PARAMS), p)) : (() => { try { global.localStorage.removeItem(PARAMS); return true; } catch (e) { return false; } })(); },
       /* Simula que esta pestaña pierde (false) o recupera (true) la conexión; al recuperarla avisa con «online», como el
          navegador. Sólo la pantalla de la persona: la de quien aplica sigue viendo el servidor. */
       conexion(hay) {
@@ -390,6 +500,8 @@
     }
   };
   API.PREFIJO = PREFIJO;
+  API.parametros = parametros;
+  API.ahora = ahora;
   API.LISTA = LISTA;
   global.APD_EXAMEN_API = API;
 }(window));
