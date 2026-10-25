@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Grupo · Personal · Acreditaciones de arbolado urbano</title>
-<meta name="description" content="Un grupo del curso de acreditación: personas, confirmación con fecha, hora e instructor, bajas y cancelación. Personal de la Secretaría. Versión de prueba con datos ficticios.">
+<meta name="description" content="Un grupo del curso de acreditación: personas, persona instructora y confirmación (área de Instructores y Capacitación), bajas y cancelación. Personal de la Secretaría. Versión de prueba con datos ficticios.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
@@ -78,28 +78,20 @@
     <div class="acciones-grupo" data-acciones></div>
   </section>
 
-  <!-- Confirmar: sólo con el mínimo de personas; la base exige 7 días de anticipación, fecha, hora e instructor (la hora,
-       la del curso: no se elige) -->
+  <!-- Persona instructora y confirmación (ajustes del equipo, 25/10/2026): las asigna, la cambia y confirma el grupo el área de
+       Instructores y Capacitación (perfil «capacitación»; la base: perfiles_asignan_instructor). Quien arma los grupos ve aquí
+       lo que le falta al grupo y quién lo confirma, sin formulario. La base exige para confirmar el mínimo de personas, 7 días
+       de anticipación, fecha, hora e instructor (la hora, la del curso: no se elige; la semana la elige quien arma el grupo). -->
   <section class="tarjeta" aria-labelledby="t-confirmar" data-confirmar hidden>
-    <h2 class="titulo-paso" id="t-confirmar">Para confirmar el grupo</h2>
-    <p class="bajada">Al confirmar, cada persona ve en «Mis trámites» su grupo, las fechas del curso, la hora de entrada y dónde presentarse.</p>
+    <h2 class="titulo-paso" id="t-confirmar" data-confirmar-titulo>Persona instructora y confirmación</h2>
+    <p class="bajada" data-confirmar-bajada>La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.</p>
     <div class="aviso aviso-advertencia" data-falta hidden><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg><p class="aviso-texto"></p></div>
-    <form id="confirmar" data-formkit="manual" action="#" method="post">
-      <!-- Fecha día/mes/año como en el resto del sitio (formato «fecha-dma» del estándar; auditoría 2026-10-18, D9). El
-           mínimo (7 días después de hoy) lo pone la página en data-min. -->
-      <div class="campo" data-campo="fecha_inicio" data-formato="fecha-dma" data-requerido data-uso="Fijar el primer día del curso (apd.grupo.fecha_inicio).">
-        <label class="etiqueta" for="fecha_inicio">Primer día del curso</label>
-        <p class="ayuda" id="ay-fecha-inicio" data-ayuda-fecha>El curso empieza al menos 7 días después de confirmar el grupo. Escríbalo como día/mes/año o elíjalo en el calendario.</p>
-        <!-- autocomplete off: la fecha la elige quien arma el grupo. -->
-        <!-- Calendario (Liber, 18/10/2026): se escribe día/mes/año o se elige en el calendario del navegador, que llena
-             el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
-        <div class="control-grupo control-corto control-con-calendario"><input class="control" id="fecha_inicio" name="fecha_inicio" type="text" inputmode="numeric" maxlength="14" placeholder="dd/mm/aaaa" autocomplete="off" aria-describedby="ay-fecha-inicio"><button type="button" class="control-calendario" data-calendario="fecha_inicio" aria-label="Elegir en el calendario: Primer día del curso"><svg class="icono" aria-hidden="true"><use href="#i-fecha"></use></svg></button><input class="control-calendario-nativo" type="date" tabindex="-1" aria-hidden="true"></div>
-      </div>
-      <div class="campo" data-campo="instructor" data-requerido data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
-        <label class="etiqueta" for="instructor">Instructor</label>
-        <p class="ayuda" id="ay-instructor">Puede cambiar durante el curso; cada día queda quién capturó la asistencia.</p>
+    <form id="confirmar" data-formkit="manual" action="#" method="post" hidden>
+      <div class="campo" data-campo="instructor" data-requerido data-uso="Asignar o cambiar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso); lo hace el área de Instructores y Capacitación.">
+        <label class="etiqueta" for="instructor">Persona instructora</label>
+        <p class="ayuda" id="ay-instructor" data-ayuda-instructor>Sólo se pueden elegir las personas instructoras libres esas fechas.</p>
         <!-- Versión de prueba: instructores ficticios. En la etapa 3 la API da las cuentas con perfil «instructor» (P27).
-             autocomplete off: lo elige quien arma el grupo. -->
+             autocomplete off: la elige el área de Instructores y Capacitación. -->
         <div class="select control-medio"><select class="control control-select" id="instructor" name="instructor" autocomplete="off" aria-describedby="ay-instructor">
             <option value="">Elija</option>
             <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
@@ -112,7 +104,8 @@
       <p class="texto-gris" data-lugar></p>
       <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
       <div class="acciones">
-        <button type="submit" class="btn btn-primario" data-accion="enviar">Confirmar el grupo</button>
+        <button type="submit" class="btn btn-secundario" data-asignar="solo" hidden>Sólo asignar, sin confirmar</button>
+        <button type="submit" class="btn btn-primario" data-accion="enviar" data-asignar="principal">Asignar y confirmar el grupo</button>
       </div>
     </form>
   </section>

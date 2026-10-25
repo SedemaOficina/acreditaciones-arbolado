@@ -1,11 +1,12 @@
 /* grupo.js · Un grupo (personal, etapa 2; maqueta aprobada y decisiones del 2026-10-17). ?folio=APD-G-…
    Situación, cupo, datos del curso y personas inscritas. Según la situación:
-     · en integración: agregar personas de la espera, dar de baja, confirmar (con el mínimo: primer día al menos
-       dias_anticipacion_grupo días después, e instructor; la hora de entrada es la del curso, curso_hora_entrada, y no se
-       elige: decisión de Liber del 24/10/2026) o cancelar;
+     · en integración: agregar personas de la espera, dar de baja o cancelar; la persona instructora la asigna y el grupo
+       lo confirma el área de Instructores y Capacitación (perfil «capacitación», ajustes del equipo del 25/10/2026; con el
+       mínimo de personas y el primer día al menos dias_anticipacion_grupo días después; la hora de entrada es la del curso,
+       curso_hora_entrada, y no se elige: decisión de Liber del 24/10/2026);
      · confirmado: agregar personas hasta el día anterior al inicio (sin pasar del máximo), dar de baja (si queda por
        debajo del mínimo regresa a integración, con su fecha) o cancelar;
-     · en curso: asistencia (instructor) y, el último día, el examen;
+     · en curso: asistencia (instructor) y, el último día, el examen; Capacitación puede cambiar la persona instructora;
      · concluido o cancelado: sólo consulta.
    Dar de baja y cancelar piden motivo; las personas regresan a la espera con su antigüedad. La base vuelve a aplicar
    todo (apd.grupo_cambio, apd.inscripcion_alta, apd.inscripcion_cambio); en la prueba, app/archivos-prueba.js. */
@@ -16,6 +17,11 @@
   const $ = (s, r) => (r || document).querySelector(s);
   const plural = APD.plural;
   const params = new URLSearchParams(location.search);
+  // El perfil de la prueba (?perfil=): el de quien arma los grupos o el del área de Instructores y Capacitación (25/10/2026)
+  const perfil = P.perfilDePrueba();
+  const quien = P.quienEs(perfil);
+  // «a, b y c»
+  const y = (l) => (l.length < 2 ? l[0] || '' : `${l.slice(0, -1).join(', ')} y ${l[l.length - 1]}`);
   // «Inscrita»: el curso está en marcha, no terminado (auditoría 2026-10-18, D6)
   const ESTADO_SOLICITUD = { inscrita: ['Inscrita', 'marcha'], aprobada: ['Aprobada', 'ok'], acreditada: ['Acreditada', 'ok'], no_acreditada: ['No acreditada', 'error'], sin_derecho_examen: ['Sin derecho a examen', 'error'] };
 
@@ -31,12 +37,15 @@
       agregadas: [params.get('no') ? 'pend' : 'ok', `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} al grupo`,
         params.get('no') ? `${params.get('no').split(',').length === 1 ? '1 de las que eligió no entró: ya tenía grupo o el grupo se llenó' : `${params.get('no').split(',').length} de las que eligió no entraron: ya tenían grupo o el grupo se llenó`}.` : ''],
       confirmado: ['ok', 'Grupo confirmado', 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.'],
+      // La persona instructora (ajustes del equipo, 25/10/2026): la asigna o la cambia el área de Instructores y Capacitación
+      instructor: ['ok', 'Persona instructora asignada', 'El grupo sigue por confirmar hasta que tenga lo que le falta; la persona instructora ve el grupo en sus próximos.'],
+      instructor_cambiado: ['ok', 'Persona instructora cambiada', 'El cambio queda en la bitácora. La persona instructora nueva ve el grupo en «Mis grupos de hoy» o en sus próximos.'],
       // Desde el paso a paso de «Grupos» sin confirmarlo: la semana y el instructor quedan como propuesta
       propuesto: ['pend', 'Se guardaron los cambios del grupo', { texto: `Sigue por confirmar: su semana queda como propuesta${n ? ` y se ${n === 1 ? 'agregó 1 persona' : `agregaron ${n} personas`}` : ''}.`, pasos: [
-        'Complete lo que le falte: el mínimo de personas y el instructor.', 'Confirme el grupo: cada persona ve las fechas en «Mis trámites».'] }],
+        'Complete lo que le falte: el mínimo de personas.', 'El área de Instructores y Capacitación le asigna la persona instructora y lo confirma: cada persona ve las fechas en «Mis trámites».'] }],
       baja: ['ok', 'La persona salió del grupo', 'Regresó a la espera con su antigüedad.'],
-      baja_integracion: ['pend', 'El grupo dejó de estar confirmado', { texto: 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora e instructor como propuesta.', pasos: [
-        'Agregue personas hasta completar el mínimo.', 'Vuelva a confirmar el grupo.'] }],
+      baja_integracion: ['pend', 'El grupo dejó de estar confirmado', { texto: 'La persona salió y el grupo quedó por debajo del mínimo. Conserva su fecha, hora y persona instructora como propuesta.', pasos: [
+        'Agregue personas hasta completar el mínimo.', 'El área de Instructores y Capacitación vuelve a confirmar el grupo.'] }],
       cancelado: ['info', 'Grupo cancelado', 'Las personas regresaron a la espera con su antigüedad.']
     };
     if (!textos[hecho]) return;
@@ -48,13 +57,17 @@
     params.delete('hecho'); params.delete('n'); params.delete('no');
     history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
   }
-  const vuelve = (folio, hecho) => { location.href = `grupo.html?folio=${encodeURIComponent(folio)}&hecho=${hecho}`; };
+  const vuelve = (folio, hecho) => { location.href = `${P.fichaGrupo(folio, perfil)}&hecho=${hecho}`; };
   /* Un cambio que la base no aplicó (bloque 2): el aviso del formulario lo dice, con el enlace para ver el grupo como está */
   const noSeHizo = (titulo, motivo) => APD.rechazo(titulo, `${motivo.charAt(0).toLocaleUpperCase('es-MX')}${motivo.slice(1)}. Lo que escribió sigue aquí.`,
     { href: location.pathname.split('/').pop() + location.search, texto: 'Ver el grupo como está ahora' }, 'conflicto');
 
   APD.cargar().then((datos) => {
-    P.pintaSesion($('[data-sesion-personal]'), 'grupos');
+    P.pintaSesion($('[data-sesion-personal]'), perfil === 'capacitacion' ? 'capacitacion' : 'grupos', perfil);
+    // ¿Asigna la persona instructora y confirma grupos? (capacitación y administración, parámetro perfiles_asignan_instructor)
+    const asigna = P.asignaInstructor(datos, perfil);
+    // Capacitación regresa a su inicio, «Grupos por asignar y confirmar»
+    if (perfil === 'capacitacion') { const atras = $('.btn-atras'); atras.href = 'capacitacion.html'; atras.lastChild.textContent = 'Grupos por asignar y confirmar'; }
     const g0 = datos.grupo.find((g) => g.folio === params.get('folio'));
     if (!g0) { $('[data-bajada]').textContent = 'No se encontró el grupo. Vuelva a «Grupos».'; return; }
     avisoHecho();
@@ -92,18 +105,21 @@
       // las 15:00 (sesión de trabajo del 23/10/2026, P91: parámetro curso_hora_salida)
       pares.push(['Primer día', fechaCorta(g.fecha_inicio)], [`Último día (${APD.diaFinal(x.c).toLowerCase()})`, fechaCorta(x.ultimo)],
         ['Hora de entrada', APD.hhmm(g.hora_entrada) || horaEntrada], ['Hora de salida', horaSalida],
-        ['Instructor', P.nombreInstructor(g.instructor)],
+        ['Persona instructora', g.instructor ? P.nombreInstructor(g.instructor) : 'Sin asignar: la asigna el área de Instructores y Capacitación'],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);
       // Texto neutro: la fecha puede venir de «Guardar sin confirmar» o de un grupo que dejó de estar confirmado
       // (auditoría «intentar romperlo», F3 M7)
-      if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Fecha e instructor propuestos, todavía sin confirmar; se confirman abajo']);
+      if (g.estado === 'en_integracion') pares.unshift(['Propuesta', 'Semana propuesta, todavía sin confirmar: el grupo lo confirma el área de Instructores y Capacitación']);
     }
     if (g.estado === 'cancelado') pares.push(['Motivo de la cancelación', g.motivo_cancelacion || ''], ['Cancelado el', fechaCorta(g.estado_desde)]);
     $('[data-datos]').replaceChildren(pares.length ? APD.datosLista(pares) : '');
 
     /* Personas */
     const conSituacion = ['en_curso', 'concluido'].includes(g.estado);
-    const puedeBaja = antesDeIniciar;
+    // Dar de baja, agregar personas, cambiar la semana y cancelar son de quien arma los grupos, no del área de Instructores
+    // y Capacitación (ajustes del equipo, 25/10/2026)
+    const armaGrupos = perfil !== 'capacitacion';
+    const puedeBaja = antesDeIniciar && armaGrupos;
     $('[data-encabezado]').replaceChildren(...['Persona', 'Folio de la solicitud', 'Adscripción', 'En el grupo desde', ...(conSituacion ? ['Situación'] : []), ...(puedeBaja ? ['Acción'] : [])]
       .map((t) => el('th', { scope: 'col' }, t === 'Acción' ? [el('span', { class: 'solo-lector', texto: t })] : [document.createTextNode(t)])));
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
@@ -156,7 +172,7 @@
 
     /* Acciones del grupo */
     const acciones = [];
-    if (x.recibe) {
+    if (!armaGrupos) { /* Capacitación: la persona instructora y la confirmación van abajo */ } else if (x.recibe) {
       // Un grupo de una organización sólo recibe a su gente: se cuenta sólo a ella (auditoría de tareas, M1)
       const propia = g.integracion === 'especifico';
       const org = propia ? x.integracion.replace('De una organización · ', '') : '';
@@ -171,7 +187,7 @@
       acciones.push(el('p', { class: 'texto-gris', texto: 'El curso ya empezó: el grupo no recibe más personas.' }));
     }
     // La semana en el calendario de «Grupos» (paso 2 del paso a paso, con este grupo; decisión del 24/10/2026)
-    if (g.estado === 'en_integracion') {
+    if (g.estado === 'en_integracion' && armaGrupos) {
       acciones.push(el('a', { class: 'btn btn-secundario', href: `grupos.html?grupo=${encodeURIComponent(g.folio)}&paso=2`, texto: g.fecha_inicio ? 'Cambiar la semana en el calendario' : 'Elegir la semana en el calendario' }));
     }
     if (g.estado === 'en_curso') {
@@ -179,7 +195,7 @@
       if (hoy === x.ultimo) acciones.push(el('a', { class: 'btn btn-secundario', href: `aplicar.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Aplicar el examen' }));
     }
     let cancelar = null;
-    if (antesDeIniciar) {
+    if (antesDeIniciar && armaGrupos) {
       cancelar = el('button', { type: 'button', class: 'btn btn-peligro-contorno', texto: 'Cancelar el grupo' });
       cancelar.addEventListener('click', () => {
         $('[data-cancelar-titulo]').textContent = `¿Cancelar el grupo ${g.folio} (${x.calculado})?`;
@@ -191,62 +207,99 @@
     }
     $('[data-acciones]').replaceChildren(...acciones);
 
-    /* Confirmar (en integración) */
-    if (g.estado === 'en_integracion') {
-      $('[data-confirmar]').hidden = false;
-      const falta = g.cupo_minimo - x.n;
+    /* Persona instructora y confirmación (ajustes del equipo, 25/10/2026). Las asigna, la cambia (también durante el curso,
+       con constancia en la bitácora) y confirma el grupo el área de Instructores y Capacitación (perfiles de
+       perfiles_asignan_instructor: capacitación y administración); quien arma los grupos ve aquí lo que le falta al grupo y
+       quién lo confirma. Sólo se ofrecen las personas instructoras libres esas fechas (P.ocupado, la regla de choques de
+       «Grupos»). La semana la elige quien arma el grupo, en «Grupos»: aquí no se cambia. */
+    const enIntegracion = g.estado === 'en_integracion';
+    const cambiable = ['confirmado', 'en_curso'].includes(g.estado);
+    if (enIntegracion || (cambiable && asigna)) {
+      const sec = $('[data-confirmar]');
+      sec.hidden = false;
       const form = $('#confirmar');
-      if (falta > 0) {
-        $('[data-falta]').hidden = false;
-        $('[data-falta] .aviso-texto').textContent = `${falta === 1 ? 'Falta 1 persona' : `Faltan ${falta} personas`} para el mínimo de ${g.cupo_minimo}: el grupo todavía no se puede confirmar. Ningún grupo abre con menos del mínimo.`;
-        form.hidden = true;
-      }
       const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
       const minimo = APD.sumaDias(hoy, anticipacion);
-      const maximo = P.ultimoDiaPosible(datos); // un año después de hoy (decisión 3, auditoría 2026-10-19)
-      const fi = $('#fecha_inicio');
-      // Fecha día/mes/año (formato «fecha-dma», D9): el estándar lee el mínimo de data-min del campo (AAAA-MM-DD) y lo
-      // dice en día/mes/año; la página trabaja con AAAA-MM-DD
-      $('[data-campo="fecha_inicio"]').dataset.min = minimo;
-      $('[data-campo="fecha_inicio"]').dataset.max = maximo;
-      const iso = () => (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(fi.value)) || '';
-      // La propuesta de un grupo que regresó a integración se ofrece de nuevo
-      if (g.fecha_inicio && g.fecha_inicio >= minimo && g.fecha_inicio <= maximo) fi.value = fechaCorta(g.fecha_inicio);
-      // El horario, como dato: la hora es fija (decisión de Liber del 24/10/2026)
-      $('[data-horario]').textContent = `Horario: de ${hm(horaEntrada)} a ${hm(horaSalida)}${c.dias_duracion > 1 ? ', de lunes a viernes' : ''}.`;
-      if (g.instructor) $('#instructor').value = g.instructor;
-      const ayudaFecha = () => {
-        // De lunes a viernes (sesión de trabajo del 23/10/2026): el de 5 días empieza en lunes
-        const base = `El curso empieza al menos ${anticipacion} días después de confirmar: desde el ${fechaCorta(minimo)} y hasta el ${fechaCorta(maximo)}, un año después de hoy. ${c.dias_duracion > 1 ? `Dura ${c.dias_duracion} días, de lunes a viernes: empieza en lunes` : 'Dura un día, de lunes a viernes'}`;
-        $('[data-ayuda-fecha]').textContent = iso() && iso() >= minimo && iso() <= maximo ? `${base}: del ${fechaCorta(iso())} al ${fechaCorta(APD.sumaDias(iso(), c.dias_duracion - 1))}.` : `${base}. Escríbalo como día/mes/año o elíjalo en el calendario.`;
-      };
-      fi.addEventListener('input', ayudaFecha);
-      fi.addEventListener('change', ayudaFecha);
-      ayudaFecha();
-      $('[data-lugar]').replaceChildren(document.createTextNode('Lugar: aula de capacitación del '), el('strong', { texto: sede }),
-        document.createTextNode('; el examen, en el salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio.'));
-      FormKit.iniciar(form, {
-        enviar(payload) {
-          const d = Object.assign({}, payload.datos, { fecha_inicio: (window.FORMKIT_VALIDACIONES && FORMKIT_VALIDACIONES.isoDeDma(payload.datos.fecha_inicio)) || payload.datos.fecha_inicio });
-          if (d.fecha_inicio < minimo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso debe empezar al menos ${anticipacion} días después de confirmar el grupo: desde el ${fechaCorta(minimo)}.` }] });
-          if (d.fecha_inicio > maximo) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El curso empieza a más tardar un año después de hoy: hasta el ${fechaCorta(maximo)}.` }] });
-          // Sábados y domingos sin curso (el de 5 días empieza en lunes, P151) y como máximo 2 grupos al mismo tiempo (P149):
-          // sesión de trabajo del 23/10/2026; la base: curso_en_fin_de_semana y grupos_simultaneos
-          const r = P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, d.fecha_inicio, g.id);
-          if (r && ['fin_de_semana', 'simultaneos'].includes(r.clave)) return Promise.reject({ errores: [{ campo: 'fecha_inicio', mensaje: `El ${fechaCorta(d.fecha_inicio)} no se puede: ${r.texto}.` }] });
-          // Como la API: con lo guardado de ahora (otra pestaña pudo dar de baja a alguien) y comprobando después que quedó
-          // confirmado (auditoría «intentar romperlo», F3 M2: «Grupo confirmado» aunque seguía por confirmar). Lo escrito
-          // se conserva.
-          return P.guardaGrupoComprobado({
-            antes: (d1) => P.razonNoConfirma(d1, deAhora(d1), d.fecha_inicio),
-            // La hora de entrada es la del curso (parámetro), también para un grupo que no la tenía
-            eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: d.fecha_inicio, hora_entrada: horaEntrada, instructor: d.instructor, por: P.REVISORA.usuario }),
-            comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'confirmado' ? null : P.razonNoConfirma(d2, deAhora(d2), d.fecha_inicio) || 'la base no lo confirmó')
-          }).catch((e) => Promise.reject(e && e.motivo ? noSeHizo('No se confirmó el grupo', e.motivo) : e));
-        },
-        alEnviar() { vuelve(g.folio, 'confirmado'); },
-        alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
-      });
+      const faltaMin = g.cupo_minimo - x.n;
+      const r = g.fecha_inicio ? P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, g.fecha_inicio, g.id) : null;
+      // Lo que le falta para confirmarse, sin la persona instructora (como la base: datos_para_confirmar, anticipacion,
+      // cupo_minimo, curso_en_fin_de_semana, grupos_simultaneos)
+      const falta = [];
+      if (!g.fecha_inicio) falta.push('la semana, que elige quien arma los grupos en «Grupos»');
+      else if (r) falta.push(`otra semana: el ${fechaCorta(g.fecha_inicio)} ya no se puede (${r.texto})`);
+      if (faltaMin > 0) falta.push(faltaMin === 1 ? '1 persona más' : `${faltaMin} personas más`);
+      const pintaFalta = (texto) => { $('[data-falta]').hidden = !texto; $('[data-falta] .aviso-texto').textContent = texto || ''; };
+      if (!asigna) {
+        // Quien arma los grupos: lo que le falta y quién lo confirma, sin formulario
+        $('[data-confirmar-titulo]').textContent = 'Para confirmar el grupo';
+        $('[data-confirmar-bajada]').textContent = 'La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.';
+        pintaFalta(falta.length ? `Le falta: ${y(falta)}. Ningún grupo abre con menos del mínimo.` : g.instructor ? 'Tiene lo necesario: falta que el área de Instructores y Capacitación lo confirme.' : 'Tiene lo que le toca a usted: falta que el área de Instructores y Capacitación le asigne la persona instructora y lo confirme.');
+      } else if (enIntegracion && !g.fecha_inicio) {
+        $('[data-confirmar-bajada]').textContent = 'Sólo se pueden elegir las personas instructoras libres esas fechas; después se confirma el grupo.';
+        pintaFalta(`Este grupo todavía no tiene semana: la elige quien arma los grupos, en «Grupos». Después podrá asignarle la persona instructora y confirmarlo.${faltaMin > 0 ? ` También le ${faltaMin === 1 ? 'falta 1 persona' : `faltan ${faltaMin} personas`} para el mínimo de ${g.cupo_minimo}.` : ''}`);
+      } else {
+        form.hidden = false;
+        const puedeConfirmar = enIntegracion && !falta.length && g.fecha_inicio >= minimo;
+        // Las fechas en que da el curso: todo el curso; en curso, de hoy al último día
+        const desde = g.estado === 'en_curso' && hoy > g.fecha_inicio ? hoy : g.fecha_inicio;
+        const sel = $('#instructor');
+        for (const o of sel.options) {
+          if (!o.value) continue;
+          const otros = P.ocupado(datos, o.value, desde, x.ultimo, g.id);
+          o.textContent = `${P.nombreInstructor(o.value)}${o.value === g.instructor ? ' · la asignada ahora' : otros.length ? ' · tiene otro curso esas fechas' : ' · libre esas fechas'}`;
+          o.disabled = Boolean(otros.length) && o.value !== g.instructor;
+        }
+        if (g.instructor) sel.value = g.instructor;
+        $('[data-horario]').textContent = `Horario: de ${hm(horaEntrada)} a ${hm(horaSalida)}${c.dias_duracion > 1 ? ', de lunes a viernes' : ''}.`;
+        $('[data-lugar]').replaceChildren(document.createTextNode('Lugar: aula de capacitación del '), el('strong', { texto: sede }),
+          document.createTextNode('; el examen, en el salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio.'));
+        const principal = $('[data-asignar="principal"]');
+        const solo = $('[data-asignar="solo"]');
+        if (cambiable) {
+          $('[data-confirmar-titulo]').textContent = 'Persona instructora';
+          $('[data-confirmar-bajada]').textContent = `Puede cambiarla ${g.estado === 'en_curso' ? 'durante el curso' : 'hasta que concluya el curso'}: el cambio queda en la bitácora, y cada día queda quién capturó la asistencia. Sólo se pueden elegir las personas libres esas fechas.`;
+          principal.textContent = 'Cambiar la persona instructora';
+        } else if (puedeConfirmar) {
+          $('[data-confirmar-bajada]').textContent = `Tiene ${plural(x.n, 'persona', 'personas')} y su semana: elija a la persona instructora, libre esas fechas, y confirme el grupo. Al confirmarlo, cada persona ve en «Mis trámites» su grupo, las fechas del curso, la hora de entrada y dónde presentarse.`;
+          principal.textContent = g.instructor ? 'Confirmar el grupo' : 'Asignar y confirmar el grupo';
+          solo.textContent = g.instructor ? 'Cambiar la persona instructora, sin confirmar' : 'Sólo asignar, sin confirmar';
+          solo.hidden = false;
+        } else {
+          $('[data-confirmar-bajada]').textContent = 'Sólo se pueden elegir las personas instructoras libres esas fechas. El grupo se confirma cuando tenga lo que le falta.';
+          principal.textContent = g.instructor ? 'Cambiar la persona instructora' : 'Asignar la persona instructora';
+          pintaFalta(`Para confirmarlo le falta: ${y(falta.length ? falta : [`que el curso empiece al menos ${anticipacion} días después de confirmarlo`])}. Mientras, puede asignarle la persona instructora.`);
+        }
+        let accion = 'principal';
+        for (const b of [principal, solo]) b.addEventListener('click', () => { accion = b.dataset.asignar; }, true);
+        FormKit.iniciar(form, {
+          enviar(payload) {
+            const instructor = payload.datos.instructor;
+            const confirmar = puedeConfirmar && accion === 'principal';
+            if (instructor === g.instructor && !confirmar) return Promise.reject({ errores: [{ campo: 'instructor', mensaje: 'Esa persona ya es la instructora del grupo: elija otra.' }] });
+            // Como la API: con lo guardado de ahora (otra pestaña pudo cambiar el grupo) y comprobando después que quedó
+            const eventos = [];
+            if (instructor !== g.instructor) eventos.push({ tipo: 'instructor', grupo_id: g.id, instructor, perfil, por: quien.usuario });
+            if (confirmar) eventos.push({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: g.fecha_inicio, hora_entrada: horaEntrada, instructor, perfil, por: quien.usuario });
+            return P.guardaGrupoComprobado({
+              antes: (d1) => {
+                const g1 = deAhora(d1);
+                if (!g1 || g1.estado !== g.estado) return g1 ? `el grupo ya está «${P.grupo(d1, g1).situacion.texto}»` : 'el grupo ya no existe';
+                if (instructor !== g.instructor && P.ocupado(d1, instructor, desde, x.ultimo, g.id).length) return `${P.nombreInstructor(instructor)} ya tiene otro curso esas fechas`;
+                return confirmar ? P.razonNoConfirma(d1, g1, g.fecha_inicio) : null;
+              },
+              eventos: () => eventos,
+              comprueba: (d2) => {
+                const g2 = deAhora(d2);
+                if (!g2 || g2.instructor !== instructor) return 'la persona instructora no se guardó';
+                return confirmar && g2.estado !== 'confirmado' ? P.razonNoConfirma(d2, g2, g.fecha_inicio) || 'la base no lo confirmó' : null;
+              }
+            }).then(() => ({ confirmar, cambio: Boolean(g.instructor) && instructor !== g.instructor }))
+              .catch((e) => Promise.reject(e && e.motivo ? noSeHizo(confirmar ? 'No se confirmó el grupo' : 'No se guardó la persona instructora', e.motivo) : e));
+          },
+          alEnviar(r) { vuelve(g.folio, r.confirmar ? 'confirmado' : r.cambio ? 'instructor_cambiado' : 'instructor'); },
+          alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
+        });
+      }
     }
 
     /* Dar de baja y cancelar: formularios del estándar en diálogos, con motivo */

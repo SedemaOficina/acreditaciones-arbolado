@@ -312,6 +312,13 @@
       document.querySelector('[data-observaciones-nota]').textContent = obs.length === 1
         ? 'Va primero, con lo que debes corregir junto al documento. Lo demás ya está aceptado.'
         : 'Van primero, cada uno con lo que debes corregir. Lo demás ya está aceptado.';
+      // Cuántas oportunidades le quedan para corregir, contando ésta, o que es la última (ajustes del equipo, 25/10/2026; lo
+      // del cotejo no cuenta y lo dice). Va en el aviso de lo que debe corregir, sin cambiar el HTML de la página.
+      const oport = APD.oportunidades(datos, s);
+      const nota = document.querySelector('[data-observaciones-nota]');
+      if (oport && nota && !nota.parentElement.querySelector('[data-oportunidades]')) {
+        nota.after(el('p', { 'data-oportunidades': oport.ultima ? 'ultima' : oport.cotejo ? 'cotejo' : String(oport.quedan) }, [el('strong', { texto: oport.texto }), oport.detalle ? document.createTextNode(` ${oport.detalle}`) : null]));
+      }
       document.querySelector('[data-observaciones]').hidden = false;
       const bajada = document.querySelector('[data-bajada-tramite]');
       if (bajada) bajada.textContent = `Corriges la solicitud ${s.folio}: ${obs.length === 1 ? 'tienes 1 observación' : `tienes ${obs.length} observaciones`} en «Documentos» (paso 2). La acreditación ya no cambia.`;
