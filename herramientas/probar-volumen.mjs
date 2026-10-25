@@ -331,8 +331,14 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
     await pg.waitForSelector('#paso-personas:not([hidden]) .plan-persona input');
     await pg.click('[data-mas-espera] > summary');
     await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
-    const pegajosos = await pg.evaluate(() => [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility()).length);
-    comprueba(pegajosos === 0, `[${tam}] grupos con volumen: en el paso 3 nada queda fijo ni pegajoso sobre la lista (la barra de elegidas ya no existe; ${pegajosos})`);
+    // Acomodo de escritorio, parte B (25/10/2026): el panel «Tu grupo» es fijo, pero va al lado de la lista, no encima: se
+    // cuenta lo fijo que cruza la columna de la lista
+    const pegajosos = await pg.evaluate(() => {
+      const l = document.querySelector('[data-personas]').getBoundingClientRect();
+      return [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility())
+        .filter((x) => { const r = x.getBoundingClientRect(); return r.left < l.right && r.right > l.left; }).length;
+    });
+    comprueba(pegajosos === 0, `[${tam}] grupos con volumen: en el paso 3 nada queda fijo ni pegajoso sobre la lista (la barra de elegidas ya no existe; el panel «Tu grupo» va al lado; ${pegajosos})`);
     for (const tecla of ['Tab', 'Shift+Tab']) {
       await pg.evaluate(() => { window.scrollTo(0, 0); document.activeElement && document.activeElement.blur(); });
       let paradas = 0; let casillas = 0; const ocultas = [];
@@ -357,6 +363,60 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
       comprueba(casillas >= 66 && ocultas.length === 0, `[${tam}] grupos con volumen, ${tecla}: ninguna de las ${paradas} paradas (${casillas} casillas) queda oculta por completo por algo fijo${ocultas.length ? `: ${ocultas.length}, p. ej. «${ocultas[0]}»` : ''}`);
     }
   } catch (e) { comprueba(false, `[${tam}] grupos con volumen, foco no oculto: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
+  await ctx.close();
+}
+
+// Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026; DIAGNOSTICO 4.3 y 4.4): con el volumen,
+//   · el inicio del personal pagina de 25 en 25 en el mismo orden (la de más espera primero), la página 2 sigue donde
+//     terminó la 1 y lleva el foco a la lista, un filtro regresa a la página 1, y la página mide mucho menos que antes
+//     (6.51 pantallas a 1440 × 900 en la 0.70);
+//   · en el paso 3 de «Grupos» (66 en espera), el cupo y «Siguiente» del panel «Tu grupo» se ven en todo el recorrido de la
+//     página, de arriba abajo.
+for (const [w, h] of [[1440, 900], [1366, 768], [1024, 768]]) {
+  const tam = `escritorio B ${w}×${h}`;
+  const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+  await ctx.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: cuerpo, contentType: 'application/json' }));
+  const pg = await ctx.newPage();
+  const errores = [];
+  pg.on('pageerror', (e) => errores.push(String(e)));
+  pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+  try {
+    await pg.goto(BASE + 'revision.html');
+    await pg.waitForSelector('[data-filas] tr');
+    await pg.waitForTimeout(200);
+    const enviadas = d.solicitud.filter((s) => s.estado === 'enviada').length;
+    const vistas = () => pg.$$eval('[data-filas] tr', (l) => l.filter((x) => !x.hidden).map((x) => x.dataset.folio));
+    const todas = await pg.$$eval('[data-filas] tr', (l) => l.map((x) => x.dataset.folio));
+    const p1 = await vistas();
+    const pantallas = await pg.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+    const filaAlta = await pg.$eval('[data-filas] tr:not([hidden])', (x) => x.getBoundingClientRect().height);
+    comprueba(p1.length === 25 && p1.join() === todas.slice(0, 25).join() && /Mostrando 1–25 de/.test(await pg.textContent('[data-paginacion]')) && (w !== 1440 || pantallas < 2.6) && (w < 1366 || filaAlta <= 50),
+      `[${tam}] bandeja con ${enviadas}: la página 1 trae las 25 que más esperan, en orden; filas de ${Math.round(filaAlta)} px; la página mide ${pantallas.toFixed(2)} pantallas (0.70: 6.51 a 1440 × 900)`);
+    await pg.click('[data-paginacion] .paginacion-num:has-text("2")');
+    const p2 = await vistas();
+    comprueba(p2.join() === todas.slice(25, 50).join() && await pg.evaluate(() => document.activeElement.id === 'lista-bandeja'),
+      `[${tam}] bandeja: la página 2 sigue en orden (de la 26 a la 50) y lleva el foco a la lista`);
+    await pg.selectOption('#f_tipo', 'dictaminador');
+    const dict = d.solicitud.filter((s) => s.estado === 'enviada' && s.tipo_acreditacion === 'dictaminador').length;
+    comprueba((await vistas()).length === Math.min(25, dict) && (dict > 25 ? /Mostrando 1–/.test(await pg.textContent('[data-paginacion]')) : await pg.isHidden('[data-paginacion]')),
+      `[${tam}] bandeja: al filtrar regresa a la página 1 (${dict} de dictaminador)`);
+    // «Grupos», paso 3: el cupo y «Siguiente» del panel, a la vista arriba, a media página y abajo
+    await pg.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
+    await pg.waitForSelector('#paso-personas:not([hidden]) .plan-persona');
+    await pg.click('[data-mas-espera] > summary');
+    const fuera = [];
+    for (const f of [0, 0.25, 0.5, 0.75, 1]) {
+      await pg.evaluate((x) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * x), f);
+      await pg.evaluate(() => new Promise((listo) => requestAnimationFrame(() => requestAnimationFrame(listo))));
+      // El del panel o, al final de la página (donde el panel termina con su paso), el del propio paso
+      for (const sel of ['[data-panel-cupo], [data-cuenta-personas]', '[data-panel-siguiente], #paso-personas [data-accion="siguiente"]']) {
+        const r = await pg.$$eval(sel, (l) => l.some((e) => { const b = e.getBoundingClientRect(); return b.top >= 0 && b.bottom <= innerHeight + 0.5 && e.checkVisibility(); }));
+        if (!r) fuera.push(`${sel} en ${f * 100} %`);
+      }
+    }
+    comprueba(!fuera.length, `[${tam}] grupos con 66 en espera: el cupo y «Siguiente» del panel se ven en todo el recorrido${fuera.length ? `; fuera: ${fuera.join(', ')}` : ''}`);
+    comprueba(!errores.length, `[${tam}] sin errores en la consola${errores.length ? `: ${errores.slice(0, 2).join(' | ')}` : ''}`);
+  } catch (e) { comprueba(false, `[${tam}] se detuvo: ${String(e.message || e).split('\n')[0]}`); }
   await ctx.close();
 }
 
@@ -396,7 +456,8 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
       const t0 = Date.now();
       await pg.goto(BASE + 'grupos.html?curso=poda-nueva&mes=2026-11&paso=2');
       await pg.waitForSelector('#paso-semana:not([hidden]) .arm-semana');
-      await pg.waitForSelector('[data-programados] tr[data-grupo]');
+      // En escritorio los grupos programados están en su pestaña (acomodo de escritorio, parte B): ya están en la página
+      await pg.waitForSelector('[data-programados] tr[data-grupo]', { state: 'attached' });
       const ms = Date.now() - t0;
       const r = await pg.evaluate(() => ({ filas: document.querySelectorAll('[data-programados] tr[data-grupo]').length, terminados: (document.querySelector('[data-terminados-titulo]') || {}).textContent,
         semana9: document.querySelector('.arm-semana[data-lunes="2026-11-09"]').textContent.replace(/\s+/g, ' '), semana16: document.querySelector('.arm-semana[data-lunes="2026-11-16"]').textContent.replace(/\s+/g, ' '),
@@ -407,8 +468,9 @@ for (const [w, h] of [[1440, 900], [1280, 720], [1024, 768]]) {
       comprueba(/No disponible\s*Ya hay 2 grupos/.test(r.semana9) && /otro curso/.test(r.semana9) && /1 lugar libre de 2/.test(r.semana16),
         `[${tam}] grupos con 40 grupos: la semana del 9 de noviembre (2 grupos, uno de otro curso) no está disponible y la del 16 tiene 1 lugar libre de 2`);
       comprueba(!r.desborde && ms < 6000 && !errores.length, `[${tam}] grupos con 40 grupos y 112 en espera: sin desborde, lista en ${ms} ms (tope 6 s)${errores.length ? `; errores: ${errores.slice(0, 2).join(' | ')}` : ''}`);
-      await pg.click('[data-terminados] > summary');
-      comprueba((await pg.$$('[data-terminados-lista] li')).length === terminados && await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+      // En escritorio, «Ya terminaron» es una pestaña que se abre desplegada (acomodo de escritorio, parte B)
+      if (await pg.isVisible('#pe-terminados')) await pg.click('#pe-terminados'); else await pg.click('[data-terminados] > summary');
+      comprueba((await pg.$$('[data-terminados-lista] li')).length === terminados && await pg.isVisible('[data-terminados-lista] li') && await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `[${tam}] grupos con 40 grupos: «Grupos que ya terminaron», desplegado, lista los ${terminados} sin desborde`);
     } catch (e) { comprueba(false, `[${tam}] grupos con 40 grupos: se detuvo: ${String(e.message || e).split('\n')[0]}`); }
     await ctx.close();
