@@ -703,6 +703,17 @@
       $('[data-panel-siguiente]', panel).textContent = real ? real.textContent : 'Siguiente';
       $('[data-panel-atras]', panel).hidden = paso === 1;
     }
+    /* Un solo principal por pantalla (C6-02, decisión 2 de Liber): con el panel fijo (desde 1024 px de ancho y 700 px de alto,
+       app/apd.css) el principal es el del panel y el de abajo del paso pasa a secundario; si no, como antes */
+    const conPanelFijo = window.matchMedia('(min-width: 1024px) and (min-height: 700px)');
+    function principalDelPaso() {
+      for (const b of $$('[data-accion="siguiente"], [data-accion="enviar"]', form)) {
+        b.classList.toggle('btn-primario', !conPanelFijo.matches);
+        b.classList.toggle('btn-secundario', conPanelFijo.matches);
+      }
+    }
+    conPanelFijo.addEventListener('change', principalDelPaso);
+    principalDelPaso();
     $('[data-panel-siguiente]', panel).addEventListener('click', () => {
       const b = pasos[paso - 1] && pasos[paso - 1].querySelector('[data-accion="siguiente"], [data-accion="enviar"]');
       if (b) b.click();

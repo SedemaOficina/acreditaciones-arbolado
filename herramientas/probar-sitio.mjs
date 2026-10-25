@@ -1574,6 +1574,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(/Elija a quién va/.test(await texto('[data-error-personas]')) && await pg.evaluate(() => document.activeElement && document.activeElement.closest('[data-error-personas]') !== null)
     && (await pg.$$('.plan-persona.falta-marcar')).length > 0 && await pasoDe(pg) === 3, t('sin elegir a nadie: el error sale junto a los botones, con el foco ahí, se señalan las personas y no se avanza'));
   // «Agregar personas» de la fila del grupo del 26 al 30 de octubre: el paso 3 con ese grupo; se agrega a la que más espera
+  await aProgramados(pg);
   await Promise.all([pg.waitForNavigation(), pg.click(`[data-programados] tr[data-grupo="${g005.folio}"] a:has-text("Agregar personas")`)]);
   await listoGrupos(pg);
   comprueba(/grupo=APD-G-2026-005/.test(pg.url()) && await pasoDe(pg) === 3 && /Completando «Poda nueva · del 26 al 30 de octubre» · APD-G-2026-005/.test(await texto('[data-modo-grupo]')),
@@ -1589,6 +1590,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await listoGrupos(pg);
   comprueba((await pg.$$('[data-personas] .plan-persona input')).length === enEsperaPoda - 1 && /2 de 25/.test(await texto(`[data-programados] tr[data-grupo="${g005.folio}"]`)), t('la persona sale de la espera y el grupo suma'));
   // Completar con las que más esperan y confirmar ahí mismo (ya tiene fecha, hora e instructor)
+  await aProgramados(pg);
   const completar = pg.locator(`[data-programados] tr[data-grupo="${g005.folio}"] button:has-text("Completar con las 3 que más esperan")`);
   comprueba(await completar.count() === 1, t('«Completar con las 3 que más esperan» dice cuántas faltan para el mínimo'));
   await Promise.all([pg.waitForNavigation(), completar.click()]);
@@ -1814,6 +1816,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
     && /no inició/.test(t004), t('la propuesta vencida lo dice y lleva a «Elegir otra semana» (paso 2 con ese grupo); el confirmado dice que no inició'));
   await sinDesborde(p2, t('su fecha ya pasó'));
   // «Elegir otra semana»: el paso 2 con ese grupo, su semana vencida no queda elegida y se elige otra
+  await aProgramados(p2);
   await Promise.all([p2.waitForNavigation(), p2.click('[data-programados] tr[data-grupo="APD-G-2026-005"] a:has-text("Elegir otra semana")')]);
   await listoGrupos(p2);
   comprueba(await pasoDe(p2) === 2 && (await p2.inputValue('#fecha_inicio')) === '' && (await p2.$$('.arm-semana[data-elegida]')).length === 0, t('«Elegir otra semana» abre el paso 2 sin la semana vencida elegida'));
@@ -1827,6 +1830,12 @@ async function listoGrupos(pg) {
   await pg.waitForFunction(() => window.FormKit && FormKit.pasos && !/Cargando/.test(document.querySelector('[data-bajada]').textContent));
 }
 const pasoDe = (pg) => pg.evaluate(() => FormKit.pasos.actual() + 1);
+// Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026): desde 1024 px los grupos programados van en su pestaña;
+// para usarlos, se abre (en teléfono no hay pestañas: ya están a la vista)
+async function aProgramados(pg) {
+  await pg.waitForSelector('#pe-programados', { state: 'attached' });
+  if (await pg.isVisible('#pe-programados') && (await pg.getAttribute('#pe-programados', 'aria-selected')) !== 'true') await pg.click('#pe-programados');
+}
 async function siguientePaso(pg) {
   const antes = await pasoDe(pg);
   await pg.click('[data-paso]:not([hidden]) [data-accion="siguiente"]');
@@ -2170,6 +2179,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
     && /Del 16\/11\/2026 al 20\/11\/2026/.test(await texto('[data-programados] tr[data-grupo="APD-G-2026-007"]')) && await pg.isHidden('[data-hecho]:not(.pasos-btn)'),
     t('al recargar, el grupo nuevo está por confirmar en su semana (le falta la persona instructora, de Capacitación) y el aviso no se repite'));
   // Un grupo sin fecha que ya existe: «Elegir semana» abre el paso 2 con ese grupo (sus personas ya están; se agregan más)
+  await aProgramados(pg);
   await Promise.all([pg.waitForNavigation(), pg.click(`[data-programados] tr[data-grupo="${sinFecha.folio}"] a:has-text("Elegir semana")`)]);
   await listoGrupos(pg);
   comprueba(await pasoDe(pg) === 2 && new RegExp(`grupo=${sinFecha.folio}`).test(pg.url()), t('«Elegir semana» de la tabla abre el paso 2 con ese grupo'));
@@ -2683,6 +2693,7 @@ async function romper(navegador) {
   // M3 · un grupo por confirmar lleno se confirma y se le elige semana
   await conRuta(pg, (j) => { const g = j.grupo.find((x) => x.folio === 'APD-G-2026-004'); const n = j.inscripcion.filter((i) => i.grupo_id === g.id && i.activa).length; g.cupo_minimo = 1; g.cupo_maximo = n; });
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await aProgramados(pg);
   await pg.waitForSelector('[data-programados] tr[data-grupo="APD-G-2026-004"]');
   const lleno = await pg.textContent('[data-programados] tr[data-grupo="APD-G-2026-004"]');
   // Desde los ajustes del equipo (25/10/2026) quien arma los grupos ya no lo confirma: lo dice la fila, sin el botón
@@ -2840,7 +2851,8 @@ async function romper(navegador) {
   const cargaron = [];
   for (const [pagina, sel] of [['grupos.html?curso=poda-nueva', '[data-programados] tr[data-grupo]'], ['programar.html?curso=poda-nueva', '.arm-semana-elegir'], ['aplicar.html?folio=APD-G-2026-003', '[data-con-grupo]:not([hidden])'], ['asistencia.html?folio=APD-G-2026-003', '.asistencia-fila']]) {
     await pg.goto(BASE + pagina);
-    cargaron.push(await pg.waitForSelector(sel, { timeout: 8000 }).then(() => true, () => false) && !/No se pud/.test(await pg.textContent('main')));
+    // attached: en escritorio los grupos programados van en su pestaña (acomodo de escritorio, parte B, 25/10/2026)
+    cargaron.push(await pg.waitForSelector(sel, { timeout: 8000, state: 'attached' }).then(() => true, () => false) && !/No se pud/.test(await pg.textContent('main')));
   }
   comprueba(cargaron.every(Boolean), t(`B5-04: con un grupo y una inscripción null en los datos, Grupos, Programar, Aplicar y Asistencia cargan (${cargaron.join(', ')})`));
   sinErrores(errores, 'B5-04');
@@ -3319,6 +3331,7 @@ async function romperDos(navegador) {
   await parte('F3 B10', async ({ pagina }) => {
     const gc = await pagina('grupos.html?curso=poda-nueva');
     const completar = '[data-programados] tr[data-grupo="APD-G-2026-005"] button:has-text("Completar")';
+    await aProgramados(gc);
     await gc.waitForSelector(completar);
     await Promise.all([gc.waitForNavigation(), gc.dblclick(completar)]);
     await gc.waitForSelector('[data-hecho]:not(.pasos-btn) .aviso');
@@ -4391,6 +4404,7 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
       t(`P126: en ${donde}, una etiqueta de estado larga ${escritorio ? 'no ensancha su tarjeta' : 'se parte en renglones y no ensancha su tarjeta ni la página'} (${JSON.stringify(r)})`));
   };
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await aProgramados(pg);
   await pg.waitForSelector('[data-programados] .tabla .estado');
   await etiquetaLarga('[data-programados] .tabla .estado', '«Grupos programados»');
   await captura(pg, `151-grupos-etiqueta-larga-${sufijo}`);
@@ -4607,7 +4621,13 @@ async function focoAccesibilidad(navegador) {
     await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
     await listoGrupos(page);
     await dosCuadros(page);
-    const pegajosos = await page.evaluate(() => [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility()).map((x) => x.className));
+    // El panel «Tu grupo» (acomodo de escritorio, parte B, 25/10/2026) es fijo, pero va al lado de la lista: cuenta lo fijo
+    // que cruza la columna de la lista
+    const pegajosos = await page.evaluate(() => {
+      const l = document.querySelector('[data-personas]').getBoundingClientRect();
+      return [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility())
+        .filter((x) => { const r = x.getBoundingClientRect(); return r.left < l.right && r.right > l.left; }).map((x) => x.className);
+    });
     comprueba(!pegajosos.length, `[${w}×${h}] B4-01: en el paso 3 de «Grupos» nada queda fijo ni pegajoso sobre la lista${pegajosos.length ? ` (${pegajosos.join(', ')})` : ''}`);
     await page.focus('#paso-personas .titulo-paso');
     let casillas = 0; const ocultas = [];
@@ -4918,6 +4938,8 @@ async function focoAccesibilidad(navegador) {
   for (const [u, sel, sesion] of [['grupos.html?curso=poda-nueva', '[data-programados] tr[data-grupo]', null], ['material.html', '.material-doc', null]]) {
     const { c, page } = await nuevo(1440, 900, sesion);
     await page.goto(BASE + u);
+    // En «Grupos», los enlaces de los grupos programados están en su pestaña (acomodo de escritorio, parte B)
+    if (/grupos/.test(u)) await aProgramados(page);
     await page.waitForSelector(sel);
     const repetidos = await page.evaluate(() => {
       const nombre = (a) => (a.getAttribute('aria-label') || a.textContent).replace(/\s+/g, ' ').trim();
@@ -7861,7 +7883,8 @@ async function registroAsistido(navegador) {
     const x = personas[1];
     if (!x.contexto) throw new Error('no se creó la persona de la computadora');
     const { page, errores } = x.contexto;
-    await page.goto(BASE + 'revision.html');
+    // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
+    await page.goto(BASE + 'revision.html#t-avisos-tel');
     await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
     const ficha = page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) });
     const txt = ((await ficha.textContent()) || '').replace(/\s+/g, ' ');
@@ -7878,7 +7901,8 @@ async function registroAsistido(navegador) {
     await page.focus('[data-accion="enviar"]');
     await page.click('[data-accion="enviar"]');
     await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
-    await page.goto(BASE + 'revision.html');
+    // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
+    await page.goto(BASE + 'revision.html#t-avisos-tel');
     await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
     const cita = page.locator('[data-avisos-lista] .ficha', { hasText: 'ELVIRA SUPUESTO MODELO' });
     const tc = ((await cita.textContent()) || '').replace(/\s+/g, ' ');
@@ -8006,7 +8030,8 @@ async function registroAsistido(navegador) {
           estado_desde: `${d.fecha_corte}T12:00:00-06:00` });
         await r.fulfill({ contentType: 'application/json', body: JSON.stringify(d) });
       });
-      await page.goto(BASE + 'revision.html');
+      // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
+      await page.goto(BASE + 'revision.html#t-avisos-tel');
       await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
       const amalia = ((await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) }).first().textContent()) || '').replace(/\s+/g, ' ');
       comprueba(/Hay un plazo para corregir\. Te quedan 2 oportunidades para corregir\./.test(amalia), t(`${ancho} px: el aviso de las observaciones (S2) dice cuántas oportunidades le quedan`));
