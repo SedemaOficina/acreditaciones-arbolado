@@ -673,6 +673,108 @@ body > main { flex: 1 0 auto; width: 100%; }
   .estado-atencion[data-plazo="atrasada"] { border-width: var(--b-2); }
 }
 
+/* =========================================================
+   Escritorio · parte C: Asistencia, Aplicar el examen y Ficha del grupo
+   (acomodo de escritorio aprobado por Liber el 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.5, 4.6 y 4.9)
+   Debajo de 1024 px nada cambia: todo lo de aquí va en @media (min-width: 1024px) y lo fijo, además, en
+   (min-height: 700px), sin pasar del 25 % del alto de la ventana (criterio de P177). Los nombres llevan «esc-c-» para
+   unificarlos al integrar con las partes A y B.
+   ========================================================= */
+/* La cuenta corta de la franja del pase de lista sólo se ve en computadora (en teléfono la cuenta completa basta) */
+.esc-c-cuenta { display: none; }
+/* Los avisos del grupo en «Aplicar el examen», juntos con el mismo espacio que tenían sueltos en .grupo-examen */
+.esc-c-avisos { display: grid; gap: var(--e-3); }
+@media (min-width: 1024px) {
+  /* ── Asistencia (4.5) ── */
+  /* Franja del día: el día y el grupo a la izquierda; la regla de asistencia y la leyenda a la derecha. Propuesta al
+     estándar E2 (franja de contexto), aquí sin fijar: el día va también en «Guardar la asistencia del día N». */
+  .esc-c-franja { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-1) var(--e-6); align-items: baseline; margin-block-end: var(--e-4); }
+  .esc-c-franja > .titulo-paso { grid-column: 1; grid-row: 1; margin: 0; }
+  .esc-c-franja > .bajada { grid-column: 1; grid-row: 2; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-3); margin: 0; }
+  .esc-c-franja > [data-regla] { grid-column: 2; grid-row: 1; margin: 0; text-align: end; }
+  .esc-c-franja > .asis-leyenda { grid-column: 2; grid-row: 2; justify-content: flex-end; margin: 0; }
+  .esc-c-franja .grupo-titulo { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); }
+  .esc-c-franja .grupo-bajada-datos { margin: 0; }
+  /* Personas en una rejilla de tarjetas: 2 por renglón a 1024 px, 3 de 1280 a 1440 y 4 a 1920 (tarjetas de 336 px como
+     mínimo). Propuesta al estándar E8 (.rejilla-tarjetas). El orden de lectura es por renglón, el alfabético. */
+  .esc-c-personas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--e-11) * 3.5)), 1fr)); gap: var(--e-3); }
+  .esc-c-personas > .asistencia-fila { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: var(--e-1) var(--e-3); padding: var(--e-2) var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+  /* Fotografía de 64 × 80 px a la izquierda; a su derecha el nombre, la tira y «¿Asistió? Sí / No» en un renglón */
+  .esc-c-personas > .asistencia-fila > .asistencia-foto { grid-row: 1 / span 2; width: calc(var(--e-9) + var(--e-4)); height: calc((var(--e-9) + var(--e-4)) * 1.25); }
+  .esc-c-personas > .asistencia-fila > .asis-opciones { grid-column: 2; }
+  /* La pregunta a la izquierda de Sí y No (flotada deja de ser la leyenda que el navegador dibuja sobre el borde, pero
+     sigue siendo la leyenda del grupo: el nombre accesible no cambia) */
+  .esc-c-personas .asis-pregunta { float: inline-start; display: flex; align-items: center; min-height: var(--alto-opcion); margin: 0 var(--e-3) 0 0; }
+  .esc-c-personas .opcion-corta { min-width: var(--objetivo-min); }
+  /* Barra de abajo: los totales a la izquierda y los dos botones a la derecha; lo que no se pudo guardar, debajo, a todo lo
+     ancho. Ocupa todo el ancho de la tarjeta. */
+  .esc-c-barra:not([hidden]) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .esc-c-barra { margin-inline: calc(-1 * var(--e-seccion)); padding: var(--e-3) var(--e-seccion); background: var(--blanco); border-block-start: var(--b-2) solid var(--guinda); }
+  .esc-c-barra > .asis-totales { grid-column: 1; grid-row: 1; }
+  .esc-c-barra > .acciones-grupo { grid-column: 2; grid-row: 1; margin: 0; }
+  .esc-c-barra > [data-falta-marcar] { grid-column: 1 / -1; grid-row: 2; }
+  /* Versión de prueba: el botón «Menú de pruebas» va abajo a la izquierda en esta pantalla (F3 B11); la barra le reserva su
+     lugar para que no tape los totales ni quede tapado */
+  .modo-pruebas .esc-c-barra { padding-inline-start: calc(var(--e-11) + var(--e-6)); }
+
+  /* ── Aplicar el examen (4.6, con el cambio de Liber del 25/10/2026: el pase de lista sigue una persona por renglón) ── */
+  /* Los datos del grupo en una línea: cada par rótulo y valor seguido (el rótulo en gris los separa); si no caben, el par
+     pasa completo al renglón siguiente. Propuesta al estándar E11 (datos de rótulo y valor en línea o en rejilla). */
+  .esc-c-grupo > .datos { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-6); padding-block: var(--e-2); border-block-end: var(--b-1) solid var(--linea); }
+  .esc-c-grupo > .datos > .datos-par { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); padding: 0; border: 0; }
+  .esc-c-grupo > .datos .datos-valor { font-size: var(--t-md); }
+  .esc-c-grupo .grupo-titulo { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); }
+  /* Los avisos del grupo en una sola fila */
+  .esc-c-avisos { grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--e-11) * 4)), 1fr)); }
+  /* Franja del pase de lista: título, cuenta corta e «Imprimir los códigos» en el primer renglón; la explicación, la cuenta
+     completa (role="status") y la lista debajo. Las tres piezas de la franja son celdas de la misma fila de la rejilla, con
+     el mismo fondo y el mismo filete: juntas se ven como una sola banda. Propuesta al estándar E2 y E7. */
+  .esc-c-pase { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
+  .esc-c-pase > * { grid-column: 1 / -1; }
+  .esc-c-pase > .titulo-bloque, .esc-c-pase > .esc-c-cuenta, .esc-c-pase > .esc-c-franja-accion {
+    grid-row: 1; align-self: stretch; margin: var(--e-seccion) 0 var(--e-3); padding-block: var(--e-3); background: var(--blanco);
+    border-block-start: var(--b-2) solid var(--dorado); border-block-end: var(--b-1) solid var(--linea);
+  }
+  .esc-c-pase > .titulo-bloque { grid-column: 1; display: flex; align-items: center; }
+  .esc-c-pase > .esc-c-cuenta { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); padding-inline: var(--e-4); font-size: var(--t-md); color: var(--texto); }
+  .esc-c-pase > .esc-c-franja-accion { grid-column: 3; display: flex; align-items: center; }
+  .esc-c-franja-accion > .btn { width: auto; }
+  .esc-c-cuenta-dato { white-space: nowrap; }
+  .esc-c-cuenta strong { font-size: var(--t-lg); font-family: var(--fuente-titulo); }
+  /* Renglón de cada persona, más compacto: «Ampliar» a la derecha de la fotografía, no debajo. La fotografía conserva sus
+     96 px (es la verificación de identidad) y se sigue ampliando ahí mismo. El código, grande. */
+  .esc-c-pase .examen-foto-boton { grid-template-columns: auto auto; align-items: end; justify-items: start; }
+  .esc-c-pase .examen-codigo { font-size: var(--t-xl); }
+
+  /* ── Ficha del grupo (4.9) ── */
+  /* «Persona instructora y confirmación» en una columna lateral de 384 px, cuando se ve. Propuesta al estándar E1
+     (.con-lateral). */
+  .esc-c-ficha:has(> [data-confirmar]:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) calc(var(--e-11) * 4); gap: 0 var(--e-5); align-items: start; }
+  /* Cabeza con el cupo a la derecha */
+  .esc-c-cabeza { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--e-11) * 3)); gap: var(--e-3) var(--e-6); align-items: start; }
+  .esc-c-cabeza > .cupo { margin-block: 0; }
+  /* Los datos del curso en una rejilla de 2 columnas (3 desde 1280 px), cada rótulo sobre su valor. Propuesta al estándar
+     E11. */
+  .esc-c-datos > .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-5); margin-block-start: var(--e-4); }
+  .esc-c-datos > .datos > .datos-par { grid-template-columns: minmax(0, 1fr); align-content: start; }
+  /* Pestañas «Personas del grupo» y «Asistencia por día» (módulo pestanas del estándar, app/grupo.js) */
+  .esc-c-pestanas { margin-block: var(--e-seccion) 0; }
+  .esc-c-pestanas .pestanas-panel > .tabla-marco:first-child, .esc-c-pestanas .solo-lector + .tabla-marco { margin-block-start: 0; }
+}
+@media (min-width: 1280px) {
+  .esc-c-datos > .datos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+/* Lo fijo, sólo con alto suficiente: la barra de la asistencia abajo y la franja del pase de lista arriba (cada una, por
+   debajo del 25 % del alto; nunca van juntas en una misma pantalla) */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .esc-c-barra { position: sticky; bottom: 0; z-index: calc(var(--z-barra) - 1); box-shadow: var(--sombra-hoja); }
+  /* El control enfocado con el teclado no queda debajo de la barra (WCAG 2.4.11) */
+  html:has(.esc-c-barra:not([hidden])) { scroll-padding-bottom: calc(var(--objetivo-min) + var(--e-7) + var(--e-4)); }
+  html:has(.esc-c-barra [data-falta-marcar]:not([hidden])) { scroll-padding-bottom: calc(var(--objetivo-min) + var(--e-7) + var(--e-4) + var(--e-11)); }
+  .esc-c-pase > .titulo-bloque, .esc-c-pase > .esc-c-cuenta, .esc-c-pase > .esc-c-franja-accion { position: sticky; top: 0; z-index: calc(var(--z-barra) - 1); }
+  html:has(.esc-c-pase) { scroll-padding-top: calc(var(--e-11) + var(--e-4)); }
+}
+
 /* ---------- Impresión ---------- */
 /* Registro asistido: al imprimir el acuse sólo sale la hoja sencilla (app/solicitud.js pone .imprime-hoja en el cuerpo) */
 @media print {
