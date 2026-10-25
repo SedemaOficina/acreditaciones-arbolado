@@ -36,6 +36,30 @@ sólo se cuida que funcionen. La asistencia y el examen se cuidan en los dos tam
 
 En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la pantalla de cada papel; también está en «Ir a otra pantalla».
 
+### 1 bis C. Acomodo de escritorio: Asistencia, Aplicar el examen y Un grupo (decisión de Liber del 25/10/2026)
+
+Desde 1024 px de ancho (debajo, el teléfono y la tableta quedan como antes); lo fijo, sólo con 700 px de alto o más y sin
+pasar del 25 % del alto. Estilos en `sitio/app/apd.css`, sección «Escritorio · parte C»; prueba permanente
+`SOLO=escritorio-c` de `herramientas/probar-sitio.mjs`; mediciones en `docs/diseno-escritorio/DIAGNOSTICO.md` (4.5, 4.6 y 4.9).
+
+- **Asistencia**: el día, el grupo, la regla de asistencia y la leyenda en una franja de dos renglones; las personas hacia
+  abajo, una por renglón, como el pase de lista (cambio de Liber del 25/10/2026: lista, no rejilla de tarjetas), en un
+  renglón compacto con su fotografía de 64 × 80, nombre, tira de días, etiqueta de riesgo y «¿Asistió? Sí / No» a la derecha;
+  la barra de abajo («N asistieron · N faltaron · N sin marcar», «Todas asistieron», «Guardar la asistencia del día N» y, si
+  algo no se guardó, su aviso) queda fija al pie. En la versión de prueba la barra le reserva su lugar al botón «Menú de
+  pruebas».
+- **Aplicar el examen**: los cinco datos del grupo en una línea (rótulo y valor seguidos) y los avisos del grupo en una sola
+  fila. El título «Día 5 de 5 · Pase de lista en el salón de cómputo», una cuenta corta («N presentes · N no llegó · N por
+  pasar lista · de N con derecho», a la vista; la que se anuncia sigue siendo la frase completa de abajo) e «Imprimir los
+  códigos» forman una franja fija arriba; en computadora el botón de imprimir se lleva a esa franja (en teléfono sigue
+  después de los pasos del examen). El pase de lista sigue una persona por renglón, en una sola columna (cambio de Liber
+  del 25/10/2026: una rejilla podía confundir), más compacto: «Ampliar» va a la derecha de la fotografía, que conserva sus
+  96 px; ya presente, el código va grande.
+- **Un grupo**: el cupo a la derecha de la cabeza; los datos del curso en una rejilla de 2 columnas (3 desde 1280 px);
+  con el curso en marcha o concluido, «Personas del grupo» y «Asistencia por día» como pestañas del estándar (módulo
+  `pestanas`, que arma `app/grupo.js` al abrir la página en computadora: son dos vistas de las mismas personas y cada una
+  conserva sus columnas); «Persona instructora y confirmación» (o «Para confirmar el grupo») en una columna lateral de 480 px.
+
 ## 2. Reglas de la revisión
 
 - **Máximo dos oportunidades para corregir** (ajustes del equipo, 25/10/2026; parámetro `oportunidades_correccion`): cada

@@ -1790,6 +1790,9 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await captura(pg, `asistencia-guardada-${sufijo}`);
   // La ficha de un grupo concluido conserva la asistencia de conjunto
   await pg.goto(BASE + `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'concluido').folio}`);
+  await pg.waitForSelector('[data-conc-filas] tr', { state: 'attached' });
+  // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» es una pestaña; se abre para verla
+  if (await pg.locator('#pt-asistencia').count()) await pg.click('#pt-asistencia');
   await pg.waitForSelector('[data-conc-filas] tr');
   comprueba(/Sin derecho/.test(await texto('[data-concentrado]')), t('la ficha de un grupo concluido muestra la asistencia por día y quién se quedó sin derecho'));
   await sinDesborde(pg, t('grupo concluido con su concentrado'));
@@ -6636,7 +6639,8 @@ async function sesion23(navegador) {
     await page.waitForSelector('.asistencia-fila');
     const tira = await page.textContent('main');
     await page.goto(BASE + 'grupo.html?folio=APD-G-2026-003');
-    await page.waitForSelector('[data-conc-encabezado] th');
+    // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» va en una pestaña (oculta al abrir)
+    await page.waitForSelector('[data-conc-encabezado] th', { state: 'attached' });
     const encabezado = await page.textContent('[data-conc-encabezado]');
     const datosG = await page.textContent('[data-datos]');
     comprueba(/16\/10\/2026 · repaso de conocimientos y examen final/.test(encabezado) && /Último día \(repaso de conocimientos y examen final\)/.test(datosG) && /Hora de salida\s*15:00/.test(datosG) && !errores.length,
@@ -7148,8 +7152,10 @@ async function asistenciaDia5(navegador) {
       comprueba(primero === 'Día 5 de 5 · Pase de lista en el salón de cómputo', t(`${ancho}: en «Aplicar el examen», el primer paso es «Día 5 de 5 · Pase de lista en el salón de cómputo» («${primero}»)`));
       const lista = await texto(page, '[data-lista-texto]');
       comprueba(/asistencia del día 5/.test(lista) && /Repaso de conocimientos y examen final/.test(lista), t(`${ancho}: el pase de lista dice que es la asistencia del día 5, el de repaso y examen final («${lista.slice(0, 160)}»)`));
-      comprueba(await ordenAntes(page, '#t-pase-lista', '[data-tabla]') && await ordenAntes(page, '[data-tabla]', '#t-el-examen') && await ordenAntes(page, '#t-el-examen', '[data-imprimir]'),
-        t(`${ancho}: primero el pase de lista (con su lista), después el examen (códigos y pantalla del examen)`));
+      // Acomodo de escritorio (25/10/2026): desde 1024 px «Imprimir los códigos» va en la franja del pase de lista, arriba
+      comprueba(await ordenAntes(page, '#t-pase-lista', '[data-tabla]') && await ordenAntes(page, '[data-tabla]', '#t-el-examen')
+        && (ancho >= 1024 ? Boolean(await page.$('[data-franja-accion] [data-imprimir]')) : await ordenAntes(page, '#t-el-examen', '[data-imprimir]')),
+        t(`${ancho}: primero el pase de lista (con su lista), después el examen (códigos y pantalla del examen; en computadora, «Imprimir los códigos» en la franja del pase de lista)`));
       await revisaAxe(page, `${ancho}: «Aplicar el examen»`);
       // Pasar lista: una presente y otra que no llegó
       const ins = await page.$$eval('[data-filas] [data-accion="presente"]', (l) => l.map((b) => b.dataset.ins));
@@ -7168,6 +7174,9 @@ async function asistenciaDia5(navegador) {
         t(`${ancho}: en «Asistencia», el pase de lista cuenta como la asistencia del día 5 («${ult}»)`));
       // En la ficha del grupo: la columna del último día
       await page.goto(BASE + `grupo.html?folio=${G3}`);
+      await page.waitForSelector('[data-conc-filas] tr', { state: 'attached' });
+      // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» es una pestaña; se abre para verla
+      if (await page.locator('#pt-asistencia').count()) await page.click('#pt-asistencia');
       await page.waitForSelector('[data-conc-filas] tr');
       const celda = (nombre) => page.evaluate((n) => {
         const tr = [...document.querySelectorAll('[data-conc-filas] tr')].find((r) => r.cells[0].textContent.trim() === n.trim());
@@ -8425,6 +8434,305 @@ async function escritorioA(navegador) {
     await c.close();
   }
 }
+/* ── Acomodo de escritorio, parte C (decisión de Liber del 25/10/2026; SOLO=escritorio-c) ──
+   Asistencia, Aplicar el examen y la ficha del grupo (docs/diseno-escritorio/DIAGNOSTICO.md, 4.5, 4.6 y 4.9), con el
+   escenario de volumen del proyecto (un grupo de 25 en su día 3) y, para el pase de lista, ese mismo grupo en su día 5.
+   A 1366 × 768, 1440 × 900 y 1920 × 1080 comprueba: lo que queda a la vista sin bajar (los datos que identifican el caso y
+   la acción principal), que lo fijo no pase del 25 % del alto, que no haya desborde horizontal y axe; y lo propio de cada
+   pantalla (asistencia en renglones compactos, barra fija con «Guardar», franja fija con la cuenta e «Imprimir los códigos», una
+   persona por renglón con su fotografía de 96 px, pestañas del estándar, panel lateral). A 390 px, que nada de eso aplique:
+   el orden y la altura de antes. A 1440 × 650, que nada quede fijo (sólo desde 700 px de alto).
+   «A la vista» se mide con la cabecera compacta del personal que hace la parte A (≤ 88 px más las dos franjas de la versión
+   de prueba): la posición de cada pieza se toma desde el final de la sesión del personal. Lo fijo se mide tal cual. */
+async function escritorioC(navegador) {
+  const t = (m) => `[escritorio C] ${m}`;
+  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+  if (!axe) console.log('OMITIDO  [escritorio C] axe: falta AXE=<ruta a axe.min.js del estándar>');
+  const { execFileSync } = await import('node:child_process');
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const salida = join(mkdtempSync(join(tmpdir(), 'apd-escritorio-c-')), 'volumen.json');
+  execFileSync('node', [join(raiz, 'herramientas/escenario-volumen.mjs'), join(raiz, 'sitio/datos/ficticios.json'), salida]);
+  const vol = JSON.parse(readFileSync(salida, 'utf8'));
+  const G25 = 'APD-G-2026-020';
+  const g25 = vol.grupo.find((g) => g.folio === G25);
+  // El mismo grupo en su día 5: el corte pasa al viernes y los días 3 y 4 quedan capturados (asistieron)
+  const examen = JSON.parse(JSON.stringify(vol));
+  examen.fecha_corte = APD_SUMA_DIAS(g25.fecha_inicio, 4);
+  for (const i of examen.inscripcion.filter((x) => x.grupo_id === g25.id && x.activa)) {
+    for (const dia of [3, 4]) examen.asistencia.push({ dia, asistio: true, capturada_en: `${APD_SUMA_DIAS(g25.fecha_inicio, dia - 1)}T18:30:00-06:00`, capturada_por: g25.instructor, inscripcion_id: i.id });
+  }
+  const CAPACITACION = (datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio) || {}).folio;
+  const nuevo = async (ancho, alto, cuerpo) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+    if (cuerpo) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(cuerpo), contentType: 'application/json' }));
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  const sinErr = (errores, donde) => comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+  const revisaAxe = async (page, donde) => {
+    if (!axe) return;
+    if (!(await page.evaluate(() => Boolean(window.axe)))) await page.evaluate(axe);
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 140)).join(' || ')}`));
+    comprueba(!v.length, t(`${donde}: axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
+  };
+  /* Posición de cada selector con la cabecera compacta: [fin de la pieza en la ventana, alto de la ventana]. La cabecera de
+     hoy (franjas de prueba, cabecera institucional y sesión) se cambia por la compacta de la parte A: 88 px más las dos
+     franjas de la versión de prueba. Sin desplazar la página. */
+  const aLaVista = (page, selectores) => page.evaluate((sels) => {
+    const sesion = document.querySelector('[data-sesion-personal]');
+    const r = sesion.getBoundingClientRect();
+    const fin = r.bottom + scrollY + parseFloat(getComputedStyle(sesion).marginBottom);
+    const pruebas = [...document.querySelectorAll('.entorno-pruebas, .ubicacion-prueba')].reduce((s, e) => s + e.getBoundingClientRect().height, 0);
+    const base = 88 + pruebas;
+    return sels.map((s) => {
+      const e = document.querySelector(s);
+      if (!e || !e.getClientRects().length) return [s, null];
+      const b = e.getBoundingClientRect();
+      return [s, Math.round(b.bottom + scrollY - fin + base), Math.round(b.top + scrollY - fin + base)];
+    });
+  }, selectores);
+  const revisaVista = async (page, selectores, donde) => {
+    const alto = page.viewportSize().height;
+    for (const [s, fin, inicio] of await aLaVista(page, selectores)) comprueba(fin !== null && inicio >= 0 && fin <= alto, t(`${donde}: «${s}» a la vista sin bajar (con la cabecera compacta: ${inicio}–${fin} de ${alto} px)`));
+  };
+  // Lo fijo que está en la ventana (sin el botón del menú de pruebas): suma de altos y si cada pieza cabe
+  const fijo = (page) => page.evaluate(() => {
+    const piezas = [...document.querySelectorAll('body *')].filter((e) => {
+      const p = getComputedStyle(e).position;
+      if (!['sticky', 'fixed'].includes(p) || e.closest('.menu-pruebas-boton, dialog')) return false;
+      const b = e.getBoundingClientRect();
+      return b.height > 0 && b.bottom > 0 && b.top < innerHeight;
+    }).filter((e, _, l) => !l.some((o) => o !== e && o.contains(e)));
+    // Las piezas de una misma banda (celdas de la misma fila) cuentan una vez: se suma la unión de sus intervalos verticales
+    const tramos = piezas.map((e) => { const b = e.getBoundingClientRect(); return [Math.max(0, b.top), Math.min(innerHeight, b.bottom)]; }).sort((a, b) => a[0] - b[0]);
+    let suma = 0; let fin = -1;
+    for (const [a, b] of tramos) { if (b <= fin) continue; suma += b - Math.max(a, fin); fin = b; }
+    return { suma: Math.round(suma), alto: innerHeight, piezas: piezas.map((e) => e.className || e.tagName).slice(0, 6) };
+  });
+  const revisaFijo = async (page, donde, minimo = 0) => {
+    const f = await fijo(page);
+    comprueba(f.suma <= f.alto * 0.25 && f.suma >= minimo, t(`${donde}: lo fijo mide ${f.suma} px de ${f.alto} (≤ 25 %${minimo ? `, y está` : ''}) [${f.piezas.join(', ')}]`));
+  };
+  const enVentana = (page, sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const b = e.getBoundingClientRect(); return b.height > 0 && b.top >= 0 && b.bottom <= innerHeight; }, sel);
+  const aMitad = (page) => page.evaluate(() => { window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) / 2); });
+  const pantallas = (page) => page.evaluate(() => +(document.documentElement.scrollHeight / innerHeight).toFixed(2));
+  const encima = (page, a, b) => page.evaluate(([a, b]) => {
+    const x = document.querySelector(a); if (!x) return false;
+    const r = x.getBoundingClientRect();
+    return [...document.querySelectorAll(b)].some((y) => { const q = y.getBoundingClientRect(); return q.width && r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom; });
+  }, [a, b]);
+
+  for (const [ancho, alto] of [[1366, 768], [1440, 900], [1920, 1080]]) {
+    const d = `${ancho}×${alto}`;
+    /* ── Asistencia: grupo de 25 en su día 3 ── */
+    await bloque(`asistencia ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, vol);
+      await page.goto(BASE + `asistencia.html?folio=${G25}`);
+      await page.waitForSelector('.asistencia-fila img[src^="blob:"], .asistencia-fila img[src^="data:image"]', { state: 'attached' }).catch(() => null);
+      await page.waitForTimeout(300);
+      // La franja: el día, el grupo, la regla y la leyenda en dos renglones (alto de una sola pieza)
+      const franja = await page.evaluate(() => { const f = document.querySelector('.esc-c-franja'); const r = f.getBoundingClientRect(); const h = document.querySelector('[data-titulo-dia]').getBoundingClientRect(); const reg = document.querySelector('[data-regla]').getBoundingClientRect(); return { alto: Math.round(r.height), juntos: Math.abs(h.top - reg.top) < h.height }; });
+      comprueba(franja.juntos && franja.alto <= 120, t(`${d}: la franja del día lleva el día, el grupo, la regla y la leyenda en dos o tres renglones (${franja.alto} px; la regla junto al día)`));
+      await revisaVista(page, ['[data-titulo-dia]', '[data-guardar]', '[data-todas]', '[data-totales]'], `asistencia ${d}`);
+      // Una persona por renglón, como el pase de lista (cambio de Liber del 25/10/2026, 14:54: ya no en rejilla), en orden
+      // alfabético; renglón compacto con la fotografía de 64 × 80 y «¿Asistió? Sí / No» a la derecha, en el mismo renglón
+      const filas = await page.evaluate(() => {
+        const f = [...document.querySelectorAll('.asistencia-fila')];
+        const cajas = f.map((x) => x.getBoundingClientRect());
+        const unaColumna = cajas.every((b, i) => !i || (b.top >= cajas[i - 1].bottom - 1 && Math.abs(b.left - cajas[0].left) < 1));
+        const derecha = f.every((x) => { const q = x.querySelector('.asis-quien').getBoundingClientRect(); const o = x.querySelector('.asis-opciones').getBoundingClientRect(); return o.left >= q.right && o.top < q.bottom && q.top < o.bottom; });
+        const foto = document.querySelector('.asistencia-foto').getBoundingClientRect();
+        return { n: f.length, unaColumna, derecha, alto: Math.max(...cajas.map((b) => Math.round(b.height))), foto: [Math.round(foto.width), Math.round(foto.height)] };
+      });
+      comprueba(filas.n === 25 && filas.unaColumna, t(`${d}: las 25 personas hacia abajo, una por renglón, en una sola columna`));
+      comprueba(filas.foto[0] === 64 && filas.foto[1] === 80 && filas.alto <= 100, t(`${d}: renglón compacto (${filas.alto} px como máximo) con la fotografía de 64 × 80 (${filas.foto.join(' × ')})`));
+      comprueba(filas.derecha, t(`${d}: «¿Asistió? Sí / No» a la derecha de cada persona, en su mismo renglón`));
+      // «¿Asistió? Sí / No» conserva sus controles y su nombre accesible
+      const primera = (await page.textContent('.asistencia-fila .asis-nombre')).trim();
+      comprueba(await page.getByRole('group', { name: `${primera}, día 3: ¿Asistió?` }).count() === 1 && await page.getByRole('radio', { name: 'Sí' }).count() === 25,
+        t(`${d}: «¿Asistió?» sigue siendo el grupo de Sí y No de cada persona, con su nombre («${primera}, día 3: ¿Asistió?»)`));
+      const pantallasAsis = await pantallas(page);
+      console.log(`INFO  [escritorio C] ${d}: asistencia de 25 mide ${pantallasAsis} pantallas (antes 3.75 a 1440 × 900)`);
+      // Barra fija abajo: totales y los dos botones siempre a la vista, también a media lista; el menú de pruebas no la tapa
+      await aMitad(page);
+      comprueba(await enVentana(page, '[data-guardar]') && await enVentana(page, '[data-todas]') && await enVentana(page, '[data-totales]'),
+        t(`${d}: a media lista, «Guardar la asistencia del día 3», «Todas asistieron» y los totales siguen a la vista (barra fija abajo)`));
+      await revisaFijo(page, `asistencia ${d}, a media lista`, 40);
+      comprueba(!(await encima(page, '.menu-pruebas-boton', '.esc-c-barra .asis-totales, .esc-c-barra .btn')), t(`${d}: el botón «Menú de pruebas» no tapa los totales ni los botones de la barra`));
+      // Marcar a una persona actualiza los totales de la barra
+      await page.locator('.asistencia-fila').nth(10).locator('input[value="no"]').check({ force: true });
+      comprueba(/^0 asistieron · 1 faltó · 24 sin marcar$/.test((await page.textContent('[data-totales]')).trim()), t(`${d}: los totales de la barra cambian al marcar («${(await page.textContent('[data-totales]')).trim()}»)`));
+      await sinDesborde(page, t(`asistencia ${d}`));
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await revisaAxe(page, `asistencia ${d}`);
+      sinErr(errores, `asistencia ${d}`);
+      await c.close();
+    });
+
+    /* ── Aplicar el examen: el mismo grupo en su día 5 ── */
+    await bloque(`aplicar ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, examen);
+      await page.goto(BASE + `aplicar.html?folio=${G25}`);
+      await page.waitForSelector('[data-filas] tr .examen-foto-boton img');
+      await page.waitForTimeout(300);
+      comprueba(await page.locator('[data-grupo] .aviso').count() === 0, t(`${d}: el día del examen, con los días capturados, no hay avisos del grupo`));
+      // Los datos del grupo en una línea de datos (uno o dos renglones), no en cinco
+      const datosAlto = await page.evaluate(() => Math.round(document.querySelector('.esc-c-grupo > .datos').getBoundingClientRect().height));
+      comprueba(datosAlto <= 80, t(`${d}: los cinco datos del grupo en una línea de datos (${datosAlto} px; antes ≈ 240)`));
+      // Franja: título, cuenta corta e «Imprimir los códigos» juntos y a la vista
+      await revisaVista(page, ['#t-pase-lista', '[data-cuenta-corta]', '[data-imprimir]'], `aplicar ${d}`);
+      comprueba(await page.evaluate(() => Boolean(document.querySelector('[data-franja-accion] [data-imprimir]'))), t(`${d}: «Imprimir los códigos» va en la franja de arriba`));
+      const corta = async () => (await page.textContent('[data-cuenta-corta]')).replace(/\s+/g, ' ').trim();
+      comprueba(/^0 presentes · 0 no llegaron · \d+ por pasar lista · de \d+ con derecho$/.test(await corta()), t(`${d}: la cuenta corta de la franja («${await corta()}»)`));
+      // Una persona por renglón, con su fotografía de 96 px (no más chica: es la verificación de identidad)
+      const filas = await page.evaluate(() => {
+        const f = [...document.querySelectorAll('[data-filas] tr')];
+        const tops = f.map((x) => Math.round(x.getBoundingClientRect().top));
+        const fotos = [...document.querySelectorAll('[data-filas] .examen-foto-lista')].map((x) => Math.round(x.getBoundingClientRect().width));
+        const altos = f.map((x) => Math.round(x.getBoundingClientRect().height));
+        return { n: f.length, unoPorRenglon: new Set(tops).size === f.length, fotoMin: Math.min(...fotos), altoMax: Math.max(...altos) };
+      });
+      comprueba(filas.n === 25 && filas.unoPorRenglon, t(`${d}: las 25 personas una por renglón, en una sola columna`));
+      comprueba(filas.fotoMin >= 96 && filas.altoMax <= 150, t(`${d}: renglones compactos (${filas.altoMax} px como máximo; antes ≈ 160) con la fotografía de ${filas.fotoMin} px`));
+      comprueba(await page.locator('[data-filas] tr', { hasText: 'Sin derecho a examen' }).count() > 0, t(`${d}: «Sin derecho a examen» se ve en su renglón`));
+      // Presente: el código grande en su renglón y la cuenta corta lo cuenta
+      for (const n of [1, 2]) {
+        await page.locator('[data-filas] [data-accion="presente"]').first().click();
+        await page.waitForFunction((k) => document.querySelectorAll('[data-filas] .examen-codigo').length === k, n);
+      }
+      const codigo = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('[data-filas] .examen-codigo')).fontSize));
+      comprueba(codigo >= 20, t(`${d}: ya presente, su código va grande (${codigo} px)`));
+      comprueba(/^2 presentes · /.test(await corta()), t(`${d}: la cuenta corta cuenta a las presentes («${await corta()}»)`));
+      console.log(`INFO  [escritorio C] ${d}: aplicar el examen con 25 mide ${await pantallas(page)} pantallas (antes 6.47 a 1440 × 900)`);
+      // A media lista la franja sigue arriba, y no pasa del 25 %
+      await aMitad(page);
+      comprueba(await enVentana(page, '#t-pase-lista') && await enVentana(page, '[data-cuenta-corta]') && await enVentana(page, '[data-imprimir]'),
+        t(`${d}: a media lista, el título, la cuenta e «Imprimir los códigos» siguen a la vista (franja fija arriba)`));
+      await revisaFijo(page, `aplicar ${d}, a media lista`, 40);
+      await sinDesborde(page, t(`aplicar ${d}`));
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await revisaAxe(page, `aplicar ${d}`);
+      sinErr(errores, `aplicar ${d}`);
+      await c.close();
+    });
+
+    /* ── Aplicar el examen fuera de su día: los dos avisos en una sola fila ── */
+    await bloque(`aplicar con avisos ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, vol);
+      await page.goto(BASE + `aplicar.html?folio=${G25}`);
+      await page.waitForSelector('[data-grupo] .aviso');
+      const tops = await page.$$eval('.esc-c-avisos > .aviso', (l) => l.map((x) => Math.round(x.getBoundingClientRect().top)));
+      comprueba(tops.length === 2 && tops[0] === tops[1], t(`${d}: los dos avisos del grupo en una sola fila`));
+      await sinDesborde(page, t(`aplicar con avisos ${d}`));
+      sinErr(errores, `aplicar con avisos ${d}`);
+      await c.close();
+    });
+
+    /* ── Ficha del grupo en curso (25 personas) ── */
+    await bloque(`ficha del grupo ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, vol);
+      await page.goto(BASE + `grupo.html?folio=${G25}`);
+      await page.waitForSelector('[data-pestanas][data-listo]');
+      await revisaVista(page, ['#t-grupo', '[data-situacion] .estado', '[data-cupo-texto]', '[role="tab"]'], `ficha ${d}`);
+      const cab = await page.evaluate(() => {
+        const ti = document.querySelector('#t-grupo').getBoundingClientRect();
+        const cu = document.querySelector('[data-cupo]').getBoundingClientRect();
+        const pares = [...document.querySelectorAll('[data-datos] .datos-par')].map((x) => Math.round(x.getBoundingClientRect().top));
+        return { derecha: cu.left > ti.right && cu.top < ti.bottom, columnas: pares.filter((v) => v === pares[0]).length };
+      });
+      comprueba(cab.derecha, t(`${d}: el cupo va a la derecha de la cabeza`));
+      comprueba(cab.columnas === 3, t(`${d}: los datos del curso en una rejilla de 3 columnas (${cab.columnas})`));
+      // Pestañas del estándar: «Personas del grupo» abierta; «Asistencia por día» con el teclado (flecha derecha)
+      const tabs = page.getByRole('tab');
+      comprueba(await tabs.count() === 2 && (await tabs.nth(0).textContent()).trim() === 'Personas del grupo' && (await tabs.nth(1).textContent()).trim() === 'Asistencia por día'
+        && await tabs.nth(0).getAttribute('aria-selected') === 'true' && await page.isVisible('[data-filas] tr') && !(await page.isVisible('[data-conc-filas] tr')),
+        t(`${d}: «Personas del grupo» y «Asistencia por día» como pestañas; abre en «Personas del grupo»`));
+      await tabs.nth(0).focus();
+      await page.keyboard.press('ArrowRight');
+      comprueba(await tabs.nth(1).getAttribute('aria-selected') === 'true' && await page.isVisible('[data-conc-filas] tr') && !(await page.isVisible('[data-filas] tr'))
+        && await page.evaluate(() => document.activeElement && document.activeElement.id === 'pt-asistencia'),
+        t(`${d}: con la flecha derecha se abre «Asistencia por día», con el foco en su pestaña`));
+      comprueba(await page.locator('[data-conc-filas] tr').count() === 25 && await page.locator('[data-filas] tr').count() === 25, t(`${d}: las dos vistas conservan a las 25 personas`));
+      console.log(`INFO  [escritorio C] ${d}: ficha del grupo de 25 mide ${await pantallas(page)} pantallas (antes 4.19 a 1440 × 900)`);
+      await revisaFijo(page, `ficha ${d}`);
+      await sinDesborde(page, t(`ficha ${d}`));
+      await revisaAxe(page, `ficha ${d}`);
+      sinErr(errores, `ficha ${d}`);
+      await c.close();
+    });
+
+    /* ── Ficha del grupo con el perfil de Capacitación: el panel en una columna lateral ── */
+    await bloque(`ficha de capacitación ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto);
+      await page.goto(BASE + `grupo.html?folio=${CAPACITACION}&perfil=capacitacion`);
+      await page.waitForSelector('#confirmar[data-formkit="listo"]');
+      const lado = await page.evaluate(() => {
+        const g = document.querySelector('section[aria-labelledby="t-grupo"]').getBoundingClientRect();
+        const p = document.querySelector('[data-confirmar]').getBoundingClientRect();
+        return p.left >= g.right && Math.abs(p.top - g.top) < 2;
+      });
+      comprueba(lado, t(`${d}: «Persona instructora y confirmación» va en una columna lateral, junto a la ficha`));
+      await revisaVista(page, ['#t-grupo', '#t-confirmar', '[data-asignar="principal"]'], `ficha de capacitación ${d}`);
+      await sinDesborde(page, t(`ficha de capacitación ${d}`));
+      await revisaAxe(page, `ficha de capacitación ${d}`);
+      sinErr(errores, `ficha de capacitación ${d}`);
+      await c.close();
+    });
+  }
+
+  /* ── Menos de 700 px de alto: nada fijo ── */
+  await bloque('1440 × 650', async () => {
+    for (const [url, cuerpo, sel] of [[`asistencia.html?folio=${G25}`, vol, '.asistencia-fila'], [`aplicar.html?folio=${G25}`, examen, '[data-filas] tr']]) {
+      const { c, page } = await nuevo(1440, 650, cuerpo);
+      await page.goto(BASE + url);
+      await page.waitForSelector(sel);
+      await aMitad(page);
+      const f = await fijo(page);
+      comprueba(f.suma === 0, t(`1440 × 650, ${url.split('?')[0]}: con menos de 700 px de alto nada queda fijo (${f.suma} px)`));
+      await c.close();
+    }
+  });
+
+  /* ── Teléfono (390 px): nada del acomodo de escritorio; el orden y el alto de antes ── */
+  await bloque('390 px', async () => {
+    const { c, page, errores } = await nuevo(390, 844, vol);
+    await page.goto(BASE + `asistencia.html?folio=${G25}`);
+    await page.waitForSelector('.asistencia-fila');
+    const asis = await page.evaluate(() => ({
+      rejilla: getComputedStyle(document.querySelector('.esc-c-personas')).display, barra: getComputedStyle(document.querySelector('.esc-c-barra')).position,
+      franja: getComputedStyle(document.querySelector('.esc-c-franja')).display, foto: Math.round(document.querySelector('.asistencia-foto').getBoundingClientRect().width),
+      orden: ['[data-titulo-dia]', '[data-bajada]', '[data-regla]', '[data-leyenda]', '.asistencia-fila', '[data-guardar]'].map((s) => document.querySelector(s).getBoundingClientRect().top)
+    }));
+    comprueba(asis.rejilla === 'block' && asis.barra === 'static' && asis.franja === 'block' && asis.foto === 44 && asis.orden.every((v, i) => !i || v > asis.orden[i - 1]),
+      t('390 px: «Asistencia» como antes (lista de una columna con la fotografía de 44 px, sin barra fija; día, grupo, regla, leyenda, lista y «Guardar» en ese orden)'));
+    comprueba(await pantallas(page) <= 6.7, t(`390 px: «Asistencia» con 25 no crece (${await pantallas(page)} pantallas; antes 6.7)`));
+    await page.goto(BASE + `aplicar.html?folio=${G25}`);
+    await page.waitForSelector('[data-filas] tr');
+    const apl = await page.evaluate(() => ({
+      imprimir: Boolean(document.querySelector('.examen-herramientas [data-imprimir]')), corta: getComputedStyle(document.querySelector('[data-cuenta-corta]')).display,
+      sticky: getComputedStyle(document.querySelector('#t-pase-lista')).position, datos: getComputedStyle(document.querySelector('.esc-c-grupo > .datos')).display
+    }));
+    comprueba(apl.imprimir && apl.corta === 'none' && apl.sticky === 'static' && apl.datos === 'grid', t('390 px: «Aplicar el examen» como antes («Imprimir los códigos» después de los pasos del examen, sin franja fija ni cuenta corta, datos en ficha)'));
+    comprueba(await pantallas(page) <= 15.43, t(`390 px: «Aplicar el examen» con 25 no crece (${await pantallas(page)} pantallas; antes 15.43)`));
+    await page.goto(BASE + `grupo.html?folio=${G25}`);
+    await page.waitForSelector('[data-conc-filas] tr');
+    comprueba(await page.locator('[data-pestanas]').count() === 0 && await page.isVisible('[data-filas] tr') && await page.isVisible('[data-conc-filas] tr'),
+      t('390 px: la ficha del grupo sin pestañas, con «Personas del grupo» y «Asistencia por día» una debajo de otra'));
+    comprueba(await pantallas(page) <= 15.11, t(`390 px: la ficha del grupo con 25 no crece (${await pantallas(page)} pantallas; antes 15.11)`));
+    await revisaAxe(page, '390 px: ficha del grupo');
+    sinErr(errores, '390 px');
+    await c.close();
+  });
+}
+// Fecha ISO más n días (sin depender de la zona de la máquina)
+function APD_SUMA_DIAS(iso, n) { const f = new Date(`${iso}T12:00:00Z`); f.setUTCDate(f.getUTCDate() + n); return f.toISOString().slice(0, 10); }
 
 const APD_NOMBRE = (p) => [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' ').toUpperCase();
 
@@ -8511,6 +8819,8 @@ try {
   if (toca('escritorio-a')) await parte('escritorio, parte A', () => escritorioA(navegador));
   // Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026): inicio del personal y «Grupos»
   if (toca('escritorio-b')) await parte('escritorio, parte B', () => escritorioB(navegador));
+  // Acomodo de escritorio, parte C (25/10/2026): asistencia, aplicar el examen y ficha del grupo desde 1024 px
+  if (toca('escritorio-c')) await parte('escritorio C', () => escritorioC(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

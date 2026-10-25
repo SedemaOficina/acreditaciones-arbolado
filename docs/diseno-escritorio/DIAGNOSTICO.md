@@ -255,6 +255,10 @@ A todas las pantallas del personal se suma la **cabecera compacta** (regla gener
 - **Ahorro**: con 25, de 6.5 a ≈ 2.0.
 - **Riesgo**: bajo. La foto no debe hacerse más chica para ahorrar espacio (es la verificación de identidad).
 - **Dónde**: proyecto.
+- **Cambio de Liber (25/10/2026, al hacerlo)**: el pase de lista **no** va en rejilla de varias columnas, porque puede
+  confundir: va hacia abajo, una persona por renglón, como una lista de asistencia, con cada renglón lo más compacto posible
+  sin achicar la foto. La meta deja de ser «2 pantallas o menos»: la cuenta e «Imprimir los códigos» siempre a la vista
+  (franja fija arriba). Hecho en la rama `escritorio-c`.
 
 ### 4.7 Citas de cotejo (prioridad 7)
 

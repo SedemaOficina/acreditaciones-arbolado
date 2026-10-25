@@ -27,8 +27,8 @@ const sitio = join(raiz, 'sitio');
 // estado en cinco familias (estado, P118)
 const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla',
   'visor', 'version', 'chips', 'fecha', 'resultado', 'estado',
-  // Acomodo de escritorio (decisión de Liber del 25/10/2026, parte B): pestañas y paginación del estándar 1.5.1 en el
-  // inicio del personal (bandeja) y en «Grupos»
+  // Acomodo de escritorio (decisión de Liber del 25/10/2026), estándar 1.5.1: pestañas (inicio del personal, «Grupos» y
+  // ficha del grupo, sólo desde 1024 px) y paginación (inicio del personal)
   'pestanas', 'paginacion'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
