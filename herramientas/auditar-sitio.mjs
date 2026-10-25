@@ -45,6 +45,11 @@ const unMes = new Date(`${datos.fecha_corte}T12:00:00Z`); unMes.setUTCMonth(unMe
 const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id)
   && !datos.acreditacion.some((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda' && a.vence_en > unMes.toISOString().slice(0, 10)));
 const canc = datos.acreditacion.find((a) => a.cancelada_en);
+// Oportunidades para corregir (ajustes del equipo, 25/10/2026): revisiones en línea con observaciones de cada solicitud
+const obsDe = (s) => datos.revision.filter((r) => r.solicitud_id === s.id && r.resultado === 'con_observaciones').length;
+const segundaCorreccion = datos.solicitud.find((s) => s.estado === 'enviada' && obsDe(s) === 2);
+const ultimaOportunidad = datos.solicitud.find((s) => s.estado === 'con_observaciones' && obsDe(s) === 2);
+const sinOportunidades = datos.solicitud.find((s) => s.estado === 'concluida_sin_atender' && /^Se agotaron las oportunidades de corrección/.test(s.motivo_cierre || ''));
 const enPaso = (e) => { const r = (datos.reposicion || []).find((x) => x.estado === e); return r ? datos.acreditacion.find((a) => a.id === r.acreditacion_id) : null; };
 const ESTADOS = [
   ['inicio', 'index.html', null],
@@ -97,7 +102,17 @@ const ESTADOS = [
   enPaso('con_observaciones') && ['tramites-reposicion-observada', 'tramites.html', enPaso('con_observaciones').solicitante_id],
   enPaso('acta_aceptada') && ['tramites-reposicion-aceptada', 'tramites.html', enPaso('acta_aceptada').solicitante_id],
   enPaso('repuesta') && ['reposicion-pedir', `reposicion.html?numero=${enPaso('repuesta').numero}`, enPaso('repuesta').solicitante_id],
-  enPaso('con_observaciones') && ['reposicion-corregir', `reposicion.html?numero=${enPaso('con_observaciones').numero}`, enPaso('con_observaciones').solicitante_id]
+  enPaso('con_observaciones') && ['reposicion-corregir', `reposicion.html?numero=${enPaso('con_observaciones').numero}`, enPaso('con_observaciones').solicitante_id],
+  // Ajustes del equipo, 25/10/2026: el inicio y la ficha del grupo del perfil «capacitación», la revisión de la segunda
+  // corrección y la persona en su última oportunidad o con la solicitud cerrada al agotarlas. Al corregir en su última
+  // oportunidad (solicitud.html?folio=) es la misma pantalla que «corregir-observaciones»: no se repite aquí (repetía su
+  // aviso conocido, «a.salto»); la línea de las oportunidades la prueba probar-sitio (SOLO=ajustes25), con axe
+  ['capacitacion', 'capacitacion.html', null],
+  ['grupo-capacitacion', `grupo.html?folio=${(datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio) || {}).folio}&perfil=capacitacion`, null],
+  ['grupo-en-curso-capacitacion', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}&perfil=capacitacion`, null],
+  segundaCorreccion && ['revisar-ultima-oportunidad', `revisar.html?folio=${segundaCorreccion.folio}`, null],
+  ultimaOportunidad && ['tramites-ultima-oportunidad', 'tramites.html', ultimaOportunidad.solicitante_id],
+  sinOportunidades && ['tramites-sin-oportunidades', 'tramites.html', sinOportunidades.solicitante_id]
 ].filter(Boolean);
 
 const hallazgos = [];
