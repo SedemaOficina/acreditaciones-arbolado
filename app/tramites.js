@@ -299,11 +299,8 @@
     if (s.estado === 'con_observaciones') {
       const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && d.estado === 'con_observacion' && d.observacion);
       // Regresó desde el cotejo (C 3.2): la cita con resultado «con_observaciones», posterior a la última revisión, como
-      // lo deja la base (apd.cita); la marca en_cotejo del documento queda como respaldo de la prueba
-      const ultimaRev = datos.revision.filter((r) => r.solicitud_id === s.id).map((r) => r.revisada_en || '').sort().pop() || '';
-      const desdeCita = (datos.cita || []).some((c) => c.solicitud_id === s.id && c.resultado === 'con_observaciones'
-        && new Date(c.atendida_en || c.programada_en) > new Date(ultimaRev || 0));
-      const enCotejo = desdeCita || obs.some((d) => d.en_cotejo);
+      // lo deja la base (apd.cita; APD.observadaEnCotejo); la marca en_cotejo del documento queda como respaldo de la prueba
+      const enCotejo = APD.observadaEnCotejo(datos, s) || obs.some((d) => d.en_cotejo);
       if (obs.length) {
         cambio.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste' : 'Lo que debes corregir',
           texto: el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: APD.observacionDe(req[d.requisito] || d.requisito, d.observacion) }))) }));
