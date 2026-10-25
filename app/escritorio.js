@@ -1,9 +1,9 @@
 /* =========================================================
-   escritorio-b.js · Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md,
-   secciones 4.3 y 4.4): lo común del inicio del personal (bandeja) y de «Grupos».
+   escritorio.js · Acomodo de escritorio (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md,
+   secciones 4.3, 4.4 y 4.9): lo común del inicio del personal (bandeja), de «Grupos» y de la ficha del grupo.
 
    Pestañas sólo desde 1024 px. Son las del módulo «pestanas» del estándar 1.5.1 (teclado, anuncio, tabindex rotatorio);
-   debajo de 1024 px la lista de pestañas no se ve (app/apd.css, sección «Escritorio · parte B») y cada panel se muestra
+   debajo de 1024 px la lista de pestañas no se ve (app/apd.css, sección «Escritorio», .pestanas-escritorio) y cada panel se muestra
    como antes, uno debajo de otro, con su orden y sus textos de hoy: el teléfono y la tableta no cambian. Aquí sólo se
    ponen y se quitan los atributos de panel (role, aria-labelledby, tabindex, hidden) al cruzar los 1024 px; el panel
    recuerda la etiqueta que tenía (su título) para regresársela en teléfono. Propuesta al estándar E14: «pestañas desde
@@ -31,7 +31,7 @@
       const en = mq.matches;
       const sel = seleccionada();
       // El título de un panel que repite su pestaña: en escritorio, sólo para el lector (.solo-lector del estándar)
-      for (const h of document.querySelectorAll('.escb-titulo-de-pestana')) h.classList.toggle('solo-lector', en);
+      for (const h of document.querySelectorAll('.titulo-de-pestana')) h.classList.toggle('solo-lector', en);
       for (const t of tabs) {
         const p = panelDe(t);
         if (!p) continue;
@@ -82,5 +82,5 @@
     return { activa, muestra, escritorio: () => mq.matches, tabs };
   }
 
-  global.APD_ESCRITORIO_B = { pestanas, ESCRITORIO };
+  global.APD_ESCRITORIO = { pestanas, ESCRITORIO };
 }(window));

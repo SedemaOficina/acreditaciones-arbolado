@@ -582,7 +582,7 @@
     );
   }
 
-  /* Escritorio · parte A (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.1 y 4.2): algunas
+  /* Acomodo de escritorio (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.1 y 4.2): algunas
      piezas cambian de lugar en computadora y regresan al suyo en pantallas más chicas, para que el teléfono y la tableta
      queden exactamente como estaban (mismo orden, mismos textos). Por ejemplo, la ficha de la persona entra a «Datos de la
      persona» de la franja de contexto. Cada pieza recuerda su lugar con un marcador vacío.
