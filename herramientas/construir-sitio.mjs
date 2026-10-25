@@ -7,7 +7,7 @@
 //
 // Lo que escribe es generado y no se edita a mano: sitio/formkit/, sitio/datos/ (con examen-ficticio.js, copiado de datos/), sitio/VERSION,
 // sitio/vendor/pdfjs-dist/, sitio/app/version-visible.js, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
-// corregir.html, cuenta.html y datos.html.
+// corregir.html, cuenta.html, datos.html y asistido.html.
 
 import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -329,10 +329,11 @@ for (const [pagina, marcas] of [['cotejo.html', [['cotejo-documentos', cotejoDoc
   writeFileSync(r, h);
 }
 
-// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mi perfil»
+// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta», en «Mi perfil» y en el
+//     registro asistido del personal (decisión 2026-10-25: las mismas preguntas, que se le leen a la persona)
 const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd()
   .replace(/^( *)<!-- alcaldias:opciones -->$/m, (_, s) => alcaldias.map((o) => `${s}<option value="${esc(o.clave)}">${esc(o.nombre)}</option>`).join('\n'));
-for (const p of ['cuenta.html', 'datos.html']) {
+for (const p of ['cuenta.html', 'datos.html', 'asistido.html']) {
   const r = join(sitio, p);
   const h = readFileSync(r, 'utf8');
   const ini = h.match(/^( *)<!-- adscripcion:inicio[^>]*-->/m);

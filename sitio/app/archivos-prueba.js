@@ -46,6 +46,8 @@
     cotejos: 'apd.personal.cotejos',
     grupos: 'apd.personal.grupos',
     acreditaciones: 'apd.acreditaciones',
+    // Avisos por teléfono del registro asistido que registró el personal en esta prueba (decisión 2026-10-25)
+    avisosTelefono: 'apd.personal.avisos_telefono',
     lista: 'apd.examen.lista',
     examen: 'apd.examen.c.',
     latido: 'apd.examen.latido.',
@@ -301,14 +303,16 @@
       .then((b) => Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, '0')).join(''));
   }
   /* cuenta: { curp, id, persona: {…datos de la persona…}, contrasena } → se guarda con el resumen. Sin CURP no hay
-     cuenta (auditoría 2026-10-18, A 8.3: quedaba una cuenta con la CURP vacía). */
+     cuenta (auditoría 2026-10-18, A 8.3: quedaba una cuenta con la CURP vacía). La del registro asistido (decisión
+     2026-10-25) llega sin contraseña: se guarda sin resumen y no entra hasta que la persona la activa. */
   function guardaCuenta({ curp, id, persona, contrasena }) {
     if (!curp || !id) return Promise.reject(new Error('sin_curp'));
-    return despuesDe(resumen(contrasena).then((r) => tx(CUENTAS, 'readwrite', (s) => s.put({ curp, id, persona, resumen: r, creada_en: new Date().toISOString() }))));
+    const r0 = contrasena == null ? Promise.resolve(null) : resumen(contrasena);
+    return despuesDe(r0.then((r) => tx(CUENTAS, 'readwrite', (s) => s.put({ curp, id, persona, resumen: r, creada_en: new Date().toISOString() }))));
   }
   function cuentas() { return tx(CUENTAS, 'readonly', (s) => s.getAll()).catch(() => []); }
   function cuenta(curp) { return curp ? tx(CUENTAS, 'readonly', (s) => s.get(curp)).catch(() => null) : Promise.resolve(null); }
-  function contrasenaValida(c, contrasena) { return c ? resumen(contrasena).then((r) => r === c.resumen) : Promise.resolve(false); }
+  function contrasenaValida(c, contrasena) { return c && c.resumen ? resumen(contrasena).then((r) => r === c.resumen) : Promise.resolve(false); }
 
   /* ----- Cambios de «Mi perfil» (contacto, adscripción, fotografía nueva), por persona ----- */
   const leePerfiles = () => { const v = leeLs(CLAVES.perfiles, {}); return esObjeto(v) ? v : {}; };
@@ -383,8 +387,9 @@
         revisiones: cuantos(CLAVES.revisiones), cotejos: cuantos(CLAVES.cotejos), grupos: eventosGrupos().length,
         acreditaciones: eventosAcreditaciones().length,
         lista: Object.keys(paseDeLista()).length, examenes: clavesLs(CLAVES.examen).length,
+        avisos: cuantos(CLAVES.avisosTelefono),
         // Cualquier otra clave de la prueba (por ejemplo, una señal de pantalla abierta del examen)
-        otras: clavesLs('apd.').filter((k) => ![CLAVES.sesion, CLAVES.ultimoUso, CLAVES.inicio].includes(k) && !k.startsWith(BORRADOR_LS)).length
+        otras: clavesLs('apd.').filter((k) => ![CLAVES.sesion, CLAVES.ultimoUso, CLAVES.inicio, CLAVES.avisosTelefono].includes(k) && !k.startsWith(BORRADOR_LS)).length
       };
     });
   }
@@ -792,7 +797,9 @@
               nivel_estudios: primero.nivel_estudios, carrera: primero.carrera, carrera_tecnica: primero.carrera_tecnica || null, estatus_estudios: primero.estatus_estudios,
               anios_experiencia: primero.anios_experiencia, perfil_academico: perfil ? perfil.perfil : null, experiencia_minima: perfil ? perfil.minimo : null,
               adscripcion: primero.persona.adscripcion, organizacion_id: primero.persona.organizacion_id, organizacion_nombre: primero.persona.organizacion_nombre,
-              acreditacion_anterior_id: primero.acreditacion_anterior_id || null, pago_referencia: primero.folio.replace(/-/g, ''), de_prueba: true });
+              acreditacion_anterior_id: primero.acreditacion_anterior_id || null, pago_referencia: primero.folio.replace(/-/g, ''),
+              // Registro asistido (decisión 2026-10-25): quién la capturó con la persona presente (apd.solicitud.capturada_por)
+              capturada_por: primero.capturada_por || null, de_prueba: true });
             i = d.solicitud.length - 1;
           }
           const id = d.solicitud[i].id;

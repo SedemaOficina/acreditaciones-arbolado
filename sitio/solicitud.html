@@ -64,6 +64,15 @@
   <!-- Sin rol de región viva: FormKit.anuncia lo escribe aquí y lo anuncia una sola vez en su región (auditoría 2026-10-20, RI-03) -->
   <p class="nota-borrador" data-borrador-recuperado hidden></p>
 
+  <!-- Registro asistido (decisión de Liber del 25/10/2026): el personal captura la solicitud de una persona que no sabe leer
+       ni escribir, con ella presente (?asistida=<persona>). El formulario es el mismo, escrito para la persona: se le lee.
+       Lo pinta app/solicitud.js con APD_ASISTIDO (app/registro-asistido.js). -->
+  <div class="aviso aviso-advertencia" data-asistido-banner hidden>
+    <svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg>
+    <div class="aviso-texto"><strong class="aviso-titulo">Registro asistido: usted captura la solicitud de <span data-asistido-nombre></span></strong>
+      <p>Con la persona presente. Las preguntas van escritas para ella: léaselas y capture lo que conteste. Cargue sus documentos escaneados en este momento. En el último paso léale lo capturado y marque que lo aceptó.</p></div>
+  </div>
+
   <div class="barra-fija" data-con-formulario>
     <div data-barra="Avance de la solicitud"></div>
     <p class="recordatorio" data-recordatorio="tipo" hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="recordatorio-texto">Estás solicitando: <strong data-recordatorio-texto></strong></span></p>
@@ -82,6 +91,9 @@
     <div data-interno="Lo calcula el sistema con la acreditación elegida y el historial de la persona. Se guarda en la base como apd.solicitud.tipo_acreditacion y modalidad." data-interno-etiqueta="Curso que corresponde (calculado)">
       <input type="hidden" id="tramite" name="tramite" value="" data-campo="tramite" data-auxiliar data-uso="Mostrar los documentos del curso que corresponde; lo calcula la página.">
     </div>
+    <!-- Registro asistido (decisión de Liber del 25/10/2026): si la captura el personal por la persona; lo calculan la página
+         y el servidor (con la sesión del personal) -->
+    <input type="hidden" id="asistido" name="asistido" value="no" data-campo="asistido" data-auxiliar data-uso="Pedir la marca de lectura del personal en lugar de las declaraciones de la persona cuando la solicitud la captura el personal (registro asistido); lo calculan la página y el servidor.">
 
     <!-- Paso 1 · Trámite -->
     <section class="tarjeta" data-paso data-titulo="Trámite" hidden>
@@ -582,11 +594,20 @@
       </div>
       <!-- Declaración bajo protesta de decir verdad (decisión 2026-10-15, Liber). Se escribe en mayúsculas y minúsculas:
            el texto todo en mayúsculas se lee peor. -->
+      <div data-si="asistido=no">
       <div class="destacado" data-campo="protesta" data-requerido data-uso="Dejar constancia de que la persona declara bajo protesta de decir verdad que su información es auténtica.">
         <label class="casilla"><input class="casilla-input" type="checkbox" name="protesta" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real</span><span class="destacado-ayuda">Asimismo, reconozco que proporcionar información falsa puede ocasionar la cancelación del trámite.</span></span></label>
       </div>
       <div class="destacado" data-campo="aviso" data-requerido data-uso="Dejar constancia de que se informó a la persona.">
         <label class="casilla"><input class="casilla-input" type="checkbox" name="aviso" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Leí el aviso de privacidad</span></span></label>
+      </div>
+      </div>
+      <!-- Registro asistido: la persona no lee las declaraciones; el personal se las lee con lo capturado y marca que las
+           aceptó. La marca va a la bitácora con la cuenta del personal (apd.lectura_aceptada = lo_capturado). -->
+      <div data-si="asistido=si">
+      <div class="destacado" data-campo="lectura_aceptada" data-requerido data-uso="Dejar constancia de que el personal le leyó a la persona lo capturado, la declaración bajo protesta de decir verdad y el aviso de privacidad, y que los aceptó (registro asistido; bitácora con la cuenta del personal).">
+        <label class="casilla"><input class="casilla-input" type="checkbox" name="lectura_aceptada" value="si"><span class="casilla-texto"><span class="etiqueta destacado-nombre">Le leí a la persona lo capturado, la declaración bajo protesta de decir verdad y el aviso de privacidad, y los aceptó</span><span class="destacado-ayuda">Queda registrado con su nombre y la hora. Sin esta marca no se envía.</span></span></label>
+      </div>
       </div>
       <!-- «No soy un programa automático» se marca al crear la cuenta; con la sesión abierta no se vuelve a pedir (decisión
            13 a de Liber, auditoría 2026-10-20, C3-03). Queda la trampa para programas automáticos: una persona no la ve
@@ -625,7 +646,15 @@
       <li class="secuencia-item">Si todo está completo, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.</li>
       <li class="secuencia-item">Después de la cita, la Secretaría te asigna un grupo del curso y te avisa las fechas.</li>
     </ol>
-    <div class="acuse-acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
+    <div class="acuse-acciones" data-acuse-persona><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
+    <!-- Registro asistido: el acuse se imprime en una hoja sencilla para la persona (la pinta app/solicitud.js). La envoltura
+         lleva el hidden: .acuse-acciones del estándar pone su propio display -->
+    <div data-acuse-asistido hidden>
+      <div class="acuse-acciones">
+        <button type="button" class="btn btn-primario" data-imprimir-acuse>Imprimir el acuse</button>
+        <a class="btn btn-secundario" data-acuse-ventanilla href="ventanilla.html">Ir a la ventanilla</a>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -633,6 +662,15 @@
   <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
+
+<!-- Registro asistido: la hoja sencilla que se imprime para la persona, con el folio, la fecha y los informes de la
+     Secretaría para preguntar en la ventanilla. En pantalla no se ve; al imprimir, sólo ella (app/apd.css). -->
+<section class="hoja-acuse" data-hoja-acuse aria-hidden="true">
+  <p class="hoja-acuse-titulo">Secretaría del Medio Ambiente de la Ciudad de México · Acreditaciones de arbolado urbano</p>
+  <h2 class="titulo-paso">Acuse de tu solicitud</h2>
+  <dl class="datos" data-hoja-datos></dl>
+  <p data-hoja-informes></p>
+</section>
 
 <dialog class="dialogo" id="dialogo-privacidad" aria-labelledby="titulo-privacidad">
   <h2 class="titulo-bloque dialogo-titulo" id="titulo-privacidad">Aviso de privacidad simplificado</h2>
@@ -647,6 +685,8 @@
 <script src="datos/catalogos.js?v=0.69"></script>
 <!-- Versión de prueba: guarda en este navegador los archivos enviados, para verlos en la revisión del personal. -->
 <script src="app/archivos-prueba.js?v=0.69"></script>
+<!-- Registro asistido: la cuenta del personal que captura (perfil ficticio de revisión y cotejo) -->
+<script src="app/personal.js?v=0.69"></script>
 <script src="app/formatos-propios.js?v=0.69"></script>
 <script src="app/config-solicitud.js?v=0.69"></script>
 <script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
@@ -660,6 +700,7 @@
 <script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
 <script src="formkit/modulos/copiar/copiar.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<script src="app/registro-asistido.js?v=0.69"></script>
 <script src="app/solicitud.js?v=0.69"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.69"></script>

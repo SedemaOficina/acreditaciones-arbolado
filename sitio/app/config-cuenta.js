@@ -19,6 +19,11 @@
      · CURP con cuenta activa      → rechazo con mensaje (no se crea otra);
      · CURP del padrón migrado     → si el nombre es el del registro, se activa esa cuenta y se
                                      muestra su historial; si no, se rechaza;
+     · CURP del registro asistido  → la cuenta que registró la Secretaría en el Vivero sin contraseña
+       (decisión 2026-10-25): el mismo camino que el padrón migrado (CURP y nombre); al activarla
+       la persona pone su correo (obligatorio) y su contraseña y ve lo que se capturó por ella. La
+       base pone la hora de la activación (activada_en). Si su fotografía ya está confirmada en el
+       cotejo, la API conserva ésa y no guarda la nueva (la base no deja cambiarla: foto_confirmada);
      · CURP nueva                  → cuenta nueva.
    ?simular=error | limite | lento muestra cada pantalla de fallo.
    ========================================================= */
@@ -54,7 +59,8 @@ window.FORMKIT_OPCIONES = {
         APD.cargar().then((datos) => {
           const d = payload.datos;
           const existente = datos.solicitante.find((p) => p.curp === d.curp);
-          if (existente && existente.estado !== 'sin_activar') {
+          const asistida = APD.asistidaSinActivar(existente);
+          if (existente && existente.estado !== 'sin_activar' && !asistida) {
             return mal({ mensaje: 'Ya hay una cuenta con esta CURP. Entra con ella; si no recuerdas tu contraseña, pide ayuda a la Secretaría.' });
           }
           // Un correo, una cuenta: el de otra cuenta activa no se acepta (decisión 2026-10-17)
@@ -62,20 +68,26 @@ window.FORMKIT_OPCIONES = {
             return mal({ mensaje: APD.CORREO_EN_USO, errores: [{ campo: 'correo', mensaje: APD.CORREO_EN_USO }] });
           }
           if (existente) {
-            // Registro anterior (Kobo): además de la CURP, el nombre, con una letra de tolerancia (P14)
+            // Registro anterior (Kobo) o registro asistido: además de la CURP, el nombre, con una letra de tolerancia (P14)
             if (!coincideConRegistro(d, existente)) {
               const NO = 'No coincide con el nombre que tiene la Secretaría para esta CURP.';
-              return mal({ mensaje: 'Tu nombre no coincide con el que tiene la Secretaría para esta CURP en su registro anterior. Revisa tu nombre y tus apellidos; si están bien escritos, acude a la Secretaría para aclararlo: informes de lunes a viernes, de 9:00 a 15:00 (parámetro informes_horario). Pendiente: teléfono y correo para estas aclaraciones (P132).',
+              return mal({ mensaje: `Tu nombre no coincide con el que tiene la Secretaría para esta CURP ${asistida ? 'en la cuenta que registró en el Vivero' : 'en su registro anterior'}. Revisa tu nombre y tus apellidos; si están bien escritos, acude a la Secretaría para aclararlo: informes de lunes a viernes, de 9:00 a 15:00 (parámetro informes_horario). Pendiente: teléfono y correo para estas aclaraciones (P132).`,
                 errores: [{ campo: 'nombre', mensaje: NO }, { campo: 'primer_apellido', mensaje: NO }] });
             }
           }
           // Versión de prueba: la cuenta (con la contraseña sólo como resumen) y la fotografía se guardan en este
           // navegador, para entrar otra vez, verla en «Mi perfil» y en la revisión del personal (app/archivos-prueba.js)
           const id = existente ? existente.id : `prueba:${d.curp}`;
-          const persona = Object.assign(existente ? {} : { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null, sexo: d.curp[10] },
-            { correo: d.correo, telefono: d.telefono }, APD.adscripcionDe(datos, d));
-          const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
           const P = typeof APD_ARCHIVOS_PRUEBA !== 'undefined' ? APD_ARCHIVOS_PRUEBA : null;
+          // La del registro asistido conserva lo que capturó la Secretaría (quién la registró y cuándo; en la prueba, también
+          // su nombre, si se registró en este navegador) y anota cuándo se activó (como la base, activada_en)
+          const deAsistida = asistida ? Object.assign(existente.de_prueba ? { nombre: existente.nombre, primer_apellido: existente.primer_apellido,
+            segundo_apellido: existente.segundo_apellido || null, sexo: existente.sexo } : {},
+          { registro_asistido_por: existente.registro_asistido_por, registro_asistido_en: existente.registro_asistido_en,
+            activada_en: P ? P.alCorte(datos, new Date().toISOString()) : new Date().toISOString() }) : {};
+          const persona = Object.assign(existente ? {} : { nombre: d.nombre, primer_apellido: d.primer_apellido, segundo_apellido: d.segundo_apellido || null, sexo: d.curp[10] },
+            deAsistida, { correo: d.correo, telefono: d.telefono }, APD.adscripcionDe(datos, d));
+          const foto = (payload.archivos || []).find((a) => a.campo === 'foto' && a.blob);
           // Si el navegador no deja guardar (modo privado, almacenamiento bloqueado), se dice ahora: si no, la cuenta parece
           // creada y después no se puede entrar con ella (2026-10-17)
           const guarda = P ? Promise.all([P.guardaCuenta({ curp: d.curp, id, persona, contrasena: d.contrasena }), foto ? P.guardaFoto(d.curp, foto) : null])
@@ -87,7 +99,7 @@ window.FORMKIT_OPCIONES = {
             if (!APD.guardaSesion({ id })) {
               return mal({ mensaje: `Tu cuenta de prueba quedó guardada, pero ${APD.textoNoGuardo('tu sesión').replace(/^Este/, 'este')}` });
             }
-            return ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente) });
+            return ok({ folio: d.curp, fecha: new Date().toISOString(), historial: Boolean(existente), asistida });
           }).catch(() => mal({ mensaje: APD.textoNoGuardo('tu cuenta de prueba') }));
         }).catch(mal);
       }, modo === 'lento' ? 20000 : 400);
@@ -97,6 +109,8 @@ window.FORMKIT_OPCIONES = {
   alEnviar(respuesta) {
     const h = document.querySelector('[data-cuenta-historial]');
     if (h) h.hidden = !respuesta.historial;
+    // Registro asistido: lo que capturó la Secretaría en el Vivero ya está en su cuenta
+    if (h && respuesta.asistida) h.textContent = 'Tu cuenta ya tiene lo que la Secretaría capturó contigo en el Vivero: lo verás en «Mis trámites».';
     // Con la cuenta creada, la barra de pasos ya no dice nada (el acuse ocupa el lugar del formulario)
     const barra = document.querySelector('[data-con-formulario]');
     if (barra) barra.hidden = true;
