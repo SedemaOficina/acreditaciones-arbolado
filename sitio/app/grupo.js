@@ -246,7 +246,8 @@
         for (const o of sel.options) {
           if (!o.value) continue;
           const otros = P.ocupado(datos, o.value, desde, x.ultimo, g.id);
-          o.textContent = `${P.nombreInstructor(o.value)}${o.value === g.instructor ? ' · la asignada ahora' : otros.length ? ' · tiene otro curso esas fechas' : ' · libre esas fechas'}`;
+          // La asignada ahora también dice si tiene otro curso esas fechas (la semana pudo cambiar después de asignarla)
+          o.textContent = `${P.nombreInstructor(o.value)}${o.value === g.instructor ? ' · la asignada ahora' : ''}${otros.length ? ' · tiene otro curso esas fechas' : o.value === g.instructor ? '' : ' · libre esas fechas'}`;
           o.disabled = Boolean(otros.length) && o.value !== g.instructor;
         }
         if (g.instructor) sel.value = g.instructor;
@@ -284,7 +285,8 @@
               antes: (d1) => {
                 const g1 = deAhora(d1);
                 if (!g1 || g1.estado !== g.estado) return g1 ? `el grupo ya está «${P.grupo(d1, g1).situacion.texto}»` : 'el grupo ya no existe';
-                if (instructor !== g.instructor && P.ocupado(d1, instructor, desde, x.ultimo, g.id).length) return `${P.nombreInstructor(instructor)} ya tiene otro curso esas fechas`;
+                // Sólo una persona instructora libre esas fechas (también la que ya estaba, si su semana cambió)
+                if (P.ocupado(d1, instructor, desde, x.ultimo, g.id).length) return `${P.nombreInstructor(instructor)} ya tiene otro curso esas fechas: elija a otra persona instructora`;
                 return confirmar ? P.razonNoConfirma(d1, g1, g.fecha_inicio) : null;
               },
               eventos: () => eventos,
