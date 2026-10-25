@@ -90,7 +90,9 @@
     if (g.fecha_inicio) {
       // El último día es de examen o, en el curso de primera vez, de repaso de conocimientos y examen final; la salida es a
       // las 15:00 (sesión de trabajo del 23/10/2026, P91: parámetro curso_hora_salida)
-      pares.push(['Primer día', fechaCorta(g.fecha_inicio)], [`Último día (${APD.diaFinal(x.c).toLowerCase()})`, fechaCorta(x.ultimo)],
+      // La duración, de lunes a viernes (ajustes del equipo, 25/10/2026: duración y quinto día)
+      pares.push(['Duración', x.c.dias_duracion > 1 ? `${x.c.dias_duracion} días, de lunes a viernes` : '1 día'],
+        ['Primer día', fechaCorta(g.fecha_inicio)], [`Último día (${APD.diaFinal(x.c).toLowerCase()})`, fechaCorta(x.ultimo)],
         ['Hora de entrada', APD.hhmm(g.hora_entrada) || horaEntrada], ['Hora de salida', horaSalida],
         ['Instructor', P.nombreInstructor(g.instructor)],
         ['Lugar del curso', `Aula de capacitación del ${sede}`], ['Lugar del examen', 'Salón de cómputo del PILARES Vivero Nezahualcóyotl, en el mismo predio']);

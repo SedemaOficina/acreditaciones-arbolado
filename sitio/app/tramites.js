@@ -213,7 +213,8 @@
         // Lo que necesita para no perder el examen: asistencia, identificación, cuándo es y la calificación (alta 11)
         if (c) {
           const unDia = c.dias_duracion === 1;
-          sigue = { texto: `Tu curso dura ${c.dias_duracion} ${unDia ? 'día' : 'días'}.`, pasos: [
+          // De lunes a viernes, con el último día de repaso y examen (ajustes del equipo, 25/10/2026: duración y quinto día)
+          sigue = { texto: `Tu curso dura ${c.dias_duracion} ${unDia ? 'día' : 'días, de lunes a viernes'}.`, pasos: [
             unDia ? 'Asiste al curso completo: sin esa asistencia no puedes presentar el examen.' : `Asiste al menos ${c.dias_minimos_asistencia} de los ${c.dias_duracion} días: con menos no puedes presentar el examen.`,
             unDia ? 'Al terminar el curso presentas el examen en computadora, en el salón de cómputo del PILARES Vivero Nezahualcóyotl.'
               : `El día ${c.dias_duracion} es de ${final.toLowerCase()}: presentas el examen en computadora, en el salón de cómputo del PILARES Vivero Nezahualcóyotl.`,
