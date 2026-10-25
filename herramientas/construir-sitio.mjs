@@ -24,9 +24,10 @@ const sitio = join(raiz, 'sitio');
 // 1 · Estándar: núcleo y sólo los módulos que usa el sitio, en su forma original
 // Desde la 1.2.0: visor de documentos (P67), chips fijos (P65) y fecha día/mes/año (módulo fecha, P70); desde la 1.1.0, el
 // distintivo de versión (version, P45); desde la 1.4.0, el resultado de una decisión (resultado, P113) y las etiquetas de
-// estado en cinco familias (estado, P118)
+// estado en cinco familias (estado, P118); desde la 1.5.1, las pestañas (pestanas: ficha del grupo en computadora, acomodo de
+// escritorio del 25/10/2026; la parte B lo copia también en su rama: se unifica al integrar)
 const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla',
-  'visor', 'version', 'chips', 'fecha', 'resultado', 'estado'];
+  'visor', 'version', 'chips', 'fecha', 'resultado', 'estado', 'pestanas'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
 for (const d of ['css', 'js', 'fuentes', 'iconos', 'imagenes']) cpSync(join(estandar, 'codigo', d), join(destino, d), { recursive: true });

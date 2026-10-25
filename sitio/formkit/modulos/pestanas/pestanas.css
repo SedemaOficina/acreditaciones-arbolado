@@ -1,0 +1,36 @@
+/* =========================================================
+   pestanas.css · Módulo «pestanas» · nivel OPCIONAL
+   Lista de pestañas con desplazamiento horizontal en teléfono (no se
+   apilan ni se cortan) y panel debajo. El estado se lee de aria-selected.
+   Depende de: nucleo.css. Bloques: componentes → estados.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.pestanas{margin-bottom:var(--e-5)}
+.pestanas-lista{
+  display:flex;
+  gap:var(--e-1);
+  overflow-x:auto;
+  border-bottom:var(--b-2) solid var(--linea);
+  scrollbar-width:thin;
+}
+.pestana{
+  flex:none;
+  min-height:var(--objetivo-min);
+  margin-bottom:calc(var(--b-2) * -1);
+  padding:var(--e-3) var(--e-4);
+  background:none;
+  border:0;
+  border-bottom:var(--b-3) solid transparent;
+  font-family:var(--fuente-titulo);
+  font-weight:var(--peso-semi);
+  white-space:nowrap;
+  color:var(--gris);
+}
+.pestanas-panel{padding-top:var(--e-4)}
+
+/* @bloque estados */
+
+.pestana:hover{color:var(--azul)}
+.pestana[aria-selected="true"]{border-bottom-color:var(--guinda);color:var(--guinda)}
