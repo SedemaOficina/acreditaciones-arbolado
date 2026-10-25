@@ -7585,7 +7585,8 @@ async function escritorioB(navegador) {
   const alto = (page) => page.evaluate(() => document.documentElement.scrollHeight / innerHeight);
   const PANEL = ['#t-tu-grupo', '[data-panel-datos] dd', '[data-panel-siguiente]'];
   const PANTALLAS = [
-    ['bandeja', 'revision.html', '[data-filas] tr', ['[data-indicadores]', '[role="tablist"]', '#buscar', '.tabla-bandeja thead'], 6.201],
+    // Con la cabecera compacta de la parte A (integración), también la primera fila con su «Revisar», a 1366 × 768
+    ['bandeja', 'revision.html', '[data-filas] tr', ['[data-indicadores]', '[role="tablist"]', '#buscar', '.tabla-bandeja thead', '[data-filas] tr:first-child .btn'], 6.201],
     ['grupos · 1 El curso', 'grupos.html?curso=poda-nueva&paso=1', '#paso-curso:not([hidden])', PANEL, 4.517],
     ['grupos · 2 La semana', 'grupos.html?curso=poda-nueva&paso=2', '#paso-semana:not([hidden]) .arm-semana', PANEL, 5.675],
     ['grupos · 3 Quiénes van', 'grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona', [...PANEL, '[data-panel-cupo]'], 5.224],
