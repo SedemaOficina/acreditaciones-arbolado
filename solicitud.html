@@ -155,7 +155,9 @@
       <div data-si="nivel_estudios=licenciatura|maestria|doctorado">
         <div class="campo" data-campo="carrera" data-formato="carrera" data-requerido data-finalidad="Conocer la formación de las personas acreditadas (padrón y estadística) y, en dictaminador, comprobar el perfil que piden los lineamientos." data-uso="Conocer tu formación; en dictaminador, saber si tu carrera es de las que piden los lineamientos o afín, para fijar la experiencia mínima.">
           <label class="etiqueta" for="carrera">¿Qué carrera estudiaste?</label>
-          <p class="ayuda">Al escribir aparecen las ya registradas.<span data-ayuda-posgrado hidden> Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.</span></p>
+          <!-- La carrera que no está en la lista se escribe (combo libre): llega a la revisión como «carrera por clasificar»
+               (ajustes del equipo, 25/10/2026: carrera que no aparece en el catálogo). -->
+          <p class="ayuda">Al escribir aparecen las ya registradas. Si la tuya no aparece, escríbela completa, como viene en tu título o cédula: la Secretaría la revisa.<span data-ayuda-posgrado hidden> Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.</span></p>
           <div class="combo" data-combo data-catalogo="carreras" data-libre>
             <!-- autocomplete off: no hay un valor de autocompletado para la carrera. -->
             <input class="control" id="carrera" name="carrera" type="text" maxlength="120" autocomplete="off">
@@ -623,7 +625,8 @@
       <li class="secuencia-item">La Secretaría revisa tus documentos. <span class="pendiente">Pendiente (P02): plazo de la revisión.</span></li>
       <li class="secuencia-item">Si algo falta, te lo indica en «Mis trámites» y lo corriges en línea.</li>
       <li class="secuencia-item">Si todo está completo, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.</li>
-      <li class="secuencia-item">Después de la cita, la Secretaría te asigna un grupo del curso y te avisa las fechas.</li>
+      <!-- La duración del curso que le corresponde la pone app/solicitud.js (ajustes del equipo, 25/10/2026: quinto día). -->
+      <li class="secuencia-item">Después de la cita, la Secretaría te asigna un grupo del curso y te avisa las fechas.<span data-acuse-curso></span></li>
     </ol>
     <div class="acuse-acciones"><a class="btn btn-primario" href="tramites.html">Ir a mis trámites</a></div>
   </section>
