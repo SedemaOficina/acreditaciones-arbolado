@@ -1132,6 +1132,9 @@ body > main { flex: 1 0 auto; width: 100%; }
   /* «Persona instructora y confirmación» en la columna lateral (.con-lateral, sección 1), de 480 px y no fija (mide más del
      25 %): con ese ancho su botón queda a la vista sin bajar */
   .ficha-grupo { --ancho-lateral: calc(var(--e-11) * 5); --hueco-lateral: var(--e-5); }
+  /* Con la cabecera compacta, a 1366 × 768 el botón principal de la columna terminaba justo en el borde de la ventana
+     (768,1 px): con el aire de los botones de la decisión de Revisar (sección 2) queda a la vista */
+  .ficha-grupo > .columna-lateral .acciones { margin-top: var(--e-4); padding-top: var(--e-4); }
   /* Cabeza con el cupo a la derecha */
   .grupo-cabeza-cupo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--e-11) * 3)); gap: var(--e-3) var(--e-6); align-items: start; }
   .grupo-cabeza-cupo > .cupo { margin-block: 0; }
