@@ -7498,6 +7498,171 @@ async function ajustes25(navegador) {
   }
 }
 
+/* ── Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md 4.3 y 4.4;
+   SOLO=escritorio-b) ──
+   Inicio del personal (bandeja) y «Grupos» (sus cuatro pasos) a 1366 × 768, 1440 × 900 y 1920 × 1080:
+     · lo que queda a la vista sin bajar (criterio de aceptación: en el estado inicial, lo que identifica el caso y la acción
+       principal; en la bandeja, los indicadores, las pestañas, la búsqueda y el encabezado de la tabla; en «Grupos», el
+       panel «Tu grupo» con el curso y su «Siguiente», y el cupo desde «Quiénes van»);
+     · lo fijo: las barras (lo fijo a lo ancho, como el encabezado de la tabla) suman 25 % del alto o menos, arriba y a media
+       página (criterio de P177); un lateral fijo (el panel) cabe completo en la ventana;
+     · sin desborde horizontal y axe sin violaciones;
+   y a 390 × 844, que el orden y el alto sigan como antes (versión 0.70, medidos el 25/10/2026) o mejor: sin indicadores,
+   sin lista de pestañas ni panel lateral, y las secciones una debajo de otra en el orden de antes. Además, las pestañas con
+   el teclado y desde un enlace, la paginación, «Quitar» del panel (que anuncia «n de 25») y sus botones. */
+async function escritorioB(navegador) {
+  const t = (m) => `[escritorio B] ${m}`;
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+  if (!axe) console.log('OMITIDO  [escritorio B] axe: falta AXE=<ruta a axe.min.js del estándar>');
+  const revisaAxe = async (page, que) => {
+    if (!axe) return;
+    if (!(await page.evaluate(() => Boolean(window.axe)))) await page.evaluate(axe);
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 140)).join(' || ')}`));
+    comprueba(!v.length, t(`${que}: axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
+  };
+  // Lo fijo en la ventana: las barras (unión de sus franjas de alto) y los laterales (angostos y altos), sin el menú de pruebas
+  const fijo = (page) => page.evaluate(() => {
+    const H = innerHeight, W = innerWidth;
+    const franjas = [];
+    const laterales = [];
+    for (const e of document.querySelectorAll('body *')) {
+      const pos = getComputedStyle(e).position;
+      if (pos !== 'sticky' && pos !== 'fixed') continue;
+      if (e.closest('.menu-pruebas-boton, .menu-pruebas, dialog, #version-sia') || !e.checkVisibility()) continue;
+      const r = e.getBoundingClientRect();
+      if (r.bottom <= 0 || r.top >= H || !r.width || !r.height) continue;
+      if (r.width <= W * 0.4 && r.height > H * 0.25) laterales.push({ arriba: Math.round(r.top), abajo: Math.round(r.bottom), pegado: Math.abs(r.top - parseFloat(getComputedStyle(e).top)) < 1 });
+      else franjas.push([Math.max(0, r.top), Math.min(H, r.bottom)]);
+    }
+    franjas.sort((a, b) => a[0] - b[0]);
+    let suma = 0, fin = -1;
+    for (const [a, b] of franjas) { if (b <= fin) continue; suma += b - Math.max(a, fin); fin = b; }
+    return { barras: suma / H, laterales, H };
+  });
+  const enVentana = (page, sel) => page.evaluate((s) => {
+    const e = [...document.querySelectorAll(s)].find((x) => x.checkVisibility());
+    if (!e) return null;
+    const r = e.getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= innerHeight + 0.5 ? true : `${Math.round(r.top)}–${Math.round(r.bottom)} de ${innerHeight}`;
+  }, sel);
+  const alto = (page) => page.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+  const PANEL = ['#t-tu-grupo', '[data-panel-datos] dd', '[data-panel-siguiente]'];
+  const PANTALLAS = [
+    ['bandeja', 'revision.html', '[data-filas] tr', ['[data-indicadores]', '[role="tablist"]', '#buscar', '.tabla-bandeja thead'], 6.201],
+    ['grupos · 1 El curso', 'grupos.html?curso=poda-nueva&paso=1', '#paso-curso:not([hidden])', PANEL, 4.517],
+    ['grupos · 2 La semana', 'grupos.html?curso=poda-nueva&paso=2', '#paso-semana:not([hidden]) .arm-semana', PANEL, 5.675],
+    ['grupos · 3 Quiénes van', 'grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona', [...PANEL, '[data-panel-cupo]'], 5.224],
+    ['grupos · 4 Confirmar', 'grupos.html?curso=poda-nueva&paso=4', '#paso-confirmar:not([hidden]) [data-resumen] .datos', [...PANEL, '[data-panel-cupo]'], 5.161]
+  ];
+  for (const [w, h] of [[1366, 768], [1440, 900], [1920, 1080]]) {
+    const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: ZONA });
+    const page = await ctx.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    for (const [nombre, url, listo, aLaVista] of PANTALLAS) {
+      const d = `${nombre} a ${w} × ${h}`;
+      await page.goto(BASE + url);
+      await page.waitForSelector(listo);
+      await page.waitForTimeout(150);
+      const fuera = [];
+      for (const sel of aLaVista) { const r = await enVentana(page, sel); if (r !== true) fuera.push(`${sel}: ${r === null ? 'no se ve' : r}`); }
+      comprueba(!fuera.length, t(`${d}: a la vista sin bajar (${aLaVista.join(', ')})${fuera.length ? ' · fuera: ' + fuera.join('; ') : ''}`));
+      for (const [donde, y] of [['arriba', 0], ['a media página', 0.5]]) {
+        await page.evaluate((f) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * f), y);
+        await page.waitForTimeout(50);
+        const f = await fijo(page);
+        // Un lateral mide a lo más el alto de la ventana; ya pegado arriba, cabe completo
+        const mal = f.laterales.filter((l) => l.abajo - l.arriba > f.H + 0.5 || (l.pegado && (l.arriba < 0 || l.abajo > f.H + 0.5)));
+        comprueba(f.barras <= 0.25 && !mal.length, t(`${d}, ${donde}: lo fijo a lo ancho ocupa ${Math.round(f.barras * 100)} % del alto (25 % o menos) y el lateral fijo cabe en la ventana${mal.length ? ': ' + JSON.stringify(mal) : ''}`));
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await sinDesborde(page, t(d));
+      await revisaAxe(page, d);
+    }
+    // Las pestañas: con el teclado (flechas) y desde un indicador que lleva a otra pestaña; la página 1 de la bandeja
+    if (w === 1440) {
+      await page.goto(BASE + 'revision.html');
+      await page.waitForSelector('[data-filas] tr');
+      await page.focus('#pe-solicitudes');
+      await page.keyboard.press('ArrowRight');
+      comprueba(await page.evaluate(() => document.activeElement.id === 'pe-avisos' && document.getElementById('pe-avisos').getAttribute('aria-selected') === 'true'
+        && document.getElementById('panel-solicitudes').hidden && !document.getElementById('panel-avisos').hidden),
+      t('bandeja: la flecha derecha pasa a «Avisos por teléfono» y muestra su panel (módulo pestanas del estándar)'));
+      await revisaAxe(page, 'bandeja con la pestaña «Avisos por teléfono»');
+      await page.keyboard.press('End');
+      comprueba(await page.isVisible('#panel-asistido .menu-opcion') && !(await page.isVisible('#panel-avisos')), t('bandeja: Fin lleva a «Registro asistido»'));
+      await page.click('#pe-solicitudes');
+      const ind = (await page.textContent('[data-indicadores]')).replace(/\s+/g, ' ').trim();
+      const enviadas = datos.solicitud.filter((x) => x.estado === 'enviada').length;
+      comprueba(new RegExp(`^Por revisar ${enviadas} `).test(ind) && /Citas de hoy \d+ /.test(ind) && /Avisos por teléfono \d+ pendientes?/.test(ind) && /En espera de grupo \d+ en \d curso/.test(ind)
+        && (await page.textContent('#pe-solicitudes')) === `Solicitudes por revisar (${enviadas})`,
+      t(`bandeja: los indicadores («${ind}») y la cuenta de la pestaña`));
+      await page.click('.escb-indicador[href="#t-avisos-tel"]');
+      comprueba(await page.isVisible('#t-avisos-tel') && (await page.getAttribute('#pe-avisos', 'aria-selected')) === 'true', t('bandeja: el indicador «Avisos por teléfono» abre su pestaña'));
+      await page.goto(BASE + 'revision.html#t-avisos-tel');
+      await page.waitForSelector('[data-avisos-lista] .ficha');
+      comprueba(await page.isVisible('[data-avisos-lista] .ficha'), t('bandeja: revision.html#t-avisos-tel (desde la ventanilla) abre la pestaña de los avisos'));
+      comprueba(await page.isHidden('[data-paginacion]'), t('bandeja: con 25 solicitudes o menos no hay paginación'));
+      // «Grupos»: «Quitar» del panel desmarca, anuncia «n de 25» y deja el foco en la siguiente; los botones del panel
+      await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
+      await page.waitForSelector('#paso-personas:not([hidden]) .plan-persona');
+      const antes = await page.$$eval('[data-quitar]', (l) => l.length);
+      const folio = await page.getAttribute('[data-quitar]', 'data-quitar');
+      await page.click('[data-quitar]');
+      await page.waitForFunction(() => /de 25 lugares/.test((document.querySelector('[data-anuncios]') || {}).textContent || ''));
+      const anuncio = await page.textContent('[data-anuncios]');
+      comprueba(!(await page.isChecked(`.plan-casilla[value="${folio}"]`)) && (await page.$$eval('[data-quitar]', (l) => l.length)) === antes - 1
+        && new RegExp(`^${antes - 1} de 25 lugares`).test(anuncio.trim()) && (await page.evaluate(() => document.activeElement.matches('[data-quitar]'))),
+      t(`grupos: «Quitar» en el panel desmarca a la persona, anuncia «${anuncio.trim().slice(0, 30)}…» y deja el foco en la siguiente`));
+      await page.evaluate(() => { document.querySelector('[data-anuncios]').textContent = ''; });
+      await page.check(`.plan-casilla[value="${folio}"]`);
+      await page.waitForFunction((n) => (document.querySelector('[data-anuncios]').textContent || '').trim().startsWith(`${n} de 25 lugares`), antes).catch(() => {});
+      comprueba((await page.textContent('[data-anuncios]')).trim().startsWith(`${antes} de 25 lugares`), t('grupos: marcar en la lista sigue anunciando «n de 25»'));
+      await page.click('[data-panel-siguiente]');
+      await page.waitForSelector('#paso-confirmar:not([hidden])');
+      comprueba(await page.evaluate(() => document.activeElement.matches('#paso-confirmar .titulo-paso')) && (await page.textContent('[data-panel-siguiente]')) === 'Crear el grupo'
+        && (await page.getAttribute('[data-barra] [aria-current="step"]', 'aria-current')) === 'step',
+      t('grupos: «Siguiente» del panel avanza al paso 4 con el foco en su título; el panel ofrece «Crear el grupo»'));
+      await page.click('[data-panel-atras]');
+      await page.waitForSelector('#paso-personas:not([hidden])');
+      bien(t('grupos: «Atrás» del panel regresa al paso 3'));
+      // Filtro por organización: deja sólo las filas y bloques de esa organización
+      const org = await page.$eval('#filtro_org option:nth-child(2)', (o) => o.value);
+      await page.selectOption('#filtro_org', org);
+      comprueba(await page.$$eval('[data-personas] li[data-org]', (l, o) => l.filter((x) => x.checkVisibility()).every((x) => x.dataset.org === o) && l.some((x) => x.checkVisibility()), org),
+        t(`grupos: el filtro por organización deja sólo «${org}»`));
+      await page.click('#pe-programados');
+      comprueba(await page.isVisible('[data-programados] table') && await page.isHidden('#panel-armar'), t('grupos: la pestaña «Grupos programados» muestra sus tablas'));
+      await page.click('#pe-terminados');
+      comprueba(await page.isVisible('[data-terminados-lista] li'), t('grupos: la pestaña «Ya terminaron» se ve abierta'));
+    }
+    comprueba(!errores.length, t(`${w} × ${h}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+    await ctx.close();
+  }
+  // Teléfono: como antes (orden y alto de la versión 0.70, o mejor)
+  const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-MX', timezoneId: ZONA, hasTouch: true, isMobile: true });
+  const page = await ctx.newPage();
+  for (const [nombre, url, listo, , antes] of PANTALLAS) {
+    await page.goto(BASE + url);
+    await page.waitForSelector(listo);
+    await page.waitForTimeout(150);
+    const a = await alto(page);
+    const orden = await page.evaluate(() => {
+      const y = (s) => { const e = document.querySelector(s); return e && e.checkVisibility() ? e.getBoundingClientRect().top + scrollY : null; };
+      const sinEscritorio = ['[data-indicadores]', '.pestanas-lista', '[data-panel-grupo]', '.escb-espera-cabeza', '[data-filtro-org]'].every((s) => y(s) === null);
+      if (document.querySelector('#panel-solicitudes')) return sinEscritorio && y('#panel-solicitudes') < y('#panel-asistido .menu-opcion') && y('#panel-asistido .menu-opcion') < y('#t-avisos-tel');
+      const paso = [...document.querySelectorAll('#armar [data-paso]')].findIndex((s) => !s.hidden) + 1;
+      return sinEscritorio && y('#panel-armar') < y('#programados') && y('#programados') < y('[data-terminados] summary') && (paso === 1 || y('[data-eleccion]') < y('#armar'));
+    });
+    comprueba(a <= antes + 0.02 && orden, t(`${nombre} a 390 px: mide ${a.toFixed(2)} pantallas (antes ${antes}) y conserva su orden, sin lo de escritorio`));
+    await sinDesborde(page, t(`${nombre} a 390 px`));
+    await revisaAxe(page, `${nombre} a 390 px`);
+  }
+  await ctx.close();
+}
+
 /* ── Registro asistido (decisión de Liber del 25/10/2026; SOLO=asistido) ──
    Personas que no saben leer ni escribir: el personal de revisión y cotejo las registra en el Vivero, con ellas presentes.
    El flujo completo por pasos en teléfono y en computadora (la fotografía cargada en teléfono y tomada con la cámara de la
@@ -8068,6 +8233,8 @@ try {
   if (toca('ajustes25')) await parte('ajustes del equipo 25/10', () => ajustes25(navegador));
   // Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir
   if (toca('asistido')) await parte('registro asistido', () => registroAsistido(navegador));
+  // Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026): inicio del personal y «Grupos»
+  if (toca('escritorio-b')) await parte('escritorio, parte B', () => escritorioB(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

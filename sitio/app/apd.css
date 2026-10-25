@@ -700,12 +700,11 @@ body > main { flex: 1 0 auto; width: 100%; }
   .escb-pestanas [role="tabpanel"][hidden] { display: none; }
   /* La tarjeta del registro asistido lleva dos paneles: sin ninguno a la vista, no se ve */
   .escb-asistido:not(:has(> .pestanas-panel:not([hidden]))) { display: none; }
-  .escb-asistido > .pestanas-panel > .titulo-bloque:first-child { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
+  .escb-asistido > .pestanas-panel > .titulo-bloque:first-child, .escb-asistido > .pestanas-panel > .bajada:first-child { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
 
   /* El título de un panel que repite su pestaña («Solicitudes por revisar», «Registro asistido»): se queda para el lector
      de pantalla y como ancla, sin ocupar lugar */
   .escb-titulo-de-pestana { position: absolute; width: var(--b-1); height: var(--b-1); margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .escb-titulo-de-pestana + .bajada { margin-block-start: 0; }
   /* Búsqueda y filtros en una fila, sin el aire de un formulario de captura */
   .escb-filtros { margin-block-start: var(--e-3); }
   .escb-filtros .campo { margin-block-end: var(--e-3); }
@@ -756,6 +755,7 @@ body > main { flex: 1 0 auto; width: 100%; }
   .escb-panel-elegidas[hidden] { display: none; }
   .escb-panel-elegidas li { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); min-height: calc(var(--e-7) + var(--e-1)); border-block-end: var(--b-1) solid var(--linea); }
   .escb-panel-nombre { min-width: 0; overflow-wrap: anywhere; }
+  .escb-panel-elegidas .btn-enlace { min-width: var(--e-6); min-height: var(--e-6); }
 
   /* Paso 1: los cuatro cursos en rejilla de 2 × 2 */
   .arm-cursos { grid-template-columns: repeat(2, minmax(0, 1fr)); }

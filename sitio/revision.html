@@ -39,10 +39,10 @@
        pestañas, y las secciones van una debajo de otra, como antes (app/escritorio-b.js). Las cifras las pone
        app/revision.js. -->
   <nav class="escb-indicadores" aria-label="Resumen del día" data-indicadores>
-    <a class="escb-indicador" href="#t-bandeja"><span class="escb-indicador-rotulo">Por revisar</span><span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="revisar">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="revisar"></span></span></a>
-    <a class="escb-indicador" href="citas.html"><span class="escb-indicador-rotulo">Citas de hoy</span><span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="citas">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="citas"></span></span></a>
-    <a class="escb-indicador" href="#t-avisos-tel"><span class="escb-indicador-rotulo">Avisos por teléfono</span><span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="avisos">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="avisos"></span></span></a>
-    <a class="escb-indicador" href="grupos.html"><span class="escb-indicador-rotulo">En espera de grupo</span><span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="espera">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="espera"></span></span></a>
+    <a class="escb-indicador" href="#t-bandeja"><span class="escb-indicador-rotulo">Por revisar</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="revisar">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="revisar"></span></span></a>
+    <a class="escb-indicador" href="citas.html"><span class="escb-indicador-rotulo">Citas de hoy</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="citas">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="citas"></span></span></a>
+    <a class="escb-indicador" href="#t-avisos-tel"><span class="escb-indicador-rotulo">Avisos por teléfono</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="avisos">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="avisos"></span></span></a>
+    <a class="escb-indicador" href="grupos.html"><span class="escb-indicador-rotulo">En espera de grupo</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="espera">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="espera"></span></span></a>
   </nav>
 
   <div class="pestanas escb-pestanas" data-pestanas>
@@ -109,9 +109,10 @@
   <!-- Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir. La entrada para
        registrarlas y la ventanilla, y los avisos por teléfono pendientes (los pinta app/registro-asistido.js). -->
   <section class="tarjeta escb-asistido" aria-labelledby="t-asistido" data-asistido-inicio>
-    <!-- En escritorio, dos pestañas: «Registro asistido» y «Avisos por teléfono» -->
-    <div class="pestanas-panel" id="panel-asistido">
+    <!-- En escritorio, dos pestañas: «Registro asistido» y «Avisos por teléfono». El título queda fuera de las dos: en
+         escritorio no se ve (repite la pestaña), pero ordena los títulos de las dos para el lector de pantalla. -->
     <h2 class="titulo-paso escb-titulo-de-pestana" id="t-asistido">Registro asistido</h2>
+    <div class="pestanas-panel" id="panel-asistido">
     <p class="bajada">Para personas que no saben leer ni escribir: usted las registra en el Vivero, con ellas presentes, captura su solicitud y les da seguimiento por teléfono y en la ventanilla.</p>
     <nav class="menu-inicio" aria-label="Registro asistido">
       <a class="menu-opcion" href="asistido.html">
