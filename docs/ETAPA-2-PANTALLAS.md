@@ -42,11 +42,12 @@ Desde 1024 px de ancho (debajo, el teléfono y la tableta quedan como antes); lo
 pasar del 25 % del alto. Estilos en `sitio/app/apd.css`, sección «Escritorio · parte C»; prueba permanente
 `SOLO=escritorio-c` de `herramientas/probar-sitio.mjs`; mediciones en `docs/diseno-escritorio/DIAGNOSTICO.md` (4.5, 4.6 y 4.9).
 
-- **Asistencia**: el día, el grupo, la regla de asistencia y la leyenda en una franja de dos renglones; las personas en una
-  rejilla de tarjetas (2 por renglón a 1024 px, 3 a 1280–1440, 4 a 1920), cada una con su fotografía de 64 × 80, nombre,
-  tira de días, etiqueta de riesgo y «¿Asistió? Sí / No» en un renglón; la barra de abajo («N asistieron · N faltaron · N sin
-  marcar», «Todas asistieron», «Guardar la asistencia del día N» y, si algo no se guardó, su aviso) queda fija al pie. En la
-  versión de prueba la barra le reserva su lugar al botón «Menú de pruebas».
+- **Asistencia**: el día, el grupo, la regla de asistencia y la leyenda en una franja de dos renglones; las personas hacia
+  abajo, una por renglón, como el pase de lista (cambio de Liber del 25/10/2026: lista, no rejilla de tarjetas), en un
+  renglón compacto con su fotografía de 64 × 80, nombre, tira de días, etiqueta de riesgo y «¿Asistió? Sí / No» a la derecha;
+  la barra de abajo («N asistieron · N faltaron · N sin marcar», «Todas asistieron», «Guardar la asistencia del día N» y, si
+  algo no se guardó, su aviso) queda fija al pie. En la versión de prueba la barra le reserva su lugar al botón «Menú de
+  pruebas».
 - **Aplicar el examen**: los cinco datos del grupo en una línea (rótulo y valor seguidos) y los avisos del grupo en una sola
   fila. El título «Día 5 de 5 · Pase de lista en el salón de cómputo», una cuenta corta («N presentes · N no llegó · N por
   pasar lista · de N con derecho», a la vista; la que se anuncia sigue siendo la frase completa de abajo) e «Imprimir los

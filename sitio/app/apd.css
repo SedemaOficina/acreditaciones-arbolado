@@ -695,17 +695,14 @@ body > main { flex: 1 0 auto; width: 100%; }
   .esc-c-franja > .asis-leyenda { grid-column: 2; grid-row: 2; justify-content: flex-end; margin: 0; }
   .esc-c-franja .grupo-titulo { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); }
   .esc-c-franja .grupo-bajada-datos { margin: 0; }
-  /* Personas en una rejilla de tarjetas: 2 por renglón a 1024 px, 3 de 1280 a 1440 y 4 a 1920 (tarjetas de 336 px como
-     mínimo). Propuesta al estándar E8 (.rejilla-tarjetas). El orden de lectura es por renglón, el alfabético. */
-  .esc-c-personas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--e-11) * 3.5)), 1fr)); gap: var(--e-3); }
-  .esc-c-personas > .asistencia-fila { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: var(--e-1) var(--e-3); padding: var(--e-2) var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
-  /* Fotografía de 64 × 80 px a la izquierda; a su derecha el nombre, la tira y «¿Asistió? Sí / No» en un renglón */
-  .esc-c-personas > .asistencia-fila > .asistencia-foto { grid-row: 1 / span 2; width: calc(var(--e-9) + var(--e-4)); height: calc((var(--e-9) + var(--e-4)) * 1.25); }
-  .esc-c-personas > .asistencia-fila > .asis-opciones { grid-column: 2; }
+  /* Personas hacia abajo, una por renglón, como el pase de lista (cambio de Liber del 25/10/2026, 14:54: ya no en rejilla
+     de tarjetas). Renglón compacto: fotografía de 64 × 80, el nombre con la tira de días y la etiqueta de riesgo, y
+     «¿Asistió? Sí / No» a la derecha, en el mismo renglón. */
+  .esc-c-personas > .asistencia-fila { grid-template-columns: auto minmax(0, 1fr) auto; gap: 0 var(--e-4); padding-block: var(--e-1); }
+  .esc-c-personas > .asistencia-fila > .asistencia-foto { width: calc(var(--e-9) + var(--e-4)); height: calc((var(--e-9) + var(--e-4)) * 1.25); }
   /* La pregunta a la izquierda de Sí y No (flotada deja de ser la leyenda que el navegador dibuja sobre el borde, pero
      sigue siendo la leyenda del grupo: el nombre accesible no cambia) */
   .esc-c-personas .asis-pregunta { float: inline-start; display: flex; align-items: center; min-height: var(--alto-opcion); margin: 0 var(--e-3) 0 0; }
-  .esc-c-personas .opcion-corta { min-width: var(--objetivo-min); }
   /* Barra de abajo: los totales a la izquierda y los dos botones a la derecha; lo que no se pudo guardar, debajo, a todo lo
      ancho. Ocupa todo el ancho de la tarjeta. */
   .esc-c-barra:not([hidden]) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }

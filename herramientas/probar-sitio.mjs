@@ -8001,7 +8001,7 @@ async function ajustesEquipo(navegador) {
    escenario de volumen del proyecto (un grupo de 25 en su día 3) y, para el pase de lista, ese mismo grupo en su día 5.
    A 1366 × 768, 1440 × 900 y 1920 × 1080 comprueba: lo que queda a la vista sin bajar (los datos que identifican el caso y
    la acción principal), que lo fijo no pase del 25 % del alto, que no haya desborde horizontal y axe; y lo propio de cada
-   pantalla (rejilla de 3 o 4 tarjetas, barra fija con «Guardar», franja fija con la cuenta e «Imprimir los códigos», una
+   pantalla (asistencia en renglones compactos, barra fija con «Guardar», franja fija con la cuenta e «Imprimir los códigos», una
    persona por renglón con su fotografía de 96 px, pestañas del estándar, panel lateral). A 390 px, que nada de eso aplique:
    el orden y la altura de antes. A 1440 × 650, que nada quede fijo (sólo desde 700 px de alto).
    «A la vista» se mide con la cabecera compacta del personal que hace la parte A (≤ 88 px más las dos franjas de la versión
@@ -8103,17 +8103,19 @@ async function escritorioC(navegador) {
       const franja = await page.evaluate(() => { const f = document.querySelector('.esc-c-franja'); const r = f.getBoundingClientRect(); const h = document.querySelector('[data-titulo-dia]').getBoundingClientRect(); const reg = document.querySelector('[data-regla]').getBoundingClientRect(); return { alto: Math.round(r.height), juntos: Math.abs(h.top - reg.top) < h.height }; });
       comprueba(franja.juntos && franja.alto <= 120, t(`${d}: la franja del día lleva el día, el grupo, la regla y la leyenda en dos o tres renglones (${franja.alto} px; la regla junto al día)`));
       await revisaVista(page, ['[data-titulo-dia]', '[data-guardar]', '[data-todas]', '[data-totales]'], `asistencia ${d}`);
-      // Rejilla: 3 tarjetas por renglón a 1366 y 1440, 4 a 1920; el orden de lectura sigue siendo el alfabético, por renglón
-      const rej = await page.evaluate(() => {
+      // Una persona por renglón, como el pase de lista (cambio de Liber del 25/10/2026, 14:54: ya no en rejilla), en orden
+      // alfabético; renglón compacto con la fotografía de 64 × 80 y «¿Asistió? Sí / No» a la derecha, en el mismo renglón
+      const filas = await page.evaluate(() => {
         const f = [...document.querySelectorAll('.asistencia-fila')];
-        const tops = f.map((x) => Math.round(x.getBoundingClientRect().top));
-        const porRenglon = tops.filter((v) => v === tops[0]).length;
-        const ordenado = f.every((x, i) => !i || tops[i] > tops[i - 1] || (tops[i] === tops[i - 1] && x.getBoundingClientRect().left > f[i - 1].getBoundingClientRect().left));
+        const cajas = f.map((x) => x.getBoundingClientRect());
+        const unaColumna = cajas.every((b, i) => !i || (b.top >= cajas[i - 1].bottom - 1 && Math.abs(b.left - cajas[0].left) < 1));
+        const derecha = f.every((x) => { const q = x.querySelector('.asis-quien').getBoundingClientRect(); const o = x.querySelector('.asis-opciones').getBoundingClientRect(); return o.left >= q.right && o.top < q.bottom && q.top < o.bottom; });
         const foto = document.querySelector('.asistencia-foto').getBoundingClientRect();
-        return { n: f.length, porRenglon, ordenado, foto: [Math.round(foto.width), Math.round(foto.height)] };
+        return { n: f.length, unaColumna, derecha, alto: Math.max(...cajas.map((b) => Math.round(b.height))), foto: [Math.round(foto.width), Math.round(foto.height)] };
       });
-      comprueba(rej.n === 25 && rej.porRenglon === (ancho >= 1920 ? 4 : 3) && rej.ordenado, t(`${d}: las 25 personas en tarjetas, ${rej.porRenglon} por renglón, en orden de lectura`));
-      comprueba(rej.foto[0] === 64 && rej.foto[1] === 80, t(`${d}: fotografía de 64 × 80 en cada tarjeta (${rej.foto.join(' × ')})`));
+      comprueba(filas.n === 25 && filas.unaColumna, t(`${d}: las 25 personas hacia abajo, una por renglón, en una sola columna`));
+      comprueba(filas.foto[0] === 64 && filas.foto[1] === 80 && filas.alto <= 100, t(`${d}: renglón compacto (${filas.alto} px como máximo) con la fotografía de 64 × 80 (${filas.foto.join(' × ')})`));
+      comprueba(filas.derecha, t(`${d}: «¿Asistió? Sí / No» a la derecha de cada persona, en su mismo renglón`));
       // «¿Asistió? Sí / No» conserva sus controles y su nombre accesible
       const primera = (await page.textContent('.asistencia-fila .asis-nombre')).trim();
       comprueba(await page.getByRole('group', { name: `${primera}, día 3: ¿Asistió?` }).count() === 1 && await page.getByRole('radio', { name: 'Sí' }).count() === 25,
@@ -8267,11 +8269,11 @@ async function escritorioC(navegador) {
     await page.waitForSelector('.asistencia-fila');
     const asis = await page.evaluate(() => ({
       rejilla: getComputedStyle(document.querySelector('.esc-c-personas')).display, barra: getComputedStyle(document.querySelector('.esc-c-barra')).position,
-      franja: getComputedStyle(document.querySelector('.esc-c-franja')).display,
+      franja: getComputedStyle(document.querySelector('.esc-c-franja')).display, foto: Math.round(document.querySelector('.asistencia-foto').getBoundingClientRect().width),
       orden: ['[data-titulo-dia]', '[data-bajada]', '[data-regla]', '[data-leyenda]', '.asistencia-fila', '[data-guardar]'].map((s) => document.querySelector(s).getBoundingClientRect().top)
     }));
-    comprueba(asis.rejilla === 'block' && asis.barra === 'static' && asis.franja === 'block' && asis.orden.every((v, i) => !i || v > asis.orden[i - 1]),
-      t('390 px: «Asistencia» como antes (lista de una columna, sin barra fija; día, grupo, regla, leyenda, lista y «Guardar» en ese orden)'));
+    comprueba(asis.rejilla === 'block' && asis.barra === 'static' && asis.franja === 'block' && asis.foto === 44 && asis.orden.every((v, i) => !i || v > asis.orden[i - 1]),
+      t('390 px: «Asistencia» como antes (lista de una columna con la fotografía de 44 px, sin barra fija; día, grupo, regla, leyenda, lista y «Guardar» en ese orden)'));
     comprueba(await pantallas(page) <= 6.7, t(`390 px: «Asistencia» con 25 no crece (${await pantallas(page)} pantallas; antes 6.7)`));
     await page.goto(BASE + `aplicar.html?folio=${G25}`);
     await page.waitForSelector('[data-filas] tr');
