@@ -396,7 +396,7 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `pago_monto` | `numeric(10,2)` | No | Monto que se le indicó a la persona al darle su cita: el vigente en ese momento. Un cambio de costo posterior no lo altera. Vacío si aún no había monto capturado |
 | `pago_referencia` | `text` | No | Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura |
 | `lista_para_curso_en` | `timestamptz` | No | Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad |
-| `motivo_cierre` | `text` | No | Motivo de cancelación, conclusión sin atender o rechazo |
+| `motivo_cierre` | `text` | No | Motivo de cancelación, conclusión sin atender (también «Se agotaron las oportunidades de corrección», 25/10/2026) o rechazo |
 | `folio_origen` | `text` | No | Folio en Kobo, para las migradas |
 | `creada_en` | `timestamptz` | Sí | Alta (por omisión: `now()`) |
 | `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
@@ -529,11 +529,11 @@ Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con e
 | `folio` | `text` | Sí | Folio del grupo; lo asigna la base (APD-G-AAAA-NNN) |
 | `tipo_acreditacion` | `text` | Sí | Curso |
 | `modalidad` | `text` | Sí | Curso |
-| `integracion` | `text` | Sí | especifico (una organización) o combinado |
+| `integracion` | `text` | Sí | especifico (una organización; sólo instituciones de gobierno: dependencias de la Ciudad, Alcaldías y dependencias federales, ajustes del equipo del 25/10/2026) o combinado |
 | `organizacion_id` | `uuid` | No | Organización, sólo en grupos específicos |
 | `cupo_minimo` | `smallint` | Sí | Copiado del curso al crearse; lo pone la base |
 | `cupo_maximo` | `smallint` | Sí | Copiado del curso al crearse; lo pone la base |
-| `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo |
+| `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. La asigna o la cambia, hasta concluir el grupo, el área de Instructores y Capacitación (perfiles de perfiles_asignan_instructor, ajustes del equipo del 25/10/2026) |
 | `sede` | `text` | No | Instalación de la Secretaría; obligatoria para confirmar |
 | `fecha_inicio` | `date` | No | Primer día; obligatoria para confirmar |
 | `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. El curso es de 9:00 a 15:00 (P91, sesión de trabajo del 23/10/2026): entre curso_hora_entrada y antes de curso_hora_salida; la salida no se guarda por grupo |
