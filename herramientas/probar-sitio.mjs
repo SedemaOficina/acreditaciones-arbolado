@@ -8433,6 +8433,27 @@ async function escritorioA(navegador) {
     comprueba(!malas.length && cab && !errores.length, t(`Revisar (3 solicitudes) y cita de cotejo como en la 0.70: mismo alto o menos, la cabeza antes de la barra de pasos y del formulario, la ficha en la cabeza, sin franja fija ni piezas de escritorio, y la sesión debajo de la cabecera${malas.length ? ': ' + malas.join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
     await c.close();
   }
+
+  // 6 · «Contacto» de una persona del registro asistido sin correo: sólo el teléfono (decía «null · …», visto por la parte A
+  // al integrar el acomodo de escritorio); con correo, el correo y el teléfono, como siempre. En teléfono y en computadora.
+  const sinCorreo = enviadas.find((s) => { const p = datos.solicitante.find((x) => x.id === s.solicitante_id); return p && !p.correo && p.telefono; });
+  const conCorreo = poda;
+  for (const [ancho, alto] of [[390, 844], [1440, 900]]) {
+    const t = (m) => `[escritorio A ${ancho}×${alto}] ${m}`;
+    const { c, pg, errores } = await nuevo(ancho, alto);
+    const contacto = async (s) => {
+      await pg.goto(BASE + `revisar.html?folio=${s.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      // En computadora la ficha va en «Datos de la persona», bajo la franja; en teléfono, en la cabeza
+      return pg.evaluate(() => { const par = [...document.querySelectorAll('.datos-par')].find((x) => x.querySelector('dt').textContent.trim() === 'Contacto'); return par ? par.querySelector('.datos-valor, dd').textContent.trim() : null; });
+    };
+    const ps = (s) => datos.solicitante.find((x) => x.id === s.solicitante_id);
+    const a = sinCorreo ? await contacto(sinCorreo) : null;
+    comprueba(Boolean(sinCorreo) && a === ps(sinCorreo).telefono, t(`registro asistido sin correo: «Contacto» dice sólo el teléfono («${a}»${sinCorreo ? `, ${sinCorreo.folio}` : ', no hay solicitud por revisar sin correo en los datos'})`));
+    const b = await contacto(conCorreo);
+    comprueba(b === `${ps(conCorreo).correo} · ${ps(conCorreo).telefono}` && !errores.length, t(`con correo: «Contacto» sigue diciendo el correo y el teléfono («${b}»)${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
 }
 /* ── Acomodo de escritorio, parte C (decisión de Liber del 25/10/2026; SOLO=escritorio-c) ──
    Asistencia, Aplicar el examen y la ficha del grupo (docs/diseno-escritorio/DIAGNOSTICO.md, 4.5, 4.6 y 4.9), con el

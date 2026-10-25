@@ -131,7 +131,8 @@
       // Se comprueba que siga vigente antes de decirlo (auditoría de tareas)
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fechaCorta(podaVigente.vence_en)}` : ''],
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
-      ['Contacto', `${p.correo} · ${p.telefono}`]
+      // Sin correo (registro asistido), sólo el teléfono: antes decía «null · …» (visto por la parte A del acomodo de escritorio)
+      ['Contacto', [p.correo, p.telefono].filter(Boolean).join(' · ')]
     ])])]));
     pintaFranja();
     // En una renovación sólo la constancia fiscal es obligatoria; lo demás se carga si la persona lo actualizó
