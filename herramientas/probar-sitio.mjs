@@ -4428,7 +4428,8 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   };
   const porRevisar = datos.solicitud.find((s) => s.estado === 'enviada');
   await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
-  await pg.waitForSelector('[data-bajada] .linea-datos');
+  // Desde 1024 px la línea de la cabeza es la corta de la franja de contexto (escritorio, parte A, 25/10/2026)
+  await pg.waitForSelector('[data-cabeza] .linea-datos:visible');
   await lineas('la revisión documental');
   // P135: motivos frecuentes completos (un renglón cada uno, sin encogerse) y al pasar el cursor sólo cambia el borde
   const doc = await pg.$eval('[data-doc]:not([hidden]) input[value="con_observacion"]', (i) => i.name);
@@ -7987,6 +7988,250 @@ async function ajustesEquipo(navegador) {
   });
 }
 
+/* ── Escritorio, parte A (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, regla general 2, 4.1 y
+   4.2; SOLO=escritorio-a) ──
+   La cabecera compacta del personal, «Revisar una solicitud» y «Cita de cotejo» en 1366 × 768, 1440 × 900 y 1920 × 1080:
+   en el estado inicial de cada paso la franja (o la columna de la persona) y el botón principal se ven sin bajar; lo fijo
+   que ocupa el ancho no pasa del 25 % del alto; sin desborde a lo ancho; el visor queda debajo de la franja y no 32 px
+   debajo de una barra (E4); el foco va al título del paso y no queda tapado; axe sin violaciones. A 390 px, el orden y el
+   alto son los de la versión 0.70 (si una pantalla crece a propósito, se actualiza ALTO_390 con la razón).
+   Excepción conocida: el paso «Perfil» de un dictaminador con la carrera por clasificar (dato, aviso y tres opciones con su
+   descripción) mide 1.1 a 1.4 pantallas; ahí se comprueba que la franja y la pregunta empiezan en la primera. */
+async function escritorioA(navegador) {
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+  if (!axe) console.log('OMITIDO  [escritorio A] axe: falta AXE=<ruta a axe.min.js del estándar>');
+  const poda = enviadas.find((s) => s.tipo_acreditacion === 'poda' && s.modalidad === 'renovacion' && !datos.revision.some((r) => r.solicitud_id === s.id));
+  const dict = porClasificar;
+  const reenviada = enviadas.find((s) => datos.revision.some((r) => r.solicitud_id === s.id));
+  // Alto de la página a 390 px en la versión 0.70 (antes del acomodo de escritorio): no debe crecer
+  const ALTO_390 = { [poda.folio]: 2589, [dict.folio]: 2810, [reenviada.folio]: 3114, cotejo: 1999 };
+  const nuevo = async (ancho, alto) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+    const pg = await c.newPage();
+    const errores = [];
+    pg.on('pageerror', (e) => errores.push(e.message));
+    pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, pg, errores };
+  };
+  // Lo que se ve sin bajar en el estado del paso, lo fijo que ocupa el ancho y el desborde
+  const mide = (pg) => pg.evaluate(() => {
+    const vis = (e) => e && e.checkVisibility() && e.getBoundingClientRect().width > 0;
+    const paso = document.querySelector('#formulario section[data-paso]:not([hidden])');
+    const boton = paso && [...paso.querySelectorAll('.acciones .btn-primario, .acciones .btn-peligro-contorno')].find(vis);
+    const franja = document.querySelector('[data-franja]');
+    const rf = franja.getBoundingClientRect();
+    const bandas = [...document.querySelectorAll('body *')].filter((e) => vis(e) && /sticky|fixed/.test(getComputedStyle(e).position) && e.getBoundingClientRect().width > innerWidth / 2);
+    const visor = document.querySelector('[data-visor]');
+    return {
+      paso: paso ? paso.dataset.titulo : '', boton: boton ? Math.round(boton.getBoundingClientRect().bottom) : null, botonTexto: boton ? boton.textContent.trim() : '',
+      franja: { arriba: Math.round(rf.top), abajo: Math.round(rf.bottom), alto: Math.round(rf.height), texto: franja.textContent.replace(/\s+/g, ' ') },
+      fijo: Math.round(bandas.reduce((s, e) => s + e.getBoundingClientRect().height, 0)), alto: innerHeight,
+      desborde: document.documentElement.scrollWidth > innerWidth + 1,
+      visor: visor && visor.open ? Math.round(visor.getBoundingClientRect().top) : null,
+      lateral: (() => { const a = document.querySelector('[data-resumen-lateral]'); return a && vis(a) ? a.querySelectorAll('li').length : 0; })()
+    };
+  });
+  const axeSin = async (pg) => {
+    if (!axe) return [];
+    if (!(await pg.evaluate(() => Boolean(window.axe)))) await pg.evaluate(axe);
+    return pg.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((v) => `${v.id}: ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`));
+  };
+  const siguiente = async (pg) => {
+    const antes = await tituloPaso(pg);
+    await pg.click(`${pasoVisible} [data-accion="siguiente"]`);
+    await pg.waitForFunction((a) => { const p = document.querySelector('#formulario section[data-paso]:not([hidden])'); return p && p.dataset.titulo !== a; }, antes, { timeout: 5000 });
+    await dosCuadros(pg);
+  };
+
+  for (const [ancho, alto] of [[1366, 768], [1440, 900], [1920, 1080]]) {
+    const t = (m) => `[escritorio A ${ancho}×${alto}] ${m}`;
+    // 1 · Cabecera compacta en todas las pantallas del personal
+    {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      const malas = [];
+      for (const url of ['revision.html', 'revisar.html?folio=' + poda.folio, 'citas.html', 'cotejo.html?folio=' + conCita.folio, 'grupos.html', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`,
+        'asistencia.html', 'aplicar.html', 'capacitacion.html', 'acreditaciones.html', 'acreditacion.html?numero=PD-2025-K100', 'material-personal.html', 'ventanilla.html', 'asistido.html']) {
+        await pg.goto(BASE + url);
+        await pg.waitForSelector('[data-sesion-personal] a');
+        const m = await pg.evaluate(() => {
+          const r = (q) => document.querySelector(q).getBoundingClientRect();
+          const cab = r('.cabecera'); const ses = r('[data-sesion-personal]'); const tit = r('.cabecera-titulo'); const logo = r('.cabecera-logo');
+          const franjas = [...document.querySelectorAll('.entorno-pruebas, .ubicacion-prueba')].map((e) => Math.round(e.getBoundingClientRect().height));
+          return { cab: Math.round(cab.height), dentro: ses.top >= cab.top - 1 && ses.bottom <= cab.bottom + 1 && logo.bottom <= cab.bottom && tit.bottom <= cab.bottom,
+            choca: tit.right > ses.left && tit.bottom > ses.top, franjas, desborde: document.documentElement.scrollWidth > innerWidth + 1 };
+        });
+        if (m.cab > 88 || !m.dentro || m.choca || m.desborde || m.franjas.some((h) => h > 30)) malas.push(`${url}: ${JSON.stringify(m)}`);
+      }
+      comprueba(!malas.length && !errores.length, t(`cabecera compacta en 14 pantallas del personal: logotipo, título, sesión y secciones en una banda de 88 px o menos, sin encimarse, y cada franja de prueba en un renglón${malas.length ? ': ' + malas.slice(0, 3).join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+
+    // 2 · Revisar una solicitud: cada paso de una renovación de poda y los documentos de un dictaminador
+    for (const s of [poda, dict]) {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      await pg.goto(BASE + `revisar.html?folio=${s.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      await dosCuadros(pg);
+      const persona = APD_NOMBRE(datos.solicitante.find((p) => p.id === s.solicitante_id));
+      const fuera = [];
+      for (let i = 0; i < 12; i++) {
+        const m = await mide(pg);
+        const exento = m.paso === 'Perfil' && s.perfil_academico === 'por_clasificar';
+        const enVista = m.franja.arriba >= 0 && m.franja.abajo <= alto && m.franja.alto <= 80 && m.franja.texto.includes(persona) && m.franja.texto.includes(s.folio);
+        const botonVisto = m.boton !== null && m.boton <= alto;
+        if (!enVista || (!botonVisto && !exento) || m.fijo > alto * 0.25 || m.desborde) fuera.push(`${m.paso}: ${JSON.stringify({ franja: m.franja.abajo, boton: m.boton, fijo: m.fijo, desborde: m.desborde })}`);
+        if (exento) {
+          const pregunta = await pg.evaluate(() => Math.round(document.querySelector('[data-campo="clasificacion"]').getBoundingClientRect().top));
+          if (pregunta > alto) fuera.push(`Perfil: la pregunta empieza en ${pregunta}`);
+        }
+        // Visor debajo de la franja (E4) y con el documento del paso
+        if (m.visor !== null && m.visor < m.franja.abajo) fuera.push(`${m.paso}: el visor (${m.visor}) bajo la franja (${m.franja.abajo})`);
+        if (['Resultado', 'Fecha de la cita'].includes(m.paso) && m.lateral < 1) fuera.push(`${m.paso}: sin «Así queda la revisión» al lado`);
+        // Lo que pide el paso, para avanzar por el camino feliz
+        for (const r of await pg.$$(`${pasoVisible} input[value="aceptado"], ${pasoVisible} input[name="clasificacion"][value="afin"]`)) if (await r.isVisible()) await r.check({ force: true });
+        if (m.paso === 'Fecha de la cita' || !(await pg.isVisible(`${pasoVisible} [data-accion="siguiente"]`))) break;
+        await siguiente(pg);
+        const foco = await pg.evaluate(ocultoPorFijo);
+        const enTitulo = await pg.evaluate(() => document.activeElement.matches('.titulo-paso'));
+        if (!enTitulo || (foco && foco.tapados)) fuera.push(`${await tituloPaso(pg)}: foco ${enTitulo ? 'tapado' : 'fuera del título'}`);
+      }
+      comprueba(!fuera.length && !errores.length, t(`Revisar ${s.tipo_acreditacion} ${s.folio}: en cada paso la franja (≤ 80 px, con nombre y folio) y el botón principal a la vista sin bajar, lo fijo ≤ 25 %, sin desborde, el visor debajo de la franja, el foco en el título sin tapar y el resumen al lado en «Resultado» y «Fecha de la cita»${fuera.length ? ': ' + fuera.slice(0, 3).join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+    // Pasos verticales desde 1280, la franja fija al bajar, «Datos de la persona», «Revisiones anteriores» en la columna de la decisión y axe
+    {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      await pg.goto(BASE + `revisar.html?folio=${reenviada.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      await dosCuadros(pg);
+      const r = await pg.evaluate(() => {
+        const pasos = [...document.querySelectorAll('[data-barra] .pasos-btn')].map((b) => b.getBoundingClientRect());
+        const ant = document.querySelector('[data-anteriores]').getBoundingClientRect(); const form = document.getElementById('formulario').getBoundingClientRect();
+        return { vertical: pasos.length > 1 && pasos[1].top > pasos[0].bottom - 1 && Math.abs(pasos[1].left - pasos[0].left) < 2, actual: document.querySelectorAll('[data-barra] [aria-current="step"]').length,
+          anterioresEnDecision: Math.abs(ant.left - form.left) < 2 && ant.bottom <= form.top + 1 };
+      });
+      // Se baja lo que pide la franja para pegarse arriba más un poco: el visor sigue debajo de ella (al final del área de
+      // trabajo el visor sube con la página, como todo lo fijo)
+      await pg.evaluate(() => window.scrollTo(0, document.querySelector('[data-franja]').getBoundingClientRect().top + scrollY + 40));
+      await dosCuadros(pg);
+      const fija = await pg.evaluate(() => {
+        const f = document.querySelector('[data-franja]').getBoundingClientRect(); const v = document.querySelector('[data-visor]').getBoundingClientRect(); const a = document.querySelector('[data-area-trabajo]').getBoundingClientRect();
+        return { franja: Math.round(f.top), visor: Math.round(v.top), bajo: Math.round(f.bottom), alFinal: Math.abs(v.bottom - a.bottom) < 2,
+          // Lo que pide la hoja: el visor se pega debajo de la franja, no a 12 px del borde (E4)
+          pegado: parseFloat(getComputedStyle(document.querySelector('[data-visor]')).top) >= f.height };
+      });
+      await pg.evaluate(() => window.scrollTo(0, 0));
+      const resumen = await pg.locator('.franja-datos > summary').textContent();
+      const cerrado = await pg.isHidden('.franja-datos-panel');
+      await pg.click('.franja-datos > summary');
+      const abierto = await pg.isVisible('.franja-datos-panel') && /Número de expediente/.test(await pg.textContent('.franja-datos-panel'));
+      await pg.keyboard.press('Escape');
+      const v = await axeSin(pg);
+      comprueba(r.vertical && r.actual === 1 && r.anterioresEnDecision && fija.franja === 0 && fija.pegado && (fija.visor >= fija.bajo || fija.alFinal) && resumen === 'Datos de la persona' && cerrado && abierto && await pg.isHidden('.franja-datos-panel') && !v.length && !errores.length,
+        t(`Revisar: pasos en barra vertical con aria-current="step", «Revisiones anteriores» en la columna de la decisión, al bajar la franja queda arriba y el visor debajo (${fija.visor} ≥ ${fija.bajo}), «Datos de la persona» se abre y Escape lo cierra, axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+
+    // 3 · Cita de cotejo: los cuatro pasos por el camino feliz
+    {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      await abreCotejo(pg, conCita.folio);
+      await pg.evaluate(() => window.scrollTo(0, 0));
+      await dosCuadros(pg);
+      const persona = APD_NOMBRE(datos.solicitante.find((p) => p.id === conCita.solicitante_id));
+      const fuera = [];
+      const columna = await pg.evaluate(() => { const f = document.querySelector('.franja-contexto .perfil-foto').getBoundingClientRect(); const b = document.querySelector('[data-franja] [data-barra]'); return { ancho: Math.round(f.width), alto: Math.round(f.height), barra: Boolean(b) }; });
+      for (let i = 0; i < 4; i++) {
+        const m = await mide(pg);
+        const caso = m.franja.arriba >= 0 && m.franja.arriba < alto / 2 && m.franja.texto.includes(persona) && m.franja.texto.includes(conCita.folio);
+        if (!caso || m.boton === null || m.boton > alto || m.fijo > alto * 0.25 || m.desborde) fuera.push(`${m.paso}: ${JSON.stringify({ franja: m.franja.arriba, boton: m.boton, fijo: m.fijo, desborde: m.desborde })}`);
+        if (m.paso === '¿Es la persona?') { await pg.check('input[name="se_presento"][value="si"]', { force: true }); await pg.check('input[name="identidad"][value="misma"]', { force: true }); }
+        if (m.paso === 'Documentos originales') {
+          // Tabla compacta: una fila por documento; cada grupo de opciones conserva su nombre; «No es igual» abre la observación debajo de su fila
+          const docs = await pg.locator(`${pasoVisible} [data-doc]:visible`).count();
+          const grupos = await pg.getByRole('group', { name: '¿El original es igual al que cargó?' }).count();
+          // Alto de cada fila sin la nota que algunos documentos llevan debajo (la constancia de situación fiscal)
+          const filas = await pg.evaluate(() => [...document.querySelectorAll('#formulario section[data-paso]:not([hidden]) [data-doc]')].filter((a) => a.checkVisibility())
+            .map((a) => { const n = a.querySelector(':scope > .ayuda'); return Math.round(a.getBoundingClientRect().height - (n ? n.getBoundingClientRect().height + 8 : 0)); }));
+          const k = await pg.evaluate(() => document.querySelectorAll('#formulario section[data-paso]:not([hidden]) [data-doc]')[1].dataset.doc);
+          await pg.check(`input[name="coincide_${k}"][value="no"]`, { force: true });
+          const debajo = await pg.evaluate((q) => { const a = document.querySelector(`[data-doc="${q}"]`); const g = a.querySelector('.grupo').getBoundingClientRect(); const d = document.getElementById(`diferencia_${q}`).getBoundingClientRect(); const sig = a.parentElement.nextElementSibling.getBoundingClientRect(); return d.top > g.bottom && d.bottom < sig.top; }, k);
+          if (grupos !== docs || filas.some((h) => h > 100) || !debajo) fuera.push(`documentos: ${JSON.stringify({ docs, grupos, filas, debajo })}`);
+          await pg.check(`input[name="coincide_${k}"][value="si"]`, { force: true });
+          for (const r of await pg.$$(`${pasoVisible} input[name^="coincide_"][value="si"]`)) if (await r.isVisible()) await r.check({ force: true });
+        }
+        if (m.paso === 'Pago y factura') {
+          await pg.check('input[name="pago"][value="si"]', { force: true });
+          await pg.waitForSelector('#factura_rfc', { state: 'visible' });
+          const p3 = await pg.evaluate(() => { const l = document.querySelector('[data-pago-linea] .linea-datos'); const a = document.getElementById('factura_rfc').getBoundingClientRect(); const b = document.getElementById('factura_razon_social').getBoundingClientRect(); return { items: l && l.checkVisibility() ? l.querySelectorAll('.linea-datos-item').length : 0, ficha: document.querySelector('[data-pago-datos]').checkVisibility(), fila: Math.abs(a.top - b.top) < 2 && b.left > a.right }; });
+          if (p3.items !== 3 || p3.ficha || !p3.fila) fuera.push(`pago: ${JSON.stringify(p3)}`);
+          await pg.setInputFiles('[data-campo="factura_pago"] [data-archivos] > input[type="file"]', PDF);
+          await pg.waitForSelector('[data-campo="factura_pago"] .lista-arch li[data-estado="listo"]');
+          await pg.fill('#factura_rfc', 'XAXX010101000');
+          await pg.fill('#factura_razon_social', 'Prueba Ejemplo');
+          await pg.fill('#factura_folio_fiscal', '6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f');
+        }
+        if (m.paso === 'Resultado') break;
+        await siguiente(pg);
+        const foco = await pg.evaluate(ocultoPorFijo);
+        if (!(await pg.evaluate(() => document.activeElement.matches('.titulo-paso'))) || (foco && foco.tapados)) fuera.push(`${await tituloPaso(pg)}: foco`);
+      }
+      const v = await axeSin(pg);
+      const columnaBien = ancho < 1280 || (columna.ancho >= 120 && columna.alto >= 150 && columna.barra);
+      comprueba(!fuera.length && columnaBien && !v.length && !errores.length, t(`Cita de cotejo: en cada paso la persona (nombre y folio) y el botón principal a la vista, lo fijo ≤ 25 %, sin desborde; documentos en filas de 100 px o menos con su grupo nombrado y la observación debajo de su fila; el pago en una línea de datos y RFC | nombre en un renglón${ancho >= 1280 ? `; fotografía de la cuenta de ${columna.ancho} × ${columna.alto} px y la barra de pasos en la columna de la persona` : ''}; axe${fuera.length ? ': ' + fuera.slice(0, 3).join(' · ') : ''}${v.length ? ' · axe: ' + v.join(', ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+  }
+
+  // 4 · De 1024 a 1279 px: la franja arriba, decisión | visor y la barra de pasos horizontal sin quedar fija (cotejo incluido)
+  {
+    const t = (m) => `[escritorio A 1024×768] ${m}`;
+    const { c, pg, errores } = await nuevo(1024, 768);
+    await pg.goto(BASE + `revisar.html?folio=${poda.folio}`);
+    await pg.waitForSelector('#formulario:not([hidden])');
+    await dosCuadros(pg);
+    const r = await mide(pg);
+    const h = await pg.evaluate(() => { const b = [...document.querySelectorAll('[data-barra] .pasos-btn')].map((x) => Math.round(x.getBoundingClientRect().top)); return { horizontal: new Set(b).size === 1, fija: getComputedStyle(document.querySelector('[data-con-formulario]')).position }; });
+    await abreCotejo(pg, conCita.folio);
+    await pg.evaluate(() => window.scrollTo(0, 0));
+    const m = await mide(pg);
+    // A 1024 px el botón principal puede quedar un poco abajo (la barra de pasos horizontal ocupa su renglón): se anota, no se exige
+    comprueba(r.franja.alto <= 80 && h.horizontal && h.fija === 'static' && !r.desborde && m.franja.alto <= 80 && m.boton <= 768 && !m.desborde && !errores.length,
+      t(`Revisar y cita de cotejo: franja de ${r.franja.alto} y ${m.franja.alto} px, barra de pasos horizontal y no fija, sin desborde; botón principal de Revisar en ${r.boton} px y del cotejo en ${m.boton} px${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
+
+  // 5 · A 390 px, como en la versión 0.70: mismo orden, mismo alto, nada fijo nuevo, lo de escritorio no se ve
+  {
+    const t = (m) => `[escritorio A 390×844] ${m}`;
+    const { c, pg, errores } = await nuevo(390, 844);
+    const malas = [];
+    const revisa = (clave) => pg.evaluate(() => {
+      const visibles = [...document.querySelectorAll('.franja-quien, .franja-caso, .franja-etiqueta, .franja-datos, .resumen-lateral, .cotejo-docs-cabeza, .pago-linea')].filter((e) => e.checkVisibility());
+      const orden = ['[data-cabeza]', '[data-con-formulario]', '#formulario'].map((q) => document.querySelector(q).getBoundingClientRect().top);
+      const ficha = document.querySelector('[data-cabeza] .persona-con-foto .datos');
+      return { alto: document.documentElement.scrollHeight, visibles: visibles.map((e) => e.className), orden: orden[0] < orden[1] && orden[1] < orden[2],
+        ficha: Boolean(ficha && ficha.checkVisibility()), franjaFija: getComputedStyle(document.querySelector('[data-franja]')).position !== 'static' };
+    }).then((x) => ({ clave, ...x }));
+    for (const s of [poda, dict, reenviada]) {
+      await pg.goto(BASE + `revisar.html?folio=${s.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      await pg.waitForTimeout(800);
+      const x = await revisa(s.folio);
+      if (x.alto > ALTO_390[s.folio] || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
+    }
+    await abreCotejo(pg, conCita.folio);
+    await pg.waitForTimeout(800);
+    const x = await revisa('cotejo');
+    if (x.alto > ALTO_390.cotejo || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
+    const cab = await pg.evaluate(() => { const s = document.querySelector('[data-sesion-personal]').getBoundingClientRect(); return s.top >= document.querySelector('.cabecera').getBoundingClientRect().bottom; });
+    comprueba(!malas.length && cab && !errores.length, t(`Revisar (3 solicitudes) y cita de cotejo como en la 0.70: mismo alto o menos, la cabeza antes de la barra de pasos y del formulario, la ficha en la cabeza, sin franja fija ni piezas de escritorio, y la sesión debajo de la cabecera${malas.length ? ': ' + malas.join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
+}
+
 const APD_NOMBRE = (p) => [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' ').toUpperCase();
 
 // El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
@@ -8068,6 +8313,8 @@ try {
   if (toca('ajustes25')) await parte('ajustes del equipo 25/10', () => ajustes25(navegador));
   // Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir
   if (toca('asistido')) await parte('registro asistido', () => registroAsistido(navegador));
+  // Acomodo de escritorio, parte A (decisión de Liber del 25/10/2026): cabecera compacta, Revisar y Cita de cotejo
+  if (toca('escritorio-a')) await parte('escritorio, parte A', () => escritorioA(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));

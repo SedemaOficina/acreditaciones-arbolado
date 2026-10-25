@@ -133,6 +133,7 @@
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
       ['Contacto', `${p.correo} · ${p.telefono}`]
     ])])]));
+    pintaFranja();
     // En una renovación sólo la constancia fiscal es obligatoria; lo demás se carga si la persona lo actualizó
     // (decisión 2026-10-14): se dice aquí para que no parezca que faltan documentos
     $('[data-renovacion]').hidden = s.modalidad !== 'renovacion';
@@ -145,6 +146,38 @@
         document.createTextNode(` porque es la revisión de la ${cualCorreccion} corrección y siguen las observaciones. Motivo: «${APD.MOTIVO_SIN_OPORTUNIDADES}». La persona lo verá en «Mis trámites» y podrá iniciar una solicitud nueva de inmediato.`));
     }
     $('[data-cabeza]').hidden = false;
+
+    /* ----- Franja de contexto en escritorio (decisión de Liber del 25/10/2026; DIAGNOSTICO.md, 4.1) -----
+       Desde 1024 px la cabeza de la solicitud es una franja fija de 80 px como máximo: fotografía chica o iniciales,
+       nombre, CURP y adscripción, «Poda y derribo · renovación», folio, vuelta, estado y, si aplica, «Última oportunidad» o
+       «Registro asistido». La ficha completa y la nota de la renovación entran a «Datos de la persona», plegable; el aviso
+       de la última oportunidad y las revisiones anteriores van arriba de la decisión. Debajo de 1024 px todo regresa a su
+       lugar (APD_PERSONAL.acomodaEscritorio). */
+    function pintaFranja() {
+      const conFoto = $('[data-persona] .persona-con-foto');
+      const ficha = conFoto.lastElementChild;
+      // Nombre y CURP ya están en la franja: en «Datos de la persona» no se repiten
+      for (const par of $$('.datos-par', ficha)) if (['Persona', 'CURP'].includes($('.datos-etq', par).textContent)) par.setAttribute('data-en-franja', '');
+      // La línea corta de la franja: folio y vuelta (la completa queda en la tarjeta de teléfono)
+      $('[data-bajada]').after(APD.lineaDatos([el('strong', { class: 'mono', texto: s.folio }), `${v.n}.ª revisión${v.n > 1 ? ' (reenviada)' : ''}`], 'franja-caso'));
+      const pares = APD.adscripcionPares(datos, s, 'Adscripción');
+      conFoto.firstElementChild.after(el('div', { class: 'franja-quien' }, [
+        el('p', { class: 'franja-nombre', texto: APD.nombreCompleto(p) }),
+        // CURP y adscripción, cada una en su renglón (en la franja angosta no caben en uno)
+        el('p', { class: 'franja-dato mono', texto: p.curp }),
+        pares.length ? el('p', { class: 'franja-dato', texto: pares[pares.length - 1][1] }) : null
+      ].filter(Boolean)));
+      const panel = el('div', { class: 'franja-datos-panel' });
+      const datosPersona = el('details', { class: 'plegable franja-datos' }, [el('summary', { class: 'plegable-titulo', texto: 'Datos de la persona' }), panel]);
+      $('[data-cabeza]').append(ultima ? el('p', { class: 'franja-etiqueta' }, [APD.estado('Última oportunidad', 'atencion')]) : '', datosPersona);
+      // El aviso de la última oportunidad se ve desde el inicio (ajustes del equipo, 25/10/2026): va arriba de la decisión, con
+      // las revisiones anteriores
+      const avisos = $('[data-avisos-escritorio]');
+      P.acomodaEscritorio('(min-width: 1024px)', [[ficha, panel], [$('[data-renovacion]'), panel], [$('[data-ultima-oportunidad]'), avisos], [$('[data-anteriores]'), avisos]]);
+      // Se cierra con Escape y al hacer clic fuera, como una lista desplegable
+      datosPersona.addEventListener('keydown', (e) => { if (e.key === 'Escape' && datosPersona.open) { datosPersona.open = false; $('summary', datosPersona).focus(); } });
+      document.addEventListener('click', (e) => { if (datosPersona.open && !datosPersona.contains(e.target)) datosPersona.open = false; });
+    }
 
     /* ----- Revisiones anteriores ----- */
     if (anteriores.length) {
@@ -303,9 +336,13 @@
       const firma = JSON.stringify(filas);
       if (lista.dataset.firma !== firma) { // sin cambios no se vuelve a escribir
         lista.dataset.firma = firma;
-        lista.replaceChildren(...filas.map(([nombre, estado, tono, obs]) => el('li', { class: 'resumen-pasos-fila' }, [
-          el('span', { class: 'resumen-pasos-nombre', texto: nombre }), APD.estado(estado, tono), obs ? el('span', { class: 'resumen-pasos-detalle', texto: obs }) : null
-        ].filter(Boolean))));
+        // La misma lista en la columna del visor, en escritorio (pasos «Resultado» y «Fecha de la cita»)
+        for (const ul of [lista, $('[data-resumen-lista-lateral]')]) {
+          ul.replaceChildren(...filas.map(([nombre, estado, tono, obs]) => el('li', { class: 'resumen-pasos-fila' }, [
+            el('span', { class: 'resumen-pasos-nombre', texto: nombre }), APD.estado(estado, tono), obs ? el('span', { class: 'resumen-pasos-detalle', texto: obs }) : null
+          ].filter(Boolean))));
+        }
+        muestraResumenLateral();
       }
       // El botón para registrar va en el paso donde termina la revisión: «Fecha de la cita» si se valida; «Resultado» si
       // regresa con observaciones o se rechaza. Con él va el aviso de envío fallido, que el núcleo busca en el formulario.
@@ -404,6 +441,17 @@
     /* Al llegar a un documento, en computadora el visor lo muestra al lado (P171; en teléfono se abre con «Ver
        documento», a pantalla completa). En el perfil, el comprobante de estudios, con el que se decide. En «Resultado» y
        en la cita, el visor se cierra. La página lo abre sola: el visor no se anuncia (P181, RS-03). */
+    /* Escritorio: en «Resultado» y «Fecha de la cita» el visor se cierra y su columna muestra «Así queda la revisión» (la
+       lista de lo decidido en cada documento), en lugar de quedar vacía. En «Resultado» el título ya lo dice el paso. */
+    const lateral = $('[data-resumen-lateral]');
+    let pasoActual = '';
+    function muestraResumenLateral() {
+      const toca = ['Resultado', 'Fecha de la cita'].includes(pasoActual) && !form.hidden && $('[data-resumen-lista-lateral]').children.length > 0;
+      lateral.hidden = !toca;
+      lateral.toggleAttribute('data-en-resultado', pasoActual === 'Resultado');
+      lateral.setAttribute('aria-labelledby', pasoActual === 'Resultado' ? 't-resultado' : 't-resumen-lateral');
+    }
+    form.addEventListener('formkit:paso', (e) => { pasoActual = e.detail.paso.dataset.titulo; muestraResumenLateral(); });
     form.addEventListener('formkit:paso', (e) => {
       const paso = e.detail.paso;
       const k = paso.dataset.pasoDoc || (paso.hasAttribute('data-perfil') && ['por_clasificar', 'no_cumple'].includes(perfil) ? 'comprobante_estudios' : '');
@@ -481,6 +529,7 @@
         }[resultado === 'con_observaciones' && ultima ? 'cerrada' : resultado];
         form.hidden = true;
         $('[data-con-formulario]').hidden = true;
+        lateral.hidden = true;
         sinGuardar = false;
         // La cabecera dice la situación nueva, no «En revisión documental» (auditoría 2026-10-18, D8)
         const nueva = resultado === 'con_observaciones' && ultima ? 'concluida_sin_atender' : { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' }[resultado];
