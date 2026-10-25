@@ -576,6 +576,168 @@ const delServidor = (ap, codigo) => ap.evaluate((x) => { const v = APD_EXAMEN_AP
   await c.close();
 }
 
+// ── El reloj del examen se detiene durante un corte (decisión de Liber del 25/10/2026) ──
+// La pantalla manda una señal de vida con su código; el servidor cuenta el tiempo sólo mientras llegan: más de 30 s sin
+// señal y deja de contar desde la última; al volver, primero se envía lo pendiente y la señal siguiente reanuda. El reloj
+// del servidor simulado se adelanta (APD_EXAMEN_API.pruebas.adelantar), así que no se espera el tiempo real: las pruebas
+// esperan condiciones.
+const AXE_RELOJ = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+async function axeEn(p, que) {
+  if (!AXE_RELOJ) return;
+  await p.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
+  if (!(await p.evaluate(() => Boolean(window.axe)))) await p.evaluate(AXE_RELOJ);
+  const r = await p.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] })).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`));
+  ok(r.length === 0, `axe ${que}:\n  ${r.join('\n  ')}`);
+}
+for (const ancho of [1280, 390]) {
+  const donde = ancho < 600 ? 'teléfono' : 'escritorio';
+  const t = (m) => `reloj durante un corte (${donde}): ${m}`;
+  const c = await contexto(ancho);
+  const ap = await c.newPage();
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await ap.waitForSelector('[data-filas] tr');
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+  const reg = (codigo) => ap.evaluate((x) => JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)), codigo);
+  const restante = (codigo) => ap.evaluate((x) => APD_EXAMEN_API.estado(x).restante_ms, codigo);
+  const adelanta = (ms, conSenal) => ap.evaluate(([m, k]) => APD_EXAMEN_API.pruebas.adelantar(m, k), [ms, conSenal || null]);
+  // Lo que muestra la pantalla de la persona, en segundos, y lo que dice el servidor
+  const enPantalla = () => ex.evaluate(() => { const [m, s] = document.querySelector('[data-reloj-texto]').textContent.split(':').map(Number); return m * 60 + s; });
+  const coincideEn = (pg, codigo) => pg.waitForFunction((x) => {
+    const [m, s] = document.querySelector('[data-reloj-texto]').textContent.split(':').map(Number);
+    return Math.abs(m * 60 + s - APD_EXAMEN_API.estado(x).restante_ms / 1000) <= 3;
+  }, codigo, { timeout: 15000 }).then(() => true, () => false);
+  const coincide = (codigo) => ex.waitForFunction((x) => {
+    const [m, s] = document.querySelector('[data-reloj-texto]').textContent.split(':').map(Number);
+    return Math.abs(m * 60 + s - APD_EXAMEN_API.estado(x).restante_ms / 1000) <= 3;
+  }, codigo, { timeout: 15000 }).then(() => true, () => false);
+  const fila = (codigo) => ap.locator('[data-filas] tr', { hasText: codigo });
+
+  if (ancho === 1280) {
+    const P = await ap.evaluate(() => APD_EXAMEN_API.parametros());
+    ok(P.senal_cada_s >= 10 && P.senal_cada_s <= 15 && P.sin_senal_s === 30 && P.tope_pausa_min === 30,
+      `reloj durante un corte: parámetros (señal cada ${P.senal_cada_s} s, ${P.sin_senal_s} s sin señal detienen el tiempo, tope de ${P.tope_pausa_min} minutos)`);
+  }
+  const k = await generar(ap, 0);
+  await entraYEmpieza(ex, k);
+  // La pantalla manda su señal de vida, con su código, sin que la persona haga nada
+  const s0 = (await reg(k)).senal_en;
+  ok(await ap.waitForFunction(([x, antes]) => JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)).senal_en !== antes, [k, s0], { timeout: 20000 }).then(() => true, () => false),
+    t('la pantalla manda su señal de vida al servidor cada pocos segundos'));
+
+  // 1 · Con señal, el reloj avanza; la pantalla muestra lo que dice el servidor
+  const r0 = await restante(k);
+  await adelanta(5 * 60000, k);
+  const r1 = await restante(k);
+  ok(r0 - r1 >= 5 * 60000 && r0 - r1 < 5 * 60000 + 5000, t(`con señal, el reloj avanza: 5 minutos después quedan 5 minutos menos (${Math.round((r0 - r1) / 1000)} s)`));
+  ok(await coincide(k), t('el tiempo que muestra la pantalla es el del servidor'));
+
+  // 2 · Sin señal, el reloj no avanza
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /el tiempo de tu examen está detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent));
+  const ultima = (await reg(k)).senal_en;
+  await adelanta(2 * 60000);
+  const r2 = await restante(k);
+  await adelanta(3 * 60000);
+  const r3 = await restante(k);
+  ok(r3 === r2 && Math.abs(r1 - r2) < 20000, t(`sin señal, el reloj no avanza en el servidor (${Math.round(r2 / 1000)} s y ${Math.round(r3 / 1000)} s, 3 minutos después)`));
+  const p1 = await enPantalla();
+  await ex.waitForTimeout(1500); // el reloj de la pantalla corre cada segundo: aquí se comprueba que ya no
+  ok(await enPantalla() === p1 && await ex.isVisible('[data-aviso-tiempo]'), t('sin conexión, el reloj de la pantalla se detiene y lo dice'));
+  await sinDesborde(ex, t('examen con el tiempo detenido'));
+  await axeEn(ex, `${t('examen con el tiempo detenido')}`);
+  await captura(ex, `reloj-detenido-${donde}`);
+  // Quien aplica ve «Sin conexión desde las HH:MM» y cuánto lleva detenido
+  const hh = await ap.evaluate((x) => APD.hora(x), ultima);
+  ok(await ap.waitForFunction(([x, h]) => { const f = [...document.querySelectorAll('[data-filas] tr')].find((tr) => tr.textContent.includes(x));
+    return f && f.textContent.includes(`Sin conexión desde las ${h}`) && /Su tiempo está detenido desde hace 5 minutos/.test(f.textContent); }, [k, hh], { timeout: 8000 }).then(() => true, () => false),
+  t(`quien aplica ve «Sin conexión desde las ${hh}» con el tiempo que lleva detenido`));
+  ok(/contestando \(1 sin conexión\)/.test(await ap.textContent('[data-cuenta]')), t('el resumen del grupo cuenta a quien está sin conexión'));
+  await sinDesborde(ap, t('aplicar con una persona sin conexión'));
+  await axeEn(ap, t('aplicar con una persona sin conexión'));
+  await captura(ap, `aplicar-sin-conexion-${donde}`);
+
+  // 3 · Al volver: primero se envía lo pendiente y después la señal reanuda el tiempo; la pausa queda en la bitácora
+  await ex.evaluate(() => {
+    window.__orden = [];
+    for (const m of ['responder', 'marcar', 'senal']) { const f = APD_EXAMEN_API[m]; APD_EXAMEN_API[m] = (...a) => { window.__orden.push(m); return f(...a); }; }
+  });
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
+  await ex.waitForFunction(() => !/detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent) && !Object.keys(localStorage).some((x) => x.startsWith('apd.examen.pendiente.')));
+  const orden = await ex.evaluate(() => window.__orden.join(','));
+  const b1 = (await reg(k)).bitacora.filter((b) => b.evento === 'pausa');
+  ok(/^responder,.*senal/.test(orden) && orden.indexOf('senal') > orden.indexOf('responder'), t(`al volver, primero se envía lo pendiente y después la señal que reanuda (${orden})`));
+  ok(b1.length === 1 && b1[0].inicio === ultima && b1[0].duracion_ms >= 5 * 60000 && b1[0].detenido_ms === b1[0].duracion_ms && b1[0].fin > b1[0].inicio,
+    t(`la pausa queda en la bitácora del examen con su inicio, fin y duración (${JSON.stringify(b1[0])})`));
+  const r4 = await restante(k);
+  ok(r4 <= r3 && r3 - r4 < 20000 && await coincide(k), t('al volver, el tiempo sigue desde donde se detuvo y la pantalla muestra el del servidor'));
+  ok(await ap.waitForFunction((x) => { const f = [...document.querySelectorAll('[data-filas] tr')].find((tr) => tr.textContent.includes(x));
+    return f && /Estuvo sin conexión 1 vez; tiempo detenido: 5 minutos/.test(f.textContent) && !f.textContent.includes('Sin conexión desde'); }, k, { timeout: 8000 }).then(() => true, () => false),
+  t('quien aplica ve que estuvo sin conexión y cuánto tiempo se detuvo'));
+
+  // 4 · El tope de la pausa acumulada (30 minutos) se respeta: después, el tiempo vuelve a correr y decide quien aplica
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.click('[data-siguiente]');
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /el tiempo de tu examen está detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent));
+  await adelanta(60000);
+  const rA = await restante(k);
+  await adelanta(39 * 60000); // 40 minutos sin conexión: con los 5 de antes, el tope se pasa a los 25
+  const rB = await restante(k);
+  await adelanta(60000);
+  const rC = await restante(k);
+  ok(rA - rB >= 15 * 60000 && rA - rB < 15 * 60000 + 30000, t(`el tope se respeta: de 40 minutos sin conexión sólo se detienen 25 (con los 5 de antes, 30) y los otros 15 corren (${Math.round((rA - rB) / 1000)} s)`));
+  ok(rB - rC >= 60000 && rB - rC < 62000, t('después del tope, el tiempo corre aunque siga sin conexión'));
+  ok(await ap.waitForFunction((x) => { const f = [...document.querySelectorAll('[data-filas] tr')].find((tr) => tr.textContent.includes(x));
+    return f && /Pasó el tope de 30 minutos de tiempo detenido: su tiempo volvió a correr\. Decida si espera o suspende el examen\./.test(f.textContent) && f.textContent.includes('Sin conexión desde'); }, k, { timeout: 8000 }).then(() => true, () => false),
+  t('quien aplica ve que pasó el tope y que decide'));
+  await axeEn(ap, t('aplicar con el tope pasado'));
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
+  await ex.waitForFunction(() => !/detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent) && !Object.keys(localStorage).some((x) => x.startsWith('apd.examen.pendiente.')));
+  const b2 = (await reg(k)).bitacora.filter((b) => b.evento === 'pausa');
+  const total = b2.reduce((n, b) => n + b.detenido_ms, 0);
+  ok(b2.length === 2 && b2[1].duracion_ms >= 41 * 60000 && b2[1].detenido_ms < b2[1].duracion_ms && b2[1].tope_en && total === 30 * 60000,
+    t(`la segunda pausa queda en la bitácora con cuándo pasó el tope; en total se detuvieron 30 minutos (${Math.round(total / 60000)})`));
+  ok(await coincide(k), t('después del tope, la pantalla también muestra el tiempo del servidor'));
+
+  // 5 · A la pantalla se le acabó el tiempo pero el servidor lo tuvo detenido: el examen sigue
+  const v = await ap.evaluate((x) => APD_EXAMEN_API.terminar(x, 'tiempo'), k);
+  ok(v.situacion === 'contestando' && v.restante_ms > 0, t('«se acabó el tiempo» lo decide el servidor: si le queda tiempo, el examen sigue'));
+
+  await ex.close();
+
+  // 6 · Corte de luz (otra persona): la pantalla se apaga y no manda señal; al volver con el mismo código, en la misma
+  // computadora, primero se envía lo que quedó pendiente y luego se reanuda
+  const k2 = await generar(ap, 0);
+  const antes = await c.newPage();
+  await antes.goto(`${BASE}examen.html`);
+  await entraYEmpieza(antes, k2);
+  await antes.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await antes.locator('[data-opciones] input').first().check();
+  await antes.waitForFunction(() => /el tiempo de tu examen está detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent));
+  await antes.close();
+  await ap.evaluate((x) => localStorage.removeItem(`apd.examen.latido.${x}`), k2); // la pantalla apagada ya no avisa
+  const antesLuz = (await reg(k2)).senal_en;
+  await adelanta(4 * 60000);
+  const rL = await restante(k2);
+  await adelanta(60000);
+  ok(await restante(k2) === rL, t('con la pantalla apagada (corte de luz), el reloj del servidor no avanza'));
+  const luz = await c.newPage();
+  await luz.goto(`${BASE}examen.html`);
+  await luz.fill('#codigo', k2);
+  await luz.click('#entrar [data-accion="enviar"]');
+  await luz.waitForFunction(() => /Se enviaron las respuestas que habían quedado en esta computadora/.test(document.querySelector('[data-guardado]').textContent));
+  await ap.waitForFunction(([x, a]) => { const r = JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)); return r.senal_en !== a && r.bitacora.some((b) => b.evento === 'pausa'); }, [k2, antesLuz], { timeout: 15000 });
+  const b3 = (await reg(k2)).bitacora.filter((b) => b.evento === 'pausa');
+  ok(b3.length === 1 && b3[0].inicio === antesLuz && b3[0].duracion_ms >= 5 * 60000 && b3[0].detenido_ms === b3[0].duracion_ms && Object.keys((await reg(k2)).respuestas).length === 1,
+    t('después del corte de luz, con el mismo código: se envía lo pendiente, el tiempo se reanuda y la pausa queda en la bitácora'));
+  ok(await coincideEn(luz, k2), t('después del corte de luz, la pantalla muestra el tiempo del servidor'));
+  await luz.close();
+  ok(c.errores.length === 0, t(`sin errores en la consola:\n  ${c.errores.join('\n  ')}`));
+  await c.close();
+}
+
 // ── Lectura en voz alta (ajustes del equipo, 25/10/2026), con speechSynthesis simulado ──
 /* Síntesis de voz simulada: guarda lo que se le pide leer (window.__habla) y cuántas veces se detiene (window.__detiene).
    voces = null: el navegador no tiene speechSynthesis */

@@ -26,6 +26,8 @@
   const decimal = (n) => Number(n).toFixed(1);
   const minutos = (ms) => { const m = Math.ceil(ms / 60000); return m === 1 ? 'queda 1 minuto' : `quedan ${m} minutos`; };
   const veces = (n) => (n === 1 ? '1 vez' : `${n} veces`);
+  /* Tiempo detenido por falta de conexión (decisión de Liber del 25/10/2026), en minutos */
+  const lapso = (ms) => (ms < 60000 ? 'menos de 1 minuto' : Math.floor(ms / 60000) === 1 ? '1 minuto' : `${Math.floor(ms / 60000)} minutos`);
   const hora = APD.hora;
   /* Fechas (decisión 16 b, 20/10/2026): «Hoy, …» y el aviso del día del examen, con fecha larga; las listas, la ficha y la
      papeleta, dd/mm/aaaa */
@@ -138,7 +140,8 @@
       codigos = API.delGrupo(g.id);
       lista = API.lista();
       const vigente = (f) => codigos.find((r) => r.inscripcion_id === f.inscripcion.id && r.situacion !== 'reemplazado');
-      const nueva = JSON.stringify(filas.map((f) => { const r = vigente(f); const l = lista[f.inscripcion.id]; return [l ? l.presente : null, r ? [r.codigo, r.situacion, r.contestadas, Math.ceil(r.restante_ms / 60000), r.salidas, r.otro_equipo, r.calificacion, r.voz] : null]; }));
+      const nueva = JSON.stringify(filas.map((f) => { const r = vigente(f); const l = lista[f.inscripcion.id]; return [l ? l.presente : null, r ? [r.codigo, r.situacion, r.contestadas, Math.ceil(r.restante_ms / 60000), r.salidas, r.otro_equipo, r.calificacion, r.voz,
+        r.pausa && r.pausa.abierta ? [r.pausa.abierta.desde, Math.floor(r.pausa.abierta.ms / 60000), r.pausa.tope] : null, r.pausa && r.pausa.pausas] : null]; }));
       if (nueva === firma && !forzar) return;
       firma = nueva;
       // Se conserva el foco en el botón de la misma persona al volver a pintar
@@ -146,7 +149,7 @@
       const activo = document.activeElement;
       const enfocado = activo && activo.closest('[data-tabla]') ? [activo.hasAttribute('data-ampliar') ? null : activo.dataset.accion, activo.dataset.ins] : null;
 
-      const cuenta = { registradas: 0, derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinEmpezar: 0, suspendidas: 0 };
+      const cuenta = { registradas: 0, derecho: 0, presentes: 0, ausentes: 0, porLista: 0, terminaron: 0, aprobadas: 0, contestando: 0, sinConexion: 0, sinEmpezar: 0, suspendidas: 0 };
       $('[data-filas]').replaceChildren(...filas.map((f) => {
         const nombre = APD.nombreCompleto(f.persona);
         const r = vigente(f);
@@ -197,6 +200,18 @@
             if (r.situacion === 'contestando') {
               cuenta.contestando += 1;
               partes.push(estado(`Contestando · ${r.contestadas} de ${r.total}`, 'pend'), el('span', { class: 'examen-nota', texto: minutos(r.restante_ms) }));
+              /* Sin conexión (decisión de Liber del 25/10/2026): desde la última señal de su pantalla, con el tiempo que lleva
+                 detenido; al pasar el tope de la pausa acumulada, el tiempo vuelve a correr y decide quien aplica (P214) */
+              const p = r.pausa || {};
+              if (p.abierta) {
+                cuenta.sinConexion += 1;
+                partes.push(estado(`Sin conexión desde las ${hora(p.abierta.desde)}`, 'error'),
+                  el('span', { class: 'examen-nota examen-nota-alerta', texto: p.tope
+                    ? `Pasó el tope de ${API.parametros().tope_pausa_min} minutos de tiempo detenido: su tiempo volvió a correr. Decida si espera o suspende el examen.`
+                    : `Su tiempo está detenido desde hace ${lapso(p.abierta.ms)}` }));
+              } else if (p.pausas) {
+                partes.push(el('span', { class: 'examen-nota', texto: `Estuvo sin conexión ${veces(p.pausas)}; tiempo detenido: ${lapso(p.detenido_ms)}${p.tope ? ' (llegó al tope)' : ''}` }));
+              }
             }
             if (r.situacion === 'terminado') {
               cuenta.terminaron += 1;
@@ -230,7 +245,7 @@
       if (cuenta.porLista) partes.push(`${cuenta.porLista} por pasar lista`);
       if (cuenta.ausentes) partes.push(`${cuenta.ausentes} no ${cuenta.ausentes === 1 ? 'llegó' : 'llegaron'}`);
       if (cuenta.terminaron) partes.push(`${cuenta.terminaron} ${cuenta.terminaron === 1 ? 'terminó' : 'terminaron'} (${cuenta.aprobadas} ${cuenta.aprobadas === 1 ? 'aprobada' : 'aprobadas'})`);
-      if (cuenta.contestando) partes.push(`${cuenta.contestando} contestando`);
+      if (cuenta.contestando) partes.push(`${cuenta.contestando} contestando${cuenta.sinConexion ? ` (${cuenta.sinConexion} sin conexión)` : ''}`);
       if (cuenta.sinEmpezar) partes.push(`${cuenta.sinEmpezar} con código sin empezar`);
       if (cuenta.registradas) partes.push(`${cuenta.registradas} ya ${cuenta.registradas === 1 ? 'lo presentó' : 'lo presentaron'}, con la calificación registrada`);
       if (cuenta.suspendidas) partes.push(`${cuenta.suspendidas} ${cuenta.suspendidas === 1 ? 'suspendida' : 'suspendidas'}`);

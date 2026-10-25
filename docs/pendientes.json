@@ -1026,6 +1026,15 @@
       "titulo": "Registro asistido: cita en pausa de una persona asistida",
       "recomendacion": "Con la cita de cotejo en pausa, la persona carga ese mismo día el documento que no coincidió en «Cargar el documento correcto», que necesita su sesión. La base ya admite que lo cargue el personal (con la marca de captura), pero no hay pantalla para hacerlo desde la ventanilla. Opciones: (a) agregar «Cargar el documento correcto» a la ficha de la ventanilla cuando la cita está en pausa; (b) que el personal lo cargue desde la cita de cotejo. Recomendación: (a).",
       "lineamientos": ""
+    },
+    {
+      "id": "P214",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Examen: tope de la pausa del reloj durante un corte",
+      "recomendacion": "Decisión del 25/10/2026: el tiempo del examen se detiene mientras la computadora de la persona no tiene conexión con el servidor y se reanuda cuando vuelve. Para que un examen no quede abierto sin límite (o se use un corte provocado para ganar tiempo), la pausa acumulada por persona tiene un tope, como parámetro: propuesta, 30 minutos. Al pasarlo, el tiempo vuelve a correr y quien aplica ve en «Aplicar el examen» que pasó el tope y decide si espera o suspende el examen. También son parámetros el tiempo sin señal que detiene el reloj (propuesta: 30 segundos) y cada cuánto manda su señal la pantalla (12 segundos). Opciones: (a) 30 minutos y, al pasarlo, el tiempo corre y decide quien aplica (así quedó); (b) otro tope; (c) sin tope, y quien aplica suspende si el corte no se arregla. Recomendación: (a), con el tope como parámetro, y que el caso de un corte largo de todo el salón (luz del PILARES) se resuelva con la reprogramación del examen, junto con el tiempo adicional por fallas (P89).",
+      "lineamientos": ""
     }
   ],
   "resueltos": [

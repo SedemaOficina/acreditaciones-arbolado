@@ -83,9 +83,10 @@
     <div class="examen-voz" data-voz hidden><button type="button" class="btn btn-secundario btn-chico" data-leer="instrucciones">Escuchar las instrucciones</button><button type="button" class="btn btn-secundario btn-chico" data-detener>Detener la lectura</button></div>
     <ul class="examen-reglas">
       <li>Son <strong data-total></strong> preguntas. Cada una tiene una sola respuesta correcta.</li>
-      <li>Tienes <strong data-minutos></strong> minutos. El tiempo empieza a correr cuando presionas «Empezar el examen» y no se detiene.</li>
+      <li>Tienes <strong data-minutos></strong> minutos. El tiempo empieza a correr cuando presionas «Empezar el examen».</li>
       <li>Cada respuesta se guarda en cuanto la eliges. Puedes cambiarla todas las veces que quieras hasta que envíes el examen.</li>
-      <li>Si se va el internet, sigue contestando: tus respuestas se quedan en esta computadora y se envían solas cuando vuelva la conexión.</li>
+      <!-- El tiempo se detiene durante un corte (decisión de Liber del 25/10/2026; app/examen.js y app/examen-servidor.js) -->
+      <li>Si se va el internet, sigue contestando: tus respuestas se quedan en esta computadora y se envían solas cuando vuelva la conexión. Mientras no hay conexión, el tiempo de tu examen se detiene.</li>
       <li>Si la computadora falla, levanta la mano: sigues en otra computadora con el mismo código, con tus respuestas y el tiempo que te quede.</li>
       <li>Para aprobar necesitas <strong data-minima></strong> o más. Verás tu calificación al terminar.</li>
       <li>No se permite consultar libros, apuntes ni el teléfono, que debe estar apagado. Si quien aplica el examen ve una conducta indebida, puede suspenderlo.</li>

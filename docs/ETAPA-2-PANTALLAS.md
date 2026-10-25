@@ -90,9 +90,21 @@ En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la
   acabó el tiempo, examen suspendido o enviado) se descarta. Al volver a entrar con el mismo código en la misma
   computadora (recarga o corte de luz), primero se envía lo pendiente y luego sigue donde se quedó; con un código
   repuesto, lo pendiente del anterior se envía con el nuevo. En otra computadora manda el servidor. «Enviar mis
-  respuestas» no se envía con respuestas pendientes: lo explica y reintenta. El tiempo lo sigue llevando el servidor:
-  durante un corte sigue corriendo y lo que llega después del límite no cuenta. En la API, una llamada que no llega
-  responde con motivo `conexion`; en la prueba se simula por pestaña (menú de pruebas, «Simular que se va el internet»).
+  respuestas» no se envía con respuestas pendientes: lo explica y reintenta. El tiempo lo lleva el servidor y se detiene
+  durante un corte (siguiente punto). En la API, una llamada que no llega responde con motivo `conexion`; en la prueba se
+  simula por pestaña (menú de pruebas, «Simular que se va el internet»).
+- El reloj se detiene durante un corte (decisión de Liber del 25/10/2026): mientras el examen está en curso, la pantalla
+  manda al servidor una señal de vida con su código cada 12 segundos. El servidor cuenta el tiempo sólo mientras recibe
+  señales: con más de 30 segundos sin señal deja de contar desde la última y reanuda al llegar la siguiente; al volver, la
+  pantalla primero envía lo pendiente y después la señal. Sin conexión, el reloj de la pantalla se detiene y dice «el tiempo
+  de tu examen está detenido»; el tiempo que muestra sale siempre de lo que responde el servidor (si a la pantalla se le
+  acaba el tiempo pero el servidor lo tuvo detenido, el examen sigue). En «Aplicar el examen», cada persona sin conexión
+  aparece como «Sin conexión desde las HH:MM», con el tiempo que lleva detenido, y el resumen del grupo las cuenta; al
+  volver, «Estuvo sin conexión N veces; tiempo detenido: …». Cada pausa queda en la bitácora del examen (inicio, fin,
+  duración y lo que detuvo). La pausa acumulada por persona tiene un tope de 30 minutos: al pasarlo, el tiempo vuelve a
+  correr y quien aplica ve «Pasó el tope… Decida si espera o suspende el examen» (P214). Los tres valores son parámetros;
+  en la prueba, `APD_EXAMEN_API.pruebas.parametros` los cambia y `pruebas.adelantar` adelanta el reloj del servidor. El
+  contrato para el servidor del SIA está en `docs/EXAMEN-SEB.md`, sección 5.
 - Lectura en voz alta (ajustes del equipo, 25/10/2026): «Escuchar la pregunta» lee la pregunta y sus opciones con su
   letra; cada opción tiene su «Escuchar»; «Detener la lectura» la detiene y cambiar de pregunta también. Lee además las
   instrucciones de «Entra a tu examen» y de «Antes de empezar» y la pregunta «¿Eres tú?». Usa `speechSynthesis` con una

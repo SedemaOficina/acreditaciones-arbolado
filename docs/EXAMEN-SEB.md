@@ -83,3 +83,50 @@ Lo que haría la API del módulo en la etapa 3 (pendiente del SIA, no construido
 
 Mientras no se valide en el servidor, cualquier navegador con un código vigente puede abrir el examen; lo que hoy lo impide
 es que el código sólo se genera al pasar lista en el salón y se abre en una computadora a la vez.
+
+## 5. Contrato del servidor real: el reloj se detiene durante un corte
+
+Decisión de Liber del 25/10/2026: el tiempo del examen se detiene mientras la computadora de la persona no tiene conexión
+con el servidor (corte de internet o de luz) y se reanuda cuando vuelve; quien aplica ve quién está sin conexión y desde
+cuándo. La base (`db/apd`) sólo guarda la calificación (`apd.examen`); los códigos, el tiempo y las respuestas los lleva el
+módulo del examen. En la versión de prueba lo hace `app/examen-servidor.js`; en el SIA, la API del módulo (P29) debe
+cumplir esto:
+
+**Parámetros** (en `apd.parametro`, editables con bitácora; P214 tiene la recomendación):
+
+| Parámetro | Valor | Qué es |
+|---|---|---|
+| `examen_senal_segundos` | 12 | Cada cuántos segundos manda la pantalla su señal de vida (entre 10 y 15) |
+| `examen_sin_senal_segundos` | 30 | Segundos sin señal tras los cuales el tiempo se detiene, desde la última señal |
+| `examen_tope_pausa_minutos` | 30 | Tiempo detenido acumulado por persona; al pasarlo, el tiempo vuelve a correr y decide quien aplica |
+
+**Llamadas y reglas:**
+
+1. **Señal de vida** (`senal(codigo)`): la pantalla la manda mientras el examen está en curso, cada
+   `examen_senal_segundos`, y una vez más al volver la conexión, **después** de enviar las respuestas y marcas que
+   quedaron pendientes en la computadora. La hora es la del servidor, nunca la de la computadora. Responde lo mismo que
+   «estado»: la situación, el tiempo que queda (`restante_ms`), cada cuánto mandar la señal (`senal_cada_ms`) y lo que se
+   sabe de la pausa (`pausa`: la abierta con su inicio, el tiempo detenido total y si se llegó al tope).
+2. **Cómo se cuenta el tiempo**: `restante = inicio + duración + detenido − ahora`, donde `detenido` es la suma de las
+   pausas cerradas más la abierta, sin pasar del tope. Hay pausa abierta cuando la última señal es más vieja que
+   `examen_sin_senal_segundos`; empieza en esa última señal (no al notarse la falta), así que un corte de 10 minutos
+   detiene 10 minutos. Un corte más corto que el umbral no detiene nada.
+3. **Al llegar una señal** con una pausa abierta, la pausa se cierra y se anota en la bitácora (`apd.bitacora`, entidad
+   `examen`, acción `examen_pausa`): código, inicio (la última señal), fin (esta señal), duración, cuánto de ella detuvo el
+   tiempo y, si se pasó el tope, a qué hora. También se cierra y se anota si el examen se envía, se suspende o se acaba el
+   tiempo con la pausa abierta.
+4. **Las respuestas** que llegan durante una pausa abierta se aceptan (son las que quedaron en la computadora) y **no**
+   cierran la pausa: sólo la señal la cierra, para que lo pendiente llegue antes de reanudar.
+5. **«Se acabó el tiempo»** lo decide el servidor. Si la pantalla pide cerrar por tiempo y al servidor todavía le queda
+   (lo tuvo detenido), no cierra: responde el examen en curso con su tiempo, y la pantalla sigue. Al cerrar por tiempo, la
+   hora de cierre es el fin del tiempo contando lo detenido.
+6. **Quien aplica** («Aplicar el examen», con el avance de su grupo): por persona en curso, la pausa abierta con la hora
+   de la última señal («Sin conexión desde las HH:MM»), el tiempo que lleva detenido y si pasó el tope («su tiempo volvió a
+   correr; decida si espera o suspende»), y cuántas pausas tuvo y cuánto tiempo se detuvo en total.
+7. **El tope**: al pasarlo, el tiempo corre aunque siga sin conexión; el servidor no suspende solo. Quien aplica decide
+   (esperar, suspender con motivo o, si se aprueba, dar tiempo adicional, P89).
+8. Un código repuesto conserva la última señal, el tiempo detenido y su bitácora: es el mismo examen.
+
+Lo prueban, con el reloj del servidor simulado adelantado, las pruebas «reloj durante un corte» de
+`herramientas/probar-examen.mjs` (teléfono y escritorio): sin señal no avanza, con señal avanza, el tope se respeta, quien
+aplica ve «Sin conexión desde…», lo pendiente se envía antes de reanudar, la pausa queda en la bitácora y el corte de luz.
