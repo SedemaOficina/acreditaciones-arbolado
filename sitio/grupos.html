@@ -60,7 +60,7 @@
       <button type="button" class="pestana" role="tab" id="pe-terminados" aria-controls="panel-terminados" aria-selected="false" tabindex="-1" data-pestana-cuenta="Ya terminaron">Ya terminaron</button>
     </div>
 
-  <section class="arm pestanas-panel" id="panel-armar" aria-labelledby="t-armar">
+  <section class="arm con-lateral pestanas-panel" id="panel-armar" aria-labelledby="t-armar">
     <h3 class="titulo-bloque arm-titulo titulo-de-pestana" id="t-armar">Armar un grupo</h3>
     <div class="arm-paso-columna">
     <!-- Completar o darle semana a un grupo que ya existe (?grupo=), o un enlace guardado a uno que ya no recibe -->
@@ -209,7 +209,7 @@
     <!-- Panel «Tu grupo» (escritorio, desde 1024 px): curso, semana, horario, tipo, cupo, elegidas con «Quitar» y los
          botones del paso, que hacen lo mismo que los de abajo del paso. En teléfono no se ve: lo elegido va en la línea de
          arriba del paso, como antes. Propuesta al estándar E1 (.con-lateral). Lo llena app/grupos.js. -->
-    <aside class="panel-grupo" aria-labelledby="t-tu-grupo" data-panel-grupo>
+    <aside class="panel-grupo columna-lateral columna-lateral-fija" aria-labelledby="t-tu-grupo" data-panel-grupo>
       <h3 class="panel-grupo-titulo" id="t-tu-grupo">Tu grupo</h3>
       <dl class="panel-grupo-datos" data-panel-datos></dl>
       <div class="cupo panel-grupo-cupo" data-panel-cupo hidden>

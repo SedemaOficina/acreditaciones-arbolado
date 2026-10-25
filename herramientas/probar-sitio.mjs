@@ -8191,6 +8191,116 @@ async function ajustesEquipo(navegador) {
   });
 }
 
+/* ── Escritorio, lo común de las partes A, B y C (integración del 25/10/2026; SOLO=escritorio) ──
+   En todas las pantallas del personal, a 1024 × 768, 1366 × 768, 1440 × 900 y 1920 × 1080, al abrir, a media página y al
+   final: (1) un solo criterio para el botón «Menú de pruebas»: en computadora, abajo a la izquierda (en teléfono, donde
+   estaba: a la derecha, y a la izquierda en «Asistencia», F3 B11); (2) el botón no tapa nada fijo (franja, barra de pasos,
+   visor, columna lateral, barra de acciones, encabezado de tabla); (3) lo fijo que va a lo ancho, sumado, no pasa del 25 %
+   del alto, y lo fijo que va al lado cabe en la ventana. Las mediciones son las reales, con la cabecera compacta. */
+async function escritorioComun(navegador) {
+  const { execFileSync } = await import('node:child_process');
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const salida = join(mkdtempSync(join(tmpdir(), 'apd-escritorio-')), 'volumen.json');
+  execFileSync('node', [join(raiz, 'herramientas/escenario-volumen.mjs'), join(raiz, 'sitio/datos/ficticios.json'), salida]);
+  const vol = readFileSync(salida);
+  const dict = porClasificar;
+  const enCurso = datos.grupo.find((g) => g.estado === 'en_curso').folio;
+  const conPrimer = (datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio) || {}).folio;
+  // [nombre, dirección, lo que hay que esperar, con el escenario de volumen]
+  const PANTALLAS = [
+    ['inicio del personal', 'revision.html', '[data-filas] tr', false],
+    ['inicio del personal con volumen', 'revision.html', '[data-filas] tr', true],
+    ['revisar (poda)', `revisar.html?folio=${enviadas.find((s) => s.tipo_acreditacion === 'poda').folio}`, '#formulario:not([hidden])', false],
+    ['revisar (dictaminador, 10 pasos)', `revisar.html?folio=${dict.folio}`, '#formulario:not([hidden])', false],
+    ['cita de cotejo', `cotejo.html?folio=${conCita.folio}`, 'cotejo', false],
+    ['citas de cotejo', 'citas.html', '[data-filas] tr', false],
+    ['grupos, paso 1', 'grupos.html', 'section[data-paso]:not([hidden])', false],
+    ['grupos, paso 3 con volumen', 'grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona', true],
+    ['grupos, paso 4', 'grupos.html?curso=poda-nueva&paso=4', 'section[data-paso]:not([hidden])', false],
+    ['asistencia (25)', 'asistencia.html?folio=APD-G-2026-020', '.asistencia-fila', true],
+    ['aplicar el examen (25)', 'aplicar.html?folio=APD-G-2026-020', '[data-filas] tr', true],
+    ['ficha del grupo (25)', 'grupo.html?folio=APD-G-2026-020', '[data-filas] tr', true],
+    ['ficha del grupo (capacitación)', `grupo.html?folio=${conPrimer}&perfil=capacitacion`, '[data-filas] tr', false],
+    ['ficha del grupo en curso', `grupo.html?folio=${enCurso}`, '[data-filas] tr', false],
+    ['capacitación', 'capacitacion.html?perfil=capacitacion', '[data-sesion-personal] a', false],
+    ['acreditaciones', 'acreditaciones.html', '[data-sesion-personal] a', false],
+    ['material del personal', 'material-personal.html', '[data-sesion-personal] a', false],
+    ['ventanilla', 'ventanilla.html', '[data-sesion-personal] a', false],
+    ['registro asistido', 'asistido.html', '[data-sesion-personal] a', false]
+  ];
+  /* Lo fijo es lo que en ese momento está pegado: fixed, o sticky en su lugar de pegado (una pieza sticky que todavía va con
+     la página, como la columna de la persona al abrir la cita, es contenido, y para el contenido la página reserva el lugar
+     del botón con scroll-padding, B1-03). El botón «tapa» una pieza si cae sobre lo que ella muestra (texto, controles,
+     imágenes, el documento del visor), no sobre su relleno: la barra de acciones le reserva su lugar a la izquierda. Lo
+     fijo «a lo ancho» es lo que pasa del 60 % del ancho y las piezas bajas (≤ 25 % del alto) que forman banda, como las
+     celdas de la franja del pase de lista o del encabezado de una tabla; lo angosto y alto es una columna lateral. */
+  const mide = (pg) => pg.evaluate(() => {
+    const boton = document.querySelector('.menu-pruebas-boton');
+    const rb = boton ? boton.getBoundingClientRect() : null;
+    const pegada = (e) => {
+      const cs = getComputedStyle(e);
+      if (cs.position === 'fixed') return true;
+      if (cs.position !== 'sticky') return false;
+      const b = e.getBoundingClientRect();
+      return (cs.top !== 'auto' && Math.abs(b.top - parseFloat(cs.top)) < 1.5) || (cs.bottom !== 'auto' && Math.abs(innerHeight - b.bottom - parseFloat(cs.bottom)) < 1.5);
+    };
+    const piezas = [...document.querySelectorAll('body *')].filter((e) => {
+      if (e.closest('.menu-pruebas-boton') || !e.checkVisibility() || !pegada(e)) return false;
+      const b = e.getBoundingClientRect();
+      return b.width > 0 && b.height > 0 && b.bottom > 0 && b.top < innerHeight;
+    }).filter((e, _, l) => !l.some((o) => o !== e && o.contains(e)));
+    const nombre = (e) => `${e.tagName.toLowerCase()}${e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''}`;
+    const cruza = (r) => rb && r.width > 0 && r.height > 0 && r.left < rb.right - 1 && rb.left < r.right - 1 && r.top < rb.bottom - 1 && rb.top < r.bottom - 1;
+    const tapa = piezas.filter((e) => {
+      const hojas = [...e.querySelectorAll('*')].filter((x) => (!x.children.length || x.matches('button, a, input, select, textarea, img, svg, canvas, iframe, embed, object, label')) && x.checkVisibility());
+      return hojas.length ? hojas.some((x) => cruza(x.getBoundingClientRect())) : cruza(e.getBoundingClientRect());
+    }).map(nombre);
+    const banda = (e) => { const b = e.getBoundingClientRect(); return b.width > innerWidth * 0.6 || b.height <= innerHeight * 0.25; };
+    const tramos = piezas.filter(banda).map((e) => { const b = e.getBoundingClientRect(); return [Math.max(0, b.top), Math.min(innerHeight, b.bottom)]; }).sort((a, b) => a[0] - b[0]);
+    let suma = 0; let fin = -1;
+    for (const [a, b] of tramos) { if (b <= fin) continue; suma += b - Math.max(a, fin); fin = b; }
+    const altas = piezas.filter((e) => !banda(e) && e.getBoundingClientRect().height > innerHeight + 1).map(nombre);
+    return { boton: rb ? { izquierda: rb.left < innerWidth / 2, fijo: getComputedStyle(boton).position === 'fixed' } : null, tapa, suma: Math.round(suma), alto: innerHeight, altas, piezas: piezas.map(nombre).slice(0, 8) };
+  });
+  for (const [ancho, alto] of [[1024, 768], [1366, 768], [1440, 900], [1920, 1080], [390, 844]]) {
+    const t = (m) => `[escritorio ${ancho}×${alto}] ${m}`;
+    const movil = ancho < 600;
+    const malas = { lugar: [], tapa: [], fijo: [], alto: [] };
+    let revisadas = 0;
+    const errores = [];
+    for (const [nombre, url, listo, conVol] of PANTALLAS) {
+      const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+      if (conVol) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: vol, contentType: 'application/json' }));
+      const pg = await c.newPage();
+      pg.on('pageerror', (e) => errores.push(`${nombre}: ${e.message}`));
+      if (listo === 'cotejo') await abreCotejo(pg, conCita.folio);
+      else { await pg.goto(BASE + url); await pg.waitForSelector(listo, { state: 'attached', timeout: 15000 }); }
+      await pg.waitForSelector('.menu-pruebas-boton');
+      await pg.waitForTimeout(400);
+      for (const donde of ['al abrir', 'a media página', 'al final']) {
+        await pg.evaluate((d) => window.scrollTo(0, d === 'al abrir' ? 0 : d === 'al final' ? document.documentElement.scrollHeight : (document.documentElement.scrollHeight - innerHeight) / 2), donde);
+        await dosCuadros(pg);
+        const m = await mide(pg);
+        revisadas += 1;
+        // En teléfono, donde estaba: a la izquierda sólo en «Asistencia» (F3 B11)
+        const izquierda = movil ? nombre.startsWith('asistencia') : true;
+        if (!m.boton || !m.boton.fijo || m.boton.izquierda !== izquierda) malas.lugar.push(`${nombre} (${donde}): ${JSON.stringify(m.boton)}`);
+        if (!movil && m.tapa.length) malas.tapa.push(`${nombre} (${donde}): tapa ${m.tapa.join(', ')}`);
+        if (!movil && m.suma > m.alto * 0.25) malas.fijo.push(`${nombre} (${donde}): ${m.suma} de ${m.alto} px [${m.piezas.join(', ')}]`);
+        if (!movil && m.altas.length) malas.alto.push(`${nombre} (${donde}): ${m.altas.join(', ')}`);
+      }
+      await c.close();
+    }
+    const lugar = movil ? 'a la derecha, como antes (a la izquierda en «Asistencia», F3 B11)' : 'abajo a la izquierda';
+    comprueba(!malas.lugar.length, t(`el botón «Menú de pruebas» va ${lugar} en las ${PANTALLAS.length} pantallas del personal (${revisadas} posiciones)${malas.lugar.length ? ': ' + malas.lugar.slice(0, 3).join(' · ') : ''}`));
+    if (movil) { comprueba(!errores.length, t(`sin errores${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`)); continue; }
+    comprueba(!malas.tapa.length, t(`el botón «Menú de pruebas» no tapa nada fijo, al abrir, a media página ni al final${malas.tapa.length ? ': ' + malas.tapa.slice(0, 3).join(' · ') : ''}`));
+    comprueba(!malas.fijo.length, t(`lo fijo que va a lo ancho, sumado, no pasa del 25 % del alto (${Math.round(alto * 0.25)} px) en ninguna pantalla ni posición${malas.fijo.length ? ': ' + malas.fijo.slice(0, 3).join(' · ') : ''}`));
+    comprueba(!malas.alto.length && !errores.length, t(`lo fijo que va al lado cabe en la ventana${malas.alto.length ? ': ' + malas.alto.slice(0, 3).join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+  }
+}
+
 /* ── Escritorio, parte A (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, regla general 2, 4.1 y
    4.2; SOLO=escritorio-a) ──
    La cabecera compacta del personal, «Revisar una solicitud» y «Cita de cotejo» en 1366 × 768, 1440 × 900 y 1920 × 1080:
@@ -8463,8 +8573,8 @@ async function escritorioA(navegador) {
    pantalla (asistencia en renglones compactos, barra fija con «Guardar», franja fija con la cuenta e «Imprimir los códigos», una
    persona por renglón con su fotografía de 96 px, pestañas del estándar, panel lateral). A 390 px, que nada de eso aplique:
    el orden y la altura de antes. A 1440 × 650, que nada quede fijo (sólo desde 700 px de alto).
-   «A la vista» se mide con la cabecera compacta del personal que hace la parte A (≤ 88 px más las dos franjas de la versión
-   de prueba): la posición de cada pieza se toma desde el final de la sesión del personal. Lo fijo se mide tal cual. */
+   «A la vista» se mide en la posición real, con la cabecera compacta del personal (parte A) y las dos franjas de la versión
+   de prueba; lo fijo, tal cual. */
 async function escritorioC(navegador) {
   const t = (m) => `[escritorio C] ${m}`;
   const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
@@ -8503,25 +8613,21 @@ async function escritorioC(navegador) {
       .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 140)).join(' || ')}`));
     comprueba(!v.length, t(`${donde}: axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
   };
-  /* Posición de cada selector con la cabecera compacta: [fin de la pieza en la ventana, alto de la ventana]. La cabecera de
-     hoy (franjas de prueba, cabecera institucional y sesión) se cambia por la compacta de la parte A: 88 px más las dos
-     franjas de la versión de prueba. Sin desplazar la página. */
+  /* Posición real de cada selector al abrir, sin desplazar la página: [selector, fin, inicio] en la ventana. Desde la
+     integración de las partes A, B y C (25/10/2026) la cabecera compacta del personal es la de verdad; antes, en la rama de
+     la parte C, se tomaba desde el final de la sesión como si la cabecera midiera 88 px. */
   const aLaVista = (page, selectores) => page.evaluate((sels) => {
-    const sesion = document.querySelector('[data-sesion-personal]');
-    const r = sesion.getBoundingClientRect();
-    const fin = r.bottom + scrollY + parseFloat(getComputedStyle(sesion).marginBottom);
-    const pruebas = [...document.querySelectorAll('.entorno-pruebas, .ubicacion-prueba')].reduce((s, e) => s + e.getBoundingClientRect().height, 0);
-    const base = 88 + pruebas;
+    window.scrollTo(0, 0);
     return sels.map((s) => {
       const e = document.querySelector(s);
       if (!e || !e.getClientRects().length) return [s, null];
       const b = e.getBoundingClientRect();
-      return [s, Math.round(b.bottom + scrollY - fin + base), Math.round(b.top + scrollY - fin + base)];
+      return [s, Math.round(b.bottom), Math.round(b.top)];
     });
   }, selectores);
   const revisaVista = async (page, selectores, donde) => {
     const alto = page.viewportSize().height;
-    for (const [s, fin, inicio] of await aLaVista(page, selectores)) comprueba(fin !== null && inicio >= 0 && fin <= alto, t(`${donde}: «${s}» a la vista sin bajar (con la cabecera compacta: ${inicio}–${fin} de ${alto} px)`));
+    for (const [s, fin, inicio] of await aLaVista(page, selectores)) comprueba(fin !== null && inicio >= 0 && fin <= alto, t(`${donde}: «${s}» a la vista sin bajar (${inicio}–${fin} de ${alto} px)`));
   };
   // Lo fijo que está en la ventana (sin el botón del menú de pruebas): suma de altos y si cada pieza cabe
   const fijo = (page) => page.evaluate(() => {
@@ -8836,6 +8942,8 @@ try {
   if (toca('ajustes25')) await parte('ajustes del equipo 25/10', () => ajustes25(navegador));
   // Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir
   if (toca('asistido')) await parte('registro asistido', () => registroAsistido(navegador));
+  // Acomodo de escritorio, lo común de las tres partes (integración del 25/10/2026): el botón «Menú de pruebas» y lo fijo
+  if (toca('escritorio')) await parte('escritorio, lo común', () => escritorioComun(navegador));
   // Acomodo de escritorio, parte A (decisión de Liber del 25/10/2026): cabecera compacta, Revisar y Cita de cotejo
   if (toca('escritorio-a')) await parte('escritorio, parte A', () => escritorioA(navegador));
   // Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026): inicio del personal y «Grupos»
