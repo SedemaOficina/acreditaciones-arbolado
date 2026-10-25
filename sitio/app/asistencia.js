@@ -62,8 +62,11 @@
     const permitidas = c.dias_duracion - c.dias_minimos_asistencia;
     const ultimoDia = c.dias_duracion;
     // El grupo por su nombre calculado y su folio en chico (propuesta D, 2026-10-18)
+    // Con la duración, de lunes a viernes (ajustes del equipo, 25/10/2026: duración y quinto día)
+    // (un dato aparte: cada dato de la línea pasa entero al renglón siguiente, P134)
     $('[data-bajada]').replaceChildren(APD.grupoTitulo(g, datos), APD.lineaDatos([x.nombre,
-      `del ${fechaCorta(g.fecha_inicio)} al ${fechaCorta(x.ultimo)}`, plural(x.n, 'persona', 'personas')], 'grupo-bajada-datos'));
+      c.dias_duracion > 1 ? `${c.dias_duracion} días, de lunes a viernes` : null,
+      `del ${fechaCorta(g.fecha_inicio)} al ${fechaCorta(x.ultimo)}`, plural(x.n, 'persona', 'personas')].filter(Boolean), 'grupo-bajada-datos'));
     $('[data-regla]').textContent = permitidas > 0
       ? `Para el examen se necesitan ${c.dias_minimos_asistencia} de ${c.dias_duracion} días: cada persona puede faltar ${permitidas === 1 ? '1' : permitidas}.`
       : `Para el examen se necesita asistir ${c.dias_duracion === 1 ? 'al día del curso' : `los ${c.dias_duracion} días`}.`;

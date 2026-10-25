@@ -7626,6 +7626,18 @@ async function registroAsistido(navegador) {
           t(`${x.donde}: la solicitud se captura en el mismo formulario, en modo asistido (aviso al personal, su cabecera y la adscripción capturada)`));
         await revisaAxe(page, `${x.donde}, solicitud asistida, paso «Trámite»`);
         await page.check('input[name="tipo"][value="poda"]', { force: true });
+        // La carrera que no aparece en el catálogo (ajustes del equipo, 25/10/2026) también en el modo asistido: la misma
+        // ayuda y el mismo renglón del combo, para leérselos a la persona
+        await page.selectOption('#nivel_estudios', 'licenciatura');
+        await page.waitForSelector('#carrera', { state: 'visible' });
+        await page.click('#carrera');
+        await page.keyboard.type('Ingeniería en Arboricultura y Paisaje Urbano');
+        const renglon = await page.waitForSelector('[data-campo="carrera"] .combo-lista:not([hidden]) .combo-vacio').then((n) => n.textContent(), () => '');
+        comprueba(/Si la tuya no aparece, escríbela completa, como viene en tu título o cédula: la Secretaría la revisa\./.test(await texto(page, '[data-campo="carrera"] .ayuda'))
+          && renglon === 'No está en la lista: puedes dejarla así. Escríbela completa, como aparece en tu título o cédula; la Secretaría la revisa.',
+          t(`${x.donde}: en el modo asistido, la carrera que no está en el catálogo tiene la misma ayuda y el mismo renglón del combo («${renglon}»)`));
+        await page.keyboard.press('Escape');
+        await page.fill('#carrera', '');
         await page.selectOption('#nivel_estudios', 'primaria');
         await sigPaso(page);
         comprueba(await cargaObligatorios(page) === 4, t(`${x.donde}: el personal carga sus 4 documentos escaneados`));
@@ -7646,6 +7658,9 @@ async function registroAsistido(navegador) {
         comprueba(/^APD-S-2026-\d{5}$/.test(folio) && await page.isVisible('[data-imprimir-acuse]') && !(await page.$('a[href="tramites.html"].btn-primario'))
           && /Te avisamos por teléfono/.test(await texto(page, '[data-acuse] .secuencia')),
           t(`${x.donde}: al enviar queda como una solicitud enviada, con su folio y el acuse para imprimir (sin «Ir a mis trámites»)`));
+        // La duración del curso en el acuse (ajustes del equipo, 25/10/2026: quinto día), también en el modo asistido
+        comprueba(/te avisamos las fechas por teléfono\. El curso es de 5 días, de lunes a viernes; el día 5 es de repaso de conocimientos y examen final\./.test(await texto(page, '[data-acuse] .secuencia')),
+          t(`${x.donde}: el acuse de la solicitud asistida dice la duración del curso: 5 días, de lunes a viernes, y el día 5 de repaso y examen final`));
         // La hoja sencilla: el folio, la fecha y los informes de la Secretaría; en pantalla no se ve
         await page.evaluate(() => { window.print = () => { window.__impreso = true; }; });
         await page.click('[data-imprimir-acuse]');
@@ -7834,6 +7849,12 @@ async function registroAsistido(navegador) {
       comprueba(/Cerrada: sin más oportunidades de corrección/.test(benito) && benito.includes(`Tu solicitud ${sBenito.folio} se cerró porque, después de tu última oportunidad para corregir`)
         && /No pagaste nada y puedes iniciar una solicitud nueva en la ventanilla del Vivero/.test(benito),
         t(`${ancho} px: la solicitud cerrada al agotar las oportunidades deja su aviso por teléfono (S7), de tú y listo para decirlo`));
+      // El aviso del grupo (G1) dice también la duración del curso (ajustes del equipo, 25/10/2026: quinto día)
+      const g1 = await page.evaluate(() => APD.cargar().then((d) => [
+        APD_ASISTIDO.texto(d, { aviso: 'G1', datos: { tipo_acreditacion: 'poda', modalidad: 'nueva', fecha_inicio: '2026-11-02', hora_entrada: '09:00' } }),
+        APD_ASISTIDO.texto(d, { aviso: 'G1', datos: { tipo_acreditacion: 'poda', modalidad: 'renovacion', fecha_inicio: '2026-11-02', hora_entrada: '09:00' } })]));
+      comprueba(/Son 5 días, de lunes a viernes; el día 5 es de repaso de conocimientos y examen final\. Llega a tiempo/.test(g1[0]) && /Es un solo día y ese mismo día presentas el examen\./.test(g1[1]),
+        t(`${ancho} px: el aviso por teléfono del grupo (G1) dice la duración del curso y qué es el último día`));
       await sinDesborde(page, t(`${ancho} px: avisos por teléfono con las oportunidades`));
       await revisaAxe(page, `${ancho} px: avisos por teléfono con las oportunidades`);
       await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(BENITO.id)}`);
@@ -7851,6 +7872,119 @@ async function registroAsistido(navegador) {
   });
   for (const x of personas) if (x.contexto) await x.contexto.c.close();
   await camaraNav.close();
+}
+
+// ── Ajustes del equipo de la Dirección (25/10/2026): carrera que no aparece en el catálogo y duración del curso ──
+async function ajustesEquipo(navegador) {
+  const t = (m) => `[ajustes del equipo 25/10] ${m}`;
+  // Cada bloque sigue aunque otro se detenga: un error se cuenta como falla de ese bloque y se pasa al siguiente
+  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
+  const nuevo = async (ancho, alto, sesion) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil });
+    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+
+  // Carrera que no aparece en el catálogo: la ayuda y el renglón del combo dicen que se puede escribir completa, como viene
+  // en el título o la cédula, y que la Secretaría la revisa. De punta a punta: la persona (en teléfono) la escribe y envía;
+  // en «Revisión documental» y en «Revisar una solicitud» (en computadora) llega como «carrera por clasificar», quien
+  // revisa la clasifica y la clasificación queda en el catálogo y en el perfil de la solicitud. El acuse dice la duración
+  // del curso (punto del quinto día).
+  await bloque('carrera escrita', async () => {
+    const CARRERA = 'Ingeniería en Arboricultura y Paisaje Urbano';
+    const { c, page, errores } = await nuevo(390, 844, paraDictaminador.id);
+    await page.goto(BASE + 'solicitud.html?tipo=dictaminador');
+    await page.waitForFunction(() => document.getElementById('tramite').value === 'dictaminador_nueva');
+    const fuera = await page.evaluate((x) => { const cat = (window.FORMKIT_CATALOGOS || {}).carreras || []; const filas = Array.isArray(cat) ? cat : cat.filas || []; return filas.length > 0 && !filas.some((o) => APD_PERFIL_ACADEMICO.normaliza(o.nombre || o) === APD_PERFIL_ACADEMICO.normaliza(x)); }, CARRERA);
+    comprueba(fuera, t('la carrera de la prueba no está en el catálogo de carreras'));
+    await page.selectOption('#nivel_estudios', 'licenciatura');
+    await page.waitForSelector('#carrera', { state: 'visible' });
+    const ayuda = (await page.textContent('[data-campo="carrera"] .ayuda')).replace(/\s+/g, ' ');
+    comprueba(/Si la tuya no aparece, escríbela completa, como viene en tu título o cédula: la Secretaría la revisa\./.test(ayuda), t(`la ayuda de «¿Qué carrera estudiaste?» dice que se puede escribir completa y que la Secretaría la revisa («${ayuda.trim()}»)`));
+    await page.click('#carrera');
+    await page.keyboard.type(CARRERA);
+    const renglon = await page.waitForSelector('[data-campo="carrera"] .combo-lista:not([hidden]) .combo-vacio').then((n) => n.textContent(), () => '');
+    comprueba(renglon === 'No está en la lista: puedes dejarla así. Escríbela completa, como aparece en tu título o cédula; la Secretaría la revisa.',
+      t(`el combo, con una carrera que no está en la lista, dice que puede dejarla así y que la Secretaría la revisa («${renglon}»)`));
+    await captura(page, 'ajustes-carrera-escrita-telefono');
+    await page.keyboard.press('Escape');
+    await page.check('input[name="estatus_estudios"][value="titulado"]', { force: true });
+    comprueba(/la Secretaría revisará tu carrera/.test(await page.textContent('[data-experiencia-minima]')), t('con la carrera escrita, la experiencia dice que la Secretaría revisará la carrera'));
+    await page.fill('#anios_experiencia', '6');
+    await siguiente(page);
+    comprueba(await page.inputValue('#carrera') === CARRERA && await tituloPaso(page) !== '' && !(await page.isVisible('[data-campo="carrera"] .err:not(:empty)')), t('la carrera escrita se acepta y el formulario avanza'));
+    await cargaObligatorios(page);
+    await siguiente(page);
+    await marcaCasillas(page);
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-acuse]:not([hidden])');
+    const folio = (await page.textContent('[data-acuse-folio]')).trim();
+    const acuse = (await page.textContent('[data-acuse] .secuencia')).replace(/\s+/g, ' ');
+    comprueba(/El curso es de 5 días, de lunes a viernes; el día 5 es de repaso de conocimientos y examen final\./.test(acuse), t(`quinto día: el acuse de una solicitud nueva dice que el curso es de 5 días, de lunes a viernes, y qué es el día 5 («${acuse.trim().slice(-140)}»)`));
+    // Quien revisa, en computadora
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(BASE + 'revision.html');
+    await page.waitForSelector(`[data-filas] tr[data-folio="${folio}"]`);
+    comprueba(/Carrera por clasificar/.test(await page.textContent(`[data-filas] tr[data-folio="${folio}"]`)), t(`«Revisión documental»: ${folio}, con la carrera escrita, dice «Carrera por clasificar»`));
+    await page.goto(BASE + `revisar.html?folio=${folio}`);
+    await page.waitForSelector('#formulario:not([hidden])');
+    comprueba(await page.isVisible('[data-si="perfil_revision=por_clasificar"]') && (await page.textContent('[data-carrera-nombre]')).trim() === `«${CARRERA}»`,
+      t('«Revisar una solicitud»: la carrera escrita llega por clasificar, con su nombre como la escribió la persona'));
+    await page.check('input[name="clasificacion"][value="afin"]', { force: true });
+    comprueba(/2 años/.test(await page.textContent('[data-minimo]')), t('al clasificarla como afín se piden 2 años'));
+    await aceptaTodos(page);
+    await page.waitForSelector('[data-campo="cita_fecha"]', { state: 'visible' });
+    let dia = await page.getAttribute('[data-campo="cita_fecha"]', 'data-min');
+    while ([0, 6].includes(new Date(`${dia}T12:00:00Z`).getUTCDay())) dia = new Date(Date.parse(`${dia}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
+    await page.fill('#cita_fecha', dma(dia));
+    await page.selectOption('#cita_hora', '10:00');
+    await page.focus('[data-accion="enviar"]');
+    await page.click('[data-accion="enviar"]');
+    await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
+    const r = await page.evaluate(async (F) => {
+      const d = await APD.cargar();
+      const s = d.solicitud.find((x) => x.folio === F);
+      const car = d.carrera.find((x) => x.nombre_normalizado === APD_PERFIL_ACADEMICO.normaliza(s.carrera));
+      return { estado: s.estado, carrera: s.carrera, perfil: s.perfil_academico, minimo: Number(s.experiencia_minima), grupo: car && car.grupo };
+    }, folio);
+    comprueba(r.estado === 'validada_en_linea' && r.carrera === CARRERA && r.perfil === 'licenciatura_afin' && r.minimo === 2 && r.grupo === 'afin',
+      t(`quien revisa clasifica la carrera escrita: queda en el catálogo como afín y la solicitud con su perfil (${JSON.stringify(r)})`));
+    comprueba(!errores.length, t(`carrera escrita sin errores en la consola${errores.length ? `: ${errores.join(' | ')}` : ''}`));
+    await c.close();
+  });
+
+  // Quinto día: la duración (cinco días, de lunes a viernes) y el día 5 de repaso de conocimientos y examen final en el
+  // inicio, «Mis trámites» con grupo asignado, la ficha del grupo y la asistencia (el acuse, arriba)
+  await bloque('quinto día', async () => {
+    const con = datos.solicitud.find((s) => s.folio === 'APD-S-2026-00021');
+    for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'escritorio']]) {
+      const { c, page, errores } = await nuevo(ancho, alto, con.solicitante_id);
+      await page.goto(BASE + 'index.html');
+      const inicio = (await page.locator('li', { has: page.locator('[data-duraciones]') }).textContent()).replace(/\s+/g, ' ');
+      comprueba(/de 5 días la primera vez/.test(inicio) && /de lunes a viernes/.test(inicio) && /el quinto día es de repaso de conocimientos y examen final/.test(inicio), t(`${donde}: el inicio dice 5 días, de lunes a viernes, y el quinto de repaso y examen final`));
+      await page.goto(BASE + 'tramites.html');
+      await page.waitForSelector('[data-solicitudes] .ficha');
+      const tram = (await page.textContent('[data-solicitudes]')).replace(/\s+/g, ' ');
+      comprueba(/Tu curso dura 5 días, de lunes a viernes\./.test(tram) && /Día 5: repaso de conocimientos y examen final/.test(tram), t(`${donde}: «Mis trámites» con grupo asignado dice 5 días, de lunes a viernes, y el día 5`));
+      await page.goto(BASE + 'grupo.html?folio=APD-G-2026-003');
+      await page.waitForSelector('[data-sesion-personal] a');
+      const ficha = (await page.textContent('main')).replace(/\s+/g, ' ');
+      comprueba(/Duración\s?5 días, de lunes a viernes/.test(ficha) && /Último día \(repaso de conocimientos y examen final\)/.test(ficha), t(`${donde}: la ficha del grupo dice «Duración: 5 días, de lunes a viernes» y el último día de repaso y examen final`));
+      await page.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
+      await page.waitForSelector('[data-bajada] .grupo-bajada-datos');
+      const bajada = (await page.textContent('[data-bajada]')).replace(/\s+/g, ' ');
+      comprueba(/5 días, de lunes a viernes · del 12\/10\/2026 al 16\/10\/2026/.test(bajada) && /repaso de conocimientos y examen final/i.test(await page.textContent('main')),
+        t(`${donde}: la asistencia dice 5 días, de lunes a viernes, y el día 5 de repaso y examen final («${bajada.trim()}»)`));
+      await sinDesborde(page, t(`${donde}: asistencia con la duración`));
+      comprueba(!errores.length, t(`${donde}: quinto día sin errores en la consola${errores.length ? `: ${errores.join(' | ')}` : ''}`));
+      await c.close();
+    }
+  });
 }
 
 const APD_NOMBRE = (p) => [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' ').toUpperCase();
@@ -7923,6 +8057,8 @@ try {
   if (toca('tareas')) await parte('tareas y estados del personal', () => tareasPersonal(navegador));
   if (toca('visual')) await parte('sistema visual', () => sistemaVisual(navegador));
   if (toca('sesion23')) await parte('sesión del 23/10', () => sesion23(navegador));
+  // Ajustes del equipo de la Dirección (25/10/2026): carrera escrita de punta a punta y duración del curso
+  if (toca('ajustes')) await parte('ajustes del equipo', () => ajustesEquipo(navegador));
   if (toca('cancelacion')) await parte('cancelación de acreditaciones', () => cancelacion(navegador));
   if (toca('reposicion')) await parte('reposición de credenciales', () => reposicionCredencial(navegador));
   if (toca('pasos')) await parte('tareas por pasos', () => pasosTareas(navegador));

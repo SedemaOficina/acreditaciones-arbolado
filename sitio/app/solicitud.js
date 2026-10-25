@@ -213,6 +213,11 @@
     document.querySelector('[data-modalidad-texto]').textContent = modalidad === 'renovacion'
       ? `Te corresponde la renovación de tu acreditación ${anterior}. Curso de ${dias}.`
       : `Te corresponde una solicitud nueva: es tu primera vez o tu acreditación anterior venció hace más de un año. Curso de ${dias}.`;
+    // El acuse dice cuánto dura el curso y qué es el último día (ajustes del equipo, 25/10/2026: duración y quinto día)
+    const acuseCurso = document.querySelector('[data-acuse-curso]');
+    if (acuseCurso) acuseCurso.textContent = !c ? '' : c.dias_duracion > 1
+      ? ` El curso es de ${dias}, de lunes a viernes; el día ${c.dias_duracion} es de ${APD.diaFinal(c).toLowerCase()}.`
+      : ' El curso es de un día y ese mismo día presentas el examen.';
     caja.hidden = false;
     docsKobo(datos, tipo, modalidad, anterior);
   }
@@ -510,11 +515,16 @@
     document.querySelector('[data-acuse-persona]').remove();
     document.querySelector('[data-acuse-asistido]').hidden = false;
     const pasos = document.querySelector('[data-acuse] .secuencia');
+    // La duración del curso que le corresponde (ajustes del equipo, 25/10/2026: quinto día) se conserva: la escribe
+    // en [data-acuse-curso] la elección del tipo de acreditación, antes o después de esto
+    const curso = pasos && pasos.querySelector('[data-acuse-curso]');
     if (pasos) pasos.replaceChildren(...[
       'La Secretaría revisa tus documentos.',
       'Te avisamos por teléfono: si falta algo, vienes a la ventanilla y lo corregimos contigo; si todo está completo, te damos una cita de cotejo.',
+      'Después de la cita, la Secretaría te asigna un grupo del curso y te avisamos las fechas por teléfono.',
       'Para preguntar en qué va tu trámite, ven a la ventanilla con tu folio.'
     ].map((texto) => el('li', { class: 'secuencia-item', texto })));
+    if (curso) pasos.children[2].append(curso);
     const hoja = document.querySelector('[data-hoja-acuse]');
     document.querySelector('[data-imprimir-acuse]').addEventListener('click', () => {
       const folio = document.querySelector('[data-acuse-folio]').textContent.trim();

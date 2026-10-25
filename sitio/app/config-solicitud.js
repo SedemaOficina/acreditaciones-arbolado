@@ -111,7 +111,13 @@ window.FORMKIT_CONFIG = {
   // Formato propio «carrera» (app/formatos-propios.js): la carrera escrita lleva letras (auditoría «intentar romperlo», F1 12)
   formatos: window.APD_FORMATOS,
   // «pesa 5.0 MB y el máximo es 5 MB» parecía que sí cabía (redondeo del estándar; F4 B6)
-  mensajes: { archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduce su tamaño o elige otro.' },
+  /* comboLibre: el renglón del combo cuando lo escrito no está en la lista. En esta página el único combo libre es el de la
+     carrera, así que dice que se puede escribir completa y que la Secretaría la revisa (ajustes del equipo, 25/10/2026:
+     carrera que no aparece en el catálogo). El estándar no tiene un texto por combo: se cambia el de la página. */
+  mensajes: {
+    archRechazoPeso: 'pasa del máximo de {mb} MB (pesa {peso}). Reduce su tamaño o elige otro.',
+    comboLibre: 'No está en la lista: puedes dejarla así. Escríbela completa, como aparece en tu título o cédula; la Secretaría la revisa.'
+  },
   limitesSegun: { experiencia: (r) => APD_PERFIL_ACADEMICO.minimoExperiencia(catalogoCarreras, r) }
 };
 

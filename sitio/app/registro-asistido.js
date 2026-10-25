@@ -119,6 +119,13 @@
     return `en la ventanilla del ${s.nombre}, ${horario}`;
   }
   const nombreDoc = (datos, k) => ((datos.requisito || []).find((r) => r.clave === k) || {}).nombre || k;
+  /* Cuánto dura el curso y qué es el último día (ajustes del equipo, 25/10/2026: duración y quinto día), como «Mis trámites» */
+  function duracion(datos, d) {
+    const c = APD.curso(datos, d.tipo_acreditacion, d.modalidad);
+    if (!c) return '';
+    return c.dias_duracion > 1 ? ` Son ${c.dias_duracion} días, de lunes a viernes; el día ${c.dias_duracion} es de ${APD.diaFinal(c).toLowerCase()}.`
+      : ' Es un solo día y ese mismo día presentas el examen.';
+  }
   function texto(datos, a) {
     const d = a.datos || {};
     const folio = d.folio ? `tu solicitud ${d.folio}` : 'tu trámite';
@@ -149,7 +156,7 @@
           default: return `Hay un cambio en ${folio}. Ven ${lugar(datos)} para decírtelo.`;
         }
       case 'T3': return `Tu cuenta está bloqueada mientras la Secretaría aclara lo que pasó en tu cita de cotejo. Ven ${lugar(datos)} para aclararlo.`;
-      case 'G1': return `Ya tienes grupo del curso: empieza el ${APD.fechaLarga(d.fecha_inicio)} a las ${d.hora_entrada || APD.parametroTexto(datos, 'curso_hora_entrada')}, en el ${APD.sede(datos).nombre}. Llega a tiempo todos los días del curso.`;
+      case 'G1': return `Ya tienes grupo del curso: empieza el ${APD.fechaLarga(d.fecha_inicio)} a las ${d.hora_entrada || APD.parametroTexto(datos, 'curso_hora_entrada')}, en el ${APD.sede(datos).nombre}.${duracion(datos, d)} Llega a tiempo todos los días del curso.`;
       case 'G2':
         if (d.resultado === 'baja') return `Ya no estás en el grupo ${d.grupo || ''}${d.motivo ? `: ${APD.paraTi(d.motivo)}` : ''}. Sigues en espera de un curso con tu misma antigüedad; te avisamos las fechas.`;
         if (d.resultado === 'por_confirmar') return 'Tu grupo todavía no se confirma: faltan personas. Te avisamos por teléfono cuando tenga fechas.';
@@ -265,7 +272,7 @@
       case 'inscrita': {
         const i = (datos.inscripcion || []).find((x) => x.solicitud_id === s.id && x.activa);
         const g = i && datos.grupo.find((x) => x.id === i.grupo_id);
-        if (g && g.fecha_inicio && g.estado !== 'en_integracion') return [`Tu curso empieza el ${APD.fechaLarga(g.fecha_inicio)} a las ${APD.hhmm(g.hora_entrada)}, en el ${sede}.`, 'Llega a tiempo todos los días del curso.'];
+        if (g && g.fecha_inicio && g.estado !== 'en_integracion') return [`Tu curso empieza el ${APD.fechaLarga(g.fecha_inicio)} a las ${APD.hhmm(g.hora_entrada)}, en el ${sede}.${duracion(datos, s)}`, 'Llega a tiempo todos los días del curso.'];
         return ['Ya tienes grupo del curso; falta confirmar las fechas. Te avisamos por teléfono.'];
       }
       case 'lista_para_curso': return ['Tu cotejo terminó. Estás en espera de un grupo del curso: te avisamos por teléfono las fechas.'];
