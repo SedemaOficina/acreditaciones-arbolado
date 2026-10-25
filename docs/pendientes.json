@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-24",
+  "actualizado": "2026-10-25",
   "grupos": [
     {
       "id": "direccion",
@@ -962,6 +962,69 @@
       "desde": "2026-10-25",
       "titulo": "Oportunidades para corregir: ¿cuenta el cotejo que regresa con observaciones?",
       "recomendacion": "Ajustes del equipo (25/10/2026): la persona tiene dos oportunidades para corregir las observaciones de la revisión en línea; si en la revisión de la segunda corrección siguen, la solicitud se cierra. Cuando el cotejo la regresa con observaciones (un documento original no coincide con el que cargó), el sistema no le cuenta una oportunidad: la persona ya pagó y el error se detectó hasta la cita. Así quedó construido: sólo cuentan las revisiones en línea (apd.correcciones_usadas); si después de corregir lo del cotejo la revisión vuelve a observar algo, eso sí cuenta. «Mis trámites» le dice que lo del cotejo no cuenta. Recomendación: confirmarlo así. La alternativa (que el cotejo también cuente) cerraría solicitudes ya pagadas y obligaría a definir qué pasa con ese pago.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P207",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: ¿cómo se le hacen los recordatorios por fecha a quien no tiene correo?",
+      "recomendacion": "Los avisos por teléfono se crean cuando algo cambia (observaciones, cita, grupo, resultado). Los recordatorios por fecha (observaciones por vencer, un día antes de la cita o del curso, vencimiento de la acreditación: S3, T1, G3, A0, A2 a A5) los manda la tarea diaria de los correos, que todavía no existe (P23). Opciones: (a) que esa tarea diaria también cree avisos por teléfono para las cuentas asistidas sin activar; (b) no hacer recordatorios por teléfono y decírselos en la ventanilla y en el acuse impreso. Recomendación: (a), al construir la tarea diaria.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P208",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: persona del registro anterior (Kobo) que no sabe leer ni escribir",
+      "recomendacion": "Si la CURP ya está en el padrón del registro anterior, «Registrar a una persona» no crea otra cuenta: lo dice y lleva a la ventanilla. Falta decidir cómo se registra con ayuda a esa persona. Opciones: (a) que el personal active su cuenta del registro anterior como asistida (sin contraseña, con el mismo cotejo del nombre); (b) que la active la persona con ayuda de un familiar. Recomendación: (a).",
+      "lineamientos": ""
+    },
+    {
+      "id": "P209",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: ¿qué se hace cuando la persona «no contestó»?",
+      "recomendacion": "Al registrar «No contestó», el aviso sale de la lista de pendientes y queda en la bitácora. Opciones: (a) que vuelva a la lista al día siguiente hasta un número de intentos (por ejemplo, 3) y luego se le diga en la ventanilla; (b) dejarlo así y que el personal llame otra vez por su cuenta. Recomendación: (a), con el número de intentos como parámetro.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P210",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: ¿se avisa por teléfono lo que pasó con la persona presente?",
+      "recomendacion": "La base crea un aviso por teléfono con cada cambio, también los que pasan con la persona enfrente (resultado de la cita de cotejo, resultado del examen, entrega de la acreditación). Opciones: (a) crearlos y que el personal los marque «Se le avisó» al momento; (b) no crearlos cuando quien registra el cambio está con la persona. Recomendación: (a) por ahora: queda constancia de que se le dijo.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P211",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: declaración bajo protesta de quien no sabe firmar",
+      "recomendacion": "En la solicitud capturada por el personal, la declaración y el aviso de privacidad se sustituyen por «Le leí lo capturado y está de acuerdo», que queda en la bitácora con quién y cuándo. Falta decidir si el acuse impreso necesita la huella digital de la persona o la firma de un testigo para que la declaración tenga valor (Dirección Jurídica). Recomendación: un espacio para la huella y para la firma de quien la atendió en el acuse impreso.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P212",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: al activar la cuenta, ¿se vuelve a pedir fotografía y adscripción?",
+      "recomendacion": "La persona activa su cuenta por el mismo camino del registro anterior (Kobo): en «Crea tu cuenta», su CURP y su nombre (con la misma tolerancia de una letra), y el formulario de siempre, que vuelve a pedir la fotografía y la adscripción además del correo y la contraseña; la cuenta conserva quién la registró y cuándo, y anota cuándo se activó. Opciones: (a) dejarlo así (la fotografía nueva la vuelve a revisar el personal); (b) conservar la fotografía y la adscripción del registro asistido y pedir sólo correo, teléfono y contraseña. Recomendación: (b), cuando la API pueda decirle a «Crea tu cuenta» qué ya tiene la cuenta.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P213",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Registro asistido: cita en pausa de una persona asistida",
+      "recomendacion": "Con la cita de cotejo en pausa, la persona carga ese mismo día el documento que no coincidió en «Cargar el documento correcto», que necesita su sesión. La base ya admite que lo cargue el personal (con la marca de captura), pero no hay pantalla para hacerlo desde la ventanilla. Opciones: (a) agregar «Cargar el documento correcto» a la ficha de la ventanilla cuando la cita está en pausa; (b) que el personal lo cargue desde la cita de cotejo. Recomendación: (a).",
       "lineamientos": ""
     }
   ],

@@ -143,7 +143,7 @@
     },
     {
       "nombre": "solicitante",
-      "descripcion": "Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.",
+      "descripcion": "Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP. Registro asistido (decisión 2026-10-25, Liber): a quien no sabe leer ni escribir lo registra en el Vivero el personal de revisión y cotejo, con la persona presente; la cuenta queda activa y sin contraseña (no puede entrar sola), con el teléfono obligatorio y el correo opcional, hasta que la persona la activa con su CURP, su correo y su contraseña.",
       "columnas": [
         { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
         { "nombre": "curp", "tipo": "text", "nulo": false, "descripcion": "CURP en mayúsculas; identificador único de la cuenta" },
@@ -153,15 +153,18 @@
         { "nombre": "sexo", "tipo": "text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED", "nulo": false, "descripcion": "H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada" },
         { "nombre": "adscripcion", "tipo": "text", "nulo": true, "descripcion": "Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mi perfos»; vacía sólo en cuentas del padrón migrado sin activar" },
         { "nombre": "organizacion_id", "tipo": "uuid", "nulo": true, "descripcion": "Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente" },
-        { "nombre": "correo", "tipo": "text", "nulo": false, "descripcion": "Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta" },
-        { "nombre": "telefono", "tipo": "text", "nulo": false, "descripcion": "Teléfono de contacto, 10 dígitos" },
+        { "nombre": "correo", "tipo": "text", "nulo": true, "descripcion": "Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta. Vacío sólo en una cuenta del registro asistido que la persona todavía no activa (decisión 2026-10-25): es opcional al registrarla y obligatorio al activarla; si existe, tampoco se repite" },
+        { "nombre": "telefono", "tipo": "text", "nulo": false, "descripcion": "Teléfono de contacto, 10 dígitos. En el registro asistido es el medio de los avisos (apd.aviso_telefono)" },
         { "nombre": "numero_expediente", "tipo": "text", "nulo": true, "descripcion": "Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN" },
-        { "nombre": "contrasena_hash", "tipo": "text", "nulo": true, "descripcion": "scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar" },
+        { "nombre": "contrasena_hash", "tipo": "text", "nulo": true, "descripcion": "scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar del padrón migrado y en las del registro asistido que la persona todavía no activa: sin contraseña no se abre sesión (apd.sesion_sin_contrasena)" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'activa'", "descripcion": "activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)" },
         { "nombre": "intentos_fallidos", "tipo": "smallint", "nulo": false, "defecto": "0", "descripcion": "Intentos de entrada fallidos seguidos. Lo lleva apd.anotar_intento(); el acceso correcto lo vuelve a 0 (apd.acceso_correcto)" },
         { "nombre": "bloqueada_hasta", "tipo": "timestamptz", "nulo": true, "descripcion": "Fin del bloqueo por intentos: lo pone la base al llegar a intentos_maximos, por minutos_bloqueo minutos (parámetros); poner o quitar un bloqueo queda en la bitácora" },
         { "nombre": "bloqueo_motivo", "tipo": "text", "nulo": true, "descripcion": "identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base" },
         { "nombre": "debe_cambiar_contrasena", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Tiene una contraseña temporal de un solo uso" },
+        { "nombre": "registro_asistido_por", "tipo": "text", "nulo": true, "descripcion": "Registro asistido (decisión 2026-10-25): cuenta del personal de revisión y cotejo (acceso) que registró la cuenta con la persona presente, después de leerle el aviso de privacidad (la marca queda en la bitácora). Vacía si la creó la persona o viene del padrón migrado. La pone la base" },
+        { "nombre": "registro_asistido_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Registro asistido: cuándo la registró el personal. La pone la base" },
+        { "nombre": "activada_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Registro asistido: cuándo la persona activó su cuenta en línea con su CURP, su correo y su contraseña. Vacía mientras no la activa: hasta entonces no hay nada que ver en línea y los avisos van por teléfono. La pone la base" },
         { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta de la cuenta" },
         { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
       ],
@@ -170,7 +173,8 @@
         "CONSTRAINT solicitante_curp_uk UNIQUE (curp)",
         "CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente)",
         "CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp))",
-        "CONSTRAINT solicitante_correo_ck CHECK (apd.correo_valido(correo))",
+        "CONSTRAINT solicitante_correo_ck CHECK (correo IS NULL OR apd.correo_valido(correo))",
+        "CONSTRAINT solicitante_correo_obligatorio_ck CHECK (correo IS NOT NULL OR (registro_asistido_en IS NOT NULL AND activada_en IS NULL))",
         "CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')",
         "CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)",
         "CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))",
@@ -178,7 +182,8 @@
         "CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL)",
         "CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))",
         "CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada'))",
-        "CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))"
+        "CONSTRAINT solicitante_contrasena_ck CHECK ((contrasena_hash IS NULL) = (estado = 'sin_activar' OR (registro_asistido_en IS NOT NULL AND activada_en IS NULL)))",
+        "CONSTRAINT solicitante_asistido_ck CHECK ((registro_asistido_por IS NULL) = (registro_asistido_en IS NULL) AND (activada_en IS NULL OR registro_asistido_en IS NOT NULL) AND (registro_asistido_en IS NULL OR estado <> 'sin_activar'))"
       ],
       "indices": [
         "CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)",
@@ -197,7 +202,7 @@
         { "nombre": "tamano_bytes", "tipo": "integer", "nulo": false, "descripcion": "Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes" },
         { "nombre": "sha256", "tipo": "text", "nulo": false, "descripcion": "Suma del archivo, para comprobar el almacén" },
         { "nombre": "nombre_archivo", "tipo": "text", "nulo": false, "defecto": "''", "descripcion": "Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla" },
-        { "nombre": "origen", "tipo": "text", "nulo": false, "descripcion": "en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100). Lo pone la base" },
+        { "nombre": "origen", "tipo": "text", "nulo": false, "descripcion": "en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100); registro_asistido: la tomó o cargó el personal al registrar a la persona en el Vivero (decisión 2026-10-25); queda pendiente hasta que el cotejo la confirma contra la identificación oficial. Lo pone la base" },
         { "nombre": "estado", "tipo": "text", "nulo": false, "defecto": "'pendiente'", "descripcion": "pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó" },
         { "nombre": "vigente", "tipo": "boolean", "nulo": false, "defecto": "true", "descripcion": "Es la última fotografía de la persona" },
         { "nombre": "cargada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Carga" },
@@ -212,7 +217,7 @@
         "CONSTRAINT fotografia_mime_ck CHECK (tipo_mime IN ('image/jpeg', 'image/png'))",
         "CONSTRAINT fotografia_tamano_ck CHECK (tamano_bytes > 0)",
         "CONSTRAINT fotografia_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')",
-        "CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo'))",
+        "CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo', 'registro_asistido'))",
         "CONSTRAINT fotografia_estado_ck CHECK (estado IN ('pendiente', 'confirmada'))",
         "CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))"
       ],
@@ -356,6 +361,7 @@
         { "nombre": "pago_referencia", "tipo": "text", "nulo": true, "descripcion": "Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura" },
         { "nombre": "lista_para_curso_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad" },
         { "nombre": "motivo_cierre", "tipo": "text", "nulo": true, "descripcion": "Motivo de cancelación, conclusión sin atender (también «Se agotaron las oportunidades de corrección», 25/10/2026) o rechazo" },
+        { "nombre": "capturada_por", "tipo": "text", "nulo": true, "descripcion": "Registro asistido (decisión 2026-10-25): cuenta del personal de revisión y cotejo (acceso) que capturó la solicitud con la persona presente; cada envío lleva la marca «Se le leyó lo capturado y lo aceptó» en la bitácora. Vacía si la capturó la persona. La pone la base al darla de alta y no cambia" },
         { "nombre": "folio_origen", "tipo": "text", "nulo": true, "descripcion": "Folio en Kobo, para las migradas" },
         { "nombre": "creada_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Alta" },
         { "nombre": "es_ficticio", "tipo": "boolean", "nulo": false, "defecto": "false", "descripcion": "Dato de prueba" }
@@ -616,6 +622,35 @@
         "CONSTRAINT material_estudio_tamano_ck CHECK (tamano_bytes > 0)",
         "CONSTRAINT material_estudio_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')",
         "CONSTRAINT material_estudio_paginas_ck CHECK (paginas > 0)"
+      ]
+    },
+    {
+      "nombre": "aviso_telefono",
+      "descripcion": "Avisos por teléfono a las personas del registro asistido (decisión 2026-10-25, Liber): cada cambio del trámite que a otra persona le llegaría por correo (catálogo docs/AVISOS-POR-CORREO.md) deja aquí, mientras la persona no activa su cuenta, un aviso pendiente para el personal de revisión y cotejo, que llama y registra el resultado. Lo crea sólo la base; no se borra.",
+      "columnas": [
+        { "nombre": "id", "tipo": "uuid", "nulo": false, "defecto": "gen_random_uuid()", "descripcion": "Identificador interno" },
+        { "nombre": "solicitante_id", "tipo": "uuid", "nulo": false, "descripcion": "Persona a quien se llama" },
+        { "nombre": "solicitud_id", "tipo": "uuid", "nulo": true, "descripcion": "Solicitud del aviso; vacía si es de la cuenta o de una acreditación sin solicitud del sistema" },
+        { "nombre": "aviso", "tipo": "text", "nulo": false, "descripcion": "Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, T2, T3, G1, G2, G4, A1, A6 o A7" },
+        { "nombre": "datos", "tipo": "jsonb", "nulo": false, "defecto": "'{}'::jsonb", "descripcion": "Lo que el aviso necesita para decirse (folio, cita, monto y referencia de pago, grupo, calificación, motivo…), como estaba al crearse; la pantalla arma con ellos el texto que se le dice a la persona" },
+        { "nombre": "creado_en", "tipo": "timestamptz", "nulo": false, "defecto": "now()", "descripcion": "Cuándo pasó el cambio. Lo pone la base" },
+        { "nombre": "resultado", "tipo": "text", "nulo": true, "descripcion": "Vacío: pendiente. se_le_aviso o no_contesto: lo registra el personal al llamar, una sola vez" },
+        { "nombre": "atendido_por", "tipo": "text", "nulo": true, "descripcion": "Cuenta del personal que llamó (acceso). La pone la base" },
+        { "nombre": "atendido_en", "tipo": "timestamptz", "nulo": true, "descripcion": "Cuándo se registró el resultado. La pone la base" }
+      ],
+      "restricciones": [
+        "CONSTRAINT aviso_telefono_pk PRIMARY KEY (id)",
+        "CONSTRAINT aviso_telefono_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)",
+        "CONSTRAINT aviso_telefono_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)",
+        "CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7'))",
+        "CONSTRAINT aviso_telefono_datos_ck CHECK (jsonb_typeof(datos) = 'object')",
+        "CONSTRAINT aviso_telefono_resultado_ck CHECK (resultado IN ('se_le_aviso', 'no_contesto'))",
+        "CONSTRAINT aviso_telefono_atendido_ck CHECK ((resultado IS NULL) = (atendido_por IS NULL) AND (resultado IS NULL) = (atendido_en IS NULL))"
+      ],
+      "indices": [
+        "CREATE INDEX aviso_telefono_pendientes ON apd.aviso_telefono (creado_en) WHERE resultado IS NULL",
+        "CREATE INDEX aviso_telefono_solicitante ON apd.aviso_telefono (solicitante_id, creado_en)",
+        "CREATE INDEX aviso_telefono_solicitud ON apd.aviso_telefono (solicitud_id)"
       ]
     },
     {

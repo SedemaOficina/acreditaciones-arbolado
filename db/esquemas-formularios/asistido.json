@@ -1,0 +1,561 @@
+{
+  "formulario": "asistido.html",
+  "generado": "2026-10-25T08:31:10.412Z",
+  "campos": {
+    "aviso_leido": {
+      "etiqueta": "Le leí el aviso de privacidad a la persona y lo aceptó",
+      "tipo": "casilla",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Dejar constancia de que el personal le leyó el aviso de privacidad a la persona y que lo aceptó; la base la guarda en la bitácora con la cuenta del personal (apd.lectura_aceptada = aviso_privacidad).",
+      "atributos": {}
+    },
+    "nombre": {
+      "etiqueta": "Nombre o nombres",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "nombre",
+      "sensible": true,
+      "uso": "Nombre que aparece en el expediente y en la acreditación.",
+      "finalidad": "Identificar a la persona en su expediente y en la acreditación que se emita.",
+      "atributos": {
+        "maxlength": "80"
+      },
+      "autocomplete": "off"
+    },
+    "primer_apellido": {
+      "etiqueta": "Primer apellido",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "nombre",
+      "sensible": true,
+      "uso": "Nombre que aparece en el expediente y en la acreditación.",
+      "finalidad": "Identificar a la persona en su expediente y en la acreditación que se emita.",
+      "atributos": {
+        "maxlength": "80"
+      },
+      "autocomplete": "off"
+    },
+    "segundo_apellido": {
+      "etiqueta": "Segundo apellido",
+      "tipo": "texto",
+      "requerido": false,
+      "formato": "nombre",
+      "sensible": true,
+      "uso": "Nombre que aparece en el expediente y en la acreditación.",
+      "finalidad": "Identificar a la persona en su expediente y en la acreditación que se emita.",
+      "atributos": {
+        "maxlength": "80"
+      },
+      "autocomplete": "off"
+    },
+    "curp": {
+      "etiqueta": "CURP",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "curp",
+      "sensible": true,
+      "uso": "Identificador único de la cuenta y llave del historial de acreditaciones; con ella se comprueba la mayoría de edad.",
+      "finalidad": "Identificar a la persona sin ambigüedad: una cuenta y un historial de acreditaciones por persona.",
+      "atributos": {
+        "maxlength": "24",
+        "edadMinima": "18",
+        "deriva": "fechaNacimiento=fecha_nacimiento sexo=sexo"
+      },
+      "autocomplete": "off",
+      "cruzadas": [
+        {
+          "clave": "curp-nombre",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-segundo-apellido",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-fecha-dma",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        },
+        {
+          "clave": "curp-mayoria-edad",
+          "mapa": {
+            "curp": "curp",
+            "fecha": "fecha_nacimiento",
+            "nombre": "nombre",
+            "primer": "primer_apellido",
+            "segundo": "segundo_apellido"
+          },
+          "nivel": "error"
+        }
+      ]
+    },
+    "fecha_nacimiento": {
+      "etiqueta": "Fecha de nacimiento",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "fecha-dma",
+      "sensible": true,
+      "uso": "Comprobar la CURP y la mayoría de edad; se toma de ella y no se guarda aparte.",
+      "finalidad": "Comprobar que la CURP corresponde a la persona.",
+      "atributos": {
+        "max": "hoy",
+        "noFutura": ""
+      },
+      "autocomplete": "off"
+    },
+    "sexo": {
+      "etiqueta": "Sexo",
+      "tipo": "texto",
+      "requerido": false,
+      "sensible": true,
+      "uso": "Derivado de la CURP; no se pide por separado.",
+      "finalidad": "Estadística de la población acreditada por sexo.",
+      "atributos": {},
+      "autocomplete": "off"
+    },
+    "telefono": {
+      "etiqueta": "Teléfono",
+      "tipo": "texto",
+      "requerido": true,
+      "formato": "telefono",
+      "sensible": true,
+      "uso": "Avisos del trámite por teléfono (registro asistido).",
+      "finalidad": "Avisar a la persona por teléfono el avance de su trámite: su cita, su curso y sus resultados.",
+      "atributos": {},
+      "autocomplete": "off"
+    },
+    "correo": {
+      "etiqueta": "Correo electrónico (si tiene)",
+      "tipo": "texto",
+      "requerido": false,
+      "formato": "correo",
+      "sensible": true,
+      "uso": "Correo de contacto, opcional; no se repite entre cuentas.",
+      "finalidad": "Activar después la cuenta en línea, si alguien de confianza ayuda a la persona.",
+      "atributos": {
+        "maxlength": "120"
+      },
+      "autocomplete": "off"
+    },
+    "adscrito": {
+      "etiqueta": "¿Trabajas para alguna empresa, institución o dependencia?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Saber si la persona trabaja para una empresa, institución o dependencia, para integrar grupos por institución.",
+      "atributos": {},
+      "opciones": [
+        "si",
+        "no"
+      ],
+      "autocomplete": "off"
+    },
+    "tipo_adscripcion": {
+      "etiqueta": "¿De qué tipo es?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Clasificar la institución a la que está adscrita la persona y hacer la pregunta que le corresponde.",
+      "atributos": {},
+      "opciones": [
+        "privada",
+        "dependencia_cdmx",
+        "alcaldia",
+        "dependencia_federal",
+        "educativa"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "adscrito",
+        "valores": [
+          "si"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        }
+      ]
+    },
+    "empresa_nombre": {
+      "etiqueta": "Nombre de la empresa, consultoría o persona física",
+      "tipo": "combo",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Nombre de la empresa, consultoría o persona física para la que trabaja.",
+      "finalidad": "Integrar grupos por institución y registrar a quién presta sus servicios la persona acreditada.",
+      "atributos": {
+        "maxlength": "160"
+      },
+      "cerrado": false,
+      "catalogo": "empresas",
+      "autocomplete": "off",
+      "si": {
+        "campo": "tipo_adscripcion",
+        "valores": [
+          "privada"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "privada"
+          ]
+        }
+      ]
+    },
+    "dependencia_cdmx": {
+      "etiqueta": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar la dependencia de la Ciudad de México para integrar grupos.",
+      "atributos": {},
+      "opciones": [
+        "sobse",
+        "sedema",
+        "paot",
+        "otro"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "tipo_adscripcion",
+        "valores": [
+          "dependencia_cdmx"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_cdmx"
+          ]
+        }
+      ]
+    },
+    "dependencia_cdmx_otra": {
+      "etiqueta": "Nombre de la dependencia",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar una dependencia que no está en la lista.",
+      "atributos": {
+        "maxlength": "160",
+        "otroDe": "dependencia_cdmx"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "dependencia_cdmx",
+        "valores": [
+          "otro"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_cdmx"
+          ]
+        },
+        {
+          "campo": "dependencia_cdmx",
+          "valores": [
+            "otro"
+          ]
+        }
+      ]
+    },
+    "direccion_sedema": {
+      "etiqueta": "¿A qué Dirección General de la SEDEMA perteneces?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar la Dirección General de la SEDEMA para integrar grupos.",
+      "atributos": {},
+      "opciones": [
+        "dgsanpava",
+        "dgcorenadr",
+        "dgeira",
+        "dgiva",
+        "dgcpca",
+        "dgzcfs"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "dependencia_cdmx",
+        "valores": [
+          "sedema"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_cdmx"
+          ]
+        },
+        {
+          "campo": "dependencia_cdmx",
+          "valores": [
+            "sedema"
+          ]
+        }
+      ]
+    },
+    "alcaldia": {
+      "etiqueta": "¿En qué alcaldía trabajas?",
+      "tipo": "select",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar la alcaldía para integrar grupos.",
+      "atributos": {},
+      "opciones": [
+        "alvaro_obregon",
+        "azcapotzalco",
+        "benito_juarez",
+        "coyoacan",
+        "cuajimalpa",
+        "cuauhtemoc",
+        "gustavo_a_madero",
+        "iztacalco",
+        "iztapalapa",
+        "magdalena_contreras",
+        "miguel_hidalgo",
+        "milpa_alta",
+        "tlahuac",
+        "tlalpan",
+        "venustiano_carranza",
+        "xochimilco"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "tipo_adscripcion",
+        "valores": [
+          "alcaldia"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "alcaldia"
+          ]
+        }
+      ]
+    },
+    "dependencia_federal": {
+      "etiqueta": "¿A qué dependencia del Gobierno Federal perteneces?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar la dependencia federal para integrar grupos.",
+      "atributos": {},
+      "opciones": [
+        "cfe",
+        "otro"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "tipo_adscripcion",
+        "valores": [
+          "dependencia_federal"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_federal"
+          ]
+        }
+      ]
+    },
+    "dependencia_federal_otra": {
+      "etiqueta": "Nombre de la dependencia",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar una dependencia que no está en la lista.",
+      "atributos": {
+        "maxlength": "160",
+        "otroDe": "dependencia_federal"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "dependencia_federal",
+        "valores": [
+          "otro"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "dependencia_federal"
+          ]
+        },
+        {
+          "campo": "dependencia_federal",
+          "valores": [
+            "otro"
+          ]
+        }
+      ]
+    },
+    "institucion_educativa": {
+      "etiqueta": "¿A qué institución educativa perteneces?",
+      "tipo": "opcion",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar la institución educativa para integrar grupos.",
+      "atributos": {},
+      "opciones": [
+        "unam",
+        "chapingo",
+        "otro"
+      ],
+      "autocomplete": "off",
+      "si": {
+        "campo": "tipo_adscripcion",
+        "valores": [
+          "educativa"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "educativa"
+          ]
+        }
+      ]
+    },
+    "institucion_educativa_otra": {
+      "etiqueta": "Nombre de la institución",
+      "tipo": "texto",
+      "requerido": true,
+      "sensible": false,
+      "uso": "Identificar una institución educativa que no está en la lista.",
+      "atributos": {
+        "maxlength": "160",
+        "otroDe": "institucion_educativa"
+      },
+      "autocomplete": "off",
+      "si": {
+        "campo": "institucion_educativa",
+        "valores": [
+          "otro"
+        ]
+      },
+      "condiciones": [
+        {
+          "campo": "adscrito",
+          "valores": [
+            "si"
+          ]
+        },
+        {
+          "campo": "tipo_adscripcion",
+          "valores": [
+            "educativa"
+          ]
+        },
+        {
+          "campo": "institucion_educativa",
+          "valores": [
+            "otro"
+          ]
+        }
+      ]
+    },
+    "foto": {
+      "etiqueta": "Fotografía de frente",
+      "tipo": "archivos",
+      "requerido": true,
+      "sensible": true,
+      "uso": "Fotografía de la persona en su expediente; el personal la confirma en la cita de cotejo.",
+      "finalidad": "Reconocer a la persona en la cita de cotejo y en el curso, y confirmar su identidad y su asistencia el día del examen.",
+      "atributos": {
+        "max": "1",
+        "extensiones": "jpg,jpeg,png",
+        "mb": "5"
+      },
+      "autocomplete": "off"
+    }
+  },
+  "repetibles": [],
+  "limitesRepetibles": {}
+}

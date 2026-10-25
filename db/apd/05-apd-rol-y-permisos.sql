@@ -98,8 +98,13 @@ GRANT SELECT, INSERT ON apd.reposicion TO apd_api;
 GRANT UPDATE (estado, observacion, motivo, acta_archivo_clave, acta_nombre_original, acta_tipo_mime, acta_tamano_bytes, acta_sha256,
               factura_rfc, factura_razon_social, factura_folio_fiscal) ON apd.reposicion TO apd_api;
 
+-- Avisos por teléfono del registro asistido (decisión 2026-10-25): los crea la base (apd.avisar_por_telefono, SECURITY
+-- DEFINER); el personal sólo registra el resultado (quién y cuándo los pone la base). Nunca se borran
+GRANT SELECT ON apd.aviso_telefono TO apd_api;
+GRANT UPDATE (resultado) ON apd.aviso_telefono TO apd_api;
+
 -- Consultas
-GRANT SELECT ON apd.verificacion_publica, apd.bandeja_demanda, apd.vencidas_en_espera, apd.material_publico TO apd_api;
+GRANT SELECT ON apd.verificacion_publica, apd.bandeja_demanda, apd.vencidas_en_espera, apd.material_publico, apd.avisos_telefono_pendientes TO apd_api;
 
 -- La bitácora: sólo leerla. Los renglones los escriben las reglas por apd.registrar (SECURITY DEFINER, sólo desde un
 -- disparador), con la fecha y el contexto que impone apd.bitacora_alta (D-13 y E2-06, auditoría 2026-10-19)
@@ -130,6 +135,8 @@ ON CONFLICT (version) DO NOTHING;
       DELETE FROM apd.bitacora;
       INSERT INTO apd.bitacora (accion, entidad, entidad_id) VALUES ('x', 'x', 'x');
       SELECT apd.registrar('x', 'x', 'x');
+      SELECT apd.avisar_por_telefono(gen_random_uuid(), NULL, 'S2');
+      INSERT INTO apd.aviso_telefono (solicitante_id, aviso) VALUES (gen_random_uuid(), 'S2');
       SELECT apd.siguiente_folio('PD', 2026::smallint);
       SELECT apd.asignar_expediente(gen_random_uuid());
       DELETE FROM apd.solicitud;

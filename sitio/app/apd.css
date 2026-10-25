@@ -108,6 +108,15 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .menu-pruebas-ajuste p { margin: 0; }
 @media (min-width: 560px) { .menu-pruebas-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
+/* Registro asistido (decisión 2026-10-25): las fichas de la ventanilla y de los avisos por teléfono, una debajo de otra, y la
+   vista previa de la cámara de la computadora (el estándar sólo trae la del teléfono) */
+.lista-fichas { display: grid; gap: var(--e-3); margin-block: var(--e-4); }
+.camara-computadora { display: grid; gap: var(--e-3); margin-block: var(--e-4); }
+.camara-vista { width: 100%; max-width: var(--ancho-acuse); aspect-ratio: 4 / 3; background: var(--fondo); border: var(--b-1) solid var(--borde); border-radius: var(--r-caja); }
+/* El acuse del registro asistido, en una hoja sencilla para la persona: en pantalla no se ve (ver «Impresión») */
+.hoja-acuse { display: none; }
+.hoja-acuse-titulo { margin: 0; font-size: var(--t-sm); }
+
 /* ---------- Estados ---------- */
 
 .verificacion[data-tono="ok"] { border-color: var(--ok); background: var(--ok-bg); }
@@ -116,6 +125,8 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .verificacion[data-tono="terminado"] { border-color: var(--borde); background: var(--aviso-bg); }
 .menu-opcion:hover { border-color: var(--guinda); }
 .menu-opcion:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+
+.lista-fichas[hidden], .camara-computadora[hidden] { display: none; }
 
 /* ---------- Adaptaciones ---------- */
 
@@ -655,4 +666,11 @@ body > main { flex: 1 0 auto; width: 100%; }
 @media (forced-colors: active) {
   .arm-semana-elegir[aria-pressed="true"], .arm-dia-curso[aria-pressed="true"], .plan-persona:has(.casilla-input:checked) { outline: var(--b-3) solid Highlight; outline-offset: calc(var(--b-1) * -1); }
   .estado-atencion[data-plazo="atrasada"] { border-width: var(--b-2); }
+}
+
+/* ---------- Impresión ---------- */
+/* Registro asistido: al imprimir el acuse sólo sale la hoja sencilla (app/solicitud.js pone .imprime-hoja en el cuerpo) */
+@media print {
+  .imprime-hoja > :not(.hoja-acuse) { display: none; }
+  .imprime-hoja .hoja-acuse { display: grid; gap: var(--e-4); padding: var(--e-5); }
 }

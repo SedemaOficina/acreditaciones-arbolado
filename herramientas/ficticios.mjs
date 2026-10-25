@@ -148,7 +148,8 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   const s = { clave, id: uuid('solicitud:' + clave), persona: p, tipo, modalidad, ...opciones };
   if (p.sinActivar) activar(p, opciones.fecha); // la persona del padrón crea su contraseña al solicitar
   en(opciones.fecha, '09:30');
-  como(p.correo, 'solicitante');
+  // Registro asistido (decisión 2026-10-25): la captura el personal de revisión y cotejo con la persona presente
+  if (p.asistida) como(REVISION, 'personal', 'revision_cotejo'); else como(p.correo, 'solicitante');
   // Perfil del dictaminador: nivel, carrera y estatus; la base calcula el perfil y la experiencia mínima
   // En poda se pregunta el nivel y, desde licenciatura, la carrera (dato del padrón); se reparte entre niveles comunes
   const NIVELES_PODA = ['secundaria', 'preparatoria', 'tecnica', 'licenciatura'];
@@ -853,6 +854,70 @@ for (const m of MATERIALES) {
     archivo_clave, nombre_archivo, tipo_mime, tamano_bytes, sha256, paginas)
     VALUES (${q(m.clave)}, ${q(m.titulo)}, ${q(m.descripcion)}, ${q(m.edicion)}, NULL, ${q(JSON.stringify(m.temas))}::jsonb, ${m.orden}, true,
     ${q('material/' + m.archivo)}, ${q(m.archivo)}, 'application/pdf', ${m.bytes}, ${q(m.sha256)}, ${m.paginas})`);
+}
+
+// ── Registro asistido (decisión 2026-10-25, Liber): personas que no saben leer ni escribir ─────────────────────
+// En el Vivero, el personal de revisión y cotejo registra la cuenta (sin contraseña; el correo es opcional) después de
+// leerle el aviso de privacidad, toma su fotografía, captura su solicitud con sus documentos escaneados y, antes de
+// enviarla, le lee lo capturado. Cada marca la declara el personal en el contexto (apd.lectura_aceptada) y queda en la
+// bitácora. Los avisos le llegan por teléfono (apd.aviso_telefono). Van al final para no mover los datos de los demás;
+// el apellido «Supuesto» las ordena después de todas por CURP.
+const lectura = (marca) => emitir(`SELECT set_config('apd.lectura_aceptada', ${q(marca)}, false)`);
+function altaAsistida(p, fecha, { conCorreo = false } = {}) {
+  p.asistida = true;
+  if (!conCorreo) p.correo = null;
+  en(fecha, '09:00');
+  como(REVISION, 'personal', 'revision_cotejo');
+  lectura('aviso_privacidad');
+  emitir(`INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, es_ficticio)
+  VALUES (${q(p.id)}, ${q(p.curp)}, ${q(p.nombre)}, ${q(p.primer)}, ${q(p.segundo)}, ${q(p.correo)}, ${q(p.telefono)}, 'independiente', true)`);
+  lectura('');
+  fotografia(p); // la toma el personal con la cámara de la computadora: queda pendiente hasta el cotejo
+}
+function enviarAsistida(s, fecha, hora = '10:00') {
+  en(fecha, hora);
+  como(REVISION, 'personal', 'revision_cotejo');
+  lectura('lo_capturado');
+  emitir(`UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${q(s.id)}`);
+  lectura('');
+}
+function avisoAtendido(p, fecha, resultado) {
+  en(fecha, '16:00');
+  como(REVISION, 'personal', 'revision_cotejo');
+  emitir(`UPDATE apd.aviso_telefono SET resultado = ${q(resultado)} WHERE solicitante_id = ${q(p.id)} AND resultado IS NULL`);
+}
+// Con observaciones y su aviso por teléfono pendiente: la persona va a la ventanilla a corregir
+const asisObservada = persona('asistida-observada', { nombre: 'Amalia', primer: 'Supuesto', segundo: 'Ejemplo', sexo: 'M' });
+altaAsistida(asisObservada, '2026-10-06');
+const sAsisObservada = solicitud('asistida-observada', asisObservada, 'poda', 'nueva', { fecha: '2026-10-06', nivel: 'primaria' });
+enviarAsistida(sAsisObservada, '2026-10-06');
+observar(sAsisObservada, '2026-10-08', 'comprobante_domicilio', 'El comprobante de domicilio está a nombre de otra persona y no trae una carta de quien es titular.');
+// En revisión documental: llega a «Revisar» con su etiqueta
+const asisRevision = persona('asistida-revision', { nombre: 'Benito', primer: 'Supuesto', segundo: 'Muestra', sexo: 'H' });
+altaAsistida(asisRevision, '2026-10-13');
+const sAsisRevision = solicitud('asistida-revision', asisRevision, 'poda', 'nueva', { fecha: '2026-10-13', nivel: 'ninguna' });
+enviarAsistida(sAsisRevision, '2026-10-13');
+// Con su cita de cotejo; se le avisó por teléfono. Dio un correo, opcional
+const asisCita = persona('asistida-cita', { nombre: 'Cirilo', primer: 'Supuesto', segundo: 'Prueba', sexo: 'H' });
+altaAsistida(asisCita, '2026-09-29', { conCorreo: true });
+const sAsisCita = solicitud('asistida-cita', asisCita, 'poda', 'nueva', { fecha: '2026-09-29', nivel: 'primaria' });
+enviarAsistida(sAsisCita, '2026-09-29');
+validar(sAsisCita, '2026-10-05', '2026-10-21');
+avisoAtendido(asisCita, '2026-10-05', 'se_le_aviso');
+// Registrada en el Vivero y activada después con ayuda de su familia: ya ve en «Mis trámites» lo que se capturó por ella
+// y corrige en línea. El aviso de sus observaciones no lo contestó
+const asisActivada = persona('asistida-activada', { nombre: 'Dolores', primer: 'Supuesto', segundo: 'Simulado', sexo: 'M' });
+altaAsistida(asisActivada, '2026-09-22');
+const sAsisActivada = solicitud('asistida-activada', asisActivada, 'poda', 'nueva', { fecha: '2026-09-22', nivel: 'secundaria' });
+enviarAsistida(sAsisActivada, '2026-09-22');
+observar(sAsisActivada, '2026-09-24', 'identificacion_oficial', 'La identificación oficial está vencida: carga una vigente.');
+avisoAtendido(asisActivada, '2026-09-25', 'no_contesto');
+{
+  const correo = 'persona-asistida@ejemplo.local';
+  en('2026-10-10', '19:00');
+  como(correo, 'solicitante');
+  emitir(`UPDATE apd.solicitante SET correo = ${q(correo)}, contrasena_hash = ${q(hashContrasena(asisActivada.clave))} WHERE id = ${q(asisActivada.id)}`);
+  asisActivada.correo = correo;
 }
 
 en(CORTE, '20:00');

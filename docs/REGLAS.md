@@ -228,6 +228,41 @@ queda bien, pero la persona del personal debe recibir «La solicitud cambió: re
 transacción que decide sobre una solicitud con `SELECT 1 FROM apd.solicitud WHERE id = $1 FOR UPDATE`, o reintentándola
 una vez ante `40P01`.
 
+## Registro asistido (decisión de Liber del 25/10/2026)
+
+Personas que no saben leer ni escribir. El personal de revisión y cotejo (los perfiles del parámetro
+`perfiles_registro_asistido`, hoy `revision_cotejo`; P27) las registra en el Vivero, con ellas presentes. Las reglas están en
+su propio archivo, `db/apd/03b-apd-registro-asistido.sql`, con disparadores que corren después de los de
+`03-apd-reglas.sql` (no cambian sus reglas).
+
+| Paso | Quién | Qué pide la base |
+|---|---|---|
+| Registrar la cuenta (`apd.solicitante` sin contraseña) | Personal de revisión y cotejo (`registro_asistido_sin_permiso`) | La marca «se le leyó el aviso de privacidad y lo aceptó» (`apd.lectura_aceptada = aviso_privacidad`; si no, `sin_lectura`), la cuenta activa (`asistida_no_activa`) y la mayoría de edad con la fecha de la CURP (`menor_de_edad`). Teléfono obligatorio; correo opcional, pero si se da, de nadie más (`correo_registrado`). La base pone quién la registró y cuándo (`registro_asistido_por`, `registro_asistido_en`) y deja la marca en la bitácora (`lectura_aviso_privacidad`, con la cuenta del personal y la hora) |
+| Su fotografía | Personal de revisión y cotejo | Queda pendiente (`origen = registro_asistido`): la confirma el cotejo contra la identificación oficial |
+| Capturar la solicitud | Personal de revisión y cotejo | Sólo de una cuenta del registro asistido; la base guarda quién la capturó (`capturada_por`), que no cambia (`registro_asistido_fijo`) |
+| Enviarla o reenviarla con lo corregido | Personal de revisión y cotejo | La marca «se le leyó lo capturado y lo aceptó» (`lo_capturado`; si no, `sin_lectura`), que queda en la bitácora (`lectura_lo_capturado`). Después, las mismas reglas que cualquier envío |
+| Cargar por ella un documento en línea | Personal de revisión y cotejo | Su perfil; con la cita en pausa (no sigue un envío), también la marca de lectura |
+| Entrar | La persona | Sin contraseña no se abre sesión (`cuenta_sin_contrasena`, en `apd.sesion_solicitante`): la cuenta no entra sola |
+| Activar la cuenta | La persona (`activacion_de_persona`), por el mismo camino que las cuentas del registro de Kobo (la API compara CURP y nombre) | Su correo (`activacion_sin_correo`) y su contraseña; la base pone la hora (`activada_en`) y lo anota (`activacion`). Quién la registró, cuándo y cuándo se activó no cambian (`registro_asistido_fijo`) |
+
+Restricciones de la cuenta (cambiadas lo mínimo; `docs/MODELO-DE-DATOS.md`):
+- `solicitante_contrasena_ck`: sin contraseña sólo una cuenta del padrón migrado sin activar o una del registro asistido que
+  la persona todavía no activa (antes: sólo la del padrón).
+- `solicitante_correo_ck` y `solicitante_correo_obligatorio_ck`: el correo sólo puede faltar en una cuenta del registro
+  asistido sin activar; si existe, tiene el formato de siempre.
+- `solicitante_asistido_ck`: quién y cuándo van juntos; la activación sólo existe en una cuenta del registro asistido.
+- El índice único del correo (`solicitante_correo_uk`) y la regla «un correo, una cuenta» no cambian: varias cuentas sin
+  correo no chocan (en un índice único, los vacíos no se repiten entre sí) y un correo escrito no se repite.
+
+**Avisos por teléfono** (`apd.aviso_telefono`). Mientras la persona no activa su cuenta, cada cambio del trámite que a otra
+persona le llegaría por correo (catálogo de `docs/AVISOS-POR-CORREO.md`, «Registro asistido») deja un aviso pendiente con
+sus datos: lo crea sólo la base (`apd.avisar_por_telefono`, desde sus disparadores; llamarla directo es `aviso_directo` y la
+cuenta del servicio no tiene INSERT). El personal de revisión y cotejo registra una sola vez el resultado, «se le avisó» o
+«no contestó» (`aviso_atendido`, `aviso_sin_resultado`); la base pone quién y cuándo y lo anota en la bitácora
+(`aviso_telefono`). Lo que dice un aviso no cambia (`aviso_inmutable`) y ninguno se borra. La vista
+`apd.avisos_telefono_pendientes` los da con el nombre y el teléfono de la persona. Una cuenta ya activada, o que no es del
+registro asistido, no recibe avisos por teléfono.
+
 ## Permisos
 
 Los perfiles del personal (acceso del SIA, P27) los declara el backend en `apd.perfil`: `revision_cotejo`, `instructor`,

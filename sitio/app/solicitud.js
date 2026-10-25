@@ -18,7 +18,13 @@
      · el avance (auditoría 2026-10-18, B2): cada paso entra al historial del navegador («Atrás» regresa al paso
        anterior) y lo capturado se guarda como borrador en este dispositivo, con los documentos (en la versión de prueba,
        en el almacén de la prueba, app/archivos-prueba.js). Al volver, la franja del estándar ofrece seguir donde iba;
-     · después de «Editar» en la revisión, «Continuar» regresa directo a la revisión (B13).
+     · después de «Editar» en la revisión, «Continuar» regresa directo a la revisión (B13);
+     · registro asistido (decisión de Liber del 25/10/2026; ?asistida=<persona>): la captura el personal de revisión y
+       cotejo por una persona que no sabe leer ni escribir, con ella presente. El mismo formulario, sin duplicarlo: la
+       cabecera del personal, un aviso que lo dice, la adscripción que se capturó al registrarla, la marca «le leí lo
+       capturado…» en lugar de las declaraciones de la persona (auxiliar «asistido») y el acuse para imprimir en una hoja
+       sencilla con el folio, la fecha y los informes de la Secretaría. Con ?folio= sigue un borrador o carga en la
+       ventanilla los documentos corregidos.
    La base vuelve a comprobar todo al enviar. */
 (function () {
   'use strict';
@@ -28,6 +34,8 @@
   const avisa = (control) => APD.avisa(control);
   /* Lo que ya está cargado en la solicitud que se continúa, por campo (data-campo) */
   const previos = new Map();
+  /* Registro asistido: la persona por la que captura el personal */
+  const ASISTIDA = new URLSearchParams(location.search).get('asistida');
 
   /* Marca una opción y deshabilita las demás (no aplican al caso de la persona). */
   function fija(nombre, valor) {
@@ -263,7 +271,8 @@
     if (pasos) pasos.replaceChildren(...[
       'La Secretaría revisa los documentos que corregiste. Lo que ya te aceptó no lo vuelve a revisar.',
       'Si lo corregido está en orden, te asigna una cita de cotejo: llevas tus documentos impresos y tu comprobante de pago.',
-      'Si todavía falta algo, te lo indica en «Mis trámites» y lo vuelves a corregir en línea.'
+      // Registro asistido: los avisos van por teléfono y se corrige en la ventanilla
+      ASISTIDA ? 'Si todavía falta algo, te avisamos por teléfono y lo corregimos contigo en la ventanilla.' : 'Si todavía falta algo, te lo indica en «Mis trámites» y lo vuelves a corregir en línea.'
     ].map((texto) => el('li', { class: 'secuencia-item', texto })));
   }
 
@@ -481,9 +490,60 @@
     if (franjaEnEspera) franja.hidden = false;
   }
 
+  /* ----- Registro asistido (decisión de Liber del 25/10/2026) ----- */
+  function modoAsistido(datos, persona) {
+    if (window.APD_PERSONAL) APD_PERSONAL.pintaSesion(document.querySelector('[data-sesion]'), 'asistido');
+    const nombre = APD.nombreCompleto(persona);
+    document.querySelector('[data-asistido-nombre]').textContent = nombre;
+    document.querySelector('[data-asistido-banner]').hidden = false;
+    ponValor('asistido', 'si');
+    // Regresa a la ventanilla, con la ficha de la persona
+    const ventanilla = `ventanilla.html?persona=${encodeURIComponent(persona.id)}`;
+    const atras = document.querySelector('main > p > .btn-atras');
+    if (atras) { atras.setAttribute('href', ventanilla); atras.lastChild.textContent = 'Ventanilla'; }
+    for (const a of document.querySelectorAll('[data-sin-opciones] a[href="tramites.html"], [data-acuse-ventanilla]')) { a.setAttribute('href', ventanilla); a.textContent = 'Ir a la ventanilla'; }
+    // La adscripción es la que se capturó al registrarla; no hay «Mi perfil» que abrir por ella
+    const nota = document.querySelector('[data-adscripcion-info] a[href^="datos.html"]');
+    if (nota) nota.parentElement.textContent = 'La solicitud se envía con la que se capturó al registrar a la persona en el Vivero.';
+    // El acuse: se imprime para la persona, con los pasos que siguen para ella (avisos por teléfono y ventanilla)
+    // «Ir a mis trámites» no aplica: se quita (.acuse-acciones del estándar pone su propio display y no lo oculta hidden)
+    document.querySelector('[data-acuse-persona]').remove();
+    document.querySelector('[data-acuse-asistido]').hidden = false;
+    const pasos = document.querySelector('[data-acuse] .secuencia');
+    if (pasos) pasos.replaceChildren(...[
+      'La Secretaría revisa tus documentos.',
+      'Te avisamos por teléfono: si falta algo, vienes a la ventanilla y lo corregimos contigo; si todo está completo, te damos una cita de cotejo.',
+      'Para preguntar en qué va tu trámite, ven a la ventanilla con tu folio.'
+    ].map((texto) => el('li', { class: 'secuencia-item', texto })));
+    const hoja = document.querySelector('[data-hoja-acuse]');
+    document.querySelector('[data-imprimir-acuse]').addEventListener('click', () => {
+      const folio = document.querySelector('[data-acuse-folio]').textContent.trim();
+      // Con lo guardado: el folio y la fecha de envío de la solicitud (la de la base, enviada_en o la del reenvío)
+      APD.cargar().then((d) => {
+        const s = d.solicitud.find((x) => x.folio === folio) || {};
+        const sede = APD.sede(d);
+        hoja.querySelector('[data-hoja-datos]').replaceChildren(...APD.datosLista([
+          ['Folio', folio], ['Fecha', APD.fechaLarga(s.estado_desde || s.enviada_en, { hora: true, mayuscula: true })],
+          ['Nombre', nombre], ['Acreditación', APD.TIPOS[s.tipo_acreditacion] || ''], ['Teléfono de informes', 'Pendiente (P132)']
+        ]).children);
+        hoja.querySelector('[data-hoja-informes]').textContent = `Pregunta por tu trámite en la ventanilla del ${sede.nombre}${sede.direccion ? `, ${sede.direccion}` : ''}, ${APD.parametroTexto(d, 'informes_horario') || ''}. Lleva este acuse con tu folio.`;
+        document.body.classList.add('imprime-hoja');
+        window.print();
+      });
+    });
+    window.addEventListener('afterprint', () => document.body.classList.remove('imprime-hoja'));
+  }
+
   APD.cargar().then((datos) => {
-    const persona = APD.requiereSesion(datos);
-    if (!persona) return;
+    const persona = ASISTIDA ? APD_ASISTIDO.personaAsistida(datos, ASISTIDA) : APD.requiereSesion(datos);
+    if (!persona) {
+      if (ASISTIDA) {
+        sinOpciones(['No encontramos a esta persona entre las registradas en el Vivero (registro asistido). Búsquela en la ventanilla.']);
+        const a = document.querySelector('[data-sin-opciones] a[href="tramites.html"]');
+        if (a) { a.setAttribute('href', 'ventanilla.html'); a.textContent = 'Ir a la ventanilla'; }
+      }
+      return;
+    }
     window.APD_SOLICITUD.usaCatalogo(datos);
     for (const ev of ['input', 'change']) {
       form.addEventListener(ev, (e) => {
@@ -491,7 +551,7 @@
         if (['nivel_estudios', 'estatus_estudios', 'carrera'].includes(e.target.name)) experiencia(datos);
       });
     }
-    APD.pintaSesion(document.querySelector('[data-sesion]'), persona);
+    if (ASISTIDA) modoAsistido(datos, persona); else APD.pintaSesion(document.querySelector('[data-sesion]'), persona);
     form.addEventListener('formkit:paso', () => revisionConNombres(persona));
     pintaAdscripcion(datos, persona);
     const folio = new URLSearchParams(location.search).get('folio');
