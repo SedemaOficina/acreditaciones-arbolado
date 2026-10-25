@@ -666,7 +666,7 @@ for (const ancho of [1280, 390]) {
   await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
   await ex.waitForFunction(() => !/detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent) && !Object.keys(localStorage).some((x) => x.startsWith('apd.examen.pendiente.')));
   const orden = await ex.evaluate(() => window.__orden.join(','));
-  const b1 = (await reg(k)).bitacora.filter((b) => b.evento === 'pausa');
+  const b1 = (await reg(k)).eventos.filter((b) => b.evento === 'pausa');
   ok(/^responder,.*senal/.test(orden) && orden.indexOf('senal') > orden.indexOf('responder'), t(`al volver, primero se envía lo pendiente y después la señal que reanuda (${orden})`));
   ok(b1.length === 1 && b1[0].inicio === ultima && b1[0].duracion_ms >= 5 * 60000 && b1[0].detenido_ms === b1[0].duracion_ms && b1[0].fin > b1[0].inicio,
     t(`la pausa queda en la bitácora del examen con su inicio, fin y duración (${JSON.stringify(b1[0])})`));
@@ -695,7 +695,7 @@ for (const ancho of [1280, 390]) {
   await axeEn(ap, t('aplicar con el tope pasado'));
   await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
   await ex.waitForFunction(() => !/detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent) && !Object.keys(localStorage).some((x) => x.startsWith('apd.examen.pendiente.')));
-  const b2 = (await reg(k)).bitacora.filter((b) => b.evento === 'pausa');
+  const b2 = (await reg(k)).eventos.filter((b) => b.evento === 'pausa');
   const total = b2.reduce((n, b) => n + b.detenido_ms, 0);
   ok(b2.length === 2 && b2[1].duracion_ms >= 41 * 60000 && b2[1].detenido_ms < b2[1].duracion_ms && b2[1].tope_en && total === 30 * 60000,
     t(`la segunda pausa queda en la bitácora con cuándo pasó el tope; en total se detuvieron 30 minutos (${Math.round(total / 60000)})`));
@@ -728,8 +728,8 @@ for (const ancho of [1280, 390]) {
   await luz.fill('#codigo', k2);
   await luz.click('#entrar [data-accion="enviar"]');
   await luz.waitForFunction(() => /Se enviaron las respuestas que habían quedado en esta computadora/.test(document.querySelector('[data-guardado]').textContent));
-  await ap.waitForFunction(([x, a]) => { const r = JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)); return r.senal_en !== a && r.bitacora.some((b) => b.evento === 'pausa'); }, [k2, antesLuz], { timeout: 15000 });
-  const b3 = (await reg(k2)).bitacora.filter((b) => b.evento === 'pausa');
+  await ap.waitForFunction(([x, a]) => { const r = JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)); return r.senal_en !== a && r.eventos.some((b) => b.evento === 'pausa'); }, [k2, antesLuz], { timeout: 15000 });
+  const b3 = (await reg(k2)).eventos.filter((b) => b.evento === 'pausa');
   ok(b3.length === 1 && b3[0].inicio === antesLuz && b3[0].duracion_ms >= 5 * 60000 && b3[0].detenido_ms === b3[0].duracion_ms && Object.keys((await reg(k2)).respuestas).length === 1,
     t('después del corte de luz, con el mismo código: se envía lo pendiente, el tiempo se reanuda y la pausa queda en la bitácora'));
   ok(await coincideEn(luz, k2), t('después del corte de luz, la pantalla muestra el tiempo del servidor'));

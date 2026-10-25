@@ -47,7 +47,7 @@
    recibe señales: si pasan más de sin_senal_s segundos sin señal, deja de
    contar desde la última y reanuda al llegar la siguiente, que la pantalla
    manda después de enviar lo que quedó pendiente. Cada pausa queda en la
-   bitácora del examen (inicio, fin y duración). La pausa acumulada de una
+   bitácora del examen (los «eventos» del código: inicio, fin y duración). La pausa acumulada de una
    persona tiene un tope (tope_pausa_min): al pasarlo, el tiempo vuelve a
    correr y quien aplica decide (P214). Quien aplica ve «Sin conexión desde las
    HH:MM» y el tiempo que lleva detenido. El tiempo que muestra la pantalla sale
@@ -192,7 +192,7 @@
     const detuvo = Math.min(topeMs(), reg.pausa_ms) - antes;
     const nota = { evento: 'pausa', inicio: iso(p.desde), fin: iso(t), duracion_ms: p.ms, detenido_ms: detuvo, termino: como };
     if (detuvo < p.ms) nota.tope_en = iso(p.desde + detuvo);
-    reg.bitacora = (reg.bitacora || []).concat([nota]);
+    reg.eventos = (reg.eventos || []).concat([nota]);
     return nota;
   }
   /* Lo que se sabe del tiempo detenido: la pausa abierta (desde cuándo y cuánto lleva), el total y si pasó el tope */
@@ -202,7 +202,7 @@
     return {
       abierta: p ? { desde: iso(p.desde), ms: p.ms } : null,
       detenido_ms: total, tope: total >= topeMs(),
-      pausas: (reg.bitacora || []).filter((b) => b.evento === 'pausa').length
+      pausas: (reg.eventos || []).filter((b) => b.evento === 'pausa').length
     };
   }
   /* Situación de un código: sin_empezar, contestando, terminado, suspendido, reemplazado */
@@ -271,7 +271,7 @@
         return Object.assign({}, r, {
           situacion: situacion(r), restante_ms: restanteMs(r),
           // Sin conexión desde la última señal y el tiempo detenido (decisión de Liber del 25/10/2026)
-          pausa: pausaDe(r), bitacora: (r.bitacora || []).slice(),
+          pausa: pausaDe(r), eventos: (r.eventos || []).slice(),
           contestadas: Object.keys(r.respuestas).length, total: r.preguntas.length,
           voz: l && l.voz === false && Date.now() - l.t < VIVA_MS ? false : null
         });
@@ -291,7 +291,7 @@
         codigo, inscripcion_id, folio, persona, grupo, examen: { tipo, modalidad },
         minutos: ex.minutos, minima, preguntas, orden_opciones,
         generado_en: ahora(), generado_por: por, iniciado_en: null, respuestas: {}, marcadas: [], salidas: 0,
-        otro_equipo: 0, senal_en: null, pausa_ms: 0, bitacora: [],
+        otro_equipo: 0, senal_en: null, pausa_ms: 0, eventos: [],
         terminado_en: null, suspendido: null, reemplazado_por: null
       };
       if (!escribe(t)) return noGuarda('codigo');
