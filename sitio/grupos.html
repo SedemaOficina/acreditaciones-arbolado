@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/acordeon/acordeon.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/pestanas/pestanas.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.70">
 </head>
 <body>
@@ -48,8 +49,20 @@
     <a class="btn-enlace arm-ir-programados" href="#programados" data-ir-programados>Ver los grupos programados</a>
   </div>
 
-  <section class="arm" aria-labelledby="t-armar">
-    <h3 class="titulo-bloque arm-titulo" id="t-armar">Armar un grupo</h3>
+  <!-- Acomodo de escritorio (decisión de Liber del 25/10/2026, DIAGNOSTICO 4.4): desde 1024 px, pestañas del estándar
+       «Armar un grupo» | «Grupos programados (N)» | «Ya terminaron (N)» y, al armar, el paso a la izquierda y el panel
+       «Tu grupo» a la derecha (fijo desde 700 px de alto). En teléfono y tableta, todo como antes: una sección debajo de
+       otra y lo elegido en una línea arriba del paso (app/escritorio-b.js). -->
+  <div class="pestanas escb-pestanas" data-pestanas>
+    <div class="pestanas-lista" role="tablist" aria-label="Grupos">
+      <button type="button" class="pestana" role="tab" id="pe-armar" aria-controls="panel-armar" aria-selected="true">Armar un grupo</button>
+      <button type="button" class="pestana" role="tab" id="pe-programados" aria-controls="programados" aria-selected="false" tabindex="-1" data-pestana-cuenta="Grupos programados">Grupos programados</button>
+      <button type="button" class="pestana" role="tab" id="pe-terminados" aria-controls="panel-terminados" aria-selected="false" tabindex="-1" data-pestana-cuenta="Ya terminaron">Ya terminaron</button>
+    </div>
+
+  <section class="arm pestanas-panel" id="panel-armar" aria-labelledby="t-armar">
+    <h3 class="titulo-bloque arm-titulo escb-titulo-de-pestana" id="t-armar">Armar un grupo</h3>
+    <div class="escb-arm-paso">
     <!-- Completar o darle semana a un grupo que ya existe (?grupo=), o un enlace guardado a uno que ya no recibe -->
     <div data-modo-grupo hidden></div>
     <!-- Barra de pasos del estándar (módulo pasos), sin .barra-fija: no queda pegada arriba (P177: pegajosa ocupa hasta un
@@ -139,6 +152,12 @@
         <h4 class="titulo-paso">¿Quiénes van?</h4>
         <p class="bajada" data-propuesta></p>
         <div data-ya-estan hidden></div>
+        <!-- Escritorio (desde 1024 px): filtro por organización y la espera como tabla compacta con su encabezado (sólo
+             para la vista: cada fila dice lo suyo al lector). Lo llena app/grupos.js. -->
+        <!-- El filtro lo arma app/grupos.js (una lista sin name: filtra la vista; no se guarda, no se envía ni es parte del
+             esquema del formulario) -->
+        <div class="escb-filtro-org" data-filtro-org hidden></div>
+        <div class="escb-espera-cabeza" aria-hidden="true"><span></span><span>Persona</span><span>Organización</span><span>Espera</span><span>Folio</span></div>
         <ul class="prog-personas" data-personas aria-label="Personas en espera"></ul>
         <!-- Se ve siempre y se anuncia sólo al marcar o desmarcar (RI-04): no es región viva -->
         <p class="arm-cuenta" data-cuenta-personas></p>
@@ -185,19 +204,43 @@
         </div>
       </section>
     </form>
+    </div>
+
+    <!-- Panel «Tu grupo» (escritorio, desde 1024 px): curso, semana, horario, tipo, cupo, elegidas con «Quitar» y los
+         botones del paso, que hacen lo mismo que los de abajo del paso. En teléfono no se ve: lo elegido va en la línea de
+         arriba del paso, como antes. Propuesta al estándar E1 (.con-lateral). Lo llena app/grupos.js. -->
+    <aside class="escb-panel-grupo" aria-labelledby="t-tu-grupo" data-panel-grupo>
+      <h3 class="escb-panel-titulo" id="t-tu-grupo">Tu grupo</h3>
+      <dl class="escb-panel-datos" data-panel-datos></dl>
+      <div class="cupo escb-panel-cupo" data-panel-cupo hidden>
+        <p data-panel-cupo-texto></p>
+        <div class="cupo-barra" aria-hidden="true"><span class="cupo-lleno" data-panel-cupo-lleno></span></div>
+      </div>
+      <div class="escb-panel-acciones">
+        <button type="button" class="btn-atras" data-panel-atras hidden><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
+        <button type="button" class="btn btn-primario" data-panel-siguiente>Siguiente</button>
+      </div>
+      <ul class="escb-panel-elegidas" data-panel-elegidas aria-label="Personas elegidas" hidden></ul>
+    </aside>
   </section>
 
-  <section class="arm-programados" id="programados" aria-labelledby="t-programados">
-    <h3 class="titulo-bloque" id="t-programados" tabindex="-1">Grupos programados</h3>
+  <section class="arm-programados pestanas-panel" id="programados" aria-labelledby="t-programados">
+    <h3 class="titulo-bloque escb-titulo-de-pestana" id="t-programados" tabindex="-1">Grupos programados</h3>
     <!-- Lo que se acaba de hacer (crear, completar, confirmar): aviso con su enlace a la ficha (FormKit.aviso) -->
     <div class="plan-hecho" data-hecho hidden></div>
     <p class="bajada" data-programados-bajada>Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta. La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.</p>
     <div data-programados></div>
+  </section>
+  <!-- «Ya terminaron»: en teléfono, el plegable de siempre al final de los grupos programados; en escritorio, su pestaña
+       (abierto) -->
+  <section class="pestanas-panel escb-terminados" id="panel-terminados">
     <details class="plegable" data-terminados hidden>
       <summary class="plegable-titulo" data-terminados-titulo>Grupos que ya terminaron</summary>
       <div class="plegable-cuerpo"><ul class="plan-terminados-lista" data-terminados-lista></ul></div>
     </details>
+    <p class="texto-gris escb-solo-pestana" data-sin-terminados hidden>Todavía no hay grupos que hayan terminado.</p>
   </section>
+  </div>
   <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas y su persona instructora, y recibe hasta <span data-cupo-max>25</span>. Sólo las instituciones de gobierno tienen grupo propio. La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.</p>
 </main>
 
@@ -220,6 +263,8 @@
 <script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
 <script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<script src="formkit/modulos/pestanas/pestanas.js?v=1.5.1"></script>
+<script src="app/escritorio-b.js?v=0.70"></script>
 <script src="app/grupos.js?v=0.70"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.70"></script>
