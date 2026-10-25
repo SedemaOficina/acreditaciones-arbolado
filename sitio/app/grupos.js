@@ -904,7 +904,7 @@
         if (!g.fecha_inicio) falta.push('semana'); else if (pasada) falta.push('otra semana');
         if (faltaMin > 0) falta.push(faltaMin === 1 ? '1 persona' : `${faltaMin} personas`);
         // La persona instructora y la confirmación son del área de Instructores y Capacitación (25/10/2026)
-        if (!g.instructor) falta.push('persona instructora (Capacitación)');
+        if (!g.instructor) falta.push('persona instructora');
       }
       const textoFalta = !integra && !pasada ? '—' : falta.length ? mayus(y(falta)) : 'Que Capacitación lo confirme';
       const acciones = [];
