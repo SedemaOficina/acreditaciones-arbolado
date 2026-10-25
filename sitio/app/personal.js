@@ -582,6 +582,23 @@
     );
   }
 
+  /* Escritorio · parte A (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.1 y 4.2): algunas
+     piezas cambian de lugar en computadora y regresan al suyo en pantallas más chicas, para que el teléfono y la tableta
+     queden exactamente como estaban (mismo orden, mismos textos). Por ejemplo, la ficha de la persona entra a «Datos de la
+     persona» de la franja de contexto. Cada pieza recuerda su lugar con un marcador vacío.
+     consulta: la de matchMedia (p. ej. «(min-width: 1024px)»); movimientos: [[nodo, destino], …], en orden. */
+  function acomodaEscritorio(consulta, movimientos) {
+    const mq = global.matchMedia(consulta);
+    const lista = movimientos.filter(([nodo, destino]) => nodo && destino);
+    const marcas = lista.map(([nodo]) => { const m = document.createComment(' lugar en pantallas chicas '); nodo.before(m); return m; });
+    const acomoda = () => lista.forEach(([nodo, destino], i) => {
+      if (mq.matches) { if (nodo.parentNode !== destino) destino.append(nodo); } else if (marcas[i].nextSibling !== nodo) marcas[i].after(nodo);
+    });
+    mq.addEventListener('change', acomoda);
+    acomoda();
+    return mq;
+  }
+
   /* Concentrado de asistencia del grupo (pedido de Liber, 2026-10-18): una fila por persona y una columna por día, con
      los días asistidos y si conserva el derecho a examen. La captura sigue siendo por día («Asistencia»); esto es la
      vista de conjunto, en la ficha del grupo (en curso o concluido). El último día es el del examen:
@@ -657,5 +674,5 @@
     delDia, motivoDiaCita, vigilaDiaCita,
     diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
-    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas };
+    retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas, acomodaEscritorio };
 }(window));
