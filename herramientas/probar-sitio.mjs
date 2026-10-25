@@ -4428,7 +4428,8 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   };
   const porRevisar = datos.solicitud.find((s) => s.estado === 'enviada');
   await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
-  await pg.waitForSelector('[data-bajada] .linea-datos');
+  // Desde 1024 px la línea de la cabeza es la corta de la franja de contexto (escritorio, parte A, 25/10/2026)
+  await pg.waitForSelector('[data-cabeza] .linea-datos:visible');
   await lineas('la revisión documental');
   // P135: motivos frecuentes completos (un renglón cada uno, sin encogerse) y al pasar el cursor sólo cambia el borde
   const doc = await pg.$eval('[data-doc]:not([hidden]) input[value="con_observacion"]', (i) => i.name);

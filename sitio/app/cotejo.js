@@ -131,7 +131,7 @@
     {
       const conFoto = $('[data-persona] .persona-con-foto');
       const ficha = conFoto.lastElementChild;
-      // La línea corta de la franja: folio y cita (la completa queda en la tarjeta de teléfono y en la columna de la persona)
+      // La línea corta de la franja y de la columna de la persona: folio y cita (la completa queda en la tarjeta de teléfono)
       $('[data-bajada]').after(APD.lineaDatos([el('strong', { class: 'mono', texto: s.folio }), `cita del ${fechaCorta(s.cita_en, { hora: true })}`], 'franja-caso'));
       const pares = APD.adscripcionPares(datos, s, 'Adscripción');
       for (const par of $$('.datos-par', ficha)) {
