@@ -797,4 +797,6 @@ body > main { flex: 1 0 auto; width: 100%; }
      como secundarios (un solo principal por pantalla, C6-02: app/grupos.js cambia su clase). Más bajo que 700 px, el panel
      no es fijo y no lleva botones: los del paso son los principales, como antes. */
   .escb-panel-acciones { display: flex; }
+  /* El de abajo del paso, ya secundario, sigue a la derecha, donde estaba */
+  #armar .acciones > [data-accion="siguiente"], #armar .acciones > [data-accion="enviar"] { margin-inline-start: auto; }
 }
