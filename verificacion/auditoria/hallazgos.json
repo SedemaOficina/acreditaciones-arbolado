@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:8955/",
+  "base": "http://localhost:8962/",
   "estados": [
     [
       "inicio",
@@ -176,10 +176,34 @@
     [
       "reposicion-corregir",
       "reposicion.html?numero=PD-2026-K143"
+    ],
+    [
+      "capacitacion",
+      "capacitacion.html"
+    ],
+    [
+      "grupo-capacitacion",
+      "grupo.html?folio=APD-G-2026-005&perfil=capacitacion"
+    ],
+    [
+      "grupo-en-curso-capacitacion",
+      "grupo.html?folio=APD-G-2026-003&perfil=capacitacion"
+    ],
+    [
+      "revisar-ultima-oportunidad",
+      "revisar.html?folio=APD-S-2026-00062"
+    ],
+    [
+      "tramites-ultima-oportunidad",
+      "tramites.html"
+    ],
+    [
+      "tramites-sin-oportunidades",
+      "tramites.html"
     ]
   ],
-  "paginas": 89,
-  "presionados": 301,
+  "paginas": 101,
+  "presionados": 329,
   "porTipo": {
     "botón sin efecto visible": 1
   },

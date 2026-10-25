@@ -148,8 +148,11 @@
           <!-- autocomplete off: decisión de quien arma el grupo. -->
           <div class="opciones-lista">
             <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="combinado" checked><span><span class="opcion-nombre">Combinado</span><span class="opcion-desc">Recibe personas de cualquier organización e independientes.</span></span></label>
-            <label class="opcion-fila"><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de una organización</span><span class="opcion-desc" data-especifico-desc>Recibe únicamente a la gente de esa organización: todas las elegidas tienen que ser de ella.</span></span></label>
+            <label class="opcion-fila" data-opcion-especifico><input class="opcion-fila-input" type="radio" name="integracion" autocomplete="off" value="especifico"><span><span class="opcion-nombre" data-especifico-de>Sólo de una institución de gobierno</span><span class="opcion-desc" data-especifico-desc>Recibe únicamente a la gente de esa institución: todas las elegidas tienen que ser de ella.</span></span></label>
           </div>
+          <!-- El grupo propio de una organización, sólo para instituciones de gobierno (ajustes del equipo, 25/10/2026): donde
+               no aplica no se ofrece y esta línea dice por qué (app/grupos.js) -->
+          <p class="ayuda" data-sin-grupo-propio hidden></p>
         </fieldset>
         <!-- Si todas las elegidas son de una organización que ya tiene su grupo que recibe personas: se dice y se ofrece
              agregarlas ahí (decisión 2 de la auditoría del 2026-10-19) -->
@@ -162,26 +165,15 @@
         </div>
       </section>
 
-      <!-- Paso 4 · confirmar: el resumen (con el horario, que es fijo) y el instructor; «Crear el grupo». La hora de entrada
-           no se elige: el curso es de 9:00 a 15:00 (parámetros curso_hora_entrada y curso_hora_salida; decisión de Liber del
-           24/10/2026) y el grupo la toma del parámetro al guardarse. -->
+      <!-- Paso 4 · confirmar: el resumen (con el horario, que es fijo) y «Crear el grupo». La hora de entrada no se elige: el
+           curso es de 9:00 a 15:00 (parámetros curso_hora_entrada y curso_hora_salida; decisión de Liber del 24/10/2026) y el
+           grupo la toma del parámetro al guardarse. Quien arma el grupo ya no elige instructor: el grupo se crea sin persona
+           instructora y la asigna, y confirma el grupo, el área de Instructores y Capacitación (ajustes del equipo,
+           25/10/2026). -->
       <section class="tarjeta arm-paso" data-paso data-titulo="Confirmar" id="paso-confirmar" hidden>
         <h4 class="titulo-paso" data-titulo-confirmar>Revise y confirme</h4>
         <div data-resumen></div>
-        <div class="fila arm-quien">
-          <div class="campo" data-campo="instructor" data-uso="Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).">
-            <label class="etiqueta" for="instructor">Instructor</label>
-            <p class="ayuda" id="ay-instructor" data-ayuda-instructor>Se indica si ya tiene otro curso esas fechas.</p>
-            <!-- Versión de prueba: instructores ficticios. En la etapa 3 la API da las cuentas con perfil «instructor» (P27).
-                 «Por asignar»: la asignación de instructores sigue pendiente (P92); el grupo se crea, pero no se confirma
-                 sin instructor. autocomplete off: lo elige quien arma el grupo. -->
-            <div class="select"><select class="control control-select" id="instructor" name="instructor" autocomplete="off" aria-describedby="ay-instructor">
-                <option value="">Por asignar</option>
-                <option value="instructor.ficticio">Laura Ejemplo Instructora</option>
-                <option value="instructor2.ficticio">Instructor Ejemplo Dos</option>
-            </select></div>
-          </div>
-        </div>
+        <p class="bajada" data-quien-confirma>La persona instructora la asigna el área de Instructores y Capacitación, que también confirma el grupo.</p>
         <!-- Cómo queda el grupo al guardarlo (confirmado o por confirmar, y qué le falta): cambia con lo que se elige -->
         <div class="arm-queda" data-queda></div>
         <!-- Lo que falta para crear o guardar, junto a los botones (FormKit.aviso) -->
@@ -189,7 +181,6 @@
         <p class="aviso aviso-bloqueo estado-envio" data-estado-envio role="alert" tabindex="-1" hidden><svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg><span class="aviso-texto"></span></p>
         <div class="acciones">
           <button type="button" class="btn-atras" data-accion="atras"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Atrás</button>
-          <button type="submit" class="btn btn-secundario" data-armar="sin-confirmar" hidden>Crear sin confirmar</button>
           <button type="submit" class="btn btn-primario" data-accion="enviar" data-armar="crear">Crear el grupo</button>
         </div>
       </section>
@@ -200,14 +191,14 @@
     <h3 class="titulo-bloque" id="t-programados" tabindex="-1">Grupos programados</h3>
     <!-- Lo que se acaba de hacer (crear, completar, confirmar): aviso con su enlace a la ficha (FormKit.aviso) -->
     <div class="plan-hecho" data-hecho hidden></div>
-    <p class="bajada" data-programados-bajada>Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta.</p>
+    <p class="bajada" data-programados-bajada>Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta. La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.</p>
     <div data-programados></div>
     <details class="plegable" data-terminados hidden>
       <summary class="plegable-titulo" data-terminados-titulo>Grupos que ya terminaron</summary>
       <div class="plegable-cuerpo"><ul class="plan-terminados-lista" data-terminados-lista></ul></div>
     </details>
   </section>
-  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas e instructor, y recibe hasta <span data-cupo-max>25</span>. <span class="pendiente">Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.</span></p>
+  <p class="ayuda plan-pie">Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos <span data-cupo-min>5</span> personas y su persona instructora, y recibe hasta <span data-cupo-max>25</span>. Sólo las instituciones de gobierno tienen grupo propio. La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.</p>
 </main>
 
 <footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>

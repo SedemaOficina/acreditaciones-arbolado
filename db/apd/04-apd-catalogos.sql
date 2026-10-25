@@ -50,6 +50,10 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Horario de informes de la Secretaría para aclaraciones del trámite; se muestra a la persona donde se le pide acudir o comunicarse. El teléfono y el correo están pendientes (P132, sesión de trabajo del 23/10/2026).'),
   ('perfiles_cancelan_acreditacion', 'instructor,administracion',
    'Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y la Dirección (administración) (P120, sesión de trabajo del 23/10/2026).'),
+  ('perfiles_asignan_instructor', 'capacitacion,administracion',
+   'Perfiles del personal (acceso del SIA, P27) que asignan o cambian la persona instructora de un grupo y lo confirman, separados por coma: el área de Instructores y Capacitación (capacitación) y la Dirección (administración), que ya podía hacerlo todo. Quien arma los grupos (revisión y cotejo) ya no lo hace (ajustes del equipo, 25/10/2026).'),
+  ('oportunidades_correccion', '2',
+   'Veces que la persona puede corregir las observaciones de la revisión en línea. Si en la revisión de la última corrección siguen las observaciones, la solicitud se cierra («Se agotaron las oportunidades de corrección») y la persona puede iniciar una nueva. Que el cotejo regrese la solicitud con observaciones no cuenta (ajustes del equipo, 25/10/2026).'),
   ('minutos_bloqueo', '15',
    'Minutos que dura el bloqueo de la entrada al llegar a intentos_maximos; más intentos no lo alargan (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].');
 

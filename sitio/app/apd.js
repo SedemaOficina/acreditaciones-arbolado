@@ -240,6 +240,33 @@
   /* Cerrada por no presentarse dos veces a la cita de cotejo: se distingue por el motivo que guarda la base
      («No se presentó a su cita de cotejo N veces.», 03-apd-reglas.sql), no por un dato propio de la prueba (alta 5) */
   const cerradaPorInasistencia = (s) => s && s.estado === 'concluida_sin_atender' && /^No se presentó a su cita de cotejo/.test(s.motivo_cierre || '');
+  /* Máximo de oportunidades para corregir (ajustes del equipo, 25/10/2026; la base: apd.correcciones_usadas y el parámetro
+     oportunidades_correccion, 2). Cada revisión en línea con observaciones es una oportunidad; que el cotejo regrese la
+     solicitud con observaciones no cuenta. Si la revisión de la última corrección vuelve a tener observaciones, la base
+     cierra la solicitud como concluida sin atender, con este motivo. */
+  const MOTIVO_SIN_OPORTUNIDADES = 'Se agotaron las oportunidades de corrección';
+  const cerradaSinOportunidades = (s) => Boolean(s) && s.estado === 'concluida_sin_atender' && String(s.motivo_cierre || '').startsWith(MOTIVO_SIN_OPORTUNIDADES);
+  const oportunidadesCorreccion = (datos) => parametro(datos, 'oportunidades_correccion') || 2;
+  const correccionesUsadas = (datos, s) => datos.revision.filter((r) => r.solicitud_id === s.id && r.resultado === 'con_observaciones').length;
+  /* ¿Las observaciones de ahora vienen de su cita de cotejo? La cita con resultado «con_observaciones», posterior a la
+     última revisión, como lo deja la base (apd.cita) */
+  function observadaEnCotejo(datos, s) {
+    const ultimaRev = datos.revision.filter((r) => r.solicitud_id === s.id).map((r) => r.revisada_en || '').sort().pop() || '';
+    return (datos.cita || []).some((c) => c.solicitud_id === s.id && c.resultado === 'con_observaciones'
+      && aFecha(c.atendida_en || c.programada_en) > aFecha(ultimaRev || '1970-01-01'));
+  }
+  /* Lo que la persona ve de sus oportunidades mientras corrige, o null si no está corrigiendo: cuántas le quedan, contando
+     la de ahora («Te quedan 2 oportunidades para corregir»), o que es la última. Lo del cotejo no cuenta y lo dice. */
+  function oportunidades(datos, s) {
+    if (!s || s.estado !== 'con_observaciones') return null;
+    if (observadaEnCotejo(datos, s)) return { cotejo: true, texto: 'Corregir lo que no coincidió en tu cita de cotejo no cuenta entre tus oportunidades para corregir.' };
+    const quedan = Math.max(1, oportunidadesCorreccion(datos) - correccionesUsadas(datos, s) + 1);
+    return quedan === 1
+      ? { quedan, ultima: true, texto: 'Esta es tu última oportunidad para corregir.', detalle: 'Si en la revisión siguen las observaciones, tu solicitud se cierra y tienes que iniciar una nueva.' }
+      : { quedan, texto: `Te quedan ${quedan} oportunidades para corregir.` };
+  }
+  /* Para el personal: la solicitud enviada es la revisión de la última corrección (si algo sigue con observación, se cierra) */
+  const revisionDeLaUltima = (datos, s) => Boolean(s) && s.estado === 'enviada' && correccionesUsadas(datos, s) >= oportunidadesCorreccion(datos);
   /* Hoy, como fecha AAAA-MM-DD en la Ciudad de México. En la versión de prueba es la fecha simulada de los ficticios
      (datos.fecha_corte, la de la franja amarilla), para que cada caso siga en su situación; con la API (etapa 3) no
      hay fecha de corte y es el día real. */
@@ -477,6 +504,9 @@
   function canceladaAl(a, fecha) { return Boolean(a && a.cancelada_en) && diaDe(a.cancelada_en) <= fecha; }
   /* Perfiles del personal que pueden cancelar (parámetro perfiles_cancelan_acreditacion: instructor y administración) */
   function perfilesCancelan(datos) { return String(parametroTexto(datos, 'perfiles_cancelan_acreditacion') || '').split(',').map((x) => x.trim()).filter(Boolean); }
+  /* Perfiles que asignan o cambian la persona instructora y confirman un grupo (parámetro perfiles_asignan_instructor:
+     capacitación y administración; ajustes del equipo, 25/10/2026) */
+  function perfilesAsignan(datos) { return String(parametroTexto(datos, 'perfiles_asignan_instructor') || 'capacitacion,administracion').split(',').map((x) => x.trim()).filter(Boolean); }
   /* Cada paso de la reposición, como lo ve la persona (de tú) y el personal (de usted) */
   const REPOSICION = {
     solicitada: { texto: 'Reposición: acta en revisión', personal: 'Acta por revisar', tono: 'marcha', tonoPersonal: 'pend' },
@@ -650,6 +680,8 @@
   }
   /* Etiqueta del estado de una solicitud; para el personal, con su nombre de personal */
   function estadoSolicitud(s, paraPersonal) {
+    // Cerrada porque se agotaron las oportunidades de corrección (ajustes del equipo, 25/10/2026): no es «no se corrigió a tiempo»
+    if (cerradaSinOportunidades(s)) return estado(paraPersonal ? 'Cerrada: sin más oportunidades de corrección' : 'Cerrada: se agotaron tus oportunidades para corregir', 'error');
     const e = ESTADOS[s.estado] || { texto: s.estado, tono: '' };
     return estado(paraPersonal ? e.personal || e.texto : e.texto, e.tono);
   }
@@ -1045,11 +1077,12 @@
     CONTRASENA_FICTICIA, ESTADOS, vigencia, TIPOS, MODALIDADES, FINALES,
     cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
     cargar, cargadoTras, fechaLarga, fechaCorta, hora, sumaDias, sumaMeses, hoy, diaDe, pausaVencida, cerradaPorInasistencia, diasParaVencer, vencimiento,
+    MOTIVO_SIN_OPORTUNIDADES, cerradaSinOportunidades, oportunidadesCorreccion, correccionesUsadas, observadaEnCotejo, oportunidades, revisionDeLaUltima,
     plural, normalizaBusqueda, paraTi, observacionDe,
     leeSesion, guardaSesion, cierraSesion, personaDeSesion, requiereSesion, destinoPropio, nombreCompleto, nombreDeArchivo,
     solicitudesDe, acreditacionesDe, situacion, parametro, parametroTexto, curso, sede, activa, limpia, opciones,
     podaContinuaDesde, esHabil, diaFinal,
-    perfilesCancelan, REPOSICION_ABIERTA, estadoReposicion, reposicionesDe, reposicionAbierta, porQueNoReponer, cuotaReposicion, moneda,
+    perfilesCancelan, perfilesAsignan, REPOSICION_ABIERTA, estadoReposicion, reposicionesDe, reposicionAbierta, porQueNoReponer, cuotaReposicion, moneda,
     el, lineaDatos, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, pintaAviso, tituloPasos, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano
   };

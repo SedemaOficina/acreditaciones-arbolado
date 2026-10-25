@@ -19,7 +19,9 @@ const PAGINAS = [
   // Reposición de la credencial (P140, sesión de trabajo del 23/10/2026)
   ['reposicion.html', 'Reposición de tu credencial'],
   // «Grupos» paso a paso, del personal (decisión del 24/10/2026: sustituye al planeador y a «Programar un curso»)
-  ['grupos.html', 'Grupos (personal)']
+  ['grupos.html', 'Grupos (personal)'],
+  // Inicio del área de Instructores y Capacitación (ajustes del equipo, 25/10/2026)
+  ['capacitacion.html', 'Grupos por asignar y confirmar (personal)']
 ];
 // Bloques que sólo aparecen en ciertos casos (atributo → condición en palabras)
 const OCULTOS = {

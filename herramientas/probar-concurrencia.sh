@@ -168,7 +168,8 @@ par "$F2" "INSERT INTO apd.inscripcion (solicitud_id, grupo_id) VALUES ($(S 0004
 verifica "2b · La misma solicitud a dos grupos a la vez" solicitud_no_lista "$REGLA_GRUPOS" "$MIRA_GRUPOS"
 # Cupo mínimo: APD-G-2026-005 (en integración, con fecha, hora e instructor) completa 5 personas
 CINCO="INSERT INTO apd.inscripcion (solicitud_id, grupo_id) SELECT id, $G5 FROM apd.solicitud WHERE folio IN ('APD-S-2026-00037', 'APD-S-2026-00038', 'APD-S-2026-00031', 'APD-S-2026-00036');"
-CONFIRMA="UPDATE apd.grupo SET estado = 'confirmado' WHERE id = $G5;"
+# Confirma el área de Instructores y Capacitación (perfil «capacitación»; ajustes del equipo, 25/10/2026)
+CONFIRMA="SELECT set_config('apd.perfil', 'capacitacion', true); UPDATE apd.grupo SET estado = 'confirmado' WHERE id = $G5;"
 BAJA() { echo "UPDATE apd.inscripcion SET activa = false, motivo_baja = 'Pidió otra fecha' WHERE grupo_id = $G5 AND activa AND solicitud_id = $(S "$1");"; }
 nueva; prepara "$F2" "$CINCO"; par "$F2" "$CONFIRMA" "$(BAJA 00037)"
 verifica "2c · A confirma el grupo de 5; B da de baja a una persona (el grupo regresa a integración)" ok "$REGLA_GRUPOS" "$MIRA_GRUPOS"

@@ -5,7 +5,7 @@
 //  · 40 citas de cotejo el día de corte (09:30 a 14:30) y 30 más en los días hábiles siguientes
 //  · 100 personas en espera de grupo, repartidas en cuatro cursos y ~18 adscripciones (organizaciones grandes y cola larga)
 //  · 1 grupo de 25 personas en su día 3 (empezó el lunes; asistencia de los días 1 y 2 capturada, con faltas)
-//  · 3 grupos más en integración y confirmados
+//  · 3 grupos más en integración y confirmados (los propios, de instituciones de gobierno: CFE e Iztapalapa)
 // Sesión de trabajo del 23/10/2026: citas de 9:30 a 14:30 y de lunes a viernes; cursos de lunes a viernes (el de 5 días
 // empieza en lunes) y como máximo 2 grupos al mismo tiempo. Por eso el grupo de 25 ya no está en su último día (el corte es
 // miércoles) y el caso «día 2 sin capturar» (A1) es el grupo de la alcaldía de los ficticios (APD-G-2026-003), al que aquí
@@ -131,7 +131,9 @@ for (let i = 0; i < 25; i++) {
   for (let k = 1; k <= desdeLunes; k++) d.asistencia.push({ dia: k, asistio: !(i % 7 === 0 && k <= 2) && !(i % 11 === 0 && k === 3), capturada_en: dia(-desdeLunes - 1 + k, '18:30'), capturada_por: 'instructor.ficticio', inscripcion_id: ins.id });
 }
 
-// 5) Más grupos: uno en integración de Jardines (3), uno combinado en integración (12), uno confirmado de Iztapalapa (18)
+// 5) Más grupos: uno en integración de la CFE (3), uno combinado en integración (12), uno confirmado de Iztapalapa (18).
+//    El grupo propio es sólo de instituciones de gobierno (ajustes del equipo, 25/10/2026): hasta entonces el de 3 era de
+//    Jardines Ejemplo del Norte, una empresa, que ahora va a grupos combinados
 function grupoCon(folio, estado, integracion, o, k, fecha) {
   const gg = { id: randomUUID(), sede: 'Vivero Nezahualcóyotl', folio, estado, creado_en: dia(-6), modalidad: 'nueva', instructor: estado === 'confirmado' ? 'instructor2.ficticio' : null,
     cupo_maximo: 25, cupo_minimo: 5, es_ficticio: true, integracion, estado_desde: dia(-3), fecha_inicio: fecha, hora_entrada: fecha ? '09:00:00' : null,
@@ -142,7 +144,7 @@ function grupoCon(folio, estado, integracion, o, k, fecha) {
     d.inscripcion.push({ id: randomUUID(), activa: true, baja_en: null, grupo_id: gg.id, inscrita_en: dia(-3), motivo_baja: null, solicitud_id: s.id });
   }
 }
-grupoCon('APD-G-2026-021', 'en_integracion', 'especifico', org('Jardines Ejemplo del Norte'), 3, null);
+grupoCon('APD-G-2026-021', 'en_integracion', 'especifico', org('Comisión Federal'), 3, null);
 grupoCon('APD-G-2026-022', 'en_integracion', 'combinado', null, 12, null);
 grupoCon('APD-G-2026-023', 'confirmado', 'especifico', org('Iztapalapa'), 18, soloDia(12));
 

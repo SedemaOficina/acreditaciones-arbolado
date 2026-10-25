@@ -1,7 +1,7 @@
 """INVENTARIO DE TEXTOS PARA REVISIÓN (2026-10-15, Liber)
 
 Junta en una sola hoja todo texto que ve la persona solicitante (y, desde el 24/10/2026, el paso a paso de «Grupos» del
-personal), con la pantalla, la sección, el tipo, la condición
+personal; desde el 25/10/2026, también «Grupos por asignar y confirmar», de Capacitación), con la pantalla, la sección, el tipo, la condición
 en que aparece y dónde se cambia:
   · docs/textos/estaticos.json (lo saca herramientas/inventario-textos.mjs de las páginas, sin ejecutar scripts);
   · los textos que pintan los scripts del sitio según el perfil, el estado o la respuesta (lista curada abajo);
@@ -46,7 +46,7 @@ filas = []
 for r in estaticos:
     filas.append({
         'pantalla': r['pantalla'], 'seccion': r['seccion'] or '—', 'tipo': r['tipo'],
-        'cuando': corta_condicion(r['cuando']), 'texto': r['texto'], 'quien': PERSONAL if r['archivo'] == 'grupos.html' else PERSONA, 'donde': donde_pagina(r), 'obs': ''
+        'cuando': corta_condicion(r['cuando']), 'texto': r['texto'], 'quien': PERSONAL if r['archivo'] in ('grupos.html', 'capacitacion.html') else PERSONA, 'donde': donde_pagina(r), 'obs': ''
     })
 
 # La adscripción es el mismo fragmento en «Crea tu cuenta» y en «Mis datos»: una sola fila por texto
@@ -126,6 +126,15 @@ dinamicos = [
     ('Mis trámites', 'Mis solicitudes · ficha', 'Etiqueta de dato', 'Cancelada o concluida sin atender', 'Motivo', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes · ficha', 'Botón o enlace', 'Solicitud en borrador', 'Continuar solicitud', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes · ficha', 'Botón o enlace', 'Solicitud con observaciones', 'Corregir y reenviar', D('tramites.js')),
+    # Oportunidades para corregir (ajustes del equipo, 25/10/2026)
+    ('Mis trámites', 'Mis solicitudes · oportunidades', 'Texto', 'Con observaciones de la revisión en línea, primera vez', 'Te quedan 2 oportunidades para corregir.', D('apd.js')),
+    ('Mis trámites', 'Mis solicitudes · oportunidades', 'Texto', 'Con observaciones, la última oportunidad', 'Esta es tu última oportunidad para corregir. Si en la revisión siguen las observaciones, tu solicitud se cierra y tienes que iniciar una nueva.', D('apd.js')),
+    ('Mis trámites', 'Mis solicitudes · oportunidades', 'Texto', 'Con observaciones del cotejo', 'Corregir lo que no coincidió en tu cita de cotejo no cuenta entre tus oportunidades para corregir.', D('apd.js')),
+    ('Solicitud', 'Corregir documentos · oportunidades', 'Texto', 'Al corregir observaciones', 'Te quedan 2 oportunidades para corregir. / Esta es tu última oportunidad para corregir. Si en la revisión siguen las observaciones, tu solicitud se cierra y tienes que iniciar una nueva.', D('solicitud.js')),
+    ('Mis trámites', 'Mis solicitudes · estado', 'Estado', 'Cerrada por agotar las oportunidades de corrección', 'Cerrada: se agotaron tus oportunidades para corregir', D('apd.js')),
+    ('Mis trámites', 'Mis solicitudes · qué sigue', 'Texto', 'Cerrada por agotar las oportunidades de corrección', 'En la revisión de tu última corrección siguieron las observaciones y tu solicitud se cerró. Puedes iniciar una solicitud nueva de inmediato.', D('tramites.js')),
+    ('Mis trámites', 'Mis solicitudes · ficha', 'Etiqueta de dato', 'Cerrada por agotar las oportunidades de corrección', 'Motivo del cierre · Se agotaron las oportunidades de corrección', D('tramites.js')),
+    ('Mis trámites', 'Mis solicitudes · ficha', 'Botón o enlace', 'Cerrada por agotar las oportunidades de corrección', 'Iniciar una solicitud nueva', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes', 'Texto', 'Si no tiene solicitudes', 'Todavía no tienes solicitudes.', D('tramites.js')),
     ('Mis trámites', 'Mis trámites', 'Introducción', 'Al cargar la pantalla', 'Aquí ves tus acreditaciones y en qué va cada solicitud.', D('tramites.js')),
     ('Mis trámites', 'Mis trámites', 'Error', 'Si no se pudo cargar la información', 'No se pudo cargar tu información. Intenta de nuevo más tarde.', D('tramites.js')),
@@ -229,14 +238,17 @@ dinamicos += [
     (G, 'Paso 3 · quiénes van', 'Texto', 'Siempre', 'N de 25 lugares · se confirma con al menos 5 personas', D('grupos.js')),
     (G, 'Paso 3 · quiénes van', 'Plegable', 'Con más en espera que las propuestas', 'Cambiar a quiénes van (N más en espera)', D('grupos.js')),
     (G, 'Paso 3', 'Error', 'Siguiente sin nadie', 'Elija a quién va · Marque la casilla junto al nombre de al menos una persona. El grupo se confirma con al menos 5.', D('grupos.js')),
-    (G, 'Paso 4 · confirmar', 'Estado', 'Antes de crearlo', 'Se crea confirmado · Cada persona verá en «Mis trámites» la fecha, la hora y el lugar. / Se crea por confirmar · Para confirmarlo le falta …', D('grupos.js')),
-    (G, 'Paso 4 · confirmar', 'Botón', 'Grupo nuevo', 'Crear el grupo · Crear sin confirmar (sólo si podría confirmarse)', D('grupos.js')),
-    (G, 'Paso 4 · confirmar', 'Botón', 'Grupo que ya existe', 'Confirmar el grupo / Guardar los cambios / Guardar sin confirmar / Agregar al grupo (confirmado)', D('grupos.js')),
-    (G, 'Paso 4 · instructor', 'Ayuda (cambia)', 'Instructor «Por asignar»', 'Por asignar: el grupo se crea, pero no se confirma sin instructor. La asignación de instructores la hará el área de capacitación (pendiente P92).', D('grupos.js')),
+    (G, 'Paso 4 · confirmar', 'Estado', 'Antes de crearlo', 'Se crea por confirmar / Sigue por confirmar · Le falta: …; después, el área de Instructores y Capacitación le asigna la persona instructora y lo confirma. Lo puede completar en «Grupos programados» o en su ficha; mientras, las personas no ven la fecha como segura.', D('grupos.js')),
+    (G, 'Paso 4 · confirmar', 'Botón', 'Grupo nuevo', 'Crear el grupo', D('grupos.js')),
+    (G, 'Paso 4 · confirmar', 'Botón', 'Grupo que ya existe', 'Guardar los cambios / Agregar al grupo (confirmado)', D('grupos.js')),
+    (G, 'Paso 4 · resumen', 'Valor', 'Grupo sin persona instructora', 'Persona instructora · La asigna el área de Instructores y Capacitación', D('grupos.js')),
+    (G, 'Paso 1 · tipo de grupo', 'Ayuda (cambia)', 'Elegidas de una organización que no es de gobierno', 'NOMBRE no es una institución de gobierno: su gente va a un grupo combinado. Sólo las dependencias de la Ciudad, las Alcaldías y las dependencias federales tienen grupo propio.', D('grupos.js')),
+    (G, 'Paso 1 · tipo de grupo', 'Ayuda (cambia)', 'Elegidas de varias organizaciones o independientes', 'El grupo es combinado: las elegidas son de varias organizaciones o independientes. Sólo las dependencias de la Ciudad, las Alcaldías y las dependencias federales tienen grupo propio, con toda su gente.', D('grupos.js')),
+    (G, 'Paso 4', 'Error', 'Grupo propio de quien no es de gobierno', 'Un grupo propio es sólo de una institución de gobierno, con toda su gente. Elija «Combinado» o quite a quien no sea de esa institución.', D('grupos.js')),
     (G, 'Grupos programados', 'Aviso', 'Al crear un grupo', 'Grupo creado y confirmado: NOMBRE / Grupo creado, por confirmar: NOMBRE · FOLIO · N personas · entrada a las 09:00 · INSTRUCTOR. · Ver la ficha del grupo · Qué sigue', D('grupos.js')),
     (G, 'Grupos programados', 'Estado', 'Situación de cada grupo', 'En curso · día N de 5 / Confirmado / Por confirmar / Sin semana / Propuesta vencida / Confirmado · no inició', D('grupos.js')),
-    (G, 'Grupos programados', 'Botón o enlace', 'Acciones de cada grupo', 'Completar con las N que más esperan · Confirmar el grupo · Elegir semana / Cambiar la semana / Elegir otra semana · Agregar personas', D('grupos.js')),
-    (G, 'Grupos programados', 'Texto', 'Lo que falta', 'Semana, N personas, hora e instructor / Confirmarlo / —', D('grupos.js')),
+    (G, 'Grupos programados', 'Botón o enlace', 'Acciones de cada grupo', 'Completar con las N que más esperan · Elegir semana / Cambiar la semana / Elegir otra semana · Agregar personas', D('grupos.js')),
+    (G, 'Grupos programados', 'Texto', 'Lo que falta', 'Semana, N personas, hora y persona instructora / Que Capacitación lo confirme / —', D('grupos.js')),
 ]
 for p, s, t, c, x, d in dinamicos:
     quien = PERSONAL if p == G else PERSONA if p != 'Verificar una acreditación' else 'Cualquier persona (público)'

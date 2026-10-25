@@ -186,16 +186,18 @@
     ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
     ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['grupos.html', 'Grupos (armar un grupo)'], ['material-personal.html', 'Material de estudio (personal)']]],
     ['Instructor', [['asistencia.html', 'Asistencia'], ['aplicar.html', 'Aplicar el examen']]],
+    // Perfil «capacitación» (ajustes del equipo, 25/10/2026): asigna instructores y confirma los grupos
+    ['Instructores y Capacitación', [['capacitacion.html', 'Grupos por asignar y confirmar']]],
     ['Salón de cómputo', [['examen.html', 'Examen en línea']]]
   ];
   const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'programar.html': 'Programar un curso (lleva a Grupos)', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
-  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'programar.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html'];
+  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'programar.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html', 'capacitacion.html'];
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
   /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
   const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
   const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
-  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7,
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'capacitacion.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7,
     'acreditaciones.html': 7, 'acreditacion.html': 7, 'reposicion.html': 7 };
   const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
@@ -252,10 +254,14 @@
     const casoGuardado = (() => { try { return sessionStorage.getItem(CASO); } catch (e) { return null; } })();
     const elegido = casos.find((c) => c.clave === casoGuardado);
     const migrada = pagina === 'cuenta.html' ? new URLSearchParams(location.search).get('migrada') : null;
-    const actual = enPersonal ? (casos.find((c) => c.pantalla && c.pantalla.split('?')[0] === pagina) || casos.find((c) => c.clave === 'personal'))
+    const actual = enPersonal ? ((pagina === 'grupo.html' && new URLSearchParams(location.search).get('perfil') === 'capacitacion' ? casos.find((c) => c.clave === 'personal-capacitacion') : null)
+      || casos.find((c) => c.pantalla && c.pantalla.split('?')[0] === pagina) || casos.find((c) => c.clave === 'personal'))
       : persona ? (elegido && elegido.persona && !elegido.migrada && elegido.persona.id === persona.id ? elegido : casos.find((c) => c.persona && !c.migrada && c.persona.id === persona.id))
         : migrada ? casos.find((c) => c.migrada && c.persona && c.persona.id === migrada) || null : null;
-    const quien = ['aplicar.html', 'asistencia.html'].includes(pagina) ? `Laura Ejemplo Instructora · personal, instructor (${pagina === 'aplicar.html' ? 'aplica el examen' : 'captura la asistencia'})`
+    // Perfil «capacitación»: su inicio y la ficha de un grupo con ?perfil=capacitacion (ajustes del equipo, 25/10/2026)
+    const capacitacion = pagina === 'capacitacion.html' || (pagina === 'grupo.html' && new URLSearchParams(location.search).get('perfil') === 'capacitacion');
+    const quien = capacitacion ? `${typeof APD_PERSONAL !== 'undefined' ? APD_PERSONAL.CAPACITACION.nombre : 'Patricia Ejemplo Capacitadora'} · personal, Instructores y Capacitación (asigna a la persona instructora y confirma el grupo)`
+      : ['aplicar.html', 'asistencia.html'].includes(pagina) ? `Laura Ejemplo Instructora · personal, instructor (${pagina === 'aplicar.html' ? 'aplica el examen' : 'captura la asistencia'})`
       : pagina === 'examen.html' ? 'persona en el salón de cómputo (entra con su código, sin cuenta)'
       : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'programar.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : pagina === 'material-personal.html' ? 'material de estudio' : 'revisión documental'}`
       : persona ? `${APD.nombreCompleto(persona)} · persona solicitante${persona.de_prueba ? ' (cuenta creada en la prueba)' : ''}` : 'nadie (sin sesión)';

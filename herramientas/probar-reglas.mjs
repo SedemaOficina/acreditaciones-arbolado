@@ -445,6 +445,7 @@ const casos = [
 
   // ── Grupos y cupos ──
   ['Un grupo no se confirma por debajo del mínimo (4 de 5)', { codigo: 'cupo_minimo' }, null, `
+     ${PERFIL('capacitacion')}
      UPDATE apd.grupo SET instructor = 'i', sede = 's', fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Un grupo nuevo copia los cupos vigentes del curso, y nunca pasa del máximo', { codigo: 'cupo_maximo' }, null, `
@@ -488,11 +489,13 @@ const casos = [
      DO $$ BEGIN ASSERT (SELECT count(DISTINCT coalesce(s.organizacion_id::text, 'independiente')) FROM apd.inscripcion i
                           JOIN apd.solicitud s ON s.id = i.solicitud_id WHERE i.grupo_id = ${GRUPO_INTEGRACION} AND i.activa) >= 3; END $$;`],
   ['Un grupo no se confirma con menos de 7 días de anticipación', { codigo: 'anticipacion' }, '2026-10-20 10:00', `
+     ${PERFIL('capacitacion')}
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
      UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-10-26', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Con 5 personas y 7 días de anticipación el grupo se confirma, y recibe personas hasta el día anterior', 'ok', '2026-10-20 10:00', `
+     ${PERFIL('capacitacion')}
      CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
@@ -502,6 +505,7 @@ const casos = [
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
   ['El día que empieza el curso ya no se agregan personas al grupo confirmado', { codigo: 'grupo_por_iniciar' }, '2026-10-20 10:00', `
+     ${PERFIL('capacitacion')}
      CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
@@ -511,11 +515,13 @@ const casos = [
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
   ['Un grupo no se confirma sin hora de entrada (P91)', { codigo: 'datos_para_confirmar' }, '2026-10-20 10:00', `
+     ${PERFIL('capacitacion')}
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
      UPDATE apd.grupo SET instructor = 'i', fecha_inicio = '2026-11-02' WHERE id = ${GRUPO_INTEGRACION};
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
   ['Una baja que deja al grupo confirmado por debajo del mínimo lo regresa a integración, con su fecha', 'ok', '2026-10-20 10:00', `
+     ${PERFIL('capacitacion')}
      CREATE TEMP TABLE g AS SELECT ${GRUPO_INTEGRACION} AS id;
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
      SELECT solicitud_id, (SELECT id FROM g) FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
@@ -592,7 +598,8 @@ const casos = [
      END $$;`],
   ['Una calificación registrada no se modifica (resultado inapelable)', { sqlstate: '42501' }, null, `
      UPDATE apd.examen SET calificacion = 10;`],
-  ['El instructor puede cambiar durante el curso y queda en la bitácora (R26)', 'ok', null, `
+  ['El instructor puede cambiar durante el curso (lo cambia Capacitación) y queda en la bitácora (R26)', 'ok', null, `
+     ${PERFIL('capacitacion')}
      UPDATE apd.grupo SET instructor = 'instructor.suplente' WHERE id = ${GRUPO_EN_CURSO};
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_instructor' AND detalle LIKE '%instructor.suplente'); END $$;`],
   ['La sede no cambia con el curso iniciado', { codigo: 'grupo_cerrado' }, null, `
@@ -1198,8 +1205,10 @@ const casos = [
   ['Un grupo nuevo nace en integración', { codigo: 'alta_fuera_de_integracion' }, null, `
      INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, estado) VALUES ('poda', 'nueva', 'combinado', 'confirmado');`],
   ['Un grupo confirmado siempre tiene instructor', { codigo: 'sin_instructor' }, null, `
+     ${PERFIL('capacitacion')}
      UPDATE apd.grupo SET instructor = NULL WHERE id = ${GRUPO_EN_CURSO};`],
   ['El curso no empieza antes de su primer día', { codigo: 'antes_de_inicio' }, '2026-10-14 10:00', `
+     ${PERFIL('capacitacion')}
      INSERT INTO apd.inscripcion (solicitud_id, grupo_id) SELECT id, ${G5} FROM apd.solicitud
       WHERE folio IN ('APD-S-2026-00037', 'APD-S-2026-00038', 'APD-S-2026-00031', 'APD-S-2026-00036');
      UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${G5};
@@ -1538,7 +1547,120 @@ const casos = [
      UPDATE apd.cuota SET monto = 90, fundamento = NULL WHERE clave = 'reposicion_credencial';`],
   ['Cuota de reposición: monto ficticio de $88.00 con su publicación, su fecha y la marca de confirmarlo con Finanzas (P140)', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT monto = 88.00 AND vigente_desde = '2026-07-01' AND fundamento LIKE '%No. 1548 del 14/02/2025%[pendiente P140%Finanzas]%' FROM apd.cuota WHERE clave = 'reposicion_credencial');
-     ASSERT (SELECT array_agg(estado ORDER BY estado) FROM apd.reposicion) = ARRAY['acta_aceptada', 'con_observaciones', 'repuesta', 'solicitada']; END $$;`]
+     ASSERT (SELECT array_agg(estado ORDER BY estado) FROM apd.reposicion) = ARRAY['acta_aceptada', 'con_observaciones', 'repuesta', 'solicitada']; END $$;`],
+
+  // ── Ajustes del equipo, 25/10/2026 ──
+  // 1 · Grupo propio de una organización sólo para instituciones de gobierno; las demás van a grupos combinados
+  ['Grupo propio: una empresa no tiene grupo propio, va a un grupo combinado (ajustes del equipo, 25/10/2026)', { codigo: 'grupo_propio_sin_gobierno' }, null, `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, organizacion_id)
+     VALUES ('poda', 'nueva', 'especifico', (SELECT id FROM apd.organizacion WHERE tipo = 'privada' AND nombre LIKE 'Jardines%'));`],
+  ['Grupo propio: una institución educativa tampoco (ajustes del equipo, 25/10/2026)', { codigo: 'grupo_propio_sin_gobierno' }, null, `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, organizacion_id)
+     VALUES ('poda', 'nueva', 'especifico', (SELECT id FROM apd.organizacion WHERE clave = 'unam'));`],
+  ['Grupo propio: una dependencia federal, una de la Ciudad y una Alcaldía sí lo tienen (ajustes del equipo, 25/10/2026)', 'ok', null, `
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, organizacion_id)
+     SELECT 'dictaminador', 'nueva', 'especifico', id FROM apd.organizacion WHERE clave IN ('cfe', 'sedema_dgcorenadr', 'coyoacan');
+     DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.grupo WHERE tipo_acreditacion = 'dictaminador' AND integracion = 'especifico') = 3; END $$;`],
+  ['Grupo propio: una empresa sigue entrando a un grupo combinado (ajustes del equipo, 25/10/2026)', 'ok', '2026-10-20 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda
+      WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' AND organizacion_tipo = 'privada' ORDER BY folio LIMIT 1;
+     DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.inscripcion i JOIN apd.solicitud s ON s.id = i.solicitud_id
+                          JOIN apd.organizacion o ON o.id = s.organizacion_id WHERE i.grupo_id = ${GRUPO_INTEGRACION} AND i.activa AND o.tipo = 'privada') >= 1; END $$;`],
+  // 2 · Perfil «capacitación»: asigna o cambia la persona instructora y confirma el grupo; cotejo ya no
+  ['Capacitación: los perfiles que asignan instructor y confirman son capacitación y administración (parámetro editable)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'perfiles_asignan_instructor') = 'capacitacion,administracion'; END $$;`],
+  ['Capacitación: quien arma los grupos (cotejo) crea el grupo sin persona instructora; con ella se rechaza', { codigo: 'instructor_sin_permiso' }, null, `
+     ${PERFIL('revision_cotejo')}
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, instructor) VALUES ('poda', 'nueva', 'combinado', 'instructor.ficticio');`],
+  ['Capacitación: cotejo no asigna la persona instructora a un grupo', { codigo: 'instructor_sin_permiso' }, null, `
+     ${PERFIL('revision_cotejo')}
+     UPDATE apd.grupo SET instructor = 'instructor.ficticio' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Capacitación: un instructor tampoco se asigna un grupo', { codigo: 'instructor_sin_permiso' }, null, `
+     ${PERFIL('instructor')}
+     UPDATE apd.grupo SET instructor = 'instructor.ficticio' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Capacitación: cotejo elige la semana, pero no confirma el grupo', { codigo: 'confirmacion_sin_permiso' }, '2026-10-20 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
+     ${PERFIL('revision_cotejo')}
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
+     ${PERFIL('capacitacion')}
+     UPDATE apd.grupo SET instructor = 'instructor.ficticio' WHERE id = ${GRUPO_INTEGRACION};
+     ${PERFIL('revision_cotejo')}
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Capacitación: asigna la persona instructora y confirma el grupo; las dos cosas quedan en la bitácora a su nombre', 'ok', '2026-10-20 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
+     ${PERFIL('capacitacion')} ${B0}
+     UPDATE apd.grupo SET instructor = 'instructor2.ficticio' WHERE id = ${GRUPO_INTEGRACION};
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};
+     ${MAS(2)}
+     DO $$ BEGIN
+       ASSERT (SELECT estado = 'confirmado' AND instructor = 'instructor2.ficticio' FROM apd.grupo WHERE id = ${GRUPO_INTEGRACION});
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_instructor' AND usuario = 'prueba.automatica' AND detalle = 'sin instructor → instructor2.ficticio');
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'estado' AND entidad = 'grupo' AND usuario = 'prueba.automatica' AND detalle LIKE 'en_integracion → confirmado%');
+     END $$;`],
+  ['Capacitación: la Dirección (administración), que ya podía hacerlo todo, también asigna y confirma', 'ok', '2026-10-20 10:00', `
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id)
+     SELECT solicitud_id, ${GRUPO_INTEGRACION} FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;
+     ${PERFIL('administracion')}
+     UPDATE apd.grupo SET instructor = 'instructor.ficticio', fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Capacitación: cotejo no cambia la persona instructora durante el curso', { codigo: 'instructor_sin_permiso' }, null, `
+     ${PERFIL('revision_cotejo')}
+     UPDATE apd.grupo SET instructor = 'instructor.suplente' WHERE id = ${GRUPO_EN_CURSO};`],
+  ['Capacitación: en los ficticios, la persona instructora de cada grupo la asignó Capacitación', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_instructor' AND usuario <> 'capacitacion.ficticia');
+     ASSERT (SELECT count(*) FROM apd.bitacora WHERE accion = 'cambio_instructor') >= 4; END $$;`, 'postgres'],
+  // 3 · Máximo dos oportunidades para corregir (parámetro oportunidades_correccion)
+  ['Oportunidades: el parámetro oportunidades_correccion es 2, se edita y su cambio queda en la bitácora', 'ok', null, `
+     DO $$ BEGIN ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'oportunidades_correccion') = '2'; END $$;
+     ${B0}
+     UPDATE apd.parametro SET valor = '3' WHERE clave = 'oportunidades_correccion';
+     ${MAS(1, 'cambio_parametro')}`],
+  ['Oportunidades: cada revisión en línea con observaciones cuenta una (ficticios: 1, 2 y 2 antes de la tercera revisión)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT apd.correcciones_usadas(id) FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'poda' ORDER BY folio LIMIT 1) = 1;
+     ASSERT EXISTS (SELECT 1 FROM apd.solicitud WHERE estado = 'con_observaciones' AND apd.correcciones_usadas(id) = 2);
+     ASSERT EXISTS (SELECT 1 FROM apd.solicitud WHERE estado = 'enviada' AND apd.correcciones_usadas(id) = 2); END $$;`],
+  ['Oportunidades: con observaciones en la revisión de la segunda corrección, la solicitud se cierra con su motivo y queda en la bitácora', 'ok', '2026-10-14 12:00', `
+     CREATE TEMP TABLE s AS SELECT id FROM apd.solicitud WHERE estado = 'enviada' AND apd.correcciones_usadas(id) = 2 ORDER BY folio LIMIT 1;
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Sigue sin corregirse.', revisado_por = 'prueba.automatica'
+      WHERE solicitud_id = (SELECT id FROM s) AND vigente AND estado = 'pendiente';
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES ((SELECT id FROM s), 'con_observaciones', '', 'prueba.automatica');
+     DO $$ BEGIN
+       ASSERT (SELECT estado = 'concluida_sin_atender' AND motivo_cierre = 'Se agotaron las oportunidades de corrección' FROM apd.solicitud WHERE id = (SELECT id FROM s));
+       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE entidad_id = (SELECT id FROM s)::text AND accion = 'estado' AND detalle LIKE 'enviada → concluida_sin_atender%');
+     END $$;`],
+  ['Oportunidades: en esa misma revisión, si todo está bien, se valida', 'ok', '2026-10-14 12:00', `
+     CREATE TEMP TABLE s AS SELECT id FROM apd.solicitud WHERE estado = 'enviada' AND apd.correcciones_usadas(id) = 2 ORDER BY folio LIMIT 1;
+     ${LISTA_PARA_VALIDAR('(SELECT id FROM s)')}
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES ((SELECT id FROM s), 'validada', 'prueba.automatica');
+     DO $$ BEGIN ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM s)) = 'validada_en_linea'; END $$;`],
+  ['Oportunidades: con 3 oportunidades (parámetro), la misma revisión regresa la solicitud con observaciones', 'ok', '2026-10-14 12:00', `
+     UPDATE apd.parametro SET valor = '3' WHERE clave = 'oportunidades_correccion';
+     CREATE TEMP TABLE s AS SELECT id FROM apd.solicitud WHERE estado = 'enviada' AND apd.correcciones_usadas(id) = 2 ORDER BY folio LIMIT 1;
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Sigue sin corregirse.', revisado_por = 'prueba.automatica'
+      WHERE solicitud_id = (SELECT id FROM s) AND vigente AND estado = 'pendiente';
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES ((SELECT id FROM s), 'con_observaciones', '', 'prueba.automatica');
+     DO $$ BEGIN ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM s)) = 'con_observaciones'; END $$;`],
+  ['Oportunidades: la base no deja cerrar a mano una solicitud enviada como concluida sin atender', { codigo: 'transicion_invalida' }, null, `
+     UPDATE apd.solicitud SET estado = 'concluida_sin_atender', motivo_cierre = 'Se agotaron las oportunidades de corrección' WHERE id = ${PODA_ENVIADA};`],
+  ['Oportunidades: el cotejo que regresa la solicitud con observaciones no cuenta como oportunidad', 'ok', DIA_CITA, `
+     CREATE TEMP TABLE s AS SELECT ${CITA_SOL} AS id, apd.correcciones_usadas(${CITA_SOL}) AS n;
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'La CURP original no coincide con la cargada.', revisado_por = 'prueba.automatica'
+      WHERE solicitud_id = (SELECT id FROM s) AND requisito = 'curp' AND vigente;
+     UPDATE apd.cita SET resultado = 'con_observaciones', observacion = 'CURP: no coincide.' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
+     DO $$ BEGIN
+       ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM s)) = 'con_observaciones';
+       ASSERT apd.correcciones_usadas((SELECT id FROM s)) = (SELECT n FROM s);
+     END $$;`],
+  ['Oportunidades: la persona de una solicitud cerrada así inicia otra de inmediato (ninguna regla de «una solicitud activa» lo impide)', 'ok', '2026-10-14 12:00', `
+     CREATE TEMP TABLE p AS SELECT solicitante_id AS id, (SELECT correo FROM apd.solicitante WHERE id = solicitante_id) AS correo
+       FROM apd.solicitud WHERE motivo_cierre = 'Se agotaron las oportunidades de corrección' AND estado = 'concluida_sin_atender' LIMIT 1;
+     SELECT set_config('apd.usuario', (SELECT correo FROM p), true), set_config('apd.usuario_tipo', 'solicitante', true);
+     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios) VALUES ((SELECT id FROM p), 'poda', 'nueva', 'secundaria');
+     DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.solicitud WHERE solicitante_id = (SELECT id FROM p) AND estado = 'borrador') = 1; END $$;`]
 ];
 
 let fallas = 0;

@@ -22,11 +22,12 @@ Prioridad:
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
 | S1 | Solicitud enviada | Acuse con folio, acreditación y fecha | Recomendable |
-| S2 | Solicitud con observaciones | Qué corregir en cada documento y hasta cuándo (plazo, P02) | Indispensable |
+| S2 | Solicitud con observaciones | Qué corregir en cada documento y hasta cuándo (plazo, P02), y cuántas oportunidades le quedan para corregir: «Te quedan 2 oportunidades para corregir» o «Esta es tu última oportunidad para corregir: si en la revisión siguen las observaciones, tu solicitud se cierra» (parámetro `oportunidades_correccion`, ajustes del equipo del 25/10/2026) | Indispensable |
 | S3 | Observaciones por vencer | Recordatorio antes de que venza el plazo para corregir | Recomendable |
 | S4 | Solicitud cerrada por no corregir a tiempo | Que su solicitud se cerró porque no corrigió las observaciones dentro del plazo, y que puede iniciar una nueva | Indispensable |
 | S5 | Documentos validados: cita de cotejo | Cita de cotejo (día, hora, lugar y cómo llegar), qué llevar y datos para pagar (concepto, monto, referencia) | Indispensable |
 | S6 | Solicitud rechazada | Motivo, tal como lo escribió quien revisó | Indispensable |
+| S7 | Solicitud cerrada: se agotaron las oportunidades de corrección (ajustes del equipo, 25/10/2026) | Que en la revisión de su última corrección siguieron las observaciones y su solicitud se cerró, con el motivo «Se agotaron las oportunidades de corrección» y lo que seguía observado; que no pagó nada y puede iniciar una solicitud nueva de inmediato, con el enlace para iniciarla | Indispensable |
 
 ## 3. Cita de cotejo
 

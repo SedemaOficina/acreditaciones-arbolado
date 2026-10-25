@@ -11,8 +11,9 @@
 --   SELECT set_config('apd.usuario', '<cuenta>', true), set_config('apd.usuario_tipo', 'personal', true),
 --          set_config('apd.procedencia', '<dirección>', true);
 -- y, cuando una regla pide motivo, set_config('apd.motivo', '<texto>', true). Para el personal declara además su perfil del
--- acceso del SIA (P27: revision_cotejo, instructor, emision, consulta o administracion) con
--- set_config('apd.perfil', '<perfil>', true): lo piden las reglas reservadas a ciertos perfiles (la cancelación, P120).
+-- acceso del SIA (P27: revision_cotejo, instructor, capacitacion, emision, consulta o administracion) con
+-- set_config('apd.perfil', '<perfil>', true): lo piden las reglas reservadas a ciertos perfiles (la cancelación, P120; asignar
+-- la persona instructora y confirmar un grupo, del perfil capacitacion: ajustes del equipo, 25/10/2026).
 
 -- ───────────────────────────── Utilidades ─────────────────────────────
 
@@ -1325,6 +1326,15 @@ BEGIN
       IF OLD.estado = 'enviada' AND ultima IS DISTINCT FROM 'con_observaciones' THEN
         PERFORM apd.error('sin_revision', 'Para enviar observaciones, registre la revisión de la solicitud');
       END IF;
+      -- Máximo de oportunidades para corregir (ajustes del equipo, 25/10/2026): si la revisión de la última corrección
+      -- vuelve a tener observaciones, la solicitud ya no regresa a la persona: se cierra como concluida sin atender, con
+      -- su motivo, y la persona puede iniciar otra de inmediato. Lo hace la base, no quien revisa: así no hay una tercera
+      -- vuelta aunque alguien escriba sin pasar por la aplicación. El cotejo con observaciones no cuenta (no es una
+      -- revisión: apd.correcciones_usadas).
+      IF OLD.estado = 'enviada' AND apd.oportunidades_agotadas(NEW.id) THEN
+        NEW.estado := 'concluida_sin_atender';
+        NEW.motivo_cierre := 'Se agotaron las oportunidades de corrección';
+      END IF;
       IF OLD.estado = 'validada_en_linea' AND apd.contexto('motivo') = '' THEN
         PERFORM apd.error('cotejo_sin_motivo', 'Indique qué no coincidió en el cotejo');
       END IF;
@@ -1681,7 +1691,22 @@ END $$;
 CREATE TRIGGER revision_alta BEFORE INSERT ON apd.revision
   FOR EACH ROW EXECUTE FUNCTION apd.revision_alta();
 
--- La revisión mueve la solicitud: así no queda una revisión sin efecto ni un estado sin revisión.
+-- Máximo de oportunidades para corregir (ajustes del equipo, 25/10/2026): cada revisión en línea con observaciones da una
+-- oportunidad para corregir. Si la revisión de la última corrección vuelve a tener observaciones, la solicitud se cierra
+-- como concluida sin atender, con su motivo; la persona puede iniciar otra de inmediato (no ha pagado). Que el cotejo regrese
+-- la solicitud con observaciones (un documento que no coincide) no cuenta: queda en apd.cita, no en apd.revision.
+CREATE FUNCTION apd.correcciones_usadas(p_solicitud uuid) RETURNS integer LANGUAGE sql STABLE AS $$
+  SELECT count(*)::integer FROM apd.revision r WHERE r.solicitud_id = p_solicitud AND r.resultado = 'con_observaciones'
+$$;
+COMMENT ON FUNCTION apd.correcciones_usadas(uuid) IS 'Revisiones en línea con observaciones de una solicitud: las oportunidades para corregir que ya recibió (parámetro oportunidades_correccion). El cotejo con observaciones no cuenta.';
+CREATE FUNCTION apd.oportunidades_agotadas(p_solicitud uuid) RETURNS boolean LANGUAGE sql STABLE AS $$
+  SELECT apd.correcciones_usadas(p_solicitud) > apd.parametro_texto('oportunidades_correccion')::integer
+$$;
+COMMENT ON FUNCTION apd.oportunidades_agotadas(uuid) IS 'Las observaciones de la revisión en línea pasan de oportunidades_correccion: la solicitud se cierra en lugar de regresar a la persona.';
+
+-- La revisión mueve la solicitud: así no queda una revisión sin efecto ni un estado sin revisión. Con observaciones después
+-- de la última oportunidad para corregir, apd.solicitud_cambio la cierra en lugar de regresarla (25/10/2026); esta revisión
+-- ya cuenta (disparador AFTER INSERT).
 CREATE FUNCTION apd.revision_aplicar() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   UPDATE apd.solicitud
@@ -1893,6 +1918,15 @@ BEGIN
   END IF;
 END $$;
 
+-- La persona instructora la asigna o la cambia, y el grupo lo confirma, el área de Instructores y Capacitación (perfil
+-- «capacitación») o la Dirección (administración), que ya podía hacerlo todo: los perfiles del parámetro
+-- perfiles_asignan_instructor. Quien arma los grupos (revisión y cotejo) ya no lo hace (ajustes del equipo, 25/10/2026).
+CREATE FUNCTION apd.asigna_instructor() RETURNS boolean LANGUAGE sql STABLE AS $$
+  SELECT apd.contexto('usuario_tipo') = 'personal'
+     AND apd.contexto('perfil') = ANY (string_to_array(replace(apd.parametro_texto('perfiles_asignan_instructor'), ' ', ''), ','))
+$$;
+COMMENT ON FUNCTION apd.asigna_instructor() IS 'Quien escribe es del personal con un perfil de perfiles_asignan_instructor (capacitación o administración): asigna o cambia la persona instructora y confirma grupos.';
+
 -- SECURITY DEFINER (con search_path fijo): el folio sale de apd.siguiente_folio (decisión 6, 2026-10-19)
 CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
 DECLARE
@@ -1902,6 +1936,17 @@ BEGIN
   SELECT * INTO c FROM apd.curso WHERE tipo_acreditacion = NEW.tipo_acreditacion AND modalidad = NEW.modalidad;
   IF NOT c.activo THEN
     PERFORM apd.error('curso_inactivo', 'Este curso no está abriendo grupos');
+  END IF;
+  -- El grupo propio de una organización, sólo para instituciones de gobierno: dependencias de la Ciudad, Alcaldías y
+  -- dependencias federales (apd.es_gobierno). Las demás personas van a grupos combinados; no se pide oficio: el personal
+  -- arma el grupo (ajustes del equipo, 25/10/2026)
+  IF NEW.integracion = 'especifico'
+     AND NOT apd.es_gobierno((SELECT o.tipo FROM apd.organizacion o WHERE o.id = NEW.organizacion_id)) THEN
+    PERFORM apd.error('grupo_propio_sin_gobierno', 'Sólo las instituciones de gobierno (dependencias de la Ciudad, Alcaldías y dependencias federales) tienen grupo propio: empresas, consultorías, particulares, instituciones educativas e independientes van a grupos combinados');
+  END IF;
+  -- Quien arma el grupo lo crea sin persona instructora: la asigna el área de Instructores y Capacitación
+  IF NEW.instructor IS NOT NULL AND NOT apd.asigna_instructor() THEN
+    PERFORM apd.error('instructor_sin_permiso', 'La persona instructora la asigna el área de Instructores y Capacitación: cree el grupo sin ella');
   END IF;
   IF NEW.estado <> 'en_integracion' THEN
     PERFORM apd.error('alta_fuera_de_integracion', 'Un grupo nuevo se crea sin confirmar («En integración»)');
@@ -1940,6 +1985,11 @@ BEGIN
   -- El instructor puede variar, también durante el curso (corrección R26); cada día queda quién capturó
   -- la asistencia. Sólo no cambia con el grupo concluido o cancelado.
   IF NEW.instructor IS DISTINCT FROM OLD.instructor THEN
+    -- Lo asigna o lo cambia sólo el área de Instructores y Capacitación (o la Dirección), también durante el curso
+    -- (ajustes del equipo, 25/10/2026)
+    IF NOT apd.asigna_instructor() THEN
+      PERFORM apd.error('instructor_sin_permiso', 'La persona instructora la asigna o la cambia el área de Instructores y Capacitación');
+    END IF;
     IF OLD.estado IN ('concluido', 'cancelado') THEN
       PERFORM apd.error('grupo_cerrado', 'El instructor no cambia en un grupo concluido o cancelado');
     END IF;
@@ -1977,6 +2027,12 @@ BEGIN
   END;
   IF NOT NEW.estado = ANY (permitidas) THEN
     PERFORM apd.error('transicion_invalida', format('Este cambio no está permitido: un grupo «%s» no puede pasar a «%s»', apd.nombre_estado(OLD.estado), apd.nombre_estado(NEW.estado)));
+  END IF;
+
+  -- Confirmar el grupo es del área de Instructores y Capacitación (o de la Dirección): cotejo ya no confirma (ajustes del
+  -- equipo, 25/10/2026). Que una baja lo regrese a integración lo hace la base, con quien da la baja.
+  IF NEW.estado = 'confirmado' AND OLD.estado = 'en_integracion' AND NOT apd.asigna_instructor() THEN
+    PERFORM apd.error('confirmacion_sin_permiso', 'El grupo lo confirma el área de Instructores y Capacitación');
   END IF;
 
   SELECT count(*) INTO inscritos FROM apd.inscripcion WHERE grupo_id = NEW.id AND activa;
@@ -2333,7 +2389,7 @@ COMMENT ON VIEW apd.material_publico IS 'Material de estudio publicado y vigente
 CREATE FUNCTION apd.es_gobierno(p_tipo text) RETURNS boolean LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
   SELECT coalesce(p_tipo IN ('dependencia_cdmx', 'alcaldia', 'dependencia_federal'), false)
 $$;
-COMMENT ON FUNCTION apd.es_gobierno(text) IS 'Gobierno local (dependencia_cdmx, alcaldia) o federal (dependencia_federal): las únicas adscripciones que se agrupan en bloque en la espera.';
+COMMENT ON FUNCTION apd.es_gobierno(text) IS 'Gobierno local (dependencia_cdmx, alcaldia) o federal (dependencia_federal): las únicas adscripciones que se agrupan en bloque en la espera y que tienen grupo propio (ajustes del equipo, 25/10/2026).';
 
 CREATE VIEW apd.bandeja_demanda AS
   SELECT s.id AS solicitud_id,

@@ -11,7 +11,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | Desde | Hacia |
 |---|---|
 | `borrador` | `enviada`, `cancelada` |
-| `enviada` | `con_observaciones`, `validada_en_linea`, `rechazada`, `cancelada` |
+| `enviada` | `con_observaciones`, `validada_en_linea`, `rechazada`, `cancelada` (y `concluida_sin_atender` sólo cuando la base convierte unas observaciones que agotaron las oportunidades de corrección: no se escribe a mano) |
 | `con_observaciones` | `enviada`, `cancelada`, `concluida_sin_atender` |
 | `validada_en_linea` | `lista_para_curso`, `con_observaciones` (el cotejo no coincide), `cancelada`, `concluida_sin_atender` |
 | `lista_para_curso` | `inscrita`, `cancelada` |
@@ -22,7 +22,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 |---|---|---|
 | Alta | Persona solicitante | Elegibilidad (abajo). Una sola solicitud activa por persona y tipo de acreditación (`solicitud_activa`, con el folio de la que está en curso; el índice `solicitud_una_activa` queda como última defensa si dos altas llegan a la vez; auditoría «intentar romperlo», bloque 2) |
 | → enviada | Persona solicitante | Documentos obligatorios en línea; estudios en los dos tipos (nivel; con licenciatura o posgrado, la carrera; con licenciatura, además, su situación —con posgrado se asume titulada—: `faltan_estudios`); en dictaminador nueva, la experiencia mínima de su perfil (`experiencia_insuficiente`; un perfil que no cumple sí se envía y lo revisa el personal; la renovación no vuelve a pedir la experiencia); en la primera renovación de quien viene de Kobo sin archivos en el sistema, todos los documentos, como una nueva (`faltan_documentos_kobo`); fotografía de frente de la persona; adscripción de la persona, que se copia a la solicitud. La elegibilidad no se vuelve a comprobar |
-| → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada; en dictaminador, la carrera clasificada (`carrera_sin_clasificar`) y un perfil que cumple (`perfil_no_cumple`). Las observaciones necesitan un texto general o un documento observado. Una sola revisión por vuelta: si otra persona del personal ya la registró, la segunda se rechaza (`revision_ya_registrada`; ver «Dos personas a la vez») |
+| → con_observaciones / validada_en_linea | Revisión (con una revisión registrada) | Para validar: todos los documentos aceptados y la cita asignada; en dictaminador, la carrera clasificada (`carrera_sin_clasificar`) y un perfil que cumple (`perfil_no_cumple`). Las observaciones necesitan un texto general o un documento observado. Una sola revisión por vuelta: si otra persona del personal ya la registró, la segunda se rechaza (`revision_ya_registrada`; ver «Dos personas a la vez»). **Máximo de oportunidades para corregir** (ajustes del equipo, 25/10/2026): cada revisión en línea con observaciones es una oportunidad (`apd.correcciones_usadas`); cuando una revisión con observaciones pasa de `oportunidades_correccion` (2), es decir, en la revisión de la segunda corrección siguen las observaciones, la base no regresa la solicitud: la cierra como `concluida_sin_atender`, con `motivo_cierre` «Se agotaron las oportunidades de corrección» (`apd.oportunidades_agotadas`, en `apd.solicitud_cambio`), y queda en la bitácora. La persona puede iniciar otra de inmediato (no ha pagado; ninguna regla de «una solicitud activa» lo impide: la cerrada ya terminó). Que el cotejo regrese la solicitud con observaciones no cuenta (no es una revisión; P206) |
 | → rechazada | Revisión (revisión con resultado `rechazada`) | Sólo dictaminador cuyo perfil no cumple (`rechazo_sin_causa`): carrera clasificada como no afín, o estudios que el comprobante confirma por debajo del lineamiento. Motivo obligatorio (`rechazo_sin_motivo`), que se copia a `motivo_cierre`. Es final: la persona puede iniciar otra solicitud |
 | Clasificar una carrera | Personal (`apd.carrera.grupo`) | Sólo el personal (`clasificacion_sin_permiso`); queda en la bitácora y las solicitudes abiertas con esa carrera recalculan perfil y experiencia mínima |
 | → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la cuenta confirmada por el personal (en la cita no se toma otra, decisión 2026-10-17). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha. Además, todos los documentos en línea coincidieron (`documentos_sin_cotejar`) y la cita quedó atendida (`cotejo_sin_cita`). El folio fiscal no se repite en dos solicitudes (`folio_fiscal_repetido`) |
@@ -31,7 +31,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
 | → acreditada | Al emitir la acreditación | Solicitud aprobada; se emite con la fecha del día |
-| → cancelada / concluida_sin_atender | Persona o personal | Motivo. Si estaba en un grupo, sale de él. Al cancelar, su cita de cotejo abierta (por atender o en pausa) queda `cancelada`, con el motivo (decisión 8, 2026-10-19) |
+| → cancelada / concluida_sin_atender | Persona o personal (y la base: dos inasistencias al cotejo o las oportunidades de corrección agotadas) | Motivo. Si estaba en un grupo, sale de él. Al cancelar, su cita de cotejo abierta (por atender o en pausa) queda `cancelada`, con el motivo (decisión 8, 2026-10-19) |
 
 **Elegibilidad** (al iniciar la solicitud, y otra vez sólo si en borrador cambia el curso o la acreditación a renovar):
 - Las dos acreditaciones: `edad_minima` (18) años cumplidos ese día, con la fecha de nacimiento de la CURP
@@ -100,18 +100,19 @@ Sede única (decisión 2026-10-16): un grupo nuevo toma la sede del parámetro `
 
 | Paso | La base exige |
 |---|---|
-| Alta | Curso activo. Copia los cupos vigentes del curso (hoy 5 a 25) |
+| Alta | Curso activo. Copia los cupos vigentes del curso (hoy 5 a 25). El grupo propio de una organización (`especifico`), sólo de una institución de gobierno: dependencias de la Ciudad, Alcaldías y dependencias federales (`apd.es_gobierno`; `grupo_propio_sin_gobierno`); las demás personas van a grupos combinados y no se pide oficio (ajustes del equipo, 25/10/2026). Se crea sin persona instructora: con ella, sólo los perfiles que la asignan (`instructor_sin_permiso`) |
 | Primer día | A lo más 12 meses después de hoy, ese día incluido (`apd.hoy() + interval '12 months'`, el mismo cálculo que la pantalla; `inicio_muy_lejano`, decisión 3, 2026-10-19), al crear el grupo y en cada cambio de fecha. Ningún día del curso en sábado ni domingo: el de 5 días va de lunes a viernes (`curso_en_fin_de_semana`; P150 y P151). Como máximo `grupos_simultaneos_maximo` (2) grupos al mismo tiempo, de cualquier curso, contando los activos con fecha (por confirmar, confirmados y en curso; `grupos_simultaneos`, P149), con un candado de la transacción para que dos que programan a la vez no dejen tres. Hora de entrada entre `curso_hora_entrada` (09:00) y antes de `curso_hora_salida` (15:00) (`hora_fuera_de_horario`, P91). Lo revisa `apd.comprobar_fechas_grupo` (sesión de trabajo del 23/10/2026) |
 | Inscribir | Grupo en integración o confirmado; solicitud en espera, del mismo curso y, si el grupo es específico, de la misma organización; cupo máximo (el grupo se bloquea mientras se cuenta) |
 | Baja | Motivo (`baja_sin_motivo`); no a quien ya presentó examen (`baja_con_examen`). El grupo se bloquea mientras se da: si un grupo confirmado queda por debajo del mínimo, regresa a integración |
-| → confirmado | Cupo mínimo, instructor, sede y fecha de inicio. **Sin excepción** |
+| Persona instructora | La asigna o la cambia, hasta concluir el grupo (también durante el curso), sólo el personal con un perfil del parámetro `perfiles_asignan_instructor`: `capacitacion` (área de Instructores y Capacitación) y `administracion` (la Dirección, que ya podía hacerlo todo) (`instructor_sin_permiso`; ajustes del equipo, 25/10/2026). Cada cambio queda en la bitácora (`cambio_instructor`, con la anterior y la nueva). Quien arma los grupos (revisión y cotejo) ya no la elige |
+| → confirmado | Cupo mínimo, instructor, sede y fecha de inicio. **Sin excepción**. Lo confirman sólo los perfiles de `perfiles_asignan_instructor` (`confirmacion_sin_permiso`; ajustes del equipo, 25/10/2026) |
 | → en_curso | Cupo mínimo y que haya llegado la fecha de inicio |
 | → concluido | Nadie con asistencia suficiente sin calificación. Quien no alcanzó la asistencia queda sin derecho a examen |
 | → cancelado | Motivo. Las personas regresan a la bandeja con su antigüedad original |
 
 Cursos: 5 días los nuevos (de lunes a viernes; el quinto, de repaso de conocimientos y examen final) y 1 día las
-renovaciones, de 9:00 a 15:00. El instructor puede cambiar hasta concluir el grupo, con
-constancia en la bitácora; sede y fecha no cambian una vez iniciado. Cada cambio de primer día, hora de entrada o sede
+renovaciones, de 9:00 a 15:00. El instructor puede cambiar hasta concluir el grupo (lo cambia el área de Instructores y
+Capacitación, 25/10/2026), con constancia en la bitácora; sede y fecha no cambian una vez iniciado. Cada cambio de primer día, hora de entrada o sede
 queda en la bitácora con lo que había.
 
 Asistencia: por día, nunca de un día que no ha ocurrido; la del último día se registra al pasar lista en el examen
@@ -130,7 +131,8 @@ calificación mínima 7.0 en poda y 8.0 en dictaminador. Una calificación regis
   completa el cupo mínimo).
 - En la espera sólo se agrupan en bloque las instituciones de gobierno local y federal (`apd.es_gobierno(tipo)`:
   `dependencia_cdmx`, `alcaldia` y `dependencia_federal` del catálogo `apd.organizacion`); `apd.bandeja_demanda` trae
-  `es_gobierno` y `bloque` (su organización, o vacío). Las demás adscripciones van una por una en el orden general.
+  `es_gobierno` y `bloque` (su organización, o vacío). Las demás adscripciones van una por una en el orden general. Desde
+  los ajustes del equipo (25/10/2026) sólo ellas tienen grupo propio (`grupo_propio_sin_gobierno`, en «Grupos»).
 - En poda no se pregunta ni se guarda la situación de la licenciatura (`estatus_estudios`); en dictaminador sí, porque
   define el perfil.
 
@@ -227,6 +229,13 @@ transacción que decide sobre una solicitud con `SELECT 1 FROM apd.solicitud WHE
 una vez ante `40P01`.
 
 ## Permisos
+
+Los perfiles del personal (acceso del SIA, P27) los declara el backend en `apd.perfil`: `revision_cotejo`, `instructor`,
+`capacitacion` (área de Instructores y Capacitación, ajustes del equipo del 25/10/2026), `emision`, `consulta` y
+`administracion`. Las reglas reservadas a ciertos perfiles los leen de parámetros editables: cancelar una acreditación
+(`perfiles_cancelan_acreditacion`: instructor y administración) y asignar o cambiar la persona instructora y confirmar un
+grupo (`perfiles_asignan_instructor`: capacitación y administración). Quien no está en la lista recibe
+`cancelacion_sin_permiso`, `instructor_sin_permiso` o `confirmacion_sin_permiso`.
 
 La cuenta del servicio (`apd_api`) tiene lo mínimo para operar (`05-apd-rol-y-permisos.sql`): no borra salvo sesiones y
 requisitos de un curso, no escribe la bitácora, no pide folios ni abre expedientes, no crea objetos y su `search_path` es

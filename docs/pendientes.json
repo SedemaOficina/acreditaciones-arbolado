@@ -182,8 +182,8 @@
       "grupo": "sia",
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
-      "titulo": "Cuentas del personal en acceso, recurso apd, con cinco perfiles",
-      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17), instructor, emisión, consulta y administración (parámetros, montos, cupos, desbloqueos y correcciones con motivo). Quién arma los grupos: P92. Mientras, las pantallas del personal entran con un perfil ficticio."
+      "titulo": "Cuentas del personal en acceso, recurso apd, con seis perfiles",
+      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17; arma los grupos, 23/10), instructor, capacitación (área de Instructores y Capacitación: asigna o cambia la persona instructora de cada grupo y lo confirma; ajustes del equipo, 25/10/2026), emisión, consulta y administración (parámetros, montos, cupos, desbloqueos y correcciones con motivo). Mientras, las pantallas del personal entran con un perfil ficticio. La base ya recibe el perfil en apd.perfil y lo usa en las reglas reservadas (cancelar una acreditación; asignar la persona instructora y confirmar un grupo)."
     },
     {
       "id": "P28",
@@ -405,14 +405,6 @@
       "titulo": "Tiempo adicional cuando la falla es del equipo o de la sede",
       "recomendacion": "Hoy el tiempo corre aunque la computadora falle o se vaya la luz, porque lo lleva el servidor. Propuesta: que quien aplica pueda dar hasta 10 minutos más a una persona, con motivo, y que quede en la bitácora. No está en el prototipo hasta que la Dirección lo decida.",
       "lineamientos": "Anteproyecto 0.5: Art. 39. Valor propuesto: 10 minutos."
-    },
-    {
-      "id": "P92",
-      "grupo": "direccion",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-17",
-      "titulo": "Quién arma y programa los grupos (preguntar al Vivero Nezahualcóyotl)",
-      "recomendacion": "Preguntar al Vivero Nezahualcóyotl quién programa hoy los grupos: quién decide la semana, el instructor y la hora, y quién avisa a las personas. Con eso se define qué perfil usa «Grupos» (desde el 24/10/2026, un paso a paso que sustituye a «Programar un curso»). Propuesta mientras tanto: el mismo perfil «revisión y cotejo» (P27) arma, programa, confirma y cancela grupos; el instructor sólo ve sus grupos («Mis grupos de hoy») y captura asistencia. Si los programa el Vivero, se agrega un perfil del Vivero con sólo esas pantallas. Nota de la sesión de trabajo del 23/10/2026: la persona responsable del cotejo programa las fechas y conforma los grupos; y la asignación de instructores la hará el área de instructores y capacitación. Liber lo deja pendiente (23/10/2026). Desde el paso a paso de «Grupos» (24/10/2026), el instructor puede quedar «Por asignar»: el grupo se crea, pero no se confirma sin instructor."
     },
     {
       "id": "P100",
@@ -937,15 +929,6 @@
       "lineamientos": ""
     },
     {
-      "id": "P202",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-24",
-      "titulo": "Grupo específico de una sola organización: ¿sólo para gobierno?",
-      "recomendacion": "El 23/10 se decidió que sólo las instituciones de gobierno local y federal acceden a grupos en bloque. Hoy «Grupos» permite crear un grupo específico de cualquier organización (empresa, escuela). Opciones: (a) limitar el grupo específico a dependencias de la Ciudad, alcaldías y dependencias federales; (b) dejarlo abierto y que «en bloque» sólo signifique la solicitud conjunta. Recomendación: (a), para que la regla se cumpla en la pantalla.",
-      "lineamientos": ""
-    },
-    {
       "id": "P203",
       "grupo": "liber",
       "bloquea": "etapa 2",
@@ -970,6 +953,15 @@
       "desde": "2026-10-24",
       "titulo": "Cita de cotejo: ¿hasta cuántos meses después se puede dar?",
       "recomendacion": "El sistema acepta una cita nueva hasta 6 meses después (propuesta al construir). Con el plazo aceptado en P02 (cita dentro de los 20 días hábiles siguientes a la validación), conviene alinear el límite. Opciones: (a) 20 días hábiles; (b) dejar 6 meses para casos excepcionales. Recomendación: (a), con el plazo como parámetro.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P206",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Oportunidades para corregir: ¿cuenta el cotejo que regresa con observaciones?",
+      "recomendacion": "Ajustes del equipo (25/10/2026): la persona tiene dos oportunidades para corregir las observaciones de la revisión en línea; si en la revisión de la segunda corrección siguen, la solicitud se cierra. Cuando el cotejo la regresa con observaciones (un documento original no coincide con el que cargó), el sistema no le cuenta una oportunidad: la persona ya pagó y el error se detectó hasta la cita. Así quedó construido: sólo cuentan las revisiones en línea (apd.correcciones_usadas); si después de corregir lo del cotejo la revisión vuelve a observar algo, eso sí cuenta. «Mis trámites» le dice que lo del cotejo no cuenta. Recomendación: confirmarlo así. La alternativa (que el cotejo también cuente) cerraría solicitudes ya pagadas y obligaría a definir qué pasa con ese pago.",
       "lineamientos": ""
     }
   ],
@@ -1626,6 +1618,18 @@
       "titulo": "Con la poda por vencer, «Mis trámites» mostraba dos botones principales (P164)",
       "como": "Un botón principal por pantalla (decisión del 21/10): en «Mis trámites» va primero la solicitud en curso, luego «Renovar» y luego «Iniciar una solicitud»",
       "fecha": "2026-10-21"
+    },
+    {
+      "id": "P92",
+      "titulo": "Quién arma y programa los grupos (preguntar al Vivero Nezahualcóyotl) (P92)",
+      "como": "Revisión con el equipo (25/10/2026): la persona responsable del cotejo arma y programa los grupos (sesión del 23/10) y el área de Instructores y Capacitación, con su perfil «Capacitación», asigna la persona instructora y confirma el grupo.",
+      "fecha": "2026-10-25"
+    },
+    {
+      "id": "P202",
+      "titulo": "Grupo específico de una sola organización: ¿sólo para gobierno? (P202)",
+      "como": "Revisión con el equipo (25/10/2026): el grupo propio de una organización (en bloque) sólo para instituciones de gobierno local y federal; sin oficio, lo arma el personal. Las demás personas van a grupos combinados.",
+      "fecha": "2026-10-25"
     }
   ],
   "aplicado_hasta": "2026-10-24T05:59:59.000Z"

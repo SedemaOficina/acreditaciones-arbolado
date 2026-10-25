@@ -13,17 +13,18 @@
         En teléfono, el calendario es una lista de semanas.
      3. Quiénes van: la espera del curso con las que más esperan ya marcadas hasta el cupo (P.lasQueMasEsperan: prioridad
         desde 15 días, renovación por vencimiento con vencidas primero, bloques sólo de gobierno local y federal); las
-        propuestas a la vista y el resto plegado (C3-01, decisión del 20/10).
+        propuestas a la vista y el resto plegado (C3-01, decisión del 20/10). El grupo propio de una organización, sólo de
+        una institución de gobierno (ajustes del equipo, 25/10/2026): para las demás, la opción no se ofrece y se dice por qué.
      4. Confirmar: el resumen (con el horario, fijo: la hora de entrada no se elige y el grupo la toma del parámetro
-        curso_hora_entrada; decisión de Liber del 24/10/2026) y el instructor («Por asignar» mientras P92); «Crear el grupo»
-        lo crea confirmado si tiene todo (mínimo de personas, semana a tiempo e instructor) y, si no, por confirmar, y lo dice
-        antes.
+        curso_hora_entrada; decisión de Liber del 24/10/2026) y quién sigue: «Crear el grupo» lo crea por confirmar, sin
+        persona instructora; la asigna, y confirma el grupo, el área de Instructores y Capacitación (ajustes del equipo,
+        25/10/2026), y lo dice antes con lo que le falta.
    Grupos programados: una tabla por curso (folio con enlace a su ficha, semana, personas, situación y lo que falta) con
-   «Completar con las N que más esperan», «Confirmar el grupo», «Elegir semana» o «Cambiar la semana» (abre el paso 2 con
-   ese grupo) y «Agregar personas» (paso 3); «Grupos que ya terminaron», plegado.
+   «Completar con las N que más esperan», «Elegir semana» o «Cambiar la semana» (abre el paso 2 con ese grupo) y «Agregar
+   personas» (paso 3); «Grupos que ya terminaron», plegado. Confirmar ya no es de aquí: lo hace Capacitación en la ficha.
    La dirección guarda ?curso=&mes=&semana=&paso= (y ?grupo= con un grupo que ya existe): «Atrás» regresa al paso
    anterior y recargar conserva el paso. Lo guardado son los eventos de siempre (APD_PERSONAL.guardaGrupoComprobado:
-   crear, agregar, proponer, confirmar); la base lo vuelve a aplicar todo (apd.grupo_alta, apd.inscripcion_alta,
+   crear, agregar, proponer); la base lo vuelve a aplicar todo (apd.grupo_alta, apd.inscripcion_alta,
    apd.grupo_cambio). En la etapa 3 los datos los da la API del personal. */
 (function () {
   'use strict';
@@ -503,18 +504,35 @@
       // Se anuncia sólo cuando quien arma el grupo marca o desmarca, no al pintar (auditoría 2026-10-20, RI-04)
       if (anuncia) FormKit.anuncia(texto);
     }
-    /* Tipo de grupo: «Sólo de …» dice de cuál, si todas las elegidas son de la misma organización registrada */
+    /* Tipo de grupo: «Sólo de …» dice de cuál, si todas las elegidas son de la misma organización registrada. El grupo
+       propio de una organización, sólo de una institución de gobierno: dependencias de la Ciudad, Alcaldías y dependencias
+       federales (la base: grupo_propio_sin_gobierno; ajustes del equipo, 25/10/2026). Empresas, consultorías, particulares,
+       instituciones educativas e independientes van siempre a grupos combinados: donde no aplica, la opción no se ofrece y
+       una línea dice por qué. No se pide oficio: el personal arma el grupo. */
     const orgDeElegidas = () => { const o = [...new Set(elegidas().map((x) => x.s.organizacion_id || null))]; return o.length === 1 && o[0] ? o[0] : null; };
+    const deGobierno = (org) => Boolean(org) && elegidas().some((x) => x.s.organizacion_id === org && x.gobierno);
     const integracion = () => (gExistente ? gExistente.integracion : (($('input[name="integracion"]:checked', form) || {}).value || 'combinado'));
     function pintaIntegracion() {
       if (gExistente || !clave) return;
       const org = orgDeElegidas();
       const nombre = org ? (elegidas()[0] || {}).organizacion : '';
-      $('[data-especifico-de]').textContent = org ? `Sólo de ${nombre}` : 'Sólo de una organización';
+      const gob = deGobierno(org);
+      const opcion = $('[data-opcion-especifico]');
+      const porque = $('[data-sin-grupo-propio]');
+      opcion.hidden = !gob;
+      porque.hidden = gob || !elegidas().length;
+      if (!gob) {
+        // Sin la opción, el grupo es combinado
+        const comb = $('input[name="integracion"][value="combinado"]', form);
+        if (!comb.checked) { comb.checked = true; APD.avisa(comb); }
+        porque.textContent = org
+          ? `${nombre} no es una institución de gobierno: su gente va a un grupo combinado. Sólo las dependencias de la Ciudad, las Alcaldías y las dependencias federales tienen grupo propio.`
+          : 'El grupo es combinado: las elegidas son de varias organizaciones o independientes. Sólo las dependencias de la Ciudad, las Alcaldías y las dependencias federales tienen grupo propio, con toda su gente.';
+        return;
+      }
+      $('[data-especifico-de]').textContent = `Sólo de ${nombre}`;
       const suyo = suGrupo();
-      $('[data-especifico-desc]').textContent = org
-        ? `Recibe únicamente a la gente de ${nombre}.${total() < c().cupo_minimo ? ` Para confirmarlo se necesitan ${c().cupo_minimo} de esa organización.` : ''}${suyo ? ` Ya tiene su grupo ${suyo.g.folio}, que recibe personas.` : ''}`
-        : 'Todas las elegidas tienen que ser de la misma organización registrada; ahora son de varias o independientes.';
+      $('[data-especifico-desc]').textContent = `Recibe únicamente a la gente de ${nombre}.${total() < c().cupo_minimo ? ` Para confirmarlo se necesitan ${c().cupo_minimo} de esa institución.` : ''}${suyo ? ` Ya tiene su grupo ${suyo.g.folio}, que recibe personas.` : ''}`;
     }
     /* «Su grupo» (decisión 2 de la auditoría del 2026-10-19, Liber; auditoría de tareas, M3): si todas las elegidas son de
        una organización que ya tiene un grupo propio de este curso que recibe personas, se dice y se ofrece agregarlas ahí;
@@ -554,38 +572,9 @@
     }
 
     /* ----- Paso 4 · confirmar ----- */
-    const selInstructor = $('#instructor');
-    if (gExistente && gExistente.instructor) selInstructor.value = gExistente.instructor;
-    // La propuesta: el primer instructor libre esas fechas (la asignación sigue pendiente, P92: «Por asignar» es válido)
-    function proponInstructor() {
-      if (gExistente && gExistente.instructor) return;
-      const libre = inicio && [...selInstructor.options].find((o) => o.value && !P.ocupado(datos, o.value, inicio, finDe(inicio), excepto).length);
-      selInstructor.value = libre ? libre.value : '';
-    }
-    proponInstructor();
-    selInstructor.toggleAttribute('data-vacio', !selInstructor.value);
-    let instructorTocado = Boolean(gExistente && gExistente.instructor);
-    selInstructor.addEventListener('change', (e) => { if (e.isTrusted) { instructorTocado = true; sinGuardar = true; } pintaInstructores(); pintaResumen(); });
-    function pintaInstructores() {
-      const fin = inicio ? finDe(inicio) : null;
-      for (const o of selInstructor.options) {
-        if (!o.value) continue;
-        const nombre = P.nombreInstructor(o.value);
-        const otros = inicio ? P.ocupado(datos, o.value, inicio, fin, excepto) : [];
-        o.textContent = inicio ? `${nombre} · ${otros.length ? 'tiene otro curso esas fechas' : 'libre esas fechas'}` : nombre;
-      }
-      const sel = selInstructor.value;
-      const otros = sel && inicio ? P.ocupado(datos, sel, inicio, fin, excepto) : [];
-      // «ya da» sólo un grupo confirmado o en curso; uno por confirmar sólo lo tiene propuesto (F3 B9)
-      const seguros = otros.filter((g) => g.estado !== 'en_integracion');
-      const propuestos = otros.filter((g) => g.estado === 'en_integracion');
-      const nombres = (l) => l.map((g) => `«${APD.nombreGrupo(g, datos)}»`).join(' y ');
-      $('[data-ayuda-instructor]').textContent = otros.length
-        ? `${P.nombreInstructor(sel)} ${[seguros.length ? `ya da ${nombres(seguros)}` : '', propuestos.length ? `tiene propuesto ${nombres(propuestos)}, todavía sin confirmar,` : ''].filter(Boolean).join(' y ')} esas fechas. Puede elegirlo, pero no podría estar en los dos.`
-        : !sel ? 'Por asignar: el grupo se crea, pero no se confirma sin instructor. La asignación de instructores la hará el área de capacitación (pendiente P92).'
-          : 'Se indica si ya tiene otro curso esas fechas. Puede cambiar durante el curso; cada día queda quién capturó la asistencia.';
-    }
-    /* Lo que le falta al grupo para quedar confirmado al guardarlo (como la base: apd.grupo_cambio, datos_para_confirmar) */
+    /* Quien arma el grupo ya no elige instructor ni confirma (ajustes del equipo, 25/10/2026): el grupo se crea o se guarda
+       por confirmar, sin persona instructora; la asigna, y confirma el grupo, el área de Instructores y Capacitación en la
+       ficha del grupo. Lo que le falta para confirmarse, como lo pediría la base (apd.grupo_cambio: datos_para_confirmar). */
     function faltaParaConfirmar() {
       const cc = c();
       const falta = [];
@@ -593,7 +582,6 @@
       if (!inicio) falta.push('la semana');
       else if (razon(inicio)) falta.push('otra semana');
       if (n < cc.cupo_minimo) falta.push(cc.cupo_minimo - n === 1 ? '1 persona más' : `${cc.cupo_minimo - n} personas más`);
-      if (!selInstructor.value) falta.push('el instructor');
       return falta;
     }
     function pintaResumen() {
@@ -613,27 +601,23 @@
         ['Lugar del curso', `Aula de capacitación del ${sede}`],
         [APD.diaFinal(cc) === 'Examen' ? 'Examen' : 'Examen final', inicio ? `El ${fechaLarga(fin)}, en el salón de cómputo del PILARES` : 'El último día del curso, en el PILARES'],
         ['Personas', `${n} de ${cc.cupo_maximo}${xG && elegidas().length ? ` (${plural(elegidas().length, 'nueva', 'nuevas')})` : ''}${n > cc.cupo_maximo ? ` · sobran ${n - cc.cupo_maximo}` : ''}`],
-        ['Tipo de grupo', gExistente ? xG.integracion : integracion() === 'especifico' ? `Sólo de ${(elegidas()[0] || {}).organizacion || 'una organización'}` : 'Combinado']
+        ['Tipo de grupo', gExistente ? xG.integracion : integracion() === 'especifico' ? `Sólo de ${(elegidas()[0] || {}).organizacion || 'una institución de gobierno'}` : 'Combinado'],
+        ['Persona instructora', gExistente && gExistente.instructor ? P.nombreInstructor(gExistente.instructor) : 'La asigna el área de Instructores y Capacitación']
       ])));
-      // Cómo queda al guardarlo y los botones según eso
+      // Cómo queda al guardarlo: siempre por confirmar (lo confirma Capacitación) y, si le falta algo, qué
       const falta = confirmadoYa ? [] : faltaParaConfirmar();
       const queda = $('[data-queda]');
       const crear = $('[data-armar="crear"]');
-      const sin = $('[data-armar="sin-confirmar"]');
       if (confirmadoYa) {
         queda.replaceChildren(estado('Ya está confirmado', 'ok'), el('p', { texto: 'Las personas que agregue verán en «Mis trámites» la fecha, la hora y el lugar.' }));
         crear.textContent = 'Agregar al grupo';
-        sin.hidden = true;
-      } else if (!falta.length) {
-        queda.replaceChildren(estado(gExistente ? 'Queda confirmado' : 'Se crea confirmado', 'ok'), el('p', { texto: 'Cada persona verá en «Mis trámites» la fecha, la hora y el lugar.' }));
-        crear.textContent = gExistente ? 'Confirmar el grupo' : 'Crear el grupo';
-        sin.textContent = gExistente ? 'Guardar sin confirmar' : 'Crear sin confirmar';
-        sin.hidden = false;
       } else {
+        const capacitacion = gExistente && gExistente.instructor ? 'el área de Instructores y Capacitación lo confirma' : 'el área de Instructores y Capacitación le asigna la persona instructora y lo confirma';
         queda.replaceChildren(estado(gExistente ? 'Sigue por confirmar' : 'Se crea por confirmar', 'pend'),
-          el('p', { texto: `Para confirmarlo le falta ${y(falta)}. Lo puede completar después, en «Grupos programados» o en su ficha; mientras, las personas no ven la fecha como segura.` }));
+          el('p', { texto: falta.length
+            ? `Le falta: ${y(falta)}; después, ${capacitacion}. Lo puede completar en «Grupos programados» o en su ficha; mientras, las personas no ven la fecha como segura.`
+            : `Ya tiene lo que le toca a usted: ahora ${capacitacion}. Mientras, las personas no ven la fecha como segura.` }));
         crear.textContent = gExistente ? 'Guardar los cambios' : 'Crear el grupo';
-        sin.hidden = true;
       }
     }
 
@@ -648,8 +632,6 @@
       if (!clave) return;
       pintaCalendario();
       pintaElegida();
-      if (!instructorTocado) proponInstructor();
-      pintaInstructores();
       pintaCuenta(false);
       pintaIntegracion();
       pintaSuGrupo();
@@ -688,7 +670,7 @@
         if (!gExistente && n < 1) return { aviso: ['Elija a quién va', 'Marque la casilla junto al nombre de al menos una persona. El grupo se confirma con al menos 5.'] };
         if (confirmadoYa && !elegidas().length) return { aviso: ['Elija a quién agregar', 'Marque la casilla junto al nombre de cada persona que quiere agregar al grupo.'] };
         if (n > cc.cupo_maximo) return { aviso: ['Eligió más personas de las que caben', `Un grupo recibe hasta ${cc.cupo_maximo}; ${xG ? `ya tiene ${xG.n} y ` : ''}eligió ${elegidas().length}. Quite ${plural(n - cc.cupo_maximo, 'persona', 'personas')}.`] };
-        if (integracion() === 'especifico' && !gExistente && !orgDeElegidas()) return { campo: 'integracion', mensaje: 'Para un grupo de una sola organización, todas las elegidas tienen que ser de ella. Elija «Combinado» o quite a quien no sea de esa organización.' };
+        if (integracion() === 'especifico' && !gExistente && !deGobierno(orgDeElegidas())) return { campo: 'integracion', mensaje: 'Un grupo propio es sólo de una institución de gobierno, con toda su gente. Elija «Combinado» o quite a quien no sea de esa institución.' };
       }
       return null;
     }
@@ -748,7 +730,7 @@
         if (confirmadoYa && !elegidas().length) falta.push('al menos una persona que agregar');
         if (n > cc.cupo_maximo) falta.push(`quitar ${plural(n - cc.cupo_maximo, 'persona', 'personas')}: el grupo recibe hasta ${cc.cupo_maximo}`);
         const esp = integracion() === 'especifico' && !gExistente;
-        if (esp && !orgDeElegidas()) falta.push('que todas las elegidas sean de la misma organización, o un grupo combinado');
+        if (esp && !deGobierno(orgDeElegidas())) falta.push('que todas las elegidas sean de la misma institución de gobierno, o un grupo combinado');
         if (falta.length) {
           avisoFalta.hidden = false;
           avisoFalta.replaceChildren();
@@ -756,7 +738,6 @@
             texto: [el('p', { texto: 'Falta:' }), el('ul', { class: 'lista-obs' }, falta.map((t) => el('li', { texto: mayus(t) })))], foco: true });
           return Promise.resolve({ rechazado: true });
         }
-        const confirmar = !confirmadoYa && accion === 'crear' && !faltaParaConfirmar().length;
         const libera = APD.ocupa(botones.filter((b) => !b.matches('[data-accion="enviar"]')));
         // Un segundo grupo de una organización que ya tiene el suyo: se pregunta antes (decisión 2, 2026-10-19)
         const suyo = esp ? suGrupo() : null;
@@ -766,7 +747,7 @@
             `Con dos grupos de la misma organización, ninguno llega al mínimo. Para agregarlas a ese grupo, elija «No» y use «Agregarlas a ${suyo.g.folio}» en el paso 3.`],
           si: 'Sí, crear otro grupo', no: 'No' });
         // La hora de entrada es la del curso (parámetro curso_hora_entrada; decisión de Liber del 24/10/2026)
-        return sigue.then((si) => (si ? guarda({ ini, hora: APD.hhmm(horaEntrada), instructor: d.instructor || null, confirmar, tipoGrupo: integracion() }) : { rechazado: true }))
+        return sigue.then((si) => (si ? guarda({ ini, hora: APD.hhmm(horaEntrada), tipoGrupo: integracion() }) : { rechazado: true }))
           .finally(() => { if (libera) libera(); });
       },
       alEnviar(r) { if (r && r.rechazado) return; termina(r); },
@@ -776,7 +757,7 @@
     /* Los eventos de siempre, en orden (la base hace lo mismo en una transacción), como lo haría la API (auditoría «intentar
        romperlo», F3 A1): el folio de un grupo nuevo se calcula al guardar, con lo guardado más reciente, y la creación
        lleva un id propio; después se lee lo que quedó. */
-    function guarda({ ini, hora, instructor, confirmar, tipoGrupo }) {
+    function guarda({ ini, hora, tipoGrupo }) {
       const folios = elegidas().map((x) => x.s.folio);
       const por = P.REVISORA.usuario;
       let id = gExistente ? gExistente.id : null;
@@ -794,9 +775,9 @@
             id = `prueba-grupo:${folio}:${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
             lista.push({ tipo: 'crear', grupo_id: id, folio, tipo_acreditacion: curso()[0], modalidad: curso()[1], integracion: tipoGrupo, organizacion_id: tipoGrupo === 'especifico' ? orgDeElegidas() : null, folios, por });
           }
-          // Sin semana (un grupo que ya existe y sigue sin ella) no se propone nada: sólo se agregan personas
-          if (!confirmadoYa && ini) lista.push({ tipo: 'proponer', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
-          if (confirmar) lista.push({ tipo: 'confirmar', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, instructor, por });
+          // Sin semana (un grupo que ya existe y sigue sin ella) no se propone nada: sólo se agregan personas. La persona
+          // instructora y la confirmación son del área de Instructores y Capacitación (25/10/2026)
+          if (!confirmadoYa && ini) lista.push({ tipo: 'proponer', grupo_id: id, fecha_inicio: ini, hora_entrada: hora, por, perfil: 'revision_cotejo' });
           return lista;
         },
         comprueba: (d2, d1) => {
@@ -814,7 +795,7 @@
         // Las elegidas que de verdad entraron (otra pestaña pudo darles grupo en ese momento): el aviso lo dice
         const previas = activasEn(d1, id);
         const dentro = activasEn(d2, id);
-        return { g, confirmar, entraron: folios.filter((f) => dentro.has(f) && !previas.has(f)), fuera: folios.filter((f) => !dentro.has(f)) };
+        return { g, entraron: folios.filter((f) => dentro.has(f) && !previas.has(f)), fuera: folios.filter((f) => !dentro.has(f)) };
       }, (e) => Promise.reject(e && e.motivo ? APD.rechazo(gExistente ? 'No se guardó el grupo' : 'No se creó el grupo',
         `${mayus(e.motivo)}. No se guardó nada; lo que eligió sigue aquí.`,
         { href: location.pathname.split('/').pop() + location.search, texto: 'Volver a cargar «Grupos»' }, 'conflicto') : e));
@@ -826,7 +807,7 @@
       try { sessionStorage.removeItem(CLAVE_ELEGIDAS); } catch (e) { /* sin almacenamiento */ }
       const no = fuera.length ? `&no=${fuera.map(encodeURIComponent).join(',')}` : '';
       if (!gExistente) { location.replace(`grupos.html?curso=${clave}&hecho=creado&a=${encodeURIComponent(g.folio)}${no}`); return; }
-      const hecho = g.estado === 'confirmado' && !confirmadoYa ? 'confirmado' : entraron.length && (confirmadoYa || (g.fecha_inicio || null) === (gExistente.fecha_inicio || null)) ? 'agregadas' : 'propuesto';
+      const hecho = entraron.length && (confirmadoYa || (g.fecha_inicio || null) === (gExistente.fecha_inicio || null)) ? 'agregadas' : 'propuesto';
       location.replace(`grupo.html?folio=${encodeURIComponent(g.folio)}&hecho=${hecho}&n=${entraron.length}${no}`);
     }
 
@@ -922,9 +903,10 @@
       if (integra || pasada) {
         if (!g.fecha_inicio) falta.push('semana'); else if (pasada) falta.push('otra semana');
         if (faltaMin > 0) falta.push(faltaMin === 1 ? '1 persona' : `${faltaMin} personas`);
-        if (!g.instructor) falta.push('instructor');
+        // La persona instructora y la confirmación son del área de Instructores y Capacitación (25/10/2026)
+        if (!g.instructor) falta.push('persona instructora');
       }
-      const textoFalta = !integra && !pasada ? '—' : falta.length ? mayus(y(falta)) : 'Confirmarlo';
+      const textoFalta = !integra && !pasada ? '—' : falta.length ? mayus(y(falta)) : 'Que Capacitación lo confirme';
       const acciones = [];
       const nombre = `${x.calculado} · ${g.folio}`;
       if (x.recibe && faltaMin > 0 && !pasada) {
@@ -945,7 +927,6 @@
           acciones.push(b);
         }
       }
-      if (integra && faltaMin <= 0 && !pasada) acciones.push(botonConfirmar(x, k));
       if (integra) {
         const texto = pasada ? 'Elegir otra semana' : g.fecha_inicio ? 'Cambiar la semana' : 'Elegir semana';
         acciones.push(el('a', { class: 'btn-enlace', href: `grupos.html?grupo=${encodeURIComponent(g.folio)}&paso=2`, 'aria-label': `${texto}: ${nombre}`, texto }));
@@ -1001,39 +982,6 @@
     function irConAviso(hecho, folio, n, no, k) {
       location.href = `grupos.html?curso=${k || clave || ''}&hecho=${hecho}&a=${encodeURIComponent(folio)}${n ? `&n=${n}` : ''}${no && no.length ? `&no=${no.map(encodeURIComponent).join(',')}` : ''}`;
     }
-    /* «Confirmar el grupo»: si ya tiene fecha (a tiempo) e instructor, se confirma aquí con su confirmación; si le
-       falta algo, lleva a su ficha, donde se completa */
-    function botonConfirmar(x, k) {
-      const { g } = x;
-      const listo = g.fecha_inicio && g.fecha_inicio >= minimo && g.instructor && !P.razonNoInicio(datos, g.tipo_acreditacion, g.modalidad, g.fecha_inicio, g.id);
-      const nombre = `${x.calculado} · ${g.folio}`;
-      if (!listo) return el('a', { class: 'btn-enlace', href: `grupo.html?folio=${encodeURIComponent(g.folio)}#t-confirmar`, 'aria-label': `Confirmar el grupo: ${nombre}`, texto: 'Confirmar el grupo' });
-      const b = el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'aria-label': `Confirmar el grupo: ${nombre}`, texto: 'Confirmar el grupo' });
-      b.addEventListener('click', () => {
-        FormKit.confirma(b, { titulo: `¿Confirmar «${x.calculado}»?`,
-          consecuencias: [`${plural(x.n, 'persona', 'personas')}, de ${hm(horaEntrada)} a ${hm(horaSalida)}, con ${P.nombreInstructor(g.instructor)}.`,
-            'Cada persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
-            `Sigue recibiendo personas hasta el ${fechaCorta(APD.sumaDias(g.fecha_inicio, -1))}, sin pasar de ${g.cupo_maximo}.`],
-          si: 'Sí, confirmar el grupo' })
-          .then((si) => {
-            if (!si) return;
-            const libera = APD.ocupa(b);
-            if (!libera) return;
-            // Como la API: con lo guardado de ahora y comprobando que quedó confirmado; si no, se dice por qué (F3 M2)
-            const deAhora = (d) => d.grupo.find((z) => z.id === g.id);
-            P.guardaGrupoComprobado({
-              antes: (d1) => P.razonNoConfirma(d1, deAhora(d1), g.fecha_inicio),
-              // La hora de entrada es la del curso, también para un grupo que no la tenía (decisión de Liber del 24/10/2026)
-              eventos: () => ({ tipo: 'confirmar', grupo_id: g.id, fecha_inicio: g.fecha_inicio, hora_entrada: APD.hhmm(horaEntrada), instructor: g.instructor, por: P.REVISORA.usuario }),
-              comprueba: (d2) => (deAhora(d2) && deAhora(d2).estado === 'confirmado' ? null : P.razonNoConfirma(d2, deAhora(d2), g.fecha_inicio) || 'la base no lo confirmó')
-            })
-              .then(() => irConAviso('confirmado', g.folio, 0, null, k))
-              .catch((e) => { libera(); APD.pintaAviso($('[data-hecho]'), 'error', 'No se confirmó el grupo', e && e.motivo ? `${mayus(e.motivo)}. Vuelva a cargar la página para ver el grupo como está ahora.` : 'Intente de nuevo.', true); });
-          });
-      });
-      return b;
-    }
-
     /* ----- Aviso de lo que se acaba de hacer (llega en la dirección): crear, completar, confirmar ----- */
     function avisoHecho() {
       const hecho = params.get('hecho');
@@ -1050,7 +998,7 @@
       if (hecho === 'creado') {
         const quedo = g.estado === 'confirmado';
         const noEntraron = no.length ? ` ${no.length === 1 ? '1 de las que eligió no entró' : `${no.length} de las que eligió no entraron`}: ${porQueNoEntraron(datos, g, no)}.` : '';
-        const linea = `${g.folio} · ${plural(x.n, 'persona', 'personas')}${g.hora_entrada ? ` · entrada a las ${APD.hhmm(g.hora_entrada)}` : ''}${g.instructor ? ` · ${P.nombreInstructor(g.instructor)}` : ' · instructor por asignar'}.${noEntraron}`;
+        const linea = `${g.folio} · ${plural(x.n, 'persona', 'personas')}${g.hora_entrada ? ` · entrada a las ${APD.hhmm(g.hora_entrada)}` : ''}.${noEntraron}`;
         const sigue = [];
         if (quedo) {
           sigue.push('Cada persona ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.',
@@ -1058,19 +1006,17 @@
             `A partir del ${fechaLarga(g.fecha_inicio)}, el instructor pasa asistencia cada día y aplica el examen el último, en el PILARES.`);
         } else {
           if (falta > 0) sigue.push(`Complete al menos ${g.cupo_minimo} personas (${falta === 1 ? 'falta 1' : `faltan ${falta}`}).`);
-          if (!g.instructor) sigue.push('Elija el instructor.');
-          sigue.push(`Confírmelo aquí, en «Grupos programados», o en su ficha; el curso empieza al menos ${anticipacion} días después de confirmarlo.`);
+          if (!g.fecha_inicio) sigue.push('Elija su semana en el calendario.');
+          sigue.push(`El área de Instructores y Capacitación le asigna la persona instructora y lo confirma; el curso empieza al menos ${anticipacion} días después de confirmarlo.`);
         }
         aviso = { tono: quedo && !no.length ? 'ok' : 'advertencia', titulo: `${quedo ? 'Grupo creado y confirmado' : 'Grupo creado, por confirmar'}: ${x.calculado}`,
           texto: [el('p', { texto: `${linea}${quedo ? '' : ' La fecha queda como propuesta: las personas todavía no la ven como segura.'}` }), enlace, APD.tituloPasos()], pasos: sigue };
       } else if (hecho === 'agregadas') {
         // n: las que de verdad entraron (lo leído después de guardar); no: las que no, con su razón (F3 M1)
         const resto = falta > 0 ? `Le ${falta === 1 ? 'falta 1' : `faltan ${falta}`} para el mínimo de ${g.cupo_minimo}.`
-          : g.estado === 'en_integracion' ? 'Ya tiene el mínimo: puede confirmarlo.' : `Tiene ${plural(x.n, 'persona', 'personas')}.`;
+          : g.estado === 'en_integracion' ? 'Ya tiene el mínimo: lo confirma el área de Instructores y Capacitación.' : `Tiene ${plural(x.n, 'persona', 'personas')}.`;
         aviso = { tono: no.length ? 'advertencia' : 'ok', titulo: `${n === 1 ? 'Se agregó 1 persona' : `Se agregaron ${n} personas`} a «${cual}»`,
           texto: [el('p', { texto: no.length ? `${no.length === 1 ? '1 de las que eligió no entró' : `${no.length} de las que eligió no entraron`}. ${porQueNoEntraron(datos, g, no)}. ${resto}` : resto }), enlace] };
-      } else if (hecho === 'confirmado') {
-        aviso = { tono: 'ok', titulo: `Grupo confirmado: «${cual}»`, texto: [el('p', { texto: 'Cada persona ya ve en «Mis trámites» las fechas, la hora de entrada y dónde presentarse.' }), enlace] };
       }
       if (!aviso) return;
       const caja = $('[data-hecho]');
