@@ -12,6 +12,13 @@
   /* Los filtros no se envían: Enter en la búsqueda no hace nada más que filtrar */
   form.addEventListener('submit', (e) => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
   FormKit.iniciar(form, {});
+  /* Acomodo de escritorio (decisión de Liber del 25/10/2026, DIAGNOSTICO 4.3): pestañas desde 1024 px (app/escritorio-b.js),
+     indicadores arriba y paginación de 25 en 25 */
+  APD_ESCRITORIO_B.pestanas($('[data-pestanas]'));
+  const nav = $('[data-paginacion]');
+  const POR_PAGINA = 25;
+  let pagina = 1;
+  nav.addEventListener('formkit:pagina', (e) => { pagina = e.detail.pagina; filtra(false); });
 
   /* En teléfono, los filtros quedan plegados bajo «Filtrar», que dice cuántos hay activos (decisión 2026-10-16) */
   const bF = $('[data-filtrar]');
@@ -70,11 +77,13 @@
       pintaBandeja(datos);
       if (enfocado) { const a = $(`[data-filas] tr[data-folio="${enfocado}"] a`); if (a) a.focus(); }
       if (primera) {
-        form.addEventListener('input', filtra);
-        form.addEventListener('change', filtra);
+        // Una búsqueda o un filtro nuevo regresa a la página 1
+        form.addEventListener('input', () => filtra(true));
+        form.addEventListener('change', () => filtra(true));
         primera = false;
       }
-      filtra();
+      filtra(false);
+      pintaIndicadores(datos);
     });
   }
 
@@ -140,17 +149,26 @@
     }
   }
 
-  function filtra() {
+  function filtra(desdeUno) {
+    if (desdeUno) pagina = 1;
     const q = norm(document.getElementById('buscar').value);
     const [tipo, mod, vta] = SELECTS.map((id) => document.getElementById(id).value);
     let n = 0;
     let rojas = 0;
     let ambar = 0;
+    const coinciden = [];
     for (const f of filas) {
       const ve = (!q || f.texto.includes(q)) && (!tipo || f.tipo === tipo) && (!mod || f.modalidad === mod) && (!vta || f.vuelta === vta);
-      f.tr.hidden = !ve;
-      if (ve) { n += 1; if (f.tono === 'atrasada') rojas += 1; else if (f.tono === 'pend') ambar += 1; }
+      if (ve) { coinciden.push(f); n += 1; if (f.tono === 'atrasada') rojas += 1; else if (f.tono === 'pend') ambar += 1; }
     }
+    /* La página: en el mismo orden (la de más espera primero), de 25 en 25 o lo que se elija en «Por página»; la cuenta de
+       arriba sigue siendo la de todas las que coinciden */
+    const tam = Number(nav.dataset.tamano) || POR_PAGINA;
+    pagina = Math.min(Math.max(1, pagina), Math.max(1, Math.ceil(n / tam)));
+    const enPagina = new Set(coinciden.slice((pagina - 1) * tam, pagina * tam));
+    for (const f of filas) f.tr.hidden = !enPagina.has(f);
+    nav.hidden = n <= POR_PAGINA;
+    if (FormKit.paginacion) FormKit.paginacion(nav, { total: n, pagina });
     // Cuántas llevan más tiempo, sin recorrer la lista (auditoría de tareas, M8)
     const espera = [rojas ? `${rojas} con ${P.UMBRAL.rojo} días o más` : '', ambar ? `${ambar} de ${P.UMBRAL.ambar} a ${P.UMBRAL.rojo - 1} días` : ''].filter(Boolean);
     const detalle = espera.length ? `: ${espera.join(' y ')}` : '';
@@ -164,6 +182,39 @@
     rotulaFiltrar();
     guardaFiltros();
   }
+
+  /* Indicadores del inicio (escritorio) y cuentas de las pestañas */
+  const plural = APD.plural;
+  function escribeIndicador(clave, numero, detalle) {
+    $(`[data-ind="${clave}"]`).textContent = String(numero);
+    $(`[data-ind-detalle="${clave}"]`).textContent = detalle;
+  }
+  function cuentaPestana(id, n) {
+    const t = document.getElementById(id);
+    t.textContent = `${t.dataset.pestanaCuenta} (${n})`;
+  }
+  function pintaIndicadores(datos) {
+    const atrasadas = filas.filter((f) => f.tono === 'atrasada').length;
+    escribeIndicador('revisar', filas.length, atrasadas ? plural(atrasadas, 'atrasada', 'atrasadas') : 'ninguna atrasada');
+    cuentaPestana('pe-solicitudes', filas.length);
+    const hoy = APD.hoy(datos);
+    const deHoy = P.citas(datos).filter((c) => P.diaDe(c.en) === hoy);
+    const porAtender = deHoy.filter((c) => c.pendiente).length;
+    escribeIndicador('citas', deHoy.length, porAtender ? `${porAtender} por atender` : 'ninguna por atender');
+    const esperas = P.CURSOS.map(([t, m]) => P.enEspera(datos, t, m).length);
+    const enEspera = esperas.reduce((a, b) => a + b, 0);
+    const cursos = esperas.filter(Boolean).length;
+    escribeIndicador('espera', enEspera, cursos ? `en ${plural(cursos, 'curso', 'cursos')}` : 'nadie espera');
+  }
+  /* Los avisos por teléfono los pinta app/registro-asistido.js: se cuentan sus fichas cada vez que cambia la lista */
+  const listaAvisos = $('[data-avisos-lista]');
+  const cuentaAvisos = () => {
+    if (/^Cargando/.test($('[data-avisos-cuenta]').textContent)) return;
+    const n = listaAvisos.hidden ? 0 : listaAvisos.children.length;
+    escribeIndicador('avisos', n, n === 1 ? 'pendiente' : 'pendientes');
+    cuentaPestana('pe-avisos', n);
+  };
+  new MutationObserver(cuentaAvisos).observe($('[data-asistido-inicio]'), { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'], characterData: true });
 
   APD.alCambiar(() => { carga().catch(() => {}); });
   carga().catch(() => {

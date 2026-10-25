@@ -16,6 +16,8 @@
 <link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/pestanas/pestanas.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/paginacion/paginacion.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.70">
 </head>
 <body>
@@ -32,12 +34,30 @@
 <main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
 
-  <section class="tarjeta" aria-labelledby="t-bandeja">
-    <h2 class="titulo-paso" id="t-bandeja">Solicitudes por revisar</h2>
+  <!-- Acomodo de escritorio (decisión de Liber del 25/10/2026, DIAGNOSTICO 4.3): desde 1024 px, arriba los indicadores
+       (enlaces) y debajo las pestañas del estándar; en teléfono y tableta no se ven los indicadores ni la lista de
+       pestañas, y las secciones van una debajo de otra, como antes (app/escritorio-b.js). Las cifras las pone
+       app/revision.js. -->
+  <nav class="escb-indicadores" aria-label="Resumen del día" data-indicadores>
+    <a class="escb-indicador" href="#t-bandeja"><span class="escb-indicador-rotulo">Por revisar</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="revisar">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="revisar"></span></span></a>
+    <a class="escb-indicador" href="citas.html"><span class="escb-indicador-rotulo">Citas de hoy</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="citas">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="citas"></span></span></a>
+    <a class="escb-indicador" href="#t-avisos-tel"><span class="escb-indicador-rotulo">Avisos por teléfono</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="avisos">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="avisos"></span></span></a>
+    <a class="escb-indicador" href="grupos.html"><span class="escb-indicador-rotulo">En espera de grupo</span> <span class="escb-indicador-cifras"><strong class="escb-indicador-numero" data-ind="espera">…</strong> <span class="escb-indicador-detalle" data-ind-detalle="espera"></span></span></a>
+  </nav>
+
+  <div class="pestanas escb-pestanas" data-pestanas>
+    <div class="pestanas-lista" role="tablist" aria-label="Inicio del personal">
+      <button type="button" class="pestana" role="tab" id="pe-solicitudes" aria-controls="panel-solicitudes" aria-selected="true" data-pestana-cuenta="Solicitudes por revisar">Solicitudes por revisar</button>
+      <button type="button" class="pestana" role="tab" id="pe-avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1" data-pestana-cuenta="Avisos por teléfono">Avisos por teléfono</button>
+      <button type="button" class="pestana" role="tab" id="pe-asistido" aria-controls="panel-asistido" aria-selected="false" tabindex="-1">Registro asistido</button>
+    </div>
+
+  <section class="tarjeta pestanas-panel" id="panel-solicitudes" aria-labelledby="t-bandeja">
+    <h2 class="titulo-paso escb-titulo-de-pestana" id="t-bandeja">Solicitudes por revisar</h2>
     <p class="bajada">Ordenadas por antigüedad: la que más tiempo lleva esperando va primero. Las que la persona reenvió con correcciones lo indican en la columna «Vuelta».</p>
 
     <!-- Búsqueda y filtros: no se envían, sólo ordenan la vista. En teléfono, los filtros quedan plegados bajo «Filtrar». -->
-    <form id="filtros" class="filtros-bandeja" data-formkit role="search" aria-label="Buscar y filtrar las solicitudes" action="#">
+    <form id="filtros" class="filtros-bandeja escb-filtros" data-formkit role="search" aria-label="Buscar y filtrar las solicitudes" action="#">
       <div class="campo" data-campo="buscar" data-uso="Encontrar una solicitud; no se guarda.">
         <label class="etiqueta" for="buscar">Buscar una solicitud</label>
         <p class="ayuda">Nombre, CURP, folio de la solicitud (APD-S-…) o número de expediente (EXP-…).</p>
@@ -65,14 +85,17 @@
     </form>
     <p class="resumen-filtro" role="status" data-cuenta>Cargando las solicitudes…</p>
 
-    <div class="tabla-marco" data-tabla data-clave="folio">
-      <table class="tabla tabla-bandeja">
+    <div class="tabla-marco escb-tabla-marco" id="lista-bandeja" data-tabla data-clave="folio">
+      <table class="tabla tabla-bandeja escb-tabla-compacta">
         <caption class="solo-lector">Solicitudes enviadas en espera de revisión documental</caption>
         <thead><tr><th scope="col">Folio de la solicitud</th><th scope="col">Persona</th><th scope="col">Acreditación</th><th scope="col">Llegó a revisión</th><th scope="col">Espera</th><th scope="col">Vuelta</th><th scope="col">A revisar con atención</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
         <tbody data-filas></tbody>
       </table>
       <p class="tabla-vacia" data-tabla-vacia hidden>Ninguna solicitud coincide con la búsqueda. Revise lo que escribió o quite algún filtro.</p>
     </div>
+    <!-- Paginación del estándar (módulo paginacion), de 25 en 25 y en el mismo orden: la página 1 es la de más espera. Sólo
+         se ve con más de 25 solicitudes (las cuenta app/revision.js con la búsqueda y los filtros puestos). -->
+    <nav class="paginacion" data-paginacion data-total="0" data-pagina="1" data-tamano="25" data-tamanos="25,50,100" data-lista="#lista-bandeja" aria-label="Páginas de las solicitudes por revisar" hidden></nav>
     <p class="ayuda">La espera se marca en ámbar desde <span data-umbral-ambar></span> días y en rojo, como atrasada, desde <span data-umbral-rojo></span>. <span class="pendiente">Pendiente: plazos de la revisión documental que fije la Dirección (P02).</span></p>
     <!-- Versión de prueba: lo revisado en este navegador, con su situación actual, para seguirlo sin buscarlo en «Citas
          de cotejo» o en «Grupos» (2026-10-17; las pruebas lo usan). Se quita al pasar al SIA, con el menú de pruebas. -->
@@ -85,8 +108,11 @@
 
   <!-- Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir. La entrada para
        registrarlas y la ventanilla, y los avisos por teléfono pendientes (los pinta app/registro-asistido.js). -->
-  <section class="tarjeta" aria-labelledby="t-asistido" data-asistido-inicio>
-    <h2 class="titulo-paso" id="t-asistido">Registro asistido</h2>
+  <section class="tarjeta escb-asistido" aria-labelledby="t-asistido" data-asistido-inicio>
+    <!-- En escritorio, dos pestañas: «Registro asistido» y «Avisos por teléfono». El título queda fuera de las dos: en
+         escritorio no se ve (repite la pestaña), pero ordena los títulos de las dos para el lector de pantalla. -->
+    <h2 class="titulo-paso escb-titulo-de-pestana" id="t-asistido">Registro asistido</h2>
+    <div class="pestanas-panel" id="panel-asistido">
     <p class="bajada">Para personas que no saben leer ni escribir: usted las registra en el Vivero, con ellas presentes, captura su solicitud y les da seguimiento por teléfono y en la ventanilla.</p>
     <nav class="menu-inicio" aria-label="Registro asistido">
       <a class="menu-opcion" href="asistido.html">
@@ -98,12 +124,16 @@
         <span class="menu-opcion-texto">Busque a una persona por CURP, nombre o folio y dígale en qué va su trámite.</span>
       </a>
     </nav>
+    </div>
+    <div class="pestanas-panel" id="panel-avisos">
     <h3 class="titulo-bloque" id="t-avisos-tel">Avisos por teléfono pendientes</h3>
     <p class="ayuda">Llame a cada persona, dígale lo de «Qué decirle» y registre si se le avisó o si no contestó.</p>
     <p class="resumen-filtro" role="status" data-avisos-cuenta>Cargando los avisos…</p>
     <div data-avisos-resultado hidden></div>
     <ul class="lista-fichas" data-avisos-lista hidden></ul>
+    </div>
   </section>
+  </div>
 </main>
 
 <footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
@@ -123,6 +153,9 @@
 <script src="formkit/js/formkit.core.js?v=1.5.1"></script>
 <script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<script src="formkit/modulos/pestanas/pestanas.js?v=1.5.1"></script>
+<script src="formkit/modulos/paginacion/paginacion.js?v=1.5.1"></script>
+<script src="app/escritorio-b.js?v=0.70"></script>
 <script src="app/revision.js?v=0.70"></script>
 <script src="app/registro-asistido.js?v=0.70"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
