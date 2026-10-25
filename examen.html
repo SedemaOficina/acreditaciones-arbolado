@@ -41,6 +41,8 @@
     <form id="entrar" class="tarjeta tarjeta-angosta" data-formkit action="#" method="post">
       <h2 class="titulo-paso" id="t-entrar">Entra a tu examen</h2>
       <p class="bajada">Escribe el código que te dio quien aplica el examen. Viene en un papel con tu nombre.</p>
+      <!-- Lectura en voz alta (ajustes del equipo, 25/10/2026): la muestra app/examen.js sólo si hay voz en español -->
+      <div class="examen-voz" data-voz hidden><button type="button" class="btn btn-secundario btn-chico" data-leer="entrar">Escuchar las instrucciones</button><button type="button" class="btn btn-secundario btn-chico" data-detener>Detener la lectura</button></div>
       <p class="leyenda-oblig">Las preguntas con <span aria-hidden="true">*</span> son obligatorias.</p>
 
       <div class="campo" data-campo="codigo" data-formato="codigo-examen" data-requerido
@@ -63,6 +65,7 @@
   <!-- 2 · ¿Eres tú? -->
   <section class="tarjeta tarjeta-angosta" data-vista="confirmar" aria-labelledby="t-confirmar" tabindex="-1" hidden>
     <h2 class="titulo-paso" id="t-confirmar">¿Eres tú?</h2>
+    <div class="examen-voz" data-voz hidden><button type="button" class="btn btn-secundario btn-chico" data-leer="confirmar">Escuchar la pregunta</button><button type="button" class="btn btn-secundario btn-chico" data-detener>Detener la lectura</button></div>
     <div class="examen-persona">
       <div class="perfil-foto perfil-foto-chica" data-foto-persona><span class="perfil-iniciales" aria-hidden="true" data-iniciales></span></div>
       <div data-persona></div>
@@ -77,10 +80,12 @@
   <!-- 3 · Instrucciones -->
   <section class="tarjeta tarjeta-angosta" data-vista="instrucciones" aria-labelledby="t-instrucciones" tabindex="-1" hidden>
     <h2 class="titulo-paso" id="t-instrucciones">Antes de empezar</h2>
+    <div class="examen-voz" data-voz hidden><button type="button" class="btn btn-secundario btn-chico" data-leer="instrucciones">Escuchar las instrucciones</button><button type="button" class="btn btn-secundario btn-chico" data-detener>Detener la lectura</button></div>
     <ul class="examen-reglas">
       <li>Son <strong data-total></strong> preguntas. Cada una tiene una sola respuesta correcta.</li>
       <li>Tienes <strong data-minutos></strong> minutos. El tiempo empieza a correr cuando presionas «Empezar el examen» y no se detiene.</li>
       <li>Cada respuesta se guarda en cuanto la eliges. Puedes cambiarla todas las veces que quieras hasta que envíes el examen.</li>
+      <li>Si se va el internet, sigue contestando: tus respuestas se quedan en esta computadora y se envían solas cuando vuelva la conexión.</li>
       <li>Si la computadora falla, levanta la mano: sigues en otra computadora con el mismo código, con tus respuestas y el tiempo que te quede.</li>
       <li>Para aprobar necesitas <strong data-minima></strong> o más. Verás tu calificación al terminar.</li>
       <li>No se permite consultar libros, apuntes ni el teléfono, que debe estar apagado. Si quien aplica el examen ve una conducta indebida, puede suspenderlo.</li>
@@ -106,6 +111,8 @@
     <div class="tarjeta" tabindex="-1" data-tarjeta-pregunta>
       <fieldset class="grupo examen-pregunta">
         <legend class="examen-enunciado" id="t-pregunta" data-enunciado></legend>
+        <!-- «Escuchar la pregunta» lee la pregunta y sus opciones con su letra; cada opción tiene su «Escuchar» -->
+        <div class="examen-voz" data-voz hidden><button type="button" class="btn btn-secundario btn-chico" data-leer="pregunta">Escuchar la pregunta</button><button type="button" class="btn btn-secundario btn-chico" data-detener>Detener la lectura</button></div>
         <div class="opciones-lista" data-opciones></div>
       </fieldset>
       <p class="examen-guardado texto-gris" role="status" data-guardado></p>
