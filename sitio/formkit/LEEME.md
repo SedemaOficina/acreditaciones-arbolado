@@ -2,4 +2,4 @@
 
 Copia sin cambios de `SedemaOficina/estandares-sia` (carpeta `formularios/`), versión 1.5.1 del 2026-10-18.
 La genera `herramientas/construir-sitio.mjs`. No se edita aquí: un cambio al estándar se hace en su repositorio.
-Módulos copiados: opciones, combo, otro, identificadores, pasos, archivos, revision, acuse, modal, copiar, tooltip, acordeon, tabla, visor, version, chips, fecha, resultado, estado.
+Módulos copiados: opciones, combo, otro, identificadores, pasos, archivos, revision, acuse, modal, copiar, tooltip, acordeon, tabla, visor, version, chips, fecha, resultado, estado, pestanas, paginacion.
