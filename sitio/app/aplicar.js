@@ -111,7 +111,7 @@
       ['Fecha del examen', `${APD.fechaCorta(G.fechaExamen(datos, g))} · último día del curso (inició el ${APD.fechaCorta(g.fecha_inicio)})`],
       ['Lugar', G.LUGAR],
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
-    ]), ...avisosGrupo, ...(avisosFila.length ? [el('div', { class: 'esc-c-avisos' }, avisosFila)] : []));
+    ]), ...avisosGrupo, ...(avisosFila.length ? [el('div', { class: 'avisos-grupo' }, avisosFila)] : []));
     /* Primero el pase de lista, que es la asistencia del último día (reporte de Liber del 24/10/2026): su título dice qué
        día del curso es («Día 5 de 5 · Pase de lista en el salón de cómputo») y el texto, que esa lista es la asistencia de
        ese día; si hoy no hay que pasar lista, lo dice. Después, el examen. */
@@ -262,8 +262,8 @@
       const corta = [[cuenta.presentes, cuenta.presentes === 1 ? 'presente' : 'presentes'], [cuenta.ausentes, cuenta.ausentes === 1 ? 'no llegó' : 'no llegaron'],
         [cuenta.porLista, 'por pasar lista']];
       $('[data-cuenta-corta]').replaceChildren(...corta.flatMap(([v, t], i) => [i ? document.createTextNode(' · ') : null,
-        el('span', { class: 'esc-c-cuenta-dato' }, [el('strong', { texto: String(v) }), document.createTextNode(` ${t}`)])]).filter(Boolean),
-      document.createTextNode(' · '), el('span', { class: 'esc-c-cuenta-dato', texto: `de ${conDerecho} con derecho` }));
+        el('span', { class: 'cuenta-corta-dato' }, [el('strong', { texto: String(v) }), document.createTextNode(` ${t}`)])]).filter(Boolean),
+      document.createTextNode(' · '), el('span', { class: 'cuenta-corta-dato', texto: `de ${conDerecho} con derecho` }));
       $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
 
       if (enfocado) {

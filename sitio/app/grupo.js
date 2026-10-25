@@ -60,17 +60,18 @@
   /* «Personas del grupo» y «Asistencia por día» como pestañas del módulo pestanas del estándar (acomodo de escritorio,
      25/10/2026), sólo si la página se abre en computadora (1024 px o más) y el grupo tiene asistencia (en curso o concluido).
      Son dos vistas de las mismas personas (decisión de Liber del 18/10/2026): cada tabla conserva sus columnas, su leyenda y su
-     forma; la pestaña dice su título y el título de cada tabla sigue para el lector de pantalla (solo-lector), para navegar
-     por encabezados. Se arman antes de FormKit.iniciar, que inicia el módulo. En teléfono y tableta, una debajo de otra, como
-     antes. */
+     forma; la pestaña dice su título y el título de cada tabla sigue para el lector de pantalla, para navegar por encabezados.
+     Las mismas pestañas de computadora del inicio del personal y de «Grupos» (app/escritorio.js, .pestanas-escritorio y
+     .titulo-de-pestana): si la ventana se angosta, se vuelven las dos secciones de siempre, una debajo de otra. Se arman antes
+     de FormKit.iniciar, que inicia el módulo. En teléfono y tableta, una debajo de otra, como antes. */
   function armaPestanas() {
     const tituloP = $('#t-personas');
     const tablaP = $('[data-tabla][data-clave="persona"]');
     const bloque = $('[data-concentrado-bloque]');
     const tituloA = $('#t-concentrado');
-    const panelP = el('div', { class: 'pestanas-panel', role: 'tabpanel', id: 'pp-personas', 'aria-labelledby': 'pt-personas', tabindex: '0' });
-    const panelA = el('div', { class: 'pestanas-panel', role: 'tabpanel', id: 'pp-asistencia', 'aria-labelledby': 'pt-asistencia', tabindex: '0', hidden: true });
-    const pestanas = el('div', { class: 'pestanas esc-c-pestanas', 'data-pestanas': '' }, [
+    const panelP = el('div', { class: 'pestanas-panel', id: 'pp-personas' });
+    const panelA = el('div', { class: 'pestanas-panel', id: 'pp-asistencia' });
+    const pestanas = el('div', { class: 'pestanas pestanas-escritorio pestanas-ficha', 'data-pestanas': '' }, [
       el('div', { class: 'pestanas-lista', role: 'tablist', 'aria-label': 'Personas y asistencia del grupo' }, [
         el('button', { type: 'button', class: 'pestana', role: 'tab', id: 'pt-personas', 'aria-controls': 'pp-personas', 'aria-selected': 'true', texto: tituloP.textContent }),
         el('button', { type: 'button', class: 'pestana', role: 'tab', id: 'pt-asistencia', 'aria-controls': 'pp-asistencia', 'aria-selected': 'false', tabindex: '-1', texto: tituloA.textContent })
@@ -78,7 +79,8 @@
     tituloP.before(pestanas);
     panelP.append(tituloP, tablaP);
     panelA.append(bloque);
-    for (const t of [tituloP, tituloA]) t.classList.add('solo-lector');
+    for (const t of [tituloP, tituloA]) t.classList.add('titulo-de-pestana');
+    APD_ESCRITORIO.pestanas(pestanas);
   }
   const vuelve = (folio, hecho) => { location.href = `${P.fichaGrupo(folio, perfil)}&hecho=${hecho}`; };
   /* Un cambio que la base no aplicó (bloque 2): el aviso del formulario lo dice, con el enlace para ver el grupo como está */

@@ -12,9 +12,9 @@
   /* Los filtros no se envían: Enter en la búsqueda no hace nada más que filtrar */
   form.addEventListener('submit', (e) => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
   FormKit.iniciar(form, {});
-  /* Acomodo de escritorio (decisión de Liber del 25/10/2026, DIAGNOSTICO 4.3): pestañas desde 1024 px (app/escritorio-b.js),
+  /* Acomodo de escritorio (decisión de Liber del 25/10/2026, DIAGNOSTICO 4.3): pestañas desde 1024 px (app/escritorio.js),
      indicadores arriba y paginación de 25 en 25 */
-  APD_ESCRITORIO_B.pestanas($('[data-pestanas]'));
+  APD_ESCRITORIO.pestanas($('[data-pestanas]'));
   const nav = $('[data-paginacion]');
   const POR_PAGINA = 25;
   let pagina = 1;

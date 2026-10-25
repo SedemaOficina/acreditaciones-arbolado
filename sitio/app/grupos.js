@@ -440,7 +440,7 @@
         filas.push({ x, k });
         // El folio, columna de la tabla compacta de escritorio (en teléfono no se ve: la fila queda como antes)
         const f = P.filaEspera(x, k, conOrg);
-        f.append(el('span', { class: 'escb-persona-folio mono', texto: x.s.folio }));
+        f.append(el('span', { class: 'plan-persona-folio mono', texto: x.s.folio }));
         return f;
       };
       const orgDe = (x) => x.organizacion || 'Independiente';
@@ -693,7 +693,7 @@
       lista.hidden = !quienes.length;
       lista.replaceChildren(...quienes.map((x) => {
         const nombre = APD.nombreCompleto(x.p);
-        const hijos = [el('span', { class: 'escb-panel-nombre', texto: nombre })];
+        const hijos = [el('span', { class: 'panel-grupo-nombre', texto: nombre })];
         if (paso === 3) hijos.push(el('button', { type: 'button', class: 'btn-enlace', 'data-quitar': x.s.folio, 'aria-label': `Quitar a ${nombre}`, texto: 'Quitar' }));
         return el('li', {}, hijos);
       }));
@@ -853,8 +853,8 @@
       alEnviar(r) { if (r && r.rechazado) return; termina(r); },
       alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
     });
-    // Pestañas desde 1024 px (app/escritorio-b.js): «Ya terminaron» se ve abierto en su pestaña
-    const pes = APD_ESCRITORIO_B.pestanas($('[data-pestanas]'), { alCambiar: (t, en) => { if (en && t.id === 'pe-terminados') $('[data-terminados]').open = true; } });
+    // Pestañas desde 1024 px (app/escritorio.js): «Ya terminaron» se ve abierto en su pestaña
+    const pes = APD_ESCRITORIO.pestanas($('[data-pestanas]'), { alCambiar: (t, en) => { if (en && t.id === 'pe-terminados') $('[data-terminados]').open = true; } });
 
     /* Los eventos de siempre, en orden (la base hace lo mismo en una transacción), como lo haría la API (auditoría «intentar
        romperlo», F3 A1): el folio de un grupo nuevo se calcula al guardar, con lo guardado más reciente, y la creación

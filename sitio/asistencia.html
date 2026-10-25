@@ -39,8 +39,8 @@
          de marcas y una etiqueta sólo cuando hay riesgo. Sin botones por día ni concentrado: corregir otro día es la
          excepción y la vista de conjunto queda en la ficha del grupo. -->
     <!-- Franja del día (acomodo de escritorio, 25/10/2026): el día, el grupo, la regla y la leyenda; desde 1024 px en dos
-         renglones (app/apd.css, «Escritorio · parte C»). En teléfono, como antes. -->
-    <div class="esc-c-franja">
+         renglones (app/apd.css, «Escritorio»). En teléfono, como antes. -->
+    <div class="franja-dia">
       <h2 class="titulo-paso" id="t-asistencia" data-titulo-dia>Asistencia</h2>
       <div class="bajada" data-bajada></div>
       <p class="ayuda" data-regla></p>
@@ -58,8 +58,8 @@
 
     <!-- Desde 1024 px, una persona por renglón, compacto (cambio de Liber del 25/10/2026: lista, no rejilla), y la barra de
          abajo fija con los totales y los dos botones (acomodo de escritorio, 25/10/2026) -->
-    <div class="esc-c-personas" data-personas aria-labelledby="t-asistencia"></div>
-    <div class="asis-pie esc-c-barra" data-acciones>
+    <div class="personas-renglon" data-personas aria-labelledby="t-asistencia"></div>
+    <div class="asis-pie barra-acciones-fija" data-acciones>
       <!-- Se ve siempre; se anuncia desde app/asistencia.js sólo cuando se marca a alguien (auditoría 2026-10-20, B4-03) -->
       <p class="asis-totales" data-totales></p>
       <!-- Junto al botón: lo que no se pudo guardar o lo que se acaba de marcar (APD.pintaAviso) -->
