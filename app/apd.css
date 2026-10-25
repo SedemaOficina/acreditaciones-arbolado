@@ -116,6 +116,11 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .verificacion[data-tono="terminado"] { border-color: var(--borde); background: var(--aviso-bg); }
 .menu-opcion:hover { border-color: var(--guinda); }
 .menu-opcion:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+/* Combo libre sin ninguna opción que coincida (falla del estándar 1.5.1, se rodea aquí): la lista sólo trae el renglón
+   que explica que lo escrito se guarda tal cual, pero tapa lo que está debajo y se queda con el toque (el estándar la cierra
+   al salir del campo y evita que el toque en la lista quite el foco). Con el renglón más largo de la carrera (ajustes del
+   equipo, 25/10/2026: carrera que no aparece en el catálogo), en teléfono tapaba «Continuar»: el toque pasa a lo de abajo. */
+.combo-lista:not(:has(.combo-opcion)) { pointer-events: none; }
 
 /* ---------- Adaptaciones ---------- */
 
