@@ -594,7 +594,10 @@ body > main { flex: 1 0 auto; width: 100%; }
 .cal-muestra[data-muestra="finde"] { border-color: var(--linea); background: var(--fondo); }
 /* Paso 3 y paso 4 */
 .arm-cuenta { margin: 0 0 var(--e-3); font-weight: var(--peso-medio); }
-.arm-quien { margin-block-start: var(--e-4); }
+/* Falla del estándar, rodeada aquí: el módulo opciones declara display en .opcion-fila y se carga después del [hidden] del
+   núcleo, así que una opción con hidden seguía a la vista. La de grupo propio se oculta donde no aplica (sólo instituciones
+   de gobierno; ajustes del equipo, 25/10/2026). */
+.opcion-fila[hidden] { display: none; }
 .arm-queda { display: grid; gap: var(--e-1); justify-items: start; margin-block-start: var(--e-2); }
 .arm-queda p { margin: 0; }
 /* Grupos programados: una tabla por curso (módulo tabla del estándar) */

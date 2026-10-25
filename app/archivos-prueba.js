@@ -515,6 +515,10 @@
         // propio de esa creación y ese grupo no existe (auditoría «intentar romperlo», F3 A1: sobrescribían al otro)
         const c = curso(e.tipo_acreditacion, e.modalidad);
         if (!c || d.grupo.some((g) => g.id === e.grupo_id || g.folio === e.folio)) return;
+        // El grupo propio de una organización, sólo de una institución de gobierno (la base: grupo_propio_sin_gobierno;
+        // ajustes del equipo, 25/10/2026)
+        const org = e.integracion === 'especifico' ? (d.organizacion || []).find((o) => o.id === e.organizacion_id) : null;
+        if (e.integracion === 'especifico' && !(org && ['dependencia_cdmx', 'alcaldia', 'dependencia_federal'].includes(org.tipo))) return;
         const g = { id: e.grupo_id, folio: e.folio, tipo_acreditacion: e.tipo_acreditacion, modalidad: e.modalidad, integracion: e.integracion,
           organizacion_id: e.integracion === 'especifico' ? e.organizacion_id : null, cupo_minimo: c.cupo_minimo, cupo_maximo: c.cupo_maximo,
           instructor: null, sede, fecha_inicio: null, hora_entrada: null, estado: 'en_integracion', estado_desde: en, creado_en: en,
@@ -534,19 +538,28 @@
         baja(ins, e.motivo, en);
         // Un grupo confirmado que queda por debajo del mínimo regresa a integración, con su fecha (como la base)
         if (g.estado === 'confirmado' && activas(g.id).length < g.cupo_minimo) g = ponGrupo(g, { estado: 'en_integracion', estado_desde: en });
+      } else if (e.tipo === 'instructor') {
+        // Asignar o cambiar la persona instructora (ajustes del equipo, 25/10/2026): sólo el área de Instructores y
+        // Capacitación o la Dirección (la base: instructor_sin_permiso), hasta concluir el grupo, y siempre con alguien en
+        // un grupo confirmado o en curso (sin_instructor). La base lo deja en la bitácora.
+        if (!global.APD.perfilesAsignan(d).includes(e.perfil) || ['concluido', 'cancelado'].includes(g.estado)) return;
+        if (!e.instructor && g.estado !== 'en_integracion') return;
+        g = ponGrupo(g, { instructor: e.instructor || null });
       } else if (e.tipo === 'confirmar') {
         const c = curso(g.tipo_acreditacion, g.modalidad);
         const anticipacion = Number(global.APD.parametro(d, 'dias_anticipacion_grupo') || 7);
+        // Lo confirma el área de Instructores y Capacitación o la Dirección (la base: confirmacion_sin_permiso; 25/10/2026)
+        if (!global.APD.perfilesAsignan(d).includes(e.perfil)) return;
         if (g.estado !== 'en_integracion' || activas(g.id).length < g.cupo_minimo || !e.fecha_inicio || !e.hora_entrada || !e.instructor) return;
         // Como la base: ni antes de la anticipación ni más de un año después de hoy (decisión 3, auditoría 2026-10-19)
         if (e.fecha_inicio < global.APD.sumaDias(hoy, anticipacion) || e.fecha_inicio > global.APD.sumaMeses(hoy, 12) || !c) return;
         g = ponGrupo(g, { estado: 'confirmado', estado_desde: en, fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada, instructor: e.instructor });
       } else if (e.tipo === 'proponer') {
-        // Fecha propuesta de un grupo por confirmar («Programar un curso», «Guardar sin confirmar»; 2026-10-18): la base
-        // admite primer día, hora de entrada e instructor en un grupo en integración (apd.grupo_cambio sólo los fija al
-        // confirmar); el curso no cambia. Lo que no se eligió queda vacío.
+        // La semana de un grupo por confirmar (paso 2 de «Grupos»; 2026-10-18): la base admite primer día y hora de entrada
+        // en un grupo en integración (apd.grupo_cambio sólo los exige al confirmar); el curso no cambia. La persona
+        // instructora no se toca aquí: la asigna el área de Instructores y Capacitación (evento «instructor», 25/10/2026).
         if (g.estado !== 'en_integracion' || !e.fecha_inicio || e.fecha_inicio > global.APD.sumaMeses(hoy, 12)) return;
-        g = ponGrupo(g, { fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada || null, instructor: e.instructor || null });
+        g = ponGrupo(g, { fecha_inicio: e.fecha_inicio, hora_entrada: e.hora_entrada || null });
       } else if (e.tipo === 'iniciar') {
         // Sólo en la versión de prueba (auditoría 2026-10-18, B5): la fecha simulada no avanza, así que un grupo
         // confirmado nunca llegaría a su primer día. «Iniciar el curso hoy» (menú de pruebas, en la ficha del grupo)
@@ -869,11 +882,14 @@
                 const dec = rd[`decision_${x.requisito}`];
                 if (dec) marcaDoc(x.requisito, { estado: dec, observacion: dec === 'con_observacion' ? rd[`observacion_${x.requisito}`] || '' : '', revisado_en: en, revisado_por: rev.revisor });
               }
-              pon({ estado: RESULTADO[rev.resultado], estado_desde: en,
+              // Con observaciones después de la última oportunidad para corregir, la base la cierra en lugar de regresarla
+              // (apd.solicitud_cambio; ajustes del equipo, 25/10/2026): la revisión que se acaba de agregar ya cuenta
+              const cierra = rev.resultado === 'con_observaciones' && global.APD.correccionesUsadas(d, s) > global.APD.oportunidadesCorreccion(d);
+              pon({ estado: cierra ? 'concluida_sin_atender' : RESULTADO[rev.resultado], estado_desde: en,
                 cita_en: rev.resultado === 'validada' && rd.cita_fecha ? citaEn(rd.cita_fecha, rd.cita_hora) : s.cita_en,
                 // La cuenta de inasistencias no se reinicia al volver a validar: la base cuenta todas (auditoría, A4)
                 inasistencias: s.inasistencias,
-                motivo_cierre: rev.resultado === 'rechazada' ? rd.motivo_rechazo || null : s.motivo_cierre });
+                motivo_cierre: cierra ? global.APD.MOTIVO_SIN_OPORTUNIDADES : rev.resultado === 'rechazada' ? rd.motivo_rechazo || null : s.motivo_cierre });
               // Al validar, la base crea la cita pendiente (apd.solicitud_cita)
               if (rev.resultado === 'validada' && s.cita_en) abreCita(s.cita_en);
             } else if (e.tipo === 'cotejo') {

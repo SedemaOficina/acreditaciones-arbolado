@@ -289,6 +289,12 @@
     if (porInasistencia) {
       sigue = 'No te presentaste a tu cita de cotejo por segunda vez y tu solicitud se cerró. Puedes iniciar una solicitud nueva.';
     }
+    // Se agotaron las oportunidades de corrección (ajustes del equipo, 25/10/2026): el motivo y una sola acción principal,
+    // «Iniciar una solicitud nueva»; todavía no había pagado, así que la nueva se puede iniciar de inmediato
+    const sinOportunidades = APD.cerradaSinOportunidades(s);
+    if (sinOportunidades) {
+      sigue = 'En la revisión de tu última corrección siguieron las observaciones y tu solicitud se cerró. Puedes iniciar una solicitud nueva de inmediato.';
+    }
 
     if (s.estado === 'con_observaciones') {
       const obs = datos.documento.filter((d) => d.solicitud_id === s.id && d.vigente && d.estado === 'con_observacion' && d.observacion);
@@ -302,6 +308,9 @@
         cambio.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: enCotejo ? 'En tu cita de cotejo esto no coincidió con lo que cargaste' : 'Lo que debes corregir',
           texto: el('ul', { class: 'lista-obs' }, obs.map((d) => el('li', { texto: APD.observacionDe(req[d.requisito] || d.requisito, d.observacion) }))) }));
       }
+      // Cuántas oportunidades le quedan para corregir, contando ésta (ajustes del equipo, 25/10/2026; lo del cotejo no cuenta)
+      const oport = APD.oportunidades(datos, s);
+      if (oport) cambio.push(el('p', { class: 'ficha-sigue', 'data-oportunidades': oport.ultima ? 'ultima' : oport.cotejo ? 'cotejo' : String(oport.quedan) }, [el('strong', { texto: oport.texto }), oport.detalle ? document.createTextNode(` ${oport.detalle}`) : null]));
       // El plazo con su fecha (auditoría 2026-10-18, D3). La regla del plazo todavía no está en la base (P02: propuesta de
       // 20 días hábiles): se dice cuándo llegaron las observaciones y la fecha límite queda marcada por confirmar.
       sigue = { texto: `Recibiste las observaciones el ${fechaCorta(s.estado_desde)}. Hay un plazo para corregir: si no reenvías tu solicitud a tiempo, se cierra.`,
@@ -357,8 +366,9 @@
     if (s.estado === 'sin_derecho_examen') sigue = 'No alcanzaste la asistencia mínima. Para obtener la acreditación haces un trámite nuevo, con su pago.';
     // El motivo es un párrafo: va a todo el ancho, como aviso, después de los datos (auditoría 2026-10-17)
     // Cerrada sin atender (por inasistencia o por plazo), el motivo de la base ya lo dice el texto de arriba
-    const motivo = s.motivo_cierre && s.estado !== 'concluida_sin_atender' ? el('div', { class: 'aviso' }, [APD.icono('info'), el('div', { class: 'aviso-texto aviso-pila' }, [
-      el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : s.estado === 'cancelada' ? 'Motivo de la cancelación' : 'Motivo' })]),
+    // Cerrada por oportunidades agotadas, el motivo sí se muestra (ajustes del equipo, 25/10/2026)
+    const motivo = s.motivo_cierre && (s.estado !== 'concluida_sin_atender' || sinOportunidades) ? el('div', { class: 'aviso' }, [APD.icono('info'), el('div', { class: 'aviso-texto aviso-pila' }, [
+      el('p', {}, [el('strong', { texto: s.estado === 'rechazada' ? 'Motivo del rechazo' : s.estado === 'cancelada' ? 'Motivo de la cancelación' : sinOportunidades ? 'Motivo del cierre' : 'Motivo' })]),
       el('p', { class: 'con-renglones', texto: APD.paraTi(s.motivo_cierre) })])]) : null;
 
     const acciones = [];
@@ -370,6 +380,12 @@
     if (['borrador', 'con_observaciones'].includes(s.estado)) {
       // La acción que toca hacer en ese estado: botón principal (auditoría 2026-10-17)
       acciones.push(el('a', { class: 'btn btn-primario', href: `solicitud.html?folio=${encodeURIComponent(s.folio)}`, texto: s.estado === 'borrador' ? 'Continuar solicitud' : 'Corregir y reenviar' }));
+    }
+    // Cerrada por oportunidades agotadas y es su solicitud más reciente de esa acreditación: «Iniciar una solicitud nueva»,
+    // si la puede pedir como nueva (ninguna regla de «una solicitud activa» lo impide: esta ya terminó)
+    const op = sinOportunidades ? APD.opciones(datos, persona, [])[s.tipo_acreditacion] : null;
+    if (op && op.disponible && op.modalidad === 'nueva' && APD.solicitudesDe(datos, persona).find((x) => x.tipo_acreditacion === s.tipo_acreditacion) === s) {
+      acciones.push(el('a', { class: 'btn btn-primario', 'data-nueva-tras-cierre': '', href: `solicitud.html?tipo=${s.tipo_acreditacion}`, texto: 'Iniciar una solicitud nueva' }));
     }
 
     // Etiqueta por familia, con icono; la cita nueva y el cierre por inasistencia dicen lo que pasó
@@ -472,12 +488,14 @@
     document.querySelector('[data-anteriores-seccion]').hidden = !anteriores.length;
     document.querySelector('[data-anteriores]').replaceChildren(...anteriores.map((s) => fichaSolicitud(datos, s, persona)));
 
-    document.querySelector('[data-nueva]').hidden = !puedeNueva;
+    // Con «Iniciar una solicitud nueva» en la solicitud cerrada por oportunidades agotadas, no se repite abajo (una sola
+    // acción principal; ajustes del equipo, 25/10/2026)
+    document.querySelector('[data-nueva]').hidden = !puedeNueva || Boolean(document.querySelector('[data-nueva-tras-cierre]'));
     /* Un solo botón principal por pantalla (auditoría 2026-10-20, C6-02 con P164; decisión 2 de Liber). Queda principal el
        primero en este orden y los demás pasan a secundarios: lo que toca hacer con una solicitud en curso (continuar,
        corregir y reenviar, cargar el documento), «Renovar» (la acreditación por renovar va primero en su lista) y, al
        final, «Iniciar una solicitud». Con la poda por vencer, «Renovar» es el principal (P164). */
-    const principales = ['[data-solicitudes]', '[data-acreditaciones]', '[data-nueva]']
+    const principales = ['[data-solicitudes]', '[data-acreditaciones]', '[data-anteriores]', '[data-nueva]']
       .flatMap((s) => [...document.querySelectorAll(`${s} .btn-primario`)]).filter((b) => !b.closest('[hidden]'));
     for (const b of principales.slice(1)) b.classList.replace('btn-primario', 'btn-secundario');
     document.querySelector('[data-cargando]').textContent = 'Aquí ves tus acreditaciones y en qué va cada solicitud.';

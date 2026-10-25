@@ -51,6 +51,9 @@
       <span data-estado></span>
     </div>
     <div data-persona></div>
+    <!-- La revisión de la segunda corrección es la última oportunidad de la persona (ajustes del equipo, 25/10/2026): se avisa
+         desde el inicio (FormKit.aviso, app/revisar.js) -->
+    <div data-ultima-oportunidad hidden></div>
     <!-- En una renovación sólo la constancia fiscal es obligatoria (decisión 2026-10-14): se dice aquí, para que no parezca que faltan pasos -->
     <p class="ayuda ayuda-bloque" data-renovacion hidden>Es una renovación: sólo la constancia de situación fiscal es obligatoria. Los demás documentos se revisaron en su trámite anterior y aquí hay un paso sólo por los que la persona actualizó.</p>
   </section>
@@ -419,6 +422,12 @@
         <div class="aviso aviso-ok"><svg class="icono" aria-hidden="true"><use href="#i-ok"></use></svg><div class="aviso-texto"><p><strong>La solicitud queda validada.</strong> En el siguiente paso elija la fecha de su cita de cotejo.</p></div></div>
       </div>
       <div data-si="resultado=con_observaciones">
+        <!-- En la revisión de la segunda corrección, con algo observado, la solicitud se cierra en lugar de regresar (ajustes
+             del equipo, 25/10/2026; la base: apd.solicitud_cambio). Lo muestra app/revisar.js. -->
+        <div class="aviso aviso-bloqueo" data-cierre hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-error"></use></svg>
+          <div class="aviso-texto"><p><strong>La solicitud se cerrará</strong> porque es la revisión de la segunda corrección y siguen las observaciones. Motivo: «Se agotaron las oportunidades de corrección». La persona lo verá en «Mis trámites» y podrá iniciar una solicitud nueva de inmediato.</p></div>
+        </div>
         <div class="campo" data-campo="mensaje_general" data-uso="Indicación general para la persona, además de las observaciones de cada documento (apd.revision.observacion_general).">
           <label class="etiqueta" for="mensaje_general">Mensaje para la persona (opcional)</label>
           <p class="ayuda">Las observaciones de cada documento ya le llegan; aquí puede agregar una indicación general.</p>

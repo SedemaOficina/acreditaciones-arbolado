@@ -6,10 +6,11 @@
    ACCESO SIMULADO: en la versión de prueba no hay cuentas del personal. Las
    pantallas entran con un perfil ficticio: «revisión y cotejo» (la misma
    persona revisa en línea, atiende las citas de cotejo, arma los grupos y sube
-   el material de estudio; decisión 2026-10-17, P27 y P92) o «instructor»
-   (asistencia y examen, INSTRUCTORA). Los perfiles de emisión y consulta se
-   simulan cuando existan sus pantallas. En la etapa 3 lo sustituye el acceso
-   del SIA.
+   el material de estudio; decisión 2026-10-17, P27 y P92), «instructor»
+   (asistencia y examen, INSTRUCTORA) o «capacitación» (el área de Instructores y
+   Capacitación: asigna la persona instructora y confirma los grupos; ajustes del
+   equipo, 25/10/2026). Los perfiles de emisión y consulta se simulan cuando
+   existan sus pantallas. En la etapa 3 lo sustituye el acceso del SIA.
 
    Las decisiones que se registran en una prueba sólo se recuerdan en este
    navegador (localStorage, con las claves de APD_ARCHIVOS_PRUEBA.CLAVES):
@@ -214,9 +215,10 @@
   }
 
   /* ----- Grupos (maqueta aprobada y decisiones del 2026-10-17) -----
-     La espera de cada curso, los grupos y su situación. Quién arma los grupos está por decidir (P92): mientras, el mismo
-     perfil «revisión y cotejo». Lo hecho en la prueba se guarda en «apd.personal.grupos» (una lista de eventos, en
-     orden) y APD.cargar lo aplica como la base (app/archivos-prueba.js, aplicaGrupos). */
+     La espera de cada curso, los grupos y su situación. Los arma el perfil «revisión y cotejo» (23/10, P92), que ya no
+     elige instructor; la persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación
+     (perfil «capacitación», ajustes del equipo del 25/10/2026). Lo hecho en la prueba se guarda en «apd.personal.grupos»
+     (una lista de eventos, en orden) y APD.cargar lo aplica como la base (app/archivos-prueba.js, aplicaGrupos). */
   const GRUPOS = A.CLAVES.grupos;
   /* Instructores ficticios (cuentas del acceso del SIA en la etapa 3, perfil «instructor», P27). Son los mismos de las
      listas cerradas de grupo.html y programar.html, que se quedan en el HTML porque de ahí sale el esquema con que el
@@ -230,16 +232,23 @@
   /* Perfil ficticio de la Dirección (perfil «administración» del acceso del SIA, P27): cancela acreditaciones con los
      instructores (P120, sesión de trabajo del 23/10/2026). No es una persona real. */
   const DIRECTORA = { usuario: 'direccion.prueba', nombre: 'Rosa Ejemplo Directora', perfil: 'Administración (Dirección)' };
-  /* El perfil con que entra la pantalla de acreditaciones en la prueba (?perfil=, lo pone el menú de pruebas): revisión y
-     cotejo, instructor o administración. En la etapa 3 lo da el acceso del SIA. */
-  const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, administracion: DIRECTORA };
-  function perfilDePrueba() {
+  /* Perfil ficticio del área de Instructores y Capacitación (perfil «capacitación» del acceso del SIA, P27; ajustes del
+     equipo, 25/10/2026): asigna o cambia la persona instructora de un grupo y lo confirma. No es una persona real. */
+  const CAPACITACION = { usuario: 'capacitacion.prueba', nombre: 'Patricia Ejemplo Capacitadora', perfil: 'Capacitación' };
+  /* El perfil con que entra una pantalla del personal en la prueba (?perfil=, lo pone el menú de pruebas): revisión y
+     cotejo, instructor, capacitación o administración. En la etapa 3 lo da el acceso del SIA. */
+  const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, capacitacion: CAPACITACION, administracion: DIRECTORA };
+  function perfilDePrueba(predeterminado) {
     const p = new URLSearchParams(global.location.search).get('perfil');
-    return PERFILES[p] ? p : 'revision_cotejo';
+    return PERFILES[p] ? p : predeterminado || 'revision_cotejo';
   }
   const quienEs = (perfil) => PERFILES[perfil] || REVISORA;
+  /* ¿Ese perfil asigna la persona instructora y confirma grupos? (parámetro perfiles_asignan_instructor) */
+  const asignaInstructor = (datos, perfil) => APD.perfilesAsignan(datos).includes(perfil);
+  /* La dirección de la ficha de un grupo con el perfil de la prueba (el de revisión y cotejo no la lleva) */
+  const fichaGrupo = (folio, perfil) => `grupo.html?folio=${encodeURIComponent(folio)}${perfil && perfil !== 'revision_cotejo' ? `&perfil=${perfil}` : ''}`;
   /* El nombre de una cuenta del personal (las ficticias de la prueba); si no es de ellas, la cuenta tal cual */
-  const nombreDeCuenta = (u) => ([REVISORA, DIRECTORA].find((x) => x.usuario === u) || {}).nombre || nombreInstructor(u);
+  const nombreDeCuenta = (u) => ([REVISORA, DIRECTORA, CAPACITACION].find((x) => x.usuario === u) || {}).nombre || nombreInstructor(u);
   const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
   /* Cada evento lleva su uid, para retirarlo si la base no lo habría aplicado */
   const uid = () => (global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -551,7 +560,8 @@
     return hoyL;
   }
 
-  /* Cabecera de sesión del personal. El perfil «instructor» sólo ve sus grupos (asistencia y examen). */
+  /* Cabecera de sesión del personal. El perfil «instructor» sólo ve sus grupos (asistencia y examen); el de «capacitación»,
+     su inicio con los grupos que esperan persona instructora o confirmación (ajustes del equipo, 25/10/2026). */
   function pintaSesion(contenedor, actual, perfil) {
     if (!contenedor) return;
     const salir = el('a', { class: 'btn-enlace', href: 'index.html', texto: 'Salir' });
@@ -561,8 +571,10 @@
     const acreditaciones = enlace(`acreditaciones.html${perfil && perfil !== 'revision_cotejo' ? `?perfil=${perfil}` : ''}`, 'acreditaciones', 'Acreditaciones');
     const enlaces = perfil === 'instructor'
       ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen'), acreditaciones]
-      : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
-        enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones];
+      : perfil === 'capacitacion'
+        ? [enlace('capacitacion.html', 'capacitacion', 'Grupos por asignar y confirmar')]
+        : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
+          enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones];
     contenedor.replaceChildren(
       // El perfil no es un estado (auditoría 2026-10-18, B11 y D6): va como texto, no como etiqueta de estado
       el('p', { class: 'sesion-nombre' }, [document.createTextNode(quien.nombre), el('span', { class: 'sesion-perfil', texto: `Perfil: ${quien.perfil.toLowerCase()}` })]),
@@ -643,7 +655,7 @@
 
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     delDia, motivoDiaCita, vigilaDiaCita,
-    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, perfilDePrueba, quienEs, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas };
 }(window));
