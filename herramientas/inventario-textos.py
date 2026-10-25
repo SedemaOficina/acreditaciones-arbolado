@@ -5,7 +5,8 @@ personal), con la pantalla, la sección, el tipo, la condición
 en que aparece y dónde se cambia:
   · docs/textos/estaticos.json (lo saca herramientas/inventario-textos.mjs de las páginas, sin ejecutar scripts);
   · los textos que pintan los scripts del sitio según el perfil, el estado o la respuesta (lista curada abajo);
-  · los mensajes de la base al guardar o enviar (apd.error en db/apd/03-apd-reglas.sql);
+  · los mensajes de la base al guardar o enviar (apd.error en db/apd/03-apd-reglas.sql y, desde el 25/10/2026, en
+    db/apd/03b-apd-registro-asistido.sql);
   · los mensajes de validación del Estándar de formularios (formkit/js/validaciones.config.js).
 Escribe docs/textos/inventario-textos.json y docs/textos/inventario-textos.xlsx.
 
@@ -38,7 +39,7 @@ def corta_condicion(c):
 def donde_pagina(r):
     if r.get('origen') == 'Catálogo de requisitos (base)':
         return 'Catálogo de requisitos de la base (db/apd/04-apd-catalogos.sql)'
-    if r['archivo'] in ('cuenta.html', 'datos.html') and r['seccion'].endswith('Tu adscripción'):
+    if r['archivo'] in ('cuenta.html', 'datos.html') and r['seccion'].endswith('Tu adscripción') or r['archivo'] == 'asistido.html' and r['seccion'].endswith('Su adscripción'):
         return 'Fragmento de adscripción (herramientas/plantillas/adscripcion.html)'
     return f"Página (sitio/{r['archivo']})" if r['archivo'] != '*.html' else 'Todas las páginas'
 
@@ -46,7 +47,7 @@ filas = []
 for r in estaticos:
     filas.append({
         'pantalla': r['pantalla'], 'seccion': r['seccion'] or '—', 'tipo': r['tipo'],
-        'cuando': corta_condicion(r['cuando']), 'texto': r['texto'], 'quien': PERSONAL if r['archivo'] == 'grupos.html' else PERSONA, 'donde': donde_pagina(r), 'obs': ''
+        'cuando': corta_condicion(r['cuando']), 'texto': r['texto'], 'quien': PERSONAL if r['archivo'] in ('grupos.html', 'asistido.html', 'ventanilla.html') else PERSONA, 'donde': donde_pagina(r), 'obs': ''
     })
 
 # La adscripción es el mismo fragmento en «Crea tu cuenta» y en «Mis datos»: una sola fila por texto
@@ -56,7 +57,8 @@ for f in filas:
     if f['donde'].startswith('Fragmento de adscripción'):
         k = (f['tipo'], f['texto'], f['cuando'])
         if k in vistos:
-            vistos[k]['pantalla'] = 'Crea tu cuenta y Mis datos'
+            # Desde el 25/10/2026 el fragmento también está en el registro asistido del personal
+            vistos[k]['pantalla'] = 'Crea tu cuenta, Mis datos y Registro asistido' if f['pantalla'].startswith('Registro asistido') or vistos[k]['pantalla'].endswith('Registro asistido') else 'Crea tu cuenta y Mis datos'
             continue
         vistos[k] = f
     unidas.append(f)
@@ -238,8 +240,41 @@ dinamicos += [
     (G, 'Grupos programados', 'Botón o enlace', 'Acciones de cada grupo', 'Completar con las N que más esperan · Confirmar el grupo · Elegir semana / Cambiar la semana / Elegir otra semana · Agregar personas', D('grupos.js')),
     (G, 'Grupos programados', 'Texto', 'Lo que falta', 'Semana, N personas, hora e instructor / Confirmarlo / —', D('grupos.js')),
 ]
+# Registro asistido (decisión de Liber del 25/10/2026): lo que pintan los scripts del personal (de usted) y lo que se le dice
+# a la persona por teléfono o en la ventanilla (de tú, para leérselo)
+RA, VE, IN = 'Registro asistido (personal)', 'Ventanilla (personal)', 'Inicio del personal · avisos por teléfono'
+S = 'Solicitud (registro asistido)'
+dinamicos += [
+    (RA, 'Datos de la persona', 'Error', 'CURP de una persona menor de edad', 'Según su CURP, la persona todavía no tiene 18 años cumplidos: no se puede registrar ni solicitar una acreditación.', D('cruzadas-propias.js')),
+    (RA, 'Fotografía', 'Aviso', 'Sin cámara o sin permiso', 'Esta computadora no deja usar la cámara · Cargue una fotografía con «Cargar una fotografía». / No se pudo usar la cámara · Revise que la computadora tenga cámara y que el navegador tenga permiso de usarla, o cargue una fotografía.', D('asistido.js')),
+    (RA, 'Confirmar', 'Texto', 'Resumen', 'Aviso de privacidad: Se le leyó y lo aceptó · Correo electrónico: No tiene (es opcional) · Cambiar', D('asistido.js')),
+    (RA, 'Confirmar', 'Error', 'CURP ya registrada', 'No se registró la cuenta. Ya hay una cuenta con esta CURP. Busque a la persona en la ventanilla para ver en qué va su trámite. / Esta CURP está en el registro anterior de la Secretaría (Kobo). Cómo se registra con ayuda a una persona del registro anterior está por decidir (P208).', D('config-asistido.js')),
+    (RA, 'Confirmar', 'Error', 'Correo de otra cuenta', 'Este correo ya está registrado en otra cuenta. Escriba otro o déjelo vacío.', D('config-asistido.js')),
+    (S, 'Paso 1', 'Texto (cambia)', 'Adscripción en el registro asistido', 'La solicitud se envía con la que se capturó al registrar a la persona en el Vivero.', D('solicitud.js')),
+    (S, 'Acuse', 'Secuencia', 'Solicitud capturada por el personal', 'La Secretaría revisa tus documentos. · Te avisamos por teléfono: si falta algo, vienes a la ventanilla y lo corregimos contigo; si todo está completo, te damos una cita de cotejo. · Para preguntar en qué va tu trámite, ven a la ventanilla con tu folio.', D('solicitud.js')),
+    (S, 'Acuse de una corrección', 'Secuencia', 'Corrección cargada por el personal', 'Si todavía falta algo, te avisamos por teléfono y lo corregimos contigo en la ventanilla.', D('solicitud.js')),
+    (S, 'Hoja para imprimir', 'Texto', 'Al imprimir el acuse', 'Folio · Fecha · Nombre · Acreditación · Teléfono de informes: Pendiente (P132) · Pregunta por tu trámite en la ventanilla del SEDE, DIRECCIÓN, HORARIO. Lleva este acuse con tu folio.', D('solicitud.js')),
+    (S, 'Solicitud', 'Error', 'Persona que no es del registro asistido', 'No encontramos a esta persona entre las registradas en el Vivero (registro asistido). Búsquela en la ventanilla.', D('solicitud.js')),
+    (IN, 'Lista', 'Texto', 'Siempre', 'N avisos pendientes, del más antiguo al más reciente. / No hay avisos por teléfono pendientes.', D('registro-asistido.js')),
+    (IN, 'Cada aviso', 'Texto', 'Siempre', 'NOMBRE · teléfono · TÍTULO · Solicitud FOLIO · Desde el DD/MM/AAAA HH:MM · Qué decirle: Hola, te llamamos de la Secretaría del Medio Ambiente. … · Se le avisó · No contestó', D('registro-asistido.js')),
+    (IN, 'Cada aviso', 'Título', 'Según el aviso', 'Solicitud con observaciones · Cerrada por no corregir a tiempo · Cita de cotejo · Solicitud rechazada · Resultado de la cita de cotejo · Cuenta bloqueada por identidad · Grupo asignado · Cambio en su grupo · Resultado del examen · Acreditación entregada · Acreditación cancelada · Reposición de la credencial', D('registro-asistido.js')),
+    (IN, 'Qué decirle (de tú)', 'Texto', 'Con observaciones', 'A tu solicitud FOLIO le falta corregir algo: DOCUMENTOS. Ven a la ventanilla del SEDE, HORARIO, para que te digamos qué falta y lo corrijamos contigo. Hay un plazo para corregir.', D('registro-asistido.js')),
+    (IN, 'Qué decirle (de tú)', 'Texto', 'Cita de cotejo', 'Tus documentos están completos. Tu cita de cotejo es el DÍA a las HH:MM, en el SEDE. Lleva los mismos documentos impresos, tu identificación oficial y el comprobante del pago de $MONTO con la referencia REFERENCIA.', D('registro-asistido.js')),
+    (IN, 'Qué decirle (de tú)', 'Texto', 'Resultado de la cita', 'Tu cotejo terminó; tu expediente es el EXP-… / En tu cita faltó un documento: …; tráelo hoy mismo … / En tu cita, un documento no coincidió … / Como no llegaste a tu cita (o no llevaste el comprobante de pago), te dimos una cita nueva: … / Tu solicitud FOLIO se cerró porque no llegaste dos veces a tu cita de cotejo.', D('registro-asistido.js')),
+    (IN, 'Qué decirle (de tú)', 'Texto', 'Otros avisos', 'Cerrada sin corregir · Rechazada (con el motivo) · Cuenta bloqueada · Grupo asignado (día, hora y sede) · Baja, cambio o grupo por confirmar · Resultado del examen · Acreditación entregada o cancelada · Reposición de la credencial', D('registro-asistido.js')),
+    (IN, 'Al registrar', 'Aviso', 'Resultado', 'Se registró que se le avisó · NOMBRE: aviso hecho. / Se registró que no contestó · NOMBRE no contestó. Lo que se le iba a decir se le dice cuando vaya a la ventanilla. / Ya estaba registrado · Otra persona del personal ya registró el aviso de NOMBRE.', D('registro-asistido.js')),
+    ('Revisar una solicitud y Cita de cotejo (personal)', 'Cabecera', 'Estado', 'Persona del registro asistido sin activar', 'Registro asistido: avisar por teléfono, 55 1234 5678', D('registro-asistido.js')),
+    (VE, 'Búsqueda', 'Texto', 'Al buscar', 'Escriba al menos 3 caracteres para buscar. / N personas encontradas. / Nadie coincide con la búsqueda. Revise lo que escribió.', D('ventanilla.js')),
+    (VE, 'Ficha', 'Estado', 'Según la cuenta', 'Registro asistido · avisos por teléfono / Registro asistido · ya activó su cuenta / Registro anterior · sin cuenta en línea / Cuenta bloqueada / Cuenta en línea', D('ventanilla.js')),
+    (VE, 'Ficha', 'Aviso', 'Con avisos por teléfono pendientes', 'Tiene un aviso por teléfono pendiente (Tiene N avisos…) · Si está aquí, dígaselo y regístrelo en la lista de avisos por teléfono pendientes.', D('ventanilla.js')),
+    (VE, 'Ficha · Qué decirle (de tú)', 'Texto', 'Según el estado', 'Tu solicitud todavía no se envía: falta terminar de capturarla contigo. / La Secretaría está revisando tus documentos. … / A tu solicitud le falta corregir un documento: … Lo corregimos aquí contigo. Hay un plazo para corregir. / Tu cita de cotejo es el … / Tu curso empieza el … / Tu cotejo terminó. Estás en espera de un grupo del curso … (y los «qué sigue» de «Mis trámites»)', D('registro-asistido.js')),
+    (VE, 'Ficha', 'Botón o enlace', 'Persona del registro asistido', 'Leerle lo que falta y cargar lo corregido · Seguir capturando su solicitud · Capturar una solicitud nueva', D('ventanilla.js')),
+    ('Entrar', 'Envío', 'Error', 'Cuenta del registro asistido sin activar', 'Tu cuenta todavía no está activa · La Secretaría registró tu cuenta en el Vivero y todavía no tiene contraseña. Para verla en línea, actívala en «Crea tu cuenta» con tu CURP, tu correo y una contraseña.', D('config-entrar.js')),
+    ('Crea tu cuenta', 'Acuse', 'Texto', 'Al activar una cuenta del registro asistido', 'Tu cuenta ya tiene lo que la Secretaría capturó contigo en el Vivero: lo verás en «Mis trámites».', D('config-cuenta.js')),
+]
+DE_PERSONAL = {G, RA, VE, IN, S, 'Revisar una solicitud y Cita de cotejo (personal)'}
 for p, s, t, c, x, d in dinamicos:
-    quien = PERSONAL if p == G else PERSONA if p != 'Verificar una acreditación' else 'Cualquier persona (público)'
+    quien = PERSONAL if p in DE_PERSONAL else PERSONA if p != 'Verificar una acreditación' else 'Cualquier persona (público)'
     filas.append({'pantalla': p, 'seccion': s, 'tipo': t, 'cuando': c, 'texto': x, 'quien': quien, 'donde': d, 'obs': ''})
 
 # ── 3. Mensajes de la base al guardar o enviar ────────────────────────────────────────────────────────────
@@ -248,8 +283,12 @@ VE_PERSONA = {'anterior_no_corresponde', 'anterior_no_es_la_ultima', 'archivo_gr
               'formato_no_admitido', 'renovacion_vencida', 'requisito_ajeno', 'sin_adscripcion', 'sin_fotografia',
               'sin_poda_vigente', 'solicitud_cerrada'}
 sql = (RAIZ / 'db/apd/03-apd-reglas.sql').read_text(encoding='utf8')
+# Las del registro asistido (25/10/2026), en su archivo; a la persona sólo le hablan las de su cuenta
+sql_asistido = (RAIZ / 'db/apd/03b-apd-registro-asistido.sql').read_text(encoding='utf8')
+VE_PERSONA |= {'activacion_sin_correo', 'cuenta_sin_contrasena'}
 vistos = set()
-for m in re.finditer(r"apd\.error\('([a-z_]+)',\s*(?:format\()?'((?:[^']|'')*)'", sql):
+for archivo, texto_sql in (('03-apd-reglas.sql', sql), ('03b-apd-registro-asistido.sql', sql_asistido)):
+  for m in re.finditer(r"apd\.error\('([a-z_]+)',\s*(?:format\()?'((?:[^']|'')*)'", texto_sql):
     cod, msg = m.group(1), m.group(2).replace("''", "'")
     msg = re.sub(r'%s', '…', msg)
     if (cod, msg) in vistos: continue
@@ -260,7 +299,7 @@ for m in re.finditer(r"apd\.error\('([a-z_]+)',\s*(?:format\()?'((?:[^']|'')*)'"
     if cod in ('simulacion_prohibida', 'parametro_inexistente'): continue  # internos de la base de pruebas
     filas.append({'pantalla': 'Mensajes al guardar o enviar', 'seccion': 'Reglas de la base', 'tipo': 'Error',
                   'cuando': f'Regla «{cod}»', 'texto': msg, 'quien': quien,
-                  'donde': 'Base de datos (db/apd/03-apd-reglas.sql)', 'obs': ''})
+                  'donde': f'Base de datos (db/apd/{archivo})', 'obs': ''})
 
 # ── 4. Mensajes de validación del Estándar de formularios ─────────────────────────────────────────────────
 cfg = (RAIZ / 'sitio/formkit/js/validaciones.config.js').read_text(encoding='utf8')

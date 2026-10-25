@@ -2031,6 +2031,15 @@
  {
   "pantalla": "Solicitud",
   "archivo": "solicitud.html",
+  "tipo": "Aviso",
+  "texto": "Registro asistido: usted captura la solicitud de Con la persona presente. Las preguntas van escritas para ella: léaselas y capture lo que conteste. Cargue sus documentos escaneados en este momento. En el último paso léale lo capturado y marque que lo aceptó.",
+  "cuando": "Al capturar la solicitud por la persona (registro asistido)",
+  "seccion": "Por ahora no tienes una solicitud disponible",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
   "tipo": "Recordatorio",
   "texto": "Estás solicitando:",
   "cuando": "Después de elegir la acreditación (recordatorio arriba de cada paso)",
@@ -2698,7 +2707,7 @@
   "archivo": "solicitud.html",
   "tipo": "Pregunta",
   "texto": "Manifiesto bajo protesta de decir verdad que la información que proporciono en este formulario es auténtica, completa y corresponde a mi situación real",
-  "cuando": "Siempre",
+  "cuando": "Si «Registro asistido» es «la captura la persona»",
   "seccion": "Revisión · Revisa antes de enviar",
   "origen": ""
  },
@@ -2707,7 +2716,7 @@
   "archivo": "solicitud.html",
   "tipo": "Ayuda",
   "texto": "Asimismo, reconozco que proporcionar información falsa puede ocasionar la cancelación del trámite.",
-  "cuando": "Siempre",
+  "cuando": "Si «Registro asistido» es «la captura la persona»",
   "seccion": "Revisión · Revisa antes de enviar",
   "origen": ""
  },
@@ -2716,7 +2725,25 @@
   "archivo": "solicitud.html",
   "tipo": "Pregunta",
   "texto": "Leí el aviso de privacidad",
-  "cuando": "Siempre",
+  "cuando": "Si «Registro asistido» es «la captura la persona»",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Pregunta",
+  "texto": "Le leí a la persona lo capturado, la declaración bajo protesta de decir verdad y el aviso de privacidad, y los aceptó",
+  "cuando": "Si «Registro asistido» es «la captura el personal»",
+  "seccion": "Revisión · Revisa antes de enviar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Ayuda",
+  "texto": "Queda registrado con su nombre y la hora. Sin esta marca no se envía.",
+  "cuando": "Si «Registro asistido» es «la captura el personal»",
   "seccion": "Revisión · Revisa antes de enviar",
   "origen": ""
  },
@@ -2834,6 +2861,24 @@
   "tipo": "Botón o enlace",
   "texto": "Ir a mis trámites",
   "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Imprimir el acuse",
+  "cuando": "Al enviar con éxito (acuse); Al enviar la solicitud capturada por el personal (registro asistido)",
+  "seccion": "Recibimos tu solicitud",
+  "origen": ""
+ },
+ {
+  "pantalla": "Solicitud",
+  "archivo": "solicitud.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ir a la ventanilla",
+  "cuando": "Al enviar con éxito (acuse); Al enviar la solicitud capturada por el personal (registro asistido)",
   "seccion": "Recibimos tu solicitud",
   "origen": ""
  },
@@ -3770,6 +3815,932 @@
   "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
   "cuando": "Siempre",
   "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Inicio del personal",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Título",
+  "texto": "Léale el aviso de privacidad",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Léale el aviso de privacidad",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Introducción",
+  "texto": "Para una persona que no sabe leer ni escribir, con ella presente. Usted crea su cuenta, captura su solicitud y le da seguimiento por teléfono y en la ventanilla. Empiece por leerle en voz alta el aviso.",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Léale el aviso de privacidad",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Aviso",
+  "texto": "Versión de prueba: use datos inventados No capture datos ni fotografías de personas reales. Lo que capture se guarda sólo en este navegador y se borra solo cuando pasan 7 días sin usar la prueba.",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Léale el aviso de privacidad",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Subtítulo",
+  "texto": "Aviso de privacidad simplificado",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Texto",
+  "texto": "La Secretaría del Medio Ambiente recaba tu nombre, tu CURP (y de ella tu sexo y tu fecha de nacimiento), tu fotografía de frente, tu teléfono, tu correo si tienes y la institución para la que trabajas, si es el caso, para crear tu cuenta, tramitar tu acreditación, reconocerte en la cita, el curso y el examen, avisarte el avance por teléfono y llevar el padrón de personas acreditadas. Al entregarte la credencial te toma otra fotografía, que es la que se imprime en ella.",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Texto",
+  "texto": "Fundamento: [Art. __, fracc. __]. Pendiente: lo completa la Unidad de Transparencia.",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Nota",
+  "texto": "Las preguntas con * son obligatorias.",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Le leí el aviso de privacidad a la persona y lo aceptó",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "Queda registrado con su nombre y la hora. Sin esta marca no se continúa.",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Aviso de privacidad · Aviso de privacidad simplificado",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Título",
+  "texto": "Datos de la persona",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Introducción",
+  "texto": "Capture los datos como vienen en su CURP. Las preguntas de la adscripción van escritas para la persona: léaselas tal cual.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Nota",
+  "texto": "Las preguntas con * son obligatorias.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre o nombres",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Primer apellido",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Segundo apellido",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "Si no tiene segundo apellido, déjelo vacío.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "CURP",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "18 caracteres, de su constancia de CURP o de su identificación. La persona necesita tener 18 años cumplidos.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Fecha de nacimiento",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "Se toma de la CURP.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Sexo",
+  "cuando": "Siempre",
+  "seccion": "Datos · Datos de la persona",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Subtítulo",
+  "texto": "Cómo se le avisa",
+  "cuando": "Siempre",
+  "seccion": "Datos · Cómo se le avisa",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Teléfono",
+  "cuando": "Siempre",
+  "seccion": "Datos · Cómo se le avisa",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "Diez dígitos. Por aquí se le avisan su cita, su curso y sus resultados.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Cómo se le avisa",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Correo electrónico (si tiene)",
+  "cuando": "Siempre",
+  "seccion": "Datos · Cómo se le avisa",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "Opcional. Si lo da, no puede ser el de otra cuenta.",
+  "cuando": "Siempre",
+  "seccion": "Datos · Cómo se le avisa",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Subtítulo",
+  "texto": "Su adscripción",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿Trabajas para alguna empresa, institución o dependencia?",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "Cuenta también si trabajas para un particular. Si trabajas por tu cuenta, sin depender de nadie, elige «No, soy independiente».",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Sí",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "No, soy independiente",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿De qué tipo es?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Empresa, consultoría o particular — Persona moral o física: empresas, consultoras o trabajo para un particular.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dependencia del Gobierno de la Ciudad de México",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Alcaldía",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dependencia del Gobierno Federal — Por ejemplo, la CFE.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Institución educativa — Por ejemplo, la UNAM o Chapingo.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la empresa, consultoría o persona física",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "El nombre o la razón social, tal como aparece en su constancia de situación fiscal. Escribe las primeras letras: si ya está registrada, elígela de la lista; si no, escríbela completa.",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Empresa, consultoría o particular»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué dependencia del Gobierno de la Ciudad de México perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Secretaría de Obras y Servicios (SOBSE)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Secretaría del Medio Ambiente (SEDEMA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Procuraduría Ambiental y del Ordenamiento Territorial (PAOT)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Otra",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la dependencia",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Otra» | Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»; Si «¿A qué dependencia del Gobierno Federal perteneces?» es «Otra»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué Dirección General de la SEDEMA perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dirección General del Sistema de Áreas Naturales Protegidas y Áreas de Valor Ambiental (DGSANPAVA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de la Comisión de Recursos Naturales y Desarrollo Rural (DGCORENADR)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Evaluación de Impacto y Regulación Ambiental (DGEIRA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Vigilancia Ambiental (DGIVA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Coordinación de Políticas y Cultura Ambiental (DGCPCA)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Dirección General de Zoológicos y Conservación de la Fauna Silvestre (DGZCFS)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno de la Ciudad de México»; Si «¿A qué dependencia del Gobierno de la Ciudad de México perteneces?» es «Secretaría del Medio Ambiente (SEDEMA)»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿En qué alcaldía trabajas?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Indicación de lista",
+  "texto": "Elige la alcaldía",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción"
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Álvaro Obregón",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Azcapotzalco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Benito Juárez",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Coyoacán",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Cuajimalpa de Morelos",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Cuauhtémoc",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Gustavo A. Madero",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Iztacalco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Iztapalapa",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "La Magdalena Contreras",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Miguel Hidalgo",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Milpa Alta",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Tláhuac",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Tlalpan",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Venustiano Carranza",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción de lista",
+  "texto": "Xochimilco",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Alcaldía»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué dependencia del Gobierno Federal perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Comisión Federal de Electricidad (CFE)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Dependencia del Gobierno Federal»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "¿A qué institución educativa perteneces?",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Universidad Nacional Autónoma de México (UNAM)",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Opción",
+  "texto": "Universidad Autónoma Chapingo",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Nombre de la institución",
+  "cuando": "Si «¿Trabajas para alguna empresa, institución o dependencia?» es «Sí»; Si «¿De qué tipo es?» es «Institución educativa»; Si «¿A qué institución educativa perteneces?» es «Otra»",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Datos · Su adscripción",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Título",
+  "texto": "Su fotografía",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Pregunta",
+  "texto": "Fotografía de frente",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Ayuda",
+  "texto": "De frente, con el rostro descubierto (sin lentes oscuros, gorra ni cubrebocas), fondo claro y buena luz. Tómela con la cámara de la computadora o cargue una. En el cotejo se confirma contra su identificación oficial.",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Cargar una fotografía",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Tomar fotografía",
+  "cuando": "En teléfono o equipo con cámara",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Usar la cámara de la computadora",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Tomar la fotografía",
+  "cuando": "Con la cámara de la computadora abierta",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Cancelar",
+  "cuando": "Con la cámara de la computadora abierta",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Fotografía · Su fotografía",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Título",
+  "texto": "Confirme los datos",
+  "cuando": "Siempre",
+  "seccion": "Confirmar · Confirme los datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Introducción",
+  "texto": "Léale a la persona sus datos. Si algo no está bien, cámbielo antes de registrarla. Después sigue directo su solicitud.",
+  "cuando": "Siempre",
+  "seccion": "Confirmar · Confirme los datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Confirmar · Confirme los datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Registrar y capturar su solicitud",
+  "cuando": "Siempre",
+  "seccion": "Confirmar · Confirme los datos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Título",
+  "texto": "Cuenta registrada",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Cuenta registrada",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Introducción",
+  "texto": "Sigue capturar su solicitud.",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Cuenta registrada",
+  "origen": ""
+ },
+ {
+  "pantalla": "Registro asistido (personal)",
+  "archivo": "asistido.html",
+  "tipo": "Botón o enlace",
+  "texto": "Capturar su solicitud",
+  "cuando": "Al enviar con éxito (acuse)",
+  "seccion": "Cuenta registrada",
+  "origen": ""
+ },
+ {
+  "pantalla": "Ventanilla (personal)",
+  "archivo": "ventanilla.html",
+  "tipo": "Botón o enlace",
+  "texto": "Inicio del personal",
+  "cuando": "Siempre",
+  "seccion": "",
+  "origen": ""
+ },
+ {
+  "pantalla": "Ventanilla (personal)",
+  "archivo": "ventanilla.html",
+  "tipo": "Título",
+  "texto": "Ventanilla",
+  "cuando": "Siempre",
+  "seccion": "Ventanilla",
+  "origen": ""
+ },
+ {
+  "pantalla": "Ventanilla (personal)",
+  "archivo": "ventanilla.html",
+  "tipo": "Introducción",
+  "texto": "Busque a la persona y dígale en qué va su trámite. Lo de «Qué decirle» va escrito para ella: léaselo.",
+  "cuando": "Siempre",
+  "seccion": "Ventanilla",
+  "origen": ""
+ },
+ {
+  "pantalla": "Ventanilla (personal)",
+  "archivo": "ventanilla.html",
+  "tipo": "Pregunta",
+  "texto": "CURP, nombre o folio",
+  "cuando": "Siempre",
+  "seccion": "Ventanilla",
+  "origen": ""
+ },
+ {
+  "pantalla": "Ventanilla (personal)",
+  "archivo": "ventanilla.html",
+  "tipo": "Ayuda",
+  "texto": "La CURP, el nombre (al menos 3 letras), el folio de su solicitud (APD-S-…) o su número de expediente (EXP-…).",
+  "cuando": "Siempre",
+  "seccion": "Ventanilla",
+  "origen": ""
+ },
+ {
+  "pantalla": "Ventanilla (personal)",
+  "archivo": "ventanilla.html",
+  "tipo": "Texto",
+  "texto": "Escriba para buscar.",
+  "cuando": "Siempre",
+  "seccion": "Ventanilla",
   "origen": ""
  }
 ]
