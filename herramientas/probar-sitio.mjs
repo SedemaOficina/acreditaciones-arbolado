@@ -1788,6 +1788,9 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await captura(pg, `asistencia-guardada-${sufijo}`);
   // La ficha de un grupo concluido conserva la asistencia de conjunto
   await pg.goto(BASE + `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'concluido').folio}`);
+  await pg.waitForSelector('[data-conc-filas] tr', { state: 'attached' });
+  // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» es una pestaña; se abre para verla
+  if (await pg.locator('#pt-asistencia').count()) await pg.click('#pt-asistencia');
   await pg.waitForSelector('[data-conc-filas] tr');
   comprueba(/Sin derecho/.test(await texto('[data-concentrado]')), t('la ficha de un grupo concluido muestra la asistencia por día y quién se quedó sin derecho'));
   await sinDesborde(pg, t('grupo concluido con su concentrado'));
@@ -6609,7 +6612,8 @@ async function sesion23(navegador) {
     await page.waitForSelector('.asistencia-fila');
     const tira = await page.textContent('main');
     await page.goto(BASE + 'grupo.html?folio=APD-G-2026-003');
-    await page.waitForSelector('[data-conc-encabezado] th');
+    // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» va en una pestaña (oculta al abrir)
+    await page.waitForSelector('[data-conc-encabezado] th', { state: 'attached' });
     const encabezado = await page.textContent('[data-conc-encabezado]');
     const datosG = await page.textContent('[data-datos]');
     comprueba(/16\/10\/2026 · repaso de conocimientos y examen final/.test(encabezado) && /Último día \(repaso de conocimientos y examen final\)/.test(datosG) && /Hora de salida\s*15:00/.test(datosG) && !errores.length,
@@ -7121,8 +7125,10 @@ async function asistenciaDia5(navegador) {
       comprueba(primero === 'Día 5 de 5 · Pase de lista en el salón de cómputo', t(`${ancho}: en «Aplicar el examen», el primer paso es «Día 5 de 5 · Pase de lista en el salón de cómputo» («${primero}»)`));
       const lista = await texto(page, '[data-lista-texto]');
       comprueba(/asistencia del día 5/.test(lista) && /Repaso de conocimientos y examen final/.test(lista), t(`${ancho}: el pase de lista dice que es la asistencia del día 5, el de repaso y examen final («${lista.slice(0, 160)}»)`));
-      comprueba(await ordenAntes(page, '#t-pase-lista', '[data-tabla]') && await ordenAntes(page, '[data-tabla]', '#t-el-examen') && await ordenAntes(page, '#t-el-examen', '[data-imprimir]'),
-        t(`${ancho}: primero el pase de lista (con su lista), después el examen (códigos y pantalla del examen)`));
+      // Acomodo de escritorio (25/10/2026): desde 1024 px «Imprimir los códigos» va en la franja del pase de lista, arriba
+      comprueba(await ordenAntes(page, '#t-pase-lista', '[data-tabla]') && await ordenAntes(page, '[data-tabla]', '#t-el-examen')
+        && (ancho >= 1024 ? Boolean(await page.$('[data-franja-accion] [data-imprimir]')) : await ordenAntes(page, '#t-el-examen', '[data-imprimir]')),
+        t(`${ancho}: primero el pase de lista (con su lista), después el examen (códigos y pantalla del examen; en computadora, «Imprimir los códigos» en la franja del pase de lista)`));
       await revisaAxe(page, `${ancho}: «Aplicar el examen»`);
       // Pasar lista: una presente y otra que no llegó
       const ins = await page.$$eval('[data-filas] [data-accion="presente"]', (l) => l.map((b) => b.dataset.ins));
@@ -7141,6 +7147,9 @@ async function asistenciaDia5(navegador) {
         t(`${ancho}: en «Asistencia», el pase de lista cuenta como la asistencia del día 5 («${ult}»)`));
       // En la ficha del grupo: la columna del último día
       await page.goto(BASE + `grupo.html?folio=${G3}`);
+      await page.waitForSelector('[data-conc-filas] tr', { state: 'attached' });
+      // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» es una pestaña; se abre para verla
+      if (await page.locator('#pt-asistencia').count()) await page.click('#pt-asistencia');
       await page.waitForSelector('[data-conc-filas] tr');
       const celda = (nombre) => page.evaluate((n) => {
         const tr = [...document.querySelectorAll('[data-conc-filas] tr')].find((r) => r.cells[0].textContent.trim() === n.trim());
