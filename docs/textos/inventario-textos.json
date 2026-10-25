@@ -10894,7 +10894,7 @@
   "seccion": "Cada aviso",
   "tipo": "Título",
   "cuando": "Según el aviso",
-  "texto": "Solicitud con observaciones · Cerrada por no corregir a tiempo · Cita de cotejo · Solicitud rechazada · Resultado de la cita de cotejo · Cuenta bloqueada por identidad · Grupo asignado · Cambio en su grupo · Resultado del examen · Acreditación entregada · Acreditación cancelada · Reposición de la credencial",
+  "texto": "Solicitud con observaciones · Cerrada por no corregir a tiempo · Cita de cotejo · Solicitud rechazada · Cerrada: sin más oportunidades de corrección · Resultado de la cita de cotejo · Cuenta bloqueada por identidad · Grupo asignado · Cambio en su grupo · Resultado del examen · Acreditación entregada · Acreditación cancelada · Reposición de la credencial",
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
@@ -10905,11 +10905,22 @@
   "seccion": "Qué decirle (de tú)",
   "tipo": "Texto",
   "cuando": "Con observaciones",
-  "texto": "A tu solicitud FOLIO le falta corregir algo: DOCUMENTOS. Ven a la ventanilla del SEDE, HORARIO, para que te digamos qué falta y lo corrijamos contigo. Hay un plazo para corregir.",
+  "texto": "A tu solicitud FOLIO le falta corregir algo: DOCUMENTOS. Ven a la ventanilla del SEDE, HORARIO, para que te digamos qué falta y lo corrijamos contigo. Hay un plazo para corregir. Te quedan N oportunidades para corregir. / Esta es tu última oportunidad para corregir. Si en la revisión siguen las observaciones, tu solicitud se cierra y tienes que iniciar una nueva.",
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
   "id": "T992"
+ },
+ {
+  "pantalla": "Inicio del personal · avisos por teléfono",
+  "seccion": "Qué decirle (de tú)",
+  "tipo": "Texto",
+  "cuando": "Cerrada al agotar las oportunidades de corrección",
+  "texto": "Tu solicitud FOLIO se cerró porque, después de tu última oportunidad para corregir, tus documentos siguieron con observaciones. No pagaste nada y puedes iniciar una solicitud nueva en la ventanilla del SEDE, HORARIO.",
+  "quien": "Personal de la Secretaría",
+  "donde": "Código del sitio (sitio/app/registro-asistido.js)",
+  "obs": "",
+  "id": "T993"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10920,7 +10931,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T993"
+  "id": "T994"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10931,7 +10942,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T994"
+  "id": "T995"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10942,7 +10953,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T995"
+  "id": "T996"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10953,7 +10964,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T996"
+  "id": "T997"
  },
  {
   "pantalla": "Revisar una solicitud y Cita de cotejo (personal)",
@@ -10964,7 +10975,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T997"
+  "id": "T998"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10975,7 +10986,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T998"
+  "id": "T999"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10986,7 +10997,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T999"
+  "id": "T1000"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10997,18 +11008,18 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T1000"
+  "id": "T1001"
  },
  {
   "pantalla": "Ventanilla (personal)",
   "seccion": "Ficha · Qué decirle (de tú)",
   "tipo": "Texto",
   "cuando": "Según el estado",
-  "texto": "Tu solicitud todavía no se envía: falta terminar de capturarla contigo. / La Secretaría está revisando tus documentos. … / A tu solicitud le falta corregir un documento: … Lo corregimos aquí contigo. Hay un plazo para corregir. / Tu cita de cotejo es el … / Tu curso empieza el … / Tu cotejo terminó. Estás en espera de un grupo del curso … (y los «qué sigue» de «Mis trámites»)",
+  "texto": "Tu solicitud todavía no se envía: falta terminar de capturarla contigo. / La Secretaría está revisando tus documentos. … / A tu solicitud le falta corregir un documento: … Lo corregimos aquí contigo. Hay un plazo para corregir. Te quedan N oportunidades para corregir. (o: Esta es tu última oportunidad para corregir. …) / Tu solicitud se cerró porque, después de tu última oportunidad para corregir, tus documentos siguieron con observaciones. No pagaste nada y puedes iniciar una solicitud nueva aquí mismo. / Tu cita de cotejo es el … / Tu curso empieza el … / Tu cotejo terminó. Estás en espera de un grupo del curso … (y los «qué sigue» de «Mis trámites»)",
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T1001"
+  "id": "T1002"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -11019,6 +11030,6 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T1002"
+  "id": "T1003"
  }
 ]

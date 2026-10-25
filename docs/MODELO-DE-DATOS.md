@@ -679,7 +679,7 @@ Avisos por teléfono a las personas del registro asistido (decisión 2026-10-25,
 | `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
 | `solicitante_id` | `uuid` | Sí | Persona a quien se llama |
 | `solicitud_id` | `uuid` | No | Solicitud del aviso; vacía si es de la cuenta o de una acreditación sin solicitud del sistema |
-| `aviso` | `text` | Sí | Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, T2, T3, G1, G2, G4, A1, A6 o A7 |
+| `aviso` | `text` | Sí | Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, S7, T2, T3, G1, G2, G4, A1, A6 o A7 |
 | `datos` | `jsonb` | Sí | Lo que el aviso necesita para decirse (folio, cita, monto y referencia de pago, grupo, calificación, motivo…), como estaba al crearse; la pantalla arma con ellos el texto que se le dice a la persona (por omisión: `'{}'::jsonb`) |
 | `creado_en` | `timestamptz` | Sí | Cuándo pasó el cambio. Lo pone la base (por omisión: `now()`) |
 | `resultado` | `text` | No | Vacío: pendiente. se_le_aviso o no_contesto: lo registra el personal al llamar, una sola vez |
@@ -691,7 +691,7 @@ Restricciones e índices:
 - `CONSTRAINT aviso_telefono_pk PRIMARY KEY (id)`
 - `CONSTRAINT aviso_telefono_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
 - `CONSTRAINT aviso_telefono_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
-- `CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7'))`
+- `CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'S7', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7'))`
 - `CONSTRAINT aviso_telefono_datos_ck CHECK (jsonb_typeof(datos) = 'object')`
 - `CONSTRAINT aviso_telefono_resultado_ck CHECK (resultado IN ('se_le_aviso', 'no_contesto'))`
 - `CONSTRAINT aviso_telefono_atendido_ck CHECK ((resultado IS NULL) = (atendido_por IS NULL) AND (resultado IS NULL) = (atendido_en IS NULL))`

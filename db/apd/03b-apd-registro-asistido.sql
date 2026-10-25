@@ -280,6 +280,10 @@ BEGIN
       PERFORM apd.avisar_por_telefono(NEW.solicitante_id, NEW.id, 'S2', d);
     ELSIF OLD.estado = 'con_observaciones' AND NEW.estado = 'concluida_sin_atender' THEN
       PERFORM apd.avisar_por_telefono(NEW.solicitante_id, NEW.id, 'S4', d);
+    ELSIF OLD.estado = 'enviada' AND NEW.estado = 'concluida_sin_atender' THEN
+      -- Se agotaron las oportunidades de corrección (ajustes del equipo, 25/10/2026): la revisión de la última corrección
+      -- volvió a tener observaciones y apd.solicitud_cambio la cerró (S7, como el correo)
+      PERFORM apd.avisar_por_telefono(NEW.solicitante_id, NEW.id, 'S7', d || jsonb_build_object('motivo', NEW.motivo_cierre));
     ELSIF NEW.estado = 'validada_en_linea' THEN
       PERFORM apd.avisar_por_telefono(NEW.solicitante_id, NEW.id, 'S5', d || jsonb_build_object('cita_en', apd.iso(NEW.cita_en),
         'pago_monto', NEW.pago_monto, 'pago_referencia', NEW.pago_referencia,

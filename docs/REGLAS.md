@@ -262,6 +262,11 @@ cuenta del servicio no tiene INSERT). El personal de revisión y cotejo registra
 (`aviso_telefono`). Lo que dice un aviso no cambia (`aviso_inmutable`) y ninguno se borra. La vista
 `apd.avisos_telefono_pendientes` los da con el nombre y el teléfono de la persona. Una cuenta ya activada, o que no es del
 registro asistido, no recibe avisos por teléfono.
+Con las oportunidades para corregir (ajustes del equipo, 25/10/2026), la solicitud que la base cierra porque la revisión de
+la última corrección siguió con observaciones (`enviada → concluida_sin_atender`, «Se agotaron las oportunidades de
+corrección») deja el aviso **S7**, con su motivo: que se cerró, por qué y que puede iniciar una nueva en la ventanilla. El
+aviso S2 dice, además, cuántas oportunidades le quedan o que es la última. (La fila de S7 en la tabla del registro asistido
+de `docs/AVISOS-POR-CORREO.md` está por agregarse.)
 
 ## Permisos
 

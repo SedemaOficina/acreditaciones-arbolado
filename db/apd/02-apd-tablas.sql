@@ -777,7 +777,7 @@ CREATE TABLE apd.aviso_telefono (
   CONSTRAINT aviso_telefono_pk PRIMARY KEY (id),
   CONSTRAINT aviso_telefono_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
   CONSTRAINT aviso_telefono_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
-  CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7')),
+  CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'S7', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7')),
   CONSTRAINT aviso_telefono_datos_ck CHECK (jsonb_typeof(datos) = 'object'),
   CONSTRAINT aviso_telefono_resultado_ck CHECK (resultado IN ('se_le_aviso', 'no_contesto')),
   CONSTRAINT aviso_telefono_atendido_ck CHECK ((resultado IS NULL) = (atendido_por IS NULL) AND (resultado IS NULL) = (atendido_en IS NULL))
@@ -789,7 +789,7 @@ COMMENT ON TABLE apd.aviso_telefono IS 'Avisos por teléfono a las personas del 
 COMMENT ON COLUMN apd.aviso_telefono.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.aviso_telefono.solicitante_id IS 'Persona a quien se llama';
 COMMENT ON COLUMN apd.aviso_telefono.solicitud_id IS 'Solicitud del aviso; vacía si es de la cuenta o de una acreditación sin solicitud del sistema';
-COMMENT ON COLUMN apd.aviso_telefono.aviso IS 'Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, T2, T3, G1, G2, G4, A1, A6 o A7';
+COMMENT ON COLUMN apd.aviso_telefono.aviso IS 'Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, S7, T2, T3, G1, G2, G4, A1, A6 o A7';
 COMMENT ON COLUMN apd.aviso_telefono.datos IS 'Lo que el aviso necesita para decirse (folio, cita, monto y referencia de pago, grupo, calificación, motivo…), como estaba al crearse; la pantalla arma con ellos el texto que se le dice a la persona';
 COMMENT ON COLUMN apd.aviso_telefono.creado_en IS 'Cuándo pasó el cambio. Lo pone la base';
 COMMENT ON COLUMN apd.aviso_telefono.resultado IS 'Vacío: pendiente. se_le_aviso o no_contesto: lo registra el personal al llamar, una sola vez';

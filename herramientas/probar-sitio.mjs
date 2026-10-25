@@ -7815,6 +7815,40 @@ async function registroAsistido(navegador) {
       t('el modo asistido sólo abre la solicitud de una persona del registro asistido'));
     await c.close();
   });
+  /* Con las oportunidades para corregir (ajustes del equipo, 25/10/2026): el aviso S2 dice cuántas le quedan; la solicitud
+     cerrada al agotarlas deja su aviso (S7) y la ventanilla dice qué pasó; en teléfono y en computadora, con axe */
+  await bloque('avisos con las oportunidades para corregir', async () => {
+    for (const [ancho, alto] of [[390, 844], [1280, 900]]) {
+      const { c, page, errores } = await nuevoEn(navegador, ancho, alto);
+      await c.route('**/datos/ficticios.json*', async (r) => {
+        const d = structuredClone(datos);
+        Object.assign(d.solicitud.find((x) => x.id === sBenito.id), { estado: 'concluida_sin_atender', motivo_cierre: 'Se agotaron las oportunidades de corrección',
+          estado_desde: `${d.fecha_corte}T12:00:00-06:00` });
+        await r.fulfill({ contentType: 'application/json', body: JSON.stringify(d) });
+      });
+      await page.goto(BASE + 'revision.html');
+      await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
+      const amalia = ((await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) }).first().textContent()) || '').replace(/\s+/g, ' ');
+      comprueba(/Hay un plazo para corregir\. Te quedan 2 oportunidades para corregir\./.test(amalia), t(`${ancho} px: el aviso de las observaciones (S2) dice cuántas oportunidades le quedan`));
+      const benito = ((await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(BENITO) }).first().textContent()) || '').replace(/\s+/g, ' ');
+      comprueba(/Cerrada: sin más oportunidades de corrección/.test(benito) && benito.includes(`Tu solicitud ${sBenito.folio} se cerró porque, después de tu última oportunidad para corregir`)
+        && /No pagaste nada y puedes iniciar una solicitud nueva en la ventanilla del Vivero/.test(benito),
+        t(`${ancho} px: la solicitud cerrada al agotar las oportunidades deja su aviso por teléfono (S7), de tú y listo para decirlo`));
+      await sinDesborde(page, t(`${ancho} px: avisos por teléfono con las oportunidades`));
+      await revisaAxe(page, `${ancho} px: avisos por teléfono con las oportunidades`);
+      await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(BENITO.id)}`);
+      await page.waitForSelector('[data-ficha]:not([hidden]) [data-ficha-tramites] .ficha');
+      const tram = await texto(page, '[data-ficha-tramites]');
+      comprueba(/Cerrada: sin más oportunidades de corrección/.test(tram) && /después de tu última oportunidad para corregir, tus documentos siguieron con observaciones/.test(tram)
+        && /Capturar una solicitud nueva/.test(tram), t(`${ancho} px: la ventanilla dice que se cerró al agotar las oportunidades y ofrece capturar una nueva`));
+      await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(AMALIA.id)}`);
+      await page.waitForSelector('[data-ficha]:not([hidden]) [data-ficha-tramites] .ficha');
+      comprueba(/Te quedan 2 oportunidades para corregir\./.test(await texto(page, '[data-ficha-tramites]')), t(`${ancho} px: la ventanilla dice cuántas oportunidades le quedan para corregir`));
+      await revisaAxe(page, `${ancho} px: ventanilla con las oportunidades`);
+      comprueba(!errores.length, t(`${ancho} px: avisos y ventanilla sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+      await c.close();
+    }
+  });
   for (const x of personas) if (x.contexto) await x.contexto.c.close();
   await camaraNav.close();
 }

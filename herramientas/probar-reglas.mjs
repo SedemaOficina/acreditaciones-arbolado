@@ -1825,6 +1825,21 @@ const casos = [
      DO $$ BEGIN ASSERT (SELECT datos->>'cita_en' = '2026-10-21T16:00:00Z' AND (datos->>'pago_monto')::numeric > 0 AND datos->>'pago_referencia' LIKE 'APDS2026%'
                                 AND creado_en = '2026-10-14 12:00-06' AND resultado IS NULL
                            FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('BENITO')} AND aviso = 'S5'); END $$;`],
+  ['Avisos por teléfono: la solicitud que se cierra al agotar las oportunidades de corrección deja su aviso (S7), con el motivo', 'ok', '2026-10-14 11:00', `
+     UPDATE apd.parametro SET valor = '1' WHERE clave = 'oportunidades_correccion';
+     ${PERFIL('revision_cotejo')}
+     ${DOC_PEQUENO(SOL_DE(ASIS('AMALIA')), 'comprobante_domicilio')}
+     ${LECTURA('lo_capturado')}
+     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_DE(ASIS('AMALIA'))};
+     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Sigue sin corregirse.', revisado_por = 'prueba.automatica'
+      WHERE solicitud_id = ${SOL_DE(ASIS('AMALIA'))} AND vigente AND estado = 'pendiente';
+     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${SOL_DE(ASIS('AMALIA'))}, 'con_observaciones', '', 'prueba.automatica');
+     DO $$ BEGIN
+       ASSERT (SELECT estado = 'concluida_sin_atender' AND motivo_cierre = 'Se agotaron las oportunidades de corrección' FROM apd.solicitud WHERE id = ${SOL_DE(ASIS('AMALIA'))});
+       ASSERT (SELECT count(*) = 1 FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('AMALIA')} AND aviso = 'S7' AND resultado IS NULL
+                 AND datos->>'motivo' = 'Se agotaron las oportunidades de corrección' AND creado_en = '2026-10-14 11:00-06');
+       ASSERT ${AVISOS(ASIS('AMALIA'), 'S4')} = 0;
+       ASSERT EXISTS (SELECT 1 FROM apd.avisos_telefono_pendientes WHERE solicitante_id = ${ASIS('AMALIA')} AND aviso = 'S7'); END $$;`],
   ['Avisos por teléfono: el cotejo terminado (T2), el grupo confirmado (G1) y la baja del grupo (G2) también dejan su aviso', 'ok', '2026-10-21 10:30', `
      ${COTEJO_CIRILO}
      DO $$ BEGIN ASSERT (SELECT datos->>'resultado' = 'atendida' AND datos->>'expediente' LIKE 'EXP-2026-%' FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('CIRILO')} AND aviso = 'T2'); END $$;
