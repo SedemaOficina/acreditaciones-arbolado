@@ -749,7 +749,7 @@ body > main { flex: 1 0 auto; width: 100%; }
   .escb-panel-datos dt { color: var(--gris); }
   .escb-panel-datos dd { margin: 0; font-weight: var(--peso-medio); overflow-wrap: anywhere; }
   .escb-panel-cupo { margin: 0; font-size: var(--t-md); font-weight: var(--peso-medio); }
-  .escb-panel-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); }
+  .escb-panel-acciones { display: none; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); }
   .escb-panel-acciones .btn-primario { width: auto; margin-inline-start: auto; }
   .escb-panel-elegidas { display: grid; gap: 0; min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; border-block-start: var(--b-1) solid var(--linea); font-size: var(--t-sm); }
   .escb-panel-elegidas[hidden] { display: none; }
@@ -793,4 +793,8 @@ body > main { flex: 1 0 auto; width: 100%; }
    dentro y los botones quedan arriba de ellas, siempre a la vista */
 @media (min-width: 1024px) and (min-height: 700px) {
   .escb-panel-grupo { position: sticky; top: var(--e-4); max-height: calc(100dvh - var(--e-4) * 2); }
+  /* Con el panel fijo, sus botones son los principales del paso (siempre a la vista); los de abajo del paso siguen ahí,
+     como secundarios (un solo principal por pantalla, C6-02: app/grupos.js cambia su clase). Más bajo que 700 px, el panel
+     no es fijo y no lleva botones: los del paso son los principales, como antes. */
+  .escb-panel-acciones { display: flex; }
 }
