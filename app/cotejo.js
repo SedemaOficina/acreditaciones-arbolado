@@ -123,6 +123,36 @@
       ...APD.adscripcionPares(datos, s, 'Adscripción'),
       ['Acreditación que renueva', anterior ? `${anterior.numero}, vence el ${fechaCorta(anterior.vence_en)}` : '']
     ])])]));
+    /* ----- Escritorio (decisión de Liber del 25/10/2026; DIAGNOSTICO.md, 4.2) -----
+       De 1024 a 1279 px la cabeza es la franja de contexto fija (como en «Revisar una solicitud») y la ficha entra a «Datos
+       de la persona»; desde 1280 px es la columna fija de la persona, con la fotografía de la cuenta en grande, su ficha y,
+       debajo, la barra de pasos vertical. Desde 1024 px los avisos de la cita (pausa, segunda cita) van arriba del
+       formulario. Debajo de 1024 px todo regresa a su lugar (APD_PERSONAL.acomodaEscritorio). */
+    {
+      const conFoto = $('[data-persona] .persona-con-foto');
+      const ficha = conFoto.lastElementChild;
+      // La línea corta de la franja: folio y cita (la completa queda en la tarjeta de teléfono y en la columna de la persona)
+      $('[data-bajada]').after(APD.lineaDatos([el('strong', { class: 'mono', texto: s.folio }), `cita del ${fechaCorta(s.cita_en, { hora: true })}`], 'franja-caso'));
+      const pares = APD.adscripcionPares(datos, s, 'Adscripción');
+      for (const par of $$('.datos-par', ficha)) {
+        const etq = $('.datos-etq', par).textContent;
+        if (['Persona', 'CURP'].includes(etq)) par.setAttribute('data-en-franja', '');
+        // La adscripción ya la dice la franja: en la columna de la persona no se repite (sí en «Datos de la persona»)
+        if (pares.some(([r]) => r === etq)) par.setAttribute('data-adscripcion', '');
+      }
+      conFoto.firstElementChild.after(el('div', { class: 'franja-quien' }, [
+        el('p', { class: 'franja-nombre', texto: nombre }),
+        APD.lineaDatos([p.curp, pares.length ? pares[pares.length - 1][1] : ''])
+      ]));
+      const panel = el('div', { class: 'franja-datos-panel' });
+      const datosPersona = el('details', { class: 'plegable franja-datos' }, [el('summary', { class: 'plegable-titulo', texto: 'Datos de la persona' }), panel]);
+      $('[data-cabeza]').append(datosPersona);
+      P.acomodaEscritorio('(min-width: 1024px)', [[$('[data-retoma]'), $('[data-avisos-escritorio]')], [$('[data-antecedente]'), $('[data-avisos-escritorio]')]]);
+      P.acomodaEscritorio('(min-width: 1024px) and (max-width: 1279.98px)', [[ficha, panel]]);
+      P.acomodaEscritorio('(min-width: 1280px)', [[$('[data-con-formulario]'), $('[data-franja]')]]);
+      datosPersona.addEventListener('keydown', (e) => { if (e.key === 'Escape' && datosPersona.open) { datosPersona.open = false; $('summary', datosPersona).focus(); } });
+      document.addEventListener('click', (e) => { if (datosPersona.open && !datosPersona.contains(e.target)) datosPersona.open = false; });
+    }
     // Una pausa sólo dura el día de la cita: después la base la rechaza y la solicitud regresa con observaciones
     // (auditoría de tareas, M6; P80)
     const diaPausa = retoma ? P.diaDe(pausa.cita_en || s.cita_en) : null;
@@ -162,7 +192,9 @@
       archivos[k] = d.blob
         ? { url: URL.createObjectURL(d.blob), tipo: d.blob.type, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: es el archivo que se cargó en este navegador.' }
         : { url: `datos/documentos/${k}.pdf`, titulo: req[k].nombre, archivo: nombreArchivo, nota: 'Versión de prueba: documento ficticio, el mismo para todas las solicitudes con este requisito.' };
-      const pie = [el('span', { class: 'mono', texto: nombreArchivo }), document.createTextNode(` · lo cargó el ${fechaCorta(d.cargado_en)}`)];
+      // En la tabla de documentos de escritorio el nombre del archivo no se repite (lo dice el visor): va en su envoltorio
+      const pie = [el('span', { class: 'doc-archivo-nombre' }, [el('span', { class: 'mono', texto: nombreArchivo }), document.createTextNode(' · ')]),
+        document.createTextNode(`lo cargó el ${fechaCorta(d.cargado_en)}`)];
       if (retoma && nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Cargado de nuevo hoy', 'pend')]));
       // Pide atención (puede cargarlo todavía hoy), no es un cierre (auditoría 2026-10-18, D6)
       if (retoma && pausa.docs.includes(k) && !nuevos.has(k)) pie.push(el('span', { class: 'doc-corregido' }, [APD.estado('Todavía no carga el nuevo', 'pend')]));
@@ -216,11 +248,17 @@
     /* ----- Pago: lo que se le indicó al darle la cita ----- */
     const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad);
     const importe = s.pago_monto != null ? s.pago_monto : c && c.pago_monto;
-    $('[data-pago-datos]').replaceChildren(datosLista([
+    const PAGO = [
       ['Concepto', c ? c.pago_concepto : '', 'texto oficial del concepto de pago.'],
       ['Monto que se le indicó', importe != null ? Number(importe).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : 'Sin monto', 'lo fija la Gaceta Oficial.'],
       ['Referencia', s.pago_referencia || s.folio.replace(/-/g, ''), 'formato de la referencia de pago.']
-    ]));
+    ].filter((x) => x[1]);
+    $('[data-pago-datos]').replaceChildren(datosLista(PAGO));
+    /* Escritorio (DIAGNOSTICO.md, 4.2): los mismos datos en una línea de datos y, debajo, lo que falta confirmar de cada
+       uno; debajo de 1024 px se ve la ficha (app/apd.css) */
+    $('[data-pago-linea]').replaceChildren(
+      APD.lineaDatos(PAGO.map(([etq, valor]) => [document.createTextNode(`${etq}: `), el('strong', { texto: valor })])),
+      el('p', { class: 'datos-nota' }, [`Por confirmar: ${PAGO.map(([etq, , nota]) => `${etq.toLowerCase()} (${nota.replace(/\.$/, '')})`).join('; ')}.`]));
 
     /* ----- Lo que calcula la página ----- */
     let calculando = false;
