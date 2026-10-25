@@ -407,14 +407,6 @@
       "lineamientos": "Anteproyecto 0.5: Art. 39. Valor propuesto: 10 minutos."
     },
     {
-      "id": "P92",
-      "grupo": "direccion",
-      "bloquea": "etapa 2",
-      "desde": "2026-10-17",
-      "titulo": "Quién arma y programa los grupos (preguntar al Vivero Nezahualcóyotl)",
-      "recomendacion": "Preguntar al Vivero Nezahualcóyotl quién programa hoy los grupos: quién decide la semana, el instructor y la hora, y quién avisa a las personas. Con eso se define qué perfil usa «Grupos» (desde el 24/10/2026, un paso a paso que sustituye a «Programar un curso»). Propuesta mientras tanto: el mismo perfil «revisión y cotejo» (P27) arma, programa, confirma y cancela grupos; el instructor sólo ve sus grupos («Mis grupos de hoy») y captura asistencia. Si los programa el Vivero, se agrega un perfil del Vivero con sólo esas pantallas. Nota de la sesión de trabajo del 23/10/2026: la persona responsable del cotejo programa las fechas y conforma los grupos; y la asignación de instructores la hará el área de instructores y capacitación. Liber lo deja pendiente (23/10/2026). Desde el paso a paso de «Grupos» (24/10/2026), el instructor puede quedar «Por asignar»: el grupo se crea, pero no se confirma sin instructor."
-    },
-    {
       "id": "P100",
       "grupo": "liber",
       "bloquea": "etapa 2",
@@ -934,15 +926,6 @@
       "desde": "2026-10-24",
       "titulo": "Quién puede cancelar una acreditación: ¿«administración» son los directivos?",
       "recomendacion": "Se decidió el 23/10 que cancelan instructores y directivos (P120). En el sistema, el permiso está en el parámetro perfiles_cancelan_acreditacion con los perfiles «instructor» y «administración». Opciones: (a) «administración» equivale a directivos y se deja así; (b) crear un perfil «directivo» distinto de la administración del sistema. Recomendación: (b) si quien administra el sistema no es quien decide cancelaciones.",
-      "lineamientos": ""
-    },
-    {
-      "id": "P202",
-      "grupo": "liber",
-      "bloquea": "no",
-      "desde": "2026-10-24",
-      "titulo": "Grupo específico de una sola organización: ¿sólo para gobierno?",
-      "recomendacion": "El 23/10 se decidió que sólo las instituciones de gobierno local y federal acceden a grupos en bloque. Hoy «Grupos» permite crear un grupo específico de cualquier organización (empresa, escuela). Opciones: (a) limitar el grupo específico a dependencias de la Ciudad, alcaldías y dependencias federales; (b) dejarlo abierto y que «en bloque» sólo signifique la solicitud conjunta. Recomendación: (a), para que la regla se cumpla en la pantalla.",
       "lineamientos": ""
     },
     {
@@ -1626,6 +1609,18 @@
       "titulo": "Con la poda por vencer, «Mis trámites» mostraba dos botones principales (P164)",
       "como": "Un botón principal por pantalla (decisión del 21/10): en «Mis trámites» va primero la solicitud en curso, luego «Renovar» y luego «Iniciar una solicitud»",
       "fecha": "2026-10-21"
+    },
+    {
+      "id": "P92",
+      "titulo": "Quién arma y programa los grupos (preguntar al Vivero Nezahualcóyotl) (P92)",
+      "como": "Revisión con el equipo (25/10/2026): la persona responsable del cotejo arma y programa los grupos (sesión del 23/10) y el área de Instructores y Capacitación, con su perfil «Capacitación», asigna la persona instructora y confirma el grupo.",
+      "fecha": "2026-10-25"
+    },
+    {
+      "id": "P202",
+      "titulo": "Grupo específico de una sola organización: ¿sólo para gobierno? (P202)",
+      "como": "Revisión con el equipo (25/10/2026): el grupo propio de una organización (en bloque) sólo para instituciones de gobierno local y federal; sin oficio, lo arma el personal. Las demás personas van a grupos combinados.",
+      "fecha": "2026-10-25"
     }
   ],
   "aplicado_hasta": "2026-10-24T05:59:59.000Z"
