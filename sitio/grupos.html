@@ -154,11 +154,9 @@
         <div data-ya-estan hidden></div>
         <!-- Escritorio (desde 1024 px): filtro por organización y la espera como tabla compacta con su encabezado (sólo
              para la vista: cada fila dice lo suyo al lector). Lo llena app/grupos.js. -->
-        <div class="campo escb-filtro-org" data-filtro-org hidden>
-          <label class="etiqueta" for="filtro_org">Organización</label>
-          <!-- autocomplete off y sin name: filtra la vista; no se guarda ni se envía. -->
-          <div class="select"><select class="control control-select" id="filtro_org" autocomplete="off"><option value="">Todas</option></select></div>
-        </div>
+        <!-- El filtro lo arma app/grupos.js (una lista sin name: filtra la vista; no se guarda, no se envía ni es parte del
+             esquema del formulario) -->
+        <div class="escb-filtro-org" data-filtro-org hidden></div>
         <div class="escb-espera-cabeza" aria-hidden="true"><span></span><span>Persona</span><span>Organización</span><span>Espera</span><span>Folio</span></div>
         <ul class="prog-personas" data-personas aria-label="Personas en espera"></ul>
         <!-- Se ve siempre y se anuncia sólo al marcar o desmarcar (RI-04): no es región viva -->
