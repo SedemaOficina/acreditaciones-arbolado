@@ -4480,8 +4480,12 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await lineas('«Asistencia»');
   await captura(pg, `151-asistencia-${sufijo}`);
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva&paso=4');
-  await pg.waitForSelector('[data-eleccion] .linea-datos');
-  await lineas('«Grupos» (lo elegido en el paso a paso)');
+  // Desde 1024 px, lo elegido va en el panel «Tu grupo» y la línea de arriba del paso no se ve (acomodo de escritorio,
+  // parte B, 25/10/2026): la línea se revisa donde se ve
+  if (ancho < 1024) {
+    await pg.waitForSelector('[data-eleccion] .linea-datos');
+    await lineas('«Grupos» (lo elegido en el paso a paso)');
+  } else await pg.waitForSelector('[data-panel-datos] dd');
   await captura(pg, `151-grupos-${sufijo}`);
 
   // P131: avisos con pasos (secuencia numerada) y con enlace, en div.aviso-texto, con el icono de su tono
