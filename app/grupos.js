@@ -492,7 +492,9 @@
     /* Filtro por organización (escritorio, DIAGNOSTICO 4.4): oculta las filas y los bloques de otras organizaciones,
        también las plegadas en «Cambiar a quiénes van», que se despliega mientras el filtro está puesto. No cambia a quién
        se eligió. Con una sola organización en la espera no se ofrece. */
-    const filtroOrg = $('#filtro_org');
+    // autocomplete off: filtra la vista; el navegador no tiene un valor que proponer
+    const filtroOrg = el('select', { class: 'control control-select', id: 'filtro_org', autocomplete: 'off' });
+    $('[data-filtro-org]').append(el('label', { class: 'etiqueta', for: 'filtro_org', texto: 'Organización' }), el('div', { class: 'select' }, [filtroOrg]));
     function preparaFiltroOrg(items) {
       const orgs = [...new Set(items.map((li) => li.dataset.org))].sort((a, b) => a.localeCompare(b, 'es'));
       const antes = filtroOrg.value;
