@@ -747,9 +747,9 @@ body > main { flex: 1 0 auto; width: 100%; }
   .esc-c-pase .examen-codigo { font-size: var(--t-xl); }
 
   /* ── Ficha del grupo (4.9) ── */
-  /* «Persona instructora y confirmación» en una columna lateral de 384 px, cuando se ve. Propuesta al estándar E1
-     (.con-lateral). */
-  .esc-c-ficha:has(> [data-confirmar]:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) calc(var(--e-11) * 4); gap: 0 var(--e-5); align-items: start; }
+  /* «Persona instructora y confirmación» en una columna lateral de 480 px, cuando se ve: con ese ancho su botón queda a la
+     vista sin bajar. Propuesta al estándar E1 (.con-lateral). */
+  .esc-c-ficha:has(> [data-confirmar]:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) calc(var(--e-11) * 5); gap: 0 var(--e-5); align-items: start; }
   /* Cabeza con el cupo a la derecha */
   .esc-c-cabeza { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--e-11) * 3)); gap: var(--e-3) var(--e-6); align-items: start; }
   .esc-c-cabeza > .cupo { margin-block: 0; }
