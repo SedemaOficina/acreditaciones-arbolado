@@ -182,8 +182,8 @@
       "grupo": "sia",
       "bloquea": "etapa 2",
       "desde": "2026-10-14",
-      "titulo": "Cuentas del personal en acceso, recurso apd, con cinco perfiles",
-      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17), instructor, emisión, consulta y administración (parámetros, montos, cupos, desbloqueos y correcciones con motivo). Quién arma los grupos: P92. Mientras, las pantallas del personal entran con un perfil ficticio."
+      "titulo": "Cuentas del personal en acceso, recurso apd, con seis perfiles",
+      "recomendacion": "Misma reunión con el SIA. Los perfiles: revisión y cotejo (la misma persona hace las dos cosas, decisión 2026-10-17; arma los grupos, 23/10), instructor, capacitación (área de Instructores y Capacitación: asigna o cambia la persona instructora de cada grupo y lo confirma; ajustes del equipo, 25/10/2026), emisión, consulta y administración (parámetros, montos, cupos, desbloqueos y correcciones con motivo). Mientras, las pantallas del personal entran con un perfil ficticio. La base ya recibe el perfil en apd.perfil y lo usa en las reglas reservadas (cancelar una acreditación; asignar la persona instructora y confirmar un grupo)."
     },
     {
       "id": "P28",
@@ -953,6 +953,15 @@
       "desde": "2026-10-24",
       "titulo": "Cita de cotejo: ¿hasta cuántos meses después se puede dar?",
       "recomendacion": "El sistema acepta una cita nueva hasta 6 meses después (propuesta al construir). Con el plazo aceptado en P02 (cita dentro de los 20 días hábiles siguientes a la validación), conviene alinear el límite. Opciones: (a) 20 días hábiles; (b) dejar 6 meses para casos excepcionales. Recomendación: (a), con el plazo como parámetro.",
+      "lineamientos": ""
+    },
+    {
+      "id": "P206",
+      "grupo": "liber",
+      "bloquea": "no",
+      "desde": "2026-10-25",
+      "titulo": "Oportunidades para corregir: ¿cuenta el cotejo que regresa con observaciones?",
+      "recomendacion": "Ajustes del equipo (25/10/2026): la persona tiene dos oportunidades para corregir las observaciones de la revisión en línea; si en la revisión de la segunda corrección siguen, la solicitud se cierra. Cuando el cotejo la regresa con observaciones (un documento original no coincide con el que cargó), el sistema no le cuenta una oportunidad: la persona ya pagó y el error se detectó hasta la cita. Así quedó construido: sólo cuentan las revisiones en línea (apd.correcciones_usadas); si después de corregir lo del cotejo la revisión vuelve a observar algo, eso sí cuenta. «Mis trámites» le dice que lo del cotejo no cuenta. Recomendación: confirmarlo así. La alternativa (que el cotejo también cuente) cerraría solicitudes ya pagadas y obligaría a definir qué pasa con ese pago.",
       "lineamientos": ""
     }
   ],
