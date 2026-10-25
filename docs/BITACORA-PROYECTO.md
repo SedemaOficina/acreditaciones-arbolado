@@ -1551,3 +1551,22 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   guardar el penúltimo, al pase de lista del último día en «Aplicar el examen», que ahora empieza por «Día 5 de 5 · Pase
   de lista en el salón de cómputo». «Asistencia» muestra la lista del último día; en la renovación hay un solo botón.
 - Pruebas: `probar-sitio` con las partes `SOLO=asistencia5`, `probar-esquemas` 151 (sin `hora_entrada`).
+
+## 2026-10-25 · Bloque 95 · Ajustes de la revisión con el equipo
+
+- Documento «Solicitud de ajustes al Sistema de Acreditación de Podadores y Dictaminadores» (revisión de Liber con el equipo).
+  Ya estaban en la 0.69: dos años de poda para dictaminador, «Recibimos la corrección de tus documentos», el calendario de la
+  cita, el quinto día y el código del examen. Decisiones del 25/10 en `docs/DECISIONES.md`.
+- **Examen y carrera (parte A):** lectura en voz alta de preguntas y opciones; las respuestas esperan la conexión en la
+  computadora; compatibilidad con Safe Exam Browser (`docs/EXAMEN-SEB.md`); la carrera que no está en el catálogo se escribe
+  y la ayuda lo dice; la duración del curso completa en acuse, «Mis trámites», ficha del grupo y asistencia.
+- **Grupos y correcciones (parte B):** grupo propio sólo de gobierno, sin oficio (P202); perfil «Capacitación» que asigna
+  instructor y confirma (P92); dos oportunidades para corregir, con cierre y aviso S7 (P206 por confirmar).
+- **Registro asistido (parte C):** cuenta sin contraseña y correo opcional creada por revisión y cotejo, marcas de lectura y
+  aceptación, captura de la solicitud, ventanilla, avisos por teléfono y activación posterior (P207 a P213).
+- **Reloj del examen:** se detiene durante un corte (señal de vida cada 12 s, pausa tras 30 s sin señal, tope de 30 min
+  acumulados, P214); quien aplica ve «Sin conexión desde…»; contrato para el SIA en `docs/EXAMEN-SEB.md`.
+- Lineamientos 0.7 (Proyecto): atención asistida (art. 6), dos oportunidades (art. 30), evaluación con código, voz alta y
+  reloj detenido (arts. 40 y 41), grupos en bloque (art. 37).
+- Pruebas: probar-base 439, probar-sitio 2377, probar-examen 180, probar-volumen 123, probar-esquemas 167, auditar-sitio 111
+  pantallas (2 avisos, el conocido de «Ir al contenido» en la corrección, también en modo asistido).

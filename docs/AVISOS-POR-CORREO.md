@@ -82,6 +82,7 @@ ahí, se le dice en persona. Cuando activa su cuenta, le llegan los correos como
 | S4 | Se cierra por no corregir a tiempo | Que se cerró y que puede iniciar una nueva en la ventanilla |
 | S5 | Se validan sus documentos | Día y hora de la cita, sede, qué llevar y el pago (monto y referencia) |
 | S6 | Se rechaza | El motivo |
+| S7 | Se cierra porque en la revisión de su última corrección siguieron las observaciones (se agotaron las oportunidades) | Que se cerró por eso y que puede iniciar una nueva en la ventanilla |
 | T2 | Resultado de la cita: cotejo terminado (con su expediente), en pausa (qué traer ese día), regresó con observaciones, cita nueva por no presentarse o no traer el pago, cerrada por la segunda inasistencia | Lo que pasó y qué sigue |
 | T3 | La cuenta queda bloqueada por identidad | Que vaya a la ventanilla a aclararlo (P79) |
 | G1 | Su grupo se confirma, o entra a un grupo ya confirmado | Primer día, hora de entrada y sede |
