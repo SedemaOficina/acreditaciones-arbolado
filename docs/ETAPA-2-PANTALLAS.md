@@ -39,7 +39,7 @@ En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la
 ### 1 bis C. Acomodo de escritorio: Asistencia, Aplicar el examen y Un grupo (decisión de Liber del 25/10/2026)
 
 Desde 1024 px de ancho (debajo, el teléfono y la tableta quedan como antes); lo fijo, sólo con 700 px de alto o más y sin
-pasar del 25 % del alto. Estilos en `sitio/app/apd.css`, sección «Escritorio · parte C»; prueba permanente
+pasar del 25 % del alto. Estilos en `sitio/app/apd.css`, sección «Escritorio» (5, 6 y 7); prueba permanente
 `SOLO=escritorio-c` de `herramientas/probar-sitio.mjs`; mediciones en `docs/diseno-escritorio/DIAGNOSTICO.md` (4.5, 4.6 y 4.9).
 
 - **Asistencia**: el día, el grupo, la regla de asistencia y la leyenda en una franja de dos renglones; las personas hacia
@@ -250,7 +250,7 @@ página baja al resultado. PDF ficticios: `herramientas/documentos-ficticios.py`
 ## 2 ter. Escritorio · parte A: cabecera compacta, «Revisar una solicitud» y «Cita de cotejo»
 
 Decisión de Liber del 25/10/2026 (diagnóstico y maquetas en `docs/diseno-escritorio/`, secciones 4.1, 4.2 y regla general
-2). Todo va en `app/apd.css`, sección «Escritorio · parte A», con `@media (min-width: 1024px)` o 1280 px (lo fijo, además,
+2). Todo va en `app/apd.css`, sección «Escritorio» (1, 2 y 8), con `@media (min-width: 1024px)` o 1280 px (lo fijo, además,
 con `min-height: 700px`); debajo de 1024 px el teléfono y la tableta quedan como estaban. Lo que cambia de lugar en
 computadora lo mueve `APD_PERSONAL.acomodaEscritorio(consulta, [[nodo, destino], …])` y regresa a su lugar en pantallas
 más chicas.
@@ -278,6 +278,29 @@ más chicas.
 
 Prueba permanente: `SOLO=escritorio-a node herramientas/probar-sitio.mjs …` (1366 × 768, 1440 × 900, 1920 × 1080, 1024 ×
 768 y 390 × 844).
+
+## 2 quater. Escritorio: lo común de las tres partes (integración del 25/10/2026)
+
+- **Una sola sección «Escritorio» en `app/apd.css`**: 1 · lo común (medidas, lo que sólo es de escritorio, cabecera
+  compacta, pestañas desde 1024 px, composición con columna lateral, barra de acciones y el botón «Menú de pruebas»);
+  2 · Revisar y Cita de cotejo; 3 · inicio del personal; 4 · «Grupos»; 5 · Asistencia; 6 · Aplicar el examen; 7 · ficha
+  del grupo; 8 · lo fijo. Cada pieza que el estándar 1.5.1 no trae lleva su «propuesta al estándar E<n>»
+  (`docs/diseno-escritorio/DIAGNOSTICO.md`, sección 6). Nombres del contenido, sin prefijo de parte.
+- **Piezas comunes**: `.pestanas-escritorio` y `.titulo-de-pestana` con `APD_ESCRITORIO.pestanas` (`app/escritorio.js`:
+  inicio del personal, «Grupos» y ficha del grupo; debajo de 1024 px, las secciones de siempre); `.con-lateral` con
+  `.columna-lateral` («Tu grupo», 384 px; «Persona instructora y confirmación», 480 px); `.columna-lateral-fija` («Tu
+  grupo»; la persona de la cita de cotejo usa sus medidas desde 1280 px); `.franja-fija` (franja de contexto de Revisar y
+  del cotejo, celdas de la franja del pase de lista); `.barra-acciones-fija` (Asistencia). Medidas: `--alto-cabecera-personal`,
+  `--alto-franja`, `--margen-fijo`, `--reserva-menu-ancho` y `--reserva-menu-alto`.
+- **Botón «Menú de pruebas»** (sólo en la versión de prueba): en computadora, abajo a la izquierda en todas las pantallas
+  del personal; lo fijo que llega a esa esquina le deja su lugar (la barra de acciones de Asistencia, a lo ancho; la columna
+  de la persona del cotejo, a lo alto). En teléfono y tableta, donde estaba (a la izquierda sólo en Asistencia, F3 B11).
+- **Lo fijo**: en cada pantalla, a lo más la franja de arriba o la barra de acciones de abajo, y el encabezado de la tabla
+  del inicio; sumado, nunca más del 25 % del alto. Las columnas laterales fijas caben en la ventana.
+- **Revisar**: sin correo (registro asistido), «Contacto» dice sólo el teléfono.
+
+Prueba permanente: `SOLO=escritorio node herramientas/probar-sitio.mjs …` (19 pantallas del personal a 1024 × 768,
+1366 × 768, 1440 × 900, 1920 × 1080 y 390 × 844, al abrir, a media página y al final).
 
 Prueba sin servidor: todo el recorrido se guarda en ese navegador (`app/archivos-prueba.js`: cuentas, fotografías,
 solicitudes y documentos en IndexedDB; sesión, cambios de perfil y revisiones en localStorage) y `APD.cargar()` lo suma a

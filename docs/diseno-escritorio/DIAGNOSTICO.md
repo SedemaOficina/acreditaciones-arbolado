@@ -355,6 +355,20 @@ A todas las pantallas del personal se suma la **cabecera compacta** (regla gener
 | E12 | **Regla de lo fijo**: suma ≤ 25 % del alto, sólo desde 1024 y con alto ≥ 700 px | Generaliza P177. |
 | E13 | En `docs/03-guia-de-decision.md`, una fila «pantalla de trabajo en escritorio» que diga cuándo usar cada patrón | Hoy la guía dice «otro catálogo» para la captura interna, sin acomodo. |
 
+Propuestas que salieron al hacer el acomodo (partes A, B y C, 25/10/2026; numeradas al integrar):
+
+| # | Propuesta | Por qué no basta con el proyecto |
+|---|---|---|
+| E14 | **Pestañas desde un ancho** (`data-pestanas-desde="1024"`): debajo, secciones apiladas con su título; un enlace a un ancla de un panel oculto abre su pestaña | El módulo `pestanas` no se desarma por ancho: el proyecto lo hace en `app/escritorio.js`. |
+| E15 | **Tablero de indicadores que son enlaces** (rótulo, cifra y detalle) | Inicio del personal; no hay pieza en el estándar. |
+| E16 | **Botones de un paso repetidos en un lateral fijo**: el del lateral es el principal y el del paso, secundario, sólo mientras el lateral es fijo (FRM-34) | «Grupos»; hoy el proyecto cambia la clase del botón. |
+| E17 | **`paginacion`**: ocultarse con un total ≤ el tamaño más chico y `.paginacion[hidden]` en su hoja | Hoy dibuja «Página 1 de 1» y su `display` le gana al `[hidden]` del núcleo. |
+| E18 | **`.fila` desde 1024 px** (o `.fila-escritorio`) | La `.fila` del estándar empieza en 760 px y cambiaría la tableta (pago y factura del cotejo). |
+| E19 | **Opción corta con su pregunta al lado** (leyenda a la izquierda de Sí / No) | Asistencia en renglones; hoy el estándar la pone siempre arriba. |
+| E20 | **Lista de personas con foto**: renglón compacto con foto, datos y la opción corta a la derecha | Asistencia y pase de lista (la rejilla de tarjetas, E8, la descartó Liber para estas pantallas). |
+| E21 | **`pestanas` no anuncia la pestaña inicial** al cargar la página | Hoy `activa(inicial, false)` llama a `anuncia`. |
+| E22 | **Lugar fijo para herramientas de la versión de prueba** en escritorio (abajo a la izquierda) y una medida que lo fijo pueda reservar | El proyecto define `--reserva-menu-ancho` y `--reserva-menu-alto`. |
+
 ---
 
 ## 7. Textos reales para las maquetas
