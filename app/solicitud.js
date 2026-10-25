@@ -205,6 +205,11 @@
     document.querySelector('[data-modalidad-texto]').textContent = modalidad === 'renovacion'
       ? `Te corresponde la renovación de tu acreditación ${anterior}. Curso de ${dias}.`
       : `Te corresponde una solicitud nueva: es tu primera vez o tu acreditación anterior venció hace más de un año. Curso de ${dias}.`;
+    // El acuse dice cuánto dura el curso y qué es el último día (ajustes del equipo, 25/10/2026: duración y quinto día)
+    const acuseCurso = document.querySelector('[data-acuse-curso]');
+    if (acuseCurso) acuseCurso.textContent = !c ? '' : c.dias_duracion > 1
+      ? ` El curso es de ${dias}, de lunes a viernes; el día ${c.dias_duracion} es de ${APD.diaFinal(c).toLowerCase()}.`
+      : ' El curso es de un día y ese mismo día presentas el examen.';
     caja.hidden = false;
     docsKobo(datos, tipo, modalidad, anterior);
   }
