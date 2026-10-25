@@ -730,3 +730,67 @@ body > main { flex: 1 0 auto; width: 100%; }
   .escb-tabla-marco { overflow-x: visible; }
   .escb-tabla-compacta thead th { position: sticky; top: 0; z-index: 1; }
 }
+
+/* ── «Grupos» (DIAGNOSTICO 4.4) ── */
+/* Lo que sólo es de escritorio: el panel «Tu grupo», el filtro por organización, el encabezado de la espera, el folio de
+   cada fila y el texto de una pestaña vacía */
+.escb-panel-grupo, .escb-filtro-org, .escb-espera-cabeza, .escb-persona-folio, .escb-solo-pestana { display: none; }
+
+@media (min-width: 1024px) {
+  /* Dos columnas: el paso y el panel lateral «Tu grupo» (unos 380 px). Propuesta al estándar E1 (.con-lateral). */
+  .arm { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--e-11) * 4)); column-gap: var(--e-6); align-items: start; }
+  .escb-arm-paso { min-width: 0; }
+  .arm-eleccion { display: none; }
+  /* «Ver los grupos programados (N)» repite la pestaña «Grupos programados (N)» */
+  .arm-ir-programados { display: none; }
+  .escb-pestanas .arm-barra { margin-block-start: 0; }
+  .escb-panel-grupo { display: flex; flex-direction: column; gap: var(--e-2); min-width: 0; padding: var(--e-3) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-block-start: var(--b-4) solid var(--guinda); border-radius: var(--r-caja); }
+  .escb-panel-titulo { margin: 0; font: var(--peso-fuerte) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+  .escb-panel-datos { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--b-2) var(--e-3); margin: 0; font-size: var(--t-md); line-height: var(--interlineado-compacto); }
+  .escb-panel-datos dt { color: var(--gris); }
+  .escb-panel-datos dd { margin: 0; font-weight: var(--peso-medio); overflow-wrap: anywhere; }
+  .escb-panel-cupo { margin: 0; font-size: var(--t-md); font-weight: var(--peso-medio); }
+  .escb-panel-acciones { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); }
+  .escb-panel-acciones .btn-primario { width: auto; margin-inline-start: auto; }
+  .escb-panel-elegidas { display: grid; gap: 0; min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; border-block-start: var(--b-1) solid var(--linea); font-size: var(--t-sm); }
+  .escb-panel-elegidas[hidden] { display: none; }
+  .escb-panel-elegidas li { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); min-height: calc(var(--e-7) + var(--e-1)); border-block-end: var(--b-1) solid var(--linea); }
+  .escb-panel-nombre { min-width: 0; overflow-wrap: anywhere; }
+
+  /* Paso 1: los cuatro cursos en rejilla de 2 × 2 */
+  .arm-cursos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Paso 2: el calendario a lo ancho del paso; la semana elegida y su horario pasan al panel, y aquí quedan el primer día
+     (y el día, en el curso de un día) junto a la leyenda */
+  .arm-semana-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); }
+  .arm-cal-lado { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
+  .arm-elegida-rotulo, .arm-elegida-nombre, .arm-elegida-horario { display: none; }
+  .arm-elegida .arm-fecha { margin-block-start: 0; }
+  .arm-leyenda { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-4); }
+  /* Paso 3: la espera como tabla compacta con casilla (Persona · Organización · Espera · Folio) y filtro por organización.
+     Propuesta al estándar E6 (tabla compacta con casilla). */
+  .escb-filtro-org:not([hidden]) { display: block; max-width: calc(var(--e-11) * 4); margin-block-end: var(--e-3); }
+  .escb-espera-cabeza { display: grid; grid-template-columns: var(--e-6) minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr) calc(var(--e-11) * 1.6); column-gap: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--guinda); border-radius: var(--r-ctrl) var(--r-ctrl) 0 0; font: var(--peso-fuerte) var(--t-sm)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--blanco); }
+  #paso-personas .prog-personas { gap: 0; }
+  #paso-personas .plan-persona { grid-template-columns: var(--e-6) minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr) calc(var(--e-11) * 1.6); grid-template-areas: "casilla nombre org espera folio"; column-gap: var(--e-3); row-gap: 0; min-height: calc(var(--e-8) + var(--e-1)); padding-block: var(--e-1); border-width: 0 0 var(--b-1); border-radius: 0; }
+  #paso-personas .plan-persona > .casilla-input { grid-area: casilla; align-self: center; }
+  #paso-personas .plan-persona-nombre { grid-area: nombre; }
+  #paso-personas .plan-persona-org { grid-area: org; }
+  #paso-personas .plan-persona-espera { grid-area: espera; justify-content: flex-start; }
+  #paso-personas .escb-persona-folio { display: block; grid-area: folio; font-size: var(--t-sm); color: var(--gris); }
+  #paso-personas .plan-bloque { gap: 0; padding: 0; border-radius: 0; border-width: 0 0 var(--b-1); }
+  #paso-personas .plan-bloque-cabeza { padding: var(--e-1) var(--e-3); }
+  #paso-personas .plan-bloque .plan-persona { background: var(--blanco); }
+  #paso-personas .plan-bloque .plan-persona:has(.casilla-input:checked) { background: var(--azul-cl); }
+  #paso-personas [data-mas-espera] { margin-block-start: var(--e-3); }
+  /* Paso 4: el resumen en datos de dos columnas */
+  #paso-confirmar .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-6); }
+  #paso-confirmar .datos-par { grid-template-columns: minmax(0, calc(var(--e-11) * 1.5)) minmax(0, 1fr); }
+  /* Pestañas: «Ya terminaron» sin pestaña vacía */
+  .escb-solo-pestana:not([hidden]) { display: block; }
+  .arm-programados.pestanas-panel { margin-block-start: 0; }
+}
+/* El panel, fijo junto al paso sólo con alto suficiente (P177): nunca más alto que la ventana; las elegidas se desplazan
+   dentro y los botones quedan arriba de ellas, siempre a la vista */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .escb-panel-grupo { position: sticky; top: var(--e-4); max-height: calc(100dvh - var(--e-4) * 2); }
+}
