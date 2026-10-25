@@ -14,6 +14,23 @@
 
    A la persona se le habla de tú. Una sola acción principal por pantalla;
    «Anterior» y «Volver» son enlaces con flecha.
+
+   Sin conexión (ajustes del equipo, 25/10/2026: no perder el avance del examen): si una respuesta o una marca no llega
+   al servidor por falta de conexión, se queda en esta computadora (localStorage «apd.examen.pendiente.<código>.<pregunta>»)
+   y la persona sigue contestando. Al volver la conexión (evento «online» y reintentos con espera creciente) se envía en
+   el orden en que se eligió. Al volver a entrar con el mismo código en esta computadora (recarga o corte de luz), primero
+   se envía lo pendiente y luego sigue donde se quedó; en otra computadora manda lo que tiene el servidor. «Enviar mis
+   respuestas» no se permite con respuestas sin enviar. El tiempo lo sigue llevando el servidor.
+
+   El reloj se detiene durante un corte (decisión de Liber del 25/10/2026): mientras el examen está en curso, la página
+   manda al servidor una señal de vida con su código cada pocos segundos (senal_cada_ms, del servidor). Sin conexión, el
+   reloj de la pantalla se detiene y lo dice; al volver, primero se envía lo pendiente y después la señal, con la que el
+   servidor reanuda el tiempo. El tiempo que se muestra sale siempre de lo que responde el servidor.
+
+   Lectura en voz alta (ajustes del equipo, 25/10/2026: lectura en voz alta): con speechSynthesis y una voz en español
+   (es-MX o, si no hay, cualquier es-*), a velocidad un poco menor que la normal: la pregunta con sus opciones, cada
+   opción sola, las instrucciones de entrada y de inicio, y «¿Eres tú?». Sin síntesis de voz o sin voz en español, los
+   botones no aparecen y quien aplica lo ve en su pantalla.
    ========================================================= */
 (function () {
   'use strict';
@@ -40,10 +57,211 @@
   let avisados = new Set();
   let enviando = false;
 
+  /* ----- Lectura en voz alta ----- */
+  const Voz = (() => {
+    let s = null;
+    try { s = 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function' ? window.speechSynthesis : null; } catch (e) { s = null; }
+    let voz = null;
+    let decidido = !s;     // sin síntesis de voz ya se sabe que no puede
+    const avisa = [];
+    const elige = () => {
+      try {
+        const vs = s.getVoices() || [];
+        voz = vs.find((v) => /^es[-_]mx$/i.test(v.lang)) || vs.find((v) => /^es([-_]|$)/i.test(v.lang)) || null;
+      } catch (e) { voz = null; }
+    };
+    const cambia = () => { for (const fn of avisa) fn(); };
+    if (s) {
+      elige();
+      if (voz) decidido = true;
+      else {
+        // Las voces pueden llegar después (voiceschanged); si en unos segundos no hay voz en español, no puede
+        const llegan = () => { elige(); if (voz) { decidido = true; cambia(); } };
+        try { s.addEventListener('voiceschanged', llegan); } catch (e) { /* navegador sin eventos de voz */ }
+        setTimeout(() => { if (!decidido) { elige(); decidido = true; cambia(); } }, 3000);
+      }
+    }
+    return {
+      puede: () => Boolean(s && voz),
+      /* true, false o null (todavía no se sabe): lo que se le dice al servidor */
+      estado: () => (s && voz ? true : decidido ? false : null),
+      alCambiar: (fn) => avisa.push(fn),
+      lee(textos) {
+        if (!s || !voz) return;
+        s.cancel();
+        for (const t of textos.filter(Boolean)) {
+          const u = new window.SpeechSynthesisUtterance(t);
+          u.voice = voz; u.lang = voz.lang; u.rate = 0.85; // un poco más lento que lo normal
+          s.speak(u);
+        }
+      },
+      detiene() { try { if (s) s.cancel(); } catch (e) { /* nada que detener */ } }
+    };
+  })();
+  const info = () => ({ voz: Voz.estado() });
+
+  /* ----- Lo que no llegó al servidor por falta de conexión: en esta computadora, por código y pregunta ----- */
+  const PEND = 'apd.examen.pendiente.';
+  const Pend = {
+    lista(codigo) {
+      if (!codigo) return [];
+      const fuera = [];
+      try {
+        for (const k of Object.keys(localStorage)) {
+          if (!k.startsWith(`${PEND}${codigo}.`)) continue;
+          try { const v = JSON.parse(localStorage.getItem(k)); if (v && typeof v === 'object') fuera.push(Object.assign({}, v, { clave: k.slice(PEND.length + codigo.length + 1) })); } catch (e) { /* dañado: se ignora */ }
+        }
+      } catch (e) { return []; }
+      return fuera.sort((a, b) => a.en - b.en);
+    },
+    /* cambio: { valor } o { marca }; devuelve false si esta computadora no deja guardarlo */
+    pon(codigo, clave, cambio) {
+      try {
+        const k = `${PEND}${codigo}.${clave}`;
+        let antes = {};
+        try { antes = JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { antes = {}; }
+        localStorage.setItem(k, JSON.stringify(Object.assign(antes, cambio, { en: Date.now() })));
+        return true;
+      } catch (e) { return false; }
+    },
+    /* Lo quita sólo si no cambió mientras se enviaba */
+    /* Un examen enviado o suspendido ya no acepta nada: lo pendiente se descarta */
+    borra(codigo) {
+      try { for (const k of Object.keys(localStorage)) if (k.startsWith(`${PEND}${codigo}.`)) localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ }
+    },
+    quita(codigo, clave, en) {
+      try {
+        const k = `${PEND}${codigo}.${clave}`;
+        const v = JSON.parse(localStorage.getItem(k) || 'null');
+        if (!v || v.en === en) localStorage.removeItem(k);
+      } catch (e) { /* sin almacenamiento */ }
+    }
+  };
+  const deConexion = (e) => Boolean(e && e.motivo === 'conexion');
+  const codigosDe = (v) => (v ? [v.repone_a, v.codigo].filter(Boolean) : []);
+  const pendientes = (v = ex) => codigosDe(v).reduce((n, c) => n + Pend.lista(c).length, 0);
+  /* Lo pendiente se ve en el examen como si ya estuviera guardado */
+  function conPendientes(v) {
+    for (const c of codigosDe(v)) {
+      for (const p of Pend.lista(c)) {
+        if (p.valor !== undefined) v.respuestas[p.clave] = p.valor;
+        if (p.marca !== undefined) v.marcadas = v.marcadas.filter((k) => k !== p.clave).concat(p.marca ? [p.clave] : []);
+      }
+    }
+    return v;
+  }
+  /* Envía lo pendiente, en orden. Falla (y se reintenta después) si todavía no hay conexión; lo que el servidor rechaza por
+     sus reglas (se acabó el tiempo, examen suspendido o enviado) se descarta: manda el servidor. */
+  let enviandoPend = null;
+  function enviaPendientes(v = ex) {
+    if (!v) return Promise.resolve(0);
+    if (enviandoPend) return enviandoPend;
+    const destino = v.codigo;
+    const corre = async () => {
+      let enviadas = 0;
+      for (const c of codigosDe(v)) {
+        for (const p of Pend.lista(c)) {
+          try {
+            if (p.valor !== undefined) await API.responder(destino, p.clave, p.valor);
+            if (p.marca !== undefined) await API.marcar(destino, p.clave, p.marca);
+            enviadas += 1;
+          } catch (e) {
+            if (deConexion(e) || (e && e.motivo === 'reemplazado')) throw e;
+          }
+          Pend.quita(c, p.clave, p.en);
+        }
+      }
+      return enviadas;
+    };
+    enviandoPend = corre().finally(() => { enviandoPend = null; });
+    return enviandoPend;
+  }
+  /* Reintento: al volver la conexión (online) y cada vez más espaciado (2 s, 4 s, 8 s… hasta 30 s) */
+  let reintento = 0;
+  let espera = 2000;
+  let sinRed = false;              // la última llamada no llegó al servidor
+  let terminarAlVolver = '';       // se acabó el tiempo sin conexión: se envía al volver
+  let abrirAlVolver = '';          // recarga sin conexión: el código que se abre al volver
+  function programaReintento() {
+    if (reintento) return;
+    reintento = setTimeout(reintenta, espera);
+    espera = Math.min(espera * 2, 30000);
+  }
+  function reintenta() {
+    clearTimeout(reintento); reintento = 0;
+    if (!ex && abrirAlVolver) {
+      API.entrar(abrirAlVolver, EQUIPO, info()).then((v) => { abrirAlVolver = ''; volvio(); entraCon(v, true); },
+        (e) => { if (deConexion(e)) programaReintento(); else { abrirAlVolver = ''; guardaAbierto(null); $('[data-aviso-entrar]').hidden = true; } });
+      return;
+    }
+    if (!ex) return;
+    const alFinal = () => { if (terminarAlVolver) { const m = terminarAlVolver; terminarAlVolver = ''; termina(m); return true; } return false; };
+    if (ex.situacion !== 'contestando') { alFinal(); return; }
+    // Lo pendiente y después la señal, que reanuda el tiempo en el servidor (decisión del 25/10/2026)
+    reanuda().then((n) => {
+      volvio();
+      const g = $('[data-guardado]');
+      if (n || g.dataset.sinRed) g.textContent = 'Volvió la conexión: tus respuestas ya se enviaron.';
+      delete g.dataset.sinRed;
+      if (alFinal()) return;
+      refresca();
+      if (!$('[data-vista="revision"]').hidden) pintaRevision();
+    }, (e) => { if (deConexion(e)) { sinRed = true; programaReintento(); } });
+  }
+  function volvio() { sinRed = false; espera = 2000; }
+
+  /* ----- Señal de vida y reloj detenido durante un corte (decisión de Liber del 25/10/2026) ----- */
+  const DETENIDO = 'Sin conexión: el tiempo de tu examen está detenido. Sigue contestando; vuelve a correr cuando regrese la conexión.';
+  let senalCada = 0;
+  /* Lo pendiente primero y después la señal: con ella el servidor reanuda el tiempo y dice cuánto queda */
+  function reanuda() {
+    if (!ex || ex.situacion !== 'contestando') return Promise.resolve(0);
+    const codigo = ex.codigo;
+    let enviadas = 0;
+    return enviaPendientes().then((n) => { enviadas = n; return API.senal(codigo); }).then((v) => {
+      if (ex && ex.codigo === codigo) tiempoDe(v);
+      return enviadas;
+    }, (e) => { if (deConexion(e)) detenReloj(); throw e; });
+  }
+  /* El tiempo que dice el servidor; si el examen ya no está en curso, la pantalla se pone al día */
+  function tiempoDe(v) {
+    if (!v || v.situacion !== 'contestando') { refresca(); return; }
+    ex.restante_ms = v.restante_ms;
+    ex.pausa = v.pausa;
+    const aviso = $('[data-aviso-tiempo]');
+    if (aviso.textContent === DETENIDO) aviso.textContent = '';
+    arrancaReloj();
+  }
+  /* Sin conexión: el reloj de la pantalla se detiene (el servidor deja de contar sin señal) y se dice */
+  function detenReloj() {
+    sinRed = true;
+    paraReloj();
+    $('[data-aviso-tiempo]').textContent = DETENIDO;
+    programaReintento();
+  }
+  function arrancaSenal(v) {
+    const cada = (v && v.senal_cada_ms) || 12000;
+    if (senalCada) clearInterval(senalCada);
+    senalCada = setInterval(() => { if (ex && ex.situacion === 'contestando' && !sinRed) reanuda().catch(() => {}); }, cada);
+  }
+  window.addEventListener('online', () => { espera = 2000; reintenta(); });
+  /* La línea tranquila de cuando no hay conexión, junto a la pregunta */
+  function avisaSinRed() {
+    sinRed = true;
+    // Sin conexión, el tiempo se detiene (decisión de Liber del 25/10/2026)
+    detenReloj();
+    const g = $('[data-guardado]');
+    g.textContent = 'Sin conexión por ahora: tu respuesta quedó en esta computadora y se enviará cuando vuelva la conexión. Puedes seguir contestando.';
+    g.dataset.sinRed = '1';
+    programaReintento();
+  }
+
   const guardaAbierto = (c) => { try { if (c) sessionStorage.setItem(SESION, c); else sessionStorage.removeItem(SESION); } catch (e) { /* sin almacenamiento: una recarga pide el código otra vez */ } };
   const leeAbierto = () => { try { return sessionStorage.getItem(SESION); } catch (e) { return null; } };
 
   function muestra(vista, foco) {
+    // Al cambiar de pantalla o de pregunta se detiene lo que se estaba leyendo
+    Voz.detiene();
     for (const s of $$('[data-vista]')) s.hidden = s.dataset.vista !== vista;
     window.scrollTo(0, 0);
     const destino = foco || $(`[data-vista="${vista}"][tabindex]`);
@@ -56,23 +274,42 @@
   /* ----- 1 · Entrar ----- */
   const form = $('#entrar');
   const instancia = FormKit.iniciar(form, {
-    enviar(payload) { return API.entrar(payload.datos.codigo, EQUIPO); },
-    alEnviar(v) { abre(v, false); },
+    enviar(payload) { return API.entrar(payload.datos.codigo, EQUIPO, info()); },
+    alEnviar(v) { entraCon(v, false); },
     alFallar(e) {
       const aviso = $('[data-estado-envio] .aviso-texto', form);
       if (e && e.campo) { instancia.ctx.marca(e.campo, e.mensaje); if (aviso) aviso.textContent = 'No se pudo abrir el examen. Revisa el mensaje junto al código.'; } else if (e && e.mensaje && aviso) aviso.textContent = e.mensaje;
     }
   });
 
+  /* Al entrar con un código: si en esta computadora quedó algo sin enviar, primero se envía y luego se sigue */
+  function entraCon(v, recarga) {
+    if (!pendientes(v) || v.situacion !== 'contestando') return abre(v, recarga);
+    enviaPendientes(v).then((n) => {
+      const w = API.estado(v.codigo);
+      abre(w ? Object.assign(w, { repone_a: v.repone_a }) : v, recarga);
+      if (n) $('[data-guardado]').textContent = 'Se enviaron las respuestas que habían quedado en esta computadora. Continúas donde te quedaste.';
+    }, (e) => {
+      // Todavía sin conexión: se sigue con lo de esta computadora y se reintenta
+      abre(conPendientes(v), recarga);
+      if (deConexion(e)) avisaSinRed();
+    });
+    return undefined;
+  }
+
   /* Abre un examen según su situación */
   function abre(v, recarga) {
-    ex = v;
+    ex = conPendientes(v);
     $('[data-aviso-entrar]').hidden = true;
     guardaAbierto(v.codigo);
+    if (['terminado', 'suspendido'].includes(v.situacion)) for (const c of codigosDe(v)) Pend.borra(c);
     if (v.situacion === 'terminado') return pintaResultado();
     if (v.situacion === 'suspendido') return pintaSuspendido();
     if (v.situacion === 'contestando') {
       arrancaReloj();
+      // La señal de vida, ya con lo pendiente enviado: el servidor reanuda el tiempo si estaba detenido
+      arrancaSenal(v);
+      if (!sinRed) reanuda().catch(() => {});
       const libre = ex.preguntas.findIndex((p) => !ex.respuestas[p.clave]);
       pintaPregunta(libre < 0 ? ex.preguntas.length - 1 : libre);
       $('[data-guardado]').textContent = recarga ? '' : 'Continúas donde te quedaste: tus respuestas están guardadas.';
@@ -111,13 +348,15 @@
   function avisoNoGuardo(vista, e) {
     const c = $(`[data-vista="${vista}"] [data-aviso-falla]`);
     if (!c) return;
-    if (!e) { c.hidden = true; c.replaceChildren(); return; }
-    APD.pintaAviso(c, 'error', 'No se guardó', e.mensaje || 'Levanta la mano: quien aplica el examen te ayuda.', true);
+    if (!e) { c.hidden = true; c.replaceChildren(); delete c.dataset.pendientes; return; }
+    // Sin conexión y sin poder guardarla en esta computadora: levantar la mano
+    const texto = deConexion(e) && vista === 'pregunta' ? 'No hay conexión y esta computadora no deja guardar tu respuesta: levanta la mano. Quien aplica el examen te ayuda.' : e.mensaje;
+    APD.pintaAviso(c, 'error', deConexion(e) ? 'Sin conexión' : 'No se guardó', texto || 'Levanta la mano: quien aplica el examen te ayuda.', true);
   }
   const deAlmacenamiento = (e) => Boolean(e && e.motivo === 'almacenamiento');
   $('[data-empezar]').addEventListener('click', () => {
     avisoNoGuardo('instrucciones', null);
-    API.iniciar(ex.codigo).then((v) => { ex = v; arrancaReloj(); pintaPregunta(0); }, (e) => avisoNoGuardo('instrucciones', e));
+    API.iniciar(ex.codigo).then((v) => { ex = v; arrancaReloj(); arrancaSenal(v); pintaPregunta(0); }, (e) => avisoNoGuardo('instrucciones', e));
   });
 
   /* ----- 4 · Preguntas ----- */
@@ -128,14 +367,11 @@
     $('[data-numero]').textContent = `Pregunta ${actual + 1} de ${n}`;
     pintaAvance();
     $('[data-enunciado]').textContent = p.texto;
-    $('[data-opciones]').replaceChildren(...p.opciones.map((o, j) => {
-      const letra = 'abcd'[j];
-      const radio = el('input', { class: 'opcion-fila-input', type: 'radio', name: 'respuesta', value: o.valor, autocomplete: 'off', checked: ex.respuestas[p.clave] === o.valor ? '' : null });
-      const texto = el('span', { class: 'opcion-nombre' }, [el('span', { class: 'examen-letra', texto: `${letra})` }), document.createTextNode(` ${o.texto}`)]);
-      return el('label', { class: 'opcion-fila' }, [radio, el('span', {}, [texto])]);
-    }));
+    pintaOpciones();
     $('[data-marcar]').checked = ex.marcadas.includes(p.clave);
-    $('[data-guardado]').textContent = '';
+    // Con algo sin enviar, la línea tranquila sigue a la vista en cada pregunta
+    const g = $('[data-guardado]');
+    g.textContent = pendientes() ? 'Sin conexión por ahora: tus respuestas quedan en esta computadora y se enviarán cuando vuelva la conexión.' : '';
     avisoNoGuardo('pregunta', null);
     $('[data-anterior]').hidden = actual === 0;
     $('[data-siguiente]').textContent = actual === n - 1 ? 'Revisar y enviar' : 'Siguiente';
@@ -143,6 +379,49 @@
     muestra('pregunta', $('[data-tarjeta-pregunta]'));
     FormKit.anuncia(`Pregunta ${actual + 1} de ${n}.`);
   }
+  /* Las opciones de la pregunta en pantalla; cada una con su botón «Escuchar» si esta computadora puede leer en voz alta.
+     El botón va junto a la opción, fuera de su etiqueta, para no elegirla al escucharla. */
+  function pintaOpciones() {
+    const p = ex.preguntas[actual];
+    $('[data-opciones]').replaceChildren(...p.opciones.map((o, j) => {
+      const letra = 'abcd'[j];
+      const radio = el('input', { class: 'opcion-fila-input', type: 'radio', name: 'respuesta', value: o.valor, autocomplete: 'off', checked: ex.respuestas[p.clave] === o.valor ? '' : null });
+      const texto = el('span', { class: 'opcion-nombre' }, [el('span', { class: 'examen-letra', texto: `${letra})` }), document.createTextNode(` ${o.texto}`)]);
+      const fila = el('label', { class: 'opcion-fila' }, [radio, el('span', {}, [texto])]);
+      return el('div', { class: 'examen-opcion' }, [fila, Voz.puede()
+        ? el('button', { type: 'button', class: 'btn btn-secundario btn-chico', 'data-leer-opcion': String(j), 'aria-label': `Escuchar la opción ${letra}`, texto: 'Escuchar' }) : null]);
+    }));
+  }
+  /* Lo que se lee de cada pantalla */
+  const textoOpcion = (o, j) => `Opción ${'abcd'[j]}: ${o.texto}`;
+  const textosDe = {
+    entrar: () => ['Entra a tu examen.', 'Escribe el código que te dio quien aplica el examen. Viene en un papel con tu nombre.',
+      'Son 8 letras y números, en dos grupos de 4.', 'Si no tienes código o no funciona, levanta la mano: quien aplica el examen te ayuda.'],
+    confirmar: () => ['¿Eres tú?', `Nombre: ${ex.persona.nombre}.`, `Examen: ${nombreExamen()}.`, `Fecha: ${APD.fechaLarga(ex.grupo.examen_en)}.`,
+      'Si eres tú, presiona «Sí, soy yo».', 'Si no eres tú, no sigas: levanta la mano y avisa a quien aplica el examen.'],
+    instrucciones: () => ['Antes de empezar.', ...$$('[data-vista="instrucciones"] .examen-reglas li').map((li) => li.textContent.replace(/\s+/g, ' ').trim()),
+      'Cuando estés listo, presiona «Empezar el examen».'],
+    pregunta: () => {
+      const p = ex.preguntas[actual];
+      return [`Pregunta ${actual + 1} de ${ex.preguntas.length}.`, p.texto, ...p.opciones.map(textoOpcion)];
+    }
+  };
+  /* Botones de lectura: «Escuchar…» lee la pantalla; «Detener la lectura», detiene; los de cada opción, esa opción */
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-leer], [data-detener], [data-leer-opcion]');
+    if (!b) return;
+    if (b.hasAttribute('data-detener')) { Voz.detiene(); return; }
+    if (b.hasAttribute('data-leer-opcion')) { const j = Number(b.dataset.leerOpcion); Voz.lee([textoOpcion(ex.preguntas[actual].opciones[j], j)]); return; }
+    const leer = textosDe[b.dataset.leer];
+    if (leer) Voz.lee(leer());
+  });
+  /* Sin síntesis de voz o sin voz en español no hay botones de lectura */
+  function pintaVoz() {
+    for (const c of $$('[data-voz]')) c.hidden = !Voz.puede();
+    if (ex && !$('[data-vista="pregunta"]').hidden) pintaOpciones();
+  }
+  Voz.alCambiar(() => { pintaVoz(); if (ex) API.latido(ex.codigo, EQUIPO, info()); });
+  pintaVoz();
   function pintaAvance() {
     const n = ex.preguntas.length;
     const k = contestadas();
@@ -162,11 +441,23 @@
       return el('li', {}, [b]);
     }));
   }
+  /* Sin conexión, la respuesta se queda en esta computadora; si ni eso se puede, se dice como antes (levantar la mano) */
+  function quedaAqui(p, cambio) {
+    if (!Pend.pon(ex.codigo, p.clave, cambio)) return false;
+    if (cambio.valor !== undefined) ex.respuestas[p.clave] = cambio.valor;
+    avisoNoGuardo('pregunta', null);
+    avisaSinRed();
+    pintaAvance();
+    pintaNumeros();
+    return true;
+  }
   $('[data-opciones]').addEventListener('change', (e) => {
     if (e.target.name !== 'respuesta') return;
     const p = ex.preguntas[actual];
     const valor = e.target.value;
     const guardado = $('[data-guardado]');
+    // Con respuestas sin enviar, la nueva va detrás de ellas, en orden
+    if (pendientes() && quedaAqui(p, { valor })) { reintenta(); return; }
     guardado.textContent = 'Guardando…';
     API.responder(ex.codigo, p.clave, valor).then(() => {
       ex.respuestas[p.clave] = valor;
@@ -175,7 +466,8 @@
       pintaAvance();
       pintaNumeros();
     }, (err) => {
-      if (!deAlmacenamiento(err)) { refresca(); return; }
+      if (deConexion(err) && quedaAqui(p, { valor })) return;
+      if (!deAlmacenamiento(err) && !deConexion(err)) { refresca(); return; }
       // No quedó: la opción vuelve a la que estaba guardada y se dice, para que levante la mano
       guardado.textContent = '';
       for (const r of $$('[data-opciones] input[name="respuesta"]')) r.checked = ex.respuestas[p.clave] === r.value;
@@ -187,8 +479,10 @@
     const si = e.target.checked;
     const antes = ex.marcadas.slice();
     ex.marcadas = ex.marcadas.filter((k) => k !== p.clave).concat(si ? [p.clave] : []);
+    if (pendientes() && quedaAqui(p, { marca: si })) { reintenta(); return; }
     API.marcar(ex.codigo, p.clave, si).then(null, (err) => {
-      if (!deAlmacenamiento(err)) return;
+      if (deConexion(err) && quedaAqui(p, { marca: si })) return;
+      if (!deAlmacenamiento(err) && !deConexion(err)) return;
       ex.marcadas = antes;
       e.target.checked = antes.includes(p.clave);
       pintaNumeros();
@@ -211,6 +505,7 @@
     if (faltan.length) partes.push(`${faltan.length === 1 ? 'Te falta la pregunta' : 'Te faltan las preguntas'} ${lista(faltan)}: una pregunta sin contestar cuenta como incorrecta.`);
     if (marcadas.length) partes.push(`Marcaste para revisar: ${lista(marcadas)}.`);
     $('[data-resumen]').textContent = partes.join(' ');
+    avisoPendientes();
     $('[data-repaso]').replaceChildren(...ex.preguntas.map((p, j) => {
       const [clase, texto] = estadoDe(p);
       const ir = el('button', { type: 'button', class: 'btn-enlace', 'data-ir': String(j) }, [document.createTextNode(`Pregunta ${j + 1}`), el('span', { class: 'solo-lector', texto: `, ${texto}` })]);
@@ -220,21 +515,63 @@
   }
   $('[data-repaso]').addEventListener('click', (e) => { const b = e.target.closest('[data-ir]'); if (b) pintaPregunta(Number(b.dataset.ir)); });
   $('[data-volver-preguntas]').addEventListener('click', () => pintaPregunta(actual));
+  /* En la revisión: si hay respuestas sin enviar, lo dice; sin pendientes, lo quita */
+  function avisoPendientes(enfoca) {
+    const n = pendientes();
+    const c = $('[data-vista="revision"] [data-aviso-falla]');
+    if (!n) { if (c.dataset.pendientes) { c.hidden = true; c.replaceChildren(); delete c.dataset.pendientes; } return; }
+    APD.pintaAviso(c, 'pend', n === 1 ? 'Falta enviar 1 respuesta' : `Faltan enviar ${n} respuestas`,
+      `${n === 1 ? 'Quedó' : 'Quedaron'} en esta computadora porque no hay conexión. Se ${n === 1 ? 'envía sola' : 'envían solas'} cuando vuelva; después puedes enviar tu examen. Si tarda, levanta la mano.`, enfoca);
+    c.dataset.pendientes = '1';
+  }
   $('[data-enviar]').addEventListener('click', (e) => {
+    const boton = e.currentTarget;
+    // No se envía con respuestas sin enviar: se intenta mandarlas y, si todavía no hay conexión, se explica
+    if (pendientes()) {
+      enviaPendientes().then(() => { volvio(); delete $('[data-guardado]').dataset.sinRed; pintaRevision(); confirmaEnvio(boton); },
+        (err) => { if (deConexion(err)) { sinRed = true; programaReintento(); } avisoPendientes(true); });
+      return;
+    }
+    confirmaEnvio(boton);
+  });
+  function confirmaEnvio(boton) {
     const faltan = ex.preguntas.length - contestadas();
-    FormKit.confirma(e.currentTarget, {
+    FormKit.confirma(boton, {
       titulo: '¿Enviar tus respuestas?',
       consecuencias: [faltan ? `Te ${faltan === 1 ? 'falta 1 pregunta' : `faltan ${faltan} preguntas`} sin contestar: ${faltan === 1 ? 'cuenta' : 'cuentan'} como incorrecta${faltan === 1 ? '' : 's'}.` : 'Contestaste todas las preguntas.',
         'Al enviar ves tu calificación.'],
       irreversible: true, si: 'Sí, enviar mis respuestas', no: 'Seguir revisando'
     }).then((si) => { if (si) termina('enviado'); });
-  });
+  }
   function termina(motivo) {
     if (enviando) return;
     enviando = true;
     // Si no quedó registrado, no hay resultado: se dice en la revisión, con lo contestado (F4 A5)
-    API.terminar(ex.codigo, motivo).then((v) => { ex = v; enviando = false; pintaResultado(); }, (err) => {
+    const codigo = ex.codigo;
+    API.terminar(codigo, motivo).then((v) => {
       enviando = false;
+      volvio();
+      // Si mientras tanto la pantalla ya se puso al día (refresca) y la persona salió, no se vuelve a abrir el resultado
+      if (!ex || ex.codigo !== codigo) return;
+      // Al servidor todavía le queda tiempo (lo tuvo detenido durante un corte): el examen sigue con el que dice
+      if (v.situacion === 'contestando') { ex = conPendientes(Object.assign(v, { repone_a: v.repone_a || ex.repone_a })); tiempoDe(v); return; }
+      ex = v; for (const c of codigosDe(v)) Pend.borra(c); pintaResultado();
+    }, (err) => {
+      enviando = false;
+      if (deConexion(err)) {
+        // Sin conexión: al acabarse el tiempo, se envía solo cuando vuelva; si lo envió la persona, vuelve a presionar
+        paraReloj();
+        if (motivo !== 'tiempo') $('[data-aviso-tiempo]').textContent = DETENIDO;
+        if (motivo === 'tiempo') terminarAlVolver = 'tiempo';
+        sinRed = true;
+        programaReintento();
+        if ($('[data-vista="revision"]').hidden) pintaRevision();
+        APD.pintaAviso($('[data-vista="revision"] [data-aviso-falla]'), 'pend', motivo === 'tiempo' ? 'Se acabó el tiempo' : 'Tu examen todavía no se envía',
+          // Sin conexión el servidor detiene el tiempo (decisión del 25/10/2026): al volver dice si todavía queda
+          motivo === 'tiempo' ? 'No hay conexión. Tus respuestas no se pierden: cuando vuelva la conexión, si todavía te queda tiempo sigues contestando; si no, tu examen se envía solo.'
+            : 'No hay conexión. Tus respuestas no se pierden: cuando vuelva la conexión, presiona otra vez «Enviar mis respuestas».', true);
+        return;
+      }
       if (!deAlmacenamiento(err)) { refresca(); return; }
       // Al acabarse el tiempo, el reloj se detiene (no reintenta cada segundo); «Enviar mis respuestas» lo vuelve a intentar
       if (motivo === 'tiempo') paraReloj();
@@ -312,7 +649,7 @@
   function refresca() {
     if (!ex) return;
     // Avisa que esta pantalla sigue abierta; si el examen se abrió en otra computadora, ésta lo suelta
-    if (['sin_empezar', 'contestando'].includes(ex.situacion) && API.latido(ex.codigo, EQUIPO).otro) {
+    if (['sin_empezar', 'contestando'].includes(ex.situacion) && API.latido(ex.codigo, EQUIPO, info()).otro) {
       paraReloj(); guardaAbierto(null); ex = null;
       muestra('entrar', $('#codigo'));
       const aviso = $('[data-aviso-entrar]');
@@ -324,7 +661,8 @@
     if (!v) return;
     if (v.situacion === ex.situacion && v.situacion !== 'contestando') return;
     const antes = ex.situacion;
-    ex = Object.assign(v, { respuestas: v.respuestas });
+    // Lo que sigue en esta computadora sin enviar se ve como contestado
+    ex = conPendientes(Object.assign(v, { respuestas: v.respuestas, repone_a: v.repone_a || ex.repone_a }));
     if (v.situacion === 'suspendido' && antes !== 'suspendido') return pintaSuspendido();
     if (v.situacion === 'terminado' && $('[data-vista="resultado"]').hidden) return pintaResultado();
     if (v.situacion === 'reemplazado') {
@@ -340,11 +678,21 @@
   window.addEventListener('storage', (e) => { if (e.key && e.key.startsWith(API.PREFIJO)) refresca(); });
   setInterval(refresca, 3000);
   /* Salir de la ventana del examen se le cuenta a quien aplica (no se bloquea: puede ser un aviso del sistema) */
-  document.addEventListener('visibilitychange', () => { if (document.hidden && ex && ex.situacion === 'contestando') API.salida(ex.codigo); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && ex && ex.situacion === 'contestando') API.salida(ex.codigo).catch(() => {}); });
+  window.addEventListener('pagehide', () => Voz.detiene());
 
-  /* Una recarga vuelve al examen abierto en esta pestaña */
+  /* Una recarga vuelve al examen abierto en esta pestaña; si no hay conexión, se dice y se abre solo cuando vuelva */
   const abierto = leeAbierto();
-  if (abierto) API.entrar(abierto, EQUIPO).then((v) => abre(v, true), () => guardaAbierto(null));
+  if (abierto) {
+    API.entrar(abierto, EQUIPO, info()).then((v) => entraCon(v, true), (e) => {
+      if (!deConexion(e)) { guardaAbierto(null); return; }
+      abrirAlVolver = abierto;
+      const aviso = $('[data-aviso-entrar]');
+      $('.aviso-texto', aviso).textContent = 'Sin conexión por ahora. Tu examen y las respuestas que quedaron en esta computadora están a salvo: se abre solo cuando vuelva la conexión.';
+      aviso.hidden = false;
+      programaReintento();
+    });
+  }
 
   /* ----- Menú de pruebas: «En esta pantalla» (app/pruebas.js) ----- */
   window.APD_PRUEBAS_AQUI = (datos) => {
@@ -367,7 +715,11 @@
       }],
       ['Contestar todas bien', async () => (enCurso() && API.pruebas.contestar(ex.codigo, 'bien') ? reabre(ex.codigo, 'Todas contestadas bien. Ve a la última pregunta y envía.') : 'Primero empieza un examen.')],
       ['Contestar para no aprobar', async () => (enCurso() && API.pruebas.contestar(ex.codigo, 'reprobar') ? reabre(ex.codigo, 'Una de cada tres bien: no alcanza la mínima.') : 'Primero empieza un examen.')],
-      ['Dejar 1 minuto en el reloj', async () => (enCurso() && API.pruebas.dejarMinutos(ex.codigo, 1) ? reabre(ex.codigo, 'Queda 1 minuto. Al llegar a cero, el examen se envía solo.') : 'Primero empieza un examen.')]
+      ['Dejar 1 minuto en el reloj', async () => (enCurso() && API.pruebas.dejarMinutos(ex.codigo, 1) ? reabre(ex.codigo, 'Queda 1 minuto. Al llegar a cero, el examen se envía solo.') : 'Primero empieza un examen.')],
+      // Falta de conexión (ajustes del equipo, 25/10/2026): sólo esta pestaña; sigue al recargar
+      API.pruebas.sinConexion()
+        ? ['Simular que vuelve el internet', async () => { API.pruebas.conexion(true); return 'Volvió la conexión: lo que quedó en esta computadora se envía.'; }]
+        : ['Simular que se va el internet', async () => { API.pruebas.conexion(false); return 'Sin conexión en esta pestaña (también si la recargas): contesta y mira lo que pasa.'; }]
     ];
   };
 }());

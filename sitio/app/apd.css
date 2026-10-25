@@ -108,6 +108,15 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .menu-pruebas-ajuste p { margin: 0; }
 @media (min-width: 560px) { .menu-pruebas-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
+/* Registro asistido (decisión 2026-10-25): las fichas de la ventanilla y de los avisos por teléfono, una debajo de otra, y la
+   vista previa de la cámara de la computadora (el estándar sólo trae la del teléfono) */
+.lista-fichas { display: grid; gap: var(--e-3); margin-block: var(--e-4); }
+.camara-computadora { display: grid; gap: var(--e-3); margin-block: var(--e-4); }
+.camara-vista { width: 100%; max-width: var(--ancho-acuse); aspect-ratio: 4 / 3; background: var(--fondo); border: var(--b-1) solid var(--borde); border-radius: var(--r-caja); }
+/* El acuse del registro asistido, en una hoja sencilla para la persona: en pantalla no se ve (ver «Impresión») */
+.hoja-acuse { display: none; }
+.hoja-acuse-titulo { margin: 0; font-size: var(--t-sm); }
+
 /* ---------- Estados ---------- */
 
 .verificacion[data-tono="ok"] { border-color: var(--ok); background: var(--ok-bg); }
@@ -116,6 +125,13 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .verificacion[data-tono="terminado"] { border-color: var(--borde); background: var(--aviso-bg); }
 .menu-opcion:hover { border-color: var(--guinda); }
 .menu-opcion:focus-visible { outline: var(--foco-ancho) solid var(--foco); outline-offset: var(--foco-sep); }
+/* Combo libre sin ninguna opción que coincida (falla del estándar 1.5.1, se rodea aquí): la lista sólo trae el renglón
+   que explica que lo escrito se guarda tal cual, pero tapa lo que está debajo y se queda con el toque (el estándar la cierra
+   al salir del campo y evita que el toque en la lista quite el foco). Con el renglón más largo de la carrera (ajustes del
+   equipo, 25/10/2026: carrera que no aparece en el catálogo), en teléfono tapaba «Continuar»: el toque pasa a lo de abajo. */
+.combo-lista:not(:has(.combo-opcion)) { pointer-events: none; }
+
+.lista-fichas[hidden], .camara-computadora[hidden] { display: none; }
 
 /* ---------- Adaptaciones ---------- */
 
@@ -594,7 +610,10 @@ body > main { flex: 1 0 auto; width: 100%; }
 .cal-muestra[data-muestra="finde"] { border-color: var(--linea); background: var(--fondo); }
 /* Paso 3 y paso 4 */
 .arm-cuenta { margin: 0 0 var(--e-3); font-weight: var(--peso-medio); }
-.arm-quien { margin-block-start: var(--e-4); }
+/* Falla del estándar, rodeada aquí: el módulo opciones declara display en .opcion-fila y se carga después del [hidden] del
+   núcleo, así que una opción con hidden seguía a la vista. La de grupo propio se oculta donde no aplica (sólo instituciones
+   de gobierno; ajustes del equipo, 25/10/2026). */
+.opcion-fila[hidden] { display: none; }
 .arm-queda { display: grid; gap: var(--e-1); justify-items: start; margin-block-start: var(--e-2); }
 .arm-queda p { margin: 0; }
 /* Grupos programados: una tabla por curso (módulo tabla del estándar) */
@@ -652,4 +671,11 @@ body > main { flex: 1 0 auto; width: 100%; }
 @media (forced-colors: active) {
   .arm-semana-elegir[aria-pressed="true"], .arm-dia-curso[aria-pressed="true"], .plan-persona:has(.casilla-input:checked) { outline: var(--b-3) solid Highlight; outline-offset: calc(var(--b-1) * -1); }
   .estado-atencion[data-plazo="atrasada"] { border-width: var(--b-2); }
+}
+
+/* ---------- Impresión ---------- */
+/* Registro asistido: al imprimir el acuse sólo sale la hoja sencilla (app/solicitud.js pone .imprime-hoja en el cuerpo) */
+@media print {
+  .imprime-hoja > :not(.hoja-acuse) { display: none; }
+  .imprime-hoja .hoja-acuse { display: grid; gap: var(--e-4); padding: var(--e-5); }
 }

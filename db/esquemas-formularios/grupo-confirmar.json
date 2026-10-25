@@ -1,25 +1,13 @@
 {
   "formulario": "grupo-confirmar.html",
-  "generado": "2026-10-24T17:19:31.662Z",
+  "generado": "2026-10-25T08:15:36.068Z",
   "campos": {
-    "fecha_inicio": {
-      "etiqueta": "Primer día del curso",
-      "tipo": "texto",
-      "requerido": true,
-      "formato": "fecha-dma",
-      "sensible": false,
-      "uso": "Fijar el primer día del curso (apd.grupo.fecha_inicio).",
-      "atributos": {
-        "maxlength": "14"
-      },
-      "autocomplete": "off"
-    },
     "instructor": {
-      "etiqueta": "Instructor",
+      "etiqueta": "Persona instructora",
       "tipo": "select",
       "requerido": true,
       "sensible": false,
-      "uso": "Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).",
+      "uso": "Asignar o cambiar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso); lo hace el área de Instructores y Capacitación.",
       "atributos": {},
       "opciones": [
         "instructor.ficticio",

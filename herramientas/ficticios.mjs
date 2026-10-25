@@ -49,6 +49,9 @@ const REVISION = 'revision.ficticia';
 const COTEJO = 'cotejo.ficticio';
 const EMISION = 'emision.ficticia';
 const INSTRUCTOR = 'instructor.ficticio';
+// Área de Instructores y Capacitación (perfil «capacitación»): asigna la persona instructora y confirma los grupos; quien
+// los arma (cotejo) ya no lo hace (ajustes del equipo, 25/10/2026)
+const CAPACITACION = 'capacitacion.ficticia';
 
 // ── Instituciones de adscripción ─────────────────────────────────────────
 // Las empresas son ficticias y se agregan aquí; alcaldía y dependencias son del catálogo inicial (04), por su clave.
@@ -145,7 +148,8 @@ function solicitud(clave, p, tipo, modalidad, opciones = {}) {
   const s = { clave, id: uuid('solicitud:' + clave), persona: p, tipo, modalidad, ...opciones };
   if (p.sinActivar) activar(p, opciones.fecha); // la persona del padrón crea su contraseña al solicitar
   en(opciones.fecha, '09:30');
-  como(p.correo, 'solicitante');
+  // Registro asistido (decisión 2026-10-25): la captura el personal de revisión y cotejo con la persona presente
+  if (p.asistida) como(REVISION, 'personal', 'revision_cotejo'); else como(p.correo, 'solicitante');
   // Perfil del dictaminador: nivel, carrera y estatus; la base calcula el perfil y la experiencia mínima
   // En poda se pregunta el nivel y, desde licenciatura, la carrera (dato del padrón); se reparte entre niveles comunes
   const NIVELES_PODA = ['secundaria', 'preparatoria', 'tecnica', 'licenciatura'];
@@ -193,12 +197,13 @@ function observar(s, fecha, requisito, texto) {
   emitir(`INSERT INTO apd.revision (id, solicitud_id, resultado, observacion_general, revisor) VALUES (${q(uuid(`rev:${s.id}:${fecha}`))}, ${q(s.id)}, 'con_observaciones', ${q(texto)}, ${q(REVISION)})`);
 }
 
-function recargar(s, fecha, requisito) {
+// v: la versión del documento (la 2 es la primera corrección; otra corrección del mismo documento, la 3)
+function recargar(s, fecha, requisito, v = 2) {
   en(fecha, '18:00');
   como(s.persona.correo, 'solicitante');
   emitir(`INSERT INTO apd.documento (id, solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
-  VALUES (${q(uuid(`doc2:${s.id}:${requisito}`))}, ${q(s.id)}, ${q(requisito)}, ${q(`ficticio/${s.id}/${requisito}-v2.pdf`)}, ${q(requisito + '-corregido.pdf')}, 'application/pdf', 642118,
-    encode(sha256(convert_to(${q(s.id + requisito + 'v2')}, 'UTF8')), 'hex'))`);
+  VALUES (${q(uuid(`doc${v}:${s.id}:${requisito}`))}, ${q(s.id)}, ${q(requisito)}, ${q(`ficticio/${s.id}/${requisito}-v${v}.pdf`)}, ${q(requisito + '-corregido.pdf')}, 'application/pdf', 642118,
+    encode(sha256(convert_to(${q(s.id + requisito + 'v' + v)}, 'UTF8')), 'hex'))`);
 }
 
 function validar(s, fecha, cita) {
@@ -263,10 +268,21 @@ function inscribir(g, lista, fecha) {
   como(COTEJO, 'personal');
   for (const s of lista) emitir(`INSERT INTO apd.inscripcion (id, solicitud_id, grupo_id) VALUES (${q(uuid(`insc:${g.id}:${s.id}`))}, ${q(s.id)}, ${q(g.id)})`);
 }
-function programar(g, fecha, inicio) {
+// Quien arma el grupo (cotejo) elige la semana; el área de Instructores y Capacitación asigna la persona instructora y lo
+// confirma (ajustes del equipo, 25/10/2026)
+function semana(g, fecha, inicio) {
   en(fecha, '16:00');
-  como(COTEJO, 'personal');
-  emitir(`UPDATE apd.grupo SET instructor = ${q(INSTRUCTOR)}, fecha_inicio = ${q(inicio)}, hora_entrada = '09:00' WHERE id = ${q(g.id)}`);
+  como(COTEJO, 'personal', 'revision_cotejo');
+  emitir(`UPDATE apd.grupo SET fecha_inicio = ${q(inicio)}, hora_entrada = '09:00' WHERE id = ${q(g.id)}`);
+}
+function asignaInstructor(g, fecha, instructor = INSTRUCTOR) {
+  en(fecha, '16:30');
+  como(CAPACITACION, 'personal', 'capacitacion');
+  emitir(`UPDATE apd.grupo SET instructor = ${q(instructor)} WHERE id = ${q(g.id)}`);
+}
+function programar(g, fecha, inicio) {
+  semana(g, fecha, inicio);
+  asignaInstructor(g, fecha);
   emitir(`UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${q(g.id)}`);
 }
 function estadoGrupo(g, fecha, estado, motivo = null) {
@@ -629,9 +645,8 @@ const sPorConfirmar = solicitud('grupo-por-confirmar', porConfirmar, 'poda', 'nu
 hastaLista(sPorConfirmar, { envio: '2026-09-08', validacion: '2026-09-10', cita: '2026-09-15' });
 const G5 = grupo('g5', 'poda', 'nueva', '2026-10-05');
 inscribir(G5, [sPorConfirmar], '2026-10-05');
-en('2026-10-06', '16:00');
-como(COTEJO, 'personal');
-emitir(`UPDATE apd.grupo SET instructor = ${q(INSTRUCTOR)}, fecha_inicio = '2026-10-26', hora_entrada = '09:00' WHERE id = ${q(G5.id)}`);
+semana(G5, '2026-10-06', '2026-10-26');
+asignaInstructor(G5, '2026-10-06');
 
 // Aprobada: grupo de cinco días, de lunes a viernes (5 al 9/10), con su examen el viernes; el personal todavía no lo
 // concluye. Hasta el 23/10/2026 empezaba el sábado 10/10 y terminaba en la fecha de corte (sábados y domingos ya no hay
@@ -740,6 +755,43 @@ revisaActa(rRepuesta, '2026-09-29', 'acta_aceptada');
     WHERE id = ${q(uuid('reposicion:' + rRepuesta.clave))}`);
 }
 
+// ── Máximo dos oportunidades para corregir (ajustes del equipo, 25/10/2026) ──────────────────────
+// Cada revisión en línea con observaciones da una oportunidad (parámetro oportunidades_correccion = 2). Tres personas de poda:
+// con observaciones por segunda vez (su última oportunidad), reenviada con su segunda corrección (la revisión que puede
+// cerrarla) y cerrada porque en la revisión de la segunda corrección siguieron las observaciones.
+const ultimaOportunidad = persona('ultima-oportunidad');
+alta(ultimaOportunidad, '2026-09-14');
+const sUltima = solicitud('ultima-oportunidad', ultimaOportunidad, 'poda', 'nueva', { fecha: '2026-09-14' });
+enviar(sUltima, '2026-09-14');
+observar(sUltima, '2026-09-16', 'comprobante_domicilio', 'El comprobante de domicilio tiene más de tres meses de antigüedad.');
+recargar(sUltima, '2026-09-18', 'comprobante_domicilio');
+enviar(sUltima, '2026-09-18', '19:00');
+observar(sUltima, '2026-09-22', 'comprobante_domicilio', 'El comprobante de domicilio corregido no muestra la fecha de emisión.');
+
+const segundaCorreccion = persona('segunda-correccion');
+alta(segundaCorreccion, '2026-09-07');
+const sSegunda = solicitud('segunda-correccion', segundaCorreccion, 'poda', 'nueva', { fecha: '2026-09-07' });
+enviar(sSegunda, '2026-09-07');
+observar(sSegunda, '2026-09-09', 'identificacion_oficial', 'La imagen de la identificación no es legible.');
+recargar(sSegunda, '2026-09-11', 'identificacion_oficial');
+enviar(sSegunda, '2026-09-11', '19:00');
+observar(sSegunda, '2026-09-15', 'identificacion_oficial', 'La identificación corregida está vencida.');
+recargar(sSegunda, '2026-09-17', 'identificacion_oficial', 3);
+enviar(sSegunda, '2026-09-17', '19:00');
+
+const agotadas = persona('oportunidades-agotadas');
+alta(agotadas, '2026-08-31');
+const sAgotadas = solicitud('oportunidades-agotadas', agotadas, 'poda', 'nueva', { fecha: '2026-08-31' });
+enviar(sAgotadas, '2026-08-31');
+observar(sAgotadas, '2026-09-02', 'curp', 'La CURP no está en el formato actualizado.');
+recargar(sAgotadas, '2026-09-04', 'curp');
+enviar(sAgotadas, '2026-09-04', '19:00');
+observar(sAgotadas, '2026-09-08', 'curp', 'La CURP corregida sigue sin el formato actualizado.');
+recargar(sAgotadas, '2026-09-10', 'curp', 3);
+enviar(sAgotadas, '2026-09-10', '19:00');
+// Tercera revisión con observaciones: la base la cierra («Se agotaron las oportunidades de corrección»)
+observar(sAgotadas, '2026-09-14', 'curp', 'La CURP cargada es de otra persona.');
+
 // ── Material de estudio (decisión 2026-10-18, Liber) ──────────────────────────────────
 // No es ficticio: son los documentos de la Secretaría que subió Liber. En la versión de prueba el archivo está en
 // sitio/material/ y su clave en el almacén es esa misma ruta. Las páginas de los temas son las del PDF; el temario
@@ -802,6 +854,70 @@ for (const m of MATERIALES) {
     archivo_clave, nombre_archivo, tipo_mime, tamano_bytes, sha256, paginas)
     VALUES (${q(m.clave)}, ${q(m.titulo)}, ${q(m.descripcion)}, ${q(m.edicion)}, NULL, ${q(JSON.stringify(m.temas))}::jsonb, ${m.orden}, true,
     ${q('material/' + m.archivo)}, ${q(m.archivo)}, 'application/pdf', ${m.bytes}, ${q(m.sha256)}, ${m.paginas})`);
+}
+
+// ── Registro asistido (decisión 2026-10-25, Liber): personas que no saben leer ni escribir ─────────────────────
+// En el Vivero, el personal de revisión y cotejo registra la cuenta (sin contraseña; el correo es opcional) después de
+// leerle el aviso de privacidad, toma su fotografía, captura su solicitud con sus documentos escaneados y, antes de
+// enviarla, le lee lo capturado. Cada marca la declara el personal en el contexto (apd.lectura_aceptada) y queda en la
+// bitácora. Los avisos le llegan por teléfono (apd.aviso_telefono). Van al final para no mover los datos de los demás;
+// el apellido «Supuesto» las ordena después de todas por CURP.
+const lectura = (marca) => emitir(`SELECT set_config('apd.lectura_aceptada', ${q(marca)}, false)`);
+function altaAsistida(p, fecha, { conCorreo = false } = {}) {
+  p.asistida = true;
+  if (!conCorreo) p.correo = null;
+  en(fecha, '09:00');
+  como(REVISION, 'personal', 'revision_cotejo');
+  lectura('aviso_privacidad');
+  emitir(`INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, segundo_apellido, correo, telefono, adscripcion, es_ficticio)
+  VALUES (${q(p.id)}, ${q(p.curp)}, ${q(p.nombre)}, ${q(p.primer)}, ${q(p.segundo)}, ${q(p.correo)}, ${q(p.telefono)}, 'independiente', true)`);
+  lectura('');
+  fotografia(p); // la toma el personal con la cámara de la computadora: queda pendiente hasta el cotejo
+}
+function enviarAsistida(s, fecha, hora = '10:00') {
+  en(fecha, hora);
+  como(REVISION, 'personal', 'revision_cotejo');
+  lectura('lo_capturado');
+  emitir(`UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${q(s.id)}`);
+  lectura('');
+}
+function avisoAtendido(p, fecha, resultado) {
+  en(fecha, '16:00');
+  como(REVISION, 'personal', 'revision_cotejo');
+  emitir(`UPDATE apd.aviso_telefono SET resultado = ${q(resultado)} WHERE solicitante_id = ${q(p.id)} AND resultado IS NULL`);
+}
+// Con observaciones y su aviso por teléfono pendiente: la persona va a la ventanilla a corregir
+const asisObservada = persona('asistida-observada', { nombre: 'Amalia', primer: 'Supuesto', segundo: 'Ejemplo', sexo: 'M' });
+altaAsistida(asisObservada, '2026-10-06');
+const sAsisObservada = solicitud('asistida-observada', asisObservada, 'poda', 'nueva', { fecha: '2026-10-06', nivel: 'primaria' });
+enviarAsistida(sAsisObservada, '2026-10-06');
+observar(sAsisObservada, '2026-10-08', 'comprobante_domicilio', 'El comprobante de domicilio está a nombre de otra persona y no trae una carta de quien es titular.');
+// En revisión documental: llega a «Revisar» con su etiqueta
+const asisRevision = persona('asistida-revision', { nombre: 'Benito', primer: 'Supuesto', segundo: 'Muestra', sexo: 'H' });
+altaAsistida(asisRevision, '2026-10-13');
+const sAsisRevision = solicitud('asistida-revision', asisRevision, 'poda', 'nueva', { fecha: '2026-10-13', nivel: 'ninguna' });
+enviarAsistida(sAsisRevision, '2026-10-13');
+// Con su cita de cotejo; se le avisó por teléfono. Dio un correo, opcional
+const asisCita = persona('asistida-cita', { nombre: 'Cirilo', primer: 'Supuesto', segundo: 'Prueba', sexo: 'H' });
+altaAsistida(asisCita, '2026-09-29', { conCorreo: true });
+const sAsisCita = solicitud('asistida-cita', asisCita, 'poda', 'nueva', { fecha: '2026-09-29', nivel: 'primaria' });
+enviarAsistida(sAsisCita, '2026-09-29');
+validar(sAsisCita, '2026-10-05', '2026-10-21');
+avisoAtendido(asisCita, '2026-10-05', 'se_le_aviso');
+// Registrada en el Vivero y activada después con ayuda de su familia: ya ve en «Mis trámites» lo que se capturó por ella
+// y corrige en línea. El aviso de sus observaciones no lo contestó
+const asisActivada = persona('asistida-activada', { nombre: 'Dolores', primer: 'Supuesto', segundo: 'Simulado', sexo: 'M' });
+altaAsistida(asisActivada, '2026-09-22');
+const sAsisActivada = solicitud('asistida-activada', asisActivada, 'poda', 'nueva', { fecha: '2026-09-22', nivel: 'secundaria' });
+enviarAsistida(sAsisActivada, '2026-09-22');
+observar(sAsisActivada, '2026-09-24', 'identificacion_oficial', 'La identificación oficial está vencida: carga una vigente.');
+avisoAtendido(asisActivada, '2026-09-25', 'no_contesto');
+{
+  const correo = 'persona-asistida@ejemplo.local';
+  en('2026-10-10', '19:00');
+  como(correo, 'solicitante');
+  emitir(`UPDATE apd.solicitante SET correo = ${q(correo)}, contrasena_hash = ${q(hashContrasena(asisActivada.clave))} WHERE id = ${q(asisActivada.id)}`);
+  asisActivada.correo = correo;
 }
 
 en(CORTE, '20:00');

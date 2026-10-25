@@ -472,10 +472,378 @@ async function enviar(ex) {
   await c.close();
 }
 
+// ── Sin conexión (ajustes del equipo, 25/10/2026: no perder el avance del examen) ──
+// La falta de conexión se simula por pestaña en el servidor simulado (APD_EXAMEN_API.pruebas.conexion). Lo que ve el
+// servidor se pregunta desde la pantalla de quien aplica, que sí tiene conexión.
+const PEND = 'apd.examen.pendiente.';
+const pendientesDe = (p, codigo) => p.evaluate((k) => Object.keys(localStorage).filter((x) => x.startsWith(k)).length, `${PEND}${codigo}.`);
+const delServidor = (ap, codigo) => ap.evaluate((x) => { const v = APD_EXAMEN_API.estado(x); return v ? Object.keys(v.respuestas).length : -1; }, codigo);
+{
+  const c = await contexto(1280);
+  const ap = await c.newPage();
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await ap.waitForSelector('[data-filas] tr');
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+
+  // 1 · Sin conexión se sigue contestando; al volver, se envía; «Enviar mis respuestas» espera a que se envíe
+  const c1 = await generar(ap, 0);
+  await entraYEmpieza(ex, c1);
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => document.querySelector('[data-guardado]').textContent === 'Respuesta guardada.');
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.click('[data-siguiente]');
+  await ex.locator('[data-opciones] input').nth(1).check();
+  await ex.waitForFunction(() => /Sin conexión por ahora/.test(document.querySelector('[data-guardado]').textContent));
+  ok(await ex.locator('[data-vista="pregunta"] [data-aviso-falla]:not([hidden])').count() === 0 && await ex.isChecked('[data-opciones] input >> nth=1'),
+    'sin conexión: la respuesta se queda elegida, con una línea tranquila y sin aviso de error');
+  ok((await ex.textContent('[data-guardado]')).includes('se enviará cuando vuelva la conexión'), 'sin conexión: dice que se enviará cuando vuelva la conexión');
+  await captura(ex, 'sin-conexion-escritorio');
+  // Cambia de idea en la misma pregunta y contesta otra: sigue contestando
+  await ex.locator('[data-opciones] input').nth(2).check();
+  await ex.click('[data-siguiente]');
+  await ex.locator('[data-opciones] input').nth(3).check();
+  await ex.waitForFunction(() => /3 contestadas/.test(document.querySelector('[data-contestadas]').textContent));
+  ok(await pendientesDe(ex, c1) === 2 && await delServidor(ap, c1) === 1, `sin conexión: 2 preguntas quedan en esta computadora y el servidor sólo tiene la primera (${await pendientesDe(ex, c1)}; ${await delServidor(ap, c1)})`);
+  ok((await ex.textContent('[data-numero]')) === 'Pregunta 3 de 10', 'sin conexión: la persona sigue avanzando entre preguntas');
+  // «Enviar mis respuestas» con pendientes: no abre la confirmación, lo explica y reintenta
+  await ex.click('.examen-mapa-titulo');
+  await ex.locator('.examen-numero').last().click();
+  await ex.click('[data-siguiente]');
+  await ex.waitForSelector('[data-vista="revision"]:not([hidden])');
+  ok(/Faltan enviar 2 respuestas/.test(await ex.textContent('[data-vista="revision"] [data-aviso-falla]')), 'revisión: avisa que faltan enviar 2 respuestas');
+  await ex.click('[data-enviar]');
+  await ex.waitForFunction(() => /Faltan enviar 2 respuestas/.test(document.querySelector('[data-vista="revision"] [data-aviso-falla]').textContent) && document.activeElement && document.activeElement.closest('[data-aviso-falla]'));
+  ok(await ex.locator('dialog.dialogo-confirma[open]').count() === 0, '«Enviar mis respuestas» con respuestas sin enviar: no se envía y lo explica');
+  await captura(ex, 'sin-conexion-revision-escritorio');
+  // Vuelve la conexión: se envía sola y en la revisión ya no hay aviso
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
+  await ex.waitForFunction((k) => !Object.keys(localStorage).some((x) => x.startsWith(k)), `${PEND}${c1}.`);
+  const servidor = await ap.evaluate((x) => APD_EXAMEN_API.estado(x), c1);
+  const enPantalla = await ex.evaluate(() => { const c = sessionStorage.getItem('apd.examen.abierto'); return APD_EXAMEN_API.estado(c).preguntas.map((p) => p.opciones.map((o) => o.valor)); });
+  ok(Object.keys(servidor.respuestas).length === 3 && servidor.respuestas[servidor.preguntas[1].clave] === enPantalla[1][2] && servidor.respuestas[servidor.preguntas[2].clave] === enPantalla[2][3],
+    'al volver la conexión se envía lo pendiente, con la última opción elegida en cada pregunta');
+  await ex.waitForFunction(() => document.querySelector('[data-vista="revision"] [data-aviso-falla]').hidden);
+  ok(true, 'revisión: al enviarse lo pendiente, el aviso se quita');
+  await ex.click('[data-enviar]');
+  ok(await ex.waitForSelector('dialog.dialogo-confirma[open]').then(() => true, () => false), 'sin pendientes, «Enviar mis respuestas» pide la confirmación');
+  await ex.click('.dialogo-confirma [data-r="si"]');
+  await ex.waitForSelector('[data-vista="resultado"]:not([hidden])');
+  await ex.click('[data-vista="resultado"] [data-salir]');
+
+  // 2 · Recarga sin conexión: lo pendiente se conserva; al volver, el examen se abre solo y se envía
+  const c2 = await generar(ap, 0);
+  await entraYEmpieza(ex, c2);
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.click('[data-siguiente]');
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /2 contestadas/.test(document.querySelector('[data-contestadas]').textContent));
+  await ex.reload();
+  await ex.waitForSelector('[data-aviso-entrar]:not([hidden])');
+  ok(/Sin conexión por ahora/.test(await ex.textContent('[data-aviso-entrar]')) && await pendientesDe(ex, c2) === 2 && await delServidor(ap, c2) === 0,
+    'recarga sin conexión: lo dice y conserva en esta computadora las 2 respuestas');
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
+  await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+  await ex.waitForFunction((k) => !Object.keys(localStorage).some((x) => x.startsWith(k)), `${PEND}${c2}.`);
+  ok(await delServidor(ap, c2) === 2 && /2 contestadas/.test(await ex.textContent('[data-contestadas]')), 'al volver la conexión, el examen se abre solo, se envía lo pendiente y sigue donde se quedó');
+
+  // 3 · Recarga con pendientes y ya con conexión: primero se envía lo pendiente y luego se sigue
+  // (el examen se abrió en la pregunta 3, la primera sin contestar)
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /3 contestadas/.test(document.querySelector('[data-contestadas]').textContent));
+  await ex.evaluate(() => sessionStorage.removeItem('apd.examen.prueba.sin_conexion')); // vuelve sin que la página se entere
+  await ex.reload();
+  await ex.waitForFunction(() => /Se enviaron las respuestas que habían quedado en esta computadora/.test(document.querySelector('[data-guardado]').textContent));
+  ok(await delServidor(ap, c2) === 3 && await pendientesDe(ex, c2) === 0 && (await ex.textContent('[data-numero]')) === 'Pregunta 4 de 10',
+    'recarga con pendientes: primero se envían y sigue en la primera pregunta sin contestar');
+
+  // 4 · Corte de luz: la pestaña se pierde; con el mismo código en la misma computadora se envía lo pendiente
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /4 contestadas/.test(document.querySelector('[data-contestadas]').textContent));
+  await ex.close();
+  await ap.evaluate((x) => localStorage.removeItem(`apd.examen.latido.${x}`), c2); // la pantalla apagada ya no avisa
+  const luz = await c.newPage();
+  await luz.goto(`${BASE}examen.html`);
+  await luz.fill('#codigo', c2);
+  await luz.click('#entrar [data-accion="enviar"]');
+  await luz.waitForFunction(() => /Se enviaron las respuestas que habían quedado en esta computadora/.test(document.querySelector('[data-guardado]').textContent));
+  ok(await delServidor(ap, c2) === 4 && /4 contestadas/.test(await luz.textContent('[data-contestadas]')), 'después de un corte de luz, con el mismo código en la misma computadora: se envía lo pendiente y sigue');
+  await luz.close();
+  ok(c.errores.length === 0, `sin conexión, sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
+  await c.close();
+}
+
+// ── El reloj del examen se detiene durante un corte (decisión de Liber del 25/10/2026) ──
+// La pantalla manda una señal de vida con su código; el servidor cuenta el tiempo sólo mientras llegan: más de 30 s sin
+// señal y deja de contar desde la última; al volver, primero se envía lo pendiente y la señal siguiente reanuda. El reloj
+// del servidor simulado se adelanta (APD_EXAMEN_API.pruebas.adelantar), así que no se espera el tiempo real: las pruebas
+// esperan condiciones.
+const AXE_RELOJ = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+async function axeEn(p, que) {
+  if (!AXE_RELOJ) return;
+  await p.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
+  if (!(await p.evaluate(() => Boolean(window.axe)))) await p.evaluate(AXE_RELOJ);
+  const r = await p.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] })).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`));
+  ok(r.length === 0, `axe ${que}:\n  ${r.join('\n  ')}`);
+}
+for (const ancho of [1280, 390]) {
+  const donde = ancho < 600 ? 'teléfono' : 'escritorio';
+  const t = (m) => `reloj durante un corte (${donde}): ${m}`;
+  const c = await contexto(ancho);
+  const ap = await c.newPage();
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await ap.waitForSelector('[data-filas] tr');
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+  const reg = (codigo) => ap.evaluate((x) => JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)), codigo);
+  const restante = (codigo) => ap.evaluate((x) => APD_EXAMEN_API.estado(x).restante_ms, codigo);
+  const adelanta = (ms, conSenal) => ap.evaluate(([m, k]) => APD_EXAMEN_API.pruebas.adelantar(m, k), [ms, conSenal || null]);
+  // Lo que muestra la pantalla de la persona, en segundos, y lo que dice el servidor
+  const enPantalla = () => ex.evaluate(() => { const [m, s] = document.querySelector('[data-reloj-texto]').textContent.split(':').map(Number); return m * 60 + s; });
+  const coincideEn = (pg, codigo) => pg.waitForFunction((x) => {
+    const [m, s] = document.querySelector('[data-reloj-texto]').textContent.split(':').map(Number);
+    return Math.abs(m * 60 + s - APD_EXAMEN_API.estado(x).restante_ms / 1000) <= 3;
+  }, codigo, { timeout: 15000 }).then(() => true, () => false);
+  const coincide = (codigo) => ex.waitForFunction((x) => {
+    const [m, s] = document.querySelector('[data-reloj-texto]').textContent.split(':').map(Number);
+    return Math.abs(m * 60 + s - APD_EXAMEN_API.estado(x).restante_ms / 1000) <= 3;
+  }, codigo, { timeout: 15000 }).then(() => true, () => false);
+  const fila = (codigo) => ap.locator('[data-filas] tr', { hasText: codigo });
+
+  if (ancho === 1280) {
+    const P = await ap.evaluate(() => APD_EXAMEN_API.parametros());
+    ok(P.senal_cada_s >= 10 && P.senal_cada_s <= 15 && P.sin_senal_s === 30 && P.tope_pausa_min === 30,
+      `reloj durante un corte: parámetros (señal cada ${P.senal_cada_s} s, ${P.sin_senal_s} s sin señal detienen el tiempo, tope de ${P.tope_pausa_min} minutos)`);
+  }
+  const k = await generar(ap, 0);
+  await entraYEmpieza(ex, k);
+  // La pantalla manda su señal de vida, con su código, sin que la persona haga nada
+  const s0 = (await reg(k)).senal_en;
+  ok(await ap.waitForFunction(([x, antes]) => JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)).senal_en !== antes, [k, s0], { timeout: 20000 }).then(() => true, () => false),
+    t('la pantalla manda su señal de vida al servidor cada pocos segundos'));
+
+  // 1 · Con señal, el reloj avanza; la pantalla muestra lo que dice el servidor
+  const r0 = await restante(k);
+  await adelanta(5 * 60000, k);
+  const r1 = await restante(k);
+  ok(r0 - r1 >= 5 * 60000 && r0 - r1 < 5 * 60000 + 5000, t(`con señal, el reloj avanza: 5 minutos después quedan 5 minutos menos (${Math.round((r0 - r1) / 1000)} s)`));
+  ok(await coincide(k), t('el tiempo que muestra la pantalla es el del servidor'));
+
+  // 2 · Sin señal, el reloj no avanza
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /el tiempo de tu examen está detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent));
+  const ultima = (await reg(k)).senal_en;
+  await adelanta(2 * 60000);
+  const r2 = await restante(k);
+  await adelanta(3 * 60000);
+  const r3 = await restante(k);
+  ok(r3 === r2 && Math.abs(r1 - r2) < 20000, t(`sin señal, el reloj no avanza en el servidor (${Math.round(r2 / 1000)} s y ${Math.round(r3 / 1000)} s, 3 minutos después)`));
+  const p1 = await enPantalla();
+  await ex.waitForTimeout(1500); // el reloj de la pantalla corre cada segundo: aquí se comprueba que ya no
+  ok(await enPantalla() === p1 && await ex.isVisible('[data-aviso-tiempo]'), t('sin conexión, el reloj de la pantalla se detiene y lo dice'));
+  await sinDesborde(ex, t('examen con el tiempo detenido'));
+  await axeEn(ex, `${t('examen con el tiempo detenido')}`);
+  await captura(ex, `reloj-detenido-${donde}`);
+  // Quien aplica ve «Sin conexión desde las HH:MM» y cuánto lleva detenido
+  const hh = await ap.evaluate((x) => APD.hora(x), ultima);
+  ok(await ap.waitForFunction(([x, h]) => { const f = [...document.querySelectorAll('[data-filas] tr')].find((tr) => tr.textContent.includes(x));
+    return f && f.textContent.includes(`Sin conexión desde las ${h}`) && /Su tiempo está detenido desde hace 5 minutos/.test(f.textContent); }, [k, hh], { timeout: 8000 }).then(() => true, () => false),
+  t(`quien aplica ve «Sin conexión desde las ${hh}» con el tiempo que lleva detenido`));
+  ok(/contestando \(1 sin conexión\)/.test(await ap.textContent('[data-cuenta]')), t('el resumen del grupo cuenta a quien está sin conexión'));
+  await sinDesborde(ap, t('aplicar con una persona sin conexión'));
+  await axeEn(ap, t('aplicar con una persona sin conexión'));
+  await captura(ap, `aplicar-sin-conexion-${donde}`);
+
+  // 3 · Al volver: primero se envía lo pendiente y después la señal reanuda el tiempo; la pausa queda en la bitácora
+  await ex.evaluate(() => {
+    window.__orden = [];
+    for (const m of ['responder', 'marcar', 'senal']) { const f = APD_EXAMEN_API[m]; APD_EXAMEN_API[m] = (...a) => { window.__orden.push(m); return f(...a); }; }
+  });
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
+  await ex.waitForFunction(() => !/detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent) && !Object.keys(localStorage).some((x) => x.startsWith('apd.examen.pendiente.')));
+  const orden = await ex.evaluate(() => window.__orden.join(','));
+  const b1 = (await reg(k)).eventos.filter((b) => b.evento === 'pausa');
+  ok(/^responder,.*senal/.test(orden) && orden.indexOf('senal') > orden.indexOf('responder'), t(`al volver, primero se envía lo pendiente y después la señal que reanuda (${orden})`));
+  ok(b1.length === 1 && b1[0].inicio === ultima && b1[0].duracion_ms >= 5 * 60000 && b1[0].detenido_ms === b1[0].duracion_ms && b1[0].fin > b1[0].inicio,
+    t(`la pausa queda en la bitácora del examen con su inicio, fin y duración (${JSON.stringify(b1[0])})`));
+  const r4 = await restante(k);
+  ok(r4 <= r3 && r3 - r4 < 20000 && await coincide(k), t('al volver, el tiempo sigue desde donde se detuvo y la pantalla muestra el del servidor'));
+  ok(await ap.waitForFunction((x) => { const f = [...document.querySelectorAll('[data-filas] tr')].find((tr) => tr.textContent.includes(x));
+    return f && /Estuvo sin conexión 1 vez; tiempo detenido: 5 minutos/.test(f.textContent) && !f.textContent.includes('Sin conexión desde'); }, k, { timeout: 8000 }).then(() => true, () => false),
+  t('quien aplica ve que estuvo sin conexión y cuánto tiempo se detuvo'));
+
+  // 4 · El tope de la pausa acumulada (30 minutos) se respeta: después, el tiempo vuelve a correr y decide quien aplica
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await ex.click('[data-siguiente]');
+  await ex.locator('[data-opciones] input').first().check();
+  await ex.waitForFunction(() => /el tiempo de tu examen está detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent));
+  await adelanta(60000);
+  const rA = await restante(k);
+  await adelanta(39 * 60000); // 40 minutos sin conexión: con los 5 de antes, el tope se pasa a los 25
+  const rB = await restante(k);
+  await adelanta(60000);
+  const rC = await restante(k);
+  ok(rA - rB >= 15 * 60000 && rA - rB < 15 * 60000 + 30000, t(`el tope se respeta: de 40 minutos sin conexión sólo se detienen 25 (con los 5 de antes, 30) y los otros 15 corren (${Math.round((rA - rB) / 1000)} s)`));
+  ok(rB - rC >= 60000 && rB - rC < 62000, t('después del tope, el tiempo corre aunque siga sin conexión'));
+  ok(await ap.waitForFunction((x) => { const f = [...document.querySelectorAll('[data-filas] tr')].find((tr) => tr.textContent.includes(x));
+    return f && /Pasó el tope de 30 minutos de tiempo detenido: su tiempo volvió a correr\. Decida si espera o suspende el examen\./.test(f.textContent) && f.textContent.includes('Sin conexión desde'); }, k, { timeout: 8000 }).then(() => true, () => false),
+  t('quien aplica ve que pasó el tope y que decide'));
+  await axeEn(ap, t('aplicar con el tope pasado'));
+  await ex.evaluate(() => APD_EXAMEN_API.pruebas.conexion(true));
+  await ex.waitForFunction(() => !/detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent) && !Object.keys(localStorage).some((x) => x.startsWith('apd.examen.pendiente.')));
+  const b2 = (await reg(k)).eventos.filter((b) => b.evento === 'pausa');
+  const total = b2.reduce((n, b) => n + b.detenido_ms, 0);
+  ok(b2.length === 2 && b2[1].duracion_ms >= 41 * 60000 && b2[1].detenido_ms < b2[1].duracion_ms && b2[1].tope_en && total === 30 * 60000,
+    t(`la segunda pausa queda en la bitácora con cuándo pasó el tope; en total se detuvieron 30 minutos (${Math.round(total / 60000)})`));
+  ok(await coincide(k), t('después del tope, la pantalla también muestra el tiempo del servidor'));
+
+  // 5 · A la pantalla se le acabó el tiempo pero el servidor lo tuvo detenido: el examen sigue
+  const v = await ap.evaluate((x) => APD_EXAMEN_API.terminar(x, 'tiempo'), k);
+  ok(v.situacion === 'contestando' && v.restante_ms > 0, t('«se acabó el tiempo» lo decide el servidor: si le queda tiempo, el examen sigue'));
+
+  await ex.close();
+
+  // 6 · Corte de luz (otra persona): la pantalla se apaga y no manda señal; al volver con el mismo código, en la misma
+  // computadora, primero se envía lo que quedó pendiente y luego se reanuda
+  const k2 = await generar(ap, 0);
+  const antes = await c.newPage();
+  await antes.goto(`${BASE}examen.html`);
+  await entraYEmpieza(antes, k2);
+  await antes.evaluate(() => APD_EXAMEN_API.pruebas.conexion(false));
+  await antes.locator('[data-opciones] input').first().check();
+  await antes.waitForFunction(() => /el tiempo de tu examen está detenido/.test(document.querySelector('[data-aviso-tiempo]').textContent));
+  await antes.close();
+  await ap.evaluate((x) => localStorage.removeItem(`apd.examen.latido.${x}`), k2); // la pantalla apagada ya no avisa
+  const antesLuz = (await reg(k2)).senal_en;
+  await adelanta(4 * 60000);
+  const rL = await restante(k2);
+  await adelanta(60000);
+  ok(await restante(k2) === rL, t('con la pantalla apagada (corte de luz), el reloj del servidor no avanza'));
+  const luz = await c.newPage();
+  await luz.goto(`${BASE}examen.html`);
+  await luz.fill('#codigo', k2);
+  await luz.click('#entrar [data-accion="enviar"]');
+  await luz.waitForFunction(() => /Se enviaron las respuestas que habían quedado en esta computadora/.test(document.querySelector('[data-guardado]').textContent));
+  await ap.waitForFunction(([x, a]) => { const r = JSON.parse(localStorage.getItem(`apd.examen.c.${x}`)); return r.senal_en !== a && r.eventos.some((b) => b.evento === 'pausa'); }, [k2, antesLuz], { timeout: 15000 });
+  const b3 = (await reg(k2)).eventos.filter((b) => b.evento === 'pausa');
+  ok(b3.length === 1 && b3[0].inicio === antesLuz && b3[0].duracion_ms >= 5 * 60000 && b3[0].detenido_ms === b3[0].duracion_ms && Object.keys((await reg(k2)).respuestas).length === 1,
+    t('después del corte de luz, con el mismo código: se envía lo pendiente, el tiempo se reanuda y la pausa queda en la bitácora'));
+  ok(await coincideEn(luz, k2), t('después del corte de luz, la pantalla muestra el tiempo del servidor'));
+  await luz.close();
+  ok(c.errores.length === 0, t(`sin errores en la consola:\n  ${c.errores.join('\n  ')}`));
+  await c.close();
+}
+
+// ── Lectura en voz alta (ajustes del equipo, 25/10/2026), con speechSynthesis simulado ──
+/* Síntesis de voz simulada: guarda lo que se le pide leer (window.__habla) y cuántas veces se detiene (window.__detiene).
+   voces = null: el navegador no tiene speechSynthesis */
+function vozSimulada(voces) {
+  window.__habla = [];
+  window.__detiene = 0;
+  if (voces === null) { Object.defineProperty(window, 'speechSynthesis', { value: undefined, configurable: true }); return; }
+  const s = {
+    getVoices: () => voces,
+    speak: (u) => window.__habla.push({ texto: u.text, lang: u.lang, rate: u.rate }),
+    cancel: () => { window.__detiene += 1; },
+    addEventListener: () => {}
+  };
+  Object.defineProperty(window, 'speechSynthesis', { value: s, configurable: true });
+  window.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } };
+}
+const habla = (p) => p.evaluate(() => window.__habla.map((x) => x.texto));
+for (const ancho of [390, 1280]) {
+  const donde = ancho < 600 ? 'teléfono' : 'escritorio';
+  const c = await contexto(ancho);
+  await c.addInitScript(vozSimulada, [{ lang: 'en-US', name: 'Inglés' }, { lang: 'es-ES', name: 'España' }, { lang: 'es-MX', name: 'México' }]);
+  const ap = await c.newPage();
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await ap.waitForSelector('[data-filas] tr');
+  const cod = await generar(ap, 0);
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+  await ex.waitForSelector('#entrar [data-voz]:not([hidden])');
+  await ex.click('#entrar [data-leer="entrar"]');
+  ok((await habla(ex))[0] === 'Entra a tu examen.' && (await habla(ex)).some((t) => /levanta la mano/.test(t)), `${donde}: lee las instrucciones de la entrada`);
+  await ex.fill('#codigo', cod);
+  await ex.click('#entrar [data-accion="enviar"]');
+  await ex.waitForSelector('[data-vista="confirmar"]:not([hidden])');
+  await ex.click('[data-vista="confirmar"] [data-leer="confirmar"]');
+  const nombre = await ex.evaluate(() => document.querySelector('[data-persona] .datos-valor').textContent);
+  ok((await habla(ex)).includes('¿Eres tú?') && (await habla(ex)).includes(`Nombre: ${nombre}.`), `${donde}: lee «¿Eres tú?» con el nombre de la persona`);
+  await ex.click('[data-ir-vista="instrucciones"]');
+  await ex.waitForSelector('[data-vista="instrucciones"]:not([hidden])');
+  await ex.click('[data-vista="instrucciones"] [data-leer="instrucciones"]');
+  const instr = await habla(ex);
+  ok(instr.includes('Antes de empezar.') && instr.some((t) => /^Son 10 preguntas/.test(t)) && instr.some((t) => /Si se va el internet/.test(t)), `${donde}: lee las instrucciones de inicio del examen`);
+  await ex.click('[data-empezar]');
+  await ex.waitForSelector('[data-vista="pregunta"]:not([hidden])');
+  await captura(ex, `voz-pregunta-${donde}`);
+  await sinDesborde(ex, `examen ${donde} · pregunta con lectura en voz alta`);
+  // «Escuchar la pregunta»: la pregunta y sus opciones con su letra, en es-MX y más despacio
+  await ex.evaluate(() => { window.__habla = []; });
+  await ex.click('[data-vista="pregunta"] [data-leer="pregunta"]');
+  const esperado = await ex.evaluate(() => [document.querySelector('[data-numero]').textContent + '.', document.querySelector('[data-enunciado]').textContent,
+    ...[...document.querySelectorAll('[data-opciones] .opcion-nombre')].map((o) => `Opción ${o.querySelector('.examen-letra').textContent.replace(')', '')}: ${o.textContent.replace(/^[a-d]\)\s*/, '')}`)]);
+  const dicho = await ex.evaluate(() => window.__habla);
+  ok(JSON.stringify(dicho.map((x) => x.texto)) === JSON.stringify(esperado), `${donde}: «Escuchar la pregunta» lee la pregunta y sus cuatro opciones con su letra (${JSON.stringify(dicho.map((x) => x.texto)).slice(0, 160)})`);
+  ok(dicho.every((x) => x.lang === 'es-MX' && x.rate > 0 && x.rate < 1), `${donde}: con la voz es-MX y un poco más despacio (${dicho[0] && dicho[0].lang}, ${dicho[0] && dicho[0].rate})`);
+  // Cada opción, sola; escucharla no la elige
+  ok(await ex.locator('[data-opciones] [data-leer-opcion]').count() === 4, `${donde}: cada opción tiene su botón «Escuchar»`);
+  await ex.evaluate(() => { window.__habla = []; });
+  await ex.click('[data-opciones] [data-leer-opcion="1"]');
+  ok((await habla(ex)).join('|') === esperado[3] && !(await ex.isChecked('[data-opciones] input >> nth=1')), `${donde}: el «Escuchar» de la opción b la lee sola y no la elige`);
+  ok(await ex.getAttribute('[data-leer-opcion="1"]', 'aria-label') === 'Escuchar la opción b', `${donde}: el botón de cada opción dice cuál lee (para el lector de pantalla)`);
+  // Detener; y al cambiar de pregunta se detiene lo que se leía
+  let antes = await ex.evaluate(() => window.__detiene);
+  await ex.click('[data-vista="pregunta"] [data-detener]');
+  ok(await ex.evaluate(() => window.__detiene) > antes, `${donde}: «Detener la lectura» la detiene`);
+  antes = await ex.evaluate(() => window.__detiene);
+  await ex.click('[data-siguiente]');
+  ok(await ex.evaluate(() => window.__detiene) > antes && (await ex.textContent('[data-numero]')) === 'Pregunta 2 de 10', `${donde}: al cambiar de pregunta se detiene la lectura`);
+  // Con el teclado: Tab hasta «Escuchar la pregunta» e Intro
+  await ex.evaluate(() => { window.__habla = []; document.querySelector('[data-tarjeta-pregunta]').focus(); });
+  for (let i = 0; i < 6 && !(await ex.evaluate(() => document.activeElement && document.activeElement.dataset.leer === 'pregunta')); i++) await ex.keyboard.press('Tab');
+  await ex.keyboard.press('Enter');
+  ok((await habla(ex))[0] === 'Pregunta 2 de 10.', `${donde}: con el teclado, Tab hasta «Escuchar la pregunta» e Intro la lee`);
+  ok(c.errores.length === 0, `${donde}: lectura en voz alta sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
+  await c.close();
+}
+// Sin voz en español (sólo inglés) o sin síntesis de voz: no hay botones y quien aplica ve el aviso; con es-ES, se usa ésa
+for (const [voces, que] of [[[{ lang: 'en-US', name: 'Inglés' }], 'sin voz en español'], [null, 'sin síntesis de voz'], [[{ lang: 'es-ES', name: 'España' }], 'con es-ES']]) {
+  const c = await contexto(1280);
+  await c.addInitScript(vozSimulada, voces);
+  const ap = await c.newPage();
+  await ap.goto(`${BASE}aplicar.html?folio=APD-G-2026-003`);
+  await ap.waitForSelector('[data-filas] tr');
+  const cod = await generar(ap, 0);
+  const ex = await c.newPage();
+  await ex.goto(`${BASE}examen.html`);
+  await entraYEmpieza(ex, cod);
+  if (que === 'con es-ES') {
+    await ex.waitForSelector('[data-vista="pregunta"] [data-voz]:not([hidden])');
+    await ex.click('[data-vista="pregunta"] [data-leer="pregunta"]');
+    ok(await ex.evaluate(() => window.__habla.length > 0 && window.__habla.every((x) => x.lang === 'es-ES')), 'sin es-MX, lee con otra voz en español (es-ES)');
+  } else {
+    await ap.waitForFunction((x) => (document.querySelector(`[data-filas] tr:has(.examen-codigo)`) || {}).textContent && [...document.querySelectorAll('[data-filas] tr')].some((tr) => tr.textContent.includes(x) && tr.textContent.includes('Esta computadora no puede leer en voz alta')), cod, { timeout: 10000 }).catch(() => {});
+    const fila = await ap.locator('[data-filas] tr', { hasText: cod }).textContent();
+    ok(await ex.locator('[data-voz]:not([hidden]), [data-leer-opcion]').count() === 0, `${que}: no aparecen los botones de lectura`);
+    ok(fila.includes('Esta computadora no puede leer en voz alta'), `${que}: quien aplica ve «Esta computadora no puede leer en voz alta» en la fila de la persona`);
+    if (que === 'sin voz en español') await captura(ap, 'aplicar-sin-voz-escritorio');
+  }
+  ok(c.errores.length === 0, `${que}: sin errores en la consola:\n  ${c.errores.join('\n  ')}`);
+  await c.close();
+}
+
 // ── Accesibilidad con axe-core en cada pantalla del examen y en la de quien aplica ──
 if (process.env.AXE) {
   const axe = readFileSync(process.env.AXE, 'utf8');
   const c = await contexto(390);
+  // Con voz en español simulada: axe revisa también los botones de lectura en voz alta
+  await c.addInitScript(vozSimulada, [{ lang: 'es-MX', name: 'México' }]);
   const p = await c.newPage();
   const revisa = async (que) => {
     await p.emulateMedia({ reducedMotion: 'reduce' }); // sin transiciones a medias al medir el contraste

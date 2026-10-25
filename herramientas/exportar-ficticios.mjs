@@ -46,6 +46,8 @@ const TABLAS = {
   asistencia: 'inscripcion_id, dia',
   examen: 'inscripcion_id',
   material_estudio: 'orden, clave, cargado_en',
+  // Avisos por teléfono del registro asistido (decisión 2026-10-25): la pantalla del personal los lista y los marca
+  aviso_telefono: 'creado_en, solicitante_id, aviso',
   bitacora: 'fecha, accion, entidad_id'
 };
 // Se omiten la contraseña (nunca sale) y las fechas de instalación de los catálogos (cambian en cada carga)
@@ -74,7 +76,7 @@ if (r.status !== 0) {
 }
 const salida = r.stdout.split('\n');
 let json = JSON.parse(salida.slice(salida.findIndex((l) => l.startsWith('{'))).join('\n'));
-// Los catálogos (organizaciones y carreras) y el material de estudio toman un id aleatorio al instalarse: se sustituye,
+// Los catálogos (organizaciones y carreras), el material de estudio y los avisos por teléfono toman un id aleatorio al instalarse: se sustituye,
 // en todo el archivo, por uno derivado de lo que los distingue, para que regenerar no cambie el archivo sin motivo
 // (auditoría 2026-10-17; el material, auditoría 2026-10-19, A3-01: si su id cambia, un «Ocultar» hecho en el navegador
 // de prueba se pierde al republicar)
@@ -82,7 +84,10 @@ const uuidDe = (texto) => { const h = createHash('md5').update(texto).digest('he
 const LLAVE = {
   organizacion: (f) => f.nombre_normalizado || f.nombre,
   carrera: (f) => f.nombre_normalizado || f.nombre,
-  material_estudio: (f) => `${f.clave}:${f.archivo_clave}` // archivo_clave es único (material_estudio_archivo_uk)
+  material_estudio: (f) => `${f.clave}:${f.archivo_clave}`, // archivo_clave es único (material_estudio_archivo_uk)
+  // Los crea la base con cada cambio (id aleatorio): persona, aviso y momento lo distinguen; un «se le avisó» guardado en el
+  // navegador de prueba no se pierde al regenerar
+  aviso_telefono: (f) => `${f.solicitante_id}:${f.aviso}:${f.solicitud_id}:${f.creado_en}`
 };
 let texto = JSON.stringify(json);
 for (const [tabla, llave] of Object.entries(LLAVE)) {

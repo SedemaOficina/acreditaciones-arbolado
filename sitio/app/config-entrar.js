@@ -24,6 +24,11 @@ window.FORMKIT_OPCIONES = {
           if (p && p.estado === 'sin_activar') {
             return mal({ mensaje: 'Esta CURP tiene acreditaciones anteriores, pero todavía no tiene cuenta. Crea tu cuenta con ella para verlas.' });
           }
+          // Registro asistido (decisión 2026-10-25): la cuenta que registró la Secretaría en el Vivero no tiene contraseña
+          // hasta que la persona la activa; la base no abre sesión sin ella (apd.sesion_sin_contrasena)
+          if (APD.asistidaSinActivar(p)) {
+            return mal({ titulo: 'Tu cuenta todavía no está activa', mensaje: 'La Secretaría registró tu cuenta en el Vivero y todavía no tiene contraseña. Para verla en línea, actívala en «Crea tu cuenta» con tu CURP, tu correo y una contraseña.' });
+          }
           const falla = () => mal({ titulo: 'No pudiste entrar', mensaje: 'La CURP o la contraseña no coinciden. Revisa ambas e intenta de nuevo.' });
           // Sólo en la versión de prueba (2026-10-17): si la CURP no tiene cuenta en ESTE navegador se dice, porque las
           // cuentas de la prueba no se comparten entre navegadores ni entre direcciones. En el SIA el mensaje es siempre

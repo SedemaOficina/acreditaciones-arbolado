@@ -22,20 +22,22 @@ await import(pathToFileURL(join(raiz, 'sitio/app/codigo-examen.js')).href);
 // Formatos propios «carrera» y «numero-acreditacion» (auditoría «intentar romperlo» 2026-10-18, F1 10 y 12)
 await import(pathToFileURL(join(raiz, 'sitio/app/formatos-propios.js')).href);
 await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
+// Cruzada propia «curp-mayoria-edad» (registro asistido, decisión 2026-10-25): la mayoría de edad con la fecha de la CURP
+await import(pathToFileURL(join(raiz, 'sitio/app/cruzadas-propias.js')).href);
 // Textos de usted de las pantallas del personal (desde la 1.3.2 todos viven en «mensajes», P95): el servidor los recibe
 // igual, con validaPayload(…, { mensajes })
 await import(pathToFileURL(join(raiz, 'sitio/app/mensajes-usted.js')).href);
 const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar', 'material',
-  'acreditacion-cancelar', 'reposicion-acta', 'reposicion-entrega']);
+  'acreditacion-cancelar', 'reposicion-acta', 'reposicion-entrega', 'asistido']);
 let ultimo = null;
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
-const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
+const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS }, cruzadas: { ...cfgEstandar.cruzadas, ...globalThis.APD_CRUZADAS } };
 
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-// La reposición de la credencial (persona; P140, sesión de trabajo del 23/10/2026)
-for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir', 'reposicion']) {
+// La reposición de la credencial (persona; P140, sesión de trabajo del 23/10/2026) y el registro asistido (personal, 25/10/2026)
+for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir', 'reposicion', 'asistido']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
@@ -90,9 +92,10 @@ const pdf = (n) => ({ nombre: `${n}.pdf`, size: 200000, type: 'application/pdf',
 //     de la licenciatura sólo se pregunta en dictaminador (pedir_situacion; sesión de trabajo del 23/10/2026).
 function calcula(form, d, ctx) {
   d = { ...d, ...ctx };
+  // Registro asistido (25/10/2026): «asistido» lo calcula la API con la sesión: el personal que captura por la persona (`_asistido`)
   if (form === 'solicitud') {
     return { tramite: d.tipo ? `${d.tipo}_${d._modalidad || 'nueva'}` : '',
-      pedir_situacion: d.tipo === 'dictaminador' && d.nivel_estudios === 'licenciatura' ? 'si' : 'no' };
+      pedir_situacion: d.tipo === 'dictaminador' && d.nivel_estudios === 'licenciatura' ? 'si' : 'no', asistido: d._asistido ? 'si' : 'no' };
   }
   // Revisión documental del personal (etapa 2): el servidor calcula los auxiliares con la base (perfil de la
   // solicitud y documentos cargados) y con las decisiones recibidas, igual que app/revisar.js. El caso indica
@@ -229,6 +232,28 @@ caso('Solicitud sin la declaración bajo protesta de decir verdad se rechaza', '
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Renovación de dictaminador: no vuelve a pedir los años de experiencia', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '' }, true, csf);
 
+// Registro asistido (decisión de Liber del 25/10/2026): la solicitud que captura el personal pide su marca de lectura en
+// lugar de las declaraciones de la persona; la cuenta, la marca del aviso de privacidad, teléfono y CURP de una persona
+// mayor de edad, sin contraseña y con el correo opcional
+const asisSol = { nivel_estudios: 'primaria', tipo: 'poda', _asistido: true, ...docs('poda_nueva', podaNueva) };
+const asisDocs = podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`));
+caso('Registro asistido: la solicitud con la marca de lectura del personal se acepta, sin las declaraciones de la persona', 'solicitud', { ...asisSol, lectura_aceptada: 'si' }, true, asisDocs);
+caso('Registro asistido: la solicitud sin la marca de lectura se rechaza', 'solicitud', asisSol, ['lectura_aceptada'], asisDocs);
+caso('Registro asistido: en la solicitud de la persona se piden sus declaraciones; la marca de lectura no aplica', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva), lectura_aceptada: 'si' }, true, asisDocs);
+caso('Registro asistido: el navegador no decide si la solicitud es asistida (lo calcula la API)', 'solicitud', { ...asisSol, lectura_aceptada: 'si', asistido: 'si' }, ['asistido'], asisDocs);
+const curpElvira = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Elvira', primer: 'Supuesto', segundo: 'Modelo' }, '1980-05-17', 'M', 'NE') + '0');
+const asistida = { aviso_leido: 'si', nombre: 'Elvira', primer_apellido: 'Supuesto', segundo_apellido: 'Modelo', curp: curpElvira, fecha_nacimiento: '17/05/1980', telefono: '0000000091', adscrito: 'no' };
+caso('Registro asistido: cuenta sin correo ni contraseña, con su fotografía, se acepta', 'asistido', asistida, true, foto());
+caso('Registro asistido: con correo también se acepta', 'asistido', { ...asistida, correo: 'elvira@ejemplo.local' }, true, foto());
+caso('Registro asistido: sin la marca del aviso de privacidad se rechaza', 'asistido', { ...asistida, aviso_leido: '' }, ['aviso_leido'], foto());
+caso('Registro asistido: sin teléfono se rechaza', 'asistido', { ...asistida, telefono: '' }, ['telefono'], foto());
+caso('Registro asistido: un correo mal escrito se rechaza', 'asistido', { ...asistida, correo: 'elvira@' }, ['correo'], foto());
+caso('Registro asistido: sin fotografía se rechaza', 'asistido', asistida, ['foto']);
+caso('Registro asistido: una CURP de otro nombre se rechaza', 'asistido', { ...asistida, nombre: 'Pedro' }, ['curp'], foto());
+const curpMenor = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Elvira', primer: 'Supuesto', segundo: 'Modelo' }, '2012-05-17', 'M', 'NE') + 'A');
+caso('Registro asistido: una persona menor de edad según su CURP se rechaza', 'asistido', { ...asistida, curp: curpMenor, fecha_nacimiento: '17/05/2012' }, ['curp'], foto());
+caso('Registro asistido: la contraseña no es un campo de este formulario', 'asistido', { ...asistida, contrasena: 'una frase larga de prueba' }, ['contrasena'], foto());
+
 // Adscripción (en la cuenta y en «Mi perfil»): según el tipo, su pregunta; lo que depende de una respuesta se oculta con ella
 const conFoto = foto();
 const cta = (extra) => ({ ...cuenta, ...extra });
@@ -362,12 +387,20 @@ caso('Grupo: otra integración se rechaza', 'grupo-crear', { curso: 'poda-nueva'
 caso('Grupo: un curso fuera de los cuatro se rechaza', 'grupo-crear', { curso: 'poda-intensivo', integracion: 'combinado', fecha_inicio: '02/11/2026' }, ['curso']);
 // La hora de entrada no se elige (decisión de Liber del 24/10/2026): el curso es de 9:00 a 15:00 y la API la toma del
 // parámetro curso_hora_entrada; el formulario ya no la manda, y si llega se rechaza como campo no declarado
-caso('Grupo: armar con instructor de la lista se acepta (crear y confirmar)', 'grupo-crear', { curso: 'dictaminador-renovacion', integracion: 'especifico', fecha_inicio: '02/11/2026', instructor: 'instructor.ficticio' }, true);
+// Quien arma el grupo ya no elige instructor (ajustes del equipo, 25/10/2026): el grupo se crea sin persona instructora; la
+// asigna el área de Instructores y Capacitación en la ficha del grupo (grupo-confirmar). Si llega, se rechaza como campo no
+// declarado. El grupo propio (específico) sigue siendo una opción del formulario: que sea de gobierno lo exige la base.
+caso('Grupo: armar un grupo de una institución (específico) sin persona instructora se acepta (por confirmar)', 'grupo-crear', { curso: 'dictaminador-renovacion', integracion: 'especifico', fecha_inicio: '02/11/2026' }, true);
+caso('Grupo: armar enviando una persona instructora se rechaza (la asigna Capacitación)', 'grupo-crear', { curso: 'dictaminador-renovacion', integracion: 'especifico', fecha_inicio: '02/11/2026', instructor: 'instructor.ficticio' }, ['instructor']);
 caso('Grupo: armar enviando una hora de entrada se rechaza (la hora es la del curso)', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', hora_entrada: '09:00' }, ['hora_entrada']);
 caso('Grupo: armar con un instructor fuera de la lista se rechaza', 'grupo-crear', { curso: 'poda-nueva', integracion: 'combinado', fecha_inicio: '02/11/2026', instructor: 'otra.persona' }, ['instructor']);
-const confirma = { fecha_inicio: '26/10/2026', instructor: 'instructor.ficticio' };
-caso('Grupo: confirmar con primer día e instructor se acepta', 'grupo-confirmar', confirma, true);
-caso('Grupo: confirmar sin instructor se rechaza', 'grupo-confirmar', { fecha_inicio: '26/10/2026' }, ['instructor']);
+// Capacitación, en la ficha del grupo: asigna o cambia la persona instructora (de la lista) y confirma; la semana es la que
+// eligió quien arma el grupo, así que el primer día ya no se manda
+const confirma = { instructor: 'instructor.ficticio' };
+caso('Grupo: asignar la persona instructora (y confirmar) con una de la lista se acepta', 'grupo-confirmar', confirma, true);
+caso('Grupo: confirmar sin instructor se rechaza', 'grupo-confirmar', {}, ['instructor']);
+caso('Grupo: asignar una persona instructora fuera de la lista se rechaza', 'grupo-confirmar', { instructor: 'otra.persona' }, ['instructor']);
+caso('Grupo: confirmar enviando el primer día se rechaza (la semana la elige quien arma el grupo)', 'grupo-confirmar', { ...confirma, fecha_inicio: '26/10/2026' }, ['fecha_inicio']);
 caso('Grupo: confirmar enviando una hora de entrada se rechaza (la hora es la del curso)', 'grupo-confirmar', { ...confirma, hora_entrada: '09:00' }, ['hora_entrada']);
 caso('Grupo: dar de baja sin motivo se rechaza', 'grupo-baja', {}, ['motivo']);
 caso('Grupo: dar de baja con motivo se acepta', 'grupo-baja', { motivo: 'Pidió cambiar de fecha por trabajo.' }, true);

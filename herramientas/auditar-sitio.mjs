@@ -29,7 +29,13 @@ const VISTAS_EXTRA = { telefono360: { viewport: { width: 360, height: 780 }, has
 
 // Estados a recorrer: [nombre, página, sesión (id de solicitante) o null]
 const sol = (estado, f = () => true) => datos.solicitud.find((s) => s.estado === estado && f(s));
-const activa = (s) => s && datos.solicitante.find((p) => p.id === s.solicitante_id && p.estado === 'activa');
+// Las del registro asistido que no han activado su cuenta no entran en línea (decisión 2026-10-25): no son «con sesión»
+const activa = (s) => s && datos.solicitante.find((p) => p.id === s.solicitante_id && p.estado === 'activa' && !(p.registro_asistido_en && !p.activada_en));
+// Registro asistido: una persona con observaciones (se le cargan en la ventanilla) y una en revisión
+const asisSin = (estado) => { const p = datos.solicitante.find((x) => x.registro_asistido_en && !x.activada_en && datos.solicitud.some((s) => s.solicitante_id === x.id && s.estado === estado));
+  return p ? [p, datos.solicitud.find((s) => s.solicitante_id === p.id && s.estado === estado)] : [null, null]; };
+const [asisObs, sAsisObs] = asisSin('con_observaciones');
+const [, sAsisRev] = asisSin('enviada');
 const conPersona = (estado, f) => { const s = datos.solicitud.find((x) => x.estado === estado && (!f || f(x)) && activa(x)); return s ? [s, s.solicitante_id] : [null, null]; };
 const [borr, pBorr] = conPersona('borrador');
 const [obs, pObs] = conPersona('con_observaciones');
@@ -45,6 +51,11 @@ const unMes = new Date(`${datos.fecha_corte}T12:00:00Z`); unMes.setUTCMonth(unMe
 const sinTramite = datos.solicitante.find((p) => p.estado === 'activa' && !datos.solicitud.some((s) => s.solicitante_id === p.id)
   && !datos.acreditacion.some((a) => a.solicitante_id === p.id && a.tipo_acreditacion === 'poda' && a.vence_en > unMes.toISOString().slice(0, 10)));
 const canc = datos.acreditacion.find((a) => a.cancelada_en);
+// Oportunidades para corregir (ajustes del equipo, 25/10/2026): revisiones en línea con observaciones de cada solicitud
+const obsDe = (s) => datos.revision.filter((r) => r.solicitud_id === s.id && r.resultado === 'con_observaciones').length;
+const segundaCorreccion = datos.solicitud.find((s) => s.estado === 'enviada' && obsDe(s) === 2);
+const ultimaOportunidad = datos.solicitud.find((s) => s.estado === 'con_observaciones' && obsDe(s) === 2);
+const sinOportunidades = datos.solicitud.find((s) => s.estado === 'concluida_sin_atender' && /^Se agotaron las oportunidades de corrección/.test(s.motivo_cierre || ''));
 const enPaso = (e) => { const r = (datos.reposicion || []).find((x) => x.estado === e); return r ? datos.acreditacion.find((a) => a.id === r.acreditacion_id) : null; };
 const ESTADOS = [
   ['inicio', 'index.html', null],
@@ -97,8 +108,30 @@ const ESTADOS = [
   enPaso('con_observaciones') && ['tramites-reposicion-observada', 'tramites.html', enPaso('con_observaciones').solicitante_id],
   enPaso('acta_aceptada') && ['tramites-reposicion-aceptada', 'tramites.html', enPaso('acta_aceptada').solicitante_id],
   enPaso('repuesta') && ['reposicion-pedir', `reposicion.html?numero=${enPaso('repuesta').numero}`, enPaso('repuesta').solicitante_id],
-  enPaso('con_observaciones') && ['reposicion-corregir', `reposicion.html?numero=${enPaso('con_observaciones').numero}`, enPaso('con_observaciones').solicitante_id]
+  enPaso('con_observaciones') && ['reposicion-corregir', `reposicion.html?numero=${enPaso('con_observaciones').numero}`, enPaso('con_observaciones').solicitante_id],
+  // Ajustes del equipo, 25/10/2026: el inicio y la ficha del grupo del perfil «capacitación», la revisión de la segunda
+  // corrección y la persona en su última oportunidad o con la solicitud cerrada al agotarlas. Al corregir en su última
+  // oportunidad (solicitud.html?folio=) es la misma pantalla que «corregir-observaciones»: no se repite aquí (repetía su
+  // aviso conocido, «a.salto»); la línea de las oportunidades la prueba probar-sitio (SOLO=ajustes25), con axe
+  ['capacitacion', 'capacitacion.html', null],
+  ['grupo-capacitacion', `grupo.html?folio=${(datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio) || {}).folio}&perfil=capacitacion`, null],
+  ['grupo-en-curso-capacitacion', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}&perfil=capacitacion`, null],
+  segundaCorreccion && ['revisar-ultima-oportunidad', `revisar.html?folio=${segundaCorreccion.folio}`, null],
+  ultimaOportunidad && ['tramites-ultima-oportunidad', 'tramites.html', ultimaOportunidad.solicitante_id],
+  sinOportunidades && ['tramites-sin-oportunidades', 'tramites.html', sinOportunidades.solicitante_id],
+  // Registro asistido (decisión de Liber del 25/10/2026): registrar, la ventanilla, la solicitud que se captura por la persona
+  // y la etiqueta de «Revisar»
+  ['registro-asistido', 'asistido.html', null],
+  ['ventanilla', 'ventanilla.html', null],
+  asisObs && ['ventanilla-ficha', `ventanilla.html?persona=${encodeURIComponent(asisObs.id)}`, null],
+  asisObs && ['solicitud-asistida-corregir', `solicitud.html?asistida=${encodeURIComponent(asisObs.id)}&folio=${sAsisObs.folio}`, null],
+  sAsisRev && ['revisar-asistida', `revisar.html?folio=${sAsisRev.folio}`, null]
 ].filter(Boolean);
+
+// Por partes (25/10/2026): AUDITAR_PARTE=k/n recorre sólo la parte k de n de los estados (uno de cada n), para que cada
+// corrida quepa en el tiempo de una sola orden; las salidas de las n partes se suman a mano (paginas, presionados, hallazgos)
+const enParte = (process.env.AUDITAR_PARTE || '').match(/^(\d+)\/(\d+)$/);
+const ESTADOS_AQUI = enParte ? ESTADOS.filter((_, i) => i % Number(enParte[2]) === Number(enParte[1]) - 1) : ESTADOS;
 
 const hallazgos = [];
 const agrega = (estado, vista, tipo, detalle) => hallazgos.push({ estado, vista, tipo, detalle });
@@ -226,7 +259,7 @@ const recursosRevisados = new Map();
 let paginas = 0;
 let presionados = 0;
 for (const [vistaNombre, vista] of Object.entries({ ...VISTAS, ...VISTAS_EXTRA })) {
-  for (const [nombre, ruta, sesion, extra] of ESTADOS) {
+  for (const [nombre, ruta, sesion, extra] of ESTADOS_AQUI) {
     if (VISTAS_EXTRA[vistaNombre] && !(extra || []).includes(vistaNombre)) continue;
     const contexto = await navegador.newContext(vista);
     if (sesion) await contexto.addInitScript((id) => { try { localStorage.setItem('apd.sesion', JSON.stringify({ id })); } catch (e) { /* sin almacenamiento */ } }, sesion);
@@ -303,7 +336,7 @@ for (const [vistaNombre, vista] of Object.entries({ ...VISTAS, ...VISTAS_EXTRA }
 await navegador.close();
 const porTipo = {};
 for (const h of hallazgos) porTipo[h.tipo] = (porTipo[h.tipo] || 0) + 1;
-writeFileSync(join(SALIDA, 'hallazgos.json'), JSON.stringify({ base: BASE, estados: ESTADOS.map(([n, r]) => [n, r]), paginas, presionados, porTipo, hallazgos }, null, 2));
-console.log(`\n${paginas} pantallas revisadas (${ESTADOS.length} estados × 2 tamaños, y algunos a 360 px); ${presionados} botones presionados`);
+writeFileSync(join(SALIDA, 'hallazgos.json'), JSON.stringify({ base: BASE, estados: ESTADOS_AQUI.map(([n, r]) => [n, r]), paginas, presionados, porTipo, hallazgos }, null, 2));
+console.log(`\n${paginas} pantallas revisadas (${ESTADOS_AQUI.length} estados × 2 tamaños, y algunos a 360 px${enParte ? `; parte ${enParte[1]} de ${enParte[2]}` : ''}); ${presionados} botones presionados`);
 for (const [t, n] of Object.entries(porTipo)) console.log(`  ${t}: ${n}`);
 if (!hallazgos.length) console.log('Sin hallazgos.');

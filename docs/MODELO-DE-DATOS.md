@@ -14,7 +14,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`requisito_curso`](#requisito_curso) — Qué requisitos pide cada curso, en qué orden. Editable: agregar o quitar un documento no requiere programar.
 - [`organizacion`](#organizacion) — Catálogo de instituciones de adscripción: empresas, consultorías o particulares; dependencias de la Ciudad de México; alcaldías; dependencias federales; instituciones educativas. Sirve para agrupar la demanda; no inscribe ni paga. Las 16 alcaldías y las dependencias que el formulario ofrece por nombre (SOBSE, SEDEMA y sus Direcciones Generales, PAOT, CFE, UNAM) vienen en el catálogo inicial con su clave; las demás las agrega la base cuando una persona escribe un nombre nuevo.
 - [`carrera`](#carrera) — Catálogo de carreras para la pregunta «¿Qué carrera estudiaste?». No hay catálogo de carreras afines (decisión 2026-10-15, Liber): la carrera es un campo abierto que el personal valida en la revisión documental. Empieza con las que nombran los lineamientos (principal) y crece con las que la Secretaría acepta de manera explícita. El grupo decide la experiencia mínima del dictaminador: principal y afín, dos años con licenciatura; disciplina afín, cinco; no afín, no cumple. Las que escribe una persona entran sin grupo; sólo las aceptadas se sugieren al escribir.
-- [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+- [`solicitante`](#solicitante) — Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP. Registro asistido (decisión 2026-10-25, Liber): a quien no sabe leer ni escribir lo registra en el Vivero el personal de revisión y cotejo, con la persona presente; la cuenta queda activa y sin contraseña (no puede entrar sola), con el teléfono obligatorio y el correo opcional, hasta que la persona la activa con su CURP, su correo y su contraseña.
 - [`fotografia`](#fotografia) — Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en el curso; quien aplica el examen la usa para confirmar su identidad y su asistencia, por eso debe verse clara. La carga ella al crear su cuenta; en el cotejo el personal confirma que corresponde a quien se presenta (en la cita no se toma otra). No es la foto de la credencial: esa se toma al entregar la acreditación y se guarda como documento de la solicitud. El archivo vive en el almacén, fuera de lo publicado; aquí sólo su clave. Una nueva carga no borra la anterior: la marca como no vigente.
 - [`sesion_solicitante`](#sesion_solicitante) — Sesiones de las personas solicitantes. Sólo se guarda el resumen sha256 del testigo, nunca el testigo.
 - [`acreditacion`](#acreditacion) — Padrón de acreditaciones emitidas, del sistema o migradas de Kobo o papel. Su estado de vigencia no se guarda: lo calcula apd.estado_acreditacion() con la fecha del día. Una cancelada (P120, sesión de trabajo del 23/10/2026) lo está desde su cancelada_en: ya no es vigente, no se renueva ni sirve de requisito. La credencial se repone sin cambiar la acreditación (apd.reposicion).
@@ -28,6 +28,7 @@ están en `db/apd/03-apd-reglas.sql` y se describen en `docs/REGLAS.md`.
 - [`asistencia`](#asistencia) — Asistencia por día de curso, capturada por el instructor; la del último día se registra al pasar lista en el examen (P94).
 - [`examen`](#examen) — Calificación del examen final: la captura el instructor o llega del sistema de examen en línea. Sólo se admite con la asistencia mínima, y una vez registrada no se modifica (el resultado es inapelable).
 - [`material_estudio`](#material_estudio) — Documentos de la Secretaría para preparar el examen (decisión 2026-10-18, Liber): los sube el personal y, publicados, los ve cualquiera en «Material de estudio», sin cuenta. El examen es a libro cerrado: se estudian antes. El archivo vive en el almacén; aquí sólo su clave. Una carga nueva del mismo documento no borra la anterior: la marca como no vigente.
+- [`aviso_telefono`](#aviso_telefono) — Avisos por teléfono a las personas del registro asistido (decisión 2026-10-25, Liber): cada cambio del trámite que a otra persona le llegaría por correo (catálogo docs/AVISOS-POR-CORREO.md) deja aquí, mientras la persona no activa su cuenta, un aviso pendiente para el personal de revisión y cotejo, que llama y registra el resultado. Lo crea sólo la base; no se borra.
 - [`folio_contador`](#folio_contador) — Último número asignado por serie y año. Lo usa sólo la base al asignar folios.
 
 ## parametro
@@ -182,7 +183,7 @@ Restricciones e índices:
 
 ## solicitante
 
-Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.
+Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP. Registro asistido (decisión 2026-10-25, Liber): a quien no sabe leer ni escribir lo registra en el Vivero el personal de revisión y cotejo, con la persona presente; la cuenta queda activa y sin contraseña (no puede entrar sola), con el teléfono obligatorio y el correo opcional, hasta que la persona la activa con su CURP, su correo y su contraseña.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
@@ -194,15 +195,18 @@ Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (ap
 | `sexo` | `text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED` | Sí | H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada |
 | `adscripcion` | `text` | No | Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mi perfos»; vacía sólo en cuentas del padrón migrado sin activar |
 | `organizacion_id` | `uuid` | No | Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente |
-| `correo` | `text` | Sí | Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta |
-| `telefono` | `text` | Sí | Teléfono de contacto, 10 dígitos |
+| `correo` | `text` | No | Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta. Vacío sólo en una cuenta del registro asistido que la persona todavía no activa (decisión 2026-10-25): es opcional al registrarla y obligatorio al activarla; si existe, tampoco se repite |
+| `telefono` | `text` | Sí | Teléfono de contacto, 10 dígitos. En el registro asistido es el medio de los avisos (apd.aviso_telefono) |
 | `numero_expediente` | `text` | No | Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN |
-| `contrasena_hash` | `text` | No | scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar |
+| `contrasena_hash` | `text` | No | scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar del padrón migrado y en las del registro asistido que la persona todavía no activa: sin contraseña no se abre sesión (apd.sesion_sin_contrasena) |
 | `estado` | `text` | Sí | activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña) (por omisión: `'activa'`) |
 | `intentos_fallidos` | `smallint` | Sí | Intentos de entrada fallidos seguidos. Lo lleva apd.anotar_intento(); el acceso correcto lo vuelve a 0 (apd.acceso_correcto) (por omisión: `0`) |
 | `bloqueada_hasta` | `timestamptz` | No | Fin del bloqueo por intentos: lo pone la base al llegar a intentos_maximos, por minutos_bloqueo minutos (parámetros); poner o quitar un bloqueo queda en la bitácora |
 | `bloqueo_motivo` | `text` | No | identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base |
 | `debe_cambiar_contrasena` | `boolean` | Sí | Tiene una contraseña temporal de un solo uso (por omisión: `false`) |
+| `registro_asistido_por` | `text` | No | Registro asistido (decisión 2026-10-25): cuenta del personal de revisión y cotejo (acceso) que registró la cuenta con la persona presente, después de leerle el aviso de privacidad (la marca queda en la bitácora). Vacía si la creó la persona o viene del padrón migrado. La pone la base |
+| `registro_asistido_en` | `timestamptz` | No | Registro asistido: cuándo la registró el personal. La pone la base |
+| `activada_en` | `timestamptz` | No | Registro asistido: cuándo la persona activó su cuenta en línea con su CURP, su correo y su contraseña. Vacía mientras no la activa: hasta entonces no hay nada que ver en línea y los avisos van por teléfono. La pone la base |
 | `creada_en` | `timestamptz` | Sí | Alta de la cuenta (por omisión: `now()`) |
 | `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
 
@@ -212,7 +216,8 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_curp_uk UNIQUE (curp)`
 - `CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente)`
 - `CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp))`
-- `CONSTRAINT solicitante_correo_ck CHECK (apd.correo_valido(correo))`
+- `CONSTRAINT solicitante_correo_ck CHECK (correo IS NULL OR apd.correo_valido(correo))`
+- `CONSTRAINT solicitante_correo_obligatorio_ck CHECK (correo IS NOT NULL OR (registro_asistido_en IS NOT NULL AND activada_en IS NULL))`
 - `CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$')`
 - `CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id)`
 - `CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa'))`
@@ -220,7 +225,8 @@ Restricciones e índices:
 - `CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL)`
 - `CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar'))`
 - `CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada'))`
-- `CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))`
+- `CONSTRAINT solicitante_contrasena_ck CHECK ((contrasena_hash IS NULL) = (estado = 'sin_activar' OR (registro_asistido_en IS NOT NULL AND activada_en IS NULL)))`
+- `CONSTRAINT solicitante_asistido_ck CHECK ((registro_asistido_por IS NULL) = (registro_asistido_en IS NULL) AND (activada_en IS NULL OR registro_asistido_en IS NOT NULL) AND (registro_asistido_en IS NULL OR estado <> 'sin_activar'))`
 - `CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre)`
 - `CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar'`
 - `CREATE INDEX solicitante_organizacion ON apd.solicitante (organizacion_id)`
@@ -238,7 +244,7 @@ Fotografía de frente de la persona, para reconocerla en la cita de cotejo y en 
 | `tamano_bytes` | `integer` | Sí | Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes |
 | `sha256` | `text` | Sí | Suma del archivo, para comprobar el almacén |
 | `nombre_archivo` | `text` | Sí | Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla (por omisión: `''`) |
-| `origen` | `text` | Sí | en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100). Lo pone la base |
+| `origen` | `text` | Sí | en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100); registro_asistido: la tomó o cargó el personal al registrar a la persona en el Vivero (decisión 2026-10-25); queda pendiente hasta que el cotejo la confirma contra la identificación oficial. Lo pone la base |
 | `estado` | `text` | Sí | pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó (por omisión: `'pendiente'`) |
 | `vigente` | `boolean` | Sí | Es la última fotografía de la persona (por omisión: `true`) |
 | `cargada_en` | `timestamptz` | Sí | Carga (por omisión: `now()`) |
@@ -254,7 +260,7 @@ Restricciones e índices:
 - `CONSTRAINT fotografia_mime_ck CHECK (tipo_mime IN ('image/jpeg', 'image/png'))`
 - `CONSTRAINT fotografia_tamano_ck CHECK (tamano_bytes > 0)`
 - `CONSTRAINT fotografia_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')`
-- `CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo'))`
+- `CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo', 'registro_asistido'))`
 - `CONSTRAINT fotografia_estado_ck CHECK (estado IN ('pendiente', 'confirmada'))`
 - `CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))`
 - `CREATE UNIQUE INDEX fotografia_una_vigente ON apd.fotografia (solicitante_id) WHERE vigente`
@@ -396,7 +402,8 @@ Un trámite: una persona, un curso. El expediente físico es de la persona (apd.
 | `pago_monto` | `numeric(10,2)` | No | Monto que se le indicó a la persona al darle su cita: el vigente en ese momento. Un cambio de costo posterior no lo altera. Vacío si aún no había monto capturado |
 | `pago_referencia` | `text` | No | Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura |
 | `lista_para_curso_en` | `timestamptz` | No | Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad |
-| `motivo_cierre` | `text` | No | Motivo de cancelación, conclusión sin atender o rechazo |
+| `motivo_cierre` | `text` | No | Motivo de cancelación, conclusión sin atender (también «Se agotaron las oportunidades de corrección», 25/10/2026) o rechazo |
+| `capturada_por` | `text` | No | Registro asistido (decisión 2026-10-25): cuenta del personal de revisión y cotejo (acceso) que capturó la solicitud con la persona presente; cada envío lleva la marca «Se le leyó lo capturado y lo aceptó» en la bitácora. Vacía si la capturó la persona. La pone la base al darla de alta y no cambia |
 | `folio_origen` | `text` | No | Folio en Kobo, para las migradas |
 | `creada_en` | `timestamptz` | Sí | Alta (por omisión: `now()`) |
 | `es_ficticio` | `boolean` | Sí | Dato de prueba (por omisión: `false`) |
@@ -529,11 +536,11 @@ Grupo de un curso. Copia los cupos del curso al crearse. Sólo se confirma con e
 | `folio` | `text` | Sí | Folio del grupo; lo asigna la base (APD-G-AAAA-NNN) |
 | `tipo_acreditacion` | `text` | Sí | Curso |
 | `modalidad` | `text` | Sí | Curso |
-| `integracion` | `text` | Sí | especifico (una organización) o combinado |
+| `integracion` | `text` | Sí | especifico (una organización; sólo instituciones de gobierno: dependencias de la Ciudad, Alcaldías y dependencias federales, ajustes del equipo del 25/10/2026) o combinado |
 | `organizacion_id` | `uuid` | No | Organización, sólo en grupos específicos |
 | `cupo_minimo` | `smallint` | Sí | Copiado del curso al crearse; lo pone la base |
 | `cupo_maximo` | `smallint` | Sí | Copiado del curso al crearse; lo pone la base |
-| `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. Puede cambiar hasta concluir el grupo |
+| `instructor` | `text` | No | Cuenta del instructor responsable (acceso); obligatoria para confirmar. La asigna o la cambia, hasta concluir el grupo, el área de Instructores y Capacitación (perfiles de perfiles_asignan_instructor, ajustes del equipo del 25/10/2026) |
 | `sede` | `text` | No | Instalación de la Secretaría; obligatoria para confirmar |
 | `fecha_inicio` | `date` | No | Primer día; obligatoria para confirmar |
 | `hora_entrada` | `time` | No | Hora de entrada del curso, la misma todos los días; obligatoria para confirmar. El curso es de 9:00 a 15:00 (P91, sesión de trabajo del 23/10/2026): entre curso_hora_entrada y antes de curso_hora_salida; la salida no se guarda por grupo |
@@ -662,6 +669,35 @@ Restricciones e índices:
 - `CONSTRAINT material_estudio_tamano_ck CHECK (tamano_bytes > 0)`
 - `CONSTRAINT material_estudio_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$')`
 - `CONSTRAINT material_estudio_paginas_ck CHECK (paginas > 0)`
+
+## aviso_telefono
+
+Avisos por teléfono a las personas del registro asistido (decisión 2026-10-25, Liber): cada cambio del trámite que a otra persona le llegaría por correo (catálogo docs/AVISOS-POR-CORREO.md) deja aquí, mientras la persona no activa su cuenta, un aviso pendiente para el personal de revisión y cotejo, que llama y registra el resultado. Lo crea sólo la base; no se borra.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `id` | `uuid` | Sí | Identificador interno (por omisión: `gen_random_uuid()`) |
+| `solicitante_id` | `uuid` | Sí | Persona a quien se llama |
+| `solicitud_id` | `uuid` | No | Solicitud del aviso; vacía si es de la cuenta o de una acreditación sin solicitud del sistema |
+| `aviso` | `text` | Sí | Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, S7, T2, T3, G1, G2, G4, A1, A6 o A7 |
+| `datos` | `jsonb` | Sí | Lo que el aviso necesita para decirse (folio, cita, monto y referencia de pago, grupo, calificación, motivo…), como estaba al crearse; la pantalla arma con ellos el texto que se le dice a la persona (por omisión: `'{}'::jsonb`) |
+| `creado_en` | `timestamptz` | Sí | Cuándo pasó el cambio. Lo pone la base (por omisión: `now()`) |
+| `resultado` | `text` | No | Vacío: pendiente. se_le_aviso o no_contesto: lo registra el personal al llamar, una sola vez |
+| `atendido_por` | `text` | No | Cuenta del personal que llamó (acceso). La pone la base |
+| `atendido_en` | `timestamptz` | No | Cuándo se registró el resultado. La pone la base |
+
+Restricciones e índices:
+
+- `CONSTRAINT aviso_telefono_pk PRIMARY KEY (id)`
+- `CONSTRAINT aviso_telefono_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id)`
+- `CONSTRAINT aviso_telefono_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id)`
+- `CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'S7', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7'))`
+- `CONSTRAINT aviso_telefono_datos_ck CHECK (jsonb_typeof(datos) = 'object')`
+- `CONSTRAINT aviso_telefono_resultado_ck CHECK (resultado IN ('se_le_aviso', 'no_contesto'))`
+- `CONSTRAINT aviso_telefono_atendido_ck CHECK ((resultado IS NULL) = (atendido_por IS NULL) AND (resultado IS NULL) = (atendido_en IS NULL))`
+- `CREATE INDEX aviso_telefono_pendientes ON apd.aviso_telefono (creado_en) WHERE resultado IS NULL`
+- `CREATE INDEX aviso_telefono_solicitante ON apd.aviso_telefono (solicitante_id, creado_en)`
+- `CREATE INDEX aviso_telefono_solicitud ON apd.aviso_telefono (solicitud_id)`
 
 ## folio_contador
 

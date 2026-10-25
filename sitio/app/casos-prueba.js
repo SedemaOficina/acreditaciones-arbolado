@@ -39,9 +39,14 @@
         ['enviada', 'Enviada, en revisión documental', 'Ver qué ve la persona mientras se revisa.',
           (p, s, acs, d) => s && s.estado === 'enviada' && s.modalidad !== 'renovacion' && s.tipo_acreditacion === 'poda' && vueltas(d, s) === 0],
         ['reenviada', 'Reenviada con correcciones (2.ª vuelta)', 'Ver la solicitud que vuelve a revisión con lo corregido.',
-          (p, s, acs, d) => s && s.estado === 'enviada' && vueltas(d, s) > 0],
-        ['obs-poda', 'Con observaciones', 'Corregir los documentos con observaciones y reenviar.',
-          (p, s) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda']
+          (p, s, acs, d) => s && s.estado === 'enviada' && vueltas(d, s) > 0 && !A().revisionDeLaUltima(d, s)],
+        // Máximo dos oportunidades para corregir (ajustes del equipo, 25/10/2026)
+        ['obs-poda', 'Con observaciones', 'Corregir los documentos con observaciones y reenviar; ver «Te quedan 2 oportunidades para corregir».',
+          (p, s, acs, d) => s && s.estado === 'con_observaciones' && s.tipo_acreditacion === 'poda' && !(A().oportunidades(d, s) || {}).ultima],
+        ['obs-ultima', 'Con observaciones por segunda vez: su última oportunidad', 'Ver «Esta es tu última oportunidad para corregir» en «Mis trámites» y al corregir.',
+          (p, s, acs, d) => s && (A().oportunidades(d, s) || {}).ultima],
+        ['reenviada-ultima', 'Reenviada con su segunda corrección', 'Ver la solicitud en su última revisión: si siguen las observaciones, se cierra.',
+          (p, s, acs, d) => A().revisionDeLaUltima(d, s)]
       ]],
       ['Cita de cotejo', [
         ['cita', 'Cita de cotejo asignada', 'Ver la fecha, el lugar y los datos de pago.',
@@ -103,7 +108,9 @@
         ['dos-inasistencias', 'Cerrada: no se presentó dos veces a la cita', 'Ver el cierre por inasistencias y que puede iniciar otra.',
           (p, s) => s && A().cerradaPorInasistencia(s)],
         ['sin-atender', 'Cerrada por no corregir a tiempo', 'Ver la solicitud que se cerró porque venció el plazo para corregir.',
-          (p, s) => s && s.estado === 'concluida_sin_atender' && !A().cerradaPorInasistencia(s)],
+          (p, s) => s && s.estado === 'concluida_sin_atender' && !A().cerradaPorInasistencia(s) && !A().cerradaSinOportunidades(s)],
+        ['sin-oportunidades', 'Cerrada: se agotaron las oportunidades de corrección', 'Ver el motivo del cierre y una sola acción: «Iniciar una solicitud nueva».',
+          (p, s) => A().cerradaSinOportunidades(s)],
         ['cancelada', 'Cancelada por la persona', 'Ver una solicitud cancelada.', (p, s) => s && s.estado === 'cancelada']
       ]]
     ]],
@@ -143,17 +150,24 @@
     ['personal', 'Personal de la Secretaría', [
       ['Su papel', [
         ['personal', 'Revisión documental', 'Revisar las solicitudes enviadas paso por paso, un documento a la vez: validar con cita, observar o rechazar.', null, 'revision.html'],
+        // La revisión de la segunda corrección (ajustes del equipo, 25/10/2026): es la última oportunidad de la persona
+        ['personal-ultima-revision', 'Revisión documental: la segunda corrección', 'Revisar la solicitud en su última oportunidad: si algo sigue con observación, «Cerrar la solicitud».', null, 'revisar.html?folio=APD-S-2026-00062'],
         ['personal-citas', 'Citas de cotejo', 'Atender las citas del día paso por paso: ¿es la persona?, documentos originales, pago y factura, resultado (pausa, inasistencia).', null, 'citas.html'],
         // «Grupos» paso a paso (decisión del 24/10/2026): un solo camino para armar un grupo; «Programar un curso» lleva ahí
-        ['personal-grupos', 'Grupos: armar un grupo', 'Paso a paso: el curso, la semana en el calendario, quiénes van y confirmar; abajo, los grupos programados con lo que les falta.', null, 'grupos.html'],
-        ['personal-programar', 'Grupos: darle semana a un grupo', 'Un grupo por confirmar sin semana: elegirla en el calendario, completarlo con las que más esperan y confirmarlo.', null, 'grupos.html?grupo=APD-G-2026-004&paso=2'],
+        ['personal-grupos', 'Grupos: armar un grupo', 'Paso a paso: el curso, la semana en el calendario, quiénes van y crearlo (lo confirma Capacitación); abajo, los grupos programados con lo que les falta.', null, 'grupos.html'],
+        ['personal-programar', 'Grupos: darle semana a un grupo', 'Un grupo por confirmar sin semana: elegirla en el calendario y completarlo con las que más esperan.', null, 'grupos.html?grupo=APD-G-2026-004&paso=2'],
+        // Perfil «capacitación» (ajustes del equipo, 25/10/2026): asigna la persona instructora y confirma el grupo
+        ['personal-capacitacion', 'Capacitación: asignar instructores y confirmar', 'Ver los grupos que esperan persona instructora o confirmación, del más próximo al más lejano; en la ficha, asignarla (sólo las libres esas fechas) y confirmar el grupo cuando tenga el mínimo (complételo antes en «Grupos», con el perfil de revisión y cotejo).', null, 'capacitacion.html?perfil=capacitacion'],
         ['personal-material', 'Material de estudio', 'Subir, reemplazar, publicar u ocultar los documentos para el examen.', null, 'material-personal.html'],
         ['personal-asistencia', 'Instructor: asistencia', 'Capturar la asistencia de cada día del curso.', null, 'asistencia.html'],
         ['personal-examen', 'Instructor: aplicar el examen', 'Pasar lista el último día (cuenta como asistencia) y seguir el examen.', null, 'aplicar.html'],
         // Sesión de trabajo del 23/10/2026: reposición de credenciales (P140) y cancelación por instructores y directivos (P120)
         ['personal-acreditaciones', 'Acreditaciones: reposición de credenciales', 'Revisar el acta y entregar la credencial repuesta con la factura de la cuota.', null, 'acreditaciones.html'],
         ['personal-cancelar-instructor', 'Instructor: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento.', null, 'acreditaciones.html?perfil=instructor'],
-        ['personal-cancelar-direccion', 'Dirección: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento (perfil de administración).', null, 'acreditaciones.html?perfil=administracion']
+        ['personal-cancelar-direccion', 'Dirección: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento (perfil de administración).', null, 'acreditaciones.html?perfil=administracion'],
+        // Registro asistido (decisión 2026-10-25): personas que no saben leer ni escribir
+        ['personal-asistido', 'Registro asistido', 'Registrar en el Vivero a una persona que no sabe leer ni escribir y capturar su solicitud, con ella presente.', null, 'asistido.html'],
+        ['personal-ventanilla', 'Ventanilla', 'Buscar a una persona, decirle en qué va su trámite y cargar por ella lo corregido.', null, 'ventanilla.html']
       ]]
     ]]
   ];
@@ -161,7 +175,8 @@
   /* → [{ perfil, perfilTexto, grupo, casos: [{ clave, texto, prueba, persona?, pantalla?, migrada? }] }] */
   function lista(datos) {
     const usadas = new Set();
-    const activas = datos.solicitante.filter((x) => x.estado === 'activa');
+    // Las del registro asistido que no han activado su cuenta no entran en línea (decisión 2026-10-25): no se «entra como» ellas
+    const activas = datos.solicitante.filter((x) => x.estado === 'activa' && !(x.registro_asistido_en && !x.activada_en));
     const sinCuenta = datos.solicitante.filter((x) => x.estado === 'sin_activar');
     const grupos = [];
     for (const [perfil, perfilTexto, etapas] of PERFILES) {

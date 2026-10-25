@@ -235,39 +235,49 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     // programados», cada uno con «Agregar personas» que dice cuál es
     await ir('grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona');
     const destinos = await pg.$$eval('[data-programados] a', (l) => l.filter((a) => /^Agregar personas/.test(a.textContent)).map((a) => a.getAttribute('aria-label')));
-    comprueba(destinos.length === 5 && destinos.some((x) => /Iztapalapa/.test(x)) && destinos.some((x) => /Jardines Ejemplo del Norte/.test(x) && /APD-G-2026-021/.test(x)),
+    comprueba(destinos.length === 5 && destinos.some((x) => /Iztapalapa/.test(x)) && destinos.some((x) => /Comisión Federal de Electricidad/.test(x) && /APD-G-2026-021/.test(x)),
       t('Grupos programados: cada grupo que recibe lleva «Agregar personas», con su nombre (de quién es y sus fechas)'));
     comprueba((await Promise.all(['APD-G-2026-004', 'APD-G-2026-005', 'APD-G-2026-021', 'APD-G-2026-022', 'APD-G-2026-023'].map((f) => pg.locator(`[data-programados] tr[data-grupo="${f}"]`).count()))).every((n) => n === 1), t('Grupos programados: están todos los grupos que reciben'));
     const semana26 = await texto('.arm-semana[data-lunes="2026-10-26"]');
     comprueba(/APD-G-2026-005/.test(semana26) && /APD-G-2026-023/.test(semana26) && /No disponible\s*Ya hay 2 grupos/.test(semana26), t('calendario: una semana con dos grupos los nombra a los dos y ya no está disponible («Ya hay 2 grupos»)'));
-    comprueba(/2 personas/.test(await texto('[data-programados] tr[data-grupo="APD-G-2026-021"]')), t('Grupos programados: el grupo de Jardines dice cuántas le faltan'));
+    comprueba(/2 personas/.test(await texto('[data-programados] tr[data-grupo="APD-G-2026-021"]')), t('Grupos programados: el grupo de la CFE dice cuántas le faltan'));
     await pg.locator('#paso-personas .plan-persona input:checked').first().uncheck();
     comprueba(/^24 de 25 lugares/.test(await texto('[data-cuenta-personas]')), t('paso 3: la cuenta sigue lo que se marca («24 de 25 lugares»)'));
     await sinDesborde('grupos con 112 en espera');
     // R4-03 (decisión 2 de la auditoría del 2026-10-19): el bloque de una organización dice «su grupo» y cuántas le faltan.
     // Desde la sesión de trabajo del 23/10/2026 sólo las instituciones de gobierno van en bloque: Iztapalapa (alcaldía) con
-    // su grupo APD-G-2026-023; las de Jardines (empresa) van una por una y cada fila dice su grupo
+    // su grupo APD-G-2026-023 y la CFE (dependencia federal) con el suyo, APD-G-2026-021; desde los ajustes del equipo
+    // (25/10/2026) sólo ellas tienen grupo propio: las de Jardines (empresa) van una por una y sin «su grupo»
     await pg.click('[data-mas-espera] > summary');
-    const cabIzta = (await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).find((x) => /^Iztapalapa/.test(x)) || '';
+    const cabezas = await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent));
+    const cabIzta = cabezas.find((x) => /^Iztapalapa/.test(x)) || '';
     comprueba(/Su grupo APD-G-2026-023: 18 de 25, caben 7/.test(cabIzta), t(`paso 3: el bloque de Iztapalapa dice «Su grupo APD-G-2026-023» y cuántas caben («${cabIzta.slice(0, 90)}»)`));
+    const cabCfe = cabezas.find((x) => /^Comisión Federal/.test(x)) || '';
+    comprueba(/Su grupo APD-G-2026-021: 3 de 25, le faltan 2 para el mínimo/.test(cabCfe), t(`paso 3: el bloque de la CFE dice «Su grupo APD-G-2026-021» y cuántas le faltan («${cabCfe.slice(0, 90)}»)`));
     const filasJardines = await pg.$$eval('[data-personas] .plan-persona', (l) => l.filter((x) => !x.closest('.plan-bloque')).map((x) => x.textContent).filter((x) => /Jardines/.test(x)));
-    comprueba(filasJardines.length > 1 && filasJardines.every((x) => /Su grupo APD-G-2026-021: 3 de 25, le faltan 2 para el mínimo/.test(x))
+    comprueba(filasJardines.length > 1 && filasJardines.every((x) => !/Su grupo/.test(x))
       && !(await pg.$$eval('.plan-bloque-nombre', (l) => l.some((x) => /Jardines/.test(x.textContent)))),
-      t(`paso 3: las ${filasJardines.length} de Jardines (empresa) van una por una, sin bloque, y cada una dice «Su grupo APD-G-2026-021»`));
+      t(`paso 3: las ${filasJardines.length} de Jardines (empresa) van una por una, sin bloque y sin grupo propio`));
     comprueba((await pg.$$eval('.plan-bloque-cabeza', (l) => l.map((x) => x.textContent))).some((x) => /grupo propio de 5; o van a un grupo combinado|Alcanza para un grupo propio/.test(x)),
       t('paso 3: el bloque de una organización sin grupo dice si alcanzan para uno propio'));
-    // … y el paso a paso avisa antes de crearle un segundo grupo, y ofrece agregarlas al suyo
+    // Dos de Jardines (empresa): sin la opción de grupo propio y con la línea que dice por qué (ajustes del equipo, 25/10/2026)
     const jardines = d.organizacion.find((o) => /Jardines/.test(o.nombre));
     const dosJardines = d.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva' && s.organizacion_id === jardines.id).slice(0, 2).map((s) => s.folio);
     await ir(`programar.html?curso=poda-nueva&personas=${dosJardines.join(',')}`, '#paso-personas:not([hidden]) .plan-persona');
+    comprueba(await pg.isHidden('[data-opcion-especifico]') && /no es una institución de gobierno/.test(await texto('[data-sin-grupo-propio]')) && await pg.isHidden('[data-su-grupo]'),
+      t('paso 3: con dos de Jardines (empresa), sin la opción de grupo propio y una línea que dice por qué'));
+    // … y, con gente de la CFE, el paso a paso avisa antes de crearle un segundo grupo, y ofrece agregarlas al suyo
+    const cfe = d.organizacion.find((o) => /Comisión Federal/.test(o.nombre));
+    const dosCfe = d.solicitud.filter((s) => s.estado === 'lista_para_curso' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva' && s.organizacion_id === cfe.id).slice(0, 2).map((s) => s.folio);
+    await ir(`programar.html?curso=poda-nueva&personas=${dosCfe.join(',')}`, '#paso-personas:not([hidden]) .plan-persona');
     comprueba(await pg.isVisible('[data-su-grupo] .aviso') && /ya tiene su grupo/.test(await texto('[data-su-grupo]')) && /APD-G-2026-021/.test(await texto('[data-su-grupo]')),
-      t('paso 3: con personas de Jardines, avisa que ya tiene su grupo APD-G-2026-021'));
+      t('paso 3: con personas de la CFE, avisa que ya tiene su grupo APD-G-2026-021'));
     await pg.check('input[name="integracion"][value="especifico"]');
     await pg.click('#paso-personas [data-accion="siguiente"]');
     await pg.waitForSelector('#paso-confirmar:not([hidden])');
     await pg.click('[data-armar="crear"]');
     await pg.waitForSelector('dialog.dialogo-confirma[open]');
-    comprueba(/¿Crear otro grupo de Jardines/.test(await texto('dialog.dialogo-confirma[open]')), t('paso 4: crear un segundo grupo de Jardines pide confirmación'));
+    comprueba(/¿Crear otro grupo de Comisión Federal de Electricidad/.test(await texto('dialog.dialogo-confirma[open]')), t('paso 4: crear un segundo grupo de la CFE pide confirmación'));
     await pg.click('dialog.dialogo-confirma[open] [data-r="no"]');
     await pg.waitForTimeout(300);
     comprueba((await pg.evaluate(() => JSON.parse(localStorage.getItem('apd.personal.grupos') || '[]').filter((e) => e.tipo === 'crear').length)) === 0, t('paso 4: con «No» no se crea el segundo grupo'));
@@ -275,7 +285,7 @@ for (const [tam, vp] of [['teléfono', { width: 390, height: 844 }], ['escritori
     await pg.waitForSelector('#paso-personas:not([hidden]) [data-su-grupo] button');
     await Promise.all([pg.waitForURL(/grupo\.html/), pg.click('[data-su-grupo] button')]);
     await pg.waitForSelector('[data-filas] tr');
-    comprueba(/grupo\.html\?folio=APD-G-2026-021/.test(pg.url()) && (await Promise.all(dosJardines.map((f) => pg.isVisible(`[data-filas] tr[data-folio="${f}"]`)))).every(Boolean),
+    comprueba(/grupo\.html\?folio=APD-G-2026-021/.test(pg.url()) && (await Promise.all(dosCfe.map((f) => pg.isVisible(`[data-filas] tr[data-folio="${f}"]`)))).every(Boolean),
       t('paso 3: «Agregarlas a APD-G-2026-021» las agrega a su grupo y abre su ficha'));
 
   });

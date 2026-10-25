@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="same-origin">
+<meta name="sia-version" content="0.69">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Grupos por asignar y confirmar · Personal · Acreditaciones de arbolado urbano</title>
+<meta name="description" content="Inicio del área de Instructores y Capacitación: los grupos que esperan persona instructora o confirmación, del más próximo al más lejano. Personal de la Secretaría. Versión de prueba con datos ficticios.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="formkit/css/tokens.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/base.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/css/nucleo.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/tabla/tabla.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
+<link rel="stylesheet" href="app/apd.css?v=0.69">
+</head>
+<body>
+<a class="salto" href="#contenido">Ir al contenido</a>
+<aside class="entorno-pruebas" aria-label="Aviso de entorno">Versión de prueba · datos ficticios · acceso del personal simulado · nada sale de este navegador · fecha simulada: <span data-corte></span></aside>
+
+<header class="cabecera">
+  <div class="cabecera-int">
+    <a href="https://www.sedema.cdmx.gob.mx/" class="cabecera-enlace"><img class="cabecera-logo" src="formkit/imagenes/logotipo-sedema.png" width="477" height="96" alt="Gobierno de la Ciudad de México · Secretaría del Medio Ambiente. Ir al sitio de la Secretaría"></a>
+    <div class="cabecera-titulo"><h1 class="titulo-pagina">Acreditaciones de arbolado urbano · Personal</h1></div>
+  </div>
+</header>
+
+<main class="pagina pagina-amplia" id="contenido">
+  <div class="sesion personal-sesion" data-sesion-personal></div>
+
+  <!-- Inicio del área de Instructores y Capacitación (perfil «capacitación»; ajustes del equipo, 25/10/2026): asigna o cambia
+       la persona instructora de cada grupo y lo confirma, en la ficha del grupo. Quien arma los grupos (revisión y cotejo) ya
+       no lo hace. -->
+  <section class="tarjeta" aria-labelledby="t-por-confirmar">
+    <h2 class="titulo-paso" id="t-por-confirmar">Grupos por asignar y confirmar</h2>
+    <p class="bajada" data-bajada>Los grupos que esperan persona instructora o confirmación, del que empieza antes al más lejano. En la ficha de cada uno se asigna a la persona instructora, libre esas fechas, y se confirma el grupo.</p>
+    <!-- La cuenta se escribe al cargar (no es región viva) -->
+    <p class="resumen-filtro" data-cuenta>Cargando los grupos…</p>
+    <div class="tabla-marco" data-tabla data-clave="grupo" data-por-confirmar>
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector">Grupos que esperan persona instructora o confirmación</caption>
+        <thead><tr><th scope="col">Grupo</th><th scope="col">Semana</th><th scope="col">Personas</th><th scope="col">Persona instructora</th><th scope="col">Lo que falta</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+      <p class="tabla-vacia" data-tabla-vacia hidden>Ningún grupo espera persona instructora ni confirmación.</p>
+    </div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-confirmados">
+    <h2 class="titulo-paso" id="t-confirmados">Grupos confirmados y en curso</h2>
+    <p class="bajada">Si hace falta, cambie a la persona instructora, también durante el curso: el cambio queda en la bitácora.</p>
+    <div class="tabla-marco" data-tabla data-clave="grupo" data-confirmados>
+      <table class="tabla tabla-bandeja">
+        <caption class="solo-lector">Grupos confirmados y en curso</caption>
+        <thead><tr><th scope="col">Grupo</th><th scope="col">Semana</th><th scope="col">Situación</th><th scope="col">Persona instructora</th><th scope="col"><span class="solo-lector">Acción</span></th></tr></thead>
+        <tbody data-filas></tbody>
+      </table>
+      <p class="tabla-vacia" data-tabla-vacia hidden>No hay grupos confirmados ni en curso.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="pie"><div class="pie-int"><p>Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental.</p></div>
+  <!-- Distintivo de versión: lo llena version-visible.js; va dentro del pie para quedar en una región. -->
+  <div id="version-sia" data-testid="version-sia"></div>
+</footer>
+
+<script src="app/perfil-academico.js?v=0.69"></script>
+<script src="app/apd.js?v=0.69"></script>
+<!-- Versión de prueba: lo registrado en este navegador. -->
+<script src="app/archivos-prueba.js?v=0.69"></script>
+<script src="app/personal.js?v=0.69"></script>
+<script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
+<script src="app/mensajes-usted.js?v=0.69"></script>
+<script src="formkit/js/iconos.js?v=1.5.1"></script>
+<script src="formkit/js/formkit.core.js?v=1.5.1"></script>
+<script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
+<script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<script src="app/capacitacion.js?v=0.69"></script>
+<!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
+<script src="app/casos-prueba.js?v=0.69"></script>
+<script src="app/pruebas.js?v=0.69"></script>
+<script src="app/version-visible.js?v=0.69"></script>
+</body>
+</html>

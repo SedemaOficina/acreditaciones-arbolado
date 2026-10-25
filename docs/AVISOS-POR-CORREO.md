@@ -22,11 +22,12 @@ Prioridad:
 | # | Momento | Contenido | Prioridad |
 |---|---|---|---|
 | S1 | Solicitud enviada | Acuse con folio, acreditación y fecha | Recomendable |
-| S2 | Solicitud con observaciones | Qué corregir en cada documento y hasta cuándo (plazo, P02) | Indispensable |
+| S2 | Solicitud con observaciones | Qué corregir en cada documento y hasta cuándo (plazo, P02), y cuántas oportunidades le quedan para corregir: «Te quedan 2 oportunidades para corregir» o «Esta es tu última oportunidad para corregir: si en la revisión siguen las observaciones, tu solicitud se cierra» (parámetro `oportunidades_correccion`, ajustes del equipo del 25/10/2026) | Indispensable |
 | S3 | Observaciones por vencer | Recordatorio antes de que venza el plazo para corregir | Recomendable |
 | S4 | Solicitud cerrada por no corregir a tiempo | Que su solicitud se cerró porque no corrigió las observaciones dentro del plazo, y que puede iniciar una nueva | Indispensable |
 | S5 | Documentos validados: cita de cotejo | Cita de cotejo (día, hora, lugar y cómo llegar), qué llevar y datos para pagar (concepto, monto, referencia) | Indispensable |
 | S6 | Solicitud rechazada | Motivo, tal como lo escribió quien revisó | Indispensable |
+| S7 | Solicitud cerrada: se agotaron las oportunidades de corrección (ajustes del equipo, 25/10/2026) | Que en la revisión de su última corrección siguieron las observaciones y su solicitud se cerró, con el motivo «Se agotaron las oportunidades de corrección» y lo que seguía observado; que no pagó nada y puede iniciar una solicitud nueva de inmediato, con el enlace para iniciarla | Indispensable |
 
 ## 3. Cita de cotejo
 
@@ -65,6 +66,33 @@ Prioridad:
 |---|---|---|---|
 | D1 | No era la persona en la cita | Dirección (P79), con folio y la nota de quien atendió | Indispensable |
 | D2 | Pausas que vencieron sin retomarse | Personal de cotejo, resumen diario (P80) | Recomendable |
+
+## 7. Registro asistido: avisos por teléfono (decisión de Liber del 25/10/2026)
+
+A una persona que no sabe leer ni escribir la registra el personal de revisión y cotejo en el Vivero; su cuenta queda sin
+contraseña y el correo es opcional. **Mientras no activa su cuenta**, cada cambio de esta lista que a otra persona le
+llegaría por correo deja en la base un **aviso por teléfono pendiente** (`apd.aviso_telefono`): el personal la llama, le dice
+lo que corresponde (el texto, de tú y listo para decirlo, lo arma la pantalla con los datos del aviso) y registra «se le
+avisó» o «no contestó». La lista está en el inicio del personal de revisión y cotejo; en la ventanilla, si la persona está
+ahí, se le dice en persona. Cuando activa su cuenta, le llegan los correos como a cualquiera.
+
+| Aviso | Cuándo lo crea la base | Qué se le dice |
+|---|---|---|
+| S2 | La revisión documental le pone observaciones | Qué documentos corregir y que vaya a la ventanilla a corregirlos con el personal; que hay un plazo |
+| S4 | Se cierra por no corregir a tiempo | Que se cerró y que puede iniciar una nueva en la ventanilla |
+| S5 | Se validan sus documentos | Día y hora de la cita, sede, qué llevar y el pago (monto y referencia) |
+| S6 | Se rechaza | El motivo |
+| S7 | Se cierra porque en la revisión de su última corrección siguieron las observaciones (se agotaron las oportunidades) | Que se cerró por eso y que puede iniciar una nueva en la ventanilla |
+| T2 | Resultado de la cita: cotejo terminado (con su expediente), en pausa (qué traer ese día), regresó con observaciones, cita nueva por no presentarse o no traer el pago, cerrada por la segunda inasistencia | Lo que pasó y qué sigue |
+| T3 | La cuenta queda bloqueada por identidad | Que vaya a la ventanilla a aclararlo (P79) |
+| G1 | Su grupo se confirma, o entra a un grupo ya confirmado | Primer día, hora de entrada y sede |
+| G2 | Baja del grupo o grupo cancelado; cambio de fecha u hora de un grupo confirmado; el grupo regresa a integración | Qué cambió y que sigue en espera con su antigüedad |
+| G4 | Resultado del examen o sin derecho a examen | Calificación y qué sigue |
+| A1, A6, A7 | Acreditación entregada o cancelada; pasos de la reposición de la credencial | Como el correo |
+
+No generan aviso por teléfono: lo de la cuenta (C1 a C4: no tiene contraseña ni, quizá, correo), el envío de su solicitud
+(S1: el personal la captura con ella presente y le imprime el acuse) ni los recordatorios por fecha (S3, T1, G3, A0, A2 a
+A5): ésos los manda la tarea diaria de los correos, que todavía no existe (P23); cómo se hacen por teléfono es P207.
 
 ## Reglas para todos los correos
 

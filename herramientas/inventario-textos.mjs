@@ -19,7 +19,11 @@ const PAGINAS = [
   // Reposición de la credencial (P140, sesión de trabajo del 23/10/2026)
   ['reposicion.html', 'Reposición de tu credencial'],
   // «Grupos» paso a paso, del personal (decisión del 24/10/2026: sustituye al planeador y a «Programar un curso»)
-  ['grupos.html', 'Grupos (personal)']
+  ['grupos.html', 'Grupos (personal)'],
+  // Inicio del área de Instructores y Capacitación (ajustes del equipo, 25/10/2026)
+  ['capacitacion.html', 'Grupos por asignar y confirmar (personal)'],
+  // Registro asistido del personal (decisión de Liber del 25/10/2026): registrar a una persona y la ventanilla
+  ['asistido.html', 'Registro asistido (personal)'], ['ventanilla.html', 'Ventanilla (personal)']
 ];
 // Bloques que sólo aparecen en ciertos casos (atributo → condición en palabras)
 const OCULTOS = {
@@ -36,7 +40,13 @@ const OCULTOS = {
   'data-cuenta-historial': 'Si la CURP tiene acreditaciones anteriores (registro de Kobo)',
   'data-foto-cambio': 'Mientras la fotografía no está confirmada',
   'data-recordatorio': 'Después de elegir la acreditación (recordatorio arriba de cada paso)',
-  'data-camara': 'En teléfono o equipo con cámara'
+  'data-camara': 'En teléfono o equipo con cámara',
+  // Registro asistido (25/10/2026)
+  'data-asistido-banner': 'Al capturar la solicitud por la persona (registro asistido)',
+  'data-acuse-asistido': 'Al enviar la solicitud capturada por el personal (registro asistido)',
+  'data-camara-panel': 'Con la cámara de la computadora abierta',
+  'data-ficha': 'Al abrir el trámite de una persona',
+  'data-avisos-resultado': 'Al registrar un aviso por teléfono'
 };
 
 // El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
@@ -63,16 +73,18 @@ for (const [archivo, pantalla] of PAGINAS) {
     };
     const opcionDe = (campo, valor) => {
       const r = document.querySelector(`input[name="${campo}"][value="${valor}"]`);
-      if (r) { const l = r.closest('label'); const n = l.querySelector('.opcion-nombre') || l.querySelector('.casilla-texto') || l; return limpio(n.textContent); }
+      if (r && r.type !== 'hidden') { const l = r.closest('label'); const n = l.querySelector('.opcion-nombre') || l.querySelector('.casilla-texto') || l; return limpio(n.textContent); }
       const o = document.querySelector(`select[name="${campo}"] option[value="${valor}"]`);
       if (o) return limpio(o.textContent);
+      // Registro asistido (25/10/2026): el auxiliar que dice si la solicitud la captura el personal por la persona
+      if (campo === 'asistido') return valor === 'si' ? 'la captura el personal' : 'la captura la persona';
       if (campo === 'tramite') return { poda_nueva: 'poda y derribo, solicitud nueva', poda_renovacion: 'poda y derribo, renovación', dictaminador_nueva: 'dictaminador técnico, solicitud nueva', dictaminador_renovacion: 'dictaminador técnico, renovación' }[valor] || valor;
       return valor === '' ? '(vacío)' : valor;
     };
     const condicionSi = (expr) => {
       const [campo, valores] = expr.split('=');
       const ops = (valores || '').split('|').map((v) => `«${opcionDe(campo, v)}»`);
-      const etq = campo === 'tramite' ? 'Trámite' : etiquetaDe(campo);
+      const etq = campo === 'tramite' ? 'Trámite' : campo === 'asistido' ? 'Registro asistido' : etiquetaDe(campo);
       return `Si «${etq}» es ${ops.join(' o ')}`;
     };
     const condicion = (el) => {

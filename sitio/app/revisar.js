@@ -96,6 +96,14 @@
       .map((x) => `${x.requisito}|${x.cargado_real || x.cargado_en}|${x.estado}`).sort()].join('~');
     const abierta = huella(datos, s);
     const dict = s.tipo_acreditacion === 'dictaminador';
+    /* Máximo de oportunidades para corregir (ajustes del equipo, 25/10/2026; la base: apd.correcciones_usadas y el parámetro
+       oportunidades_correccion). En la revisión de la última corrección, si algo sigue con observación, la solicitud no
+       regresa: se cierra con su motivo y la persona puede iniciar otra. Se avisa desde el inicio y, en «Resultado», la acción
+       principal es «Cerrar la solicitud», con confirmación. */
+    const ultima = APD.revisionDeLaUltima(datos, s);
+    const maxCorrecciones = APD.oportunidadesCorreccion(datos);
+    const ORDINALES = ['', 'primera', 'segunda', 'tercera', 'cuarta', 'quinta'];
+    const cualCorreccion = ORDINALES[maxCorrecciones] || `${maxCorrecciones}.ª`;
 
     /* ----- Cabeza: la solicitud y la persona ----- */
     $('[data-titulo]').textContent = `${APD.TIPOS[s.tipo_acreditacion]} · ${APD.MODALIDADES[s.modalidad].toLowerCase()}`;
@@ -128,6 +136,14 @@
     // En una renovación sólo la constancia fiscal es obligatoria; lo demás se carga si la persona lo actualizó
     // (decisión 2026-10-14): se dice aquí para que no parezca que faltan documentos
     $('[data-renovacion]').hidden = s.modalidad !== 'renovacion';
+    if (ultima) {
+      const caja = $('[data-ultima-oportunidad]');
+      caja.hidden = false;
+      FormKit.aviso(caja, { tono: 'advertencia', titulo: `Es la revisión de la ${cualCorreccion} corrección: la última oportunidad`,
+        texto: `${APD.nombreCompleto(p)} ya corrigió ${APD.plural(APD.correccionesUsadas(datos, s), 'vez', 'veces')}. Si algo sigue con observación, la solicitud se cierra («${APD.MOTIVO_SIN_OPORTUNIDADES}») y la persona tendrá que iniciar una nueva; si todo está bien, se valida como siempre.` });
+      $('[data-cierre] .aviso-texto p').replaceChildren(el('strong', { texto: 'La solicitud se cerrará' }),
+        document.createTextNode(` porque es la revisión de la ${cualCorreccion} corrección y siguen las observaciones. Motivo: «${APD.MOTIVO_SIN_OPORTUNIDADES}». La persona lo verá en «Mis trámites» y podrá iniciar una solicitud nueva de inmediato.`));
+    }
     $('[data-cabeza]').hidden = false;
 
     /* ----- Revisiones anteriores ----- */
@@ -271,9 +287,10 @@
       }
       // Resumen antes de confirmar (paso «Resultado»): lo decidido en cada documento. Se lee al llegar al paso, que el
       // módulo anuncia: no se anuncia en cada decisión (un anuncio por acción, RI-03 y RI-04)
+      const cierra = ultima && resultado === 'con_observaciones';
       const resumen = rechazo ? 'La solicitud se rechaza por el perfil: sus documentos no se revisan.'
         : hechos === cargados.length && cargados.length
-          ? `Los ${cargados.length} documentos están revisados${observados ? `: ${observados} con un problema` : ''}.`
+          ? `Los ${cargados.length} documentos están revisados${observados ? `: ${observados} con un problema` : ''}.${cierra ? ' Como es la última oportunidad, la solicitud se cierra.' : ''}`
           : `${hechos} de ${cargados.length} documentos revisados${observados ? ` · ${observados} con un problema` : ''}.`;
       if ($('[data-resumen]').textContent !== resumen) $('[data-resumen]').textContent = resumen;
       const filas = rechazo ? [] : cargados.map((k) => {
@@ -292,7 +309,10 @@
       }
       // El botón para registrar va en el paso donde termina la revisión: «Fecha de la cita» si se valida; «Resultado» si
       // regresa con observaciones o se rechaza. Con él va el aviso de envío fallido, que el núcleo busca en el formulario.
-      const r = RESULTADOS[resultado];
+      // En la última oportunidad, con algo observado: «Cerrar la solicitud» en lugar de «Regresar con observaciones». Abre su
+      // confirmación, así que va con contorno, como «Rechazar la solicitud» (estándar: .btn-peligro-contorno)
+      const r = cierra ? { boton: 'Cerrar la solicitud', clase: 'btn-peligro-contorno' } : RESULTADOS[resultado];
+      $('[data-cierre]', form).hidden = !cierra;
       const boton = $('[data-accion="enviar"]', form);
       const lugar = ['con_observaciones', 'rechazada'].includes(resultado) ? $('[data-acciones-resultado]', form) : $('[data-acciones-cita]', form);
       if (boton && lugar && boton.parentNode !== lugar && boton.getAttribute('aria-busy') !== 'true') {
@@ -417,7 +437,7 @@
             }
             const textos = {
               validada: `Validada · cita el ${fechaCorta(d.cita_fecha, { hora: d.cita_hora })}`,
-              con_observaciones: 'Con observaciones',
+              con_observaciones: ultima ? `Cerrada: ${APD.MOTIVO_SIN_OPORTUNIDADES.toLocaleLowerCase('es-MX')}` : 'Con observaciones',
               rechazada: 'Rechazada'
             };
             const en = new Date().toISOString();
@@ -454,14 +474,17 @@
             texto: `${nombre} ya ve en «Mis trámites» qué debe corregir.`,
             pasos: [`${nombre} corrige y reenvía su solicitud.`, 'La solicitud vuelve a «Solicitudes por revisar», marcada como reenviada.'] },
           rechazada: { tono: 'rechazo', titulo: 'Rechazada por perfil', motivo: d.motivo_rechazo || '',
-            texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` }
-        }[resultado];
+            texto: `${nombre} ve este motivo en «Mis trámites» y puede iniciar una solicitud nueva.` },
+          // La revisión de la última corrección con algo observado: la base la cerró (ajustes del equipo, 25/10/2026)
+          cerrada: { tono: 'rechazo', titulo: 'Solicitud cerrada: se agotaron las oportunidades de corrección', motivo: APD.MOTIVO_SIN_OPORTUNIDADES,
+            texto: `${nombre} ve el motivo en «Mis trámites» y puede iniciar una solicitud nueva de inmediato.` }
+        }[resultado === 'con_observaciones' && ultima ? 'cerrada' : resultado];
         form.hidden = true;
         $('[data-con-formulario]').hidden = true;
         sinGuardar = false;
         // La cabecera dice la situación nueva, no «En revisión documental» (auditoría 2026-10-18, D8)
-        const nueva = { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' }[resultado];
-        $('[data-estado]').replaceChildren(APD.estadoSolicitud({ estado: nueva }, true));
+        const nueva = resultado === 'con_observaciones' && ultima ? 'concluida_sin_atender' : { validada: 'validada_en_linea', con_observaciones: 'con_observaciones', rechazada: 'rechazada' }[resultado];
+        $('[data-estado]').replaceChildren(APD.estadoSolicitud({ estado: nueva, motivo_cierre: nueva === 'concluida_sin_atender' ? APD.MOTIVO_SIN_OPORTUNIDADES : null }, true));
         // El visor se cierra (en computadora queda fijo y empujaba el resultado hasta abajo)
         const visor = $('[data-visor]');
         if (visor && visor.open) visor.close();
@@ -485,8 +508,20 @@
       const boton = $('[data-accion="enviar"]', form);
       const paso = FormKit.pasos.elementos[FormKit.pasos.actual()];
       if (!paso.contains(boton)) return submitPasos(f, enviar);
-      if (document.getElementById('resultado').value !== 'rechazada') { enviar(); return true; }
+      const res = document.getElementById('resultado').value;
+      if (res !== 'rechazada' && !(res === 'con_observaciones' && ultima)) { enviar(); return true; }
       if (instancia.valida().length) { enviar(); return true; } // con errores, el módulo abre el paso y muestra el resumen
+      // Cerrar por oportunidades agotadas: con confirmación y el motivo ya escrito (ajustes del equipo, 25/10/2026)
+      if (res === 'con_observaciones') {
+        FormKit.confirma(boton, {
+          titulo: `¿Cerrar la solicitud ${s.folio}?`,
+          consecuencias: [`Motivo: ${APD.MOTIVO_SIN_OPORTUNIDADES}. Era la revisión de su ${cualCorreccion} corrección y siguen las observaciones.`,
+            `${APD.nombreCompleto(p)} verá el motivo en «Mis trámites» y podrá iniciar una solicitud nueva de inmediato.`,
+            'Las observaciones de esta revisión quedan registradas.'],
+          irreversible: true, si: 'Sí, cerrar la solicitud', peligro: true
+        }).then((si) => { if (si) enviar(); });
+        return true;
+      }
       FormKit.confirma(boton, {
         titulo: `¿Rechazar la solicitud ${s.folio}?`,
         consecuencias: [`${APD.nombreCompleto(p)} verá el motivo en «Mis trámites».`, 'La solicitud se cierra sin acreditación; la persona puede iniciar una nueva.'],

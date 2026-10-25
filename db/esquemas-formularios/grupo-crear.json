@@ -1,6 +1,6 @@
 {
   "formulario": "grupo-crear.html",
-  "generado": "2026-10-24T17:19:31.621Z",
+  "generado": "2026-10-25T08:15:36.025Z",
   "campos": {
     "curso": {
       "etiqueta": "Curso",
@@ -39,19 +39,6 @@
       "opciones": [
         "combinado",
         "especifico"
-      ],
-      "autocomplete": "off"
-    },
-    "instructor": {
-      "etiqueta": "Instructor",
-      "tipo": "select",
-      "requerido": false,
-      "sensible": false,
-      "uso": "Fijar quién imparte el curso y captura la asistencia (apd.grupo.instructor, cuenta del acceso).",
-      "atributos": {},
-      "opciones": [
-        "instructor.ficticio",
-        "instructor2.ficticio"
       ],
       "autocomplete": "off"
     }
