@@ -138,7 +138,7 @@
       codigos = API.delGrupo(g.id);
       lista = API.lista();
       const vigente = (f) => codigos.find((r) => r.inscripcion_id === f.inscripcion.id && r.situacion !== 'reemplazado');
-      const nueva = JSON.stringify(filas.map((f) => { const r = vigente(f); const l = lista[f.inscripcion.id]; return [l ? l.presente : null, r ? [r.codigo, r.situacion, r.contestadas, Math.ceil(r.restante_ms / 60000), r.salidas, r.otro_equipo, r.calificacion] : null]; }));
+      const nueva = JSON.stringify(filas.map((f) => { const r = vigente(f); const l = lista[f.inscripcion.id]; return [l ? l.presente : null, r ? [r.codigo, r.situacion, r.contestadas, Math.ceil(r.restante_ms / 60000), r.salidas, r.otro_equipo, r.calificacion, r.voz] : null]; }));
       if (nueva === firma && !forzar) return;
       firma = nueva;
       // Se conserva el foco en el botón de la misma persona al volver a pintar
@@ -206,6 +206,8 @@
             }
             if (r.situacion === 'suspendido') { cuenta.suspendidas += 1; partes.push(estado('Suspendido', 'error'), el('span', { class: 'examen-nota', texto: r.suspendido.motivo })); }
             if (r.salidas && r.situacion !== 'terminado') partes.push(el('span', { class: 'examen-nota examen-nota-alerta', texto: `Salió de la ventana del examen ${veces(r.salidas)}` }));
+            // La computadora en que está abierto no puede leer en voz alta (ajustes del equipo, 25/10/2026: lectura en voz alta)
+            if (r.voz === false && ['sin_empezar', 'contestando'].includes(r.situacion)) partes.push(el('span', { class: 'examen-nota examen-nota-alerta', texto: 'Esta computadora no puede leer en voz alta' }));
             if (r.otro_equipo && r.situacion !== 'terminado') partes.push(el('span', { class: 'examen-nota examen-nota-alerta', texto: `Su código se intentó abrir en otra computadora ${veces(r.otro_equipo)}` }));
             avance = el('td', {}, [el('div', { class: 'examen-avance-celda' }, partes)]);
             if (['sin_empezar', 'contestando'].includes(r.situacion)) {
