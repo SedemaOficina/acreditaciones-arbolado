@@ -1,0 +1,48 @@
+/* =========================================================
+   paginacion.css · Módulo «paginacion» · nivel OPCIONAL
+   En teléfono: Anterior · «Página X de N» · Siguiente, con objetivos de
+   44 px. Desde tableta: números, rango y selector de tamaño.
+   Depende de: nucleo.css. Bloques: componentes → estados → adaptaciones.
+   ========================================================= */
+
+/* @bloque componentes */
+
+.paginacion{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--e-3);margin:var(--e-5) 0}
+.paginacion-rango{display:none;font-size:var(--t-sm);color:var(--gris)}
+.paginacion-lista{display:flex;align-items:center;gap:var(--e-1);order:1;width:100%;justify-content:space-between}
+.paginacion-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--e-1);
+  min-width:var(--objetivo-min);
+  min-height:var(--objetivo-min);
+  padding:var(--e-2) var(--e-3);
+  background:var(--blanco);
+  border:var(--b-1) solid var(--borde);
+  border-radius:var(--r-ctrl);
+  font-weight:var(--peso-medio);
+  color:var(--azul);
+}
+.paginacion-num{display:none}
+.paginacion-salto{display:none;padding:0 var(--e-1);color:var(--gris-cl)}
+.paginacion-compacto{order:0;width:100%;font-size:var(--t-sm);font-weight:var(--peso-semi);text-align:center;color:var(--gris)}
+.paginacion-tamano{display:none;align-items:center;gap:var(--e-2);font-size:var(--t-sm);color:var(--gris)}
+.paginacion-select{width:auto;min-height:var(--objetivo-min);padding:var(--e-2) var(--e-7) var(--e-2) var(--e-3)}
+
+/* @bloque estados */
+
+.paginacion-btn:hover{border-color:var(--azul);background:var(--azul-cl)}
+.paginacion-btn[aria-current="page"]{background:var(--guinda);border-color:var(--guinda);color:var(--blanco);cursor:default}
+.paginacion-btn[aria-disabled="true"]{opacity:var(--op-inactivo);cursor:not-allowed}
+
+/* @bloque adaptaciones */
+
+@media (min-width:760px){
+  .paginacion-rango{display:block}
+  .paginacion-lista{order:0;width:auto;justify-content:flex-start}
+  .paginacion-num{display:inline-flex}
+  .paginacion-salto{display:inline-block}
+  .paginacion-compacto{display:none}
+  .paginacion-tamano{display:inline-flex}
+}
