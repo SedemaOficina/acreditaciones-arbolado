@@ -223,6 +223,38 @@ abre de entrada el primer documento (el comprobante de estudios si hay que decid
 pantalla completa. Al aceptar un documento, el visor y la lista pasan al siguiente sin decidir; con todo decidido, la
 página baja al resultado. PDF ficticios: `herramientas/documentos-ficticios.py`.
 
+## 2 ter. Escritorio · parte A: cabecera compacta, «Revisar una solicitud» y «Cita de cotejo»
+
+Decisión de Liber del 25/10/2026 (diagnóstico y maquetas en `docs/diseno-escritorio/`, secciones 4.1, 4.2 y regla general
+2). Todo va en `app/apd.css`, sección «Escritorio · parte A», con `@media (min-width: 1024px)` o 1280 px (lo fijo, además,
+con `min-height: 700px`); debajo de 1024 px el teléfono y la tableta quedan como estaban. Lo que cambia de lugar en
+computadora lo mueve `APD_PERSONAL.acomodaEscritorio(consulta, [[nodo, destino], …])` y regresa a su lugar en pantallas
+más chicas.
+
+- **Cabecera compacta del personal** (todas sus pantallas, desde 1024 px): logotipo (40 px de alto) y título a la
+  izquierda; nombre, perfil, secciones y «Salir» a la derecha, en una banda de 88 px. La sesión sigue al principio de
+  `<main>` (mismo orden de lectura y mismas regiones): sube a la banda con un margen negativo. Las dos franjas de la
+  versión de prueba, en un renglón cada una.
+- **Franja de contexto fija** (≤ 80 px): «← Solicitudes por revisar» o «← Citas de cotejo», fotografía o iniciales,
+  nombre, CURP, adscripción, «Poda y derribo · renovación», folio y vuelta («1.ª revisión», «3.ª revisión (reenviada)») o
+  cita, estado y, si aplica, «Última oportunidad» o «Registro asistido». «Datos de la persona» (plegable del estándar, se
+  abre como lista bajo la franja; Escape o un clic fuera lo cierran) lleva la ficha completa y la nota de la renovación.
+- **Revisar una solicitud**: de 1024 a 1279 px, decisión | visor con la barra de pasos horizontal (sin quedar fija);
+  desde 1280 px, pasos en barra vertical (el mismo módulo, con sus estados y `aria-current="step"`) | decisión (504 px) |
+  visor. El aviso de la última oportunidad y «Revisiones anteriores» van arriba de la decisión. En «Resultado» y «Fecha
+  de la cita» la columna del visor muestra «Así queda la revisión». El visor queda debajo de la franja con el alto que
+  queda de la ventana (rodeo de E4: el del estándar se pega a 12 px del borde y quedaba 32 px debajo de la barra fija).
+- **Cita de cotejo**: de 1024 a 1279 px como «Revisar»; desde 1280 px, la persona en una columna fija a la izquierda
+  (fotografía de la cuenta de 120 × 150 px, nombre, CURP, folio, cita, expediente y la barra de pasos vertical) |
+  formulario | visor. «Documentos originales» como tabla compacta: una fila por documento con «Ver lo que cargó» y
+  «Sí, es igual / No es igual» (cada grupo conserva su leyenda como nombre); «No es igual» abre su observación debajo de
+  la fila. «Pago y factura»: los datos del pago en una línea de datos (con lo que falta confirmar debajo) y RFC | nombre
+  en un renglón, el folio fiscal debajo.
+- Si el visor no tiene documento ni resumen al lado, el formulario ocupa también su columna (regla general 11).
+
+Prueba permanente: `SOLO=escritorio-a node herramientas/probar-sitio.mjs …` (1366 × 768, 1440 × 900, 1920 × 1080, 1024 ×
+768 y 390 × 844).
+
 Prueba sin servidor: todo el recorrido se guarda en ese navegador (`app/archivos-prueba.js`: cuentas, fotografías,
 solicitudes y documentos en IndexedDB; sesión, cambios de perfil y revisiones en localStorage) y `APD.cargar()` lo suma a
 los ficticios en todas las pantallas. Lo enviado en la prueba va primero en la bandeja; la revisión muestra la fotografía
