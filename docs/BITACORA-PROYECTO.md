@@ -1570,3 +1570,23 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   reloj detenido (arts. 40 y 41), grupos en bloque (art. 37).
 - Pruebas: probar-base 439, probar-sitio 2377, probar-examen 180, probar-volumen 123, probar-esquemas 167, auditar-sitio 111
   pantallas (2 avisos, el conocido de «Ir al contenido» en la corrección, también en modo asistido).
+
+## 2026-10-25 · Bloque 96 · Acomodo de escritorio
+
+- Liber pidió (25/10) que, como el sistema se usará en escritorio, no haya scrolls interminables y lo que se necesita siempre
+  esté a la vista. Diagnóstico con mediciones de 17 pantallas en `docs/diseno-escritorio/DIAGNOSTICO.md`; maqueta
+  «Escritorio: propuestas de acomodo»; decisión del 25/10 en DECISIONES.
+- Hecho en tres partes y unificado en `apd.css` (sección «Escritorio», propuestas al estándar E1 a E22) y `app/escritorio.js`:
+  - **Cabecera compacta del personal** (de 365 a 166 px) desde 1024 px.
+  - **Revisar una solicitud:** franja fija con la persona; desde 1280 px pasos verticales | decisión | visor; de 2.4 a 1.5
+    pantallas por paso; «Así queda la revisión» en la columna del visor en el resultado.
+  - **Cita de cotejo:** columna fija con la foto y los pasos; originales en filas; de 2.9 a 1.45 pantallas.
+  - **Inicio del personal:** indicadores, pestañas (módulos `pestanas` y `paginacion` del estándar), paginación de 25; con
+    volumen, de 6.5 a 2.4 pantallas.
+  - **Grupos:** panel fijo «Tu grupo» con cupo y «Siguiente»; pestañas para programados y terminados.
+  - **Asistencia y pase de lista** en lista hacia abajo (pedido de Liber), con totales y «Guardar» o la cuenta e «Imprimir los
+    códigos» fijos; **ficha del grupo** con datos en columnas y pestañas.
+- En teléfono (menos de 1024 px) todo queda como antes. Corregido «Contacto: null» en Revisar para el registro asistido sin
+  correo.
+- Pruebas: probar-sitio 2735 (partes nuevas `escritorio`, `escritorio-a`, `-b` y `-c`), examen 180, volumen 138, esquemas
+  167, auditar-sitio 111 pantallas con los 2 avisos conocidos. Quedan Citas de cotejo y Acreditaciones.
