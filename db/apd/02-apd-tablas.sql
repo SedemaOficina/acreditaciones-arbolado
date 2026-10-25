@@ -172,7 +172,7 @@ CREATE TABLE apd.solicitante (
   sexo                       text GENERATED ALWAYS AS (substr(curp, 11, 1)) STORED NOT NULL,
   adscripcion                text          NULL,
   organizacion_id            uuid          NULL,
-  correo                     text          NOT NULL,
+  correo                     text          NULL,
   telefono                   text          NOT NULL,
   numero_expediente          text          NULL,
   contrasena_hash            text          NULL,
@@ -181,13 +181,17 @@ CREATE TABLE apd.solicitante (
   bloqueada_hasta            timestamptz   NULL,
   bloqueo_motivo             text          NULL,
   debe_cambiar_contrasena    boolean       NOT NULL DEFAULT false,
+  registro_asistido_por      text          NULL,
+  registro_asistido_en       timestamptz   NULL,
+  activada_en                timestamptz   NULL,
   creada_en                  timestamptz   NOT NULL DEFAULT now(),
   es_ficticio                boolean       NOT NULL DEFAULT false,
   CONSTRAINT solicitante_pk PRIMARY KEY (id),
   CONSTRAINT solicitante_curp_uk UNIQUE (curp),
   CONSTRAINT solicitante_expediente_uk UNIQUE (numero_expediente),
   CONSTRAINT solicitante_curp_ck CHECK (apd.curp_valida(curp)),
-  CONSTRAINT solicitante_correo_ck CHECK (apd.correo_valido(correo)),
+  CONSTRAINT solicitante_correo_ck CHECK (correo IS NULL OR apd.correo_valido(correo)),
+  CONSTRAINT solicitante_correo_obligatorio_ck CHECK (correo IS NOT NULL OR (registro_asistido_en IS NOT NULL AND activada_en IS NULL)),
   CONSTRAINT solicitante_telefono_ck CHECK (telefono ~ '^[0-9]{10}$'),
   CONSTRAINT solicitante_organizacion_fk FOREIGN KEY (organizacion_id) REFERENCES apd.organizacion (id),
   CONSTRAINT solicitante_adscripcion_ck CHECK (adscripcion IN ('independiente', 'privada', 'dependencia_cdmx', 'alcaldia', 'dependencia_federal', 'educativa')),
@@ -195,12 +199,13 @@ CREATE TABLE apd.solicitante (
   CONSTRAINT solicitante_adscripcion_activa_ck CHECK (estado = 'sin_activar' OR adscripcion IS NOT NULL),
   CONSTRAINT solicitante_estado_ck CHECK (estado IN ('activa', 'bloqueada', 'inactiva', 'sin_activar')),
   CONSTRAINT solicitante_bloqueo_ck CHECK (bloqueo_motivo IS NULL OR (bloqueo_motivo = 'identidad' AND estado = 'bloqueada')),
-  CONSTRAINT solicitante_contrasena_ck CHECK ((estado = 'sin_activar') = (contrasena_hash IS NULL))
+  CONSTRAINT solicitante_contrasena_ck CHECK ((contrasena_hash IS NULL) = (estado = 'sin_activar' OR (registro_asistido_en IS NOT NULL AND activada_en IS NULL))),
+  CONSTRAINT solicitante_asistido_ck CHECK ((registro_asistido_por IS NULL) = (registro_asistido_en IS NULL) AND (activada_en IS NULL OR registro_asistido_en IS NOT NULL) AND (registro_asistido_en IS NULL OR estado <> 'sin_activar'))
 );
 CREATE INDEX solicitante_apellidos ON apd.solicitante (primer_apellido, segundo_apellido, nombre);
 CREATE UNIQUE INDEX solicitante_correo_uk ON apd.solicitante (correo) WHERE estado <> 'sin_activar';
 CREATE INDEX solicitante_organizacion ON apd.solicitante (organizacion_id);
-COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP.';
+COMMENT ON TABLE apd.solicitante IS 'Cuenta de la persona solicitante. Una por CURP, con su fotografía de frente (apd.fotografia) y con un solo expediente físico para todos sus trámites. La contraseña se guarda derivada con scrypt (parámetros de acceso), nunca en claro. Las personas del padrón migrado quedan sin activar hasta que se registran con su CURP. Registro asistido (decisión 2026-10-25, Liber): a quien no sabe leer ni escribir lo registra en el Vivero el personal de revisión y cotejo, con la persona presente; la cuenta queda activa y sin contraseña (no puede entrar sola), con el teléfono obligatorio y el correo opcional, hasta que la persona la activa con su CURP, su correo y su contraseña.';
 COMMENT ON COLUMN apd.solicitante.id IS 'Identificador interno';
 COMMENT ON COLUMN apd.solicitante.curp IS 'CURP en mayúsculas; identificador único de la cuenta';
 COMMENT ON COLUMN apd.solicitante.nombre IS 'Nombre(s)';
@@ -209,15 +214,18 @@ COMMENT ON COLUMN apd.solicitante.segundo_apellido IS 'Segundo apellido, si lo h
 COMMENT ON COLUMN apd.solicitante.sexo IS 'H, M o X: se toma de la posición 11 de la CURP (no se pide aparte); para la estadística de la población acreditada';
 COMMENT ON COLUMN apd.solicitante.adscripcion IS 'Adscripción vigente de la persona: independiente, privada, dependencia_cdmx, alcaldia, dependencia_federal o educativa. La captura al crear su cuenta y la cambia en «Mi perfos»; vacía sólo en cuentas del padrón migrado sin activar';
 COMMENT ON COLUMN apd.solicitante.organizacion_id IS 'Institución de adscripción vigente, del catálogo y de su mismo tipo; vacía si es independiente';
-COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta';
-COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos';
+COMMENT ON COLUMN apd.solicitante.correo IS 'Correo de contacto, en minúsculas. No se repite entre cuentas activas: un correo, una cuenta (decisión 2026-10-17, Liber); el del registro anterior sin activar no cuenta. Vacío sólo en una cuenta del registro asistido que la persona todavía no activa (decisión 2026-10-25): es opcional al registrarla y obligatorio al activarla; si existe, tampoco se repite';
+COMMENT ON COLUMN apd.solicitante.telefono IS 'Teléfono de contacto, 10 dígitos. En el registro asistido es el medio de los avisos (apd.aviso_telefono)';
 COMMENT ON COLUMN apd.solicitante.numero_expediente IS 'Expediente físico de la persona: uno por CURP, para todos sus trámites. Lo asigna la base al concluir su primer cotejo presencial, consecutivo por año y sin huecos. Formato provisional EXP-AAAA-NNNN';
-COMMENT ON COLUMN apd.solicitante.contrasena_hash IS 'scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar';
+COMMENT ON COLUMN apd.solicitante.contrasena_hash IS 'scrypt N=2^14, r=8, p=1, base64url. Vacía sólo en cuentas sin activar del padrón migrado y en las del registro asistido que la persona todavía no activa: sin contraseña no se abre sesión (apd.sesion_sin_contrasena)';
 COMMENT ON COLUMN apd.solicitante.estado IS 'activa, bloqueada, inactiva o sin_activar (persona del padrón migrado que aún no crea su contraseña)';
 COMMENT ON COLUMN apd.solicitante.intentos_fallidos IS 'Intentos de entrada fallidos seguidos. Lo lleva apd.anotar_intento(); el acceso correcto lo vuelve a 0 (apd.acceso_correcto)';
 COMMENT ON COLUMN apd.solicitante.bloqueada_hasta IS 'Fin del bloqueo por intentos: lo pone la base al llegar a intentos_maximos, por minutos_bloqueo minutos (parámetros); poner o quitar un bloqueo queda en la bitácora';
 COMMENT ON COLUMN apd.solicitante.bloqueo_motivo IS 'identidad: en su cita de cotejo no era la persona de la fotografía ni de la identificación; la cuenta queda bloqueada sin fecha de fin hasta que la Dirección lo aclare (decisión 2026-10-17, Liber). Lo pone la base';
 COMMENT ON COLUMN apd.solicitante.debe_cambiar_contrasena IS 'Tiene una contraseña temporal de un solo uso';
+COMMENT ON COLUMN apd.solicitante.registro_asistido_por IS 'Registro asistido (decisión 2026-10-25): cuenta del personal de revisión y cotejo (acceso) que registró la cuenta con la persona presente, después de leerle el aviso de privacidad (la marca queda en la bitácora). Vacía si la creó la persona o viene del padrón migrado. La pone la base';
+COMMENT ON COLUMN apd.solicitante.registro_asistido_en IS 'Registro asistido: cuándo la registró el personal. La pone la base';
+COMMENT ON COLUMN apd.solicitante.activada_en IS 'Registro asistido: cuándo la persona activó su cuenta en línea con su CURP, su correo y su contraseña. Vacía mientras no la activa: hasta entonces no hay nada que ver en línea y los avisos van por teléfono. La pone la base';
 COMMENT ON COLUMN apd.solicitante.creada_en IS 'Alta de la cuenta';
 COMMENT ON COLUMN apd.solicitante.es_ficticio IS 'Dato de prueba';
 
@@ -242,7 +250,7 @@ CREATE TABLE apd.fotografia (
   CONSTRAINT fotografia_mime_ck CHECK (tipo_mime IN ('image/jpeg', 'image/png')),
   CONSTRAINT fotografia_tamano_ck CHECK (tamano_bytes > 0),
   CONSTRAINT fotografia_sha256_ck CHECK (sha256 ~ '^[0-9a-f]{64}$'),
-  CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo')),
+  CONSTRAINT fotografia_origen_ck CHECK (origen IN ('en_linea', 'cotejo', 'registro_asistido')),
   CONSTRAINT fotografia_estado_ck CHECK (estado IN ('pendiente', 'confirmada')),
   CONSTRAINT fotografia_confirmada_ck CHECK ((estado = 'confirmada') = (confirmada_por IS NOT NULL AND confirmada_en IS NOT NULL))
 );
@@ -256,7 +264,7 @@ COMMENT ON COLUMN apd.fotografia.tipo_mime IS 'image/jpeg o image/png';
 COMMENT ON COLUMN apd.fotografia.tamano_bytes IS 'Tamaño; el máximo lo fija el parámetro tamano_maximo_archivo_bytes';
 COMMENT ON COLUMN apd.fotografia.sha256 IS 'Suma del archivo, para comprobar el almacén';
 COMMENT ON COLUMN apd.fotografia.nombre_archivo IS 'Nombre con que se guarda y se descarga: FOTOGRAFIA_NOMBRE COMPLETO.ext. Lo pone la base al cargarla';
-COMMENT ON COLUMN apd.fotografia.origen IS 'en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100). Lo pone la base';
+COMMENT ON COLUMN apd.fotografia.origen IS 'en_linea: la cargó la persona; cotejo: la cargó el personal frente a ella (hoy sin pantalla: cómo se actualiza una fotografía confirmada, P100); registro_asistido: la tomó o cargó el personal al registrar a la persona en el Vivero (decisión 2026-10-25); queda pendiente hasta que el cotejo la confirma contra la identificación oficial. Lo pone la base';
 COMMENT ON COLUMN apd.fotografia.estado IS 'pendiente: aún no la confirma nadie; confirmada: el personal comprobó en persona, contra la identificación oficial, que corresponde a quien se presentó';
 COMMENT ON COLUMN apd.fotografia.vigente IS 'Es la última fotografía de la persona';
 COMMENT ON COLUMN apd.fotografia.cargada_en IS 'Carga';
@@ -421,6 +429,7 @@ CREATE TABLE apd.solicitud (
   pago_referencia            text          NULL,
   lista_para_curso_en        timestamptz   NULL,
   motivo_cierre              text          NULL,
+  capturada_por              text          NULL,
   folio_origen               text          NULL,
   creada_en                  timestamptz   NOT NULL DEFAULT now(),
   es_ficticio                boolean       NOT NULL DEFAULT false,
@@ -482,6 +491,7 @@ COMMENT ON COLUMN apd.solicitud.pago_monto IS 'Monto que se le indicó a la pers
 COMMENT ON COLUMN apd.solicitud.pago_referencia IS 'Referencia del pago de derechos que se da a la persona con su cita. La asigna la base al validar en línea. Formato provisional (folio sin guiones) hasta definir con Finanzas la referencia o línea de captura';
 COMMENT ON COLUMN apd.solicitud.lista_para_curso_en IS 'Inicio de la espera de grupo; no cambia si un grupo se cancela, para conservar la antigüedad';
 COMMENT ON COLUMN apd.solicitud.motivo_cierre IS 'Motivo de cancelación, conclusión sin atender o rechazo';
+COMMENT ON COLUMN apd.solicitud.capturada_por IS 'Registro asistido (decisión 2026-10-25): cuenta del personal de revisión y cotejo (acceso) que capturó la solicitud con la persona presente; cada envío lleva la marca «Se le leyó lo capturado y lo aceptó» en la bitácora. Vacía si la capturó la persona. La pone la base al darla de alta y no cambia';
 COMMENT ON COLUMN apd.solicitud.folio_origen IS 'Folio en Kobo, para las migradas';
 COMMENT ON COLUMN apd.solicitud.creada_en IS 'Alta';
 COMMENT ON COLUMN apd.solicitud.es_ficticio IS 'Dato de prueba';
@@ -753,6 +763,38 @@ COMMENT ON COLUMN apd.material_estudio.cargado_en IS 'Carga';
 COMMENT ON COLUMN apd.material_estudio.cargado_por IS 'Cuenta del personal que lo cargó; lo pone la base';
 COMMENT ON COLUMN apd.material_estudio.actualizado_en IS 'Último cambio de sus datos o de su publicación; lo pone la base';
 COMMENT ON COLUMN apd.material_estudio.actualizado_por IS 'Cuenta del personal del último cambio; lo pone la base';
+
+CREATE TABLE apd.aviso_telefono (
+  id                         uuid          NOT NULL DEFAULT gen_random_uuid(),
+  solicitante_id             uuid          NOT NULL,
+  solicitud_id               uuid          NULL,
+  aviso                      text          NOT NULL,
+  datos                      jsonb         NOT NULL DEFAULT '{}'::jsonb,
+  creado_en                  timestamptz   NOT NULL DEFAULT now(),
+  resultado                  text          NULL,
+  atendido_por               text          NULL,
+  atendido_en                timestamptz   NULL,
+  CONSTRAINT aviso_telefono_pk PRIMARY KEY (id),
+  CONSTRAINT aviso_telefono_solicitante_fk FOREIGN KEY (solicitante_id) REFERENCES apd.solicitante (id),
+  CONSTRAINT aviso_telefono_solicitud_fk FOREIGN KEY (solicitud_id) REFERENCES apd.solicitud (id),
+  CONSTRAINT aviso_telefono_aviso_ck CHECK (aviso IN ('S2', 'S4', 'S5', 'S6', 'T2', 'T3', 'G1', 'G2', 'G4', 'A1', 'A6', 'A7')),
+  CONSTRAINT aviso_telefono_datos_ck CHECK (jsonb_typeof(datos) = 'object'),
+  CONSTRAINT aviso_telefono_resultado_ck CHECK (resultado IN ('se_le_aviso', 'no_contesto')),
+  CONSTRAINT aviso_telefono_atendido_ck CHECK ((resultado IS NULL) = (atendido_por IS NULL) AND (resultado IS NULL) = (atendido_en IS NULL))
+);
+CREATE INDEX aviso_telefono_pendientes ON apd.aviso_telefono (creado_en) WHERE resultado IS NULL;
+CREATE INDEX aviso_telefono_solicitante ON apd.aviso_telefono (solicitante_id, creado_en);
+CREATE INDEX aviso_telefono_solicitud ON apd.aviso_telefono (solicitud_id);
+COMMENT ON TABLE apd.aviso_telefono IS 'Avisos por teléfono a las personas del registro asistido (decisión 2026-10-25, Liber): cada cambio del trámite que a otra persona le llegaría por correo (catálogo docs/AVISOS-POR-CORREO.md) deja aquí, mientras la persona no activa su cuenta, un aviso pendiente para el personal de revisión y cotejo, que llama y registra el resultado. Lo crea sólo la base; no se borra.';
+COMMENT ON COLUMN apd.aviso_telefono.id IS 'Identificador interno';
+COMMENT ON COLUMN apd.aviso_telefono.solicitante_id IS 'Persona a quien se llama';
+COMMENT ON COLUMN apd.aviso_telefono.solicitud_id IS 'Solicitud del aviso; vacía si es de la cuenta o de una acreditación sin solicitud del sistema';
+COMMENT ON COLUMN apd.aviso_telefono.aviso IS 'Clave del catálogo de avisos (docs/AVISOS-POR-CORREO.md): S2, S4, S5, S6, T2, T3, G1, G2, G4, A1, A6 o A7';
+COMMENT ON COLUMN apd.aviso_telefono.datos IS 'Lo que el aviso necesita para decirse (folio, cita, monto y referencia de pago, grupo, calificación, motivo…), como estaba al crearse; la pantalla arma con ellos el texto que se le dice a la persona';
+COMMENT ON COLUMN apd.aviso_telefono.creado_en IS 'Cuándo pasó el cambio. Lo pone la base';
+COMMENT ON COLUMN apd.aviso_telefono.resultado IS 'Vacío: pendiente. se_le_aviso o no_contesto: lo registra el personal al llamar, una sola vez';
+COMMENT ON COLUMN apd.aviso_telefono.atendido_por IS 'Cuenta del personal que llamó (acceso). La pone la base';
+COMMENT ON COLUMN apd.aviso_telefono.atendido_en IS 'Cuándo se registró el resultado. La pone la base';
 
 CREATE TABLE apd.folio_contador (
   serie                      text          NOT NULL,

@@ -13,6 +13,7 @@ BEGIN;
 \ir 01-apd-esquema.sql
 \ir 02-apd-tablas.sql
 \ir 03-apd-reglas.sql
+\ir 03b-apd-registro-asistido.sql
 \ir 04-apd-catalogos.sql
 \ir 05-apd-rol-y-permisos.sql
 COMMIT;
