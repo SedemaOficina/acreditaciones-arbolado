@@ -57,6 +57,29 @@
     params.delete('hecho'); params.delete('n'); params.delete('no');
     history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
   }
+  /* «Personas del grupo» y «Asistencia por día» como pestañas del módulo pestanas del estándar (acomodo de escritorio,
+     25/10/2026), sólo si la página se abre en computadora (1024 px o más) y el grupo tiene asistencia (en curso o concluido).
+     Son dos vistas de las mismas personas (decisión de Liber del 18/10/2026): cada tabla conserva sus columnas, su leyenda y su
+     forma; la pestaña dice su título y el título de cada tabla sigue para el lector de pantalla (solo-lector), para navegar
+     por encabezados. Se arman antes de FormKit.iniciar, que inicia el módulo. En teléfono y tableta, una debajo de otra, como
+     antes. */
+  function armaPestanas() {
+    const tituloP = $('#t-personas');
+    const tablaP = $('[data-tabla][data-clave="persona"]');
+    const bloque = $('[data-concentrado-bloque]');
+    const tituloA = $('#t-concentrado');
+    const panelP = el('div', { class: 'pestanas-panel', role: 'tabpanel', id: 'pp-personas', 'aria-labelledby': 'pt-personas', tabindex: '0' });
+    const panelA = el('div', { class: 'pestanas-panel', role: 'tabpanel', id: 'pp-asistencia', 'aria-labelledby': 'pt-asistencia', tabindex: '0', hidden: true });
+    const pestanas = el('div', { class: 'pestanas esc-c-pestanas', 'data-pestanas': '' }, [
+      el('div', { class: 'pestanas-lista', role: 'tablist', 'aria-label': 'Personas y asistencia del grupo' }, [
+        el('button', { type: 'button', class: 'pestana', role: 'tab', id: 'pt-personas', 'aria-controls': 'pp-personas', 'aria-selected': 'true', texto: tituloP.textContent }),
+        el('button', { type: 'button', class: 'pestana', role: 'tab', id: 'pt-asistencia', 'aria-controls': 'pp-asistencia', 'aria-selected': 'false', tabindex: '-1', texto: tituloA.textContent })
+      ]), panelP, panelA]);
+    tituloP.before(pestanas);
+    panelP.append(tituloP, tablaP);
+    panelA.append(bloque);
+    for (const t of [tituloP, tituloA]) t.classList.add('solo-lector');
+  }
   const vuelve = (folio, hecho) => { location.href = `${P.fichaGrupo(folio, perfil)}&hecho=${hecho}`; };
   /* Un cambio que la base no aplicó (bloque 2): el aviso del formulario lo dice, con el enlace para ver el grupo como está */
   const noSeHizo = (titulo, motivo) => APD.rechazo(titulo, `${motivo.charAt(0).toLocaleUpperCase('es-MX')}${motivo.slice(1)}. Lo que escribió sigue aquí.`,
@@ -170,6 +193,8 @@
     // Asistencia de conjunto: una columna por día, en curso o concluido (pedido de Liber 2026-10-18)
     $('[data-concentrado-bloque]').hidden = !conSituacion;
     if (conSituacion) P.pintaConcentrado($('[data-concentrado]'), datos, x);
+    // Acomodo de escritorio (25/10/2026): en computadora, las dos vistas de las mismas personas como pestañas del estándar
+    if (conSituacion && window.matchMedia('(min-width: 1024px)').matches) armaPestanas();
     $('[data-baja-ayuda]').hidden = !puedeBaja;
 
     /* Acciones del grupo */

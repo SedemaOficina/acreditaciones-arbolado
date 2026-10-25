@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/pestanas/pestanas.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.70">
 </head>
 <body>
@@ -37,7 +38,11 @@
   <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
   <div data-hecho hidden></div>
 
+  <!-- Acomodo de escritorio (25/10/2026): desde 1024 px, «Persona instructora y confirmación» va en una columna lateral -->
+  <div class="esc-c-ficha">
   <section class="tarjeta" aria-labelledby="t-grupo">
+    <!-- Desde 1024 px, el cupo a la derecha de la cabeza -->
+    <div class="esc-c-cabeza">
     <div class="grupo-cabeza">
       <div>
         <h2 class="titulo-paso" id="t-grupo">Grupo</h2>
@@ -49,7 +54,12 @@
       <p data-cupo-texto></p>
       <div class="cupo-barra" aria-hidden="true"><span class="cupo-lleno" data-cupo-lleno></span></div>
     </div>
-    <div data-datos></div>
+    </div>
+    <!-- Desde 1024 px, los datos del curso en una rejilla de 2 o 3 columnas -->
+    <div class="esc-c-datos" data-datos></div>
+
+    <!-- Desde 1024 px, con el curso en marcha o concluido, «Personas del grupo» y «Asistencia por día» van como pestañas del
+         estándar (módulo pestanas); app/grupo.js las arma al abrir la página en computadora. En teléfono, una debajo de otra. -->
 
     <h3 class="titulo-bloque" id="t-personas">Personas del grupo</h3>
     <div class="tabla-marco" data-tabla data-clave="persona">
@@ -109,6 +119,7 @@
       </div>
     </form>
   </section>
+  </div>
 
   <dialog class="dialogo dialogo-confirma" id="dlg-baja" aria-labelledby="t-baja">
     <form id="baja" data-formkit="manual" action="#" method="post">
@@ -168,6 +179,8 @@
 <script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
 <script src="formkit/modulos/fecha/fecha.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
+<!-- Pestañas «Personas del grupo» y «Asistencia por día», sólo en computadora (acomodo de escritorio, 25/10/2026) -->
+<script src="formkit/modulos/pestanas/pestanas.js?v=1.5.1"></script>
 <script src="app/grupo.js?v=0.70"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.70"></script>

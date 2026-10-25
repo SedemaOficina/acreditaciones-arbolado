@@ -37,11 +37,19 @@
   <section class="tarjeta" aria-labelledby="t-aplicar" data-con-grupo hidden>
     <h2 class="titulo-paso" id="t-aplicar">Aplicar el examen</h2>
     <p class="bajada">El último día del curso, en el salón de cómputo: primero se pasa lista, que es la asistencia de ese día, y después cada persona presente contesta el examen en línea con su código de un solo uso.</p>
-    <div class="grupo-examen" data-grupo></div>
+    <!-- Desde 1024 px, los datos del grupo en una línea y los avisos en una fila (acomodo de escritorio, 25/10/2026) -->
+    <div class="grupo-examen esc-c-grupo" data-grupo></div>
 
     <!-- Primero el pase de lista (la asistencia del último día), después el examen (reporte de Liber del 24/10/2026). El
          título y el texto los pone app/aplicar.js con el día del curso: «Día 5 de 5 · Pase de lista en el salón de cómputo». -->
+    <!-- Acomodo de escritorio (25/10/2026): desde 1024 px el título, la cuenta corta e «Imprimir los códigos» van en una
+         franja en la parte de arriba (fija desde 700 px de alto) y el pase de lista sigue una persona por renglón, más compacto.
+         La cuenta corta repite a la vista la de abajo (role="status"), que es la que se anuncia. app/aplicar.js lleva ahí el
+         botón de imprimir en computadora; en teléfono queda como antes. -->
+    <div class="esc-c-pase" data-pase>
     <h3 class="titulo-bloque" id="t-pase-lista" data-titulo-lista>Pase de lista en el salón de cómputo</h3>
+    <p class="esc-c-cuenta" data-cuenta-corta aria-hidden="true"></p>
+    <div class="esc-c-franja-accion" data-franja-accion></div>
     <p class="ayuda ayuda-bloque" data-lista-texto>Compare a cada persona con su fotografía y con su identificación oficial, y márquela «Presente» o «No llegó». Al marcarla presente aparece su código.</p>
     <!-- Lo que se acaba de hacer o lo que no se pudo (APD.pintaAviso), junto a la lista -->
     <div data-aviso-accion hidden></div>
@@ -53,6 +61,7 @@
         <thead><tr><th scope="col">Persona</th><th scope="col">Asistencia</th><th scope="col">Pase de lista y código</th><th scope="col">Avance</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
         <tbody data-filas></tbody>
       </table>
+    </div>
     </div>
 
     <h3 class="titulo-bloque" id="t-el-examen">Después de pasar lista: el examen</h3>
