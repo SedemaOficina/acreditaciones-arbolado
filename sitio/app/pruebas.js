@@ -480,8 +480,11 @@
       el('p', { class: 'ubicacion-prueba-int' }, [
         el('strong', { texto: `Pantalla: ${nombre}` }),
         n ? document.createTextNode(` · Fase ${n} de 7: ${FASES[n - 1]} · `) : document.createTextNode(' · '),
-        el('a', { href: MAPA, target: '_blank', rel: 'noopener' }, [document.createTextNode('Ver el mapa del trámite: quién hace qué, fase por fase'),
-          el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])
+        // En el examen, sin enlace: Safe Exam Browser no abre pestañas nuevas ni sitios fuera del dominio del examen
+        // (ajustes del equipo, 25/10/2026: compatibilidad con Safe Exam Browser)
+        pagina === 'examen.html' ? document.createTextNode('El mapa del trámite se consulta fuera del examen.')
+          : el('a', { href: MAPA, target: '_blank', rel: 'noopener' }, [document.createTextNode('Ver el mapa del trámite: quién hace qué, fase por fase'),
+            el('span', { class: 'solo-lector', texto: ' (se abre en otra pestaña)' })])
       ])
     ]);
   }
