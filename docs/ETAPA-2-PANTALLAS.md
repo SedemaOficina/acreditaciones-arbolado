@@ -72,6 +72,23 @@ En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la
 - Construido sin maqueta previa porque Liber pidió el prototipo funcional; Liber aprobó su funcionamiento el 2026-10-17 (P101).
 - En la etapa 3 hacen falta en la base: el banco de reactivos (sin exponer la clave), los códigos con su orden y
   tiempo, y las respuestas con su hora; la API del módulo hace lo que hoy simula `app/examen-servidor.js` (P29).
+- Sin conexión (ajustes del equipo, 25/10/2026: no perder el avance del examen): si una respuesta o una marca no llega
+  al servidor por falta de conexión, se queda en esa computadora (`localStorage`, `apd.examen.pendiente.<código>.<pregunta>`)
+  y la persona sigue contestando con una línea tranquila que lo dice. Al volver la conexión (evento `online` y reintentos
+  cada 2, 4, 8… hasta 30 segundos) se envía en el orden en que se eligió; lo que el servidor rechaza por sus reglas (se
+  acabó el tiempo, examen suspendido o enviado) se descarta. Al volver a entrar con el mismo código en la misma
+  computadora (recarga o corte de luz), primero se envía lo pendiente y luego sigue donde se quedó; con un código
+  repuesto, lo pendiente del anterior se envía con el nuevo. En otra computadora manda el servidor. «Enviar mis
+  respuestas» no se envía con respuestas pendientes: lo explica y reintenta. El tiempo lo sigue llevando el servidor:
+  durante un corte sigue corriendo y lo que llega después del límite no cuenta. En la API, una llamada que no llega
+  responde con motivo `conexion`; en la prueba se simula por pestaña (menú de pruebas, «Simular que se va el internet»).
+- Lectura en voz alta (ajustes del equipo, 25/10/2026): «Escuchar la pregunta» lee la pregunta y sus opciones con su
+  letra; cada opción tiene su «Escuchar»; «Detener la lectura» la detiene y cambiar de pregunta también. Lee además las
+  instrucciones de «Entra a tu examen» y de «Antes de empezar» y la pregunta «¿Eres tú?». Usa `speechSynthesis` con una
+  voz `es-MX` o, si no hay, cualquier `es-*`, un poco más despacio (0.85). Sin síntesis de voz o sin voz en español no hay
+  botones, y quien aplica ve «Esta computadora no puede leer en voz alta» en la fila de la persona.
+- Safe Exam Browser (ajustes del equipo, 25/10/2026): configuración recomendada, lo revisado y lo que hay que verificar en
+  el PILARES en `docs/EXAMEN-SEB.md`.
 
 ## 2c. Reglas de grupos y asistencia (maqueta aprobada y decisiones del 2026-10-17)
 
