@@ -3633,7 +3633,7 @@
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
   "tipo": "Opción",
-  "texto": "Sólo de una organización — Recibe únicamente a la gente de esa organización: todas las elegidas tienen que ser de ella.",
+  "texto": "Sólo de una institución de gobierno — Recibe únicamente a la gente de esa institución: todas las elegidas tienen que ser de ella.",
   "cuando": "Siempre",
   "seccion": "Quiénes van",
   "origen": ""
@@ -3668,43 +3668,8 @@
  {
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
-  "tipo": "Pregunta",
-  "texto": "Instructor",
-  "cuando": "Siempre",
-  "seccion": "Confirmar",
-  "origen": ""
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Ayuda",
-  "texto": "Se indica si ya tiene otro curso esas fechas.",
-  "cuando": "Siempre",
-  "seccion": "Confirmar",
-  "origen": ""
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Indicación de lista",
-  "texto": "Por asignar",
-  "cuando": "Siempre",
-  "seccion": "Confirmar"
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Opción de lista",
-  "texto": "Laura Ejemplo Instructora",
-  "cuando": "Siempre",
-  "seccion": "Confirmar",
-  "origen": ""
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Opción de lista",
-  "texto": "Instructor Ejemplo Dos",
+  "tipo": "Introducción",
+  "texto": "La persona instructora la asigna el área de Instructores y Capacitación, que también confirma el grupo.",
   "cuando": "Siempre",
   "seccion": "Confirmar",
   "origen": ""
@@ -3714,15 +3679,6 @@
   "archivo": "grupos.html",
   "tipo": "Botón o enlace",
   "texto": "Atrás",
-  "cuando": "Siempre",
-  "seccion": "Confirmar",
-  "origen": ""
- },
- {
-  "pantalla": "Grupos (personal)",
-  "archivo": "grupos.html",
-  "tipo": "Botón o enlace",
-  "texto": "Crear sin confirmar",
   "cuando": "Siempre",
   "seccion": "Confirmar",
   "origen": ""
@@ -3749,7 +3705,7 @@
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
   "tipo": "Introducción",
-  "texto": "Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta.",
+  "texto": "Por curso: los grupos por confirmar, confirmados y en curso, con lo que les falta. La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.",
   "cuando": "Siempre",
   "seccion": "Grupos programados",
   "origen": ""
@@ -3767,9 +3723,153 @@
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
   "tipo": "Ayuda",
-  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas e instructor, y recibe hasta 25. Pendiente (P92): quién arma los grupos (hoy, el perfil de revisión y cotejo) y quién asigna a los instructores.",
+  "texto": "Los cuatro cursos nunca se mezclan; un grupo se confirma con al menos 5 personas y su persona instructora, y recibe hasta 25. Sólo las instituciones de gobierno tienen grupo propio. La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.",
   "cuando": "Siempre",
   "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Título",
+  "texto": "Grupos por asignar y confirmar",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Introducción",
+  "texto": "Los grupos que esperan persona instructora o confirmación, del que empieza antes al más lejano. En la ficha de cada uno se asigna a la persona instructora, libre esas fechas, y se confirma el grupo.",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Texto",
+  "texto": "Cargando los grupos…",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Grupo",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Semana",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Personas",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Persona instructora",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Lo que falta",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Texto",
+  "texto": "Ningún grupo espera persona instructora ni confirmación.",
+  "cuando": "Siempre",
+  "seccion": "Grupos por asignar y confirmar",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Título",
+  "texto": "Grupos confirmados y en curso",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Introducción",
+  "texto": "Si hace falta, cambie a la persona instructora, también durante el curso: el cambio queda en la bitácora.",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Grupo",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Semana",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Situación",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Encabezado de tabla",
+  "texto": "Persona instructora",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos por asignar y confirmar (personal)",
+  "archivo": "capacitacion.html",
+  "tipo": "Texto",
+  "texto": "No hay grupos confirmados ni en curso.",
+  "cuando": "Siempre",
+  "seccion": "Grupos confirmados y en curso",
   "origen": ""
  }
 ]
