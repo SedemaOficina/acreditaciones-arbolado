@@ -2256,7 +2256,7 @@
   "pantalla": "Solicitud",
   "archivo": "solicitud.html",
   "tipo": "Ayuda",
-  "texto": "Al escribir aparecen las ya registradas. Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.",
+  "texto": "Al escribir aparecen las ya registradas. Si la tuya no aparece, escríbela completa, como viene en tu título o cédula: la Secretaría la revisa. Escribe la de tu posgrado (por ejemplo, Ciencias Forestales): cuenta aunque tu licenciatura sea de otra área.",
   "cuando": "Si «¿Cuál es tu último nivel o grado de estudios?» es «Licenciatura o ingeniería» o «Maestría» o «Doctorado»",
   "seccion": "Trámite · Tus estudios",
   "origen": ""
