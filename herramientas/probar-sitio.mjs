@@ -7221,7 +7221,7 @@ async function ajustesEquipo(navegador) {
       await page.goto(BASE + 'asistencia.html?folio=APD-G-2026-003');
       await page.waitForSelector('[data-bajada] .grupo-bajada-datos');
       const bajada = (await page.textContent('[data-bajada]')).replace(/\s+/g, ' ');
-      comprueba(/5 días, de lunes a viernes, del 12\/10\/2026 al 16\/10\/2026/.test(bajada) && /repaso de conocimientos y examen final/i.test(await page.textContent('main')),
+      comprueba(/5 días, de lunes a viernes · del 12\/10\/2026 al 16\/10\/2026/.test(bajada) && /repaso de conocimientos y examen final/i.test(await page.textContent('main')),
         t(`${donde}: la asistencia dice 5 días, de lunes a viernes, y el día 5 de repaso y examen final («${bajada.trim()}»)`));
       await sinDesborde(page, t(`${donde}: asistencia con la duración`));
       comprueba(!errores.length, t(`${donde}: quinto día sin errores en la consola${errores.length ? `: ${errores.join(' | ')}` : ''}`));
