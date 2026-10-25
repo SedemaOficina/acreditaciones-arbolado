@@ -402,6 +402,7 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .franja-quien { grid-area: quien; display: grid; min-width: 0; gap: 0; }
   .franja-quien > p { margin: 0; }
   .franja-nombre { font-weight: var(--peso-fuerte); font-size: var(--t-sm); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
+  .franja-dato { font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--gris); overflow-wrap: anywhere; }
   .franja-contexto .revision-cabeza > div { grid-area: caso; min-width: 0; }
   .franja-contexto .revision-cabeza .titulo-paso { margin: 0; font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--texto); }
   .franja-contexto .linea-datos { margin: 0; line-height: var(--interlineado-compacto); }
@@ -430,6 +431,7 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .resumen-lateral:not([hidden]) { display: block; }
   .resumen-lateral { align-self: start; padding: var(--e-seccion); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
   .resumen-lateral .resumen-pasos { margin: 0; }
+  .resumen-lateral .titulo-bloque { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
   .resumen-lateral[data-en-resultado] .resumen-lateral-titulo { display: none; }
   .area-trabajo [data-paso] [data-resumen-lista] { display: none; }
 

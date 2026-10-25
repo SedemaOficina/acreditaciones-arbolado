@@ -142,8 +142,10 @@
       }
       conFoto.firstElementChild.after(el('div', { class: 'franja-quien' }, [
         el('p', { class: 'franja-nombre', texto: nombre }),
-        APD.lineaDatos([p.curp, pares.length ? pares[pares.length - 1][1] : ''])
-      ]));
+        // CURP y adscripción, cada una en su renglón (en la franja angosta no caben en uno)
+        el('p', { class: 'franja-dato mono', texto: p.curp }),
+        pares.length ? el('p', { class: 'franja-dato', texto: pares[pares.length - 1][1] }) : null
+      ].filter(Boolean)));
       const panel = el('div', { class: 'franja-datos-panel' });
       const datosPersona = el('details', { class: 'plegable franja-datos' }, [el('summary', { class: 'plegable-titulo', texto: 'Datos de la persona' }), panel]);
       $('[data-cabeza]').append(datosPersona);
