@@ -334,7 +334,7 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .pagina > .personal-sesion .sesion-nombre { margin: 0; font-size: var(--t-sm); line-height: var(--interlineado-compacto); }
   .pagina > .personal-sesion .sesion-perfil { display: inline; }
   .pagina > .personal-sesion .sesion-perfil::before { content: "·" / ""; margin-inline: var(--e-2); }
-  .pagina > .personal-sesion .sesion-enlaces { flex-wrap: nowrap; justify-content: flex-end; }
+  .pagina > .personal-sesion .sesion-enlaces { flex-wrap: nowrap; justify-content: flex-end; column-gap: var(--e-2); }
   /* Las franjas de la versión de prueba, compactas: un renglón cada una (se quitan al pasar al SIA) */
   body:has([data-sesion-personal]) .entorno-pruebas { padding-block: var(--e-1); }
   body:has([data-sesion-personal]) .ubicacion-prueba-int { padding-block: var(--e-1); }
@@ -469,7 +469,9 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .pago-linea > p { margin: 0; }
   .pago-linea .linea-datos { color: var(--texto); }
   .area-cotejo .pago-datos { display: none; }
-  .fila-escritorio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--e-4); align-items: start; }
+  .fila-escritorio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto auto; gap: 0 var(--e-4); align-items: start; }
+  /* Como .fila del estándar: cada campo adopta las cuatro filas (etiqueta, ayuda, control, error) y los controles alinean */
+  .fila-escritorio > .campo { display: grid; grid-template-rows: subgrid; grid-row: span 4; gap: 0; align-content: start; }
 }
 @media (min-width: 1024px) and (min-height: 700px) {
   /* Lo fijo: la franja arriba y, debajo de ella, el visor con el alto que queda. Visor: propuesta al estándar E4 (el del
@@ -483,7 +485,8 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .modo-pruebas .area-trabajo .visor { height: calc(100dvh - var(--alto-franja) - var(--e-6) - var(--objetivo-min) - var(--e-6) - var(--e-4)); }
 }
 @media (min-width: 1280px) {
-  body:has([data-sesion-personal]) .cabecera .titulo-pagina { font-size: var(--t-lg); }
+  /* En la página amplia del personal, el título más grande (en la angosta, «Registro asistido», no cabría junto a la sesión) */
+  body:has([data-sesion-personal]):has(.pagina-amplia) .cabecera .titulo-pagina { font-size: var(--t-lg); }
   .franja-nombre, .franja-contexto .revision-cabeza .titulo-paso { font-size: var(--t-md); }
   .franja-datos > .plegable-titulo { max-inline-size: none; white-space: nowrap; }
   /* «Revisar una solicitud», tres columnas: pasos en barra vertical | decisión | visor */
