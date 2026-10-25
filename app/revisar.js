@@ -150,8 +150,9 @@
     /* ----- Franja de contexto en escritorio (decisión de Liber del 25/10/2026; DIAGNOSTICO.md, 4.1) -----
        Desde 1024 px la cabeza de la solicitud es una franja fija de 80 px como máximo: fotografía chica o iniciales,
        nombre, CURP y adscripción, «Poda y derribo · renovación», folio, vuelta, estado y, si aplica, «Última oportunidad» o
-       «Registro asistido». La ficha completa, el aviso de la última oportunidad y la nota de la renovación entran a «Datos
-       de la persona», plegable; debajo de 1024 px regresan a su lugar (APD_PERSONAL.acomodaEscritorio). */
+       «Registro asistido». La ficha completa y la nota de la renovación entran a «Datos de la persona», plegable; el aviso
+       de la última oportunidad y las revisiones anteriores van arriba de la decisión. Debajo de 1024 px todo regresa a su
+       lugar (APD_PERSONAL.acomodaEscritorio). */
     function pintaFranja() {
       const conFoto = $('[data-persona] .persona-con-foto');
       const ficha = conFoto.lastElementChild;
@@ -167,7 +168,10 @@
       const panel = el('div', { class: 'franja-datos-panel' });
       const datosPersona = el('details', { class: 'plegable franja-datos' }, [el('summary', { class: 'plegable-titulo', texto: 'Datos de la persona' }), panel]);
       $('[data-cabeza]').append(ultima ? el('p', { class: 'franja-etiqueta' }, [APD.estado('Última oportunidad', 'atencion')]) : '', datosPersona);
-      P.acomodaEscritorio('(min-width: 1024px)', [[ficha, panel], [$('[data-ultima-oportunidad]'), panel], [$('[data-renovacion]'), panel]]);
+      // El aviso de la última oportunidad se ve desde el inicio (ajustes del equipo, 25/10/2026): va arriba de la decisión, con
+      // las revisiones anteriores
+      const avisos = $('[data-avisos-escritorio]');
+      P.acomodaEscritorio('(min-width: 1024px)', [[ficha, panel], [$('[data-renovacion]'), panel], [$('[data-ultima-oportunidad]'), avisos], [$('[data-anteriores]'), avisos]]);
       // Se cierra con Escape y al hacer clic fuera, como una lista desplegable
       datosPersona.addEventListener('keydown', (e) => { if (e.key === 'Escape' && datosPersona.open) { datosPersona.open = false; $('summary', datosPersona).focus(); } });
       document.addEventListener('click', (e) => { if (datosPersona.open && !datosPersona.contains(e.target)) datosPersona.open = false; });

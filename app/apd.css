@@ -349,13 +349,13 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .area-trabajo > .visor-area { display: contents; }
   .area-trabajo > .franja-contexto { grid-area: franja; }
   .area-trabajo > .barra-fija { grid-area: pasos; }
-  .area-trabajo > [data-anteriores], .area-trabajo > .avisos-escritorio { grid-area: notas; }
+  .area-trabajo > .avisos-escritorio { grid-area: notas; min-width: 0; }
   .area-trabajo > [data-cargando], .area-trabajo > [data-futura], .area-trabajo #formulario { grid-area: form; min-width: 0; }
   .area-trabajo .visor, .area-trabajo > .visor-area > .resumen-lateral { grid-area: visor; }
   /* Columna vacía, no (regla general 11): si no hay documento en el visor ni resumen al lado, el formulario ocupa también
      esa columna */
   .area-trabajo:not(:has(.visor[open], .resumen-lateral:not([hidden]))) #formulario { grid-column: 1 / -1; }
-  .avisos-escritorio > .aviso { margin-block: 0 var(--e-4); }
+  .avisos-escritorio > .aviso, .avisos-escritorio > [data-ultima-oportunidad] { margin-block: 0 var(--e-4); }
   /* La barra de pasos horizontal no queda pegada: lo fijo es la franja (con las dos pasaba del 25 % del alto, P177) */
   .area-trabajo .barra-fija { position: static; margin-block-end: var(--e-4); }
   .area-trabajo .barra-paso-visible { padding-inline-end: 0; }
@@ -405,8 +405,8 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .franja-contexto .revision-cabeza > div { grid-area: caso; min-width: 0; }
   .franja-contexto .revision-cabeza .titulo-paso { margin: 0; font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--texto); }
   .franja-contexto .linea-datos { margin: 0; line-height: var(--interlineado-compacto); }
-  /* En la franja, la línea corta («APD-S-… · 1.ª revisión»); la completa sigue en la tarjeta de teléfono y en la columna
-     de la persona del cotejo */
+  /* En la franja, la línea corta («APD-S-… · 1.ª revisión» o «… · cita del …»); la completa sigue en la tarjeta de
+     teléfono */
   .franja-contexto [data-bajada] { display: none; }
   .franja-caso { display: block; }
   .franja-contexto [data-estado] { grid-area: estado; margin: 0; }
@@ -520,15 +520,13 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
   .area-cotejo .franja-quien { order: 2; }
   .area-cotejo .franja-contexto .revision-cabeza > div { order: 3; }
   .area-cotejo .franja-contexto [data-estado], .area-cotejo .franja-contexto [data-asistido-etiqueta] { order: 4; }
-  .area-cotejo .franja-contexto [data-bajada] { display: block; }
-  .area-cotejo .franja-caso { display: none; }
+
   .area-cotejo .franja-contexto .perfil-foto { width: calc(var(--e-11) + var(--e-6)); border-width: var(--b-2); }
   .area-cotejo .franja-contexto .perfil-iniciales { font-size: var(--t-xl); }
   .area-cotejo .franja-nombre { font-size: var(--t-base); }
   .area-cotejo .franja-contexto .revision-cabeza > div { flex: none; }
   .area-cotejo .franja-contexto .persona-con-foto > :last-child { order: 5; inline-size: 100%; }
   .area-cotejo .franja-contexto .datos { font-size: var(--t-sm); }
-  .area-cotejo .franja-contexto .linea-datos-item { white-space: normal; }
   .area-cotejo .franja-contexto .datos-par { grid-template-columns: none; gap: 0; padding-block: var(--e-1); }
   .area-cotejo .franja-contexto .datos-valor { font-weight: var(--peso-normal); }
   .area-cotejo [data-adscripcion] { display: none; }
