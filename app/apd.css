@@ -679,3 +679,54 @@ body > main { flex: 1 0 auto; width: 100%; }
   .imprime-hoja > :not(.hoja-acuse) { display: none; }
   .imprime-hoja .hoja-acuse { display: grid; gap: var(--e-4); padding: var(--e-5); }
 }
+
+/* ═════ Escritorio · parte B (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.3 y 4.4) ═════
+   Inicio del personal (bandeja) y «Grupos». Debajo de 1024 px todo queda como antes: mismo orden y mismos textos. Desde
+   1024 px, dos columnas; lo fijo (encabezado de la tabla, panel «Tu grupo») sólo desde 1024 px y 700 px de alto. Lo que
+   el estándar 1.5.1 no trae va aquí con su propuesta (DIAGNOSTICO, sección 6). Sólo tokens del estándar. */
+
+/* Pestañas sólo desde 1024 px (app/escritorio-b.js). Propuesta al estándar E14: pestañas que en teléfono se vuelven
+   secciones apiladas («pestañas desde un ancho»). */
+.escb-pestanas { margin-block-end: 0; }
+.escb-pestanas > .pestanas-lista { display: none; }
+.escb-pestanas .pestanas-panel:not(.tarjeta) { padding-block-start: 0; }
+/* Indicadores del inicio: sólo desde 1024 px. Propuesta al estándar E15: tablero de indicadores que son enlaces. */
+.escb-indicadores { display: none; }
+/* La paginación del estándar declara display: con [hidden] (25 o menos) no se ve */
+.paginacion[hidden] { display: none; }
+
+@media (min-width: 1024px) {
+  .escb-pestanas > .pestanas-lista { display: flex; margin-block-end: var(--e-4); }
+  .escb-pestanas [role="tabpanel"][hidden] { display: none; }
+  /* La tarjeta del registro asistido lleva dos paneles: sin ninguno a la vista, no se ve */
+  .escb-asistido:not(:has(> .pestanas-panel:not([hidden]))) { display: none; }
+  .escb-asistido > .pestanas-panel > .titulo-bloque:first-child { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
+
+  /* El título de un panel que repite su pestaña («Solicitudes por revisar», «Registro asistido»): se queda para el lector
+     de pantalla y como ancla, sin ocupar lugar */
+  .escb-titulo-de-pestana { position: absolute; width: var(--b-1); height: var(--b-1); margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .escb-titulo-de-pestana + .bajada { margin-block-start: 0; }
+  /* Búsqueda y filtros en una fila, sin el aire de un formulario de captura */
+  .escb-filtros { margin-block-start: var(--e-3); }
+  .escb-filtros .campo { margin-block-end: var(--e-3); }
+  .escb-filtros + .resumen-filtro + .tabla-marco { margin-block-start: var(--e-2); }
+
+  .escb-indicadores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e-4); margin-block-end: var(--e-3); }
+  .escb-indicador { display: grid; gap: 0; padding: var(--e-2) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-block-start: var(--b-4) solid var(--guinda); border-radius: var(--r-ctrl); color: var(--texto); text-decoration: none; }
+  .escb-indicador:hover { border-color: var(--azul); background: var(--azul-cl); }
+  .escb-indicador-rotulo { font-size: var(--t-sm); color: var(--gris); }
+  .escb-indicador-cifras { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--e-1) var(--e-3); }
+  .escb-indicador-numero { font: var(--peso-fuerte) var(--t-xl)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--guinda); }
+  .escb-indicador-detalle { font-size: var(--t-sm); color: var(--gris); }
+
+  /* Tabla compacta: filas de unos 44 px. Propuesta al estándar E6 (densidad compacta del módulo tabla). */
+  .escb-tabla-compacta td { padding-block: var(--e-1); }
+  .escb-tabla-compacta .btn-chico { min-height: calc(var(--e-7) + var(--e-1)); }
+  .tarjeta > .paginacion { margin-block-end: var(--e-3); }
+}
+/* Encabezado de la tabla fijo desde 1280 px y 700 px de alto, donde la tabla cabe sin desplazamiento propio (con él, el
+   encabezado quedaría fijo sólo dentro de su marco). Propuesta al estándar E6 (.tabla-encabezado-fijo). */
+@media (min-width: 1280px) and (min-height: 700px) {
+  .escb-tabla-marco { overflow-x: visible; }
+  .escb-tabla-compacta thead th { position: sticky; top: 0; z-index: 1; }
+}
