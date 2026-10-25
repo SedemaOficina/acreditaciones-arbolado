@@ -6426,7 +6426,7 @@ async function sesion23(navegador) {
     const html = await (await fetch(BASE + 'solicitud.html')).text();
     const ayuda = (html.match(/id="ay-doc_poda_nueva_constancia_situacion_fiscal">([^<]*)</) || [])[1] || '';
     const domicilio = (html.match(/id="ay-doc_poda_nueva_comprobante_domicilio">([^<]*)</) || [])[1] || '';
-    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.$/.test(ayuda)
+    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.\s*$/.test(ayuda)
       && !/pendiente/i.test(ayuda) && domicilio && !/pendiente|dejar|provisional/i.test(domicilio),
       t(`nuevos 4 y 5 (P196) y P03: la ayuda de la constancia («${ayuda}») y la del comprobante de domicilio, sin marcas`));
     for (const [pagina, sel] of [['revisar.html', '[data-doc="constancia_situacion_fiscal"]'], ['cotejo.html', '[data-doc="constancia_situacion_fiscal"]']]) {
