@@ -30,6 +30,8 @@
     function aplica() {
       const en = mq.matches;
       const sel = seleccionada();
+      // El título de un panel que repite su pestaña: en escritorio, sólo para el lector (.solo-lector del estándar)
+      for (const h of document.querySelectorAll('.escb-titulo-de-pestana')) h.classList.toggle('solo-lector', en);
       for (const t of tabs) {
         const p = panelDe(t);
         if (!p) continue;
