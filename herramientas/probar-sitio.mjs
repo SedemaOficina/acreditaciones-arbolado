@@ -384,6 +384,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await siguiente(page);
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
     t('documentos: la CURP trae el enlace oficial para obtenerla'));
+  comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_constancia_situacion_fiscal"] .ayuda a', 'href') === 'https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf',
+    t('documentos: la constancia de situación fiscal trae el enlace del SAT para generarla'));
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"]', 'data-extensiones') === 'pdf', t('documentos: sólo se aceptan en PDF'));
   await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', FOTO);
   comprueba(await page.locator('[data-campo="doc_poda_nueva_curp"] [data-rechazos] *').count() > 0, t('documentos: una imagen se rechaza con su motivo'));
@@ -6476,7 +6478,7 @@ async function sesion23(navegador) {
     const html = await (await fetch(BASE + 'solicitud.html')).text();
     const ayuda = (html.match(/id="ay-doc_poda_nueva_constancia_situacion_fiscal">([^<]*)</) || [])[1] || '';
     const domicilio = (html.match(/id="ay-doc_poda_nueva_comprobante_domicilio">([^<]*)</) || [])[1] || '';
-    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.$/.test(ayuda)
+    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.\s*$/.test(ayuda)
       && !/pendiente/i.test(ayuda) && domicilio && !/pendiente|dejar|provisional/i.test(domicilio),
       t(`nuevos 4 y 5 (P196) y P03: la ayuda de la constancia («${ayuda}») y la del comprobante de domicilio, sin marcas`));
     for (const [pagina, sel] of [['revisar.html', '[data-doc="constancia_situacion_fiscal"]'], ['cotejo.html', '[data-doc="constancia_situacion_fiscal"]']]) {

@@ -7969,14 +7969,14 @@
    "clave": "constancia_situacion_fiscal",
    "forma": "documento",
    "activo": true,
-   "enlace": null,
+   "enlace": "https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf",
    "nombre": "Constancia de situación fiscal",
    "momento": "en_linea",
    "formatos": [
     "application/pdf"
    ],
    "descripcion": "Tuya, como persona solicitante, emitida en el mes en curso. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago. [pendiente P196: cuántos días de antigüedad se aceptan]",
-   "enlace_texto": null,
+   "enlace_texto": "Cómo generar tu constancia de situación fiscal en el SAT",
    "nombre_archivo": "CONSTANCIA DE SITUACION FISCAL"
   },
   {

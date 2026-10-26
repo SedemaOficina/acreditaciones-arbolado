@@ -224,6 +224,8 @@ const casos = [
      VALUES (${BORRADOR}, 'curp', 'prueba/foto-curp', 'curp.jpg', 'image/jpeg', 1000, repeat('a', 64));`],
   ['La CURP trae el enlace oficial para obtenerla', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT enlace = 'https://www.gob.mx/curp/' FROM apd.requisito WHERE clave = 'curp'); END $$;`],
+  ['La constancia de situación fiscal trae el enlace del SAT para generarla', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT enlace = 'https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf' FROM apd.requisito WHERE clave = 'constancia_situacion_fiscal'); END $$;`],
   ['El nombre con que se guardó un archivo no se cambia', { sqlstate: '42501' }, null, `
      UPDATE apd.documento SET nombre_archivo = 'otro.pdf' WHERE solicitud_id = ${BORRADOR};`],
   // ── Fotografía de frente de la persona (decisión 2026-10-14) ──

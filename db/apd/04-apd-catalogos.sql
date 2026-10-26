@@ -236,3 +236,7 @@ UPDATE apd.requisito SET formatos = ARRAY['application/pdf'] WHERE clave IN ('fa
 -- Dónde se obtiene un documento (decisión 2026-10-15, Liber): la CURP se consulta y descarga en gob.mx.
 UPDATE apd.requisito SET enlace = 'https://www.gob.mx/curp/', enlace_texto = 'Consulta y descarga tu CURP en gob.mx'
  WHERE clave = 'curp';
+-- La constancia de situación fiscal se genera en el portal del SAT (decisión de Liber, 25/10/2026): para quien no la tiene.
+UPDATE apd.requisito SET enlace = 'https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf',
+       enlace_texto = 'Cómo generar tu constancia de situación fiscal en el SAT'
+ WHERE clave = 'constancia_situacion_fiscal';

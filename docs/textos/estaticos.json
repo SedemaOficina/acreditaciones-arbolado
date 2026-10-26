@@ -2499,7 +2499,7 @@
   "pantalla": "Solicitud",
   "archivo": "solicitud.html",
   "tipo": "Ayuda",
-  "texto": "Tuya, como persona solicitante, emitida en el mes en curso. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago.",
+  "texto": "Tuya, como persona solicitante, emitida en el mes en curso. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago. Cómo generar tu constancia de situación fiscal en el SAT.",
   "cuando": "Si «Trámite» es «poda y derribo, solicitud nueva» o «poda y derribo, renovación» o «dictaminador técnico, solicitud nueva» o «dictaminador técnico, renovación»",
   "seccion": "Documentos · Carga tus documentos",
   "origen": "Catálogo de requisitos (base)"
