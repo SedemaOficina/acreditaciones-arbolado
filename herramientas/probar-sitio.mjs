@@ -8318,7 +8318,10 @@ async function escritorioA(navegador) {
   const dict = porClasificar;
   const reenviada = enviadas.find((s) => datos.revision.some((r) => r.solicitud_id === s.id));
   // Alto de la página a 390 px en la versión 0.70 (antes del acomodo de escritorio): no debe crecer
+  // Altos medidos en la 0.70 en esta máquina. En la verificación de GitHub la tipografía mide distinto (hasta ≈ 9 % más),
+  // así que se admite un 10 %: lo que asegura que a 390 px nada de escritorio se aplica es la revisión de piezas y orden.
   const ALTO_390 = { [poda.folio]: 2589, [dict.folio]: 2810, [reenviada.folio]: 3114, cotejo: 1999 };
+  const TOLERANCIA_390 = 1.10;
   const nuevo = async (ancho, alto) => {
     const movil = ancho < 600;
     const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
@@ -8534,12 +8537,12 @@ async function escritorioA(navegador) {
       await pg.waitForSelector('#formulario:not([hidden])');
       await pg.waitForTimeout(800);
       const x = await revisa(s.folio);
-      if (x.alto > ALTO_390[s.folio] || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
+      if (x.alto > ALTO_390[s.folio] * TOLERANCIA_390 || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
     }
     await abreCotejo(pg, conCita.folio);
     await pg.waitForTimeout(800);
     const x = await revisa('cotejo');
-    if (x.alto > ALTO_390.cotejo || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
+    if (x.alto > ALTO_390.cotejo * TOLERANCIA_390 || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
     const cab = await pg.evaluate(() => { const s = document.querySelector('[data-sesion-personal]').getBoundingClientRect(); return s.top >= document.querySelector('.cabecera').getBoundingClientRect().bottom; });
     comprueba(!malas.length && cab && !errores.length, t(`Revisar (3 solicitudes) y cita de cotejo como en la 0.70: mismo alto o menos, la cabeza antes de la barra de pasos y del formulario, la ficha en la cabeza, sin franja fija ni piezas de escritorio, y la sesión debajo de la cabecera${malas.length ? ': ' + malas.join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
     await c.close();
@@ -8840,7 +8843,7 @@ async function escritorioC(navegador) {
     }));
     comprueba(asis.rejilla === 'block' && asis.barra === 'static' && asis.franja === 'block' && asis.foto === 44 && asis.orden.every((v, i) => !i || v > asis.orden[i - 1]),
       t('390 px: «Asistencia» como antes (lista de una columna con la fotografía de 44 px, sin barra fija; día, grupo, regla, leyenda, lista y «Guardar» en ese orden)'));
-    comprueba(await pantallas(page) <= 6.7, t(`390 px: «Asistencia» con 25 no crece (${await pantallas(page)} pantallas; antes 6.7)`));
+    comprueba(await pantallas(page) <= 6.7 * 1.10, t(`390 px: «Asistencia» con 25 no crece (${await pantallas(page)} pantallas; antes 6.7, con 10 % de margen por la tipografía de cada máquina)`));
     await page.goto(BASE + `aplicar.html?folio=${G25}`);
     await page.waitForSelector('[data-filas] tr');
     const apl = await page.evaluate(() => ({
@@ -8848,12 +8851,12 @@ async function escritorioC(navegador) {
       sticky: getComputedStyle(document.querySelector('#t-pase-lista')).position, datos: getComputedStyle(document.querySelector('.grupo-en-linea > .datos')).display
     }));
     comprueba(apl.imprimir && apl.corta === 'none' && apl.sticky === 'static' && apl.datos === 'grid', t('390 px: «Aplicar el examen» como antes («Imprimir los códigos» después de los pasos del examen, sin franja fija ni cuenta corta, datos en ficha)'));
-    comprueba(await pantallas(page) <= 15.43, t(`390 px: «Aplicar el examen» con 25 no crece (${await pantallas(page)} pantallas; antes 15.43)`));
+    comprueba(await pantallas(page) <= 15.43 * 1.10, t(`390 px: «Aplicar el examen» con 25 no crece (${await pantallas(page)} pantallas; antes 15.43, con 10 % de margen por la tipografía de cada máquina)`));
     await page.goto(BASE + `grupo.html?folio=${G25}`);
     await page.waitForSelector('[data-conc-filas] tr');
     comprueba(await page.locator('[data-pestanas]').count() === 0 && await page.isVisible('[data-filas] tr') && await page.isVisible('[data-conc-filas] tr'),
       t('390 px: la ficha del grupo sin pestañas, con «Personas del grupo» y «Asistencia por día» una debajo de otra'));
-    comprueba(await pantallas(page) <= 15.11, t(`390 px: la ficha del grupo con 25 no crece (${await pantallas(page)} pantallas; antes 15.11)`));
+    comprueba(await pantallas(page) <= 15.11 * 1.10, t(`390 px: la ficha del grupo con 25 no crece (${await pantallas(page)} pantallas; antes 15.11, con 10 % de margen por la tipografía de cada máquina)`));
     await revisaAxe(page, '390 px: ficha del grupo');
     sinErr(errores, '390 px');
     await c.close();
