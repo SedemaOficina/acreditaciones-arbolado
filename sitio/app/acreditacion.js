@@ -85,7 +85,7 @@
       ]));
     }
 
-    /* Cancelar (P120): sólo de una vigente, sólo instructores y la Dirección */
+    /* Cancelar (P120): sólo de una vigente, sólo instructores y directivos (perfiles_cancelan_acreditacion; P201) */
     const acciones = [];
     let cancelar = null;
     const abierta = APD.reposicionAbierta(datos, a);
@@ -105,7 +105,7 @@
         });
         acciones.push(cancelar);
       } else {
-        acciones.push(el('p', { class: 'texto-gris', texto: 'Sólo los instructores y la Dirección pueden cancelar una acreditación.' }));
+        acciones.push(el('p', { class: 'texto-gris', texto: 'Sólo los instructores y los directivos pueden cancelar una acreditación.' }));
       }
     }
     $('[data-acciones]').replaceChildren(...acciones);
@@ -161,7 +161,8 @@
 
     /* Revisar el acta */
     const formA = $('#acta');
-    if (r.estado === 'solicitada' && vigente(datos, a)) {
+    // El directivo sólo consulta la reposición: no revisa el acta ni entrega (P201)
+    if (r.estado === 'solicitada' && vigente(datos, a) && !P.soloConsultaReposicion(perfil)) {
       formA.hidden = false;
       FormKit.iniciar(formA, {
         enviar(payload) {
@@ -180,7 +181,7 @@
 
     /* Entregar la credencial repuesta, con la factura de la cuota */
     const formE = $('#entrega');
-    if (r.estado === 'acta_aceptada' && vigente(datos, a)) {
+    if (r.estado === 'acta_aceptada' && vigente(datos, a) && !P.soloConsultaReposicion(perfil)) {
       formE.hidden = false;
       FormKit.iniciar(formE, {
         enviar(payload) {

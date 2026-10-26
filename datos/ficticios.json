@@ -7803,6 +7803,21 @@
    "descripcion": "Días mínimos entre confirmar un grupo y el primer día del curso, para que la persona se entere y se organice (decisión 2026-10-17, Liber)."
   },
   {
+   "clave": "dias_habiles_cita",
+   "valor": "20",
+   "descripcion": "Días hábiles (de lunes a viernes) dentro de los que se da la cita de cotejo: al validar la solicitud y al dar una cita nueva, del siguiente día hábil a este número de días hábiles después (P205, decisión de Liber del 26/10/2026, como dicen los lineamientos; P02). Sustituye al límite de 6 meses (meses_adelanto_cita)."
+  },
+  {
+   "clave": "dias_habiles_correccion",
+   "valor": "20",
+   "descripcion": "Días hábiles que tiene la persona para atender las observaciones de la revisión; «Mis trámites» le dice hasta cuándo (P02, sesión de trabajo del 23/10/2026; P199). Todavía no hay tarea que cierre sola la solicitud al vencer (P23)."
+  },
+  {
+   "clave": "dias_habiles_revision",
+   "valor": "10",
+   "descripcion": "Días hábiles que tiene la Secretaría para la revisión documental de una solicitud enviada; se le dice a la persona con su fecha (P02, sesión de trabajo del 23/10/2026; P199)."
+  },
+  {
    "clave": "edad_minima",
    "valor": "18",
    "descripcion": "Años cumplidos que necesita la persona, el día de su solicitud, para las dos acreditaciones; se calculan con la fecha de nacimiento de su CURP (P138, sesión de trabajo del 23/10/2026)."
@@ -7833,11 +7848,6 @@
    "descripcion": "Intentos de entrada fallidos seguidos con los que la cuenta se bloquea (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA]."
   },
   {
-   "clave": "meses_adelanto_cita",
-   "valor": "6",
-   "descripcion": "Meses hacia adelante en los que se puede asignar una cita de cotejo (auditoría «intentar romperlo» 2026-10-18, F2 M4; valor de prueba a confirmar con la Dirección)."
-  },
-  {
    "clave": "meses_despues_renovacion",
    "valor": "12",
    "descripcion": "Meses después del vencimiento durante los que todavía se renueva; pasado ese plazo se tramita como nueva (decisión 2026-10-14)."
@@ -7864,8 +7874,8 @@
   },
   {
    "clave": "perfiles_cancelan_acreditacion",
-   "valor": "instructor,administracion",
-   "descripcion": "Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y la Dirección (administración) (P120, sesión de trabajo del 23/10/2026)."
+   "valor": "instructor,directivo",
+   "descripcion": "Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y los directivos (P120, sesión de trabajo del 23/10/2026). El perfil «directivo» es distinto de la administración del sistema, que ya no cancela (P201, decisión de Liber del 26/10/2026)."
   },
   {
    "clave": "sede",
@@ -11139,6 +11149,22 @@
    "solicitante_id": "3a939f55-5357-4d4b-a426-7c5408f01b7c"
   },
   {
+   "id": "a17bd0dd-4b65-4021-a6e3-b418acbe949c",
+   "estado": "pendiente",
+   "origen": "en_linea",
+   "sha256": "266062309774e8a0bad540c3cd99344e64faf096c0b8c5eebb9cf991b002ecf8",
+   "vigente": true,
+   "tipo_mime": "image/jpeg",
+   "cargada_en": "2026-09-15T08:45:00-06:00",
+   "cargada_por": "persona80@ejemplo.local",
+   "tamano_bytes": 184320,
+   "archivo_clave": "ficticio/personas/3cee8603-2983-41a4-a777-605016632fa5/foto-1.jpg",
+   "confirmada_en": null,
+   "confirmada_por": null,
+   "nombre_archivo": "FOTOGRAFIA_ERNESTO SUPUESTO EJEMPLO.jpg",
+   "solicitante_id": "3cee8603-2983-41a4-a777-605016632fa5"
+  },
+  {
    "id": "364cf8a8-f9cd-44ef-a642-ff2952ff0912",
    "estado": "confirmada",
    "origen": "en_linea",
@@ -14034,6 +14060,26 @@
    "debe_cambiar_contrasena": false
   },
   {
+   "id": "3cee8603-2983-41a4-a777-605016632fa5",
+   "curp": "SUEE890826HNEPJR05",
+   "sexo": "H",
+   "correo": "persona80@ejemplo.local",
+   "estado": "activa",
+   "nombre": "ERNESTO",
+   "telefono": "0000000080",
+   "creada_en": "2026-07-01T06:30:00-06:00",
+   "adscripcion": "independiente",
+   "es_ficticio": true,
+   "bloqueo_motivo": null,
+   "bloqueada_hasta": null,
+   "organizacion_id": null,
+   "primer_apellido": "SUPUESTO",
+   "segundo_apellido": "EJEMPLO",
+   "intentos_fallidos": 0,
+   "numero_expediente": null,
+   "debe_cambiar_contrasena": false
+  },
+  {
    "id": "04684f7c-b27e-4597-a55b-7f639d0d0733",
    "curp": "SUMB860523HNEPSN06",
    "sexo": "H",
@@ -15063,6 +15109,23 @@
    "tipo_acreditacion": "poda",
    "cancelacion_motivo": null,
    "cancelacion_fundamento": null
+  },
+  {
+   "id": "33372a88-4a06-4816-a048-b912aaf4d179",
+   "numero": "PD-2026-K149",
+   "origen": "kobo",
+   "vence_en": "2027-03-01",
+   "emitida_en": "2026-03-02",
+   "es_ficticio": true,
+   "cancelada_en": "2026-10-13T12:00:00-06:00",
+   "entregada_en": null,
+   "folio_origen": "KOBO-149",
+   "solicitud_id": null,
+   "cancelada_por": "directivo.ficticio",
+   "solicitante_id": "3cee8603-2983-41a4-a777-605016632fa5",
+   "tipo_acreditacion": "poda",
+   "cancelacion_motivo": "Se comprobó que prestó su credencial a otra persona para trabajar en el arbolado.",
+   "cancelacion_fundamento": "Lineamientos para la acreditación de podadores y dictaminadores técnicos, [Art. __, fracc. __] [pendiente P120: lo fija la Dirección Jurídica]"
   }
  ],
  "organizacion": [
@@ -16113,7 +16176,8 @@
   "PD-2026-K141": "vigente",
   "PD-2026-K143": "vigente",
   "PD-2026-K145": "vigente",
-  "PD-2026-K147": "vigente"
+  "PD-2026-K147": "vigente",
+  "PD-2026-K149": "cancelada"
  },
  "verificacion_publica": [
   {
@@ -16628,6 +16692,15 @@
    "situacion": "Vigente",
    "emitida_en": "2026-06-08",
    "cancelada_el": null
+  },
+  {
+   "tipo": "Poda y derribo",
+   "nombre": "ERNESTO SUPUESTO EJEMPLO",
+   "numero": "PD-2026-K149",
+   "vence_en": "2027-03-01",
+   "situacion": "Cancelada",
+   "emitida_en": "2026-03-02",
+   "cancelada_el": "2026-10-13"
   }
  ]
 }

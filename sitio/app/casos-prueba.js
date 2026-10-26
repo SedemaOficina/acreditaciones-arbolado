@@ -164,7 +164,8 @@
         // Sesión de trabajo del 23/10/2026: reposición de credenciales (P140) y cancelación por instructores y directivos (P120)
         ['personal-acreditaciones', 'Acreditaciones: reposición de credenciales', 'Revisar el acta y entregar la credencial repuesta con la factura de la cuota.', null, 'acreditaciones.html'],
         ['personal-cancelar-instructor', 'Instructor: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento.', null, 'acreditaciones.html?perfil=instructor'],
-        ['personal-cancelar-direccion', 'Dirección: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento (perfil de administración).', null, 'acreditaciones.html?perfil=administracion'],
+        // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026), distinto de la administración del sistema
+        ['personal-directivo', 'Directivo: cancelar una acreditación', 'Consultar las acreditaciones y cancelar una vigente, con motivo y fundamento (perfil directivo).', null, 'acreditaciones.html?perfil=directivo'],
         ['personal-ventanilla', 'Consultar un trámite', 'Buscar a una persona por CURP, nombre o folio y ver en qué va su trámite y qué sigue.', null, 'ventanilla.html']
       ]]
     ]]

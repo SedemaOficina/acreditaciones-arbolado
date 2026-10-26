@@ -190,6 +190,8 @@
     ['Instructor', [['asistencia.html', 'Asistencia'], ['aplicar.html', 'Aplicar el examen']]],
     // Perfil «capacitación» (ajustes del equipo, 25/10/2026): asigna instructores y confirma los grupos
     ['Instructores y Capacitación', [['capacitacion.html', 'Grupos por asignar y confirmar']]],
+    // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio es «Acreditaciones», con «Cancelar acreditación»
+    ['Directivo', [['acreditaciones.html?perfil=directivo', 'Acreditaciones (cancelar)']]],
     ['Salón de cómputo', [['examen.html', 'Examen en línea']]]
   ];
   const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'programar.html': 'Programar un curso (lleva a Grupos)', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));

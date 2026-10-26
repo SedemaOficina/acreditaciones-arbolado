@@ -314,7 +314,7 @@ const casos = [
      SELECT set_config('apd.ahora_simulado', '2026-10-28 18:00:00-06', true);
      UPDATE apd.cita SET resultado = 'no_se_presento' WHERE solicitud_id = (SELECT id FROM s) AND resultado = 'pendiente';
      DO $$ BEGIN ASSERT (SELECT estado = 'concluida_sin_atender' AND motivo_cierre LIKE 'No se presentó a su cita de cotejo 2 veces%' FROM apd.solicitud WHERE id = (SELECT id FROM s)); END $$;`],
-  ['Con la cita abierta no se cambia la cita', { codigo: 'cita_abierta' }, null, `
+  ['Con la cita abierta no se cambia la cita', { codigo: 'cita_abierta' }, '2026-10-14 10:00', `
      UPDATE apd.solicitud SET cita_en = '2026-10-28 10:00-06' WHERE id = ${CITA_SOL};`],
   ['La persona no cambia su cita', { codigo: 'cita_de_personal' }, DIA_CITA, `
      ${NO_SE_PRESENTO}
@@ -736,12 +736,12 @@ const casos = [
      DO $$ BEGIN ASSERT (SELECT perfil_academico = 'licenciatura_afin' AND experiencia_minima = 2
                            FROM apd.solicitud WHERE estado = 'con_observaciones' AND tipo_acreditacion = 'dictaminador' ORDER BY folio LIMIT 1); END $$;`],
   // Revisión documental del dictaminador (decisiones 2026-10-16): clasificar la carrera, validar, rechazar
-  ['Con la carrera sin clasificar no se valida', { codigo: 'carrera_sin_clasificar' }, null, `${LISTA_PARA_VALIDAR(POR_CLASIFICAR)}
+  ['Con la carrera sin clasificar no se valida', { codigo: 'carrera_sin_clasificar' }, '2026-10-14 19:00', `${LISTA_PARA_VALIDAR(POR_CLASIFICAR)}
      INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${POR_CLASIFICAR}, 'validada', 'prueba.automatica');`],
   ['La persona solicitante no clasifica carreras', { codigo: 'clasificacion_sin_permiso' }, null, `
      SELECT set_config('apd.usuario_tipo', 'solicitante', true);
      UPDATE apd.carrera SET grupo = 'afin' WHERE nombre = 'Ingeniería Ambiental';`],
-  ['Al clasificar la carrera como afín, la solicitud pide 2 años, se valida y queda en la bitácora', 'ok', null, `
+  ['Al clasificar la carrera como afín, la solicitud pide 2 años, se valida y queda en la bitácora', 'ok', '2026-10-14 19:00', `
      CREATE TEMP TABLE caso AS SELECT ${POR_CLASIFICAR} AS id;
      UPDATE apd.carrera SET grupo = 'afin' WHERE nombre = 'Ingeniería Ambiental';
      DO $$ BEGIN
@@ -765,7 +765,7 @@ const casos = [
      INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${PODA_ENVIADA}, 'rechazada', 'x', 'prueba.automatica');`],
   ['Con la carrera sin clasificar tampoco se rechaza: primero se clasifica', { codigo: 'rechazo_sin_causa' }, null, `
      INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${POR_CLASIFICAR}, 'rechazada', 'x', 'prueba.automatica');`],
-  ['Licenciatura trunca confirmada por el comprobante: no se valida', { codigo: 'perfil_no_cumple' }, null, `${TRUNCA_ENVIADA}
+  ['Licenciatura trunca confirmada por el comprobante: no se valida', { codigo: 'perfil_no_cumple' }, '2026-10-14 19:00', `${TRUNCA_ENVIADA}
      ${LISTA_PARA_VALIDAR('(SELECT id FROM caso)')}
      INSERT INTO apd.revision (solicitud_id, resultado, revisor) SELECT id, 'validada', 'prueba.automatica' FROM caso;`],
   ['Licenciatura trunca confirmada por el comprobante: se rechaza, y la persona puede iniciar otra solicitud', 'ok', null, `${TRUNCA_ENVIADA}
@@ -855,12 +855,44 @@ const casos = [
   ['El día de la cita sí se registra la inasistencia', 'ok', '2026-10-20 18:00', `
      ${NO_SE_PRESENTO}
      DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.cita WHERE solicitud_id = ${CITA_SOL} AND resultado = 'no_se_presento'); END $$;`],
-  ['Una cita a más de meses_adelanto_cita meses se rechaza', { codigo: 'cita_lejana' }, DIA_CITA, `
+  // P205 (decisión de Liber del 26/10/2026): la cita, dentro de los 20 días hábiles siguientes (dias_habiles_cita), del
+  // siguiente día hábil al último del plazo; ya no hasta 6 meses. Con hoy martes 20/10/2026: del 21/10 al 17/11
+  ['Cita nueva: el día 21 hábil (18/11/2026) ya no se acepta (P205)', { codigo: 'cita_fuera_de_plazo' }, DIA_CITA, `
      ${NO_SE_PRESENTO}
-     UPDATE apd.solicitud SET cita_en = '2027-04-21 10:00-06' WHERE id = ${CITA_SOL};`],
-  ['Una cita hasta meses_adelanto_cita meses adelante se acepta', 'ok', DIA_CITA, `
+     UPDATE apd.solicitud SET cita_en = '2026-11-18 10:00-06' WHERE id = ${CITA_SOL};`],
+  ['Cita nueva: el día 20 hábil (17/11/2026) se acepta (P205)', 'ok', DIA_CITA, `
+     ${NO_SE_PRESENTO}
+     UPDATE apd.solicitud SET cita_en = '2026-11-17 10:00-06' WHERE id = ${CITA_SOL};`],
+  ['Cita nueva: el mismo día ya no se da; desde el siguiente día hábil (P205)', { codigo: 'cita_fuera_de_plazo' }, DIA_CITA, `
+     ${NO_SE_PRESENTO}
+     UPDATE apd.solicitud SET cita_en = '2026-10-20 14:00-06' WHERE id = ${CITA_SOL};`],
+  ['Cita nueva: el siguiente día hábil (21/10/2026) se acepta (P205)', 'ok', DIA_CITA, `
+     ${NO_SE_PRESENTO}
+     UPDATE apd.solicitud SET cita_en = '2026-10-21 09:30-06' WHERE id = ${CITA_SOL};`],
+  ['Cita: el mensaje dice el plazo con sus fechas (P205)', { mensaje: 'dentro de los 20 días hábiles siguientes: del 21/10/2026 al 17/11/2026' }, DIA_CITA, `
      ${NO_SE_PRESENTO}
      UPDATE apd.solicitud SET cita_en = '2027-04-20 10:00-06' WHERE id = ${CITA_SOL};`],
+  ['Al validar en «Revisar» (miércoles 14/10/2026, 19:00): el día 21 hábil (12/11/2026) se rechaza (P205)', { codigo: 'cita_fuera_de_plazo' }, '2026-10-14 19:00', `
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND vigente;
+     UPDATE apd.solicitud SET cita_en = '2026-11-12 10:00-06' WHERE id = ${S44};
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');`],
+  ['Al validar en «Revisar»: el día 20 hábil (11/11/2026) se acepta y se valida (P205)', 'ok', '2026-10-14 19:00', `
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND vigente;
+     UPDATE apd.solicitud SET cita_en = '2026-11-11 10:00-06' WHERE id = ${S44};
+     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');
+     DO $$ BEGIN ASSERT (SELECT estado = 'validada_en_linea' FROM apd.solicitud WHERE id = ${S44}); END $$;`],
+  ['El plazo de la cita es un parámetro editable y su cambio queda en la bitácora (P205)', 'ok', '2026-10-14 19:00', `${B0}
+     UPDATE apd.parametro SET valor = '21' WHERE clave = 'dias_habiles_cita';
+     ${MAS(1, 'cambio_parametro')}
+     UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND vigente;
+     UPDATE apd.solicitud SET cita_en = '2026-11-12 10:00-06' WHERE id = ${S44};
+     DO $$ BEGIN ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'dias_habiles_cita') = '21'
+       AND EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cambio_parametro' AND entidad_id = 'dias_habiles_cita' AND detalle = '20 → 21'); END $$;`],
+  ['Plazos de P02 como parámetros: 20 días hábiles para la cita, 10 para revisar y 20 para corregir; ya no meses_adelanto_cita (P205, P199)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'dias_habiles_cita') = '20';
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'dias_habiles_revision') = '10';
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'dias_habiles_correccion') = '20';
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.parametro WHERE clave = 'meses_adelanto_cita'); END $$;`],
   ['En una base de producción, simular la fecha es un error', { codigo: 'simulacion_prohibida' }, '2026-10-20 10:00', `
      CREATE OR REPLACE FUNCTION apd.entorno() RETURNS text LANGUAGE sql STABLE AS $$ SELECT 'produccion'::text $$;
      SELECT apd.hoy();`, 'admin'],
@@ -880,7 +912,7 @@ const casos = [
   ['Bitácora · mover la fecha y la hora de un grupo por confirmar deja un renglón (E2-04)', 'ok', '2026-10-14 10:00', `${B0}
      UPDATE apd.grupo SET fecha_inicio = '2026-11-30', hora_entrada = '10:00' WHERE id = ${GRUPO_INTEGRACION};
      ${MAS(1, 'cambio_programacion')}`],
-  ['Bitácora · cambiar la cita de una solicitud deja un renglón (E2-04)', 'ok', null, `${B0}
+  ['Bitácora · cambiar la cita de una solicitud deja un renglón (E2-04)', 'ok', '2026-10-14 19:00', `${B0}
      UPDATE apd.solicitud SET cita_en = '2026-11-02 10:00-06' WHERE id = ${S44};
      ${MAS(1, 'cita_asignada')}`],
   ['Bitácora · lo que la persona corrige de sus estudios después de enviar deja un renglón (E2-04)', 'ok', null, `${B0}
@@ -900,7 +932,7 @@ const casos = [
   ['Bitácora · dar de baja una cuenta deja un renglón (E2-04)', 'ok', null, `${B0}
      UPDATE apd.solicitante SET estado = 'inactiva' WHERE id = (SELECT solicitante_id FROM apd.solicitud WHERE id = ${S44});
      ${MAS(1, 'estado')}`],
-  ['Bitácora · validar en línea deja un renglón por cada decisión: 4 documentos, la cita y el estado (E2-04)', 'ok', null, `${B0}
+  ['Bitácora · validar en línea deja un renglón por cada decisión: 4 documentos, la cita y el estado (E2-04)', 'ok', '2026-10-14 19:00', `${B0}
      UPDATE apd.documento SET estado = 'aceptado', revisado_por = 'prueba.automatica' WHERE solicitud_id = ${S44} AND vigente;
      UPDATE apd.solicitud SET cita_en = '2026-10-21 10:00-06' WHERE id = ${S44};
      INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');
@@ -1090,7 +1122,7 @@ const casos = [
      DO $$ BEGIN ASSERT (SELECT capturado_por FROM apd.examen WHERE calificacion = 9 AND presentado_en = '2026-10-16') = 'prueba.automatica'; END $$;`],
 
   // ── E2-01 a E2-03 en secuencia (con dos conexiones: herramientas/probar-concurrencia.sh) ──
-  ['Una segunda revisión de la misma vuelta se rechaza: ya la registró otra persona (E2-01)', { codigo: 'revision_ya_registrada' }, null, `
+  ['Una segunda revisión de la misma vuelta se rechaza: ya la registró otra persona (E2-01)', { codigo: 'revision_ya_registrada' }, '2026-10-14 19:00', `
      ${LISTA_PARA_VALIDAR(S44)}
      INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');
      INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${S44}, 'con_observaciones', 'Otra revisión.', 'otra.revisora');`],
@@ -1132,7 +1164,7 @@ const casos = [
      UPDATE apd.acreditacion SET vence_en = vence_en + 30 WHERE numero = 'PD-2026-0001';`, 'admin'],
   ['Para pasar a observaciones hay que registrar la revisión', { codigo: 'sin_revision' }, null, `
      UPDATE apd.solicitud SET estado = 'con_observaciones' WHERE id = ${S44};`],
-  ['Validar sin todos los documentos aceptados se rechaza', { codigo: 'documentos_sin_aceptar' }, null, `
+  ['Validar sin todos los documentos aceptados se rechaza', { codigo: 'documentos_sin_aceptar' }, '2026-10-14 19:00', `
      UPDATE apd.solicitud SET cita_en = '2026-10-21 10:00-06' WHERE id = ${S44};
      INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${S44}, 'validada', 'prueba.automatica');`],
   ['Validar sin cita de cotejo se rechaza', { codigo: 'sin_cita' }, null, `
@@ -1322,11 +1354,11 @@ const casos = [
      INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion, fecha_inicio) VALUES ('poda', 'renovacion', 'combinado', '2026-11-07');`],
   ['Hora de entrada fuera del horario del curso (9:00 a 15:00) se rechaza (P91)', { codigo: 'hora_fuera_de_horario' }, '2026-10-14 10:00', `
      UPDATE apd.grupo SET fecha_inicio = '2026-11-02', hora_entrada = '08:00' WHERE id = ${GRUPO_INTEGRACION};`],
-  ['Cita de cotejo en sábado se rechaza (P150)', { codigo: 'cita_en_fin_de_semana' }, null, `
+  ['Cita de cotejo en sábado se rechaza (P150)', { codigo: 'cita_en_fin_de_semana' }, '2026-10-14 10:00', `
      UPDATE apd.solicitud SET cita_en = '2026-10-24 10:00-06' WHERE id = ${ENVIADA};`],
-  ['Cita de cotejo a las 15:00 se rechaza: son de 9:30 a 14:30 (P69)', { codigo: 'cita_fuera_de_horario' }, null, `
+  ['Cita de cotejo a las 15:00 se rechaza: son de 9:30 a 14:30 (P69)', { codigo: 'cita_fuera_de_horario' }, '2026-10-14 10:00', `
      UPDATE apd.solicitud SET cita_en = '2026-10-23 15:00-06' WHERE id = ${ENVIADA};`],
-  ['Cita de cotejo a las 9:30 y a las 14:30 de un viernes se aceptan (P69)', 'ok', null, `
+  ['Cita de cotejo a las 9:30 y a las 14:30 de un viernes se aceptan (P69)', 'ok', '2026-10-14 10:00', `
      UPDATE apd.solicitud SET cita_en = '2026-10-23 09:30-06' WHERE id = ${ENVIADA};
      UPDATE apd.solicitud SET cita_en = '2026-10-23 14:30-06' WHERE id = ${ENVIADA};`],
   ['Plazos en días hábiles: no cuentan sábados ni domingos (P150)', 'ok', null, `DO $$ BEGIN
@@ -1377,9 +1409,24 @@ const casos = [
        ASSERT apd.estado_acreditacion(${ACRED_VIGENTE}) = 'cancelada' AND NOT apd.acreditacion_vigente(${ACRED_VIGENTE});
        ASSERT apd.acreditacion_vigente(${ACRED_VIGENTE}, '2026-10-13') AND apd.estado_acreditacion(${ACRED_VIGENTE}, '2026-10-13') = 'vigente';
      END $$; ${MAS(1, 'cancelacion')}`],
-  ['Cancelación: la Dirección (perfil administración) también cancela (P120)', 'ok', '2026-10-14 12:00', `
+  // P201 (decisión de Liber del 26/10/2026): cancelan los instructores y el perfil «directivo»; la administración del sistema ya no
+  ['Cancelación: el perfil directivo cancela una acreditación vigente; la base pone quién y cuándo (P201, P120)', 'ok', '2026-10-14 12:00', `
+     ${PERFIL('directivo')} ${B0}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};
+     DO $$ BEGIN ASSERT (SELECT cancelada_por = 'prueba.automatica' AND cancelada_en = '2026-10-14 12:00-06' FROM apd.acreditacion WHERE id = ${ACRED_VIGENTE}); END $$;
+     ${MAS(1, 'cancelacion')}`],
+  ['Cancelación: la administración del sistema ya no cancela (P201)', { codigo: 'cancelacion_sin_permiso' }, '2026-10-14 12:00', `
      ${PERFIL('administracion')}
      UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
+  ['Cancelación: la administración tampoco cancela con una acreditación por vencer (P201)', { codigo: 'cancelacion_sin_permiso' }, '2026-10-14 12:00', `
+     ${PERFIL('administracion')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_POR_VENCER};`],
+  ['Cancelación: el directivo no cancela una vencida (las mismas reglas que el instructor)', { codigo: 'cancelacion_no_vigente' }, '2026-10-14 12:00', `
+     ${PERFIL('directivo')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_NO_RENOVABLE};`],
+  ['Cancelación: el directivo no cambia una cancelación ya hecha', { codigo: 'acreditacion_ya_cancelada' }, '2026-10-14 12:00', `
+     ${PERFIL('directivo')}
+     UPDATE apd.acreditacion SET cancelacion_motivo = 'Otro motivo de la prueba automática.' WHERE id = ${ACRED_CANCELADA};`],
   ['Cancelación: un perfil sin permiso (revisión y cotejo) no cancela (P120, P27)', { codigo: 'cancelacion_sin_permiso' }, '2026-10-14 12:00', `
      ${PERFIL('revision_cotejo')}
      UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = ${ACRED_VIGENTE};`],
@@ -1459,8 +1506,11 @@ const casos = [
      UPDATE apd.acreditacion SET cancelacion_motivo = 'Motivo de la prueba automática.', cancelacion_fundamento = '[Art. __, fracc. __]' WHERE id = (SELECT id FROM a);
      ${FOTO_DOC(`(SELECT solicitud_id FROM apd.acreditacion WHERE id = (SELECT id FROM a))`)}
      UPDATE apd.acreditacion SET entregada_en = '2026-10-14' WHERE id = (SELECT id FROM a);`],
-  ['Pueden cancelar los perfiles instructor y administración (parámetro editable, P120)', 'ok', null, `DO $$ BEGIN
-     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'perfiles_cancelan_acreditacion') = 'instructor,administracion'; END $$;`],
+  ['La ficticia cancelada por el directivo: la base anotó su cuenta (directivo.ficticio) y la bitácora, con su perfil (P201)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT count(*) FROM apd.acreditacion WHERE cancelada_por = 'directivo.ficticio' AND cancelada_en IS NOT NULL) = 1;
+     ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cancelacion' AND usuario = 'directivo.ficticio'); END $$;`],
+  ['Pueden cancelar los perfiles instructor y directivo (parámetro editable, P120, P201)', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'perfiles_cancelan_acreditacion') = 'instructor,directivo'; END $$;`],
 
   // ── Reposición de la credencial (P140, sesión de trabajo del 23/10/2026) ──
   ['Reposición: la persona pide la de su credencial vigente con el acta; la base pone el estado, el nombre del acta y la bitácora (P140)', 'ok', '2026-10-14 12:00', `

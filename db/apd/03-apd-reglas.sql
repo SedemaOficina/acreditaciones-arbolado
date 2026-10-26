@@ -11,7 +11,7 @@
 --   SELECT set_config('apd.usuario', '<cuenta>', true), set_config('apd.usuario_tipo', 'personal', true),
 --          set_config('apd.procedencia', '<dirección>', true);
 -- y, cuando una regla pide motivo, set_config('apd.motivo', '<texto>', true). Para el personal declara además su perfil del
--- acceso del SIA (P27: revision_cotejo, instructor, capacitacion, emision, consulta o administracion) con
+-- acceso del SIA (P27: revision_cotejo, instructor, capacitacion, emision, consulta, directivo o administracion) con
 -- set_config('apd.perfil', '<perfil>', true): lo piden las reglas reservadas a ciertos perfiles (la cancelación, P120; asignar
 -- la persona instructora y confirmar un grupo, del perfil capacitacion: ajustes del equipo, 25/10/2026).
 
@@ -792,7 +792,8 @@ CREATE FUNCTION apd.acreditacion_cambio() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE falta text;
 BEGIN
   -- Cancelación (P120, sesión de trabajo del 23/10/2026): la registran instructores y directivos (los perfiles del
-  -- parámetro perfiles_cancelan_acreditacion, P27), con motivo y fundamento; sólo de una acreditación vigente ese día. La
+  -- parámetro perfiles_cancelan_acreditacion, P27; el perfil «directivo» es distinto de la administración del sistema, que
+  -- ya no cancela: P201, decisión de Liber del 26/10/2026), con motivo y fundamento; sólo de una acreditación vigente ese día. La
   -- base pone el día y quién; ya no se deshace ni se cambia.
   IF (NEW.cancelada_en, NEW.cancelada_por, NEW.cancelacion_motivo, NEW.cancelacion_fundamento)
      IS DISTINCT FROM (OLD.cancelada_en, OLD.cancelada_por, OLD.cancelacion_motivo, OLD.cancelacion_fundamento) THEN
@@ -801,7 +802,7 @@ BEGIN
     END IF;
     IF apd.contexto('usuario_tipo') <> 'personal' OR apd.contexto('usuario') = ''
        OR NOT apd.contexto('perfil') = ANY (string_to_array(replace(apd.parametro_texto('perfiles_cancelan_acreditacion'), ' ', ''), ',')) THEN
-      PERFORM apd.error('cancelacion_sin_permiso', 'Sólo los instructores y la Dirección pueden cancelar una acreditación');
+      PERFORM apd.error('cancelacion_sin_permiso', 'Sólo los instructores y los directivos pueden cancelar una acreditación');
     END IF;
     IF length(trim(coalesce(NEW.cancelacion_motivo, ''))) < 10 THEN
       PERFORM apd.error('cancelacion_sin_motivo', 'Escriba el motivo de la cancelación (al menos 10 caracteres)');
@@ -1268,11 +1269,14 @@ BEGIN
          SELECT 1 FROM apd.cita c WHERE c.solicitud_id = NEW.id AND c.resultado IN ('pendiente', 'en_pausa')) THEN
       PERFORM apd.error('cita_abierta', 'Registre primero lo que pasó en la cita actual');
     END IF;
-    -- Una cita hasta meses_adelanto_cita meses adelante (auditoría «intentar romperlo» 2026-10-18, F2 M4: se aceptaba el
-    -- 31/12/9999).
-    IF NEW.cita_en IS NOT NULL AND (NEW.cita_en AT TIME ZONE 'America/Mexico_City')::date
-         > apd.hoy() + make_interval(months => apd.parametro_texto('meses_adelanto_cita')::integer) THEN
-      PERFORM apd.error('cita_lejana', format('La cita de cotejo se asigna como máximo %s meses adelante', apd.parametro_texto('meses_adelanto_cita')));
+    -- La cita, dentro de los dias_habiles_cita días hábiles siguientes a la validación o al día en que se da la cita nueva:
+    -- del siguiente día hábil al último del plazo (P205, decisión de Liber del 26/10/2026; sustituye al límite de 6 meses,
+    -- meses_adelanto_cita, que venía de la auditoría «intentar romperlo» 2026-10-18, F2 M4: se aceptaba el 31/12/9999).
+    IF NEW.cita_en IS NOT NULL AND ((NEW.cita_en AT TIME ZONE 'America/Mexico_City')::date <= apd.hoy()
+         OR (NEW.cita_en AT TIME ZONE 'America/Mexico_City')::date > apd.suma_dias_habiles(apd.hoy(), apd.parametro_texto('dias_habiles_cita')::integer)) THEN
+      PERFORM apd.error('cita_fuera_de_plazo', format('La cita de cotejo se da dentro de los %s días hábiles siguientes: del %s al %s',
+        apd.parametro_texto('dias_habiles_cita'), to_char(apd.suma_dias_habiles(apd.hoy(), 1), 'DD/MM/YYYY'),
+        to_char(apd.suma_dias_habiles(apd.hoy(), apd.parametro_texto('dias_habiles_cita')::integer), 'DD/MM/YYYY')));
     END IF;
     -- Las citas de cotejo son de lunes a viernes, de cita_hora_desde a cita_hora_hasta (sesión de trabajo del 23/10/2026:
     -- 9:30 a 14:30, P69; sábados y domingos inhábiles, P150)

@@ -52,6 +52,9 @@ const INSTRUCTOR = 'instructor.ficticio';
 // Área de Instructores y Capacitación (perfil «capacitación»): asigna la persona instructora y confirma los grupos; quien
 // los arma (cotejo) ya no lo hace (ajustes del equipo, 25/10/2026)
 const CAPACITACION = 'capacitacion.ficticia';
+// Perfil «Directivo» (P201, decisión de Liber del 26/10/2026), distinto de la administración del sistema: cancela
+// acreditaciones con los instructores (parámetro perfiles_cancelan_acreditacion)
+const DIRECTIVO = 'directivo.ficticio';
 
 // ── Instituciones de adscripción ─────────────────────────────────────────
 // Las empresas son ficticias y se agregan aquí; alcaldía y dependencias son del catálogo inicial (04), por su clave.
@@ -883,6 +886,18 @@ alta(ayudaIdentificacion, '2026-09-22');
 const sAyudaIdentificacion = solicitud('ayuda-identificacion', ayudaIdentificacion, 'poda', 'nueva', { fecha: '2026-09-22', nivel: 'secundaria' });
 enviar(sAyudaIdentificacion, '2026-09-22', '10:00');
 observar(sAyudaIdentificacion, '2026-09-24', 'identificacion_oficial', 'La identificación oficial está vencida: carga una vigente.');
+
+// Cancelada por el directivo (P201): poda del registro anterior, vigente hasta el 01/03/2027, cancelada el 13/10/2026.
+// Va al final para no mover los datos de los demás
+const canceladaDirectivo = persona('acred-cancelada-directivo', { nombre: 'Ernesto', primer: 'Supuesto', segundo: 'Ejemplo', sexo: 'H' });
+altaMigrada(canceladaDirectivo);
+const aCanceladaDirectivo = migrar(canceladaDirectivo, 'poda', '2026-03-02');
+activar(canceladaDirectivo, '2026-09-15');
+en('2026-10-13', '12:00');
+como(DIRECTIVO, 'personal', 'directivo');
+emitir(`UPDATE apd.acreditacion SET cancelacion_motivo = 'Se comprobó que prestó su credencial a otra persona para trabajar en el arbolado.',
+  cancelacion_fundamento = 'Lineamientos para la acreditación de podadores y dictaminadores técnicos, [Art. __, fracc. __] [pendiente P120: lo fija la Dirección Jurídica]'
+  WHERE id = ${q(aCanceladaDirectivo)}`);
 
 en(CORTE, '20:00');
 emitir(`SELECT set_config('apd.ahora_simulado', '', false)`);
