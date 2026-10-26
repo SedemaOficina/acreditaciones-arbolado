@@ -4602,6 +4602,20 @@ function observadorVivas() {
   }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live', 'open', 'class'] });
 }
 let marcaVivas = 0;
+/* Las pantallas con pestañas (módulo «pestanas» del estándar: «Grupos», el inicio del personal, la ficha del grupo) anuncian
+   la pestaña inicial al iniciarse, con el retardo de los anuncios. En una máquina lenta (la verificación de GitHub) ese
+   anuncio llegaba después de la marca de la acción que se prueba y se contaba con ella (B4-03, PR #20). Antes de tomar la
+   marca se espera a que llegue: con el observador de regiones vivas, a que se escriba «Pestaña …»; sin él, el retardo. Sin
+   pestañas no espera nada. */
+async function asientaPestanas(page) {
+  if (!(await page.$('[data-pestanas]'))) return;
+  await page.waitForSelector('[data-pestanas][data-listo]', { state: 'attached', timeout: 15000 }).catch(() => {});
+  if (await page.evaluate(() => Array.isArray(window.__vivasEscritos))) {
+    await page.waitForFunction(() => window.__vivasEscritos.some((e) => /^Pestaña /.test(e.texto)), null, { timeout: 15000 }).catch(() => {});
+  } else {
+    await page.waitForTimeout((await page.evaluate(() => FormKit.config.anuncios.retardoMs)) + 300);
+  }
+}
 const nuevaMarca = (page) => page.evaluate((k) => { window.__vivasMarca = k; return k; }, ++marcaVivas);
 const anunciosDe = (page, k) => page.evaluate((m) => window.__vivas.filter((e) => e.marca === m), k);
 // Espera a que la acción k haya anunciado algo (o a que pase su plazo) y deja correr los retardos de los anuncios
@@ -4737,6 +4751,7 @@ async function focoAccesibilidad(navegador) {
     const { c, page } = await nuevo(1440, 900);
     await page.goto(BASE + 'grupos.html?curso=poda-nueva&semana=2026-11-02&mes=2026-11&paso=2');
     await listoGrupos(page);
+    await asientaPestanas(page);
     const k = await nuevaMarca(page);
     for (const l of ['2026-11-09', '2026-11-16']) { await page.focus(`.arm-semana-elegir[data-lunes="${l}"]`); await page.keyboard.press('Enter'); await page.waitForTimeout(150); }
     const lista = await anunciosTras(page, k, { minimo: 2 });
@@ -4848,6 +4863,7 @@ async function focoAccesibilidad(navegador) {
     await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
     await listoGrupos(page);
     await page.waitForSelector('.plan-persona input');
+    await asientaPestanas(page);
     await dosCuadros(page);
     const alCargar = (await anunciosDe(page, 0)).filter((e) => !/interno|pruebas/.test(e.region));
     comprueba(!alCargar.some((e) => /en espera|elegida|lugares/.test(e.texto)), `RI-04: «Grupos» no anuncia al cargar la espera ni la cuenta de lugares (${textosDe(alCargar) || 'nada'})`);
@@ -5076,7 +5092,9 @@ async function pasosTareas(navegador) {
   // «Siguiente» con el teclado: un solo anuncio (el del paso) y el foco en el título del paso nuevo, a la vista
   const siguienteTeclado = async (pg, donde, ancho) => {
     const antes = await tituloPaso(pg);
-    // Lo que anunció lo escrito antes (p. ej., «Sexo: Mujer, tomado de la CURP») sale antes de la marca
+    // Lo que anunció lo escrito antes (p. ej., «Sexo: Mujer, tomado de la CURP») sale antes de la marca; también el de la
+    // pestaña inicial, si la pantalla tiene pestañas
+    await asientaPestanas(pg);
     await pg.waitForTimeout((await pg.evaluate(() => FormKit.config.anuncios.retardoMs)) + 150);
     const m = await nuevaMarca(pg);
     await pulsa(pg, `${pasoVisible} [data-accion="siguiente"]`);
@@ -7834,6 +7852,8 @@ async function escritorioB(navegador) {
   ];
   for (const [w, h] of [[1366, 768], [1440, 900], [1920, 1080]]) {
     const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: ZONA });
+    // El observador de regiones vivas, sólo para esperar el anuncio de la pestaña inicial antes de «Quitar» (asientaPestanas)
+    await ctx.addInitScript(observadorVivas);
     const page = await ctx.newPage();
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
@@ -7888,6 +7908,9 @@ async function escritorioB(navegador) {
       // «Grupos»: «Quitar» del panel desmarca, anuncia «n de 25» y deja el foco en la siguiente; los botones del panel
       await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
       await page.waitForSelector('#paso-personas:not([hidden]) .plan-persona');
+      // El anuncio de la pestaña inicial, antes de «Quitar»: si llega tarde, pisaba «n de 25» (el contexto lleva el
+      // observador de regiones vivas para esperarlo)
+      await asientaPestanas(page);
       const antes = await page.$$eval('[data-quitar]', (l) => l.length);
       const folio = await page.getAttribute('[data-quitar]', 'data-quitar');
       await page.click('[data-quitar]');
