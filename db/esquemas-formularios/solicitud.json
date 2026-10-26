@@ -1,6 +1,6 @@
 {
   "formulario": "solicitud.html",
-  "generado": "2026-10-25T08:31:09.372Z",
+  "generado": "2026-10-26T06:47:44.112Z",
   "campos": {
     "tramite": {
       "etiqueta": "tramite",
@@ -8,16 +8,6 @@
       "requerido": false,
       "sensible": false,
       "uso": "Mostrar los documentos del curso que corresponde; lo calcula la página.",
-      "atributos": {
-        "auxiliar": ""
-      }
-    },
-    "asistido": {
-      "etiqueta": "asistido",
-      "tipo": "auxiliar",
-      "requerido": false,
-      "sensible": false,
-      "uso": "Pedir la marca de lectura del personal en lugar de las declaraciones de la persona cuando la solicitud la captura el personal (registro asistido); lo calculan la página y el servidor.",
       "atributos": {
         "auxiliar": ""
       }
@@ -868,21 +858,7 @@
       "requerido": true,
       "sensible": false,
       "uso": "Dejar constancia de que la persona declara bajo protesta de decir verdad que su información es auténtica.",
-      "atributos": {},
-      "si": {
-        "campo": "asistido",
-        "valores": [
-          "no"
-        ]
-      },
-      "condiciones": [
-        {
-          "campo": "asistido",
-          "valores": [
-            "no"
-          ]
-        }
-      ]
+      "atributos": {}
     },
     "aviso": {
       "etiqueta": "Leí el aviso de privacidad",
@@ -890,43 +866,7 @@
       "requerido": true,
       "sensible": false,
       "uso": "Dejar constancia de que se informó a la persona.",
-      "atributos": {},
-      "si": {
-        "campo": "asistido",
-        "valores": [
-          "no"
-        ]
-      },
-      "condiciones": [
-        {
-          "campo": "asistido",
-          "valores": [
-            "no"
-          ]
-        }
-      ]
-    },
-    "lectura_aceptada": {
-      "etiqueta": "Le leí a la persona lo capturado, la declaración bajo protesta de decir verdad y el aviso de privacidad, y los aceptó",
-      "tipo": "casilla",
-      "requerido": true,
-      "sensible": false,
-      "uso": "Dejar constancia de que el personal le leyó a la persona lo capturado, la declaración bajo protesta de decir verdad y el aviso de privacidad, y que los aceptó (registro asistido; bitácora con la cuenta del personal).",
-      "atributos": {},
-      "si": {
-        "campo": "asistido",
-        "valores": [
-          "si"
-        ]
-      },
-      "condiciones": [
-        {
-          "campo": "asistido",
-          "valores": [
-            "si"
-          ]
-        }
-      ]
+      "atributos": {}
     }
   },
   "repetibles": [],

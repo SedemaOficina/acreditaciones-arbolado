@@ -131,7 +131,6 @@
       // Se comprueba que siga vigente antes de decirlo (auditoría de tareas)
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fechaCorta(podaVigente.vence_en)}` : ''],
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
-      // Sin correo (registro asistido), sólo el teléfono: antes decía «null · …» (visto por la parte A del acomodo de escritorio)
       ['Contacto', [p.correo, p.telefono].filter(Boolean).join(' · ')]
     ])])]));
     pintaFranja();
@@ -150,8 +149,7 @@
 
     /* ----- Franja de contexto en escritorio (decisión de Liber del 25/10/2026; DIAGNOSTICO.md, 4.1) -----
        Desde 1024 px la cabeza de la solicitud es una franja fija de 80 px como máximo: fotografía chica o iniciales,
-       nombre, CURP y adscripción, «Poda y derribo · renovación», folio, vuelta, estado y, si aplica, «Última oportunidad» o
-       «Registro asistido». La ficha completa y la nota de la renovación entran a «Datos de la persona», plegable; el aviso
+       nombre, CURP y adscripción, «Poda y derribo · renovación», folio, vuelta, estado y, si aplica, «Última oportunidad». La ficha completa y la nota de la renovación entran a «Datos de la persona», plegable; el aviso
        de la última oportunidad y las revisiones anteriores van arriba de la decisión. Debajo de 1024 px todo regresa a su
        lugar (APD_PERSONAL.acomodaEscritorio). */
     function pintaFranja() {

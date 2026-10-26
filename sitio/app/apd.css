@@ -108,14 +108,8 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .menu-pruebas-ajuste p { margin: 0; }
 @media (min-width: 560px) { .menu-pruebas-grupos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
-/* Registro asistido (decisión 2026-10-25): las fichas de la ventanilla y de los avisos por teléfono, una debajo de otra, y la
-   vista previa de la cámara de la computadora (el estándar sólo trae la del teléfono) */
+/* «Consultar un trámite» (ventanilla.html): las fichas de las personas y de sus trámites, una debajo de otra */
 .lista-fichas { display: grid; gap: var(--e-3); margin-block: var(--e-4); }
-.camara-computadora { display: grid; gap: var(--e-3); margin-block: var(--e-4); }
-.camara-vista { width: 100%; max-width: var(--ancho-acuse); aspect-ratio: 4 / 3; background: var(--fondo); border: var(--b-1) solid var(--borde); border-radius: var(--r-caja); }
-/* El acuse del registro asistido, en una hoja sencilla para la persona: en pantalla no se ve (ver «Impresión») */
-.hoja-acuse { display: none; }
-.hoja-acuse-titulo { margin: 0; font-size: var(--t-sm); }
 
 /* ---------- Estados ---------- */
 
@@ -131,7 +125,7 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
    equipo, 25/10/2026: carrera que no aparece en el catálogo), en teléfono tapaba «Continuar»: el toque pasa a lo de abajo. */
 .combo-lista:not(:has(.combo-opcion)) { pointer-events: none; }
 
-.lista-fichas[hidden], .camara-computadora[hidden] { display: none; }
+.lista-fichas[hidden] { display: none; }
 
 /* ---------- Adaptaciones ---------- */
 
@@ -744,7 +738,7 @@ body > main { flex: 1 0 auto; width: 100%; }
   /* Pestañas desde 1024 px */
   .pestanas-escritorio > .pestanas-lista { display: flex; margin-block-end: var(--e-4); }
   .pestanas-escritorio [role="tabpanel"][hidden] { display: none; }
-  /* El título de un panel que repite su pestaña (.titulo-de-pestana: «Solicitudes por revisar», «Registro asistido»,
+  /* El título de un panel que repite su pestaña (.titulo-de-pestana: «Solicitudes por revisar», «Consultar un trámite»,
      «Armar un grupo», «Grupos programados», «Personas del grupo», «Asistencia por día») se queda para el lector de pantalla
      y como ancla: app/escritorio.js le pone .solo-lector del estándar desde 1024 px */
 
@@ -816,8 +810,8 @@ body > main { flex: 1 0 auto; width: 100%; }
   .franja-volver .btn-atras { line-height: var(--interlineado-compacto); }
   .franja-contexto > [data-cabeza]:not([hidden]) {
     display: grid; flex: 1 1 auto; align-items: center; column-gap: var(--e-3); min-width: 0; margin: 0; padding: 0; background: none; border: 0; box-shadow: none;
-    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, max-content) auto; grid-template-rows: 1fr auto auto;
-    grid-template-areas: "foto quien caso estado datos" "foto quien caso asistido datos" "foto quien caso ultima datos";
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, max-content) auto; grid-template-rows: 1fr auto;
+    grid-template-areas: "foto quien caso estado datos" "foto quien caso ultima datos";
   }
   .franja-contexto .revision-cabeza, .franja-contexto [data-persona], .franja-contexto .persona-con-foto { display: contents; }
   .franja-contexto .perfil-foto { grid-area: foto; flex: none; width: var(--e-9); border-width: var(--b-1); }
@@ -834,7 +828,6 @@ body > main { flex: 1 0 auto; width: 100%; }
   .franja-contexto [data-bajada] { display: none; }
   .franja-caso { display: block; }
   .franja-contexto [data-estado] { grid-area: estado; margin: 0; }
-  .franja-contexto [data-asistido-etiqueta] { grid-area: asistido; margin: var(--e-1) 0 0; }
   .franja-etiqueta { grid-area: ultima; display: block; margin: var(--e-1) 0 0; }
   /* «Datos de la persona»: plegable del estándar (acordeon) que se abre como lista desplegable bajo la franja */
   .franja-datos { grid-area: datos; display: block; margin: 0; }
@@ -906,7 +899,7 @@ body > main { flex: 1 0 auto; width: 100%; }
   .area-trabajo .visor { height: calc(100dvh - var(--alto-franja) - var(--e-6)); }
 }
 @media (min-width: 1280px) {
-  /* En la página amplia del personal, el título más grande (en la angosta, «Registro asistido», no cabría junto a la sesión) */
+  /* En la página amplia del personal, el título más grande (en la angosta, «Consultar un trámite», no cabría junto a la sesión) */
   body:has([data-sesion-personal]):has(.pagina-amplia) .cabecera .titulo-pagina { font-size: var(--t-lg); }
   .franja-nombre, .franja-contexto .revision-cabeza .titulo-paso { font-size: var(--t-md); }
   .franja-datos > .plegable-titulo { max-inline-size: none; white-space: nowrap; }
@@ -940,7 +933,7 @@ body > main { flex: 1 0 auto; width: 100%; }
   .area-cotejo .franja-contexto .perfil-foto { order: 1; }
   .area-cotejo .franja-quien { order: 2; }
   .area-cotejo .franja-contexto .revision-cabeza > div { order: 3; }
-  .area-cotejo .franja-contexto [data-estado], .area-cotejo .franja-contexto [data-asistido-etiqueta] { order: 4; }
+  .area-cotejo .franja-contexto [data-estado] { order: 4; }
 
   .area-cotejo .franja-contexto .perfil-foto { width: calc(var(--e-11) + var(--e-6)); border-width: var(--b-2); }
   .area-cotejo .franja-contexto .perfil-iniciales { font-size: var(--t-xl); }
@@ -969,15 +962,12 @@ body > main { flex: 1 0 auto; width: 100%; }
 /* La paginación del estándar declara display: con [hidden] (25 o menos) no se ve */
 .paginacion[hidden] { display: none; }
 @media (min-width: 1024px) {
-  /* La tarjeta del registro asistido lleva dos paneles: sin ninguno a la vista, no se ve */
-  .inicio-asistido:not(:has(> .pestanas-panel:not([hidden]))) { display: none; }
-  .inicio-asistido > .pestanas-panel > .titulo-bloque:first-child, .inicio-asistido > .pestanas-panel > .bajada:first-child { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
   /* Búsqueda y filtros en una fila, sin el aire de un formulario de captura */
   .filtros-compactos { margin-block-start: var(--e-3); }
   .filtros-compactos .campo { margin-block-end: var(--e-3); }
   .filtros-compactos + .resumen-filtro + .tabla-marco { margin-block-start: var(--e-2); }
   /* Indicadores que son enlaces (propuesta al estándar E15: tablero de indicadores) */
-  .indicadores-inicio { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e-4); margin-block-end: var(--e-3); }
+  .indicadores-inicio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-4); margin-block-end: var(--e-3); }
   .indicador-inicio { display: grid; gap: 0; padding: var(--e-2) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-block-start: var(--b-4) solid var(--guinda); border-radius: var(--r-ctrl); color: var(--texto); text-decoration: none; }
   .indicador-inicio:hover { border-color: var(--azul); background: var(--azul-cl); }
   .indicador-rotulo { font-size: var(--t-sm); color: var(--gris); }
@@ -1167,11 +1157,4 @@ body > main { flex: 1 0 auto; width: 100%; }
   /* El control enfocado con el teclado no queda debajo de la barra (WCAG 2.4.11) */
   html:has(.barra-acciones-fija:not([hidden])) { scroll-padding-bottom: calc(var(--objetivo-min) + var(--e-7) + var(--e-4)); }
   html:has(.barra-acciones-fija [data-falta-marcar]:not([hidden])) { scroll-padding-bottom: calc(var(--objetivo-min) + var(--e-7) + var(--e-4) + var(--e-11)); }
-}
-
-/* ---------- Impresión ---------- */
-/* Registro asistido: al imprimir el acuse sólo sale la hoja sencilla (app/solicitud.js pone .imprime-hoja en el cuerpo) */
-@media print {
-  .imprime-hoja > :not(.hoja-acuse) { display: none; }
-  .imprime-hoja .hoja-acuse { display: grid; gap: var(--e-4); padding: var(--e-5); }
 }

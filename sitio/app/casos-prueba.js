@@ -165,9 +165,7 @@
         ['personal-acreditaciones', 'Acreditaciones: reposición de credenciales', 'Revisar el acta y entregar la credencial repuesta con la factura de la cuota.', null, 'acreditaciones.html'],
         ['personal-cancelar-instructor', 'Instructor: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento.', null, 'acreditaciones.html?perfil=instructor'],
         ['personal-cancelar-direccion', 'Dirección: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento (perfil de administración).', null, 'acreditaciones.html?perfil=administracion'],
-        // Registro asistido (decisión 2026-10-25): personas que no saben leer ni escribir
-        ['personal-asistido', 'Registro asistido', 'Registrar en el Vivero a una persona que no sabe leer ni escribir y capturar su solicitud, con ella presente.', null, 'asistido.html'],
-        ['personal-ventanilla', 'Ventanilla', 'Buscar a una persona, decirle en qué va su trámite y cargar por ella lo corregido.', null, 'ventanilla.html']
+        ['personal-ventanilla', 'Consultar un trámite', 'Buscar a una persona por CURP, nombre o folio y ver en qué va su trámite y qué sigue.', null, 'ventanilla.html']
       ]]
     ]]
   ];
@@ -175,8 +173,7 @@
   /* → [{ perfil, perfilTexto, grupo, casos: [{ clave, texto, prueba, persona?, pantalla?, migrada? }] }] */
   function lista(datos) {
     const usadas = new Set();
-    // Las del registro asistido que no han activado su cuenta no entran en línea (decisión 2026-10-25): no se «entra como» ellas
-    const activas = datos.solicitante.filter((x) => x.estado === 'activa' && !(x.registro_asistido_en && !x.activada_en));
+    const activas = datos.solicitante.filter((x) => x.estado === 'activa');
     const sinCuenta = datos.solicitante.filter((x) => x.estado === 'sin_activar');
     const grupos = [];
     for (const [perfil, perfilTexto, etapas] of PERFILES) {

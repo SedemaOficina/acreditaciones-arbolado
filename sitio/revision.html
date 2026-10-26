@@ -41,15 +41,13 @@
   <nav class="indicadores-inicio" aria-label="Resumen del día" data-indicadores>
     <a class="indicador-inicio" href="#t-bandeja"><span class="indicador-rotulo">Por revisar</span> <span class="indicador-cifras"><strong class="indicador-numero" data-ind="revisar">…</strong> <span class="indicador-detalle" data-ind-detalle="revisar"></span></span></a>
     <a class="indicador-inicio" href="citas.html"><span class="indicador-rotulo">Citas de hoy</span> <span class="indicador-cifras"><strong class="indicador-numero" data-ind="citas">…</strong> <span class="indicador-detalle" data-ind-detalle="citas"></span></span></a>
-    <a class="indicador-inicio" href="#t-avisos-tel"><span class="indicador-rotulo">Avisos por teléfono</span> <span class="indicador-cifras"><strong class="indicador-numero" data-ind="avisos">…</strong> <span class="indicador-detalle" data-ind-detalle="avisos"></span></span></a>
     <a class="indicador-inicio" href="grupos.html"><span class="indicador-rotulo">En espera de grupo</span> <span class="indicador-cifras"><strong class="indicador-numero" data-ind="espera">…</strong> <span class="indicador-detalle" data-ind-detalle="espera"></span></span></a>
   </nav>
 
   <div class="pestanas pestanas-escritorio" data-pestanas>
     <div class="pestanas-lista" role="tablist" aria-label="Inicio del personal">
       <button type="button" class="pestana" role="tab" id="pe-solicitudes" aria-controls="panel-solicitudes" aria-selected="true" data-pestana-cuenta="Solicitudes por revisar">Solicitudes por revisar</button>
-      <button type="button" class="pestana" role="tab" id="pe-avisos" aria-controls="panel-avisos" aria-selected="false" tabindex="-1" data-pestana-cuenta="Avisos por teléfono">Avisos por teléfono</button>
-      <button type="button" class="pestana" role="tab" id="pe-asistido" aria-controls="panel-asistido" aria-selected="false" tabindex="-1">Registro asistido</button>
+      <button type="button" class="pestana" role="tab" id="pe-consulta" aria-controls="panel-consulta" aria-selected="false" tabindex="-1">Consultar un trámite</button>
     </div>
 
   <section class="tarjeta pestanas-panel" id="panel-solicitudes" aria-labelledby="t-bandeja">
@@ -106,32 +104,17 @@
     </div>
   </section>
 
-  <!-- Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir. La entrada para
-       registrarlas y la ventanilla, y los avisos por teléfono pendientes (los pinta app/registro-asistido.js). -->
-  <section class="tarjeta inicio-asistido" aria-labelledby="t-asistido" data-asistido-inicio>
-    <!-- En escritorio, dos pestañas: «Registro asistido» y «Avisos por teléfono». El título queda fuera de las dos: en
-         escritorio no se ve (repite la pestaña), pero ordena los títulos de las dos para el lector de pantalla. -->
-    <h2 class="titulo-paso titulo-de-pestana" id="t-asistido">Registro asistido</h2>
-    <div class="pestanas-panel" id="panel-asistido">
-    <p class="bajada">Para personas que no saben leer ni escribir: usted las registra en el Vivero, con ellas presentes, captura su solicitud y les da seguimiento por teléfono y en la ventanilla.</p>
-    <nav class="menu-inicio" aria-label="Registro asistido">
-      <a class="menu-opcion" href="asistido.html">
-        <span class="menu-opcion-titulo">Registrar a una persona</span>
-        <span class="menu-opcion-texto">Le lee el aviso de privacidad, crea su cuenta y captura su solicitud.</span>
-      </a>
+  <!-- Consulta general del trámite de una persona (sin registro asistido, decisión de Liber del 26/10/2026): la búsqueda
+       que antes era la ventanilla del registro asistido, para el personal de revisión y cotejo (ventanilla.html). -->
+  <section class="tarjeta pestanas-panel" id="panel-consulta" aria-labelledby="t-consulta">
+    <h2 class="titulo-paso titulo-de-pestana" id="t-consulta">Consultar un trámite</h2>
+    <p class="bajada">Para cuando una persona pregunta en el Vivero o por otro medio en qué va su trámite.</p>
+    <nav class="menu-inicio" aria-label="Consultar un trámite">
       <a class="menu-opcion" href="ventanilla.html">
-        <span class="menu-opcion-titulo">Ventanilla</span>
-        <span class="menu-opcion-texto">Busque a una persona por CURP, nombre o folio y dígale en qué va su trámite.</span>
+        <span class="menu-opcion-titulo">Buscar a una persona</span>
+        <span class="menu-opcion-texto">Por CURP, nombre o folio: en qué va su trámite y qué sigue, en palabras sencillas.</span>
       </a>
     </nav>
-    </div>
-    <div class="pestanas-panel" id="panel-avisos">
-    <h3 class="titulo-bloque" id="t-avisos-tel">Avisos por teléfono pendientes</h3>
-    <p class="ayuda">Llame a cada persona, dígale lo de «Qué decirle» y registre si se le avisó o si no contestó.</p>
-    <p class="resumen-filtro" role="status" data-avisos-cuenta>Cargando los avisos…</p>
-    <div data-avisos-resultado hidden></div>
-    <ul class="lista-fichas" data-avisos-lista hidden></ul>
-    </div>
   </section>
   </div>
 </main>
@@ -157,7 +140,6 @@
 <script src="formkit/modulos/paginacion/paginacion.js?v=1.5.1"></script>
 <script src="app/escritorio.js?v=0.71"></script>
 <script src="app/revision.js?v=0.71"></script>
-<script src="app/registro-asistido.js?v=0.71"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.71"></script>
 <script src="app/pruebas.js?v=0.71"></script>

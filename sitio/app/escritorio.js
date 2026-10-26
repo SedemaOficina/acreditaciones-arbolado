@@ -9,8 +9,8 @@
    recuerda la etiqueta que tenía (su título) para regresársela en teléfono. Propuesta al estándar E14: «pestañas desde
    un ancho» (data-pestanas-desde).
 
-   Un enlace a algo que está dentro de un panel oculto (un indicador, «Ver los grupos programados», la ventanilla que
-   lleva a los avisos por teléfono, una dirección con #ancla) abre primero su pestaña.
+   Un enlace a algo que está dentro de un panel oculto (un indicador, «Ver los grupos programados», una dirección
+   con #ancla) abre primero su pestaña.
    ========================================================= */
 (function (global) {
   'use strict';

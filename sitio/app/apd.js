@@ -306,16 +306,9 @@
   function personaDeSesion(datos) {
     const s = leeSesion();
     if (!s || !s.id) return null;
-    // Registro asistido (decisión 2026-10-25): mientras la persona no activa su cuenta no hay nada que ver en línea (la
-    // base no abre sesión sin contraseña: apd.sesion_sin_contrasena)
-    return datos.solicitante.find((x) => x.id === s.id && x.estado === 'activa' && !asistidaSinActivar(x)) || null;
+    return datos.solicitante.find((x) => x.id === s.id && x.estado === 'activa') || null;
   }
-  /* ----- Registro asistido (decisión 2026-10-25, Liber): personas que no saben leer ni escribir -----
-     El personal de revisión y cotejo registra la cuenta en el Vivero (registro_asistido_en); queda sin contraseña hasta
-     que la persona la activa (activada_en). Mientras, sus avisos van por teléfono. */
-  const esAsistida = (p) => Boolean(p && p.registro_asistido_en);
-  const asistidaSinActivar = (p) => esAsistida(p) && !p.activada_en;
-  /* Teléfono de 10 dígitos como se dicta: «55 1234 5678» */
+  /* Teléfono de 10 dígitos como se dicta: «55 1234 5678» (la consulta del personal, ventanilla.html) */
   const telefonoTexto = (t) => (/^\d{10}$/.test(String(t || '')) ? `${t.slice(0, 2)} ${t.slice(2, 6)} ${t.slice(6)}` : String(t || ''));
 
   /* ===== Dos pestañas, dos personas a la vez y doble clic (auditoría «intentar romperlo», bloque 2) =====
@@ -1094,6 +1087,6 @@
     perfilesCancelan, perfilesAsignan, REPOSICION_ABIERTA, estadoReposicion, reposicionesDe, reposicionAbierta, porQueNoReponer, cuotaReposicion, moneda,
     el, lineaDatos, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, pintaAviso, tituloPasos, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano,
-    esAsistida, asistidaSinActivar, telefonoTexto
+    telefonoTexto
   };
 }(window));

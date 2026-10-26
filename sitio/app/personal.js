@@ -574,7 +574,9 @@
       : perfil === 'capacitacion'
         ? [enlace('capacitacion.html', 'capacitacion', 'Grupos por asignar y confirmar')]
         : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
-          enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones];
+          enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones,
+          // Consulta general del trámite de una persona (sin registro asistido, decisión de Liber del 26/10/2026)
+          enlace('ventanilla.html', 'ventanilla', 'Consultar un trámite')];
     contenedor.replaceChildren(
       // El perfil no es un estado (auditoría 2026-10-18, B11 y D6): va como texto, no como etiqueta de estado
       el('p', { class: 'sesion-nombre' }, [document.createTextNode(quien.nombre), el('span', { class: 'sesion-perfil', texto: `Perfil: ${quien.perfil.toLowerCase()}` })]),

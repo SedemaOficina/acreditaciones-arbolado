@@ -45,10 +45,7 @@ const global_archivos = () => typeof APD_ARCHIVOS_PRUEBA !== 'undefined';
    crea. Lo propio del trámite al recuperarlo (las declaraciones se vuelven a marcar, el curso se recalcula) está en
    app/solicitud.js. */
 const sesionBorrador = typeof APD !== 'undefined' ? APD.leeSesion() : null;
-/* Registro asistido (decisión de Liber del 25/10/2026; ?asistida=<persona>): la captura el personal por la persona; el
-   borrador es de esa persona, no de la sesión */
-const asistidaBorrador = new URLSearchParams(location.search).get('asistida');
-const personaBorrador = asistidaBorrador ? `asistida-${asistidaBorrador}` : sesionBorrador && sesionBorrador.id ? sesionBorrador.id : 'sin-sesion';
+const personaBorrador = sesionBorrador && sesionBorrador.id ? sesionBorrador.id : 'sin-sesion';
 const folioBorrador = new URLSearchParams(location.search).get('folio') || 'nueva';
 document.getElementById('formulario').dataset.borrador = `apd.borrador.solicitud.${personaBorrador}.${folioBorrador}`;
 document.getElementById('formulario').dataset.borradorVersion = '1';
@@ -142,17 +139,13 @@ window.FORMKIT_OPCIONES = {
           const [tipo, modalidad] = document.getElementById('tramite').value.split('_');
           const continua = new URLSearchParams(location.search).get('folio');
           const ahora = new Date().toISOString();
-          // Registro asistido: la envía el personal por la persona, con la marca de que se le leyó lo capturado (en la base,
-          // apd.lectura_aceptada = lo_capturado; sólo el perfil de revisión y cotejo, registro_asistido_sin_permiso)
-          const asistida = asistidaBorrador;
           // Sin sesión, lo capturado sigue en el borrador de este dispositivo (B6-01): se recupera al volver a entrar
-          const sesion = asistida ? null : APD.sesionCambio('No se envió nada, pero lo que capturaste sigue en este dispositivo: vuelve a entrar y continúa.');
+          const sesion = APD.sesionCambio('No se envió nada, pero lo que capturaste sigue en este dispositivo: vuelve a entrar y continúa.');
           if (sesion) return Promise.reject(sesion);
-          const p = asistida ? APD_ASISTIDO.personaAsistida(datos, asistida) : APD.personaDeSesion(datos);
-          if (!p && asistida) return Promise.reject(APD.rechazo('No se envió la solicitud', 'La persona ya no está entre las registradas en el Vivero.', { href: 'ventanilla.html', texto: 'Ir a la ventanilla' }, 'sesion_cambio'));
+          const p = APD.personaDeSesion(datos);
           if (!p) return Promise.reject(APD.rechazo('Tu cuenta no está activa', 'No se envió tu solicitud. Vuelve a entrar; si no puedes, pide ayuda a la Secretaría.', { href: 'entrar.html', texto: 'Entrar' }, 'sesion_cambio'));
           const previa = continua ? datos.solicitud.find((x) => x.folio === continua) : null;
-          const aTramites = asistida ? { href: `ventanilla.html?persona=${encodeURIComponent(asistida)}`, texto: 'Ir a la ventanilla' } : { href: 'tramites.html', texto: 'Ir a «Mis trámites»' };
+          const aTramites = { href: 'tramites.html', texto: 'Ir a «Mis trámites»' };
           if (continua && (!previa || previa.solicitante_id !== p.id)) {
             return Promise.reject(APD.rechazo('No se envió tu solicitud', `La solicitud ${continua} no es de tu cuenta.`, aTramites, 'solicitud_ajena'));
           }
@@ -183,11 +176,8 @@ window.FORMKIT_OPCIONES = {
           const archivos = (payload.archivos || []).filter((a) => a.campo.startsWith(prefijo) && a.blob)
             .map((a) => ({ requisito: a.campo.slice(prefijo.length), blob: a.blob, nombre: a.nombre, tipo: a.tipo, size: a.size }));
           const ant = d.anterior ? datos.acreditacion.find((a) => a.numero === d.anterior) : null;
-          const R = asistida && window.APD_PERSONAL ? APD_PERSONAL.REVISORA : null;
           const registro = {
             folio, existente: Boolean(previa), tipo_acreditacion: tipo, modalidad,
-            // Registro asistido: quién la capturó (al darla de alta) y la marca de lectura de este envío
-            ...(R ? { capturada_por: previa ? previa.capturada_por || R.usuario : R.usuario, lectura_lo_capturado: { por: R.usuario, en: ahora } } : {}),
             acreditacion_anterior_id: ant ? ant.id : (previa ? previa.acreditacion_anterior_id : null),
             enviada_en: previa ? previa.enviada_en : ahora, estado_desde: ahora,
             nivel_estudios: d.nivel_estudios || null, carrera: d.carrera || null, carrera_tecnica: d.carrera_tecnica || null, estatus_estudios: d.estatus_estudios || null,
