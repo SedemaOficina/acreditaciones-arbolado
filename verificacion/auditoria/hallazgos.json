@@ -1,124 +1,44 @@
 {
-  "base": "http://localhost:8984/",
+  "base": "http://localhost:8985/",
   "estados": [
     [
       "inicio",
       "index.html"
     ],
     [
-      "crear-cuenta",
-      "cuenta.html"
-    ],
-    [
-      "entrar",
-      "entrar.html"
-    ],
-    [
       "verificar",
       "verificar.html"
-    ],
-    [
-      "examen-entrar",
-      "examen.html"
-    ],
-    [
-      "aplicar-examen",
-      "aplicar.html"
     ],
     [
       "bandeja-revision",
       "revision.html"
     ],
     [
-      "agenda-citas",
-      "citas.html"
-    ],
-    [
-      "grupos",
-      "grupos.html"
-    ],
-    [
       "grupos-semana",
       "grupos.html?curso=poda-nueva&paso=2"
-    ],
-    [
-      "grupos-renovacion",
-      "grupos.html?curso=poda-renovacion&paso=2"
-    ],
-    [
-      "grupos-paso-3",
-      "grupos.html?curso=poda-nueva&paso=3"
     ],
     [
       "grupos-paso-4",
       "grupos.html?curso=poda-nueva&paso=4"
     ],
     [
-      "grupos-grupo-existente",
-      "grupos.html?grupo=APD-G-2026-004&paso=3"
-    ],
-    [
-      "grupo-integracion",
-      "grupo.html?folio=APD-G-2026-004"
-    ],
-    [
       "grupo-en-curso",
       "grupo.html?folio=APD-G-2026-003"
-    ],
-    [
-      "asistencia",
-      "asistencia.html"
-    ],
-    [
-      "grupo-cancelado",
-      "grupo.html?folio=APD-G-2026-002"
     ],
     [
       "asistencia-grupo",
       "asistencia.html?folio=APD-G-2026-003"
     ],
     [
-      "material",
-      "material.html"
-    ],
-    [
-      "material-personal",
-      "material-personal.html"
-    ],
-    [
       "revisar-dictaminador",
       "revisar.html?folio=APD-S-2026-00020"
-    ],
-    [
-      "revisar-poda",
-      "revisar.html?folio=APD-S-2026-00014"
-    ],
-    [
-      "cotejo",
-      "cotejo.html?folio=APD-S-2026-00042"
     ],
     [
       "tramites-cita",
       "tramites.html"
     ],
     [
-      "tramites-observaciones",
-      "tramites.html"
-    ],
-    [
-      "corregir-observaciones",
-      "solicitud.html?folio=APD-S-2026-00019"
-    ],
-    [
       "tramites-grupo",
-      "tramites.html"
-    ],
-    [
-      "tramites-acreditada",
-      "tramites.html"
-    ],
-    [
-      "tramites-rechazada",
       "tramites.html"
     ],
     [
@@ -126,47 +46,15 @@
       "solicitud.html?folio=APD-S-2026-00015"
     ],
     [
-      "solicitud-nueva",
-      "solicitud.html"
-    ],
-    [
-      "mi-perfil",
-      "datos.html"
-    ],
-    [
       "corregir-sin-pausa",
       "corregir.html"
-    ],
-    [
-      "acreditaciones",
-      "acreditaciones.html"
-    ],
-    [
-      "acreditacion-vigente-instructor",
-      "acreditacion.html?numero=PD-2025-K100&perfil=instructor"
     ],
     [
       "acreditacion-cancelada",
       "acreditacion.html?numero=PD-2025-K140"
     ],
     [
-      "acreditacion-acta-por-revisar",
-      "acreditacion.html?numero=PD-2026-K141"
-    ],
-    [
-      "acreditacion-por-entregar",
-      "acreditacion.html?numero=PD-2026-K145"
-    ],
-    [
       "tramites-cancelada",
-      "tramites.html"
-    ],
-    [
-      "tramites-reposicion-observada",
-      "tramites.html"
-    ],
-    [
-      "tramites-reposicion-aceptada",
       "tramites.html"
     ],
     [
@@ -174,68 +62,170 @@
       "reposicion.html?numero=PD-2026-K147"
     ],
     [
-      "reposicion-corregir",
-      "reposicion.html?numero=PD-2026-K143"
-    ],
-    [
-      "capacitacion",
-      "capacitacion.html"
-    ],
-    [
       "grupo-capacitacion",
       "grupo.html?folio=APD-G-2026-005&perfil=capacitacion"
-    ],
-    [
-      "grupo-en-curso-capacitacion",
-      "grupo.html?folio=APD-G-2026-003&perfil=capacitacion"
-    ],
-    [
-      "revisar-ultima-oportunidad",
-      "revisar.html?folio=APD-S-2026-00062"
     ],
     [
       "tramites-ultima-oportunidad",
       "tramites.html"
     ],
     [
+      "ventanilla-ficha",
+      "ventanilla.html?persona=84a21dbf-161e-4044-a213-f660eeb0b14c"
+    ],
+    [
+      "crear-cuenta",
+      "cuenta.html"
+    ],
+    [
+      "examen-entrar",
+      "examen.html"
+    ],
+    [
+      "agenda-citas",
+      "citas.html"
+    ],
+    [
+      "grupos-renovacion",
+      "grupos.html?curso=poda-renovacion&paso=2"
+    ],
+    [
+      "grupos-grupo-existente",
+      "grupos.html?grupo=APD-G-2026-004&paso=3"
+    ],
+    [
+      "asistencia",
+      "asistencia.html"
+    ],
+    [
+      "material",
+      "material.html"
+    ],
+    [
+      "revisar-poda",
+      "revisar.html?folio=APD-S-2026-00014"
+    ],
+    [
+      "tramites-observaciones",
+      "tramites.html"
+    ],
+    [
+      "tramites-acreditada",
+      "tramites.html"
+    ],
+    [
+      "solicitud-nueva",
+      "solicitud.html"
+    ],
+    [
+      "acreditaciones",
+      "acreditaciones.html"
+    ],
+    [
+      "acreditacion-acta-por-revisar",
+      "acreditacion.html?numero=PD-2026-K141"
+    ],
+    [
+      "tramites-reposicion-observada",
+      "tramites.html"
+    ],
+    [
+      "reposicion-corregir",
+      "reposicion.html?numero=PD-2026-K143"
+    ],
+    [
+      "grupo-en-curso-capacitacion",
+      "grupo.html?folio=APD-G-2026-003&perfil=capacitacion"
+    ],
+    [
       "tramites-sin-oportunidades",
       "tramites.html"
     ],
     [
-      "registro-asistido",
-      "asistido.html"
+      "acreditaciones-directivo",
+      "acreditaciones.html?perfil=directivo"
+    ],
+    [
+      "entrar",
+      "entrar.html"
+    ],
+    [
+      "aplicar-examen",
+      "aplicar.html"
+    ],
+    [
+      "grupos",
+      "grupos.html"
+    ],
+    [
+      "grupos-paso-3",
+      "grupos.html?curso=poda-nueva&paso=3"
+    ],
+    [
+      "grupo-integracion",
+      "grupo.html?folio=APD-G-2026-004"
+    ],
+    [
+      "grupo-cancelado",
+      "grupo.html?folio=APD-G-2026-002"
+    ],
+    [
+      "material-personal",
+      "material-personal.html"
+    ],
+    [
+      "cotejo",
+      "cotejo.html?folio=APD-S-2026-00042"
+    ],
+    [
+      "corregir-observaciones",
+      "solicitud.html?folio=APD-S-2026-00019"
+    ],
+    [
+      "tramites-rechazada",
+      "tramites.html"
+    ],
+    [
+      "mi-perfil",
+      "datos.html"
+    ],
+    [
+      "acreditacion-vigente-instructor",
+      "acreditacion.html?numero=PD-2025-K100&perfil=instructor"
+    ],
+    [
+      "acreditacion-por-entregar",
+      "acreditacion.html?numero=PD-2026-K145"
+    ],
+    [
+      "tramites-reposicion-aceptada",
+      "tramites.html"
+    ],
+    [
+      "capacitacion",
+      "capacitacion.html"
+    ],
+    [
+      "revisar-ultima-oportunidad",
+      "revisar.html?folio=APD-S-2026-00062"
     ],
     [
       "ventanilla",
       "ventanilla.html"
     ],
     [
-      "ventanilla-ficha",
-      "ventanilla.html?persona=47775c15-14eb-4b39-a755-1a32bb5c07bf"
-    ],
-    [
-      "solicitud-asistida-corregir",
-      "solicitud.html?asistida=47775c15-14eb-4b39-a755-1a32bb5c07bf&folio=APD-S-2026-00064"
-    ],
-    [
-      "revisar-asistida",
-      "revisar.html?folio=APD-S-2026-00065"
+      "acreditacion-directivo",
+      "acreditacion.html?numero=PD-2025-K100&perfil=directivo"
     ]
   ],
-  "paginas": 111,
-  "presionados": 391,
+  "paginas": 109,
+  "presionados": 360,
   "porTipo": {
-    "botón sin efecto visible": 2
+    "botón sin efecto visible": 1
   },
   "hallazgos": [
     {
       "estado": "corregir-observaciones",
-      "vista": "escritorio",
-      "tipo": "botón sin efecto visible",
-      "detalle": "a.salto «Ir al contenido»: con el teclado no lleva al contenido"
-    },
-    {
-      "estado": "solicitud-asistida-corregir",
       "vista": "escritorio",
       "tipo": "botón sin efecto visible",
       "detalle": "a.salto «Ir al contenido»: con el teclado no lleva al contenido"

@@ -118,7 +118,11 @@ const ESTADOS = [
   // «Consultar un trámite» (sin registro asistido, decisión de Liber del 26/10/2026): la búsqueda y la ficha de una persona.
   // Ya no están «Registrar a una persona», la solicitud capturada por el personal ni la etiqueta de «Revisar»
   ['ventanilla', 'ventanilla.html', null],
-  conObsConsulta && ['ventanilla-ficha', `ventanilla.html?persona=${encodeURIComponent(conObsConsulta.solicitante_id)}`, null]
+  conObsConsulta && ['ventanilla-ficha', `ventanilla.html?persona=${encodeURIComponent(conObsConsulta.solicitante_id)}`, null],
+  // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio («Acreditaciones») y la ficha de una vigente, con
+  // «Cancelar acreditación»
+  ['acreditaciones-directivo', 'acreditaciones.html?perfil=directivo', null],
+  ['acreditacion-directivo', 'acreditacion.html?numero=PD-2025-K100&perfil=directivo', null]
 ].filter(Boolean);
 
 // Por partes (25/10/2026): AUDITAR_PARTE=k/n recorre sólo la parte k de n de los estados (uno de cada n), para que cada
