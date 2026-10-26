@@ -9263,6 +9263,39 @@
  },
  {
   "pantalla": "Grupos (personal)",
+  "seccion": "Grupos",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Armar un grupo",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T843"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "seccion": "Grupos",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Grupos programados",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T844"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "seccion": "Grupos",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Ya terminaron",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T845"
+ },
+ {
+  "pantalla": "Grupos (personal)",
   "seccion": "Armar un grupo",
   "tipo": "Subtítulo",
   "cuando": "Siempre",
@@ -9270,7 +9303,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T843"
+  "id": "T846"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9281,7 +9314,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T844"
+  "id": "T847"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9292,7 +9325,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T845"
+  "id": "T848"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9303,7 +9336,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T846"
+  "id": "T849"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9314,7 +9347,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T847"
+  "id": "T850"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9325,7 +9358,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T848"
+  "id": "T851"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9336,7 +9369,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T849"
+  "id": "T852"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9347,7 +9380,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T850"
+  "id": "T853"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9358,7 +9391,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T851"
+  "id": "T854"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9369,7 +9402,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T852"
+  "id": "T855"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9380,7 +9413,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T853"
+  "id": "T856"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9391,7 +9424,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T854"
+  "id": "T857"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9402,7 +9435,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T855"
+  "id": "T858"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9413,7 +9446,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T856"
+  "id": "T859"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9424,7 +9457,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T857"
+  "id": "T860"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9435,7 +9468,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T858"
+  "id": "T861"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9446,7 +9479,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T859"
+  "id": "T862"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9457,7 +9490,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T860"
+  "id": "T863"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9468,7 +9501,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T861"
+  "id": "T864"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9479,7 +9512,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T862"
+  "id": "T865"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9490,7 +9523,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T863"
+  "id": "T866"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9501,7 +9534,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T864"
+  "id": "T867"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9512,7 +9545,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T865"
+  "id": "T868"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9523,7 +9556,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T866"
+  "id": "T869"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9534,7 +9567,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T867"
+  "id": "T870"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9545,7 +9578,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T868"
+  "id": "T871"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9556,7 +9589,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T869"
+  "id": "T872"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9567,7 +9600,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T870"
+  "id": "T873"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9578,7 +9611,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T871"
+  "id": "T874"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9589,7 +9622,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T872"
+  "id": "T875"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9600,7 +9633,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T873"
+  "id": "T876"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9611,7 +9644,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T874"
+  "id": "T877"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9622,7 +9655,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T875"
+  "id": "T878"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9633,7 +9666,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T876"
+  "id": "T879"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9644,7 +9677,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T877"
+  "id": "T880"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9655,7 +9688,40 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T878"
+  "id": "T881"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "seccion": "Tu grupo",
+  "tipo": "Subtítulo",
+  "cuando": "Siempre",
+  "texto": "Tu grupo",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T882"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "seccion": "Tu grupo",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Atrás",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T883"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "seccion": "Tu grupo",
+  "tipo": "Botón o enlace",
+  "cuando": "Siempre",
+  "texto": "Siguiente",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T884"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9666,7 +9732,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T879"
+  "id": "T885"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9677,7 +9743,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T880"
+  "id": "T886"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9688,7 +9754,18 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T881"
+  "id": "T887"
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "seccion": "Grupos programados",
+  "tipo": "Texto",
+  "cuando": "Siempre",
+  "texto": "Todavía no hay grupos que hayan terminado.",
+  "quien": "Personal de la Secretaría",
+  "donde": "Página (sitio/grupos.html)",
+  "obs": "",
+  "id": "T888"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -9699,7 +9776,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/grupos.html)",
   "obs": "",
-  "id": "T882"
+  "id": "T889"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9710,7 +9787,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T883"
+  "id": "T890"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9721,7 +9798,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T884"
+  "id": "T891"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9732,7 +9809,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "Texto momentáneo mientras cargan los datos.",
-  "id": "T885"
+  "id": "T892"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9743,7 +9820,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T886"
+  "id": "T893"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9754,7 +9831,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T887"
+  "id": "T894"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9765,7 +9842,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T888"
+  "id": "T895"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9776,7 +9853,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T889"
+  "id": "T896"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9787,7 +9864,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T890"
+  "id": "T897"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9798,7 +9875,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T891"
+  "id": "T898"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9809,7 +9886,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T892"
+  "id": "T899"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9820,7 +9897,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T893"
+  "id": "T900"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9831,7 +9908,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T894"
+  "id": "T901"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9842,7 +9919,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T895"
+  "id": "T902"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9853,7 +9930,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T896"
+  "id": "T903"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9864,7 +9941,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T897"
+  "id": "T904"
  },
  {
   "pantalla": "Grupos por asignar y confirmar (personal)",
@@ -9875,7 +9952,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/capacitacion.html)",
   "obs": "",
-  "id": "T898"
+  "id": "T905"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9886,7 +9963,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T899"
+  "id": "T906"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9897,7 +9974,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T900"
+  "id": "T907"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9908,7 +9985,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T901"
+  "id": "T908"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9919,7 +9996,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T902"
+  "id": "T909"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9930,7 +10007,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T903"
+  "id": "T910"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9941,7 +10018,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T904"
+  "id": "T911"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9952,7 +10029,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "Lo completa la Unidad de Transparencia; no se inventa la cita.",
-  "id": "T905"
+  "id": "T912"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9963,7 +10040,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T906"
+  "id": "T913"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9974,7 +10051,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T907"
+  "id": "T914"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9985,7 +10062,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T908"
+  "id": "T915"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -9996,7 +10073,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T909"
+  "id": "T916"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10007,7 +10084,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T910"
+  "id": "T917"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10018,7 +10095,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T911"
+  "id": "T918"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10029,7 +10106,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T912"
+  "id": "T919"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10040,7 +10117,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T913"
+  "id": "T920"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10051,7 +10128,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T914"
+  "id": "T921"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10062,7 +10139,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T915"
+  "id": "T922"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10073,7 +10150,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T916"
+  "id": "T923"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10084,7 +10161,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T917"
+  "id": "T924"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10095,7 +10172,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T918"
+  "id": "T925"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10106,7 +10183,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T919"
+  "id": "T926"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10117,7 +10194,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T920"
+  "id": "T927"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10128,7 +10205,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T921"
+  "id": "T928"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10139,7 +10216,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T922"
+  "id": "T929"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10150,7 +10227,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T923"
+  "id": "T930"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10161,7 +10238,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T924"
+  "id": "T931"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10172,7 +10249,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T925"
+  "id": "T932"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10183,7 +10260,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T926"
+  "id": "T933"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10194,7 +10271,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Fragmento de adscripción (herramientas/plantillas/adscripcion.html)",
   "obs": "",
-  "id": "T927"
+  "id": "T934"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10205,7 +10282,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T928"
+  "id": "T935"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10216,7 +10293,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T929"
+  "id": "T936"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10227,7 +10304,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T930"
+  "id": "T937"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10238,7 +10315,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T931"
+  "id": "T938"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10249,7 +10326,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T932"
+  "id": "T939"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10260,7 +10337,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T933"
+  "id": "T940"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10271,7 +10348,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T934"
+  "id": "T941"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10282,7 +10359,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T935"
+  "id": "T942"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10293,7 +10370,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T936"
+  "id": "T943"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10304,7 +10381,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T937"
+  "id": "T944"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10315,7 +10392,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T938"
+  "id": "T945"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10326,7 +10403,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T939"
+  "id": "T946"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10337,7 +10414,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T940"
+  "id": "T947"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10348,7 +10425,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T941"
+  "id": "T948"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10359,7 +10436,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T942"
+  "id": "T949"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10370,7 +10447,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T943"
+  "id": "T950"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10381,7 +10458,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/asistido.html)",
   "obs": "",
-  "id": "T944"
+  "id": "T951"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10392,7 +10469,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/ventanilla.html)",
   "obs": "",
-  "id": "T945"
+  "id": "T952"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10403,7 +10480,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/ventanilla.html)",
   "obs": "",
-  "id": "T946"
+  "id": "T953"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10414,7 +10491,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/ventanilla.html)",
   "obs": "",
-  "id": "T947"
+  "id": "T954"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10425,7 +10502,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/ventanilla.html)",
   "obs": "",
-  "id": "T948"
+  "id": "T955"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10436,7 +10513,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/ventanilla.html)",
   "obs": "",
-  "id": "T949"
+  "id": "T956"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10447,7 +10524,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Página (sitio/ventanilla.html)",
   "obs": "",
-  "id": "T950"
+  "id": "T957"
  },
  {
   "pantalla": "Reposición de tu credencial",
@@ -10458,7 +10535,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/reposicion.js)",
   "obs": "",
-  "id": "T951"
+  "id": "T958"
  },
  {
   "pantalla": "Reposición de tu credencial",
@@ -10469,7 +10546,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/reposicion.js)",
   "obs": "",
-  "id": "T952"
+  "id": "T959"
  },
  {
   "pantalla": "Reposición de tu credencial",
@@ -10480,7 +10557,7 @@
   "quien": "Persona solicitante",
   "donde": "Código del sitio (sitio/app/reposicion.js)",
   "obs": "",
-  "id": "T953"
+  "id": "T960"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10491,7 +10568,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T954"
+  "id": "T961"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10502,7 +10579,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T955"
+  "id": "T962"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10513,7 +10590,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T956"
+  "id": "T963"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10524,7 +10601,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T957"
+  "id": "T964"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10535,7 +10612,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T958"
+  "id": "T965"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10546,7 +10623,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T959"
+  "id": "T966"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10557,7 +10634,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T960"
+  "id": "T967"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10568,7 +10645,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T961"
+  "id": "T968"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10579,7 +10656,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T962"
+  "id": "T969"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10590,7 +10667,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T963"
+  "id": "T970"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10601,7 +10678,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T964"
+  "id": "T971"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10612,7 +10689,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T965"
+  "id": "T972"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10623,7 +10700,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T966"
+  "id": "T973"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10634,7 +10711,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T967"
+  "id": "T974"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10645,7 +10722,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T968"
+  "id": "T975"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10656,7 +10733,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T969"
+  "id": "T976"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10667,7 +10744,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T970"
+  "id": "T977"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10678,7 +10755,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T971"
+  "id": "T978"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10689,7 +10766,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T972"
+  "id": "T979"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10700,7 +10777,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T973"
+  "id": "T980"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10711,7 +10788,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T974"
+  "id": "T981"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10722,7 +10799,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T975"
+  "id": "T982"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10733,7 +10810,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T976"
+  "id": "T983"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10744,7 +10821,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T977"
+  "id": "T984"
  },
  {
   "pantalla": "Grupos (personal)",
@@ -10755,7 +10832,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/grupos.js)",
   "obs": "",
-  "id": "T978"
+  "id": "T985"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10766,7 +10843,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/cruzadas-propias.js)",
   "obs": "",
-  "id": "T979"
+  "id": "T986"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10777,7 +10854,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/asistido.js)",
   "obs": "",
-  "id": "T980"
+  "id": "T987"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10788,7 +10865,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/asistido.js)",
   "obs": "",
-  "id": "T981"
+  "id": "T988"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10799,7 +10876,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/config-asistido.js)",
   "obs": "",
-  "id": "T982"
+  "id": "T989"
  },
  {
   "pantalla": "Registro asistido (personal)",
@@ -10810,7 +10887,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/config-asistido.js)",
   "obs": "",
-  "id": "T983"
+  "id": "T990"
  },
  {
   "pantalla": "Solicitud (registro asistido)",
@@ -10821,7 +10898,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T984"
+  "id": "T991"
  },
  {
   "pantalla": "Solicitud (registro asistido)",
@@ -10832,7 +10909,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T985"
+  "id": "T992"
  },
  {
   "pantalla": "Solicitud (registro asistido)",
@@ -10843,7 +10920,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T986"
+  "id": "T993"
  },
  {
   "pantalla": "Solicitud (registro asistido)",
@@ -10854,7 +10931,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T987"
+  "id": "T994"
  },
  {
   "pantalla": "Solicitud (registro asistido)",
@@ -10865,7 +10942,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/solicitud.js)",
   "obs": "",
-  "id": "T988"
+  "id": "T995"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10876,7 +10953,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T989"
+  "id": "T996"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10887,7 +10964,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T990"
+  "id": "T997"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10898,7 +10975,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T991"
+  "id": "T998"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10909,7 +10986,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T992"
+  "id": "T999"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10920,7 +10997,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T993"
+  "id": "T1000"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10931,7 +11008,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T994"
+  "id": "T1001"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10942,7 +11019,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T995"
+  "id": "T1002"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10953,7 +11030,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T996"
+  "id": "T1003"
  },
  {
   "pantalla": "Inicio del personal · avisos por teléfono",
@@ -10964,7 +11041,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T997"
+  "id": "T1004"
  },
  {
   "pantalla": "Revisar una solicitud y Cita de cotejo (personal)",
@@ -10975,7 +11052,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T998"
+  "id": "T1005"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10986,7 +11063,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T999"
+  "id": "T1006"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -10997,7 +11074,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T1000"
+  "id": "T1007"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -11008,7 +11085,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T1001"
+  "id": "T1008"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -11019,7 +11096,7 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/registro-asistido.js)",
   "obs": "",
-  "id": "T1002"
+  "id": "T1009"
  },
  {
   "pantalla": "Ventanilla (personal)",
@@ -11030,6 +11107,6 @@
   "quien": "Personal de la Secretaría",
   "donde": "Código del sitio (sitio/app/ventanilla.js)",
   "obs": "",
-  "id": "T1003"
+  "id": "T1010"
  }
 ]

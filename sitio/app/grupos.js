@@ -438,8 +438,12 @@
       const fila = (x, conOrg) => {
         const k = el('input', { class: 'casilla-input plan-casilla', type: 'checkbox', value: x.s.folio, checked: marcadas.has(x.s.folio) });
         filas.push({ x, k });
-        return P.filaEspera(x, k, conOrg);
+        // El folio, columna de la tabla compacta de escritorio (en teléfono no se ve: la fila queda como antes)
+        const f = P.filaEspera(x, k, conOrg);
+        f.append(el('span', { class: 'plan-persona-folio mono', texto: x.s.folio }));
+        return f;
       };
+      const orgDe = (x) => x.organizacion || 'Independiente';
       /* «Su grupo» de cada organización (decisión 2 de la auditoría del 2026-10-19, Liber; DECISIONES, 17/10), como lo decía
          el planeador: si ya tiene un grupo propio de este curso que recibe personas, se dice cuál y cuántas le faltan; si
          no, si alcanzan para uno propio. Al armar un grupo nuevo (al completar uno, ya se sabe a cuál van). */
@@ -463,12 +467,12 @@
           const una = fila(b.xs[0], true);
           const suyo = suGrupoDe(b.xs[0].s.organizacion_id);
           if (suyo) una.append(el('span', { class: 'plan-persona-org' }, [estado(textoSuGrupo(suyo), suyo.n < suyo.g.cupo_minimo ? 'pend' : 'ok')]));
-          return el('li', {}, [una]);
+          return el('li', { 'data-org': orgDe(b.xs[0]) }, [una]);
         }
         const propias = b.xs.map((x) => fila(x, false));
         const { bloque, refleja } = P.bloqueEspera(b, `pb-${i}`, propias, filas.filter((f) => b.xs.includes(f.x)).map((f) => f.k), situacionBloque(b), () => cambioPersonas(true));
         refleja();
-        return el('li', {}, [bloque]);
+        return el('li', { 'data-org': orgDe(b.xs[0]) }, [bloque]);
       });
       /* Las propuestas a la vista; las demás, plegadas en «Cambiar a quiénes van (N más en espera)» (decisión de Liber
          sobre C3-01, auditoría 2026-10-20: la lista de 66 ocupaba 12.4 pantallas en teléfono). Un bloque con alguna
@@ -483,7 +487,29 @@
       ])]) : null;
       $('[data-personas]').replaceChildren(...(items.length ? [...aLaVista, plegadas].filter(Boolean) : []));
       $('[data-error-personas]').hidden = true;
+      preparaFiltroOrg(items);
     }
+    /* Filtro por organización (escritorio, DIAGNOSTICO 4.4): oculta las filas y los bloques de otras organizaciones,
+       también las plegadas en «Cambiar a quiénes van», que se despliega mientras el filtro está puesto. No cambia a quién
+       se eligió. Con una sola organización en la espera no se ofrece. */
+    // autocomplete off: filtra la vista; el navegador no tiene un valor que proponer
+    const filtroOrg = el('select', { class: 'control control-select', id: 'filtro_org', autocomplete: 'off' });
+    $('[data-filtro-org]').append(el('label', { class: 'etiqueta', for: 'filtro_org', texto: 'Organización' }), el('div', { class: 'select' }, [filtroOrg]));
+    function preparaFiltroOrg(items) {
+      const orgs = [...new Set(items.map((li) => li.dataset.org))].sort((a, b) => a.localeCompare(b, 'es'));
+      const antes = filtroOrg.value;
+      filtroOrg.replaceChildren(el('option', { value: '', texto: 'Todas' }), ...orgs.map((o) => el('option', { value: o, texto: o })));
+      filtroOrg.value = orgs.includes(antes) ? antes : '';
+      $('[data-filtro-org]').hidden = orgs.length < 2;
+      aplicaFiltroOrg();
+    }
+    function aplicaFiltroOrg() {
+      const org = filtroOrg.value;
+      for (const li of $$('[data-personas] li[data-org]')) li.hidden = Boolean(org) && li.dataset.org !== org;
+      const mas = $('[data-mas-espera]');
+      if (mas && org) mas.open = true;
+    }
+    filtroOrg.addEventListener('change', (e) => { e.stopPropagation(); aplicaFiltroOrg(); });
     function cambioPersonas(porPersona) {
       if (porPersona) sinGuardar = true;
       guardaElegidas();
@@ -492,6 +518,7 @@
       pintaSuGrupo();
       pintaEleccion();
       pintaResumen();
+      pintaPanel();
       if (elegidas().length) $('[data-error-personas]').hidden = true;
     }
     $('[data-personas]').addEventListener('change', (e) => cambioPersonas(e.isTrusted));
@@ -629,7 +656,7 @@
       caja.replaceChildren(...(caja.hidden ? [] : [APD.lineaDatos(partes)]));
     }
     function pintaTodo() {
-      if (!clave) return;
+      if (!clave) { pintaPanel(); return; }
       pintaCalendario();
       pintaElegida();
       pintaCuenta(false);
@@ -637,7 +664,80 @@
       pintaSuGrupo();
       pintaResumen();
       pintaEleccion();
+      pintaPanel();
     }
+
+    /* ----- Panel «Tu grupo» (escritorio, DIAGNOSTICO 4.4): lo elegido, el cupo, las elegidas con «Quitar» y los botones del
+       paso. Sus botones pulsan los del paso, así que hacen lo mismo (y revisan lo mismo) que los de abajo. ----- */
+    const panel = $('[data-panel-grupo]');
+    function pintaPanel() {
+      const cc = c();
+      const pares = [['Curso', clave ? APD.cursoLargo(...curso()) : 'Sin elegir']];
+      if (clave) {
+        pares.push(['Semana', inicio ? (dur() > 1 ? nombreSemana(inicio) : fechaLarga(inicio, { mayuscula: true })) : (gExistente ? 'Sin semana todavía' : 'Sin elegir')]);
+        pares.push(['Horario', `De ${hm(horaEntrada)} a ${hm(horaSalida)}${dur() > 1 ? ', de lunes a viernes' : ''}`]);
+        if (paso >= 3) pares.push(['Tipo de grupo', gExistente ? xG.integracion : integracion() === 'especifico' ? `Sólo de ${(elegidas()[0] || {}).organizacion || 'una institución de gobierno'}` : 'Combinado']);
+      }
+      $('[data-panel-datos]', panel).replaceChildren(...pares.flatMap(([etq, valor]) => [el('dt', { texto: etq }), el('dd', { texto: valor })]));
+      // El cupo y las elegidas, desde «Quiénes van»
+      const conPersonas = Boolean(cc) && paso >= 3;
+      const cupo = $('[data-panel-cupo]', panel);
+      cupo.hidden = !conPersonas;
+      if (conPersonas) {
+        const n = total();
+        $('[data-panel-cupo-texto]', panel).textContent = $('[data-cuenta-personas]').textContent;
+        $('[data-panel-cupo-lleno]', panel).style.width = `${Math.min(100, Math.round((n / cc.cupo_maximo) * 100))}%`;
+      }
+      const lista = $('[data-panel-elegidas]', panel);
+      const quienes = conPersonas ? elegidas() : [];
+      lista.hidden = !quienes.length;
+      lista.replaceChildren(...quienes.map((x) => {
+        const nombre = APD.nombreCompleto(x.p);
+        const hijos = [el('span', { class: 'panel-grupo-nombre', texto: nombre })];
+        if (paso === 3) hijos.push(el('button', { type: 'button', class: 'btn-enlace', 'data-quitar': x.s.folio, 'aria-label': `Quitar a ${nombre}`, texto: 'Quitar' }));
+        return el('li', {}, hijos);
+      }));
+      // Los botones: los del paso que se ve
+      const actual = pasos[paso - 1];
+      const real = actual && actual.querySelector('[data-accion="siguiente"], [data-accion="enviar"]');
+      $('[data-panel-siguiente]', panel).textContent = real ? real.textContent : 'Siguiente';
+      $('[data-panel-atras]', panel).hidden = paso === 1;
+    }
+    /* Un solo principal por pantalla (C6-02, decisión 2 de Liber): con el panel fijo (desde 1024 px de ancho y 700 px de alto,
+       app/apd.css) el principal es el del panel y el de abajo del paso pasa a secundario; si no, como antes */
+    const conPanelFijo = window.matchMedia('(min-width: 1024px) and (min-height: 700px)');
+    function principalDelPaso() {
+      for (const b of $$('[data-accion="siguiente"], [data-accion="enviar"]', form)) {
+        b.classList.toggle('btn-primario', !conPanelFijo.matches);
+        b.classList.toggle('btn-secundario', conPanelFijo.matches);
+      }
+    }
+    conPanelFijo.addEventListener('change', principalDelPaso);
+    principalDelPaso();
+    $('[data-panel-siguiente]', panel).addEventListener('click', () => {
+      const b = pasos[paso - 1] && pasos[paso - 1].querySelector('[data-accion="siguiente"], [data-accion="enviar"]');
+      if (b) b.click();
+    });
+    $('[data-panel-atras]', panel).addEventListener('click', () => {
+      const b = pasos[paso - 1] && pasos[paso - 1].querySelector('[data-accion="atras"]');
+      if (b) b.click();
+    });
+    // «Quitar»: desmarca su casilla en la lista (y su bloque), anuncia la cuenta como al desmarcar y deja el foco en la
+    // siguiente de la lista o, si no hay, en el título del panel
+    $('[data-panel-elegidas]', panel).addEventListener('click', (e) => {
+      const b = e.target.closest('[data-quitar]');
+      if (!b) return;
+      const f = filas.find((z) => z.x.s.folio === b.dataset.quitar);
+      if (!f) return;
+      const siguiente = b.closest('li').nextElementSibling || b.closest('li').previousElementSibling;
+      const folioSig = siguiente ? siguiente.querySelector('[data-quitar]').dataset.quitar : null;
+      f.k.checked = false;
+      f.k.dispatchEvent(new Event('change', { bubbles: true }));
+      sinGuardar = true;
+      FormKit.anuncia($('[data-cuenta-personas]').textContent);
+      const destino = folioSig && $(`[data-panel-elegidas] [data-quitar="${CSS.escape(folioSig)}"]`);
+      if (destino) destino.focus(); else { const t = $('#t-tu-grupo'); t.tabIndex = -1; t.focus(); }
+    });
 
     /* ----- La dirección: ?curso=&mes=&semana=&paso= (y ?grupo=) ----- */
     function direccion() {
@@ -753,6 +853,8 @@
       alEnviar(r) { if (r && r.rechazado) return; termina(r); },
       alFallar(err) { if (APD.muestraRechazo(err, form)) return; const a = $('[data-estado-envio] .aviso-texto', form); if (err && err.mensaje && a) a.textContent = err.mensaje; }
     });
+    // Pestañas desde 1024 px (app/escritorio.js): «Ya terminaron» se ve abierto en su pestaña
+    const pes = APD_ESCRITORIO.pestanas($('[data-pestanas]'), { alCambiar: (t, en) => { if (en && t.id === 'pe-terminados') $('[data-terminados]').open = true; } });
 
     /* Los eventos de siempre, en orden (la base hace lo mismo en una transacción), como lo haría la API (auditoría «intentar
        romperlo», F3 A1): el folio de un grupo nuevo se calcula al guardar, con lo guardado más reciente, y la creación
@@ -826,6 +928,7 @@
       paso = nuevo;
       pintaEleccion();
       if (paso === 4) pintaResumen();
+      pintaPanel();
       if (cambia) recuerda(!restaurando);
     });
     // Restaurar el paso al cargar sin mover el foco ni anunciarlo (el módulo pasos lo hace así al recuperar un borrador)
@@ -852,6 +955,8 @@
       const activos = todos.filter((x) => ACTIVOS.includes(x.g.estado));
       const link = $('[data-ir-programados]');
       link.textContent = `Ver los grupos programados (${activos.length})`;
+      const tabP = $('#pe-programados');
+      tabP.textContent = `${tabP.dataset.pestanaCuenta} (${activos.length})`;
       const secciones = P.CURSOS.map(([t, m]) => {
         const k = P.claveCurso(t, m);
         const suyos = activos.filter((x) => x.g.tipo_acreditacion === t && x.g.modalidad === m)
@@ -878,6 +983,9 @@
       /* Grupos que ya terminaron: concluidos y cancelados, de los cuatro cursos */
       const hechos = todos.filter((x) => ['concluido', 'cancelado'].includes(x.g.estado));
       $('[data-terminados]').hidden = !hechos.length;
+      $('[data-sin-terminados]').hidden = Boolean(hechos.length);
+      const tabT = $('#pe-terminados');
+      tabT.textContent = `${tabT.dataset.pestanaCuenta} (${hechos.length})`;
       $('[data-terminados-titulo]').textContent = `Grupos que ya terminaron · ${hechos.length}`;
       $('[data-terminados-lista]').replaceChildren(...hechos.map((x) => el('li', { class: 'plan-terminado', 'data-grupo': x.g.folio }, [
         APD.grupoTitulo(x.g, datos), estado(x.situacion.texto, x.situacion.tono),
@@ -1020,6 +1128,8 @@
       }
       if (!aviso) return;
       const caja = $('[data-hecho]');
+      // En escritorio, el aviso está en la pestaña «Grupos programados»: se abre antes de enfocarlo
+      pes.activa($('#pe-programados'));
       caja.hidden = false;
       caja.replaceChildren();
       FormKit.aviso(caja, Object.assign(aviso, { foco: true }));

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="same-origin">
-<meta name="sia-version" content="0.70">
+<meta name="sia-version" content="0.71">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Aplicar el examen · Personal · Acreditaciones de arbolado urbano</title>
@@ -17,8 +17,8 @@
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
-<link rel="stylesheet" href="app/apd.css?v=0.70">
-<link rel="stylesheet" href="app/examen.css?v=0.70">
+<link rel="stylesheet" href="app/apd.css?v=0.71">
+<link rel="stylesheet" href="app/examen.css?v=0.71">
 </head>
 <body>
 <a class="salto" href="#contenido">Ir al contenido</a>
@@ -37,11 +37,19 @@
   <section class="tarjeta" aria-labelledby="t-aplicar" data-con-grupo hidden>
     <h2 class="titulo-paso" id="t-aplicar">Aplicar el examen</h2>
     <p class="bajada">El último día del curso, en el salón de cómputo: primero se pasa lista, que es la asistencia de ese día, y después cada persona presente contesta el examen en línea con su código de un solo uso.</p>
-    <div class="grupo-examen" data-grupo></div>
+    <!-- Desde 1024 px, los datos del grupo en una línea y los avisos en una fila (acomodo de escritorio, 25/10/2026) -->
+    <div class="grupo-examen grupo-en-linea" data-grupo></div>
 
     <!-- Primero el pase de lista (la asistencia del último día), después el examen (reporte de Liber del 24/10/2026). El
          título y el texto los pone app/aplicar.js con el día del curso: «Día 5 de 5 · Pase de lista en el salón de cómputo». -->
-    <h3 class="titulo-bloque" id="t-pase-lista" data-titulo-lista>Pase de lista en el salón de cómputo</h3>
+    <!-- Acomodo de escritorio (25/10/2026): desde 1024 px el título, la cuenta corta e «Imprimir los códigos» van en una
+         franja en la parte de arriba (fija desde 700 px de alto) y el pase de lista sigue una persona por renglón, más compacto.
+         La cuenta corta repite a la vista la de abajo (role="status"), que es la que se anuncia. app/aplicar.js lleva ahí el
+         botón de imprimir en computadora; en teléfono queda como antes. -->
+    <div class="pase-lista" data-pase>
+    <h3 class="titulo-bloque franja-fija" id="t-pase-lista" data-titulo-lista>Pase de lista en el salón de cómputo</h3>
+    <p class="cuenta-corta franja-fija" data-cuenta-corta aria-hidden="true"></p>
+    <div class="franja-accion franja-fija" data-franja-accion></div>
     <p class="ayuda ayuda-bloque" data-lista-texto>Compare a cada persona con su fotografía y con su identificación oficial, y márquela «Presente» o «No llegó». Al marcarla presente aparece su código.</p>
     <!-- Lo que se acaba de hacer o lo que no se pudo (APD.pintaAviso), junto a la lista -->
     <div data-aviso-accion hidden></div>
@@ -53,6 +61,7 @@
         <thead><tr><th scope="col">Persona</th><th scope="col">Asistencia</th><th scope="col">Pase de lista y código</th><th scope="col">Avance</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
         <tbody data-filas></tbody>
       </table>
+    </div>
     </div>
 
     <h3 class="titulo-bloque" id="t-el-examen">Después de pasar lista: el examen</h3>
@@ -110,29 +119,29 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
-<script src="app/perfil-academico.js?v=0.70"></script>
-<script src="app/apd.js?v=0.70"></script>
+<script src="app/perfil-academico.js?v=0.71"></script>
+<script src="app/apd.js?v=0.71"></script>
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
-<script src="app/archivos-prueba.js?v=0.70"></script>
-<script src="app/personal.js?v=0.70"></script>
-<script src="app/codigo-examen.js?v=0.70"></script>
-<script src="app/config-examen.js?v=0.70"></script>
+<script src="app/archivos-prueba.js?v=0.71"></script>
+<script src="app/personal.js?v=0.71"></script>
+<script src="app/codigo-examen.js?v=0.71"></script>
+<script src="app/config-examen.js?v=0.71"></script>
 <script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
 <!-- Pantalla del personal: textos del estándar en usted (después de validaciones.config.js, antes del núcleo). -->
-<script src="app/mensajes-usted.js?v=0.70"></script>
+<script src="app/mensajes-usted.js?v=0.71"></script>
 <script src="formkit/js/iconos.js?v=1.5.1"></script>
 <script src="formkit/js/formkit.core.js?v=1.5.1"></script>
 <script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
 <script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
 <!-- Versión de prueba: banco ficticio y servidor simulado en el navegador (en el SIA, la API del módulo). -->
-<script src="datos/examen-ficticio.js?v=0.70"></script>
-<script src="app/examen-servidor.js?v=0.70"></script>
-<script src="app/examen-grupo.js?v=0.70"></script>
-<script src="app/aplicar.js?v=0.70"></script>
+<script src="datos/examen-ficticio.js?v=0.71"></script>
+<script src="app/examen-servidor.js?v=0.71"></script>
+<script src="app/examen-grupo.js?v=0.71"></script>
+<script src="app/aplicar.js?v=0.71"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
-<script src="app/casos-prueba.js?v=0.70"></script>
-<script src="app/pruebas.js?v=0.70"></script>
-<script src="app/version-visible.js?v=0.70"></script>
+<script src="app/casos-prueba.js?v=0.71"></script>
+<script src="app/pruebas.js?v=0.71"></script>
+<script src="app/version-visible.js?v=0.71"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="same-origin">
-<meta name="sia-version" content="0.70">
+<meta name="sia-version" content="0.71">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Grupo · Personal · Acreditaciones de arbolado urbano</title>
@@ -18,7 +18,8 @@
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
-<link rel="stylesheet" href="app/apd.css?v=0.70">
+<link rel="stylesheet" href="formkit/modulos/pestanas/pestanas.css?v=1.5.1">
+<link rel="stylesheet" href="app/apd.css?v=0.71">
 </head>
 <body>
 <a class="salto" href="#contenido">Ir al contenido</a>
@@ -37,7 +38,11 @@
   <!-- Lo que se acaba de hacer: aviso con título e icono (APD.pintaAviso) -->
   <div data-hecho hidden></div>
 
+  <!-- Acomodo de escritorio (25/10/2026): desde 1024 px, «Persona instructora y confirmación» va en una columna lateral -->
+  <div class="ficha-grupo con-lateral">
   <section class="tarjeta" aria-labelledby="t-grupo">
+    <!-- Desde 1024 px, el cupo a la derecha de la cabeza -->
+    <div class="grupo-cabeza-cupo">
     <div class="grupo-cabeza">
       <div>
         <h2 class="titulo-paso" id="t-grupo">Grupo</h2>
@@ -49,7 +54,12 @@
       <p data-cupo-texto></p>
       <div class="cupo-barra" aria-hidden="true"><span class="cupo-lleno" data-cupo-lleno></span></div>
     </div>
-    <div data-datos></div>
+    </div>
+    <!-- Desde 1024 px, los datos del curso en una rejilla de 2 o 3 columnas -->
+    <div class="datos-rejilla" data-datos></div>
+
+    <!-- Desde 1024 px, con el curso en marcha o concluido, «Personas del grupo» y «Asistencia por día» van como pestañas del
+         estándar (módulo pestanas); app/grupo.js las arma al abrir la página en computadora. En teléfono, una debajo de otra. -->
 
     <h3 class="titulo-bloque" id="t-personas">Personas del grupo</h3>
     <div class="tabla-marco" data-tabla data-clave="persona">
@@ -82,7 +92,7 @@
        Instructores y Capacitación (perfil «capacitación»; la base: perfiles_asignan_instructor). Quien arma los grupos ve aquí
        lo que le falta al grupo y quién lo confirma, sin formulario. La base exige para confirmar el mínimo de personas, 7 días
        de anticipación, fecha, hora e instructor (la hora, la del curso: no se elige; la semana la elige quien arma el grupo). -->
-  <section class="tarjeta" aria-labelledby="t-confirmar" data-confirmar hidden>
+  <section class="tarjeta columna-lateral" aria-labelledby="t-confirmar" data-confirmar hidden>
     <h2 class="titulo-paso" id="t-confirmar" data-confirmar-titulo>Persona instructora y confirmación</h2>
     <p class="bajada" data-confirmar-bajada>La persona instructora la asigna y el grupo lo confirma el área de Instructores y Capacitación.</p>
     <div class="aviso aviso-advertencia" data-falta hidden><svg class="icono" aria-hidden="true"><use href="#i-alerta"></use></svg><p class="aviso-texto"></p></div>
@@ -109,6 +119,7 @@
       </div>
     </form>
   </section>
+  </div>
 
   <dialog class="dialogo dialogo-confirma" id="dlg-baja" aria-labelledby="t-baja">
     <form id="baja" data-formkit="manual" action="#" method="post">
@@ -155,23 +166,26 @@
   <div id="version-sia" data-testid="version-sia"></div>
 </footer>
 
-<script src="app/perfil-academico.js?v=0.70"></script>
-<script src="app/apd.js?v=0.70"></script>
+<script src="app/perfil-academico.js?v=0.71"></script>
+<script src="app/apd.js?v=0.71"></script>
 <!-- Versión de prueba: lo enviado en este navegador, con sus archivos. -->
-<script src="app/archivos-prueba.js?v=0.70"></script>
-<script src="app/personal.js?v=0.70"></script>
+<script src="app/archivos-prueba.js?v=0.71"></script>
+<script src="app/personal.js?v=0.71"></script>
 <script src="formkit/js/validaciones.config.js?v=1.5.1"></script>
-<script src="app/mensajes-usted.js?v=0.70"></script>
+<script src="app/mensajes-usted.js?v=0.71"></script>
 <script src="formkit/js/iconos.js?v=1.5.1"></script>
 <script src="formkit/js/formkit.core.js?v=1.5.1"></script>
 <script src="formkit/modulos/tabla/tabla.js?v=1.5.1"></script>
 <script src="formkit/modulos/modal/modal.js?v=1.5.1"></script>
 <script src="formkit/modulos/fecha/fecha.js?v=1.5.1"></script>
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
-<script src="app/grupo.js?v=0.70"></script>
+<!-- Pestañas «Personas del grupo» y «Asistencia por día», sólo en computadora (acomodo de escritorio, 25/10/2026) -->
+<script src="formkit/modulos/pestanas/pestanas.js?v=1.5.1"></script>
+<script src="app/escritorio.js?v=0.71"></script>
+<script src="app/grupo.js?v=0.71"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
-<script src="app/casos-prueba.js?v=0.70"></script>
-<script src="app/pruebas.js?v=0.70"></script>
-<script src="app/version-visible.js?v=0.70"></script>
+<script src="app/casos-prueba.js?v=0.71"></script>
+<script src="app/pruebas.js?v=0.71"></script>
+<script src="app/version-visible.js?v=0.71"></script>
 </body>
 </html>
