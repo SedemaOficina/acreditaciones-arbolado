@@ -248,7 +248,7 @@ Parámetros editables (su cambio queda en la bitácora, `cambio_parametro`), en 
 |---|---|---|
 | `dias_habiles_cita` | 20 | La cita de cotejo, al validar y al dar una cita nueva: del siguiente día hábil al día 20 hábil (`cita_fuera_de_plazo`); el calendario de «Revisar» y de «Cita de cotejo» y su ayuda dicen el rango |
 | `dias_habiles_revision` | 10 | «Mis trámites» dice hasta cuándo se revisa una solicitud enviada |
-| `dias_habiles_correccion` | 20 | «Mis trámites» dice «Corrige antes del …»; todavía no hay tarea que cierre la solicitud al vencer (P23) |
+| `dias_habiles_correccion` | 20 | «Mis trámites» dice «Corrige a más tardar el …»; todavía no hay tarea que cierre la solicitud al vencer (P23) |
 
 La bandeja de revisión todavía marca la espera en días naturales con los valores de prueba 3 y 10 (P199, abierto).
 
@@ -257,7 +257,9 @@ La bandeja de revisión todavía marca la espera en días naturales con los valo
 Los perfiles del personal (acceso del SIA, P27) los declara el backend en `apd.perfil`: `revision_cotejo`, `instructor`,
 `capacitacion` (área de Instructores y Capacitación, ajustes del equipo del 25/10/2026), `emision`, `consulta`,
 `directivo` (P201, 26/10/2026) y `administracion`. Las reglas reservadas a ciertos perfiles los leen de parámetros
-editables: cancelar una acreditación (`perfiles_cancelan_acreditacion`: instructor y directivo) y asignar o cambiar la persona instructora y confirmar un
+editables: cancelar una acreditación (`perfiles_cancelan_acreditacion`: instructor y directivo), consultar los grupos sin
+escribirlos (`perfiles_grupos_solo_lectura`: directivo; `grupos_solo_lectura` al crear, cambiar, confirmar o inscribir;
+respuesta de Liber del 26/10/2026) y asignar o cambiar la persona instructora y confirmar un
 grupo (`perfiles_asignan_instructor`: capacitación y administración). Quien no está en la lista recibe
 `cancelacion_sin_permiso`, `instructor_sin_permiso` o `confirmacion_sin_permiso`.
 

@@ -166,6 +166,7 @@
         ['personal-cancelar-instructor', 'Instructor: cancelar una acreditación', 'Cancelar una acreditación vigente, con motivo y fundamento.', null, 'acreditaciones.html?perfil=instructor'],
         // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026), distinto de la administración del sistema
         ['personal-directivo', 'Directivo: cancelar una acreditación', 'Consultar las acreditaciones y cancelar una vigente, con motivo y fundamento (perfil directivo).', null, 'acreditaciones.html?perfil=directivo'],
+        ['personal-directivo-grupos', 'Directivo: consultar los grupos', 'Ver los grupos y su ficha, sólo de lectura (perfil directivo).', null, 'capacitacion.html?perfil=directivo'],
         ['personal-ventanilla', 'Consultar un trámite', 'Buscar a una persona por CURP, nombre o folio y ver en qué va su trámite y qué sigue.', null, 'ventanilla.html']
       ]]
     ]]

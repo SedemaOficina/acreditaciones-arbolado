@@ -315,7 +315,7 @@
       const limite = APD.limiteCorreccion(datos, s);
       sigue = { texto: `Recibiste las observaciones el ${fechaCorta(s.estado_desde)}. Tienes ${APD.parametro(datos, 'dias_habiles_correccion') || 20} días hábiles para corregir: si no reenvías tu solicitud a tiempo, se cierra.`,
         pasos: APD.ESTADOS.con_observaciones.sigue.pasos };
-      pares.unshift(['Corrige antes del', fechaCorta(limite)]);
+      pares.unshift(['Corrige a más tardar el', fechaCorta(limite)]);
     }
     // En revisión (D12): qué sigue, el plazo pendiente y, si es otra vuelta, qué corrigió
     if (s.estado === 'enviada') {

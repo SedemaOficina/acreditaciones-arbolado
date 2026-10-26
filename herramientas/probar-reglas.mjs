@@ -866,6 +866,13 @@ const casos = [
   ['Cita nueva: el mismo día ya no se da; desde el siguiente día hábil (P205)', { codigo: 'cita_fuera_de_plazo' }, DIA_CITA, `
      ${NO_SE_PRESENTO}
      UPDATE apd.solicitud SET cita_en = '2026-10-20 14:00-06' WHERE id = ${CITA_SOL};`],
+  // Cita reprogramada (respuesta de Liber del 26/10/2026): los 20 días hábiles se cuentan desde el día en que se da la cita
+  // nueva, no desde la validación. La de CITA_SOL se validó el 06/10 o después: contado desde ahí, el 17/11 ya no cabría
+  ['Cita reprogramada: el plazo cuenta desde que se da la nueva cita, no desde la validación (respuesta de Liber del 26/10)', 'ok', DIA_CITA, `
+     ${NO_SE_PRESENTO}
+     DO $$ BEGIN ASSERT apd.suma_dias_habiles((SELECT (min(fecha) AT TIME ZONE 'America/Mexico_City')::date FROM apd.bitacora
+                          WHERE entidad_id = ${CITA_SOL}::text AND accion = 'estado' AND detalle LIKE 'enviada → validada_en_linea%'), 20) < '2026-11-17'; END $$;
+     UPDATE apd.solicitud SET cita_en = '2026-11-17 10:00-06' WHERE id = ${CITA_SOL};`],
   ['Cita nueva: el siguiente día hábil (21/10/2026) se acepta (P205)', 'ok', DIA_CITA, `
      ${NO_SE_PRESENTO}
      UPDATE apd.solicitud SET cita_en = '2026-10-21 09:30-06' WHERE id = ${CITA_SOL};`],
@@ -1509,6 +1516,28 @@ const casos = [
   ['La ficticia cancelada por el directivo: la base anotó su cuenta (directivo.ficticio) y la bitácora, con su perfil (P201)', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT count(*) FROM apd.acreditacion WHERE cancelada_por = 'directivo.ficticio' AND cancelada_en IS NOT NULL) = 1;
      ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'cancelacion' AND usuario = 'directivo.ficticio'); END $$;`],
+  // Directivo y grupos (respuesta de Liber del 26/10/2026): los consulta, sin crearlos, cambiarlos, confirmarlos ni inscribir
+  ['Directivo: no crea un grupo (sólo lectura)', { codigo: 'grupos_solo_lectura' }, '2026-10-14 10:00', `
+     ${PERFIL('directivo')}
+     INSERT INTO apd.grupo (tipo_acreditacion, modalidad, integracion) VALUES ('poda', 'nueva', 'combinado');`],
+  ['Directivo: no cambia la semana de un grupo (sólo lectura)', { codigo: 'grupos_solo_lectura' }, '2026-10-14 10:00', `
+     ${PERFIL('directivo')}
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-02' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Directivo: no confirma un grupo (sólo lectura)', { codigo: 'grupos_solo_lectura' }, '2026-10-14 10:00', `
+     ${PERFIL('directivo')}
+     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Directivo: no inscribe ni da de baja (sólo lectura)', { codigo: 'grupos_solo_lectura' }, '2026-10-14 10:00', `
+     ${PERFIL('directivo')}
+     INSERT INTO apd.inscripcion (solicitud_id, grupo_id) SELECT solicitud_id, ${GRUPO_INTEGRACION}
+       FROM apd.bandeja_demanda WHERE tipo_acreditacion = 'poda' AND modalidad = 'nueva' ORDER BY folio LIMIT 1;`],
+  ['Directivo: sí lee los grupos, sus inscripciones y la bandeja', 'ok', null, `
+     ${PERFIL('directivo')}
+     DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.grupo) > 0 AND (SELECT count(*) FROM apd.inscripcion) > 0 AND (SELECT count(*) FROM apd.bandeja_demanda) > 0; END $$;`],
+  ['Los grupos siguen abiertos para quien los arma (revisión y cotejo): el candado es sólo del directivo', 'ok', '2026-10-14 10:00', `
+     ${PERFIL('revision_cotejo')}
+     UPDATE apd.grupo SET fecha_inicio = '2026-11-02' WHERE id = ${GRUPO_INTEGRACION};`],
+  ['Parámetro perfiles_grupos_solo_lectura = directivo', 'ok', null, `DO $$ BEGIN
+     ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'perfiles_grupos_solo_lectura') = 'directivo'; END $$;`],
   ['Pueden cancelar los perfiles instructor y directivo (parámetro editable, P120, P201)', 'ok', null, `DO $$ BEGIN
      ASSERT (SELECT valor FROM apd.parametro WHERE clave = 'perfiles_cancelan_acreditacion') = 'instructor,directivo'; END $$;`],
 

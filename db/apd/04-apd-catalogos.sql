@@ -54,6 +54,8 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Horario de informes de la Secretaría para aclaraciones del trámite; se muestra a la persona donde se le pide acudir o comunicarse. El teléfono y el correo están pendientes (P132, sesión de trabajo del 23/10/2026).'),
   ('perfiles_cancelan_acreditacion', 'instructor,directivo',
    'Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y los directivos (P120, sesión de trabajo del 23/10/2026). El perfil «directivo» es distinto de la administración del sistema, que ya no cancela (P201, decisión de Liber del 26/10/2026).'),
+  ('perfiles_grupos_solo_lectura', 'directivo',
+   'Perfiles del personal (acceso del SIA, P27) que consultan los grupos sin crearlos, cambiarlos, confirmarlos ni inscribir, separados por coma: el directivo (P201, respuesta de Liber del 26/10/2026).'),
   ('perfiles_asignan_instructor', 'capacitacion,administracion',
    'Perfiles del personal (acceso del SIA, P27) que asignan o cambian la persona instructora de un grupo y lo confirman, separados por coma: el área de Instructores y Capacitación (capacitación) y la Dirección (administración), que ya podía hacerlo todo. Quien arma los grupos (revisión y cotejo) ya no lo hace (ajustes del equipo, 25/10/2026).'),
   ('oportunidades_correccion', '2',

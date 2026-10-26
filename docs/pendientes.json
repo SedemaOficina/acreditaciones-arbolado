@@ -907,7 +907,7 @@
       "bloquea": "etapa 2",
       "desde": "2026-10-24",
       "titulo": "Plazos de P02: falta que la bandeja de revisión marque con los 10 días hábiles",
-      "recomendacion": "Ya están como parámetros editables dias_habiles_revision (10), dias_habiles_correccion (20) y dias_habiles_cita (20, P205), y «Mis trámites» dice «Corrige antes del …» y hasta cuándo se revisa (26/10/2026). Falta la bandeja: hoy marca la espera en días naturales con los valores de prueba de 3 (ámbar) y 10 (atrasada). Recomendación: contar la espera en días hábiles y marcarla atrasada al pasar dias_habiles_revision, en ámbar desde 3 días hábiles antes; cambia el texto «N días» de la bandeja y sus pruebas. También falta la tarea diaria que cierre la solicitud al vencer el plazo para corregir (P23).",
+      "recomendacion": "Ya están como parámetros editables dias_habiles_revision (10), dias_habiles_correccion (20) y dias_habiles_cita (20, P205), y «Mis trámites» dice «Corrige a más tardar el …» y hasta cuándo se revisa (26/10/2026). Falta la bandeja: hoy marca la espera en días naturales con los valores de prueba de 3 (ámbar) y 10 (atrasada). Recomendación: contar la espera en días hábiles y marcarla atrasada al pasar dias_habiles_revision, en ámbar desde 3 días hábiles antes; cambia el texto «N días» de la bandeja y sus pruebas. También falta la tarea diaria que cierre la solicitud al vencer el plazo para corregir (P23).",
       "lineamientos": ""
     },
     {

@@ -92,7 +92,7 @@ dinamicos = [
     ('Mis trámites', 'Mis solicitudes · ficha', 'Etiqueta de dato', 'Solicitud con cita', 'Cita de cotejo', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes · ficha', 'Etiqueta de dato', 'Desde el primer cotejo', 'Número de expediente', D('tramites.js')),
     # Plazos de P02 como parámetros (P199, decisión de Liber del 26/10/2026)
-    ('Mis trámites', 'Mis solicitudes · ficha', 'Dato', 'Con observaciones', 'Corrige antes del DD/MM/AAAA (20 días hábiles, parámetro dias_habiles_correccion) · Recibiste las observaciones el DD/MM/AAAA. Tienes 20 días hábiles para corregir: si no reenvías tu solicitud a tiempo, se cierra.', D('tramites.js')),
+    ('Mis trámites', 'Mis solicitudes · ficha', 'Dato', 'Con observaciones', 'Corrige a más tardar el DD/MM/AAAA (20 días hábiles, parámetro dias_habiles_correccion) · Recibiste las observaciones el DD/MM/AAAA. Tienes 20 días hábiles para corregir: si no reenvías tu solicitud a tiempo, se cierra.', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes · ficha', 'Texto', 'En revisión documental', 'La Secretaría la revisa en un máximo de 10 días hábiles: a más tardar el DD/MM/AAAA. (parámetro dias_habiles_revision)', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes · datos para tu pago', 'Título', 'Solicitud con cita', 'Datos para tu pago', D('tramites.js')),
     ('Mis trámites', 'Mis solicitudes · datos para tu pago', 'Etiqueta de dato', 'Solicitud con cita', 'Concepto', D('tramites.js')),

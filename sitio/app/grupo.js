@@ -88,11 +88,14 @@
     { href: location.pathname.split('/').pop() + location.search, texto: 'Ver el grupo como está ahora' }, 'conflicto');
 
   APD.cargar().then((datos) => {
-    P.pintaSesion($('[data-sesion-personal]'), perfil === 'capacitacion' ? 'capacitacion' : 'grupos', perfil);
+    P.pintaSesion($('[data-sesion-personal]'), ['capacitacion', 'directivo'].includes(perfil) ? 'capacitacion' : 'grupos', perfil);
     // ¿Asigna la persona instructora y confirma grupos? (capacitación y administración, parámetro perfiles_asignan_instructor)
     const asigna = P.asignaInstructor(datos, perfil);
     // Capacitación regresa a su inicio, «Grupos por asignar y confirmar»
     if (perfil === 'capacitacion') { const atras = $('.btn-atras'); atras.href = 'capacitacion.html'; atras.lastChild.textContent = 'Grupos por asignar y confirmar'; }
+    // El directivo consulta los grupos sin cambiarlos (respuesta de Liber del 26/10/2026): regresa a su lista de grupos
+    const soloLectura = P.gruposSoloLectura(datos, perfil);
+    if (soloLectura) { const atras = $('.btn-atras'); atras.href = `capacitacion.html?perfil=${perfil}`; atras.lastChild.textContent = 'Grupos'; }
     const g0 = datos.grupo.find((g) => g.folio === params.get('folio'));
     if (!g0) { $('[data-bajada]').textContent = 'No se encontró el grupo. Vuelva a «Grupos».'; return; }
     avisoHecho();
@@ -145,7 +148,7 @@
     const conSituacion = ['en_curso', 'concluido'].includes(g.estado);
     // Dar de baja, agregar personas, cambiar la semana y cancelar son de quien arma los grupos, no del área de Instructores
     // y Capacitación (ajustes del equipo, 25/10/2026)
-    const armaGrupos = perfil !== 'capacitacion';
+    const armaGrupos = perfil !== 'capacitacion' && !soloLectura;
     const puedeBaja = antesDeIniciar && armaGrupos;
     $('[data-encabezado]').replaceChildren(...['Persona', 'Folio de la solicitud', 'Adscripción', 'En el grupo desde', ...(conSituacion ? ['Situación'] : []), ...(puedeBaja ? ['Acción'] : [])]
       .map((t) => el('th', { scope: 'col' }, t === 'Acción' ? [el('span', { class: 'solo-lector', texto: t })] : [document.createTextNode(t)])));
@@ -219,7 +222,8 @@
     if (g.estado === 'en_integracion' && armaGrupos) {
       acciones.push(el('a', { class: 'btn btn-secundario', href: `grupos.html?grupo=${encodeURIComponent(g.folio)}&paso=2`, texto: g.fecha_inicio ? 'Cambiar la semana en el calendario' : 'Elegir la semana en el calendario' }));
     }
-    if (g.estado === 'en_curso') {
+    // La captura de la asistencia y el examen no son del directivo: el concentrado de asistencia ya está en la ficha
+    if (g.estado === 'en_curso' && !soloLectura) {
       acciones.push(el('a', { class: 'btn btn-secundario', href: `asistencia.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Ver la asistencia' }));
       if (hoy === x.ultimo) acciones.push(el('a', { class: 'btn btn-secundario', href: `aplicar.html?folio=${encodeURIComponent(g.folio)}`, texto: 'Aplicar el examen' }));
     }

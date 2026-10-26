@@ -1931,6 +1931,24 @@ CREATE FUNCTION apd.asigna_instructor() RETURNS boolean LANGUAGE sql STABLE AS $
 $$;
 COMMENT ON FUNCTION apd.asigna_instructor() IS 'Quien escribe es del personal con un perfil de perfiles_asignan_instructor (capacitación o administración): asigna o cambia la persona instructora y confirma grupos.';
 
+-- Los grupos, sólo de lectura para los perfiles de perfiles_grupos_solo_lectura (el directivo: P201, respuesta de Liber del
+-- 26/10/2026): los ve, pero no crea, edita, confirma ni inscribe. Sólo lo que escribe directamente (pg_trigger_depth() = 1):
+-- lo que cambia en cascada de una acción que sí puede hacer (cancelar una acreditación) sigue su curso.
+CREATE FUNCTION apd.grupos_solo_lectura() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF pg_trigger_depth() = 1 AND apd.contexto('usuario_tipo') = 'personal'
+     AND apd.contexto('perfil') = ANY (string_to_array(replace(apd.parametro_texto('perfiles_grupos_solo_lectura'), ' ', ''), ',')) THEN
+    PERFORM apd.error('grupos_solo_lectura', 'Con su perfil los grupos son de consulta: no se crean, cambian ni confirman');
+  END IF;
+  RETURN NEW;
+END $$;
+COMMENT ON FUNCTION apd.grupos_solo_lectura() IS 'Rechaza (grupos_solo_lectura) que un perfil de perfiles_grupos_solo_lectura (directivo) escriba grupos o inscripciones.';
+-- Los nombres empiezan con «aa» para correr antes que las demás reglas de cada tabla (PostgreSQL las corre por nombre)
+CREATE TRIGGER grupo_aa_solo_lectura BEFORE INSERT OR UPDATE ON apd.grupo
+  FOR EACH ROW EXECUTE FUNCTION apd.grupos_solo_lectura();
+CREATE TRIGGER inscripcion_aa_solo_lectura BEFORE INSERT OR UPDATE ON apd.inscripcion
+  FOR EACH ROW EXECUTE FUNCTION apd.grupos_solo_lectura();
+
 -- SECURITY DEFINER (con search_path fijo): el folio sale de apd.siguiente_folio (decisión 6, 2026-10-19)
 CREATE FUNCTION apd.grupo_alta() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = apd, pg_temp AS $$
 DECLARE

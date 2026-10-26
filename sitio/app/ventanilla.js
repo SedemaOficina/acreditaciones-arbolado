@@ -119,7 +119,8 @@
   }
 
   APD.cargar().then((datos) => {
-    APD_PERSONAL.pintaSesion($('[data-sesion-personal]'), 'ventanilla');
+    // El perfil de la prueba (?perfil=): revisión y cotejo o, para consultar, el directivo (respuesta de Liber del 26/10/2026)
+    APD_PERSONAL.pintaSesion($('[data-sesion-personal]'), 'ventanilla', APD_PERSONAL.perfilDePrueba());
     const u = new URLSearchParams(location.search);
     if (u.get('buscar')) { entrada.value = u.get('buscar'); APD.avisa(entrada); }
     let ultimos = buscar(datos);

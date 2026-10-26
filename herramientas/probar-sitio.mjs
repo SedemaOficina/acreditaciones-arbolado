@@ -7562,9 +7562,10 @@ async function perfilDirectivo(navegador) {
       await page.goto(BASE + 'acreditaciones.html?perfil=directivo');
       await page.waitForSelector('[data-filas] tr');
       const enlaces = await page.$$eval('[data-sesion-personal] nav a', (l) => l.map((a) => [a.textContent.trim(), a.getAttribute('aria-current')]));
-      comprueba(JSON.stringify(enlaces) === JSON.stringify([['Acreditaciones', 'page'], ['Salir', null]]) && /Rosa Ejemplo Directiva/.test(await texto26(page, '[data-sesion-personal]'))
-        && /Perfil: directivo/.test(await texto26(page, '[data-sesion-personal]')),
-        t(`${donde}: su inicio es «Acreditaciones»; la cabecera dice «Perfil: directivo» y sólo lleva «Acreditaciones» y «Salir»`));
+      comprueba(JSON.stringify(enlaces) === JSON.stringify([['Acreditaciones', 'page'], ['Consultar un trámite', null], ['Grupos', null], ['Salir', null]])
+        && /Rosa Ejemplo Directiva/.test(await texto26(page, '[data-sesion-personal]')) && /Perfil: directivo/.test(await texto26(page, '[data-sesion-personal]'))
+        && await page.isVisible('[data-sesion-personal] a[href="ventanilla.html?perfil=directivo"]') && await page.isVisible('[data-sesion-personal] a[href="capacitacion.html?perfil=directivo"]'),
+        t(`${donde}: su inicio es «Acreditaciones»; la cabecera dice «Perfil: directivo» y lleva «Acreditaciones», «Consultar un trámite», «Grupos» y «Salir», a la vista`));
       comprueba(await page.isHidden('[data-reposiciones]') && await page.isVisible('[data-acreditaciones-tabla]'), t(`${donde}: ve la lista de acreditaciones y no la cola de reposiciones`));
       await revisaAxe(page, `${donde}, «Acreditaciones»`);
       await sinDesborde(page, t(`${donde}, «Acreditaciones»`));
@@ -7593,6 +7594,37 @@ async function perfilDirectivo(navegador) {
         await page.goto(BASE + `acreditacion.html?numero=${aRepos.numero}&perfil=directivo`);
         await page.waitForSelector('[data-reposicion]:not([hidden])');
         comprueba(await page.isHidden('#acta') && await page.isHidden('#entrega'), t(`${donde}: con una reposición por revisar (${aRepos.numero}), la ve pero no revisa el acta ni entrega`));
+      }
+      // «Consultar un trámite» con su perfil (respuesta de Liber del 26/10/2026)
+      await page.goto(BASE + 'ventanilla.html?perfil=directivo');
+      await page.waitForSelector('[data-sesion-personal] a');
+      const qp = datos.solicitud.find((s) => s.estado === 'con_observaciones');
+      await page.fill('#buscar', qp.folio);
+      await page.waitForSelector('[data-resultados] .ficha .btn');
+      await page.click('[data-resultados] .ficha .btn');
+      await page.waitForSelector('[data-ficha]:not([hidden])');
+      comprueba(/Perfil: directivo/.test(await texto26(page, '[data-sesion-personal]')) && await page.getAttribute('[data-sesion-personal] a[href="ventanilla.html?perfil=directivo"]', 'aria-current') === 'page'
+        && /Qué decirle:/.test(await texto26(page, '[data-ficha]')) && !(await page.$('[data-ficha] form, [data-ficha] .ficha-acciones')),
+        t(`${donde}: el directivo usa «Consultar un trámite» (busca y ve la ficha, sin acciones) con su perfil en la cabecera`));
+      await revisaAxe(page, `${donde}, «Consultar un trámite» del directivo`);
+      // Los grupos, sólo de lectura: la lista (en la página de Capacitación) y la ficha
+      await page.goto(BASE + 'capacitacion.html?perfil=directivo');
+      await page.waitForSelector('[data-por-confirmar] [data-filas] tr, [data-por-confirmar] [data-tabla-vacia]:not([hidden])');
+      const acc = await page.$$eval('main tbody a, main tbody button', (l) => l.map((x) => x.textContent.trim()));
+      comprueba(await texto26(page, '#t-por-confirmar') === 'Grupos por confirmar' && /Es una consulta/.test(await texto26(page, '[data-bajada]')) && acc.length > 0 && acc.every((x) => x === 'Ver')
+        && await page.getAttribute('[data-sesion-personal] a[href="capacitacion.html?perfil=directivo"]', 'aria-current') === 'page',
+        t(`${donde}: «Grupos» del directivo: por confirmar y confirmados, cada fila sólo con «Ver» (${acc.length} filas)`));
+      await revisaAxe(page, `${donde}, «Grupos» del directivo`);
+      await sinDesborde(page, t(`${donde}, «Grupos» del directivo`));
+      for (const g of [datos.grupo.find((x) => x.estado === 'en_integracion'), datos.grupo.find((x) => x.estado === 'en_curso')]) {
+        await page.goto(BASE + `grupo.html?folio=${g.folio}&perfil=directivo`);
+        await page.waitForSelector('[data-situacion] .estado');
+        await page.waitForTimeout(100);
+        const escribe = await page.evaluate(() => [...document.querySelectorAll('main form, main button, main a.btn')].filter((e) => e.checkVisibility()
+          && !e.closest('.pestanas-lista, .plegable-titulo, [data-visor]') && !e.matches('.btn-atras, .pestana')).map((e) => (e.textContent || e.id).trim().slice(0, 40)));
+        comprueba(!escribe.length && await page.getAttribute('.btn-atras', 'href') === 'capacitacion.html?perfil=directivo',
+          t(`${donde}: la ficha del grupo ${g.folio} (${g.estado}) es de consulta: sin formularios ni botones para cambiarlo${escribe.length ? ' · hay: ' + escribe.join(' | ') : ''}; regresa a «Grupos»`));
+        await revisaAxe(page, `${donde}, ficha del grupo ${g.estado} del directivo`);
       }
       comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
     } finally { await c.close(); }
@@ -7662,7 +7694,7 @@ async function citaVeinteDias(navegador) {
   const enviadaS = datos.solicitud.find((s) => s.estado === 'enviada' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa')
     && !datos.solicitud.some((x) => x.solicitante_id === s.solicitante_id && x.id !== s.id && !FINALES.includes(x.estado)));
   const diaMx = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: ZONA });
-  for (const [s, que, dias, texto] of [[conObsS, 'con observaciones', 20, 'Corrige antes del'], [enviadaS, 'en revisión', 10, 'a más tardar el']]) {
+  for (const [s, que, dias, texto] of [[conObsS, 'con observaciones', 20, 'Corrige a más tardar el'], [enviadaS, 'en revisión', 10, 'a más tardar el']]) {
     const { c, page, errores } = await contexto26(navegador, 390, 844, s.solicitante_id);
     try {
       await page.goto(BASE + 'tramites.html');

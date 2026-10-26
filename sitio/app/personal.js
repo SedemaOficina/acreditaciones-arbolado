@@ -244,6 +244,10 @@
   const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, capacitacion: CAPACITACION, directivo: DIRECTIVO, administracion: DIRECTORA };
   /* ¿Sólo consulta las reposiciones de credencial (no revisa el acta ni entrega)? El directivo (P201) */
   const soloConsultaReposicion = (perfil) => perfil === 'directivo';
+  /* ¿Ve los grupos sólo para consultarlos, sin crearlos, cambiarlos, confirmarlos ni inscribir? Los perfiles del parámetro
+     perfiles_grupos_solo_lectura: el directivo (respuesta de Liber del 26/10/2026; la base: grupos_solo_lectura) */
+  const gruposSoloLectura = (datos, perfil) => String((datos && APD.parametroTexto(datos, 'perfiles_grupos_solo_lectura')) || 'directivo')
+    .split(',').map((x) => x.trim()).includes(perfil);
   function perfilDePrueba(predeterminado) {
     const p = new URLSearchParams(global.location.search).get('perfil');
     return PERFILES[p] ? p : predeterminado || 'revision_cotejo';
@@ -577,8 +581,10 @@
     const acreditaciones = enlace(`acreditaciones.html${perfil && perfil !== 'revision_cotejo' ? `?perfil=${perfil}` : ''}`, 'acreditaciones', 'Acreditaciones');
     const enlaces = perfil === 'instructor'
       ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen'), acreditaciones]
-      // Directivo (P201, 26/10/2026): sólo «Acreditaciones», que es su inicio
-      : perfil === 'directivo' ? [acreditaciones]
+      // Directivo (P201, 26/10/2026): «Acreditaciones», que es su inicio, y, para consultar (respuesta de Liber del
+      // 26/10/2026), «Consultar un trámite» y los grupos (en la página de Capacitación, sólo de lectura)
+      : perfil === 'directivo' ? [acreditaciones, enlace('ventanilla.html?perfil=directivo', 'ventanilla', 'Consultar un trámite'),
+        enlace('capacitacion.html?perfil=directivo', 'capacitacion', 'Grupos')]
       : perfil === 'capacitacion'
         ? [enlace('capacitacion.html', 'capacitacion', 'Grupos por asignar y confirmar')]
         : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
@@ -682,7 +688,7 @@
 
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     delDia, motivoDiaCita, vigilaDiaCita,
-    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, soloConsultaReposicion, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, soloConsultaReposicion, gruposSoloLectura, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas, acomodaEscritorio };
 }(window));

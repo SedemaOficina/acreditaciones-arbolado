@@ -370,7 +370,10 @@ IndexedDB; `app/archivos-prueba.js` (`aplicaAcreditaciones`) lo aplica como la b
   parámetros. Sin teléfono (P132) y sin «Cómo llegar» (no existe en el sitio). Prueba: `SOLO=ayuda`.
 - **Consultar un trámite** (`ventanilla.html`): arriba, en la tabla. Prueba: `SOLO=consulta`.
 - **Directivo** (P201): su inicio es «Acreditaciones» (`acreditaciones.html?perfil=directivo`), lista y ficha con «Cancelar
-  acreditación»; no ve «Reposiciones por atender» ni revisa actas o entrega. Prueba: `SOLO=directivo`.
+  acreditación»; no ve «Reposiciones por atender» ni revisa actas o entrega. Además (respuesta de Liber del 26/10/2026) usa
+  «Consultar un trámite» (`ventanilla.html?perfil=directivo`) y ve los grupos sólo de lectura: la lista en
+  `capacitacion.html?perfil=directivo` («Grupos por confirmar» y confirmados, cada fila con «Ver») y la ficha del grupo sin
+  formularios ni botones para cambiarlo. Prueba: `SOLO=directivo`.
 - **Cita de cotejo** (P205): en «Revisar» y en la cita nueva de «Cita de cotejo», del siguiente día hábil a 20 días hábiles
   después (`dias_habiles_cita`), sin sábados ni domingos; la ayuda de la fecha dice el rango. «Mis trámites» dice «Corrige
   antes del …» (20 días hábiles) y hasta cuándo se revisa (10) (P199). Prueba: `SOLO=cita20`.

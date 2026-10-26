@@ -15,6 +15,14 @@
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'capacitacion', perfil);
+    // El directivo (respuesta de Liber del 26/10/2026) consulta aquí los grupos, sólo de lectura: cada fila sólo abre la ficha
+    const soloLectura = P.gruposSoloLectura(datos, perfil);
+    if (soloLectura) {
+      document.title = 'Grupos · Personal · Acreditaciones de arbolado urbano';
+      $('#t-por-confirmar').textContent = 'Grupos por confirmar';
+      $('[data-bajada]').textContent = 'Los grupos que esperan persona instructora o confirmación, del que empieza antes al más lejano, con lo que les falta. Es una consulta: los arma el personal de revisión y cotejo y los confirma el área de Instructores y Capacitación.';
+      $('[data-bajada-confirmados]').textContent = 'Los grupos confirmados y los que están en curso, con su persona instructora.';
+    }
     const hoy = APD.hoy(datos);
     const anticipacion = APD.parametro(datos, 'dias_anticipacion_grupo') || 7;
     const minimo = APD.sumaDias(hoy, anticipacion);
@@ -39,7 +47,7 @@
       const listo = !falta.length;
       const texto = listo ? 'Confirmarlo' : mayus(y(falta));
       // La acción de la fila, según lo que le toca a Capacitación: asignar, confirmar o sólo ver (sin semana)
-      const verbo = listo ? 'Confirmar el grupo' : !g.fecha_inicio ? 'Ver' : !g.instructor ? 'Asignar la persona instructora' : 'Ver';
+      const verbo = soloLectura ? 'Ver' : listo ? 'Confirmar el grupo' : !g.fecha_inicio ? 'Ver' : !g.instructor ? 'Asignar la persona instructora' : 'Ver';
       const nombre = `${x.calculado} · ${g.folio}`;
       return el('tr', { 'data-grupo': g.folio, 'data-listo': listo ? 'si' : null }, [
         grupoCelda(x),
@@ -70,7 +78,8 @@
         el('td', { texto: semana(x) }),
         el('td', {}, [dia ? estado(`En curso · ${dia.texto.charAt(0).toLocaleLowerCase('es-MX')}${dia.texto.slice(1)}`, 'marcha') : estado(x.situacion.texto, x.situacion.tono)]),
         instructorCelda(x),
-        el('td', {}, [el('a', { class: 'btn-enlace', href: `${P.fichaGrupo(x.g.folio, perfil)}#t-confirmar`, 'aria-label': `Cambiar la persona instructora: ${nombre}`, texto: 'Cambiar la persona instructora' })])
+        el('td', {}, [soloLectura ? el('a', { class: 'btn-enlace', href: P.fichaGrupo(x.g.folio, perfil), 'aria-label': `Ver: ${nombre}`, texto: 'Ver' })
+          : el('a', { class: 'btn-enlace', href: `${P.fichaGrupo(x.g.folio, perfil)}#t-confirmar`, 'aria-label': `Cambiar la persona instructora: ${nombre}`, texto: 'Cambiar la persona instructora' })])
       ]);
     });
     $('[data-filas]', marcoC).replaceChildren(...filasC);
