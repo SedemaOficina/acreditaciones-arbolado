@@ -2412,6 +2412,8 @@ const PDF_PROTEGIDO = { name: 'protegido.pdf', mimeType: 'application/pdf', buff
 const PDF_UNA_HOJA = { name: 'una-hoja.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n') };
 const pdfDe = (bytes, nombre) => ({ name: nombre, mimeType: 'application/pdf', buffer: Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(bytes - 9, 0x20)]) });
 const sumaDiasIso = (iso, n) => { const d = new Date(`${iso}T12:00:00-06:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+// n días hábiles (de lunes a viernes) después de una fecha, como apd.suma_dias_habiles (P205: la cita de cotejo)
+const sumaHabilesIso = (iso, n) => { let d = iso; for (let k = 0; k < n;) { d = sumaDiasIso(d, 1); const w = new Date(`${d}T12:00:00Z`).getUTCDay(); if (w !== 0 && w !== 6) k += 1; } return d; };
 const sumaMesesIso = (iso, n) => { const d = new Date(`${iso}T12:00:00-06:00`); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
 /* Pega un texto en un control como lo haría el navegador (evento paste con su portapapeles) y devuelve el valor */
 const pega = (pg, sel, texto) => pg.evaluate(([q, t]) => {
@@ -2586,9 +2588,10 @@ async function romper(navegador) {
     await pg.keyboard.insertText(v);
     comprueba(await pg.inputValue('#cita_fecha') === '20/10/2026', t(`F2 A1 y B2: «${v}» puesto de una vez queda 20/10/2026 (${await pg.inputValue('#cita_fecha')})`));
   }
-  const max = sumaMesesIso(datos.fecha_corte, 6);
+  // Desde el 26/10/2026 (P205) el límite es de 20 días hábiles (dias_habiles_cita), ya no de 6 meses
+  const max = sumaHabilesIso(datos.fecha_corte, 20);
   comprueba(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-max') === max && (await pg.textContent('[data-cita-hasta]')) === dma(max),
-    t(`F2 M4: la fecha de la cita tiene límite superior (${dma(max)}, meses_adelanto_cita) y la ayuda lo dice`));
+    t(`F2 M4: la fecha de la cita tiene límite superior (${dma(max)}, 20 días hábiles: dias_habiles_cita) y la ayuda lo dice`));
   await pg.fill('#cita_fecha', '31/12/9999');
   await pg.locator('#cita_fecha').blur();
   await pg.click('[data-accion="enviar"]');
@@ -2640,7 +2643,7 @@ async function romper(navegador) {
   await pg.reload();
   await pg.click('[data-atender-simulada]');
   await pg.waitForSelector('#formulario:not([hidden])');
-  comprueba(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-min') === sumaDiasIso(diaCita, 1) && await pg.getAttribute('[data-campo="cita_fecha"]', 'data-max') === sumaMesesIso(datos.fecha_corte, 6),
+  comprueba(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-min') === sumaHabilesIso(diaCita, 1) && await pg.getAttribute('[data-campo="cita_fecha"]', 'data-max') === sumaHabilesIso(datos.fecha_corte, 20),
     t('F2 A6 y M4: la cita nueva no puede quedar antes de la perdida (desde el día siguiente) ni más allá del límite'));
   // M2 · RFC y folio fiscal pegados con espacios y guiones: se limpian antes de medir el largo
   comprueba(await pega(pg, '#factura_rfc', 'MUPA 800101 AB1') === 'MUPA800101AB1' && await pega(pg, '#factura_rfc', 'MUPA-800101-AB1') === 'MUPA800101AB1',
@@ -3812,7 +3815,7 @@ async function fechas(navegador) {
   // 4 · Desde los ajustes del equipo (25/10/2026) la ficha del grupo ya no tiene el primer día: la semana la elige quien
   // arma el grupo, en «Grupos», y Capacitación asigna a la persona instructora y lo confirma. Lo que se probaba al escribir,
   // pegar e insertar ese día se prueba en la otra fecha día/mes/año del personal con máximo: la cita de «Revisar»
-  // (hasta meses_adelanto_cita meses)
+  // (hasta 20 días hábiles desde el 26/10/2026, P205; antes, meses_adelanto_cita meses)
   ({ c, pg, errores } = await nuevo());
   await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
   await pg.waitForSelector('#formulario:not([hidden])');
@@ -6695,8 +6698,9 @@ async function sesion23(navegador) {
 }
 
 /* ── Cancelación de una acreditación (P120, P49; sesión de trabajo del 23/10/2026, parte B; SOLO=cancelacion) ──
-   Los instructores y la Dirección cancelan una acreditación vigente desde su ficha («Acreditaciones»), con motivo y
-   fundamento en un diálogo de confirmación (foco en el motivo, de usted); el perfil de revisión y cotejo no puede.
+   Los instructores y los directivos (perfil «directivo», P201, decisión del 26/10/2026; antes, la administración) cancelan
+   una acreditación vigente desde su ficha («Acreditaciones»), con motivo y fundamento en un diálogo de confirmación (foco
+   en el motivo, de usted); el perfil de revisión y cotejo y la administración del sistema no pueden.
    «Verificar» la muestra «Cancelada» (gris, sin el motivo); la persona la ve en «Mis trámites» cancelada, con el motivo,
    de tú, y sin «Renovar»; una renovación en trámite se cancela. La credencial ya no menciona huella ni antigüedad (P49). */
 async function cancelacion(navegador) {
@@ -6764,16 +6768,21 @@ async function cancelacion(navegador) {
     const { c, page, errores } = await nuevo(1280, 900);
     await page.goto(BASE + `acreditacion.html?numero=${vigente.numero}`);
     await page.waitForSelector('[data-situacion] .estado');
-    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y la Dirección pueden cancelar una acreditación/.test(await page.textContent('[data-acciones]')) && !errores.length,
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y los directivos pueden cancelar una acreditación/.test(await page.textContent('[data-acciones]')) && !errores.length,
       t('perfil de revisión y cotejo: no ve «Cancelar acreditación» y la ficha dice quién puede'));
+    // La administración del sistema ya no cancela (P201)
+    await page.goto(BASE + `acreditacion.html?numero=${vigente.numero}&perfil=administracion`);
+    await page.waitForSelector('[data-situacion] .estado');
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y los directivos/.test(await page.textContent('[data-acciones]')),
+      t('administración del sistema: ya no ve «Cancelar acreditación» (P201)'));
     await page.goto(BASE + `acreditacion.html?numero=${vencida.numero}&perfil=instructor`);
     await page.waitForSelector('[data-situacion] .estado');
     comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0, t(`instructor: una vencida (${vencida.numero}) no se cancela`));
-    await page.goto(BASE + `acreditacion.html?numero=${cancelada.numero}&perfil=administracion`);
+    await page.goto(BASE + `acreditacion.html?numero=${cancelada.numero}&perfil=directivo`);
     await page.waitForSelector('[data-situacion] .estado');
     const ficha = await page.textContent('main');
     comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Cancelación/.test(ficha) && /Laura Ejemplo Instructora/.test(ficha) && ficha.includes(cancelada.cancelacion_motivo),
-      t('Dirección: la cancelada muestra cuándo, quién, el motivo y el fundamento, y ya no se cancela otra vez'));
+      t('directivo: la cancelada muestra cuándo, quién, el motivo y el fundamento, y ya no se cancela otra vez'));
     await c.close();
   });
 
@@ -6830,20 +6839,20 @@ async function cancelacion(navegador) {
     });
   }
 
-  // La Dirección cancela una acreditación con su renovación en trámite: el diálogo lo dice y la renovación se cancela; la
-  // persona no puede renovarla
-  await bloque('dirección y renovación', async () => {
+  // Un directivo (P201) cancela una acreditación con su renovación en trámite: el diálogo lo dice y la renovación se
+  // cancela; la persona no puede renovarla
+  await bloque('directivo y renovación', async () => {
     const { c, page, errores } = await nuevo(1280, 900);
     const renov = datos.solicitud.find((s) => s.acreditacion_anterior_id === conRenovacion.id && s.estado === 'enviada');
-    await page.goto(BASE + `acreditacion.html?numero=${conRenovacion.numero}&perfil=administracion`);
+    await page.goto(BASE + `acreditacion.html?numero=${conRenovacion.numero}&perfil=directivo`);
     await page.click('button:has-text("Cancelar acreditación")');
     await page.waitForSelector('#dlg-cancelar[open]');
-    comprueba(new RegExp(`Su renovación en trámite \\(folio ${renov.folio}\\) se cancela`).test(await page.textContent('#dlg-cancelar')), t(`Dirección: el diálogo avisa que la renovación ${renov.folio} se cancela`));
-    await page.fill('#motivo-cancelar', 'Motivo de la prueba de la Dirección.');
+    comprueba(new RegExp(`Su renovación en trámite \\(folio ${renov.folio}\\) se cancela`).test(await page.textContent('#dlg-cancelar')), t(`directivo: el diálogo avisa que la renovación ${renov.folio} se cancela`));
+    await page.fill('#motivo-cancelar', 'Motivo de la prueba del directivo.');
     await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
     await page.click('#dlg-cancelar [data-accion="enviar"]');
     await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
-    comprueba(/Rosa Ejemplo Directora/.test(await page.textContent('main')), t('Dirección (perfil administración): cancela, y la ficha la registra a su nombre'));
+    comprueba(/Rosa Ejemplo Directiva/.test(await page.textContent('main')), t('directivo: cancela, y la ficha la registra a su nombre'));
     await page.goto(BASE + 'revision.html');
     await page.waitForLoadState('networkidle');
     comprueba(!(await page.textContent('main')).includes(renov.folio), t(`la renovación ${renov.folio} ya no está por revisar`));
@@ -6855,7 +6864,7 @@ async function cancelacion(navegador) {
       const txt = await page.textContent('main');
       comprueba(/que se renovaba fue cancelada/.test(txt) && await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() === 0, t('la persona ve su renovación cancelada, con el motivo, y no puede renovar la cancelada'));
     }
-    comprueba(!errores.length, t(`Dirección: sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+    comprueba(!errores.length, t(`directivo: sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
     await c.close();
   });
 
@@ -7532,6 +7541,138 @@ async function ajustes25(navegador) {
     comprueba(await pg.isHidden('[data-ultima-oportunidad]') && (await texto(pg, '#formulario [data-accion="enviar"]')) === 'Enviar las observaciones a la persona' && await pg.isHidden('[data-cierre]'),
       t('la segunda revisión (le queda una oportunidad) no avisa del cierre y regresa con observaciones, como siempre'));
     await c.close();
+  }
+}
+
+/* Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio es «Acreditaciones» (lista y ficha) con «Cancelar
+   acreditación»; no ve la cola de reposiciones ni sus formularios; su cabecera sólo lleva «Acreditaciones»; está en el menú
+   de pruebas. Cancela una vigente y la ficha la registra a su nombre. En teléfono y computadora, con axe. */
+async function perfilDirectivo(navegador) {
+  const t = (m) => `[directivo] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const porCancelar = datos.acreditacion.filter((a) => !a.cancelada_en && datos.estado_acreditacion[a.numero] === 'vigente' && !(datos.reposicion || []).some((r) => r.acreditacion_id === a.id));
+  const conRepos = (datos.reposicion || []).find((r) => r.estado === 'solicitada');
+  const aRepos = conRepos && datos.acreditacion.find((a) => a.id === conRepos.acreditacion_id);
+  const deDirectivo = datos.acreditacion.find((a) => a.cancelada_por === 'directivo.ficticio');
+  comprueba(Boolean(deDirectivo) && datos.estado_acreditacion[deDirectivo.numero] === 'cancelada' && (datos.parametro.find((x) => x.clave === 'perfiles_cancelan_acreditacion') || {}).valor === 'instructor,directivo',
+    t('ficticios: una acreditación cancelada por directivo.ficticio; perfiles_cancelan_acreditacion = instructor,directivo'));
+  for (const [ancho, alto, donde, k] of [[390, 844, 'teléfono', 0], [1280, 900, 'computadora', 1]]) {
+    const { c, page, errores } = await contexto26(navegador, ancho, alto);
+    try {
+      await page.goto(BASE + 'acreditaciones.html?perfil=directivo');
+      await page.waitForSelector('[data-filas] tr');
+      const enlaces = await page.$$eval('[data-sesion-personal] nav a', (l) => l.map((a) => [a.textContent.trim(), a.getAttribute('aria-current')]));
+      comprueba(JSON.stringify(enlaces) === JSON.stringify([['Acreditaciones', 'page'], ['Salir', null]]) && /Rosa Ejemplo Directiva/.test(await texto26(page, '[data-sesion-personal]'))
+        && /Perfil: directivo/.test(await texto26(page, '[data-sesion-personal]')),
+        t(`${donde}: su inicio es «Acreditaciones»; la cabecera dice «Perfil: directivo» y sólo lleva «Acreditaciones» y «Salir»`));
+      comprueba(await page.isHidden('[data-reposiciones]') && await page.isVisible('[data-acreditaciones-tabla]'), t(`${donde}: ve la lista de acreditaciones y no la cola de reposiciones`));
+      await revisaAxe(page, `${donde}, «Acreditaciones»`);
+      await sinDesborde(page, t(`${donde}, «Acreditaciones»`));
+      // Abre la ficha desde la lista y cancela
+      const a = porCancelar[k];
+      await page.fill('#buscar', a.numero);
+      await page.waitForFunction((n) => [...document.querySelectorAll('[data-filas] tr')].filter((x) => !x.hidden).length === 1 && document.querySelector('[data-filas] tr:not([hidden])').dataset.numero === n, a.numero);
+      await page.click(`[data-filas] tr[data-numero="${a.numero}"] a`);
+      await page.waitForURL(/acreditacion\.html\?numero=.*perfil=directivo/);
+      await page.waitForSelector('[data-situacion] .estado');
+      comprueba(await page.getAttribute('[data-volver]', 'href') === 'acreditaciones.html?perfil=directivo', t(`${donde}: la ficha regresa a su lista con su perfil`));
+      await page.click('button:has-text("Cancelar acreditación")');
+      await page.waitForSelector('#dlg-cancelar[open]');
+      comprueba(await page.evaluate(() => document.activeElement && document.activeElement.id === 'motivo-cancelar'), t(`${donde}: «Cancelar acreditación» abre el diálogo con el foco en el motivo`));
+      await revisaAxe(page, `${donde}, diálogo de cancelación`);
+      await page.fill('#motivo-cancelar', 'Motivo de la prueba del perfil directivo.');
+      await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
+      await page.click('#dlg-cancelar [data-accion="enviar"]');
+      await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
+      const ficha = await texto26(page, 'main');
+      comprueba(/Acreditación cancelada/.test(ficha) && /Rosa Ejemplo Directiva/.test(ficha) && /Motivo de la prueba del perfil directivo/.test(ficha)
+        && await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0,
+        t(`${donde}: el directivo cancela ${a.numero}; la ficha la registra a su nombre, con el motivo`));
+      // En la ficha de una acreditación con su reposición por revisar: la ve, pero no revisa el acta ni entrega
+      if (aRepos) {
+        await page.goto(BASE + `acreditacion.html?numero=${aRepos.numero}&perfil=directivo`);
+        await page.waitForSelector('[data-reposicion]:not([hidden])');
+        comprueba(await page.isHidden('#acta') && await page.isHidden('#entrega'), t(`${donde}: con una reposición por revisar (${aRepos.numero}), la ve pero no revisa el acta ni entrega`));
+      }
+      comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+    } finally { await c.close(); }
+  }
+  // El menú de pruebas lo ofrece: el caso «Directivo» y la pantalla en «Ir a otra pantalla»
+  const cp = readFileSync(join(raiz, 'sitio/app/casos-prueba.js'), 'utf8');
+  comprueba(APD_CASOS_PRUEBA.claves().includes('personal-directivo') && /\['personal-directivo', 'Directivo: cancelar una acreditación', [^\n]*'acreditaciones\.html\?perfil=directivo'\]/.test(cp) && !/perfil=administracion/.test(cp),
+    t('menú de pruebas: el caso «Directivo: cancelar una acreditación» abre «Acreditaciones» con su perfil; ya no hay caso de la administración que cancela'));
+  const pr = readFileSync(join(raiz, 'sitio/app/pruebas.js'), 'utf8');
+  comprueba(/\['Directivo', \[\['acreditaciones\.html\?perfil=directivo'/.test(pr), t('menú de pruebas: «Directivo» en «Ir a otra pantalla»'));
+}
+
+/* Cita de cotejo dentro de 20 días hábiles (P205, decisión de Liber del 26/10/2026): al validar en «Revisar» y al dar una
+   cita nueva en «Cita de cotejo», el calendario va del siguiente día hábil a 20 días hábiles después (dias_habiles_cita),
+   sin sábados ni domingos, y la ayuda dice el rango; un día fuera del rango o en fin de semana se marca. Y P199: «Mis
+   trámites» dice hasta cuándo corregir y el plazo de la revisión. */
+async function citaVeinteDias(navegador) {
+  const t = (m) => `[cita en 20 días] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const corte = datos.fecha_corte;
+  const desde = sumaHabilesIso(corte, 1);
+  const hasta = sumaHabilesIso(corte, 20);
+  const fueraDia = sumaHabilesIso(corte, 21);
+  const sabado = (() => { let d = sumaDiasIso(corte, 1); while (new Date(`${d}T12:00:00Z`).getUTCDay() !== 6) d = sumaDiasIso(d, 1); return d; })();
+  const porRevisarS = datos.solicitud.find((s) => s.estado === 'enviada' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva');
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'pendiente' && x.programada_en.startsWith(corte));
+  const sCita = pausaHoy && datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id && x.estado === 'validada_en_linea');
+  const errorDe = (page) => page.evaluate(() => (document.querySelector('[data-campo="cita_fecha"] .err') || {}).textContent || '');
+  const prueba = async (page, donde, desdeAqui) => {
+    comprueba(await page.getAttribute('[data-campo="cita_fecha"]', 'data-min') === desdeAqui && await page.getAttribute('[data-campo="cita_fecha"]', 'data-max') === hasta,
+      t(`${donde}: el calendario va del ${dma(desdeAqui)} al ${dma(hasta)} (20 días hábiles)`));
+    comprueba(new RegExp(`de lunes a viernes, dentro de los 20 días hábiles siguientes: del ${dma(desdeAqui)} al ${dma(hasta)}`).test(await texto26(page, '#ay-cita_fecha')),
+      t(`${donde}: la ayuda de la fecha dice el rango («dentro de los 20 días hábiles siguientes: del ${dma(desdeAqui)} al ${dma(hasta)}»)`));
+    await page.fill('#cita_fecha', dma(fueraDia)); await page.press('#cita_fecha', 'Tab');
+    await page.waitForFunction(() => document.getElementById('cita_fecha').getAttribute('aria-invalid') === 'true', null, { timeout: 3000 }).catch(() => null);
+    comprueba(new RegExp(`posterior al ${dma(hasta)}`).test(await errorDe(page)), t(`${donde}: el día 21 hábil (${dma(fueraDia)}) se marca («…posterior al ${dma(hasta)}»)`));
+    await page.fill('#cita_fecha', dma(sabado)); await page.press('#cita_fecha', 'Tab');
+    await page.waitForFunction(() => /lunes a viernes|sábado|domingo/i.test((document.querySelector('[data-campo="cita_fecha"] .err') || {}).textContent || ''), null, { timeout: 3000 }).catch(() => null);
+    comprueba(/lunes a viernes|sábado|domingo/i.test(await errorDe(page)), t(`${donde}: un sábado dentro del plazo (${dma(sabado)}) se marca`));
+    await page.fill('#cita_fecha', dma(hasta)); await page.press('#cita_fecha', 'Tab');
+    await page.waitForFunction(() => document.getElementById('cita_fecha').getAttribute('aria-invalid') !== 'true', null, { timeout: 3000 }).catch(() => null);
+    comprueba(await page.getAttribute('#cita_fecha', 'aria-invalid') !== 'true' && !(await errorDe(page)).trim(), t(`${donde}: el último día del plazo (${dma(hasta)}) se acepta`));
+    await revisaAxe(page, donde);
+  };
+  for (const [ancho, alto, donde] of [[390, 844, '390 px'], [1280, 900, '1280 px']]) {
+    const { c, page, errores } = await contexto26(navegador, ancho, alto);
+    try {
+      await page.goto(BASE + `revisar.html?folio=${porRevisarS.folio}`);
+      await page.waitForSelector('#formulario:not([hidden])');
+      await aceptaTodos(page);
+      await page.waitForSelector('#cita_fecha', { state: 'visible' });
+      await prueba(page, `Revisar a ${donde}`, desde);
+      if (sCita) {
+        await page.goto(BASE + `cotejo.html?folio=${sCita.folio}`);
+        await page.waitForSelector('[data-campo="cita_fecha"][data-min]', { state: 'attached' });
+        const minC = await page.getAttribute('[data-campo="cita_fecha"]', 'data-min');
+        comprueba(minC === desde && await page.getAttribute('[data-campo="cita_fecha"]', 'data-max') === hasta,
+          t(`Cita de cotejo a ${donde}: la cita nueva va del ${dma(desde)} al ${dma(hasta)}`));
+        comprueba(new RegExp(`dentro de los 20 días hábiles siguientes: del ${dma(desde)} al ${dma(hasta)}`).test(await page.textContent('#ay-cita_fecha')),
+          t(`Cita de cotejo a ${donde}: la ayuda dice el rango`));
+      }
+      comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+    } finally { await c.close(); }
+  }
+  // P199: «Mis trámites» dice hasta cuándo corregir (20 días hábiles) y el plazo de la revisión (10 días hábiles)
+  const conObsS = datos.solicitud.find((s) => s.estado === 'con_observaciones' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa'));
+  const enviadaS = datos.solicitud.find((s) => s.estado === 'enviada' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa')
+    && !datos.solicitud.some((x) => x.solicitante_id === s.solicitante_id && x.id !== s.id && !FINALES.includes(x.estado)));
+  const diaMx = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: ZONA });
+  for (const [s, que, dias, texto] of [[conObsS, 'con observaciones', 20, 'Corrige antes del'], [enviadaS, 'en revisión', 10, 'a más tardar el']]) {
+    const { c, page, errores } = await contexto26(navegador, 390, 844, s.solicitante_id);
+    try {
+      await page.goto(BASE + 'tramites.html');
+      await page.waitForSelector('[data-solicitudes] .ficha');
+      const f = await texto26(page, '[data-solicitudes]');
+      const limite = dma(sumaHabilesIso(diaMx(s.estado_desde), dias));
+      comprueba(f.includes(limite) && f.includes(texto) && !/Fecha por definir|Pendiente \(P02\)/.test(f),
+        t(`«Mis trámites» ${que}: «${texto} ${limite}» (${dias} días hábiles), sin «Fecha por definir»`));
+      comprueba(!errores.length, t(`«Mis trámites» ${que}: sin errores en la consola`));
+    } finally { await c.close(); }
   }
 }
 
@@ -8731,6 +8872,8 @@ try {
   // «Directivo» y la cita de cotejo dentro de 20 días hábiles
   if (toca('consulta')) await parte('consultar un trámite', () => consultaTramite(navegador));
   if (toca('ayuda')) await parte('letreros de ayuda', () => letrerosAyuda(navegador));
+  if (toca('directivo')) await parte('perfil directivo', () => perfilDirectivo(navegador));
+  if (toca('cita20')) await parte('cita en 20 días hábiles', () => citaVeinteDias(navegador));
   // Acomodo de escritorio, lo común de las tres partes (integración del 25/10/2026): el botón «Menú de pruebas» y lo fijo
   if (toca('escritorio')) await parte('escritorio, lo común', () => escritorioComun(navegador));
   // Acomodo de escritorio, parte A (decisión de Liber del 25/10/2026): cabecera compacta, Revisar y Cita de cotejo
