@@ -1590,3 +1590,20 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
   correo.
 - Pruebas: probar-sitio 2735 (partes nuevas `escritorio`, `escritorio-a`, `-b` y `-c`), examen 180, volumen 138, esquemas
   167, auditar-sitio 111 pantallas con los 2 avisos conocidos. Quedan Citas de cotejo y Acreditaciones.
+
+## 2026-10-26 · Bloque 97 · Sin registro asistido, letreros de ayuda, perfil directivo y cita en 20 días hábiles
+
+- Liber decidió (26/10) que la única diferencia para quien no sabe leer o escribir sean letreros de ayuda: sin cuentas sin
+  contraseña, sin captura por el personal y sin avisos por teléfono. Decisiones del 26/10 en DECISIONES.
+- **Registro asistido, fuera** de la base y de las pantallas (cuenta sin contraseña, marcas de lectura, captura, acuse
+  impreso, avisos por teléfono, su parámetro y permisos). La ventanilla queda como **«Consultar un trámite»** del personal:
+  busca por CURP, nombre o folio y dice en qué va el trámite y qué sigue. Los ficticios asistidos son cuentas normales.
+- **Letreros «¿Necesitas ayuda?»** en inicio, «Crea tu cuenta», entrar, solicitud, correcciones y «Mis trámites»: un solo
+  fragmento con la sede, dirección y horario de los parámetros, después de la acción principal.
+- **Perfil «Directivo» (P201):** cancela acreditaciones junto con el instructor; la administración ya no.
+- **Cita de cotejo dentro de 20 días hábiles (P205)**, parámetro editable; sin el límite de 6 meses. Plazos de 10 días para
+  revisar y 20 para corregir como parámetros; «Mis trámites» dice hasta cuándo (P199, en parte).
+- Pendientes resueltos: P201, P205, P206, P214 y P207 a P213.
+- Pruebas: probar-base 408 (salen 49 casos del registro asistido y los 6 meses; entran 18), probar-sitio 2783 (partes nuevas
+  `consulta`, `ayuda`, `directivo`, `cita20`), examen 180, volumen 138, esquemas 155, auditar-sitio 109 pantallas con el
+  aviso conocido.
