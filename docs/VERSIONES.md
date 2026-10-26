@@ -4,6 +4,7 @@ Cada publicación en GitHub Pages (y en el artefacto de prueba) sube el número.
 
 | Versión | Publicada | Qué cambió |
 |---|---|---|
+| 0.71 | 26/10/26, 12:10 a.m. | Merge pull request #19 from SedemaOficina/escritorio |
 | 0.70 | 25/10/26, 11:35 a.m. | Merge pull request #17 from SedemaOficina/ajustes-equipo |
 | 0.69 | 24/10/26, 1:07 p.m. | Merge pull request #15 from SedemaOficina/hora-fija |
 | 0.68 | 24/10/26, 10:48 a.m. | Merge pull request #14 from SedemaOficina/pasos-revisar-cotejo-cuenta |
