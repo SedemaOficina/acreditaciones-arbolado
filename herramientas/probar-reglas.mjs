@@ -120,46 +120,8 @@ const INTENTOS5 = `CREATE TEMP TABLE r (n integer, intentos integer, bloqueada_h
        INSERT INTO r SELECT k, a.* FROM apd.anotar_intento((SELECT curp FROM apd.solicitante WHERE estado = 'activa' ORDER BY curp LIMIT 1)) a;
      END LOOP; END $$;`;
 
-// ── Registro asistido (decisión 2026-10-25, Liber): personas que no saben leer ni escribir ──
-// Las cuatro cuentas ficticias del registro asistido, por su nombre (apellido Supuesto): con observaciones (AMALIA), en
-// revisión (BENITO), con su cita (CIRILO) y ya activada por la persona (DOLORES)
-const ASIS = (nombre) => `(SELECT id FROM apd.solicitante WHERE registro_asistido_en IS NOT NULL AND nombre = '${nombre}')`;
-const SOL_DE = (persona) => `(SELECT id FROM apd.solicitud WHERE solicitante_id = ${persona} ORDER BY folio DESC LIMIT 1)`;
-const LECTURA = (marca) => `SELECT set_config('apd.lectura_aceptada', '${marca}', true);`;
-const CURP_ASIS = curpCon('SUEX800101HNESPJ0');
-const CURP_ASIS2 = curpCon('SUEX810202MNESPJ0');
-const CURP_MENOR = curpCon('SUEX100101HNESPJA');
-const ID_ASIS = '00000000-0000-4000-a000-000000000031';
-// El alta de una cuenta del registro asistido, sin contraseña (lo de antes, contexto y marca, lo pone cada caso)
-const ALTA_ASIS = (curp = CURP_ASIS, extra = {}) => {
-  const c = { id: ID_ASIS, correo: null, estado: 'activa', ...extra };
-  return `INSERT INTO apd.solicitante (id, curp, nombre, primer_apellido, correo, telefono, adscripcion, estado, es_ficticio)
-     VALUES ('${c.id}', '${curp}', 'Caso', 'Supuesto', ${c.correo ? `'${c.correo}'` : 'NULL'}, '0000000098', 'independiente', '${c.estado}', true);`;
-};
-// Una persona del registro asistido con su fotografía y su solicitud de poda nueva, con todos sus documentos en línea,
-// capturados por el personal de revisión y cotejo
-const ASISTIDA_CON_SOLICITUD = `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')}
-     ${ALTA_ASIS()}
-     ${FOTO(`'${ID_ASIS}'`)}
-     INSERT INTO apd.solicitud (id, solicitante_id, tipo_acreditacion, modalidad, nivel_estudios)
-     VALUES ('00000000-0000-4000-a000-000000000032', '${ID_ASIS}', 'poda', 'nueva', 'primaria');
-     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
-     SELECT '00000000-0000-4000-a000-000000000032', rc.requisito, 'prueba/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1000, repeat('a', 64)
-       FROM apd.requisito_curso rc JOIN apd.requisito r ON r.clave = rc.requisito
-      WHERE rc.tipo_acreditacion = 'poda' AND rc.modalidad = 'nueva' AND rc.obligatorio AND r.forma = 'documento' AND r.momento = 'en_linea';
-     ${LECTURA('')}`;
-const SOL_ASIS = `'00000000-0000-4000-a000-000000000032'`;
-const SESION = (persona) => `INSERT INTO apd.sesion_solicitante (solicitante_id, testigo_sha256, vence_en) VALUES (${persona}, encode(sha256(gen_random_uuid()::text::bytea), 'hex'), now() + interval '1 hour');`;
-const AVISOS = (persona, aviso) => `(SELECT count(*) FROM apd.aviso_telefono WHERE solicitante_id = ${persona}${aviso ? ` AND aviso = '${aviso}'` : ''})`;
-// CIRILO, el día de su cita (21/10/2026): cotejo terminado, como lo hace cotejar() en los ficticios
-const COTEJO_CIRILO = `
-     INSERT INTO apd.documento (solicitud_id, requisito, archivo_clave, nombre_original, tipo_mime, tamano_bytes, sha256)
-     VALUES (${SOL_DE(ASIS('CIRILO'))}, 'factura_pago', 'prueba/' || gen_random_uuid(), 'factura.pdf', 'application/pdf', 1000, repeat('e', 64));
-     UPDATE apd.fotografia SET estado = 'confirmada' WHERE solicitante_id = ${ASIS('CIRILO')} AND vigente;
-     UPDATE apd.cita SET resultado = 'atendida' WHERE solicitud_id = ${SOL_DE(ASIS('CIRILO'))} AND resultado = 'pendiente';
-     UPDATE apd.solicitud SET factura_rfc = 'SUPC750101AB1', factura_razon_social = 'CIRILO SUPUESTO PRUEBA',
-       factura_folio_fiscal = 'ABCDEF01-2345-4678-9ABC-DEF0123456AA', estado = 'lista_para_curso' WHERE id = ${SOL_DE(ASIS('CIRILO'))};`;
+// Una CURP que no tiene cuenta en los ficticios (casos de alta de una cuenta)
+const CURP_NUEVA = curpCon('SUEX800101HNESPJ0');
 
 const casos = [
   // ── Vigencia con fechas movidas (PD-2025-K101 se emitió el 25/10/2025 y vence el 24/10/2026) ──
@@ -968,8 +930,8 @@ const casos = [
   ['Toda función del esquema que corre con los permisos de quien instala tiene search_path fijo', 'ok', null, `DO $$ BEGIN
      ASSERT NOT EXISTS (SELECT 1 FROM pg_proc WHERE pronamespace = 'apd'::regnamespace AND prosecdef
                          AND NOT coalesce(proconfig @> ARRAY['search_path=apd, pg_temp'], false));
-     -- 8 desde el registro asistido (25/10/2026): apd.avisar_por_telefono escribe los avisos por teléfono
-     ASSERT (SELECT count(*) FROM pg_proc WHERE pronamespace = 'apd'::regnamespace AND prosecdef) = 8; END $$;`],
+     -- 7: sin registro asistido (decisión del 26/10/2026) ya no está apd.avisar_por_telefono
+     ASSERT (SELECT count(*) FROM pg_proc WHERE pronamespace = 'apd'::regnamespace AND prosecdef) = 7; END $$;`],
 
   // ── E2-07 · Decisión 6: la cuenta del servicio no pide folios ni abre expedientes directamente ──
   ['La cuenta del servicio no pide folios directamente (E2-07)', { sqlstate: '42501' }, null, `SELECT apd.siguiente_folio('PD', 2026::smallint);`],
@@ -1703,211 +1665,24 @@ const casos = [
      SELECT set_config('apd.usuario', (SELECT correo FROM p), true), set_config('apd.usuario_tipo', 'solicitante', true);
      INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios) VALUES ((SELECT id FROM p), 'poda', 'nueva', 'secundaria');
      DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.solicitud WHERE solicitante_id = (SELECT id FROM p) AND estado = 'borrador') = 1; END $$;`],
-  // ── Registro asistido (decisión 2026-10-25, Liber): la cuenta ──
-  ['Registro asistido: el personal de revisión y cotejo registra a la persona activa, sin contraseña ni correo; la base pone quién y cuándo, y la marca del aviso de privacidad queda en la bitácora', 'ok', '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')} ${B0}
-     ${ALTA_ASIS()}
-     DO $$ BEGIN
-       ASSERT (SELECT estado = 'activa' AND contrasena_hash IS NULL AND correo IS NULL AND telefono = '0000000098' AND activada_en IS NULL
-                 AND registro_asistido_por = 'prueba.automatica' AND registro_asistido_en = '2026-10-14 10:00-06' FROM apd.solicitante WHERE id = '${ID_ASIS}');
-       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'lectura_aviso_privacidad' AND entidad_id = '${ID_ASIS}' AND usuario = 'prueba.automatica'
-                        AND fecha = '2026-10-14 10:00-06' AND detalle LIKE '%se le leyó el aviso de privacidad y lo aceptó'); END $$;
-     ${MAS(1, 'lectura_aviso_privacidad')}`],
-  ['Registro asistido: otro perfil (instructor) no registra cuentas', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 10:00', `
-     ${PERFIL('instructor')} ${LECTURA('aviso_privacidad')} ${ALTA_ASIS()}`],
-  ['Registro asistido: el personal sin perfil declarado no registra cuentas', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 10:00', `
-     ${LECTURA('aviso_privacidad')} ${ALTA_ASIS()}`],
-  ['Registro asistido: sin la marca de que se le leyó el aviso de privacidad no se registra', { codigo: 'sin_lectura' }, '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${ALTA_ASIS()}`],
-  ['Registro asistido: la marca de otra lectura no sirve para registrar', { codigo: 'sin_lectura' }, '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('lo_capturado')} ${ALTA_ASIS()}`],
-  ['Registro asistido: una persona menor de edad según su CURP no se registra', { codigo: 'menor_de_edad' }, '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')} ${ALTA_ASIS(CURP_MENOR)}`],
-  ['Registro asistido: la cuenta queda activa, no bloqueada ni inactiva', { codigo: 'asistida_no_activa' }, '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')} ${ALTA_ASIS(CURP_ASIS, { estado: 'inactiva' })}`],
-  ['Una cuenta activa sin contraseña que no es del registro asistido se sigue rechazando (solicitante_contrasena_ck)', { sqlstate: '23514' }, '2026-10-14 10:00', `
-     ${COMO('solicitante', 'persona@ejemplo.local')} ${ALTA_ASIS(CURP_ASIS, { correo: 'caso-asistido@ejemplo.local' })}`],
-  ['Una cuenta que no es del registro asistido sigue necesitando correo (solicitante_correo_obligatorio_ck)', { sqlstate: '23514' }, '2026-10-14 10:00', `
+  // ── Sin registro asistido (decisión de Liber del 26/10/2026): toda cuenta tiene correo y contraseña ──
+  ['Sin registro asistido: una cuenta activa sin contraseña se rechaza (solicitante_contrasena_ck)', { sqlstate: '23514' }, '2026-10-14 10:00', `
+     ${COMO('solicitante', 'persona@ejemplo.local')}
+     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, es_ficticio)
+     VALUES ('${CURP_NUEVA}', 'Caso', 'Supuesto', 'caso-sin-contrasena@ejemplo.local', '0000000098', 'independiente', true);`],
+  ['Sin registro asistido: una cuenta sin correo se rechaza (el correo es obligatorio)', { sqlstate: '23502' }, '2026-10-14 10:00', `
      ${COMO('solicitante', 'persona@ejemplo.local')}
      INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, contrasena_hash, es_ficticio)
-     VALUES ('${CURP_ASIS}', 'Caso', 'Supuesto', NULL, '0000000098', 'independiente', 'x', true);`],
-  ['Registro asistido: el correo es opcional, pero si se da no puede ser el de otra cuenta activa', { codigo: 'correo_registrado' }, '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')}
-     INSERT INTO apd.solicitante (curp, nombre, primer_apellido, correo, telefono, adscripcion, es_ficticio)
-     VALUES ('${CURP_ASIS}', 'Caso', 'Supuesto', (SELECT correo FROM apd.solicitante WHERE estado = 'activa' AND correo IS NOT NULL ORDER BY curp LIMIT 1), '0000000098', 'independiente', true);`],
-  ['Registro asistido: dos cuentas sin correo no chocan con el índice único del correo', 'ok', '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')}
-     ${ALTA_ASIS()}
-     ${ALTA_ASIS(CURP_ASIS2, { id: '00000000-0000-4000-a000-000000000033' })}
-     DO $$ BEGIN ASSERT (SELECT count(*) FROM apd.solicitante WHERE correo IS NULL AND registro_asistido_en IS NOT NULL) >= 4; END $$;`],
-  ['Registro asistido: sin contraseña no se abre una sesión (no puede entrar sola)', { codigo: 'cuenta_sin_contrasena' }, null, SESION(ASIS('AMALIA'))],
-  ['Registro asistido: la persona activa después su cuenta con su correo y su contraseña; la base pone cuándo, lo anota y ya puede entrar', 'ok', '2026-10-14 18:00', `
-     ${COMO('solicitante', 'amalia@ejemplo.local')} ${B0}
-     UPDATE apd.solicitante SET correo = 'nueva-asistida@ejemplo.local', contrasena_hash = 'x' WHERE id = ${ASIS('AMALIA')};
-     DO $$ BEGIN
-       ASSERT (SELECT activada_en = '2026-10-14 18:00-06' AND registro_asistido_por = 'revision.ficticia' FROM apd.solicitante WHERE nombre = 'AMALIA' AND registro_asistido_en IS NOT NULL);
-       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'activacion' AND usuario = 'amalia@ejemplo.local'); END $$;
-     ${SESION(ASIS('AMALIA'))}`],
-  ['Registro asistido: activar la cuenta sin correo se rechaza', { codigo: 'activacion_sin_correo' }, '2026-10-14 18:00', `
-     ${COMO('solicitante', 'benito@ejemplo.local')}
-     UPDATE apd.solicitante SET contrasena_hash = 'x' WHERE id = ${ASIS('BENITO')};`],
-  ['Registro asistido: el personal no pone la contraseña por la persona', { codigo: 'activacion_de_persona' }, '2026-10-14 18:00', `
-     ${PERFIL('revision_cotejo')}
-     UPDATE apd.solicitante SET correo = 'benito@ejemplo.local', contrasena_hash = 'x' WHERE id = ${ASIS('BENITO')};`],
-  ['Registro asistido: quién registró la cuenta y cuándo no los escribe la cuenta del servicio', { sqlstate: '42501' }, null, `
-     UPDATE apd.solicitante SET registro_asistido_por = 'otra.cuenta' WHERE id = ${ASIS('BENITO')};`],
-  ['Registro asistido: quién registró la cuenta, cuándo y cuándo se activó no cambian ni para quien administra la base', { codigo: 'registro_asistido_fijo' }, null, `
-     UPDATE apd.solicitante SET activada_en = now() WHERE id = ${ASIS('BENITO')};`, 'administracion'],
-  ['Registro asistido: la fotografía que toma el personal al registrar queda pendiente hasta el cotejo', 'ok', '2026-10-14 10:00', `
-     ${PERFIL('revision_cotejo')} ${FOTO(ASIS('BENITO'))}
-     DO $$ BEGIN ASSERT (SELECT origen = 'registro_asistido' AND estado = 'pendiente' AND confirmada_por IS NULL AND cargada_por = 'prueba.automatica'
-                           FROM apd.fotografia WHERE solicitante_id = (SELECT id FROM apd.solicitante WHERE nombre = 'BENITO' AND registro_asistido_en IS NOT NULL) AND vigente); END $$;`],
-  ['Registro asistido: otro perfil no carga su fotografía', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 10:00', `
-     ${PERFIL('instructor')} ${FOTO(ASIS('BENITO'))}`],
-
-  // ── Registro asistido: la solicitud y sus documentos ──
-  ['Registro asistido: la solicitud que captura el personal guarda quién la capturó; al enviarla con la marca de lectura queda enviada y la marca en la bitácora', 'ok', '2026-10-14 10:30', `
-     ${ASISTIDA_CON_SOLICITUD}
-     DO $$ BEGIN ASSERT (SELECT capturada_por = 'prueba.automatica' AND estado = 'borrador' FROM apd.solicitud WHERE id = ${SOL_ASIS}); END $$;
-     ${LECTURA('lo_capturado')} ${B0}
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_ASIS};
-     DO $$ BEGIN
-       ASSERT (SELECT estado = 'enviada' AND enviada_en = '2026-10-14 10:30-06' AND capturada_por = 'prueba.automatica' FROM apd.solicitud WHERE id = ${SOL_ASIS});
-       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'lectura_lo_capturado' AND entidad_id = ${SOL_ASIS} AND usuario = 'prueba.automatica'
-                        AND detalle = 'Se le leyó lo capturado y lo aceptó · envío de la solicitud');
-       ASSERT EXISTS (SELECT 1 FROM apd.solicitud s WHERE s.id = ${SOL_ASIS} AND s.estado = 'enviada'); END $$;`],
-  ['Registro asistido: sin la marca «se le leyó lo capturado» no se envía', { codigo: 'sin_lectura' }, '2026-10-14 10:30', `
-     ${ASISTIDA_CON_SOLICITUD}
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_ASIS};`],
-  ['Registro asistido: otro perfil no envía la solicitud por la persona', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 10:30', `
-     ${ASISTIDA_CON_SOLICITUD}
-     ${PERFIL('instructor')} ${LECTURA('lo_capturado')}
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_ASIS};`],
-  ['Registro asistido: otro perfil no captura la solicitud', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 10:30', `
-     ${PERFIL('revision_cotejo')} ${LECTURA('aviso_privacidad')} ${ALTA_ASIS()}
-     ${PERFIL('instructor')}
-     INSERT INTO apd.solicitud (solicitante_id, tipo_acreditacion, modalidad, nivel_estudios) VALUES ('${ID_ASIS}', 'poda', 'nueva', 'primaria');`],
-  ['Registro asistido: quién capturó la solicitud no lo escribe la cuenta del servicio', { sqlstate: '42501' }, null, `
-     UPDATE apd.solicitud SET capturada_por = 'otra.cuenta' WHERE id = ${SOL_DE(ASIS('BENITO'))};`],
-  ['Registro asistido: quién capturó la solicitud no cambia ni para quien administra la base', { codigo: 'registro_asistido_fijo' }, null, `
-     UPDATE apd.solicitud SET capturada_por = 'otra.cuenta' WHERE id = ${SOL_DE(ASIS('BENITO'))};`, 'administracion'],
-  ['Registro asistido: en la ventanilla, el personal carga el documento corregido y reenvía con la marca de lectura; queda en la bitácora', 'ok', '2026-10-14 11:00', `
-     ${PERFIL('revision_cotejo')}
-     ${DOC_PEQUENO(SOL_DE(ASIS('AMALIA')), 'comprobante_domicilio')}
-     ${LECTURA('lo_capturado')}
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_DE(ASIS('AMALIA'))};
-     DO $$ BEGIN
-       ASSERT (SELECT estado = 'enviada' FROM apd.solicitud WHERE id = ${SOL_DE(ASIS('AMALIA'))});
-       ASSERT (SELECT cargado_por = 'prueba.automatica' AND estado = 'pendiente' FROM apd.documento WHERE solicitud_id = ${SOL_DE(ASIS('AMALIA'))} AND requisito = 'comprobante_domicilio' AND vigente);
-       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'lectura_lo_capturado' AND entidad_id = ${SOL_DE(ASIS('AMALIA'))}::text
-                        AND detalle = 'Se le leyó lo capturado y lo aceptó · reenvío con lo corregido'); END $$;`],
-  ['Registro asistido: otro perfil no carga los documentos de la persona', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 11:00', `
-     ${PERFIL('instructor')} ${DOC_PEQUENO(SOL_DE(ASIS('AMALIA')), 'comprobante_domicilio')}`],
-  ['Registro asistido: con su cita en pausa, el documento que carga el personal pide la marca de lectura', { codigo: 'sin_lectura' }, '2026-10-21 10:40', `
-     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Trae otra versión de la CURP.', revisado_por = 'prueba.automatica'
-      WHERE solicitud_id = ${SOL_DE(ASIS('CIRILO'))} AND requisito = 'curp' AND vigente;
-     UPDATE apd.cita SET resultado = 'en_pausa', observacion = 'CURP: trae otra versión.' WHERE solicitud_id = ${SOL_DE(ASIS('CIRILO'))} AND resultado = 'pendiente';
-     ${PERFIL('revision_cotejo')} ${DOC_PEQUENO(SOL_DE(ASIS('CIRILO')), 'curp')}`],
-  ['Registro asistido: con su cita en pausa, queda el aviso por teléfono de qué traer (T2) y el documento se carga con la marca de lectura', 'ok', '2026-10-21 10:40', `
-     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Trae otra versión de la CURP.', revisado_por = 'prueba.automatica'
-      WHERE solicitud_id = ${SOL_DE(ASIS('CIRILO'))} AND requisito = 'curp' AND vigente;
-     UPDATE apd.cita SET resultado = 'en_pausa', observacion = 'CURP: trae otra versión.' WHERE solicitud_id = ${SOL_DE(ASIS('CIRILO'))} AND resultado = 'pendiente';
-     DO $$ BEGIN ASSERT (SELECT datos->>'resultado' = 'en_pausa' AND datos->>'observacion' = 'CURP: trae otra versión.' AND resultado IS NULL
-                           FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('CIRILO')} AND aviso = 'T2'); END $$;
-     ${PERFIL('revision_cotejo')} ${LECTURA('lo_capturado')} ${DOC_PEQUENO(SOL_DE(ASIS('CIRILO')), 'curp')}
-     DO $$ BEGIN ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'lectura_lo_capturado' AND detalle LIKE '%documento curp cargado en la ventanilla'); END $$;`],
-
-  // ── Registro asistido: avisos por teléfono ──
-  ['Avisos por teléfono: con observaciones queda el aviso pendiente (S2) y al validar, el de la cita con los datos para pagar (S5)', 'ok', '2026-10-14 12:00', `
-     DO $$ BEGIN ASSERT (SELECT count(*) = 1 FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('AMALIA')} AND aviso = 'S2' AND resultado IS NULL); END $$;
-     ${LISTA_PARA_VALIDAR(SOL_DE(ASIS('BENITO')))}
-     INSERT INTO apd.revision (solicitud_id, resultado, revisor) VALUES (${SOL_DE(ASIS('BENITO'))}, 'validada', 'prueba.automatica');
-     DO $$ BEGIN ASSERT (SELECT datos->>'cita_en' = '2026-10-21T16:00:00Z' AND (datos->>'pago_monto')::numeric > 0 AND datos->>'pago_referencia' LIKE 'APDS2026%'
-                                AND creado_en = '2026-10-14 12:00-06' AND resultado IS NULL
-                           FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('BENITO')} AND aviso = 'S5'); END $$;`],
-  ['Avisos por teléfono: la solicitud que se cierra al agotar las oportunidades de corrección deja su aviso (S7), con el motivo', 'ok', '2026-10-14 11:00', `
-     UPDATE apd.parametro SET valor = '1' WHERE clave = 'oportunidades_correccion';
-     ${PERFIL('revision_cotejo')}
-     ${DOC_PEQUENO(SOL_DE(ASIS('AMALIA')), 'comprobante_domicilio')}
-     ${LECTURA('lo_capturado')}
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_DE(ASIS('AMALIA'))};
-     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Sigue sin corregirse.', revisado_por = 'prueba.automatica'
-      WHERE solicitud_id = ${SOL_DE(ASIS('AMALIA'))} AND vigente AND estado = 'pendiente';
-     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${SOL_DE(ASIS('AMALIA'))}, 'con_observaciones', '', 'prueba.automatica');
-     DO $$ BEGIN
-       ASSERT (SELECT estado = 'concluida_sin_atender' AND motivo_cierre = 'Se agotaron las oportunidades de corrección' FROM apd.solicitud WHERE id = ${SOL_DE(ASIS('AMALIA'))});
-       ASSERT (SELECT count(*) = 1 FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('AMALIA')} AND aviso = 'S7' AND resultado IS NULL
-                 AND datos->>'motivo' = 'Se agotaron las oportunidades de corrección' AND creado_en = '2026-10-14 11:00-06');
-       ASSERT ${AVISOS(ASIS('AMALIA'), 'S4')} = 0;
-       ASSERT EXISTS (SELECT 1 FROM apd.avisos_telefono_pendientes WHERE solicitante_id = ${ASIS('AMALIA')} AND aviso = 'S7'); END $$;`],
-  ['Avisos por teléfono: el cotejo terminado (T2), el grupo confirmado (G1) y la baja del grupo (G2) también dejan su aviso', 'ok', '2026-10-21 10:30', `
-     ${COTEJO_CIRILO}
-     DO $$ BEGIN ASSERT (SELECT datos->>'resultado' = 'atendida' AND datos->>'expediente' LIKE 'EXP-2026-%' FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('CIRILO')} AND aviso = 'T2'); END $$;
-     INSERT INTO apd.inscripcion (solicitud_id, grupo_id) VALUES (${SOL_DE(ASIS('CIRILO'))}, ${GRUPO_INTEGRACION});
-     DO $$ BEGIN ASSERT ${AVISOS(ASIS('CIRILO'), 'G1')} = 0; END $$;
-     UPDATE apd.grupo SET fecha_inicio = '2026-11-02', hora_entrada = '09:00' WHERE id = ${GRUPO_INTEGRACION};
-     ${PERFIL('capacitacion')}
-     UPDATE apd.grupo SET instructor = 'instructor.ficticio' WHERE id = ${GRUPO_INTEGRACION};
-     UPDATE apd.grupo SET estado = 'confirmado' WHERE id = ${GRUPO_INTEGRACION};
-     DO $$ BEGIN ASSERT (SELECT datos->>'fecha_inicio' = '2026-11-02' AND datos->>'hora_entrada' = '09:00' AND datos->>'grupo' = 'APD-G-2026-004'
-                           FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('CIRILO')} AND aviso = 'G1'); END $$;
-     UPDATE apd.inscripcion SET activa = false, motivo_baja = 'La persona pidió cambiar de grupo.' WHERE solicitud_id = ${SOL_DE(ASIS('CIRILO'))} AND activa;
-     DO $$ BEGIN ASSERT (SELECT datos->>'resultado' = 'baja' AND datos->>'motivo' = 'La persona pidió cambiar de grupo.' FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('CIRILO')} AND aviso = 'G2'); END $$;`],
-  ['Avisos por teléfono: la cuenta bloqueada por identidad deja su aviso (T3)', 'ok', '2026-10-14 12:00', `
-     SELECT set_config('apd.motivo', 'Prueba automática del bloqueo por identidad.', true);
-     UPDATE apd.solicitante SET estado = 'bloqueada', bloqueo_motivo = 'identidad' WHERE id = ${ASIS('BENITO')};
-     DO $$ BEGIN ASSERT ${AVISOS(ASIS('BENITO'), 'T3')} = 1; END $$;`],
-  ['Avisos por teléfono: ni la cuenta ya activada ni la de quien no es del registro asistido reciben avisos por teléfono', 'ok', '2026-10-14 12:00', `
-     CREATE TEMP TABLE a0 AS SELECT count(*) AS n FROM apd.aviso_telefono;
-     CREATE TEMP TABLE e AS SELECT ${ENVIADA} AS id;
-     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Observación de la prueba automática.', revisado_por = 'prueba.automatica'
-      WHERE solicitud_id = (SELECT id FROM e) AND vigente AND requisito = 'curp';
-     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES ((SELECT id FROM e), 'con_observaciones', 'Observación de la prueba automática.', 'prueba.automatica');
-     ${COMO('solicitante', 'persona-asistida@ejemplo.local')}
-     ${DOC_PEQUENO(SOL_DE(ASIS('DOLORES')), 'identificacion_oficial')}
-     UPDATE apd.solicitud SET estado = 'enviada' WHERE id = ${SOL_DE(ASIS('DOLORES'))};
-     ${COMO('personal')}
-     UPDATE apd.documento SET estado = 'con_observacion', observacion = 'Sigue vencida la identificación.', revisado_por = 'prueba.automatica'
-      WHERE solicitud_id = ${SOL_DE(ASIS('DOLORES'))} AND vigente AND requisito = 'identificacion_oficial';
-     INSERT INTO apd.revision (solicitud_id, resultado, observacion_general, revisor) VALUES (${SOL_DE(ASIS('DOLORES'))}, 'con_observaciones', 'Sigue vencida la identificación.', 'prueba.automatica');
-     DO $$ BEGIN
-       ASSERT (SELECT estado FROM apd.solicitud WHERE id = (SELECT id FROM e)) = 'con_observaciones';
-       ASSERT (SELECT estado FROM apd.solicitud WHERE id = ${SOL_DE(ASIS('DOLORES'))}) = 'con_observaciones';
-       ASSERT (SELECT count(*) FROM apd.aviso_telefono) = (SELECT n FROM a0); END $$;`],
-  ['Avisos por teléfono: el personal de revisión y cotejo registra «se le avisó»; la base pone quién y cuándo, y lo anota en la bitácora', 'ok', '2026-10-14 16:00', `
-     ${PERFIL('revision_cotejo')} ${B0}
-     UPDATE apd.aviso_telefono SET resultado = 'se_le_aviso' WHERE solicitante_id = ${ASIS('AMALIA')} AND resultado IS NULL;
-     DO $$ BEGIN ASSERT (SELECT atendido_por = 'prueba.automatica' AND atendido_en = '2026-10-14 16:00-06' FROM apd.aviso_telefono WHERE solicitante_id = ${ASIS('AMALIA')} AND aviso = 'S2'); END $$;
-     ${MAS(1, 'aviso_telefono')}`],
-  ['Avisos por teléfono: «no contestó» también se registra', 'ok', '2026-10-14 16:00', `
-     ${PERFIL('revision_cotejo')}
-     UPDATE apd.aviso_telefono SET resultado = 'no_contesto' WHERE solicitante_id = ${ASIS('AMALIA')} AND resultado IS NULL;
-     DO $$ BEGIN ASSERT NOT EXISTS (SELECT 1 FROM apd.avisos_telefono_pendientes WHERE solicitante_id = ${ASIS('AMALIA')});
-       ASSERT EXISTS (SELECT 1 FROM apd.bitacora WHERE accion = 'aviso_telefono' AND detalle = 'Aviso S2 por teléfono: no contestó'); END $$;`],
-  ['Avisos por teléfono: otro perfil no los registra', { codigo: 'registro_asistido_sin_permiso' }, '2026-10-14 16:00', `
-     ${PERFIL('instructor')}
-     UPDATE apd.aviso_telefono SET resultado = 'se_le_aviso' WHERE solicitante_id = ${ASIS('AMALIA')} AND resultado IS NULL;`],
-  ['Avisos por teléfono: un aviso que ya tiene su resultado no cambia', { codigo: 'aviso_atendido' }, '2026-10-14 16:00', `
-     ${PERFIL('revision_cotejo')}
-     UPDATE apd.aviso_telefono SET resultado = 'no_contesto' WHERE solicitante_id = ${ASIS('CIRILO')} AND aviso = 'S5';`],
-  ['Avisos por teléfono: sin resultado no se registra', { codigo: 'aviso_sin_resultado' }, '2026-10-14 16:00', `
-     ${PERFIL('revision_cotejo')}
-     UPDATE apd.aviso_telefono SET resultado = NULL WHERE solicitante_id = ${ASIS('AMALIA')} AND resultado IS NULL;`],
-  ['Avisos por teléfono: el resultado es «se le avisó» o «no contestó»', { sqlstate: '23514' }, '2026-10-14 16:00', `
-     ${PERFIL('revision_cotejo')}
-     UPDATE apd.aviso_telefono SET resultado = 'mas_tarde' WHERE solicitante_id = ${ASIS('AMALIA')} AND resultado IS NULL;`],
-  ['Avisos por teléfono: la cuenta del servicio no los crea', { sqlstate: '42501' }, null, `
-     INSERT INTO apd.aviso_telefono (solicitante_id, aviso) VALUES (${ASIS('AMALIA')}, 'S2');`],
-  ['Avisos por teléfono: tampoco llamando directo a la función que los escribe', { codigo: 'aviso_directo' }, null, `
-     SELECT apd.avisar_por_telefono(${ASIS('AMALIA')}, NULL, 'S2');`],
-  ['Avisos por teléfono: nadie los borra', { sqlstate: '42501' }, null, `DELETE FROM apd.aviso_telefono;`],
-  ['Avisos por teléfono: lo que dice un aviso no lo cambia la cuenta del servicio', { sqlstate: '42501' }, null, `
-     UPDATE apd.aviso_telefono SET aviso = 'S4' WHERE solicitante_id = ${ASIS('AMALIA')};`],
-  ['Avisos por teléfono: lo que dice un aviso no cambia ni para quien administra la base', { codigo: 'aviso_inmutable' }, null, `
-     UPDATE apd.aviso_telefono SET aviso = 'S4' WHERE solicitante_id = ${ASIS('AMALIA')};`, 'administracion'],
-  ['Avisos por teléfono: la lista de pendientes trae el nombre y el teléfono de la persona; las ya atendidas no salen', 'ok', null, `DO $$ BEGIN
-     ASSERT (SELECT nombre = 'AMALIA' AND telefono ~ '^[0-9]{10}$' AND aviso = 'S2' FROM apd.avisos_telefono_pendientes WHERE solicitante_id = ${ASIS('AMALIA')});
-     ASSERT NOT EXISTS (SELECT 1 FROM apd.avisos_telefono_pendientes WHERE solicitante_id IN (${ASIS('CIRILO')}, ${ASIS('DOLORES')})); END $$;`]
+     VALUES ('${CURP_NUEVA}', 'Caso', 'Supuesto', NULL, '0000000098', 'independiente', 'x', true);`],
+  ['Sin registro asistido: la base ya no tiene sus columnas, la tabla de avisos por teléfono, sus funciones ni su parámetro', 'ok', null, `DO $$ BEGIN
+     ASSERT NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'apd'
+                         AND ((table_name = 'solicitante' AND column_name IN ('registro_asistido_por', 'registro_asistido_en', 'activada_en'))
+                           OR (table_name = 'solicitud' AND column_name = 'capturada_por')));
+     ASSERT to_regclass('apd.aviso_telefono') IS NULL AND to_regclass('apd.avisos_telefono_pendientes') IS NULL;
+     ASSERT NOT EXISTS (SELECT 1 FROM pg_proc WHERE pronamespace = 'apd'::regnamespace
+                         AND proname IN ('avisar_por_telefono', 'es_asistida', 'asistida_sin_activar', 'comprobar_lectura', 'comprobar_perfil_asistido'));
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.parametro WHERE clave = 'perfiles_registro_asistido');
+     ASSERT NOT EXISTS (SELECT 1 FROM apd.fotografia WHERE origen NOT IN ('en_linea', 'cotejo')); END $$;`]
 ];
 
 let fallas = 0;
@@ -1990,9 +1765,7 @@ informa(['curp_valida(', 'correo_valido(', 'rfc_valido('].every((f) => (rd.stdou
 const SIN_CASO_ANOTADAS = {
   sin_adscripcion: 'defensiva: una cuenta activa siempre tiene adscripción (solicitante_adscripcion_activa_ck), así que no se alcanza'
 };
-// También las del registro asistido, en su archivo (decisión 2026-10-25)
-const reglas = readFileSync(new URL('../db/apd/03-apd-reglas.sql', import.meta.url), 'utf8')
-  + readFileSync(new URL('../db/apd/03b-apd-registro-asistido.sql', import.meta.url), 'utf8');
+const reglas = readFileSync(new URL('../db/apd/03-apd-reglas.sql', import.meta.url), 'utf8');
 const concurrencia = readFileSync(new URL('./probar-concurrencia.sh', import.meta.url), 'utf8');
 const codigos = [...new Set([...reglas.matchAll(/apd\.error\('([a-z_]+)'/g)].map((m) => m[1]))].sort();
 const conCaso = new Set(casos.filter(([, e]) => e && e.codigo).map(([, e]) => e.codigo));

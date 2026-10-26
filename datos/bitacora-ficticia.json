@@ -606,17 +606,7 @@
   {
    "fecha": "2026-07-23T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "959f8f5b-6496-475b-a7e5-6b3002a74788",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-07-23T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "959f8f5b-6496-475b-a7e5-6b3002a74788",
@@ -636,7 +626,17 @@
   {
    "fecha": "2026-07-23T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "959f8f5b-6496-475b-a7e5-6b3002a74788",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-07-23T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "959f8f5b-6496-475b-a7e5-6b3002a74788",
@@ -946,7 +946,7 @@
   {
    "fecha": "2026-08-06T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → con_observacion · La identificación está vencida; carga una vigente.",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "40667225-9eca-40ea-af57-1873c1fbb62f",
@@ -966,7 +966,7 @@
   {
    "fecha": "2026-08-06T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → con_observacion · La identificación está vencida; carga una vigente.",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "40667225-9eca-40ea-af57-1873c1fbb62f",
@@ -976,7 +976,17 @@
   {
    "fecha": "2026-08-06T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → con_observacion · El comprobante tiene más de tres meses de antigüedad.",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-06T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
@@ -996,17 +1006,7 @@
   {
    "fecha": "2026-08-06T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-06T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → con_observacion · El comprobante tiene más de tres meses de antigüedad.",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "7b7f0039-8490-4d6a-a1d6-7d410e52356a",
@@ -1066,7 +1066,7 @@
   {
    "fecha": "2026-08-10T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "72567ac6-fd71-49e9-a7b8-87b2cea78778",
@@ -1076,7 +1076,7 @@
   {
    "fecha": "2026-08-10T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "72567ac6-fd71-49e9-a7b8-87b2cea78778",
@@ -1096,7 +1096,7 @@
   {
    "fecha": "2026-08-10T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "72567ac6-fd71-49e9-a7b8-87b2cea78778",
@@ -1216,7 +1216,27 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "241d2caa-9f29-4006-ae59-f6e8f594208e",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-12T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "241d2caa-9f29-4006-ae59-f6e8f594208e",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-12T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "241d2caa-9f29-4006-ae59-f6e8f594208e",
@@ -1236,37 +1256,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "241d2caa-9f29-4006-ae59-f6e8f594208e",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-12T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "241d2caa-9f29-4006-ae59-f6e8f594208e",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-12T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-12T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
@@ -1296,20 +1286,10 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-12T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
+   "entidad_id": "2cf233d2-9822-4810-a51a-92a7db05352d",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -1327,6 +1307,26 @@
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-12T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-12T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "2e6962df-6c5e-4334-ada1-77e8a4d88118",
@@ -1346,16 +1346,6 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "4f024511-6131-4de3-adc7-53295f3154bc",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-12T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -1389,6 +1379,16 @@
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
+   "entidad_id": "4f024511-6131-4de3-adc7-53295f3154bc",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-12T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
    "entidad_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
@@ -1396,7 +1396,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
@@ -1416,7 +1416,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "5687c62e-b19c-4470-a017-98e1749fa2a6",
@@ -1446,7 +1446,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
@@ -1466,20 +1466,10 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "8c6f2e74-cdb4-4211-a15d-725ae6118989",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-12T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "94f1487a-3e47-4361-a972-7555eba72d13",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -1496,7 +1486,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "94f1487a-3e47-4361-a972-7555eba72d13",
@@ -1516,7 +1506,17 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "94f1487a-3e47-4361-a972-7555eba72d13",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-12T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
@@ -1536,7 +1536,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
@@ -1546,7 +1546,7 @@
   {
    "fecha": "2026-08-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "ed83f05d-3263-4d18-a45a-334339907b5b",
@@ -2386,16 +2386,6 @@
   {
    "fecha": "2026-08-27T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-08-27T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -2406,7 +2396,7 @@
   {
    "fecha": "2026-08-27T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
@@ -2416,7 +2406,17 @@
   {
    "fecha": "2026-08-27T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-08-27T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "d3f09d69-c624-44e3-a024-4e381d947d1c",
@@ -2636,17 +2636,7 @@
   {
    "fecha": "2026-09-02T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "56a5e924-db23-47c1-ad4b-094c7343c163",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-02T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → con_observacion · La CURP no está en el formato actualizado.",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "56a5e924-db23-47c1-ad4b-094c7343c163",
@@ -2666,7 +2656,17 @@
   {
    "fecha": "2026-09-02T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "curp: pendiente → con_observacion · La CURP no está en el formato actualizado.",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "56a5e924-db23-47c1-ad4b-094c7343c163",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-02T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "56a5e924-db23-47c1-ad4b-094c7343c163",
@@ -2786,27 +2786,7 @@
   {
    "fecha": "2026-09-03T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "07d4a6aa-a9dc-4a8d-ab9b-2d160ef88ab2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-03T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "07d4a6aa-a9dc-4a8d-ab9b-2d160ef88ab2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-03T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "07d4a6aa-a9dc-4a8d-ab9b-2d160ef88ab2",
@@ -2826,6 +2806,36 @@
   {
    "fecha": "2026-09-03T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "07d4a6aa-a9dc-4a8d-ab9b-2d160ef88ab2",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-03T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "07d4a6aa-a9dc-4a8d-ab9b-2d160ef88ab2",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-03T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "15b83ccb-c3b6-4643-a8cc-eab52e82f7c4",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-03T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -2856,16 +2866,6 @@
   {
    "fecha": "2026-09-03T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "15b83ccb-c3b6-4643-a8cc-eab52e82f7c4",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-03T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -2876,7 +2876,7 @@
   {
    "fecha": "2026-09-03T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "77aee22e-f6b4-4bdb-ac87-af52c1b44786",
@@ -2896,7 +2896,7 @@
   {
    "fecha": "2026-09-03T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "77aee22e-f6b4-4bdb-ac87-af52c1b44786",
@@ -2940,16 +2940,6 @@
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "8e6df1a2-b0c3-4593-a568-89f6bb92ba71",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-03T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d79fc8f7-0d75-4035-ad05-923eac896d97",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -2967,6 +2957,16 @@
    "fecha": "2026-09-03T13:00:00-06:00",
    "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "d79fc8f7-0d75-4035-ad05-923eac896d97",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-03T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "d79fc8f7-0d75-4035-ad05-923eac896d97",
@@ -3346,17 +3346,7 @@
   {
    "fecha": "2026-09-09T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "be77b640-f273-4b9c-a210-4cf42032fefe",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-09T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → con_observacion · La imagen de la identificación no es legible.",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "be77b640-f273-4b9c-a210-4cf42032fefe",
@@ -3376,7 +3366,17 @@
   {
    "fecha": "2026-09-09T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "be77b640-f273-4b9c-a210-4cf42032fefe",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-09T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → con_observacion · La imagen de la identificación no es legible.",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "be77b640-f273-4b9c-a210-4cf42032fefe",
@@ -3406,16 +3406,6 @@
   {
    "fecha": "2026-09-10T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "e7c5f613-0a6e-454b-ae75-fa65d7946fbd",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-10T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -3427,6 +3417,16 @@
    "fecha": "2026-09-10T13:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "e7c5f613-0a6e-454b-ae75-fa65d7946fbd",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-10T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e7c5f613-0a6e-454b-ae75-fa65d7946fbd",
@@ -4086,26 +4086,6 @@
   {
    "fecha": "2026-09-16T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "90586261-c297-4bbb-a26e-f4996813ca79",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-16T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "90586261-c297-4bbb-a26e-f4996813ca79",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-16T12:00:00-06:00",
-   "accion": "documento",
    "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -4117,6 +4097,26 @@
    "fecha": "2026-09-16T12:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → con_observacion · El comprobante de domicilio tiene más de tres meses de antigüedad.",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "90586261-c297-4bbb-a26e-f4996813ca79",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-16T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "90586261-c297-4bbb-a26e-f4996813ca79",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-16T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "90586261-c297-4bbb-a26e-f4996813ca79",
@@ -4146,27 +4146,17 @@
   {
    "fecha": "2026-09-17T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-17T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-17T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-17T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curriculum_vitae: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
@@ -4186,7 +4176,7 @@
   {
    "fecha": "2026-09-17T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "curriculum_vitae: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
@@ -4196,7 +4186,7 @@
   {
    "fecha": "2026-09-17T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobantes_experiencia: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
@@ -4207,6 +4197,16 @@
    "fecha": "2026-09-17T13:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_estudios: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-17T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobantes_experiencia: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e0e7160d-6687-4008-a655-f59b73be99c2",
@@ -4464,16 +4464,6 @@
    "usuario_tipo": "solicitante"
   },
   {
-   "fecha": "2026-09-22T09:00:00-06:00",
-   "accion": "lectura_aviso_privacidad",
-   "detalle": "Registro asistido en el Vivero: se le leyó el aviso de privacidad y lo aceptó",
-   "entidad": "solicitante",
-   "usuario": "revision.ficticia",
-   "entidad_id": "21aec46a-37ab-4dcf-adce-ae6bca92b7c5",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
    "fecha": "2026-09-22T09:30:00-06:00",
    "accion": "alta",
    "detalle": "APD-S-2026-00054 · poda nueva",
@@ -4488,30 +4478,20 @@
    "accion": "alta",
    "detalle": "APD-S-2026-00067 · poda nueva",
    "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
+   "usuario": "persona79@ejemplo.local",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
    "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
+   "usuario_tipo": "solicitante"
   },
   {
    "fecha": "2026-09-22T10:00:00-06:00",
    "accion": "estado",
    "detalle": "borrador → enviada",
    "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
+   "usuario": "persona79@ejemplo.local",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
    "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-22T10:00:00-06:00",
-   "accion": "lectura_lo_capturado",
-   "detalle": "Se le leyó lo capturado y lo aceptó · envío de la solicitud",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
+   "usuario_tipo": "solicitante"
   },
   {
    "fecha": "2026-09-22T11:00:00-06:00",
@@ -4766,30 +4746,10 @@
   {
    "fecha": "2026-09-24T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → con_observacion · La identificación oficial está vencida: carga una vigente.",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-24T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-24T12:00:00-06:00",
-   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -4799,7 +4759,27 @@
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-24T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-24T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → con_observacion · La identificación oficial está vencida: carga una vigente.",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -4809,7 +4789,7 @@
    "detalle": "enviada → con_observaciones",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "360053d4-331a-405c-a197-5323f43b64b7",
+   "entidad_id": "bd92d1f3-ce18-43f6-aca2-92147b97e5e1",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -4836,7 +4816,7 @@
   {
    "fecha": "2026-09-24T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "17056b92-0473-4a4d-a14f-124cadf6f57f",
@@ -4856,7 +4836,7 @@
   {
    "fecha": "2026-09-24T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "17056b92-0473-4a4d-a14f-124cadf6f57f",
@@ -5096,7 +5076,7 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "37da0097-0e62-473a-a81a-a37eee0a71b0",
@@ -5126,20 +5106,10 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "37da0097-0e62-473a-a81a-a37eee0a71b0",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "44408b1a-8a06-45a0-a93b-892046106e75",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -5176,7 +5146,17 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "44408b1a-8a06-45a0-a93b-892046106e75",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "45ec195a-99d1-45c5-a54c-edcf60fa832a",
@@ -5196,7 +5176,7 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "45ec195a-99d1-45c5-a54c-edcf60fa832a",
@@ -5210,6 +5190,16 @@
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "45ec195a-99d1-45c5-a54c-edcf60fa832a",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "6d5c9b69-28df-4e2b-abba-9e330889bf08",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -5227,16 +5217,6 @@
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "6d5c9b69-28df-4e2b-abba-9e330889bf08",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "6d5c9b69-28df-4e2b-abba-9e330889bf08",
@@ -5266,26 +5246,6 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7165b2ea-a3c8-4b4a-acad-e6bc737f7c46",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7165b2ea-a3c8-4b4a-acad-e6bc737f7c46",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -5296,10 +5256,20 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "7c06d08a-e6ab-421b-ab0b-b19e81fb40a9",
+   "entidad_id": "7165b2ea-a3c8-4b4a-acad-e6bc737f7c46",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "7165b2ea-a3c8-4b4a-acad-e6bc737f7c46",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -5316,7 +5286,7 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "7c06d08a-e6ab-421b-ab0b-b19e81fb40a9",
@@ -5339,14 +5309,14 @@
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "895fb21e-97ce-4fb4-ab3b-7dee77617baa",
+   "entidad_id": "7c06d08a-e6ab-421b-ab0b-b19e81fb40a9",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "895fb21e-97ce-4fb4-ab3b-7dee77617baa",
@@ -5366,10 +5336,30 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "895fb21e-97ce-4fb4-ab3b-7dee77617baa",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "895fb21e-97ce-4fb4-ab3b-7dee77617baa",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "8fafa213-b04e-42ba-a953-730932001632",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -5387,16 +5377,6 @@
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
    "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "8fafa213-b04e-42ba-a953-730932001632",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "8fafa213-b04e-42ba-a953-730932001632",
@@ -5426,6 +5406,16 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "aee19a9d-dad2-47b5-a7f4-45ad5b401cc2",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -5446,16 +5436,6 @@
   {
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "aee19a9d-dad2-47b5-a7f4-45ad5b401cc2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -5467,16 +5447,6 @@
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "c3db2930-6c27-424c-a716-42dc030f2f67",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "c3db2930-6c27-424c-a716-42dc030f2f67",
@@ -5490,6 +5460,26 @@
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "c3db2930-6c27-424c-a716-42dc030f2f67",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "c3db2930-6c27-424c-a716-42dc030f2f67",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-09-25T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "e5dde1cf-0672-4973-ad7e-876ff4081a5c",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -5507,16 +5497,6 @@
    "fecha": "2026-09-25T13:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "e5dde1cf-0672-4973-ad7e-876ff4081a5c",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e5dde1cf-0672-4973-ad7e-876ff4081a5c",
@@ -5640,16 +5620,6 @@
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "e5dde1cf-0672-4973-ad7e-876ff4081a5c",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-25T16:00:00-06:00",
-   "accion": "aviso_telefono",
-   "detalle": "Aviso S2 por teléfono: no contestó",
-   "entidad": "solicitante",
-   "usuario": "revision.ficticia",
-   "entidad_id": "21aec46a-37ab-4dcf-adce-ae6bca92b7c5",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -5844,44 +5814,24 @@
    "usuario_tipo": "solicitante"
   },
   {
-   "fecha": "2026-09-29T09:00:00-06:00",
-   "accion": "lectura_aviso_privacidad",
-   "detalle": "Registro asistido en el Vivero: se le leyó el aviso de privacidad y lo aceptó",
-   "entidad": "solicitante",
-   "usuario": "revision.ficticia",
-   "entidad_id": "42ba1e94-b505-4165-a89f-f2d57c61f138",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
    "fecha": "2026-09-29T09:30:00-06:00",
    "accion": "alta",
    "detalle": "APD-S-2026-00066 · poda nueva",
    "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
+   "usuario": "persona78@ejemplo.local",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
    "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
+   "usuario_tipo": "solicitante"
   },
   {
    "fecha": "2026-09-29T10:00:00-06:00",
    "accion": "estado",
    "detalle": "borrador → enviada",
    "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
+   "usuario": "persona78@ejemplo.local",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
    "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-09-29T10:00:00-06:00",
-   "accion": "lectura_lo_capturado",
-   "detalle": "Se le leyó lo capturado y lo aceptó · envío de la solicitud",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
+   "usuario_tipo": "solicitante"
   },
   {
    "fecha": "2026-09-29T12:30:00-06:00",
@@ -6816,7 +6766,7 @@
   {
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "3beaf588-0e51-4066-abfe-82494dbfb48b",
@@ -6846,7 +6796,7 @@
   {
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "3beaf588-0e51-4066-abfe-82494dbfb48b",
@@ -6866,7 +6816,7 @@
   {
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "3d41b571-ec44-49a4-a71d-25d0bfcb1b8e",
@@ -6876,7 +6826,7 @@
   {
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "3d41b571-ec44-49a4-a71d-25d0bfcb1b8e",
@@ -6890,6 +6840,26 @@
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "3d41b571-ec44-49a4-a71d-25d0bfcb1b8e",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-01T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "862317b0-b00f-479c-a846-8aa5d454502e",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-01T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "862317b0-b00f-479c-a846-8aa5d454502e",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -6916,27 +6886,7 @@
   {
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "862317b0-b00f-479c-a846-8aa5d454502e",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-01T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "862317b0-b00f-479c-a846-8aa5d454502e",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-01T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "878eecbd-db6f-42a6-a453-538554e90c94",
@@ -6966,7 +6916,7 @@
   {
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "878eecbd-db6f-42a6-a453-538554e90c94",
@@ -7010,6 +6960,16 @@
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "dbf130f6-3e31-4577-a076-c5a9067ecc1d",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-01T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -7027,16 +6987,6 @@
    "fecha": "2026-10-01T13:00:00-06:00",
    "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-01T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "fc4ab476-fbcb-4dce-a5a3-ecf3e1af83b7",
@@ -7236,7 +7186,7 @@
   {
    "fecha": "2026-10-02T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
@@ -7246,7 +7196,17 @@
   {
    "fecha": "2026-10-02T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-02T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
@@ -7266,26 +7226,6 @@
   {
    "fecha": "2026-10-02T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "0817c281-7552-418b-ae7e-bc65c9853c2a",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-02T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-02T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "comprobante_estudios: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -7296,7 +7236,7 @@
   {
    "fecha": "2026-10-02T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobantes_experiencia: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
@@ -7317,6 +7257,16 @@
    "fecha": "2026-10-02T13:00:00-06:00",
    "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-02T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
@@ -7336,7 +7286,7 @@
   {
    "fecha": "2026-10-02T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "comprobantes_experiencia: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "d565891a-2323-4184-a21c-a46ec8a3cdf0",
@@ -7406,16 +7356,6 @@
   {
    "fecha": "2026-10-03T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "1c7d9bf5-f37a-4dd9-adf6-b315af8f9b9f",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-03T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -7437,6 +7377,16 @@
    "fecha": "2026-10-03T13:00:00-06:00",
    "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "1c7d9bf5-f37a-4dd9-adf6-b315af8f9b9f",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-03T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "1c7d9bf5-f37a-4dd9-adf6-b315af8f9b9f",
@@ -7756,16 +7706,6 @@
   {
    "fecha": "2026-10-05T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "b65098a0-b846-47b2-a77e-070f0df11f50",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-05T12:00:00-06:00",
-   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → con_observacion · El comprobante de domicilio tiene más de tres meses de antigüedad.",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -7787,6 +7727,16 @@
    "fecha": "2026-10-05T12:00:00-06:00",
    "accion": "documento",
    "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "b65098a0-b846-47b2-a77e-070f0df11f50",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-05T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "b65098a0-b846-47b2-a77e-070f0df11f50",
@@ -7829,37 +7779,7 @@
    "detalle": "sin cita → 21/10/2026 10:00",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-05T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-05T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-05T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -7869,7 +7789,37 @@
    "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-05T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-05T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-05T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -7879,17 +7829,7 @@
    "detalle": "enviada → validada_en_linea",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "d93fa1e1-55b3-4d55-ad95-08023f759f91",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-05T16:00:00-06:00",
-   "accion": "aviso_telefono",
-   "detalle": "Aviso S5 por teléfono: se le avisó",
-   "entidad": "solicitante",
-   "usuario": "revision.ficticia",
-   "entidad_id": "42ba1e94-b505-4165-a89f-f2d57c61f138",
+   "entidad_id": "cfc68b75-c0ae-4393-a586-4bc6f2ee0551",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -7914,16 +7854,6 @@
    "usuario_tipo": "solicitante"
   },
   {
-   "fecha": "2026-10-06T09:00:00-06:00",
-   "accion": "lectura_aviso_privacidad",
-   "detalle": "Registro asistido en el Vivero: se le leyó el aviso de privacidad y lo aceptó",
-   "entidad": "solicitante",
-   "usuario": "revision.ficticia",
-   "entidad_id": "47775c15-14eb-4b39-a755-1a32bb5c07bf",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
    "fecha": "2026-10-06T09:30:00-06:00",
    "accion": "alta",
    "detalle": "APD-S-2026-00019 · dictaminador nueva",
@@ -7936,16 +7866,6 @@
   {
    "fecha": "2026-10-06T09:30:00-06:00",
    "accion": "alta",
-   "detalle": "APD-S-2026-00064 · poda nueva",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-06T09:30:00-06:00",
-   "accion": "alta",
    "detalle": "APD-S-2026-00042 · poda nueva",
    "entidad": "solicitud",
    "usuario": "persona44@ejemplo.local",
@@ -7954,24 +7874,24 @@
    "usuario_tipo": "solicitante"
   },
   {
+   "fecha": "2026-10-06T09:30:00-06:00",
+   "accion": "alta",
+   "detalle": "APD-S-2026-00064 · poda nueva",
+   "entidad": "solicitud",
+   "usuario": "persona76@ejemplo.local",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "solicitante"
+  },
+  {
    "fecha": "2026-10-06T10:00:00-06:00",
    "accion": "estado",
    "detalle": "borrador → enviada",
    "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
+   "usuario": "persona76@ejemplo.local",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
    "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-06T10:00:00-06:00",
-   "accion": "lectura_lo_capturado",
-   "detalle": "Se le leyó lo capturado y lo aceptó · envío de la solicitud",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
+   "usuario_tipo": "solicitante"
   },
   {
    "fecha": "2026-10-06T10:30:00-06:00",
@@ -8276,17 +8196,7 @@
   {
    "fecha": "2026-10-06T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → con_observacion · La constancia de situación fiscal no está actualizada.",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "aa339574-3651-49e4-af7c-2a93e9739be6",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-06T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "aa339574-3651-49e4-af7c-2a93e9739be6",
@@ -8306,7 +8216,17 @@
   {
    "fecha": "2026-10-06T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → con_observacion · La constancia de situación fiscal no está actualizada.",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "aa339574-3651-49e4-af7c-2a93e9739be6",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-06T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "aa339574-3651-49e4-af7c-2a93e9739be6",
@@ -8606,6 +8526,16 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "033e10a6-2e84-417c-a810-42dcb6c3119b",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-07T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -8616,10 +8546,20 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-07T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "033e10a6-2e84-417c-a810-42dcb6c3119b",
+   "entidad_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -8627,26 +8567,6 @@
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "40ec133d-5a02-4018-a95b-fd3adbb8d7b2",
@@ -8666,6 +8586,16 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "b4495a68-486a-4be8-a7e9-002609f19571",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-07T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -8676,7 +8606,7 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "b4495a68-486a-4be8-a7e9-002609f19571",
@@ -8696,10 +8626,20 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "b4495a68-486a-4be8-a7e9-002609f19571",
+   "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-07T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "identificacion_oficial: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -8716,17 +8656,7 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "identificacion_oficial: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
@@ -8746,27 +8676,17 @@
   {
    "fecha": "2026-10-07T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-07T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "comprobante_estudios: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-07T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "f647b4f6-96fa-4ad8-a3e8-702e87c767f8",
@@ -8876,7 +8796,7 @@
   {
    "fecha": "2026-10-08T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "curriculum_vitae: pendiente → aceptado",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "7805290c-7228-47d0-a4ca-27cdcd315311",
@@ -8886,7 +8806,17 @@
   {
    "fecha": "2026-10-08T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobantes_experiencia: pendiente → con_observacion · Las constancias no indican el periodo ni las funciones realizadas en manejo de arbolado.",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "7805290c-7228-47d0-a4ca-27cdcd315311",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-08T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curriculum_vitae: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "7805290c-7228-47d0-a4ca-27cdcd315311",
@@ -8906,7 +8836,7 @@
   {
    "fecha": "2026-10-08T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "comprobantes_experiencia: pendiente → con_observacion · Las constancias no indican el periodo ni las funciones realizadas en manejo de arbolado.",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "7805290c-7228-47d0-a4ca-27cdcd315311",
@@ -8936,40 +8866,10 @@
   {
    "fecha": "2026-10-08T12:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7805290c-7228-47d0-a4ca-27cdcd315311",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-08T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-08T12:00:00-06:00",
-   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-08T12:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → con_observacion · El comprobante de domicilio está a nombre de otra persona y no trae una carta de quien es titular.",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -8979,7 +8879,27 @@
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-08T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-08T12:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → con_observacion · El comprobante de domicilio está a nombre de otra persona y no trae una carta de quien es titular.",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -8999,7 +8919,7 @@
    "detalle": "enviada → con_observaciones",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
-   "entidad_id": "7db25550-a5ee-4af3-ae46-7bcbbdf46c90",
+   "entidad_id": "e1ba4e34-5cbb-4425-ad76-a9e5fcea253d",
    "procedencia": "192.0.2.10",
    "usuario_tipo": "personal"
   },
@@ -9036,36 +8956,6 @@
   {
    "fecha": "2026-10-08T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-08T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-08T13:00:00-06:00",
-   "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-08T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -9076,7 +8966,37 @@
   {
    "fecha": "2026-10-08T13:00:00-06:00",
    "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-08T13:00:00-06:00",
+   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-08T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "06b2e9bb-5af9-40cc-ac7b-2d82c273b1f6",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-08T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "b1f3ca85-dc22-4955-adc5-b881be27739d",
@@ -9096,7 +9016,7 @@
   {
    "fecha": "2026-10-08T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
+   "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "b1f3ca85-dc22-4955-adc5-b881be27739d",
@@ -9316,16 +9236,6 @@
   {
    "fecha": "2026-10-09T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "954ade18-45da-43d9-af50-52758ce4030d",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-09T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -9337,6 +9247,16 @@
    "fecha": "2026-10-09T13:00:00-06:00",
    "accion": "documento",
    "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "954ade18-45da-43d9-af50-52758ce4030d",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-09T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "954ade18-45da-43d9-af50-52758ce4030d",
@@ -9504,16 +9424,6 @@
    "usuario_tipo": "solicitante"
   },
   {
-   "fecha": "2026-10-10T19:00:00-06:00",
-   "accion": "activacion",
-   "detalle": "La persona activó en línea su cuenta del registro asistido",
-   "entidad": "solicitante",
-   "usuario": "persona-asistida@ejemplo.local",
-   "entidad_id": "21aec46a-37ab-4dcf-adce-ae6bca92b7c5",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "solicitante"
-  },
-  {
    "fecha": "2026-10-12T08:30:00-06:00",
    "accion": "baja",
    "detalle": "Grupo APD-G-2026-002 · Grupo cancelado: No se reunió el cupo mínimo en el plazo previsto; las personas regresan a la bandeja.",
@@ -9656,16 +9566,6 @@
   {
    "fecha": "2026-10-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "curp: pendiente → aceptado",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "08f41145-e95d-4477-a69b-4e77da0e9035",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-12T13:00:00-06:00",
-   "accion": "documento",
    "detalle": "identificacion_oficial: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
@@ -9676,7 +9576,7 @@
   {
    "fecha": "2026-10-12T13:00:00-06:00",
    "accion": "documento",
-   "detalle": "comprobante_domicilio: pendiente → aceptado",
+   "detalle": "curp: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "08f41145-e95d-4477-a69b-4e77da0e9035",
@@ -9687,6 +9587,16 @@
    "fecha": "2026-10-12T13:00:00-06:00",
    "accion": "documento",
    "detalle": "constancia_situacion_fiscal: pendiente → aceptado",
+   "entidad": "solicitud",
+   "usuario": "revision.ficticia",
+   "entidad_id": "08f41145-e95d-4477-a69b-4e77da0e9035",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "personal"
+  },
+  {
+   "fecha": "2026-10-12T13:00:00-06:00",
+   "accion": "documento",
+   "detalle": "comprobante_domicilio: pendiente → aceptado",
    "entidad": "solicitud",
    "usuario": "revision.ficticia",
    "entidad_id": "08f41145-e95d-4477-a69b-4e77da0e9035",
@@ -9744,26 +9654,6 @@
    "usuario_tipo": "solicitante"
   },
   {
-   "fecha": "2026-10-13T09:00:00-06:00",
-   "accion": "lectura_aviso_privacidad",
-   "detalle": "Registro asistido en el Vivero: se le leyó el aviso de privacidad y lo aceptó",
-   "entidad": "solicitante",
-   "usuario": "revision.ficticia",
-   "entidad_id": "b7f20f74-4526-4148-a0b4-322b5d2f16c1",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-13T09:30:00-06:00",
-   "accion": "alta",
-   "detalle": "APD-S-2026-00065 · poda nueva",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "49e09a8a-f881-4381-a2d5-41b954c2edc4",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
    "fecha": "2026-10-13T09:30:00-06:00",
    "accion": "alta",
    "detalle": "APD-S-2026-00015 · poda nueva",
@@ -9784,24 +9674,24 @@
    "usuario_tipo": "solicitante"
   },
   {
+   "fecha": "2026-10-13T09:30:00-06:00",
+   "accion": "alta",
+   "detalle": "APD-S-2026-00065 · poda nueva",
+   "entidad": "solicitud",
+   "usuario": "persona77@ejemplo.local",
+   "entidad_id": "fec2ecff-192f-4038-a71e-12b6a3817d99",
+   "procedencia": "192.0.2.10",
+   "usuario_tipo": "solicitante"
+  },
+  {
    "fecha": "2026-10-13T10:00:00-06:00",
    "accion": "estado",
    "detalle": "borrador → enviada",
    "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "49e09a8a-f881-4381-a2d5-41b954c2edc4",
+   "usuario": "persona77@ejemplo.local",
+   "entidad_id": "fec2ecff-192f-4038-a71e-12b6a3817d99",
    "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
-  },
-  {
-   "fecha": "2026-10-13T10:00:00-06:00",
-   "accion": "lectura_lo_capturado",
-   "detalle": "Se le leyó lo capturado y lo aceptó · envío de la solicitud",
-   "entidad": "solicitud",
-   "usuario": "revision.ficticia",
-   "entidad_id": "49e09a8a-f881-4381-a2d5-41b954c2edc4",
-   "procedencia": "192.0.2.10",
-   "usuario_tipo": "personal"
+   "usuario_tipo": "solicitante"
   },
   {
    "fecha": "2026-10-13T10:20:00-06:00",
