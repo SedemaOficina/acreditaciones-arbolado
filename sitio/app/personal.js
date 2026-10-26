@@ -682,7 +682,7 @@
 
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     delDia, motivoDiaCita, vigilaDiaCita,
-    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, DIRECTIVO, INSTRUCTORES, perfilDePrueba, quienEs, soloConsultaReposicion, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, soloConsultaReposicion, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas, acomodaEscritorio };
 }(window));

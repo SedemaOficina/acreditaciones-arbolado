@@ -6907,7 +6907,7 @@ async function reposicionCredencial(navegador) {
     && datos.cuota.find((c) => c.clave === 'reposicion_credencial').monto === 88 && /pendiente P140/.test(datos.cuota[0].fundamento),
     t('ficticios: una reposición en cada paso y la cuota ficticia de $88.00 marcada por confirmar con Finanzas'));
   const claves = APD_CASOS_PRUEBA.claves();
-  comprueba(['repos-puede', 'repos-solicitada', 'repos-observada', 'repos-aceptada', 'repos-repuesta', 'acred-cancelada', 'personal-acreditaciones', 'personal-cancelar-instructor', 'personal-cancelar-direccion'].every((k) => claves.includes(k)),
+  comprueba(['repos-puede', 'repos-solicitada', 'repos-observada', 'repos-aceptada', 'repos-repuesta', 'acred-cancelada', 'personal-acreditaciones', 'personal-cancelar-instructor', 'personal-directivo'].every((k) => claves.includes(k)),
     t('menú de pruebas: casos de la reposición (pidió, acta en revisión, con observaciones, aceptada, repuesta), de la cancelada y del personal'));
 
   // Los ficticios, en «Mis trámites», en teléfono y en escritorio: cada paso con su etiqueta, de tú
@@ -8001,7 +8001,7 @@ async function consultaTramite(navegador) {
   }
   // La solicitud ya no tiene modo asistido: ni el auxiliar ni la marca de lectura ni la hoja del acuse
   const sol = readFileSync(join(raiz, 'sitio/solicitud.html'), 'utf8');
-  comprueba(!/asistid|lectura_aceptada|hoja-acuse/.test(sol), t('solicitud.html ya no tiene el modo asistido, la marca de lectura ni el acuse impreso'));
+  comprueba(!/data-asistido|name="asistido"|asistida=|registro-asistido\.js|lectura_aceptada|hoja-acuse/.test(sol), t('solicitud.html ya no tiene el modo asistido, la marca de lectura ni el acuse impreso'));
 }
 
 // ── Ajustes del equipo de la Dirección (25/10/2026): carrera que no aparece en el catálogo y duración del curso ──

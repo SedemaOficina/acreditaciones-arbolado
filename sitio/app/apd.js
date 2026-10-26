@@ -1091,7 +1091,7 @@
   const limiteRevision = (datos, s) => sumaHabiles(diaDe(s.estado_desde), parametro(datos, 'dias_habiles_revision') || 10);
 
   global.APD = {
-    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, sumaHabiles, plazoCita, limiteCorreccion, limiteRevision, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
+    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, plazoCita, limiteCorreccion, limiteRevision, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, vigencia, TIPOS, MODALIDADES, FINALES,
     cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
