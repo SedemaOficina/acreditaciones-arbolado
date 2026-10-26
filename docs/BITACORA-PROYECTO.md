@@ -1607,3 +1607,8 @@ Pedida por Liber antes de seguir con la etapa 2. Informe: `docs/AUDITORIA-2026-1
 - Pruebas: probar-base 408 (salen 49 casos del registro asistido y los 6 meses; entran 18), probar-sitio 2783 (partes nuevas
   `consulta`, `ayuda`, `directivo`, `cita20`), examen 180, volumen 138, esquemas 155, auditar-sitio 109 pantallas con el
   aviso conocido.
+- Respuestas de Liber (26/10, en DECISIONES): el directivo también usa «Consultar un trámite» y ve los grupos sólo de
+  lectura (parámetro `perfiles_grupos_solo_lectura`, regla `grupos_solo_lectura`); la cita reprogramada cuenta sus 20 días
+  hábiles desde que se da (prueba que lo fija); sólo sábados y domingos son inhábiles; «Corrige a más tardar el …». Prueba
+  intermitente B4-03 del PR #20 resuelta (se espera el anuncio de la pestaña inicial antes de la marca). probar-base 416,
+  probar-sitio 2803 (directivo 45), auditar-sitio 113 pantallas con el aviso conocido.

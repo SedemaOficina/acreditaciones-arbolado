@@ -122,7 +122,10 @@ const ESTADOS = [
   // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio («Acreditaciones») y la ficha de una vigente, con
   // «Cancelar acreditación»
   ['acreditaciones-directivo', 'acreditaciones.html?perfil=directivo', null],
-  ['acreditacion-directivo', 'acreditacion.html?numero=PD-2025-K100&perfil=directivo', null]
+  ['acreditacion-directivo', 'acreditacion.html?numero=PD-2025-K100&perfil=directivo', null],
+  // Y lo que consulta (respuesta de Liber del 26/10/2026): sus grupos, sólo de lectura, y la ficha de uno en curso
+  ['grupos-directivo', 'capacitacion.html?perfil=directivo', null],
+  ['grupo-en-curso-directivo', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}&perfil=directivo`, null]
 ].filter(Boolean);
 
 // Por partes (25/10/2026): AUDITAR_PARTE=k/n recorre sólo la parte k de n de los estados (uno de cada n), para que cada

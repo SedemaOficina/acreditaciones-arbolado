@@ -1,5 +1,5 @@
 {
-  "base": "http://localhost:8985/",
+  "base": "http://localhost:8765/",
   "estados": [
     [
       "inicio",
@@ -74,6 +74,10 @@
       "ventanilla.html?persona=84a21dbf-161e-4044-a213-f660eeb0b14c"
     ],
     [
+      "grupos-directivo",
+      "capacitacion.html?perfil=directivo"
+    ],
+    [
       "crear-cuenta",
       "cuenta.html"
     ],
@@ -144,6 +148,10 @@
     [
       "acreditaciones-directivo",
       "acreditaciones.html?perfil=directivo"
+    ],
+    [
+      "grupo-en-curso-directivo",
+      "grupo.html?folio=APD-G-2026-003&perfil=directivo"
     ],
     [
       "entrar",
@@ -218,8 +226,8 @@
       "acreditacion.html?numero=PD-2025-K100&perfil=directivo"
     ]
   ],
-  "paginas": 109,
-  "presionados": 360,
+  "paginas": 113,
+  "presionados": 366,
   "porTipo": {
     "botón sin efecto visible": 1
   },
