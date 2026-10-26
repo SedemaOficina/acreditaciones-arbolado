@@ -22,6 +22,10 @@
 /* Los enlaces de la sesión, juntos aunque pasen a otro renglón; «Salir» con su superficie mínima (D34) */
 .sesion-enlaces { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-3); }
 .sesion-enlaces .btn-enlace { min-width: var(--objetivo-min); justify-content: center; }
+/* «Consultar un trámite» en la cabecera del personal sólo desde 1024 px, donde cabe en el renglón de la sesión; en teléfono y
+   tableta agregaba un renglón a todas las pantallas del personal, y ahí su entrada está en el inicio (sin registro asistido,
+   decisión de Liber del 26/10/2026) */
+@media (max-width: 1023.98px) { .sesion-enlaces > [href="ventanilla.html"]:not([aria-current]) { display: none; } }
 /* El perfil del personal es un dato de la sesión, no un estado (B11, D6) */
 .sesion-perfil { display: block; font-size: var(--t-sm); font-weight: var(--peso-normal); color: var(--gris); }
 
