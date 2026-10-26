@@ -73,6 +73,8 @@
     $('[data-con-grupo]').hidden = false;
     const prueba = Boolean(datos.fecha_corte);
     const avisosGrupo = [];
+    // Los avisos del grupo van juntos: desde 1024 px, en una sola fila (acomodo de escritorio, 25/10/2026; app/apd.css)
+    const avisosFila = [];
     // Otros grupos en curso, con la fecha de su examen, para cambiar de grupo
     const otros = enCurso.filter((x) => x.id !== g.id);
     if (otros.length) {
@@ -89,14 +91,14 @@
     // El examen es el último día del curso: otro día no se generan códigos (en la prueba se permite, para probar)
     const fueraDeDia = G.fechaExamen(datos, g) !== hoy;
     if (fueraDeDia) {
-      avisosGrupo.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `El examen de este grupo es el ${APD.fechaLarga(G.fechaExamen(datos, g))}, no hoy`,
+      avisosFila.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'advertencia', titulo: `El examen de este grupo es el ${APD.fechaLarga(G.fechaExamen(datos, g))}, no hoy`,
         texto: prueba ? 'Versión de prueba: se puede pasar lista para probar. En el sistema, los códigos sólo se generan el día del examen.'
           : 'Los códigos se generan el día del examen. Si hoy presenta otro grupo, elíjalo arriba.' }));
     }
     // Días del curso sin capturar: la base los cuenta como falta (auditoría de tareas, A1)
     const conHuecos = G.personas(datos, g).filter((f) => f.simulada).length;
     if (conHuecos) {
-      avisosGrupo.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: 'Faltan días del curso por capturar en «Asistencia»',
+      avisosFila.push(FormKit.aviso(el('div', { class: 'aviso' }), { tono: 'bloqueo', titulo: 'Faltan días del curso por capturar en «Asistencia»',
         texto: prueba ? 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Versión de prueba: aquí se cuentan como asistidos para poder probar el examen.'
           : 'Sin esos días, el sistema los cuenta como falta y nadie tendría derecho a examen. Captúrelos antes de pasar lista.' }));
     }
@@ -109,7 +111,7 @@
       ['Fecha del examen', `${APD.fechaCorta(G.fechaExamen(datos, g))} · último día del curso (inició el ${APD.fechaCorta(g.fecha_inicio)})`],
       ['Lugar', G.LUGAR],
       ['Examen', `${ex.preguntas} preguntas · ${ex.minutos} minutos · calificación mínima ${decimal(c.calificacion_minima)}`]
-    ]), ...avisosGrupo);
+    ]), ...avisosGrupo, ...(avisosFila.length ? [el('div', { class: 'avisos-grupo' }, avisosFila)] : []));
     /* Primero el pase de lista, que es la asistencia del último día (reporte de Liber del 24/10/2026): su título dice qué
        día del curso es («Día 5 de 5 · Pase de lista en el salón de cómputo») y el texto, que esa lista es la asistencia de
        ese día; si hoy no hay que pasar lista, lo dice. Después, el examen. */
@@ -255,6 +257,13 @@
       $('[data-cuenta]').textContent = cuenta.registradas === n && n
         ? `${plural(n, 'persona inscrita', 'personas inscritas')}: ${n === 1 ? 'ya presentó' : `las ${n} ya presentaron`} el examen.`
         : `${plural(n, 'persona inscrita', 'personas inscritas')}, ${conDerecho} con derecho a examen${partes.length ? `: ${partes.slice(0, -1).join(', ')}${partes.length > 1 ? ' y ' : ''}${partes[partes.length - 1]}` : ''}.`;
+      /* La cuenta corta de la franja de arriba, en computadora (acomodo de escritorio, 25/10/2026): presentes, no llegó, por
+         pasar lista y de cuántas con derecho. Es aria-hidden: lo mismo, con más detalle, lo dice y lo anuncia [data-cuenta]. */
+      const corta = [[cuenta.presentes, cuenta.presentes === 1 ? 'presente' : 'presentes'], [cuenta.ausentes, cuenta.ausentes === 1 ? 'no llegó' : 'no llegaron'],
+        [cuenta.porLista, 'por pasar lista']];
+      $('[data-cuenta-corta]').replaceChildren(...corta.flatMap(([v, t], i) => [i ? document.createTextNode(' · ') : null,
+        el('span', { class: 'cuenta-corta-dato' }, [el('strong', { texto: String(v) }), document.createTextNode(` ${t}`)])]).filter(Boolean),
+      document.createTextNode(' · '), el('span', { class: 'cuenta-corta-dato', texto: `de ${conDerecho} con derecho` }));
       $('[data-todos]').hidden = !(cuenta.derecho && !cuenta.porLista && cuenta.presentes && cuenta.terminaron + cuenta.suspendidas === cuenta.presentes);
 
       if (enfocado) {
@@ -336,6 +345,21 @@
       alFallar(err) { const a = $('[data-estado-envio] .aviso-texto', formSusp); if (err && err.mensaje && a) a.textContent = err.mensaje; }
     });
     dialogo.addEventListener('close', () => { if (suspenderA && suspenderA.boton.isConnected) suspenderA.boton.focus(); });
+
+    /* Acomodo de escritorio (25/10/2026): desde 1024 px, «Imprimir los códigos» va en la franja de arriba, junto a la cuenta;
+       en teléfono y tableta queda donde estaba, después de los pasos del examen. Es el mismo botón: si tenía el foco, lo
+       conserva al cambiar de lugar. */
+    const escritorio = window.matchMedia('(min-width: 1024px)');
+    const ubicaImprimir = () => {
+      const b = $('[data-imprimir]');
+      const destino = escritorio.matches ? $('[data-franja-accion]') : $('.examen-herramientas');
+      if (b.parentElement === destino) return;
+      const tenia = document.activeElement === b;
+      destino.prepend(b);
+      if (tenia) b.focus();
+    };
+    ubicaImprimir();
+    escritorio.addEventListener('change', ubicaImprimir);
 
     /* Imprimir sólo las papeletas */
     $('[data-imprimir]').addEventListener('click', () => {

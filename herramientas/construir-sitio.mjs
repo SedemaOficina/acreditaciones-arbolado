@@ -26,7 +26,10 @@ const sitio = join(raiz, 'sitio');
 // distintivo de versión (version, P45); desde la 1.4.0, el resultado de una decisión (resultado, P113) y las etiquetas de
 // estado en cinco familias (estado, P118)
 const MODULOS = ['opciones', 'combo', 'otro', 'identificadores', 'pasos', 'archivos', 'revision', 'acuse', 'modal', 'copiar', 'tooltip', 'acordeon', 'tabla',
-  'visor', 'version', 'chips', 'fecha', 'resultado', 'estado'];
+  'visor', 'version', 'chips', 'fecha', 'resultado', 'estado',
+  // Acomodo de escritorio (decisión de Liber del 25/10/2026), estándar 1.5.1: pestañas (inicio del personal, «Grupos» y
+  // ficha del grupo, sólo desde 1024 px) y paginación (inicio del personal)
+  'pestanas', 'paginacion'];
 const destino = join(sitio, 'formkit');
 rmSync(destino, { recursive: true, force: true });
 for (const d of ['css', 'js', 'fuentes', 'iconos', 'imagenes']) cpSync(join(estandar, 'codigo', d), join(destino, d), { recursive: true });

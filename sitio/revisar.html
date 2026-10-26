@@ -38,8 +38,13 @@
 
 <main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
-  <p><a class="btn-atras" href="revision.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Solicitudes por revisar</a></p>
-  <p class="bajada" data-cargando>Cargando la solicitud…</p>
+  <!-- Escritorio (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.1): desde 1024 px el área de
+       trabajo va en columnas (app/apd.css, «Escritorio»): arriba la franja de contexto fija (el regreso y la
+       cabeza de la solicitud, con «Datos de la persona» plegable); desde 1280 px, pasos | decisión | visor. Debajo de 1024 px
+       se ve como antes: estos dos envoltorios no tienen estilo. -->
+  <div class="area-trabajo area-revisar" data-area-trabajo>
+  <div class="franja-contexto franja-fija" data-franja>
+  <p class="franja-volver"><a class="btn-atras" href="revision.html"><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Solicitudes por revisar</a></p>
 
   <!-- Lo que se revisa: datos de la persona y de la solicitud, y las vueltas anteriores. Lo pinta app/revisar.js. -->
   <section class="tarjeta" data-cabeza hidden aria-labelledby="t-solicitud">
@@ -59,6 +64,10 @@
     <!-- En una renovación sólo la constancia fiscal es obligatoria (decisión 2026-10-14): se dice aquí, para que no parezca que faltan pasos -->
     <p class="ayuda ayuda-bloque" data-renovacion hidden>Es una renovación: sólo la constancia de situación fiscal es obligatoria. Los demás documentos se revisaron en su trámite anterior y aquí hay un paso sólo por los que la persona actualizó.</p>
   </section>
+  </div>
+  <p class="bajada" data-cargando>Cargando la solicitud…</p>
+  <!-- Escritorio: arriba de la decisión, el aviso de la última oportunidad y las revisiones anteriores (app/revisar.js) -->
+  <div class="avisos-escritorio" data-avisos-escritorio></div>
   <details class="tarjeta plegable" data-anteriores hidden>
     <summary class="plegable-titulo">Revisiones anteriores <span data-anteriores-cuenta></span></summary>
     <div data-anteriores-lista></div>
@@ -533,6 +542,14 @@
     <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
     <p class="visor-nota pendiente" data-visor-nota hidden></p>
   </dialog>
+  <!-- Escritorio: en «Resultado» y «Fecha de la cita» el visor se cierra y su columna muestra lo decidido en cada
+       documento (la misma lista del paso «Resultado»; app/revisar.js la pinta en los dos lugares). Debajo de 1024 px no
+       se ve. -->
+  <aside class="resumen-lateral" data-resumen-lateral hidden aria-labelledby="t-resumen-lateral">
+    <h2 class="titulo-bloque resumen-lateral-titulo" id="t-resumen-lateral">Así queda la revisión</h2>
+    <ul class="resumen-pasos" data-resumen-lista-lateral></ul>
+  </aside>
+  </div>
   </div>
 
   <!-- Después de registrar: el resultado de la decisión (módulo «resultado» del estándar, P113). Lo que va en

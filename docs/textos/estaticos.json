@@ -3416,6 +3416,33 @@
  {
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Armar un grupo",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Grupos programados",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Ya terminaron",
+  "cuando": "Siempre",
+  "seccion": "Grupos",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
   "tipo": "Subtítulo",
   "texto": "Armar un grupo",
   "cuando": "Siempre",
@@ -3741,6 +3768,33 @@
   "pantalla": "Grupos (personal)",
   "archivo": "grupos.html",
   "tipo": "Subtítulo",
+  "texto": "Tu grupo",
+  "cuando": "Siempre",
+  "seccion": "Tu grupo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Atrás",
+  "cuando": "Siempre",
+  "seccion": "Tu grupo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Botón o enlace",
+  "texto": "Siguiente",
+  "cuando": "Siempre",
+  "seccion": "Tu grupo",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Subtítulo",
   "texto": "Grupos programados",
   "cuando": "Siempre",
   "seccion": "Grupos programados",
@@ -3760,6 +3814,15 @@
   "archivo": "grupos.html",
   "tipo": "Título desplegable",
   "texto": "Grupos que ya terminaron",
+  "cuando": "Siempre",
+  "seccion": "Grupos programados",
+  "origen": ""
+ },
+ {
+  "pantalla": "Grupos (personal)",
+  "archivo": "grupos.html",
+  "tipo": "Texto",
+  "texto": "Todavía no hay grupos que hayan terminado.",
   "cuando": "Siempre",
   "seccion": "Grupos programados",
   "origen": ""

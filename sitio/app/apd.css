@@ -312,10 +312,9 @@ html:has(.menu-pruebas-boton) { scroll-padding-bottom: calc(var(--objetivo-min) 
 .pago-datos { padding: var(--e-3) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
 .pago-datos .datos { margin: 0; }
 
-/* Versión de prueba (auditoría 2026-10-17): en computadora el visor fijo termina arriba del botón «Menú de pruebas»,
-   para que el botón no tape el documento que se revisa */
-/* En la prueba, el visor deja libre la esquina del botón «Menú de pruebas» (auditoría 2026-10-18) */
-@media (min-width: 1024px) { .modo-pruebas .visor { height: calc(100dvh - var(--e-6) - var(--objetivo-min) - var(--e-6) - var(--e-4)); } }
+/* Versión de prueba (auditorías 2026-10-17 y 2026-10-18): el visor fijo dejaba libre la esquina del botón «Menú de pruebas».
+   Desde el acomodo de escritorio (25/10/2026) el botón va abajo a la izquierda en las pantallas del personal, que son las que
+   tienen visor, y el visor, a la derecha: ya no se cruzan (sección «Escritorio», 1). */
 
 /* ───── Auditoría visual (2026-10-17) ───── */
 /* Lo oculto con el atributo hidden se oculta, aunque su clase declare display (el resultado de «Verificar» dejaba una
@@ -671,6 +670,503 @@ body > main { flex: 1 0 auto; width: 100%; }
 @media (forced-colors: active) {
   .arm-semana-elegir[aria-pressed="true"], .arm-dia-curso[aria-pressed="true"], .plan-persona:has(.casilla-input:checked) { outline: var(--b-3) solid Highlight; outline-offset: calc(var(--b-1) * -1); }
   .estado-atencion[data-plazo="atrasada"] { border-width: var(--b-2); }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Escritorio (acomodo aprobado por Liber el 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md y docs/DECISIONES.md)
+   El teléfono y la tableta quedan como estaban: todo lo de aquí va en @media (min-width: 1024px) o (min-width: 1280px), y lo
+   fijo, además, con (min-height: 700px). Lo fijo de cada pantalla, sumado, nunca pasa del 25 % del alto de la ventana
+   (criterio de P177). Lo que el estándar de formularios 1.5.1 no trae se marca «propuesta al estándar E<n>» (sección 6 del
+   diagnóstico). Las piezas que cambian de lugar en computadora las mueven APD_PERSONAL.acomodaEscritorio (Revisar y Cita de
+   cotejo), app/escritorio.js (pestañas) y app/aplicar.js («Imprimir los códigos»), y regresan a su lugar debajo de 1024 px.
+     1 · Lo común: medidas; lo que sólo es de escritorio; cabecera compacta del personal; pestañas desde 1024 px; composición
+         con columna lateral; la barra de acciones y el botón «Menú de pruebas».
+     2 · Revisar una solicitud y Cita de cotejo.   3 · Inicio del personal.   4 · «Grupos».
+     5 · Asistencia.   6 · Aplicar el examen.   7 · Ficha del grupo.   8 · Lo fijo.
+   ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ───── 1 · Lo común ───── */
+:root {
+  --alto-cabecera-personal: calc(var(--e-9) + var(--e-8)); /* 88 px: logotipo, título, sesión y secciones en una banda */
+  --alto-franja: calc(var(--e-9) + var(--e-7)); /* 80 px como máximo: la franja de contexto */
+  --margen-fijo: var(--e-3); /* lo que queda entre una pieza fija y el borde de la ventana */
+  --ancho-pasos-vertical: calc(var(--e-11) * 2 + var(--e-6)); /* 216 px */
+  --ancho-decision: calc(var(--e-11) * 5 + var(--e-6)); /* 504 px */
+  --ancho-persona-cotejo: calc(var(--e-11) * 2 + var(--e-9)); /* 240 px */
+  /* El lugar del botón «Menú de pruebas» (versión de prueba), abajo a la izquierda en computadora: a lo ancho, para lo que
+     va a todo lo ancho abajo (la barra de acciones), y a lo alto, para lo que llega abajo por la izquierda (la columna de la
+     persona en la cita de cotejo) */
+  --reserva-menu-ancho: calc(var(--e-11) + var(--e-6)); /* 120 px */
+  --reserva-menu-alto: calc(var(--objetivo-min) + var(--e-3) + var(--e-3)); /* 68 px: el botón, su margen y el aire */
+}
+/* Lo que sólo es de escritorio no se ve en teléfono ni en tableta */
+.franja-quien, .franja-caso, .franja-etiqueta, .franja-datos, .resumen-lateral, .cotejo-docs-cabeza, .pago-linea,
+.indicadores-inicio, .panel-grupo, .filtro-org, .espera-cabeza, .plan-persona-folio, .solo-en-pestana, .cuenta-corta { display: none; }
+
+/* Pestañas sólo desde 1024 px (app/escritorio.js: inicio del personal, «Grupos» y ficha del grupo). Debajo, la lista de
+   pestañas no se ve y cada panel es la sección de siempre. Propuesta al estándar E14 («pestañas desde un ancho»). */
+.pestanas-escritorio { margin-block-end: 0; }
+.pestanas-escritorio > .pestanas-lista { display: none; }
+.pestanas-escritorio .pestanas-panel:not(.tarjeta) { padding-block-start: 0; }
+
+@media (min-width: 1024px) {
+  /* Cabecera compacta del personal (regla general 2; propuesta al estándar E5: la regla «el logotipo va en su renglón y el
+     título debajo» es de base.css): logotipo y título a la izquierda, y la sesión con sus secciones, que está al principio de
+     <main>, sube a la misma banda, a la derecha. Sin mover nada en el documento: el orden de lectura y las regiones siguen
+     igual. */
+  body:has([data-sesion-personal]) .cabecera { box-sizing: border-box; block-size: var(--alto-cabecera-personal); padding-block: var(--e-2); }
+  body:has([data-sesion-personal]) .cabecera-int { block-size: 100%; justify-content: center; gap: var(--e-1); }
+  body:has([data-sesion-personal]) .cabecera-logo { max-height: var(--e-8); }
+  body:has([data-sesion-personal]) .cabecera-titulo { width: auto; padding-top: 0; border-top: 0; }
+  body:has([data-sesion-personal]) .cabecera .titulo-pagina { font-size: var(--t-base); line-height: var(--interlineado-titulo); }
+  /* La sesión: arriba el nombre y el perfil, abajo las secciones y «Salir». Sube lo que mide la cabecera más el relleno de
+     la página, y deja abajo el mismo espacio que había entre la cabecera y el contenido. */
+  .pagina > .personal-sesion {
+    box-sizing: border-box; flex-direction: column; flex-wrap: nowrap; align-items: flex-end; justify-content: center; gap: 0;
+    inline-size: fit-content; max-inline-size: 72%; block-size: calc(var(--alto-cabecera-personal) - 2 * var(--e-2) - var(--b-3));
+    margin-block: calc(var(--e-2) - var(--alto-cabecera-personal) - var(--e-5)) calc(var(--e-2) + var(--b-3) + var(--e-5));
+    margin-inline-start: auto; padding: 0; border: 0;
+  }
+  .pagina > .personal-sesion .sesion-nombre { margin: 0; font-size: var(--t-sm); line-height: var(--interlineado-compacto); }
+  .pagina > .personal-sesion .sesion-perfil { display: inline; }
+  .pagina > .personal-sesion .sesion-perfil::before { content: "·" / ""; margin-inline: var(--e-2); }
+  .pagina > .personal-sesion .sesion-enlaces { flex-wrap: nowrap; justify-content: flex-end; column-gap: var(--e-2); }
+  /* Las franjas de la versión de prueba, compactas: un renglón cada una (se quitan al pasar al SIA) */
+  body:has([data-sesion-personal]) .entorno-pruebas { padding-block: var(--e-1); }
+  body:has([data-sesion-personal]) .ubicacion-prueba-int { padding-block: var(--e-1); }
+
+  /* Composición con columna lateral (propuesta al estándar E1, .con-lateral): el contenido y, a su derecha, la columna
+     lateral, cuando se ve. «Grupos»: el paso y el panel «Tu grupo» (384 px); ficha del grupo: la ficha y «Persona
+     instructora y confirmación» (480 px). */
+  .con-lateral { --ancho-lateral: calc(var(--e-11) * 4); --hueco-lateral: var(--e-6); }
+  .con-lateral:has(> :where(.columna-lateral:not([hidden]))) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, var(--ancho-lateral)); gap: 0 var(--hueco-lateral); align-items: start; }
+
+  /* Pestañas desde 1024 px */
+  .pestanas-escritorio > .pestanas-lista { display: flex; margin-block-end: var(--e-4); }
+  .pestanas-escritorio [role="tabpanel"][hidden] { display: none; }
+  /* El título de un panel que repite su pestaña (.titulo-de-pestana: «Solicitudes por revisar», «Registro asistido»,
+     «Armar un grupo», «Grupos programados», «Personas del grupo», «Asistencia por día») se queda para el lector de pantalla
+     y como ancla: app/escritorio.js le pone .solo-lector del estándar desde 1024 px */
+
+  /* Barra de acciones (asistencia): ocupa todo el ancho de su tarjeta, con su filete arriba */
+  .barra-acciones-fija { margin-inline: calc(-1 * var(--e-seccion)); padding: var(--e-3) var(--e-seccion); background: var(--blanco); border-block-start: var(--b-2) solid var(--guinda); }
+
+  /* El botón «Menú de pruebas» (sólo en la versión de prueba), con un solo criterio en todas las pantallas del personal: en
+     computadora va abajo a la izquierda (como ya iba en «Asistencia», F3 B11), donde no hay nada fijo, y lo fijo que llega a
+     esa esquina le deja su lugar: la barra de acciones de abajo, a lo ancho (aquí), y la columna de la persona de la cita de
+     cotejo, a lo alto (sección 2). El visor y el panel «Tu grupo» van a la derecha. En teléfono y
+     tableta, donde estaba. */
+  body:has([data-sesion-personal]) .menu-pruebas-boton { right: auto; left: max(var(--e-3), env(safe-area-inset-left)); }
+  .modo-pruebas .barra-acciones-fija { padding-inline-start: var(--reserva-menu-ancho); }
+}
+/* ───── 2 · Revisar una solicitud y Cita de cotejo (DIAGNOSTICO 4.1 y 4.2) ───── */
+@media (min-width: 1024px) {
+  /* ── Área de trabajo: «tarea con documento» (regla general 3; propuesta al estándar E1). De 1024 a 1279 px, dos
+     columnas, decisión | visor, con la franja y la barra de pasos horizontal arriba; desde 1280 px, tres (abajo). El visor
+     del estándar y el formulario dejan su envoltorio (.visor-area) para entrar a esta rejilla. ── */
+  .area-trabajo {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: var(--e-5); align-items: start;
+    grid-template-areas: "franja franja" "pasos pasos" "notas visor" "form visor"; grid-template-rows: auto auto auto minmax(0, 1fr);
+  }
+  .area-trabajo > .visor-area { display: contents; }
+  .area-trabajo > .franja-contexto { grid-area: franja; }
+  .area-trabajo > .barra-fija { grid-area: pasos; }
+  .area-trabajo > .avisos-escritorio { grid-area: notas; min-width: 0; }
+  .area-trabajo > [data-cargando], .area-trabajo > [data-futura], .area-trabajo #formulario { grid-area: form; min-width: 0; }
+  .area-trabajo .visor, .area-trabajo > .visor-area > .resumen-lateral { grid-area: visor; }
+  /* Columna vacía, no (regla general 11): si no hay documento en el visor ni resumen al lado, el formulario ocupa también
+     esa columna */
+  .area-trabajo:not(:has(.visor[open], .resumen-lateral:not([hidden]))) #formulario { grid-column: 1 / -1; }
+  .avisos-escritorio > .aviso, .avisos-escritorio > [data-ultima-oportunidad] { margin-block: 0 var(--e-4); }
+  /* La barra de pasos horizontal no queda pegada: lo fijo es la franja (con las dos pasaba del 25 % del alto, P177) */
+  .area-trabajo .barra-fija { position: static; margin-block-end: var(--e-4); }
+  .area-trabajo .barra-paso-visible { padding-inline-end: 0; }
+  /* La decisión cabe en la primera pantalla: tarjetas del paso con menos relleno y, en el documento, el archivo y «Ver
+     documento» en un renglón (el visor ya lo muestra al lado) */
+  .area-trabajo #formulario > .tarjeta { padding: var(--e-5); }
+  .area-trabajo #formulario .acciones { margin-top: var(--e-4); padding-top: var(--e-4); }
+  .area-trabajo .doc-paso { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); padding-block-end: 0; }
+  .area-trabajo .doc-paso > * { flex: 1 1 100%; order: 7; }
+  .area-trabajo .doc-paso > .doc-cabeza { order: 1; }
+  .area-trabajo .doc-paso > .leyenda-oblig { order: 2; }
+  .area-trabajo .doc-paso > .doc-archivo { flex: 1 1 0; min-width: 0; order: 3; }
+  .area-trabajo .doc-paso > .doc-ver { flex: none; order: 4; }
+  .area-trabajo .doc-paso > [data-doc-pedido] { order: 5; }
+  .area-trabajo .doc-paso > .ayuda { order: 6; }
+  /* Perfil del dictaminador: los cuatro datos en rejilla de dos, el rótulo arriba del dato (regla general 8; propuesta al
+     estándar E11) */
+  .area-trabajo [data-perfil-datos] .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-4); }
+  .area-trabajo [data-perfil-datos] .datos-par { grid-template-columns: none; gap: 0; padding-block: var(--e-2); }
+  /* y «Ver el comprobante de estudios» junto al título (el visor ya lo muestra al lado) */
+  .area-trabajo [data-perfil]:not([hidden]) { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--e-3); }
+  .area-trabajo [data-perfil] > * { flex: 1 1 100%; }
+  .area-trabajo [data-perfil] > .titulo-paso { flex: 1 1 0; min-width: 0; }
+  .area-trabajo [data-perfil] > .doc-ver { flex: none; order: -1; }
+  .area-trabajo [data-perfil] > .titulo-paso { order: -2; }
+
+  /* ── Franja de contexto (propuesta al estándar E2; fija desde 700 px de alto: .franja-fija, sección 8): el regreso y la cabeza de la
+     solicitud en una banda de 80 px como máximo. La cabeza es la misma tarjeta de siempre, en renglón: sus envoltorios se
+     vuelven transparentes. ── */
+  .franja-contexto {
+    position: relative; display: flex; align-items: center; gap: var(--e-4); box-sizing: border-box; max-block-size: var(--alto-franja);
+    margin-block-end: var(--e-3); padding: var(--e-2) var(--e-4); background: var(--blanco);
+    border: var(--b-1) solid var(--linea); border-inline-start: var(--b-4) solid var(--dorado); border-radius: var(--r-caja);
+  }
+  .franja-volver { flex: 0 1 auto; max-inline-size: calc(var(--e-11) + var(--e-7)); margin: 0; font-size: var(--t-sm); }
+  .franja-volver .btn-atras { line-height: var(--interlineado-compacto); }
+  .franja-contexto > [data-cabeza]:not([hidden]) {
+    display: grid; flex: 1 1 auto; align-items: center; column-gap: var(--e-3); min-width: 0; margin: 0; padding: 0; background: none; border: 0; box-shadow: none;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, max-content) auto; grid-template-rows: 1fr auto auto;
+    grid-template-areas: "foto quien caso estado datos" "foto quien caso asistido datos" "foto quien caso ultima datos";
+  }
+  .franja-contexto .revision-cabeza, .franja-contexto [data-persona], .franja-contexto .persona-con-foto { display: contents; }
+  .franja-contexto .perfil-foto { grid-area: foto; flex: none; width: var(--e-9); border-width: var(--b-1); }
+  .franja-contexto .perfil-iniciales { font-size: var(--t-base); }
+  .franja-quien { grid-area: quien; display: grid; min-width: 0; gap: 0; }
+  .franja-quien > p { margin: 0; }
+  .franja-nombre { font-weight: var(--peso-fuerte); font-size: var(--t-sm); line-height: var(--interlineado-compacto); overflow-wrap: anywhere; }
+  .franja-dato { font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--gris); overflow-wrap: anywhere; }
+  .franja-contexto .revision-cabeza > div { grid-area: caso; min-width: 0; }
+  .franja-contexto .revision-cabeza .titulo-paso { margin: 0; font-size: var(--t-sm); line-height: var(--interlineado-compacto); color: var(--texto); }
+  .franja-contexto .linea-datos { margin: 0; line-height: var(--interlineado-compacto); }
+  /* En la franja, la línea corta («APD-S-… · 1.ª revisión» o «… · cita del …»); la completa sigue en la tarjeta de
+     teléfono */
+  .franja-contexto [data-bajada] { display: none; }
+  .franja-caso { display: block; }
+  .franja-contexto [data-estado] { grid-area: estado; margin: 0; }
+  .franja-contexto [data-asistido-etiqueta] { grid-area: asistido; margin: var(--e-1) 0 0; }
+  .franja-etiqueta { grid-area: ultima; display: block; margin: var(--e-1) 0 0; }
+  /* «Datos de la persona»: plegable del estándar (acordeon) que se abre como lista desplegable bajo la franja */
+  .franja-datos { grid-area: datos; display: block; margin: 0; }
+  .franja-datos > .plegable-titulo { display: flex; align-items: center; box-sizing: border-box; max-inline-size: calc(var(--e-11) + var(--e-8)); padding: var(--e-1) var(--e-8) var(--e-1) var(--e-3); font-size: var(--t-sm); }
+  .franja-datos > .plegable-titulo::after { right: var(--e-4); }
+  .franja-datos[open] > .plegable-titulo { margin-bottom: 0; border-bottom: 0; }
+  .franja-datos-panel {
+    position: absolute; inset-inline-end: 0; inset-block-start: calc(100% + var(--e-1)); z-index: var(--z-lista);
+    display: grid; gap: var(--e-3); box-sizing: border-box; inline-size: min(100%, var(--ancho-dialogo) + var(--e-11));
+    max-block-size: calc(100dvh - var(--alto-franja) - var(--e-6)); overflow: auto; padding: var(--e-4);
+    background: var(--blanco); border: var(--b-1) solid var(--borde); border-radius: var(--r-caja); box-shadow: var(--sombra-lista);
+  }
+  .franja-datos-panel > * { margin: 0; }
+  [data-en-franja] { display: none; }
+
+  /* «Así queda la revisión» en la columna del visor (pasos «Resultado» y «Fecha de la cita»; regla general 11) */
+  .resumen-lateral:not([hidden]) { display: block; }
+  .resumen-lateral { align-self: start; padding: var(--e-seccion); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+  .resumen-lateral .resumen-pasos { margin: 0; }
+  .resumen-lateral .titulo-bloque { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
+  .resumen-lateral[data-en-resultado] .resumen-lateral-titulo { display: none; }
+  .area-trabajo [data-paso] [data-resumen-lista] { display: none; }
+
+  /* ── Cita de cotejo: documentos originales como tabla compacta (DIAGNOSTICO.md, 4.2): una fila por documento con su
+     nombre, el archivo y «Ver lo que cargó» a la izquierda y «Sí, es igual / No es igual» a la derecha; si no es igual, su
+     observación se abre debajo de esa fila. La leyenda de cada grupo sigue siendo su nombre accesible (sólo se oculta a la
+     vista: la dice el encabezado). ── */
+  .cotejo-docs-cabeza {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-4); margin-block-start: var(--e-3);
+    padding: var(--e-2) 0; border-block-end: var(--b-2) solid var(--linea); font-size: var(--t-sm); font-weight: var(--peso-medio); color: var(--gris);
+  }
+  .area-cotejo .doc-revision {
+    grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "cabeza ver opciones" "archivo ver opciones" "nota nota nota" "dif dif dif";
+    column-gap: var(--e-3); row-gap: 0; align-items: center; padding-block: var(--e-2); border-block-start: 0; border-block-end: var(--b-1) solid var(--linea);
+  }
+  .area-cotejo .doc-revision > .doc-cabeza { grid-area: cabeza; align-self: end; justify-content: flex-start; }
+  .area-cotejo .doc-revision > .doc-cabeza > .doc-titulo { font-size: var(--t-md); }
+  /* El nombre del archivo y la etiqueta «Por cotejar / Es igual» no se repiten en la fila: los dicen el visor y la opción
+     elegida (como en la maqueta aprobada) */
+  .area-cotejo .doc-revision > .doc-cabeza > .estado, .area-cotejo .doc-archivo-nombre { display: none; }
+  .area-cotejo .doc-revision > .doc-archivo { grid-area: archivo; align-self: start; }
+  .area-cotejo .doc-revision > .ayuda { grid-area: nota; margin: var(--e-2) 0 0; }
+  .area-cotejo .doc-revision > .doc-ver { grid-area: ver; }
+  .area-cotejo .doc-revision > .grupo { grid-area: opciones; margin: 0; }
+  /* El renglón del error, vacío, no ocupa lugar en la fila (aparece si hay error) */
+  .area-cotejo .doc-revision > .grupo > .err:not([data-nivel]) { display: none; }
+  .area-cotejo .doc-revision .opciones-en-linea { gap: var(--e-2); }
+  .area-cotejo .doc-revision .opcion-fila { align-items: center; gap: var(--e-2); padding: var(--e-1) var(--e-2); }
+  .area-cotejo .doc-revision .opcion-fila-input { margin: 0; }
+  .area-cotejo .doc-revision .opcion-nombre { font-size: var(--t-md); white-space: nowrap; }
+  .area-cotejo .doc-revision > .grupo > legend { position: absolute; width: var(--b-1); height: var(--b-1); margin: calc(var(--b-1) * -1); padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .area-cotejo .doc-revision > .campo { grid-area: dif; margin-block: var(--e-2) 0; }
+  .area-cotejo .doc-revision[data-viendo] { padding-inline: var(--e-3); }
+  /* Pago y factura: los datos del pago en una línea de datos; RFC y nombre en un renglón (la .fila del estándar empieza en
+     760 px y cambiaría la tableta; propuesta al estándar E18, .fila desde 1024 px) */
+  .pago-linea { display: grid; gap: var(--e-1); padding: var(--e-3) var(--e-4); border-inline-start: var(--b-2) solid var(--dorado); background: var(--fondo); border-radius: var(--r-ctrl); }
+  .pago-linea > p { margin: 0; }
+  .pago-linea .linea-datos { color: var(--texto); }
+  .area-cotejo .pago-datos { display: none; }
+  .fila-escritorio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto auto; gap: 0 var(--e-4); align-items: start; }
+  /* Como .fila del estándar: cada campo adopta las cuatro filas (etiqueta, ayuda, control, error) y los controles alinean */
+  .fila-escritorio > .campo { display: grid; grid-template-rows: subgrid; grid-row: span 4; gap: 0; align-content: start; }
+}
+@media (min-width: 1024px) and (min-height: 700px) {
+  /* Debajo de la franja fija, el visor con el alto que queda (propuesta al estándar E4: el del estándar queda fijo a
+     var(--e-3) del borde de arriba y no sabe de lo que está pegado encima: con la barra de pasos fija, su título y su
+     archivo quedaban 32 px debajo de ella; aquí no hay barra fija encima y el visor se pega debajo de la franja). */
+  .area-trabajo .visor, .area-trabajo > .visor-area > .resumen-lateral { position: sticky; top: calc(var(--alto-franja) + var(--e-3)); }
+  .area-trabajo .visor { height: calc(100dvh - var(--alto-franja) - var(--e-6)); }
+}
+@media (min-width: 1280px) {
+  /* En la página amplia del personal, el título más grande (en la angosta, «Registro asistido», no cabría junto a la sesión) */
+  body:has([data-sesion-personal]):has(.pagina-amplia) .cabecera .titulo-pagina { font-size: var(--t-lg); }
+  .franja-nombre, .franja-contexto .revision-cabeza .titulo-paso { font-size: var(--t-md); }
+  .franja-datos > .plegable-titulo { max-inline-size: none; white-space: nowrap; }
+  /* «Revisar una solicitud», tres columnas: pasos en barra vertical | decisión | visor */
+  .area-revisar {
+    grid-template-columns: minmax(0, var(--ancho-pasos-vertical)) minmax(0, var(--ancho-decision)) minmax(0, 1fr);
+    grid-template-areas: "franja franja franja" "pasos notas visor" "pasos form visor"; grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .area-trabajo:not(:has(.visor[open], .resumen-lateral:not([hidden]))) #formulario { grid-column: 2 / -1; }
+  /* «Cita de cotejo», tres columnas: la persona (con la barra de pasos debajo) | formulario | visor */
+  .area-cotejo {
+    grid-template-columns: minmax(0, var(--ancho-persona-cotejo)) minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas: "franja notas visor" "franja form visor"; grid-template-rows: auto minmax(0, 1fr);
+  }
+  /* Barra de pasos vertical (propuesta al estándar E3): la misma barra del módulo «pasos», con las mismas etiquetas y
+     estados (palomita, alerta, actual), en columna; «Paso N de M · …» arriba. */
+  .area-trabajo .barra-fija { margin: 0; padding: var(--e-3); background: var(--blanco); border: var(--b-1) solid var(--linea); border-radius: var(--r-caja); }
+  .area-trabajo .barra-fija nav { display: flex; flex-direction: column; }
+  .area-trabajo .barra-fija .pasos-actual { order: -1; margin: 0 0 var(--e-2); font-size: var(--t-xs); font-weight: var(--peso-medio); text-align: start; color: var(--gris); }
+  .area-trabajo .pasos { flex-direction: column; align-items: stretch; }
+  .area-trabajo .pasos-item { flex: none; }
+  .area-trabajo .pasos-item::before { top: calc(var(--bolita) / -2); left: calc(var(--e-2) + var(--bolita) / 2 - var(--b-1)); width: var(--b-2); height: 100%; }
+  .area-trabajo .pasos-btn { flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--e-2); padding: var(--e-1) var(--e-2); text-align: start; }
+  .area-trabajo .pasos-btn[aria-current="step"] { background: var(--guinda-cl); }
+  .area-trabajo .pasos-bolita { flex: none; }
+  .area-trabajo .pasos-etq { font-size: var(--t-sm); text-align: start; }
+  /* La persona en su columna: la fotografía de la cuenta en grande (120 × 150), sus datos uno debajo de otro y la barra */
+  .area-cotejo > .franja-contexto { flex-direction: column; align-items: stretch; gap: var(--e-2); max-block-size: none; padding: var(--e-3); }
+  .area-cotejo .franja-volver { max-inline-size: none; }
+  .area-cotejo .franja-contexto > [data-cabeza]:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-2); }
+  .area-cotejo .franja-contexto .perfil-foto { order: 1; }
+  .area-cotejo .franja-quien { order: 2; }
+  .area-cotejo .franja-contexto .revision-cabeza > div { order: 3; }
+  .area-cotejo .franja-contexto [data-estado], .area-cotejo .franja-contexto [data-asistido-etiqueta] { order: 4; }
+
+  .area-cotejo .franja-contexto .perfil-foto { width: calc(var(--e-11) + var(--e-6)); border-width: var(--b-2); }
+  .area-cotejo .franja-contexto .perfil-iniciales { font-size: var(--t-xl); }
+  .area-cotejo .franja-nombre { font-size: var(--t-base); }
+  .area-cotejo .franja-contexto .revision-cabeza > div { flex: none; }
+  .area-cotejo .franja-contexto .persona-con-foto > :last-child { order: 5; inline-size: 100%; }
+  .area-cotejo .franja-contexto .datos { font-size: var(--t-sm); }
+  .area-cotejo .franja-contexto .datos-par { grid-template-columns: none; gap: 0; padding-block: var(--e-1); }
+  .area-cotejo .franja-contexto .datos-valor { font-weight: var(--peso-normal); }
+  .area-cotejo [data-adscripcion] { display: none; }
+  .area-cotejo .franja-datos { display: none; }
+  .area-cotejo .franja-contexto .barra-fija { order: 9; margin-block-start: var(--e-2); padding: 0; border: 0; }
+}
+@media (min-width: 1280px) and (min-height: 700px) {
+  .area-revisar > .barra-fija { position: sticky; top: calc(var(--alto-franja) + var(--e-3)); }
+  /* La columna de la persona de la cita de cotejo es, desde 1280 px, una columna lateral fija (como .columna-lateral-fija,
+     sección 8); si no cabe en la ventana, se desplaza por dentro. En la versión de prueba termina arriba del botón «Menú de
+     pruebas», que está en su esquina. */
+  .area-cotejo > .franja-contexto { top: var(--margen-fijo); max-block-size: calc(100dvh - 2 * var(--margen-fijo)); overflow: auto; }
+  .modo-pruebas .area-cotejo > .franja-contexto { max-block-size: calc(100dvh - var(--margen-fijo) - var(--reserva-menu-alto)); }
+  .area-cotejo .visor, .area-cotejo > .visor-area > .resumen-lateral { top: var(--margen-fijo); }
+  .area-cotejo .visor { height: calc(100dvh - 2 * var(--margen-fijo)); }
+}
+
+/* ───── 3 · Inicio del personal (bandeja; DIAGNOSTICO 4.3) ───── */
+/* La paginación del estándar declara display: con [hidden] (25 o menos) no se ve */
+.paginacion[hidden] { display: none; }
+@media (min-width: 1024px) {
+  /* La tarjeta del registro asistido lleva dos paneles: sin ninguno a la vista, no se ve */
+  .inicio-asistido:not(:has(> .pestanas-panel:not([hidden]))) { display: none; }
+  .inicio-asistido > .pestanas-panel > .titulo-bloque:first-child, .inicio-asistido > .pestanas-panel > .bajada:first-child { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
+  /* Búsqueda y filtros en una fila, sin el aire de un formulario de captura */
+  .filtros-compactos { margin-block-start: var(--e-3); }
+  .filtros-compactos .campo { margin-block-end: var(--e-3); }
+  .filtros-compactos + .resumen-filtro + .tabla-marco { margin-block-start: var(--e-2); }
+  /* Indicadores que son enlaces (propuesta al estándar E15: tablero de indicadores) */
+  .indicadores-inicio { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e-4); margin-block-end: var(--e-3); }
+  .indicador-inicio { display: grid; gap: 0; padding: var(--e-2) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-block-start: var(--b-4) solid var(--guinda); border-radius: var(--r-ctrl); color: var(--texto); text-decoration: none; }
+  .indicador-inicio:hover { border-color: var(--azul); background: var(--azul-cl); }
+  .indicador-rotulo { font-size: var(--t-sm); color: var(--gris); }
+  .indicador-cifras { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--e-1) var(--e-3); }
+  .indicador-numero { font: var(--peso-fuerte) var(--t-xl)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--guinda); }
+  .indicador-detalle { font-size: var(--t-sm); color: var(--gris); }
+  /* Tabla compacta: filas de unos 44 px. Propuesta al estándar E6 (densidad compacta del módulo tabla). */
+  .tabla-compacta td { padding-block: var(--e-1); }
+  .tabla-compacta .btn-chico { min-height: calc(var(--e-7) + var(--e-1)); }
+  .tarjeta > .paginacion { margin-block-end: var(--e-3); }
+}
+/* Encabezado de la tabla fijo desde 1280 px y 700 px de alto, donde la tabla cabe sin desplazamiento propio (con él, el
+   encabezado quedaría fijo sólo dentro de su marco). Propuesta al estándar E6 (.tabla-encabezado-fijo). */
+@media (min-width: 1280px) and (min-height: 700px) {
+  .tabla-encabezado-fijo { overflow-x: visible; }
+  .tabla-compacta thead th { position: sticky; top: 0; z-index: 1; }
+}
+
+/* ───── 4 · «Grupos» (DIAGNOSTICO 4.4) ───── */
+@media (min-width: 1024px) {
+  /* El paso y, en la columna lateral (.con-lateral, sección 1), el panel «Tu grupo» */
+  .arm-paso-columna { min-width: 0; }
+  .arm-eleccion { display: none; }
+  /* «Ver los grupos programados (N)» repite la pestaña «Grupos programados (N)» */
+  .arm-ir-programados { display: none; }
+  .pestanas-escritorio .arm-barra { margin-block-start: 0; }
+  /* Columna lateral fija a 16 px del borde (sección 8) */
+  .panel-grupo { --margen-fijo: var(--e-4); }
+  .panel-grupo { display: flex; flex-direction: column; gap: var(--e-2); min-width: 0; padding: var(--e-3) var(--e-4); background: var(--blanco); border: var(--b-1) solid var(--linea); border-block-start: var(--b-4) solid var(--guinda); border-radius: var(--r-caja); }
+  .panel-grupo-titulo { margin: 0; font: var(--peso-fuerte) var(--t-lg)/var(--interlineado-titulo) var(--fuente-titulo); color: var(--guinda); }
+  .panel-grupo-datos { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--b-2) var(--e-3); margin: 0; font-size: var(--t-md); line-height: var(--interlineado-compacto); }
+  .panel-grupo-datos dt { color: var(--gris); }
+  .panel-grupo-datos dd { margin: 0; font-weight: var(--peso-medio); overflow-wrap: anywhere; }
+  .panel-grupo-cupo { margin: 0; font-size: var(--t-md); font-weight: var(--peso-medio); }
+  .panel-grupo-acciones { display: none; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); }
+  .panel-grupo-acciones .btn-primario { width: auto; margin-inline-start: auto; }
+  .panel-grupo-elegidas { display: grid; gap: 0; min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; border-block-start: var(--b-1) solid var(--linea); font-size: var(--t-sm); }
+  .panel-grupo-elegidas[hidden] { display: none; }
+  .panel-grupo-elegidas li { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); border-block-end: var(--b-1) solid var(--linea); }
+  .panel-grupo-nombre { min-width: 0; overflow-wrap: anywhere; }
+  .panel-grupo-elegidas .btn-enlace { min-width: var(--objetivo-min); min-height: var(--objetivo-min); }
+
+  /* Paso 1: los cuatro cursos en rejilla de 2 × 2 */
+  .arm-cursos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Paso 2: el calendario a lo ancho del paso; la semana elegida y su horario pasan al panel, y aquí quedan el primer día
+     (y el día, en el curso de un día) junto a la leyenda */
+  .arm-semana-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); }
+  .arm-cal-lado { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
+  .arm-elegida-rotulo, .arm-elegida-nombre, .arm-elegida-horario { display: none; }
+  .arm-elegida .arm-fecha { margin-block-start: 0; }
+  .arm-leyenda { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-4); }
+  /* Paso 3: la espera como tabla compacta con casilla (Persona · Organización · Espera · Folio) y filtro por organización.
+     Propuesta al estándar E6 (tabla compacta con casilla). */
+  .filtro-org:not([hidden]) { display: block; max-width: calc(var(--e-11) * 4); margin-block-end: var(--e-3); }
+  .espera-cabeza { display: grid; grid-template-columns: var(--e-6) minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr) calc(var(--e-11) * 1.6); column-gap: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--guinda); border-radius: var(--r-ctrl) var(--r-ctrl) 0 0; font: var(--peso-fuerte) var(--t-sm)/var(--interlineado-compacto) var(--fuente-titulo); color: var(--blanco); }
+  #paso-personas .prog-personas { gap: 0; }
+  #paso-personas .plan-persona { grid-template-columns: var(--e-6) minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr) calc(var(--e-11) * 1.6); grid-template-areas: "casilla nombre org espera folio"; column-gap: var(--e-3); row-gap: 0; min-height: calc(var(--e-8) + var(--e-1)); padding-block: var(--e-1); border-width: 0 0 var(--b-1); border-radius: 0; }
+  #paso-personas .plan-persona > .casilla-input { grid-area: casilla; align-self: center; }
+  #paso-personas .plan-persona-nombre { grid-area: nombre; }
+  #paso-personas .plan-persona-org { grid-area: org; }
+  #paso-personas .plan-persona-espera { grid-area: espera; justify-content: flex-start; }
+  #paso-personas .plan-persona-folio { display: block; grid-area: folio; font-size: var(--t-sm); color: var(--gris); }
+  #paso-personas .plan-bloque { gap: 0; padding: 0; border-radius: 0; border-width: 0 0 var(--b-1); }
+  #paso-personas .plan-bloque-cabeza { padding: var(--e-1) var(--e-3); }
+  #paso-personas .plan-bloque .plan-persona { background: var(--blanco); }
+  #paso-personas .plan-bloque .plan-persona:has(.casilla-input:checked) { background: var(--azul-cl); }
+  #paso-personas [data-mas-espera] { margin-block-start: var(--e-3); }
+  /* Paso 4: el resumen en datos de dos columnas */
+  #paso-confirmar .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-6); }
+  #paso-confirmar .datos-par { grid-template-columns: minmax(0, calc(var(--e-11) * 1.5)) minmax(0, 1fr); }
+  /* Pestañas: «Ya terminaron» sin pestaña vacía */
+  .solo-en-pestana:not([hidden]) { display: block; }
+  .arm-programados.pestanas-panel { margin-block-start: 0; }
+}
+/* El panel «Tu grupo» es la columna lateral fija (sección 1) sólo con alto suficiente: las elegidas se desplazan dentro y los
+   botones quedan arriba de ellas, siempre a la vista */
+@media (min-width: 1024px) and (min-height: 700px) {
+  /* Con el panel fijo, sus botones son los principales del paso (siempre a la vista); los de abajo del paso siguen ahí,
+     como secundarios (un solo principal por pantalla, C6-02: app/grupos.js cambia su clase). Más bajo que 700 px, el panel
+     no es fijo y no lleva botones: los del paso son los principales, como antes. */
+  .panel-grupo-acciones { display: flex; }
+  /* El de abajo del paso, ya secundario, sigue a la derecha, donde estaba */
+  #armar .acciones > [data-accion="siguiente"], #armar .acciones > [data-accion="enviar"] { margin-inline-start: auto; }
+}
+
+/* ───── 5 · Asistencia (DIAGNOSTICO 4.5, con el cambio de Liber del 25/10/2026, 14:54: una persona por renglón) ───── */
+@media (min-width: 1024px) {
+  /* Franja del día: el día y el grupo a la izquierda; la regla de asistencia y la leyenda a la derecha. Propuesta al
+     estándar E2 (franja de contexto), aquí sin fijar: el día va también en «Guardar la asistencia del día N». */
+  .franja-dia { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-1) var(--e-6); align-items: baseline; margin-block-end: var(--e-4); }
+  .franja-dia > .titulo-paso { grid-column: 1; grid-row: 1; margin: 0; }
+  .franja-dia > .bajada { grid-column: 1; grid-row: 2; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-3); margin: 0; }
+  .franja-dia > [data-regla] { grid-column: 2; grid-row: 1; margin: 0; text-align: end; }
+  .franja-dia > .asis-leyenda { grid-column: 2; grid-row: 2; justify-content: flex-end; margin: 0; }
+  .franja-dia .grupo-titulo { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); }
+  .franja-dia .grupo-bajada-datos { margin: 0; }
+  /* Personas hacia abajo, una por renglón, como el pase de lista. Renglón compacto: fotografía de 64 × 80, el nombre con la
+     tira de días y la etiqueta de riesgo, y «¿Asistió? Sí / No» a la derecha, en el mismo renglón. */
+  .personas-renglon > .asistencia-fila { grid-template-columns: auto minmax(0, 1fr) auto; gap: 0 var(--e-4); padding-block: var(--e-1); }
+  .personas-renglon > .asistencia-fila > .asistencia-foto { width: calc(var(--e-9) + var(--e-4)); height: calc((var(--e-9) + var(--e-4)) * 1.25); }
+  /* La pregunta a la izquierda de Sí y No (flotada deja de ser la leyenda que el navegador dibuja sobre el borde, pero
+     sigue siendo la leyenda del grupo: el nombre accesible no cambia) */
+  .personas-renglon .asis-pregunta { float: inline-start; display: flex; align-items: center; min-height: var(--alto-opcion); margin: 0 var(--e-3) 0 0; }
+  /* La barra de acciones (fija abajo desde 700 px de alto, sección 8): los totales a la izquierda y los dos botones a la
+     derecha; lo que no se pudo guardar, debajo, a todo lo ancho */
+  .barra-acciones-fija:not([hidden]) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .barra-acciones-fija > .asis-totales { grid-column: 1; grid-row: 1; }
+  .barra-acciones-fija > .acciones-grupo { grid-column: 2; grid-row: 1; margin: 0; }
+  .barra-acciones-fija > [data-falta-marcar] { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ───── 6 · Aplicar el examen (DIAGNOSTICO 4.6, con el cambio de Liber del 25/10/2026: una persona por renglón) ───── */
+/* Los avisos del grupo, juntos con el mismo espacio que tenían sueltos en .grupo-examen */
+.avisos-grupo { display: grid; gap: var(--e-3); }
+@media (min-width: 1024px) {
+  /* Los datos del grupo en una línea: cada par rótulo y valor seguido (el rótulo en gris los separa); si no caben, el par
+     pasa completo al renglón siguiente. Propuesta al estándar E11 (datos de rótulo y valor en línea o en rejilla). */
+  .grupo-en-linea > .datos { display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-6); padding-block: var(--e-2); border-block-end: var(--b-1) solid var(--linea); }
+  .grupo-en-linea > .datos > .datos-par { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); padding: 0; border: 0; }
+  .grupo-en-linea > .datos .datos-valor { font-size: var(--t-md); }
+  .grupo-en-linea .grupo-titulo { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-2); }
+  /* Los avisos del grupo en una sola fila */
+  .avisos-grupo { grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--e-11) * 4)), 1fr)); }
+  /* Franja del pase de lista: título, cuenta corta e «Imprimir los códigos» en el primer renglón; la explicación, la cuenta
+     completa (role="status") y la lista debajo. Las tres piezas de la franja son celdas de la misma fila de la rejilla, con
+     el mismo fondo y el mismo filete: juntas se ven como una sola banda, fija desde 700 px de alto (.franja-fija, sección 8).
+     Propuesta al estándar E2 y E7. */
+  .pase-lista { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
+  .pase-lista > * { grid-column: 1 / -1; }
+  .pase-lista > .titulo-bloque, .pase-lista > .cuenta-corta, .pase-lista > .franja-accion {
+    grid-row: 1; align-self: stretch; margin: var(--e-seccion) 0 var(--e-3); padding-block: var(--e-3); background: var(--blanco);
+    border-block-start: var(--b-2) solid var(--dorado); border-block-end: var(--b-1) solid var(--linea);
+  }
+  .pase-lista > .titulo-bloque { grid-column: 1; display: flex; align-items: center; }
+  .pase-lista > .cuenta-corta { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); padding-inline: var(--e-4); font-size: var(--t-md); color: var(--texto); }
+  .pase-lista > .franja-accion { grid-column: 3; display: flex; align-items: center; }
+  .franja-accion > .btn { width: auto; }
+  .cuenta-corta-dato { white-space: nowrap; }
+  .cuenta-corta strong { font-size: var(--t-lg); font-family: var(--fuente-titulo); }
+  /* Renglón de cada persona, más compacto: «Ampliar» a la derecha de la fotografía, no debajo. La fotografía conserva sus
+     96 px (es la verificación de identidad) y se sigue ampliando ahí mismo. El código, grande. */
+  .pase-lista .examen-foto-boton { grid-template-columns: auto auto; align-items: end; justify-items: start; }
+  .pase-lista .examen-codigo { font-size: var(--t-xl); }
+}
+@media (min-width: 1024px) and (min-height: 700px) {
+  /* El control enfocado no queda debajo de la franja fija */
+  html:has(.pase-lista) { scroll-padding-top: calc(var(--e-11) + var(--e-4)); }
+}
+
+/* ───── 7 · Ficha del grupo (DIAGNOSTICO 4.9) ───── */
+@media (min-width: 1024px) {
+  /* «Persona instructora y confirmación» en la columna lateral (.con-lateral, sección 1), de 480 px y no fija (mide más del
+     25 %): con ese ancho su botón queda a la vista sin bajar */
+  .ficha-grupo { --ancho-lateral: calc(var(--e-11) * 5); --hueco-lateral: var(--e-5); }
+  /* Con la cabecera compacta, a 1366 × 768 el botón principal de la columna terminaba justo en el borde de la ventana
+     (768,1 px): con el aire de los botones de la decisión de Revisar (sección 2) queda a la vista */
+  .ficha-grupo > .columna-lateral .acciones { margin-top: var(--e-4); padding-top: var(--e-4); }
+  /* Cabeza con el cupo a la derecha */
+  .grupo-cabeza-cupo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, calc(var(--e-11) * 3)); gap: var(--e-3) var(--e-6); align-items: start; }
+  .grupo-cabeza-cupo > .cupo { margin-block: 0; }
+  /* Los datos del curso en una rejilla de 2 columnas (3 desde 1280 px), cada rótulo sobre su valor. Propuesta al estándar
+     E11. */
+  .datos-rejilla > .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-5); margin-block-start: var(--e-4); }
+  .datos-rejilla > .datos > .datos-par { grid-template-columns: minmax(0, 1fr); align-content: start; }
+  /* Pestañas «Personas del grupo» y «Asistencia por día» (las de la sección 1, app/grupo.js) */
+  .pestanas-ficha { margin-block: var(--e-seccion) 0; }
+  .pestanas-ficha .pestanas-panel > .tabla-marco:first-child, .pestanas-ficha .solo-lector + .tabla-marco { margin-block-start: 0; }
+}
+@media (min-width: 1280px) {
+  .datos-rejilla > .datos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ───── 8 · Lo fijo (común; al final para que gane a la presentación de cada pieza) ─────
+   Sólo con alto suficiente (P177). En cada pantalla, a lo más: la franja de arriba (Revisar, Cita de cotejo de 1024 a 1279 px,
+   pase de lista) o la barra de acciones de abajo (Asistencia), nunca las dos, y el encabezado de la tabla del inicio; las
+   columnas laterales cuentan por su ancho y caben en la ventana. Sumado, nunca más del 25 % del alto. */
+@media (min-width: 1024px) and (min-height: 700px) {
+  /* Franja fija arriba (propuesta al estándar E2: .franja-fija con su alto, --alto-franja, para que el visor y el foco lo
+     sepan): la franja de contexto de Revisar y de la cita de cotejo, y las tres celdas de la franja del pase de lista */
+  .franja-fija { position: sticky; top: 0; z-index: var(--z-barra); }
+  /* Columna lateral fija (E1): nunca más alta que la ventana; lo que no cabe se desplaza dentro («Tu grupo»: las elegidas).
+     La columna de la persona de la cita de cotejo es la misma pieza desde 1280 px (sección 2). */
+  .columna-lateral-fija { position: sticky; top: var(--margen-fijo); max-block-size: calc(100dvh - 2 * var(--margen-fijo)); }
+  /* Barra de acciones fija abajo (propuesta al estándar E7: hoy .acciones-fijas se vuelve estática desde 760 px). Queda
+     debajo del botón «Menú de pruebas», que va encima del lugar que ella le reserva a la izquierda. */
+  .barra-acciones-fija { position: sticky; bottom: 0; z-index: calc(var(--z-barra) - 1); box-shadow: var(--sombra-hoja); }
+  /* El control enfocado con el teclado no queda debajo de la barra (WCAG 2.4.11) */
+  html:has(.barra-acciones-fija:not([hidden])) { scroll-padding-bottom: calc(var(--objetivo-min) + var(--e-7) + var(--e-4)); }
+  html:has(.barra-acciones-fija [data-falta-marcar]:not([hidden])) { scroll-padding-bottom: calc(var(--objetivo-min) + var(--e-7) + var(--e-4) + var(--e-11)); }
 }
 
 /* ---------- Impresión ---------- */

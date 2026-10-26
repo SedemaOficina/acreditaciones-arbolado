@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="formkit/modulos/modal/modal.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/visor/visor.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/version/version.css?v=1.5.1">
+<link rel="stylesheet" href="formkit/modulos/acordeon/acordeon.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/estado/estado.css?v=1.5.1">
 <link rel="stylesheet" href="formkit/modulos/resultado/resultado.css?v=1.5.1">
 <link rel="stylesheet" href="app/apd.css?v=0.70">
@@ -37,8 +38,14 @@
 
 <main class="pagina pagina-amplia" id="contenido">
   <div class="sesion personal-sesion" data-sesion-personal></div>
-  <p><a class="btn-atras" href="citas.html" data-volver><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Citas de cotejo</a></p>
-  <p class="bajada" data-cargando>Cargando la cita…</p>
+  <!-- Escritorio (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, 4.2): desde 1024 px el área de
+       trabajo va en columnas (app/apd.css, «Escritorio»). De 1024 a 1279 px, la franja de contexto fija arriba y
+       formulario | visor; desde 1280 px, la persona en una columna fija a la izquierda (fotografía de la cuenta, datos y la
+       barra de pasos), el formulario al centro y el visor a la derecha. Debajo de 1024 px se ve como antes: estos
+       envoltorios no tienen estilo. -->
+  <div class="area-trabajo area-cotejo" data-area-trabajo>
+  <div class="franja-contexto franja-fija" data-franja>
+  <p class="franja-volver"><a class="btn-atras" href="citas.html" data-volver><svg class="icono" aria-hidden="true"><use href="#i-flecha-izq"></use></svg>Citas de cotejo</a></p>
 
   <!-- La cita: la solicitud y la persona. Lo pinta app/cotejo.js. -->
   <section class="tarjeta" data-cabeza hidden aria-labelledby="t-cita">
@@ -62,6 +69,8 @@
     <!-- Registro asistido (decisión de Liber del 25/10/2026): los avisos a esta persona van por teléfono (app/registro-asistido.js) -->
     <p data-asistido-etiqueta hidden></p>
   </section>
+  </div>
+  <p class="bajada" data-cargando>Cargando la cita…</p>
 
   <!-- Una cita de un día que todavía no llega (auditoría «intentar romperlo», F2 A6): se atiende ese día; antes no se
        registra si la persona se presentó ni su inasistencia (la base: cita_futura). Lo pinta app/cotejo.js. -->
@@ -77,6 +86,8 @@
   <!-- El cotejo (decisiones 2026-10-17): llegada, identidad, documentos, pago y factura. Una sola acción principal,
        cuyo texto cambia con el resultado. La página lo inicia con FormKit.iniciar cuando ya calculó los campos
        auxiliares (data-formkit="manual" puede quedarse: desde la 1.3.4 un formulario se inicia una sola vez, P111). -->
+  <!-- Escritorio: los avisos de la cita (pausa, segunda cita) pasan aquí, arriba del formulario (app/cotejo.js) -->
+  <div class="avisos-escritorio" data-avisos-escritorio></div>
   <!-- Avance de la cita (módulo «pasos» del estándar) -->
   <div class="barra-fija barra-paso-visible" data-con-formulario hidden>
     <div data-barra="Avance de la cita"></div>
@@ -165,6 +176,9 @@
       <div data-si="pedir_documentos=si">
       <p class="ayuda ayuda-bloque" data-docs-ayuda>Tome cada original que trae la persona y compárelo con el que cargó en línea («Ver lo que cargó»). Si alguno no es igual, escriba qué no es igual: la persona lo lee con el nombre del documento al inicio y dirigido a ella, de tú.</p>
       <p class="texto-gris" data-ya-coincidieron hidden></p>
+      <!-- Escritorio: los documentos como tabla compacta, una fila por documento (app/apd.css). Este encabezado sólo se ve
+           desde 1024 px; cada grupo de opciones conserva su leyenda. -->
+      <div class="cotejo-docs-cabeza" aria-hidden="true"><span>Documento</span><span>¿Es igual al que cargó?</span></div>
       <!-- cotejo-documentos:inicio (generado por herramientas/construir-sitio.mjs; no se edita a mano) -->
       <div data-si="cotejar_identificacion_oficial=si">
         <article class="doc-revision" data-doc="identificacion_oficial" data-contexto="Identificación oficial">
@@ -352,6 +366,8 @@
       <p class="aviso" data-pago-no-hace-falta hidden><svg class="icono" aria-hidden="true"><use href="#i-info"></use></svg><span class="aviso-texto" data-pago-no-hace-falta-texto>No hace falta ver el pago todavía.</span></p>
       <div data-si="pedir_pago=si">
       <div class="pago-datos" data-pago-datos></div>
+      <!-- Escritorio: los mismos datos en una línea de datos (app/cotejo.js); debajo de 1024 px se ve la ficha de arriba -->
+      <div class="pago-linea" data-pago-linea></div>
       <fieldset class="grupo" data-campo="pago" data-requerido data-uso="Registrar si la persona presentó el comprobante del pago de derechos por el monto y con la referencia que se le indicaron.">
         <legend class="etiqueta">¿El comprobante es por ese monto y con esa referencia?</legend>
         <!-- autocomplete off: decisión de quien atiende. -->
@@ -382,6 +398,8 @@
           <ul class="lista-arch"></ul>
         </div>
       </div>
+      <!-- Escritorio: RFC y nombre en un renglón; el folio fiscal debajo -->
+      <div class="fila-escritorio">
       <div class="campo" data-campo="factura_rfc" data-formato="rfc" data-requerido data-sensible data-finalidad="Registrar a favor de quién se emitió la factura del pago." data-uso="RFC de la factura (apd.solicitud.factura_rfc).">
         <label class="etiqueta" for="factura_rfc">RFC a cuyo favor se emitió</label>
         <p class="ayuda">El de la persona solicitante, como en su constancia de situación fiscal: 13 caracteres.</p>
@@ -392,6 +410,7 @@
         <label class="etiqueta" for="factura_razon_social">Nombre</label>
         <!-- autocomplete off: es el dato de la factura, no de quien llena. -->
         <input class="control" id="factura_razon_social" name="factura_razon_social" type="text" maxlength="200" autocomplete="off">
+      </div>
       </div>
       <div class="campo" data-campo="factura_folio_fiscal" data-formato="folio-fiscal" data-requerido data-uso="Folio fiscal de la factura, para su seguimiento; no se repite (apd.solicitud.factura_folio_fiscal).">
         <label class="etiqueta" for="factura_folio_fiscal">Folio fiscal</label>
@@ -482,6 +501,7 @@
     <div class="visor-hojas" data-visor-hojas tabindex="0" aria-label="Hojas del documento"></div>
     <p class="visor-nota pendiente" data-visor-nota hidden></p>
   </dialog>
+  </div>
   </div>
 
   <!-- Después de registrar: el resultado de la cita (módulo «resultado» del estándar, P113). Lo que va en

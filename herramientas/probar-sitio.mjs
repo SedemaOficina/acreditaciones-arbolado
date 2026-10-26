@@ -1574,6 +1574,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   comprueba(/Elija a quién va/.test(await texto('[data-error-personas]')) && await pg.evaluate(() => document.activeElement && document.activeElement.closest('[data-error-personas]') !== null)
     && (await pg.$$('.plan-persona.falta-marcar')).length > 0 && await pasoDe(pg) === 3, t('sin elegir a nadie: el error sale junto a los botones, con el foco ahí, se señalan las personas y no se avanza'));
   // «Agregar personas» de la fila del grupo del 26 al 30 de octubre: el paso 3 con ese grupo; se agrega a la que más espera
+  await aProgramados(pg);
   await Promise.all([pg.waitForNavigation(), pg.click(`[data-programados] tr[data-grupo="${g005.folio}"] a:has-text("Agregar personas")`)]);
   await listoGrupos(pg);
   comprueba(/grupo=APD-G-2026-005/.test(pg.url()) && await pasoDe(pg) === 3 && /Completando «Poda nueva · del 26 al 30 de octubre» · APD-G-2026-005/.test(await texto('[data-modo-grupo]')),
@@ -1589,6 +1590,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await listoGrupos(pg);
   comprueba((await pg.$$('[data-personas] .plan-persona input')).length === enEsperaPoda - 1 && /2 de 25/.test(await texto(`[data-programados] tr[data-grupo="${g005.folio}"]`)), t('la persona sale de la espera y el grupo suma'));
   // Completar con las que más esperan y confirmar ahí mismo (ya tiene fecha, hora e instructor)
+  await aProgramados(pg);
   const completar = pg.locator(`[data-programados] tr[data-grupo="${g005.folio}"] button:has-text("Completar con las 3 que más esperan")`);
   comprueba(await completar.count() === 1, t('«Completar con las 3 que más esperan» dice cuántas faltan para el mínimo'));
   await Promise.all([pg.waitForNavigation(), completar.click()]);
@@ -1788,6 +1790,9 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
   await captura(pg, `asistencia-guardada-${sufijo}`);
   // La ficha de un grupo concluido conserva la asistencia de conjunto
   await pg.goto(BASE + `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'concluido').folio}`);
+  await pg.waitForSelector('[data-conc-filas] tr', { state: 'attached' });
+  // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» es una pestaña; se abre para verla
+  if (await pg.locator('#pt-asistencia').count()) await pg.click('#pt-asistencia');
   await pg.waitForSelector('[data-conc-filas] tr');
   comprueba(/Sin derecho/.test(await texto('[data-concentrado]')), t('la ficha de un grupo concluido muestra la asistencia por día y quién se quedó sin derecho'));
   await sinDesborde(pg, t('grupo concluido con su concentrado'));
@@ -1814,6 +1819,7 @@ async function caminosGrupos(navegador, ancho, alto, sufijo) {
     && /no inició/.test(t004), t('la propuesta vencida lo dice y lleva a «Elegir otra semana» (paso 2 con ese grupo); el confirmado dice que no inició'));
   await sinDesborde(p2, t('su fecha ya pasó'));
   // «Elegir otra semana»: el paso 2 con ese grupo, su semana vencida no queda elegida y se elige otra
+  await aProgramados(p2);
   await Promise.all([p2.waitForNavigation(), p2.click('[data-programados] tr[data-grupo="APD-G-2026-005"] a:has-text("Elegir otra semana")')]);
   await listoGrupos(p2);
   comprueba(await pasoDe(p2) === 2 && (await p2.inputValue('#fecha_inicio')) === '' && (await p2.$$('.arm-semana[data-elegida]')).length === 0, t('«Elegir otra semana» abre el paso 2 sin la semana vencida elegida'));
@@ -1827,6 +1833,12 @@ async function listoGrupos(pg) {
   await pg.waitForFunction(() => window.FormKit && FormKit.pasos && !/Cargando/.test(document.querySelector('[data-bajada]').textContent));
 }
 const pasoDe = (pg) => pg.evaluate(() => FormKit.pasos.actual() + 1);
+// Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026): desde 1024 px los grupos programados van en su pestaña;
+// para usarlos, se abre (en teléfono no hay pestañas: ya están a la vista)
+async function aProgramados(pg) {
+  await pg.waitForSelector('#pe-programados', { state: 'attached' });
+  if (await pg.isVisible('#pe-programados') && (await pg.getAttribute('#pe-programados', 'aria-selected')) !== 'true') await pg.click('#pe-programados');
+}
 async function siguientePaso(pg) {
   const antes = await pasoDe(pg);
   await pg.click('[data-paso]:not([hidden]) [data-accion="siguiente"]');
@@ -2170,6 +2182,7 @@ async function caminosProgramar(navegador, ancho, alto, sufijo) {
     && /Del 16\/11\/2026 al 20\/11\/2026/.test(await texto('[data-programados] tr[data-grupo="APD-G-2026-007"]')) && await pg.isHidden('[data-hecho]:not(.pasos-btn)'),
     t('al recargar, el grupo nuevo está por confirmar en su semana (le falta la persona instructora, de Capacitación) y el aviso no se repite'));
   // Un grupo sin fecha que ya existe: «Elegir semana» abre el paso 2 con ese grupo (sus personas ya están; se agregan más)
+  await aProgramados(pg);
   await Promise.all([pg.waitForNavigation(), pg.click(`[data-programados] tr[data-grupo="${sinFecha.folio}"] a:has-text("Elegir semana")`)]);
   await listoGrupos(pg);
   comprueba(await pasoDe(pg) === 2 && new RegExp(`grupo=${sinFecha.folio}`).test(pg.url()), t('«Elegir semana» de la tabla abre el paso 2 con ese grupo'));
@@ -2683,6 +2696,7 @@ async function romper(navegador) {
   // M3 · un grupo por confirmar lleno se confirma y se le elige semana
   await conRuta(pg, (j) => { const g = j.grupo.find((x) => x.folio === 'APD-G-2026-004'); const n = j.inscripcion.filter((i) => i.grupo_id === g.id && i.activa).length; g.cupo_minimo = 1; g.cupo_maximo = n; });
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await aProgramados(pg);
   await pg.waitForSelector('[data-programados] tr[data-grupo="APD-G-2026-004"]');
   const lleno = await pg.textContent('[data-programados] tr[data-grupo="APD-G-2026-004"]');
   // Desde los ajustes del equipo (25/10/2026) quien arma los grupos ya no lo confirma: lo dice la fila, sin el botón
@@ -2840,7 +2854,8 @@ async function romper(navegador) {
   const cargaron = [];
   for (const [pagina, sel] of [['grupos.html?curso=poda-nueva', '[data-programados] tr[data-grupo]'], ['programar.html?curso=poda-nueva', '.arm-semana-elegir'], ['aplicar.html?folio=APD-G-2026-003', '[data-con-grupo]:not([hidden])'], ['asistencia.html?folio=APD-G-2026-003', '.asistencia-fila']]) {
     await pg.goto(BASE + pagina);
-    cargaron.push(await pg.waitForSelector(sel, { timeout: 8000 }).then(() => true, () => false) && !/No se pud/.test(await pg.textContent('main')));
+    // attached: en escritorio los grupos programados van en su pestaña (acomodo de escritorio, parte B, 25/10/2026)
+    cargaron.push(await pg.waitForSelector(sel, { timeout: 8000, state: 'attached' }).then(() => true, () => false) && !/No se pud/.test(await pg.textContent('main')));
   }
   comprueba(cargaron.every(Boolean), t(`B5-04: con un grupo y una inscripción null en los datos, Grupos, Programar, Aplicar y Asistencia cargan (${cargaron.join(', ')})`));
   sinErrores(errores, 'B5-04');
@@ -3319,6 +3334,7 @@ async function romperDos(navegador) {
   await parte('F3 B10', async ({ pagina }) => {
     const gc = await pagina('grupos.html?curso=poda-nueva');
     const completar = '[data-programados] tr[data-grupo="APD-G-2026-005"] button:has-text("Completar")';
+    await aProgramados(gc);
     await gc.waitForSelector(completar);
     await Promise.all([gc.waitForNavigation(), gc.dblclick(completar)]);
     await gc.waitForSelector('[data-hecho]:not(.pasos-btn) .aviso');
@@ -4391,6 +4407,7 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
       t(`P126: en ${donde}, una etiqueta de estado larga ${escritorio ? 'no ensancha su tarjeta' : 'se parte en renglones y no ensancha su tarjeta ni la página'} (${JSON.stringify(r)})`));
   };
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva');
+  await aProgramados(pg);
   await pg.waitForSelector('[data-programados] .tabla .estado');
   await etiquetaLarga('[data-programados] .tabla .estado', '«Grupos programados»');
   await captura(pg, `151-grupos-etiqueta-larga-${sufijo}`);
@@ -4428,7 +4445,8 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   };
   const porRevisar = datos.solicitud.find((s) => s.estado === 'enviada');
   await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
-  await pg.waitForSelector('[data-bajada] .linea-datos');
+  // Desde 1024 px la línea de la cabeza es la corta de la franja de contexto (escritorio, parte A, 25/10/2026)
+  await pg.waitForSelector('[data-cabeza] .linea-datos:visible');
   await lineas('la revisión documental');
   // P135: motivos frecuentes completos (un renglón cada uno, sin encogerse) y al pasar el cursor sólo cambia el borde
   const doc = await pg.$eval('[data-doc]:not([hidden]) input[value="con_observacion"]', (i) => i.name);
@@ -4466,8 +4484,12 @@ async function estandarPantallas(navegador, ancho, alto, sufijo) {
   await lineas('«Asistencia»');
   await captura(pg, `151-asistencia-${sufijo}`);
   await pg.goto(BASE + 'grupos.html?curso=poda-nueva&paso=4');
-  await pg.waitForSelector('[data-eleccion] .linea-datos');
-  await lineas('«Grupos» (lo elegido en el paso a paso)');
+  // Desde 1024 px, lo elegido va en el panel «Tu grupo» y la línea de arriba del paso no se ve (acomodo de escritorio,
+  // parte B, 25/10/2026): la línea se revisa donde se ve
+  if (ancho < 1024) {
+    await pg.waitForSelector('[data-eleccion] .linea-datos');
+    await lineas('«Grupos» (lo elegido en el paso a paso)');
+  } else await pg.waitForSelector('[data-panel-datos] dd');
   await captura(pg, `151-grupos-${sufijo}`);
 
   // P131: avisos con pasos (secuencia numerada) y con enlace, en div.aviso-texto, con el icono de su tono
@@ -4607,7 +4629,13 @@ async function focoAccesibilidad(navegador) {
     await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
     await listoGrupos(page);
     await dosCuadros(page);
-    const pegajosos = await page.evaluate(() => [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility()).map((x) => x.className));
+    // El panel «Tu grupo» (acomodo de escritorio, parte B, 25/10/2026) es fijo, pero va al lado de la lista: cuenta lo fijo
+    // que cruza la columna de la lista
+    const pegajosos = await page.evaluate(() => {
+      const l = document.querySelector('[data-personas]').getBoundingClientRect();
+      return [...document.querySelectorAll('#contenido *')].filter((x) => /fixed|sticky/.test(getComputedStyle(x).position) && x.checkVisibility())
+        .filter((x) => { const r = x.getBoundingClientRect(); return r.left < l.right && r.right > l.left; }).map((x) => x.className);
+    });
     comprueba(!pegajosos.length, `[${w}×${h}] B4-01: en el paso 3 de «Grupos» nada queda fijo ni pegajoso sobre la lista${pegajosos.length ? ` (${pegajosos.join(', ')})` : ''}`);
     await page.focus('#paso-personas .titulo-paso');
     let casillas = 0; const ocultas = [];
@@ -4918,6 +4946,8 @@ async function focoAccesibilidad(navegador) {
   for (const [u, sel, sesion] of [['grupos.html?curso=poda-nueva', '[data-programados] tr[data-grupo]', null], ['material.html', '.material-doc', null]]) {
     const { c, page } = await nuevo(1440, 900, sesion);
     await page.goto(BASE + u);
+    // En «Grupos», los enlaces de los grupos programados están en su pestaña (acomodo de escritorio, parte B)
+    if (/grupos/.test(u)) await aProgramados(page);
     await page.waitForSelector(sel);
     const repetidos = await page.evaluate(() => {
       const nombre = (a) => (a.getAttribute('aria-label') || a.textContent).replace(/\s+/g, ' ').trim();
@@ -6609,7 +6639,8 @@ async function sesion23(navegador) {
     await page.waitForSelector('.asistencia-fila');
     const tira = await page.textContent('main');
     await page.goto(BASE + 'grupo.html?folio=APD-G-2026-003');
-    await page.waitForSelector('[data-conc-encabezado] th');
+    // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» va en una pestaña (oculta al abrir)
+    await page.waitForSelector('[data-conc-encabezado] th', { state: 'attached' });
     const encabezado = await page.textContent('[data-conc-encabezado]');
     const datosG = await page.textContent('[data-datos]');
     comprueba(/16\/10\/2026 · repaso de conocimientos y examen final/.test(encabezado) && /Último día \(repaso de conocimientos y examen final\)/.test(datosG) && /Hora de salida\s*15:00/.test(datosG) && !errores.length,
@@ -7121,8 +7152,10 @@ async function asistenciaDia5(navegador) {
       comprueba(primero === 'Día 5 de 5 · Pase de lista en el salón de cómputo', t(`${ancho}: en «Aplicar el examen», el primer paso es «Día 5 de 5 · Pase de lista en el salón de cómputo» («${primero}»)`));
       const lista = await texto(page, '[data-lista-texto]');
       comprueba(/asistencia del día 5/.test(lista) && /Repaso de conocimientos y examen final/.test(lista), t(`${ancho}: el pase de lista dice que es la asistencia del día 5, el de repaso y examen final («${lista.slice(0, 160)}»)`));
-      comprueba(await ordenAntes(page, '#t-pase-lista', '[data-tabla]') && await ordenAntes(page, '[data-tabla]', '#t-el-examen') && await ordenAntes(page, '#t-el-examen', '[data-imprimir]'),
-        t(`${ancho}: primero el pase de lista (con su lista), después el examen (códigos y pantalla del examen)`));
+      // Acomodo de escritorio (25/10/2026): desde 1024 px «Imprimir los códigos» va en la franja del pase de lista, arriba
+      comprueba(await ordenAntes(page, '#t-pase-lista', '[data-tabla]') && await ordenAntes(page, '[data-tabla]', '#t-el-examen')
+        && (ancho >= 1024 ? Boolean(await page.$('[data-franja-accion] [data-imprimir]')) : await ordenAntes(page, '#t-el-examen', '[data-imprimir]')),
+        t(`${ancho}: primero el pase de lista (con su lista), después el examen (códigos y pantalla del examen; en computadora, «Imprimir los códigos» en la franja del pase de lista)`));
       await revisaAxe(page, `${ancho}: «Aplicar el examen»`);
       // Pasar lista: una presente y otra que no llegó
       const ins = await page.$$eval('[data-filas] [data-accion="presente"]', (l) => l.map((b) => b.dataset.ins));
@@ -7141,6 +7174,9 @@ async function asistenciaDia5(navegador) {
         t(`${ancho}: en «Asistencia», el pase de lista cuenta como la asistencia del día 5 («${ult}»)`));
       // En la ficha del grupo: la columna del último día
       await page.goto(BASE + `grupo.html?folio=${G3}`);
+      await page.waitForSelector('[data-conc-filas] tr', { state: 'attached' });
+      // Acomodo de escritorio (25/10/2026): en computadora «Asistencia por día» es una pestaña; se abre para verla
+      if (await page.locator('#pt-asistencia').count()) await page.click('#pt-asistencia');
       await page.waitForSelector('[data-conc-filas] tr');
       const celda = (nombre) => page.evaluate((n) => {
         const tr = [...document.querySelectorAll('[data-conc-filas] tr')].find((r) => r.cells[0].textContent.trim() === n.trim());
@@ -7498,6 +7534,172 @@ async function ajustes25(navegador) {
   }
 }
 
+/* ── Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md 4.3 y 4.4;
+   SOLO=escritorio-b) ──
+   Inicio del personal (bandeja) y «Grupos» (sus cuatro pasos) a 1366 × 768, 1440 × 900 y 1920 × 1080:
+     · lo que queda a la vista sin bajar (criterio de aceptación: en el estado inicial, lo que identifica el caso y la acción
+       principal; en la bandeja, los indicadores, las pestañas, la búsqueda y el encabezado de la tabla; en «Grupos», el
+       panel «Tu grupo» con el curso y su «Siguiente», y el cupo desde «Quiénes van»);
+     · lo fijo: las barras (lo fijo a lo ancho, como el encabezado de la tabla) suman 25 % del alto o menos, arriba y a media
+       página (criterio de P177); un lateral fijo (el panel) cabe completo en la ventana;
+     · sin desborde horizontal y axe sin violaciones;
+   y a 390 × 844, que el orden y el alto sigan como antes (versión 0.70, medidos el 25/10/2026) o mejor: sin indicadores,
+   sin lista de pestañas ni panel lateral, y las secciones una debajo de otra en el orden de antes. Además, las pestañas con
+   el teclado y desde un enlace, la paginación, «Quitar» del panel (que anuncia «n de 25») y sus botones. */
+async function escritorioB(navegador) {
+  const t = (m) => `[escritorio B] ${m}`;
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+  if (!axe) console.log('OMITIDO  [escritorio B] axe: falta AXE=<ruta a axe.min.js del estándar>');
+  const revisaAxe = async (page, que) => {
+    if (!axe) return;
+    if (!(await page.evaluate(() => Boolean(window.axe)))) await page.evaluate(axe);
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 140)).join(' || ')}`));
+    comprueba(!v.length, t(`${que}: axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
+  };
+  // Lo fijo en la ventana: las barras (unión de sus franjas de alto) y los laterales (angostos y altos), sin el menú de pruebas
+  const fijo = (page) => page.evaluate(() => {
+    const H = innerHeight, W = innerWidth;
+    const franjas = [];
+    const laterales = [];
+    for (const e of document.querySelectorAll('body *')) {
+      const pos = getComputedStyle(e).position;
+      if (pos !== 'sticky' && pos !== 'fixed') continue;
+      if (e.closest('.menu-pruebas-boton, .menu-pruebas, dialog, #version-sia') || !e.checkVisibility()) continue;
+      const r = e.getBoundingClientRect();
+      if (r.bottom <= 0 || r.top >= H || !r.width || !r.height) continue;
+      if (r.width <= W * 0.4 && r.height > H * 0.25) laterales.push({ arriba: Math.round(r.top), abajo: Math.round(r.bottom), pegado: Math.abs(r.top - parseFloat(getComputedStyle(e).top)) < 1 });
+      else franjas.push([Math.max(0, r.top), Math.min(H, r.bottom)]);
+    }
+    franjas.sort((a, b) => a[0] - b[0]);
+    let suma = 0, fin = -1;
+    for (const [a, b] of franjas) { if (b <= fin) continue; suma += b - Math.max(a, fin); fin = b; }
+    return { barras: suma / H, laterales, H };
+  });
+  const enVentana = (page, sel) => page.evaluate((s) => {
+    const e = [...document.querySelectorAll(s)].find((x) => x.checkVisibility());
+    if (!e) return null;
+    const r = e.getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= innerHeight + 0.5 ? true : `${Math.round(r.top)}–${Math.round(r.bottom)} de ${innerHeight}`;
+  }, sel);
+  const alto = (page) => page.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+  const PANEL = ['#t-tu-grupo', '[data-panel-datos] dd', '[data-panel-siguiente]'];
+  const PANTALLAS = [
+    // Con la cabecera compacta de la parte A (integración), también la primera fila con su «Revisar», a 1366 × 768
+    ['bandeja', 'revision.html', '[data-filas] tr', ['[data-indicadores]', '[role="tablist"]', '#buscar', '.tabla-bandeja thead', '[data-filas] tr:first-child .btn'], 6.201],
+    ['grupos · 1 El curso', 'grupos.html?curso=poda-nueva&paso=1', '#paso-curso:not([hidden])', PANEL, 4.517],
+    ['grupos · 2 La semana', 'grupos.html?curso=poda-nueva&paso=2', '#paso-semana:not([hidden]) .arm-semana', PANEL, 5.675],
+    ['grupos · 3 Quiénes van', 'grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona', [...PANEL, '[data-panel-cupo]'], 5.224],
+    ['grupos · 4 Confirmar', 'grupos.html?curso=poda-nueva&paso=4', '#paso-confirmar:not([hidden]) [data-resumen] .datos', [...PANEL, '[data-panel-cupo]'], 5.161]
+  ];
+  for (const [w, h] of [[1366, 768], [1440, 900], [1920, 1080]]) {
+    const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: ZONA });
+    const page = await ctx.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    for (const [nombre, url, listo, aLaVista] of PANTALLAS) {
+      const d = `${nombre} a ${w} × ${h}`;
+      await page.goto(BASE + url);
+      await page.waitForSelector(listo);
+      await page.waitForTimeout(150);
+      const fuera = [];
+      for (const sel of aLaVista) { const r = await enVentana(page, sel); if (r !== true) fuera.push(`${sel}: ${r === null ? 'no se ve' : r}`); }
+      comprueba(!fuera.length, t(`${d}: a la vista sin bajar (${aLaVista.join(', ')})${fuera.length ? ' · fuera: ' + fuera.join('; ') : ''}`));
+      for (const [donde, y] of [['arriba', 0], ['a media página', 0.5]]) {
+        await page.evaluate((f) => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * f), y);
+        await page.waitForTimeout(50);
+        const f = await fijo(page);
+        // Un lateral mide a lo más el alto de la ventana; ya pegado arriba, cabe completo
+        const mal = f.laterales.filter((l) => l.abajo - l.arriba > f.H + 0.5 || (l.pegado && (l.arriba < 0 || l.abajo > f.H + 0.5)));
+        comprueba(f.barras <= 0.25 && !mal.length, t(`${d}, ${donde}: lo fijo a lo ancho ocupa ${Math.round(f.barras * 100)} % del alto (25 % o menos) y el lateral fijo cabe en la ventana${mal.length ? ': ' + JSON.stringify(mal) : ''}`));
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await sinDesborde(page, t(d));
+      await revisaAxe(page, d);
+    }
+    // Las pestañas: con el teclado (flechas) y desde un indicador que lleva a otra pestaña; la página 1 de la bandeja
+    if (w === 1440) {
+      await page.goto(BASE + 'revision.html');
+      await page.waitForSelector('[data-filas] tr');
+      await page.focus('#pe-solicitudes');
+      await page.keyboard.press('ArrowRight');
+      comprueba(await page.evaluate(() => document.activeElement.id === 'pe-avisos' && document.getElementById('pe-avisos').getAttribute('aria-selected') === 'true'
+        && document.getElementById('panel-solicitudes').hidden && !document.getElementById('panel-avisos').hidden),
+      t('bandeja: la flecha derecha pasa a «Avisos por teléfono» y muestra su panel (módulo pestanas del estándar)'));
+      await revisaAxe(page, 'bandeja con la pestaña «Avisos por teléfono»');
+      await page.keyboard.press('End');
+      comprueba(await page.isVisible('#panel-asistido .menu-opcion') && !(await page.isVisible('#panel-avisos')), t('bandeja: Fin lleva a «Registro asistido»'));
+      await page.click('#pe-solicitudes');
+      const ind = (await page.textContent('[data-indicadores]')).replace(/\s+/g, ' ').trim();
+      const enviadas = datos.solicitud.filter((x) => x.estado === 'enviada').length;
+      comprueba(new RegExp(`^Por revisar ${enviadas} `).test(ind) && /Citas de hoy \d+ /.test(ind) && /Avisos por teléfono \d+ pendientes?/.test(ind) && /En espera de grupo \d+ en \d curso/.test(ind)
+        && (await page.textContent('#pe-solicitudes')) === `Solicitudes por revisar (${enviadas})`,
+      t(`bandeja: los indicadores («${ind}») y la cuenta de la pestaña`));
+      await page.click('.indicador-inicio[href="#t-avisos-tel"]');
+      comprueba(await page.isVisible('#t-avisos-tel') && (await page.getAttribute('#pe-avisos', 'aria-selected')) === 'true', t('bandeja: el indicador «Avisos por teléfono» abre su pestaña'));
+      await page.goto(BASE + 'revision.html#t-avisos-tel');
+      await page.waitForSelector('[data-avisos-lista] .ficha');
+      comprueba(await page.isVisible('[data-avisos-lista] .ficha'), t('bandeja: revision.html#t-avisos-tel (desde la ventanilla) abre la pestaña de los avisos'));
+      comprueba(await page.isHidden('[data-paginacion]'), t('bandeja: con 25 solicitudes o menos no hay paginación'));
+      // «Grupos»: «Quitar» del panel desmarca, anuncia «n de 25» y deja el foco en la siguiente; los botones del panel
+      await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
+      await page.waitForSelector('#paso-personas:not([hidden]) .plan-persona');
+      const antes = await page.$$eval('[data-quitar]', (l) => l.length);
+      const folio = await page.getAttribute('[data-quitar]', 'data-quitar');
+      await page.click('[data-quitar]');
+      await page.waitForFunction(() => /de 25 lugares/.test((document.querySelector('[data-anuncios]') || {}).textContent || ''));
+      const anuncio = await page.textContent('[data-anuncios]');
+      comprueba(!(await page.isChecked(`.plan-casilla[value="${folio}"]`)) && (await page.$$eval('[data-quitar]', (l) => l.length)) === antes - 1
+        && new RegExp(`^${antes - 1} de 25 lugares`).test(anuncio.trim()) && (await page.evaluate(() => document.activeElement.matches('[data-quitar]'))),
+      t(`grupos: «Quitar» en el panel desmarca a la persona, anuncia «${anuncio.trim().slice(0, 30)}…» y deja el foco en la siguiente`));
+      await page.evaluate(() => { document.querySelector('[data-anuncios]').textContent = ''; });
+      await page.check(`.plan-casilla[value="${folio}"]`);
+      await page.waitForFunction((n) => (document.querySelector('[data-anuncios]').textContent || '').trim().startsWith(`${n} de 25 lugares`), antes).catch(() => {});
+      comprueba((await page.textContent('[data-anuncios]')).trim().startsWith(`${antes} de 25 lugares`), t('grupos: marcar en la lista sigue anunciando «n de 25»'));
+      await page.click('[data-panel-siguiente]');
+      await page.waitForSelector('#paso-confirmar:not([hidden])');
+      comprueba(await page.evaluate(() => document.activeElement.matches('#paso-confirmar .titulo-paso')) && (await page.textContent('[data-panel-siguiente]')) === 'Crear el grupo'
+        && (await page.getAttribute('[data-barra] [aria-current="step"]', 'aria-current')) === 'step',
+      t('grupos: «Siguiente» del panel avanza al paso 4 con el foco en su título; el panel ofrece «Crear el grupo»'));
+      await page.click('[data-panel-atras]');
+      await page.waitForSelector('#paso-personas:not([hidden])');
+      bien(t('grupos: «Atrás» del panel regresa al paso 3'));
+      // Filtro por organización: deja sólo las filas y bloques de esa organización
+      const org = await page.$eval('#filtro_org option:nth-child(2)', (o) => o.value);
+      await page.selectOption('#filtro_org', org);
+      comprueba(await page.$$eval('[data-personas] li[data-org]', (l, o) => l.filter((x) => x.checkVisibility()).every((x) => x.dataset.org === o) && l.some((x) => x.checkVisibility()), org),
+        t(`grupos: el filtro por organización deja sólo «${org}»`));
+      await page.click('#pe-programados');
+      comprueba(await page.isVisible('[data-programados] table') && await page.isHidden('#panel-armar'), t('grupos: la pestaña «Grupos programados» muestra sus tablas'));
+      await page.click('#pe-terminados');
+      comprueba(await page.isVisible('[data-terminados-lista] li'), t('grupos: la pestaña «Ya terminaron» se ve abierta'));
+    }
+    comprueba(!errores.length, t(`${w} × ${h}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+    await ctx.close();
+  }
+  // Teléfono: como antes (orden y alto de la versión 0.70, o mejor)
+  const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-MX', timezoneId: ZONA, hasTouch: true, isMobile: true });
+  const page = await ctx.newPage();
+  for (const [nombre, url, listo, , antes] of PANTALLAS) {
+    await page.goto(BASE + url);
+    await page.waitForSelector(listo);
+    await page.waitForTimeout(150);
+    const a = await alto(page);
+    const orden = await page.evaluate(() => {
+      const y = (s) => { const e = document.querySelector(s); return e && e.checkVisibility() ? e.getBoundingClientRect().top + scrollY : null; };
+      const sinEscritorio = ['[data-indicadores]', '.pestanas-lista', '[data-panel-grupo]', '.espera-cabeza', '[data-filtro-org]'].every((s) => y(s) === null);
+      if (document.querySelector('#panel-solicitudes')) return sinEscritorio && y('#panel-solicitudes') < y('#panel-asistido .menu-opcion') && y('#panel-asistido .menu-opcion') < y('#t-avisos-tel');
+      const paso = [...document.querySelectorAll('#armar [data-paso]')].findIndex((s) => !s.hidden) + 1;
+      return sinEscritorio && y('#panel-armar') < y('#programados') && y('#programados') < y('[data-terminados] summary') && (paso === 1 || y('[data-eleccion]') < y('#armar'));
+    });
+    comprueba(a <= antes + 0.02 && orden, t(`${nombre} a 390 px: mide ${a.toFixed(2)} pantallas (antes ${antes}) y conserva su orden, sin lo de escritorio`));
+    await sinDesborde(page, t(`${nombre} a 390 px`));
+    await revisaAxe(page, `${nombre} a 390 px`);
+  }
+  await ctx.close();
+}
+
 /* ── Registro asistido (decisión de Liber del 25/10/2026; SOLO=asistido) ──
    Personas que no saben leer ni escribir: el personal de revisión y cotejo las registra en el Vivero, con ellas presentes.
    El flujo completo por pasos en teléfono y en computadora (la fotografía cargada en teléfono y tomada con la cámara de la
@@ -7696,7 +7898,8 @@ async function registroAsistido(navegador) {
     const x = personas[1];
     if (!x.contexto) throw new Error('no se creó la persona de la computadora');
     const { page, errores } = x.contexto;
-    await page.goto(BASE + 'revision.html');
+    // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
+    await page.goto(BASE + 'revision.html#t-avisos-tel');
     await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
     const ficha = page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) });
     const txt = ((await ficha.textContent()) || '').replace(/\s+/g, ' ');
@@ -7713,7 +7916,8 @@ async function registroAsistido(navegador) {
     await page.focus('[data-accion="enviar"]');
     await page.click('[data-accion="enviar"]');
     await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
-    await page.goto(BASE + 'revision.html');
+    // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
+    await page.goto(BASE + 'revision.html#t-avisos-tel');
     await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
     const cita = page.locator('[data-avisos-lista] .ficha', { hasText: 'ELVIRA SUPUESTO MODELO' });
     const tc = ((await cita.textContent()) || '').replace(/\s+/g, ' ');
@@ -7841,7 +8045,8 @@ async function registroAsistido(navegador) {
           estado_desde: `${d.fecha_corte}T12:00:00-06:00` });
         await r.fulfill({ contentType: 'application/json', body: JSON.stringify(d) });
       });
-      await page.goto(BASE + 'revision.html');
+      // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
+      await page.goto(BASE + 'revision.html#t-avisos-tel');
       await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
       const amalia = ((await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) }).first().textContent()) || '').replace(/\s+/g, ' ');
       comprueba(/Hay un plazo para corregir\. Te quedan 2 oportunidades para corregir\./.test(amalia), t(`${ancho} px: el aviso de las observaciones (S2) dice cuántas oportunidades le quedan`));
@@ -7987,6 +8192,679 @@ async function ajustesEquipo(navegador) {
   });
 }
 
+/* ── Escritorio, lo común de las partes A, B y C (integración del 25/10/2026; SOLO=escritorio) ──
+   En todas las pantallas del personal, a 1024 × 768, 1366 × 768, 1440 × 900 y 1920 × 1080, al abrir, a media página y al
+   final: (1) un solo criterio para el botón «Menú de pruebas»: en computadora, abajo a la izquierda (en teléfono, donde
+   estaba: a la derecha, y a la izquierda en «Asistencia», F3 B11); (2) el botón no tapa nada fijo (franja, barra de pasos,
+   visor, columna lateral, barra de acciones, encabezado de tabla); (3) lo fijo que va a lo ancho, sumado, no pasa del 25 %
+   del alto, y lo fijo que va al lado cabe en la ventana. Las mediciones son las reales, con la cabecera compacta. */
+async function escritorioComun(navegador) {
+  const { execFileSync } = await import('node:child_process');
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const salida = join(mkdtempSync(join(tmpdir(), 'apd-escritorio-')), 'volumen.json');
+  execFileSync('node', [join(raiz, 'herramientas/escenario-volumen.mjs'), join(raiz, 'sitio/datos/ficticios.json'), salida]);
+  const vol = readFileSync(salida);
+  const dict = porClasificar;
+  const enCurso = datos.grupo.find((g) => g.estado === 'en_curso').folio;
+  const conPrimer = (datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio) || {}).folio;
+  // [nombre, dirección, lo que hay que esperar, con el escenario de volumen]
+  const PANTALLAS = [
+    ['inicio del personal', 'revision.html', '[data-filas] tr', false],
+    ['inicio del personal con volumen', 'revision.html', '[data-filas] tr', true],
+    ['revisar (poda)', `revisar.html?folio=${enviadas.find((s) => s.tipo_acreditacion === 'poda').folio}`, '#formulario:not([hidden])', false],
+    ['revisar (dictaminador, 10 pasos)', `revisar.html?folio=${dict.folio}`, '#formulario:not([hidden])', false],
+    ['cita de cotejo', `cotejo.html?folio=${conCita.folio}`, 'cotejo', false],
+    ['citas de cotejo', 'citas.html', '[data-filas] tr', false],
+    ['grupos, paso 1', 'grupos.html', 'section[data-paso]:not([hidden])', false],
+    ['grupos, paso 3 con volumen', 'grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona', true],
+    ['grupos, paso 4', 'grupos.html?curso=poda-nueva&paso=4', 'section[data-paso]:not([hidden])', false],
+    ['asistencia (25)', 'asistencia.html?folio=APD-G-2026-020', '.asistencia-fila', true],
+    ['aplicar el examen (25)', 'aplicar.html?folio=APD-G-2026-020', '[data-filas] tr', true],
+    ['ficha del grupo (25)', 'grupo.html?folio=APD-G-2026-020', '[data-filas] tr', true],
+    ['ficha del grupo (capacitación)', `grupo.html?folio=${conPrimer}&perfil=capacitacion`, '[data-filas] tr', false],
+    ['ficha del grupo en curso', `grupo.html?folio=${enCurso}`, '[data-filas] tr', false],
+    ['capacitación', 'capacitacion.html?perfil=capacitacion', '[data-sesion-personal] a', false],
+    ['acreditaciones', 'acreditaciones.html', '[data-sesion-personal] a', false],
+    ['material del personal', 'material-personal.html', '[data-sesion-personal] a', false],
+    ['ventanilla', 'ventanilla.html', '[data-sesion-personal] a', false],
+    ['registro asistido', 'asistido.html', '[data-sesion-personal] a', false]
+  ];
+  /* Lo fijo es lo que en ese momento está pegado: fixed, o sticky en su lugar de pegado (una pieza sticky que todavía va con
+     la página, como la columna de la persona al abrir la cita, es contenido, y para el contenido la página reserva el lugar
+     del botón con scroll-padding, B1-03). El botón «tapa» una pieza si cae sobre lo que ella muestra (texto, controles,
+     imágenes, el documento del visor), no sobre su relleno: la barra de acciones le reserva su lugar a la izquierda. Lo
+     fijo «a lo ancho» es lo que pasa del 60 % del ancho y las piezas bajas (≤ 25 % del alto) que forman banda, como las
+     celdas de la franja del pase de lista o del encabezado de una tabla; lo angosto y alto es una columna lateral. */
+  const mide = (pg) => pg.evaluate(() => {
+    const boton = document.querySelector('.menu-pruebas-boton');
+    const rb = boton ? boton.getBoundingClientRect() : null;
+    const pegada = (e) => {
+      const cs = getComputedStyle(e);
+      if (cs.position === 'fixed') return true;
+      if (cs.position !== 'sticky') return false;
+      const b = e.getBoundingClientRect();
+      return (cs.top !== 'auto' && Math.abs(b.top - parseFloat(cs.top)) < 1.5) || (cs.bottom !== 'auto' && Math.abs(innerHeight - b.bottom - parseFloat(cs.bottom)) < 1.5);
+    };
+    const piezas = [...document.querySelectorAll('body *')].filter((e) => {
+      if (e.closest('.menu-pruebas-boton') || !e.checkVisibility() || !pegada(e)) return false;
+      const b = e.getBoundingClientRect();
+      return b.width > 0 && b.height > 0 && b.bottom > 0 && b.top < innerHeight;
+    }).filter((e, _, l) => !l.some((o) => o !== e && o.contains(e)));
+    const nombre = (e) => `${e.tagName.toLowerCase()}${e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''}`;
+    const cruza = (r) => rb && r.width > 0 && r.height > 0 && r.left < rb.right - 1 && rb.left < r.right - 1 && r.top < rb.bottom - 1 && rb.top < r.bottom - 1;
+    const tapa = piezas.filter((e) => {
+      const hojas = [...e.querySelectorAll('*')].filter((x) => (!x.children.length || x.matches('button, a, input, select, textarea, img, svg, canvas, iframe, embed, object, label')) && x.checkVisibility());
+      return hojas.length ? hojas.some((x) => cruza(x.getBoundingClientRect())) : cruza(e.getBoundingClientRect());
+    }).map(nombre);
+    const banda = (e) => { const b = e.getBoundingClientRect(); return b.width > innerWidth * 0.6 || b.height <= innerHeight * 0.25; };
+    const tramos = piezas.filter(banda).map((e) => { const b = e.getBoundingClientRect(); return [Math.max(0, b.top), Math.min(innerHeight, b.bottom)]; }).sort((a, b) => a[0] - b[0]);
+    let suma = 0; let fin = -1;
+    for (const [a, b] of tramos) { if (b <= fin) continue; suma += b - Math.max(a, fin); fin = b; }
+    const altas = piezas.filter((e) => !banda(e) && e.getBoundingClientRect().height > innerHeight + 1).map(nombre);
+    return { boton: rb ? { izquierda: rb.left < innerWidth / 2, fijo: getComputedStyle(boton).position === 'fixed' } : null, tapa, suma: Math.round(suma), alto: innerHeight, altas, piezas: piezas.map(nombre).slice(0, 8) };
+  });
+  for (const [ancho, alto] of [[1024, 768], [1366, 768], [1440, 900], [1920, 1080], [390, 844]]) {
+    const t = (m) => `[escritorio ${ancho}×${alto}] ${m}`;
+    const movil = ancho < 600;
+    const malas = { lugar: [], tapa: [], fijo: [], alto: [] };
+    let revisadas = 0;
+    const errores = [];
+    for (const [nombre, url, listo, conVol] of PANTALLAS) {
+      const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+      if (conVol) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: vol, contentType: 'application/json' }));
+      const pg = await c.newPage();
+      pg.on('pageerror', (e) => errores.push(`${nombre}: ${e.message}`));
+      if (listo === 'cotejo') await abreCotejo(pg, conCita.folio);
+      else { await pg.goto(BASE + url); await pg.waitForSelector(listo, { state: 'attached', timeout: 15000 }); }
+      await pg.waitForSelector('.menu-pruebas-boton');
+      await pg.waitForTimeout(400);
+      for (const donde of ['al abrir', 'a media página', 'al final']) {
+        await pg.evaluate((d) => window.scrollTo(0, d === 'al abrir' ? 0 : d === 'al final' ? document.documentElement.scrollHeight : (document.documentElement.scrollHeight - innerHeight) / 2), donde);
+        await dosCuadros(pg);
+        const m = await mide(pg);
+        revisadas += 1;
+        // En teléfono, donde estaba: a la izquierda sólo en «Asistencia» (F3 B11)
+        const izquierda = movil ? nombre.startsWith('asistencia') : true;
+        if (!m.boton || !m.boton.fijo || m.boton.izquierda !== izquierda) malas.lugar.push(`${nombre} (${donde}): ${JSON.stringify(m.boton)}`);
+        if (!movil && m.tapa.length) malas.tapa.push(`${nombre} (${donde}): tapa ${m.tapa.join(', ')}`);
+        if (!movil && m.suma > m.alto * 0.25) malas.fijo.push(`${nombre} (${donde}): ${m.suma} de ${m.alto} px [${m.piezas.join(', ')}]`);
+        if (!movil && m.altas.length) malas.alto.push(`${nombre} (${donde}): ${m.altas.join(', ')}`);
+      }
+      await c.close();
+    }
+    const lugar = movil ? 'a la derecha, como antes (a la izquierda en «Asistencia», F3 B11)' : 'abajo a la izquierda';
+    comprueba(!malas.lugar.length, t(`el botón «Menú de pruebas» va ${lugar} en las ${PANTALLAS.length} pantallas del personal (${revisadas} posiciones)${malas.lugar.length ? ': ' + malas.lugar.slice(0, 3).join(' · ') : ''}`));
+    if (movil) { comprueba(!errores.length, t(`sin errores${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`)); continue; }
+    comprueba(!malas.tapa.length, t(`el botón «Menú de pruebas» no tapa nada fijo, al abrir, a media página ni al final${malas.tapa.length ? ': ' + malas.tapa.slice(0, 3).join(' · ') : ''}`));
+    comprueba(!malas.fijo.length, t(`lo fijo que va a lo ancho, sumado, no pasa del 25 % del alto (${Math.round(alto * 0.25)} px) en ninguna pantalla ni posición${malas.fijo.length ? ': ' + malas.fijo.slice(0, 3).join(' · ') : ''}`));
+    comprueba(!malas.alto.length && !errores.length, t(`lo fijo que va al lado cabe en la ventana${malas.alto.length ? ': ' + malas.alto.slice(0, 3).join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+  }
+}
+
+/* ── Escritorio, parte A (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md, regla general 2, 4.1 y
+   4.2; SOLO=escritorio-a) ──
+   La cabecera compacta del personal, «Revisar una solicitud» y «Cita de cotejo» en 1366 × 768, 1440 × 900 y 1920 × 1080:
+   en el estado inicial de cada paso la franja (o la columna de la persona) y el botón principal se ven sin bajar; lo fijo
+   que ocupa el ancho no pasa del 25 % del alto; sin desborde a lo ancho; el visor queda debajo de la franja y no 32 px
+   debajo de una barra (E4); el foco va al título del paso y no queda tapado; axe sin violaciones. A 390 px, el orden y el
+   alto son los de la versión 0.70 (si una pantalla crece a propósito, se actualiza ALTO_390 con la razón).
+   Excepción conocida: el paso «Perfil» de un dictaminador con la carrera por clasificar (dato, aviso y tres opciones con su
+   descripción) mide 1.1 a 1.4 pantallas; ahí se comprueba que la franja y la pregunta empiezan en la primera. */
+async function escritorioA(navegador) {
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+  if (!axe) console.log('OMITIDO  [escritorio A] axe: falta AXE=<ruta a axe.min.js del estándar>');
+  const poda = enviadas.find((s) => s.tipo_acreditacion === 'poda' && s.modalidad === 'renovacion' && !datos.revision.some((r) => r.solicitud_id === s.id));
+  const dict = porClasificar;
+  const reenviada = enviadas.find((s) => datos.revision.some((r) => r.solicitud_id === s.id));
+  // Alto de la página a 390 px en la versión 0.70 (antes del acomodo de escritorio): no debe crecer
+  // Altos medidos en la 0.70 en esta máquina. En la verificación de GitHub la tipografía mide distinto (hasta ≈ 9 % más),
+  // así que se admite un 10 %: lo que asegura que a 390 px nada de escritorio se aplica es la revisión de piezas y orden.
+  const ALTO_390 = { [poda.folio]: 2589, [dict.folio]: 2810, [reenviada.folio]: 3114, cotejo: 1999 };
+  const TOLERANCIA_390 = 1.10;
+  const nuevo = async (ancho, alto) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+    const pg = await c.newPage();
+    const errores = [];
+    pg.on('pageerror', (e) => errores.push(e.message));
+    pg.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, pg, errores };
+  };
+  // Lo que se ve sin bajar en el estado del paso, lo fijo que ocupa el ancho y el desborde
+  const mide = (pg) => pg.evaluate(() => {
+    const vis = (e) => e && e.checkVisibility() && e.getBoundingClientRect().width > 0;
+    const paso = document.querySelector('#formulario section[data-paso]:not([hidden])');
+    const boton = paso && [...paso.querySelectorAll('.acciones .btn-primario, .acciones .btn-peligro-contorno')].find(vis);
+    const franja = document.querySelector('[data-franja]');
+    const rf = franja.getBoundingClientRect();
+    const bandas = [...document.querySelectorAll('body *')].filter((e) => vis(e) && /sticky|fixed/.test(getComputedStyle(e).position) && e.getBoundingClientRect().width > innerWidth / 2);
+    const visor = document.querySelector('[data-visor]');
+    return {
+      paso: paso ? paso.dataset.titulo : '', boton: boton ? Math.round(boton.getBoundingClientRect().bottom) : null, botonTexto: boton ? boton.textContent.trim() : '',
+      franja: { arriba: Math.round(rf.top), abajo: Math.round(rf.bottom), alto: Math.round(rf.height), texto: franja.textContent.replace(/\s+/g, ' ') },
+      fijo: Math.round(bandas.reduce((s, e) => s + e.getBoundingClientRect().height, 0)), alto: innerHeight,
+      desborde: document.documentElement.scrollWidth > innerWidth + 1,
+      visor: visor && visor.open ? Math.round(visor.getBoundingClientRect().top) : null,
+      lateral: (() => { const a = document.querySelector('[data-resumen-lateral]'); return a && vis(a) ? a.querySelectorAll('li').length : 0; })()
+    };
+  });
+  const axeSin = async (pg) => {
+    if (!axe) return [];
+    if (!(await pg.evaluate(() => Boolean(window.axe)))) await pg.evaluate(axe);
+    return pg.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((v) => `${v.id}: ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`));
+  };
+  const siguiente = async (pg) => {
+    const antes = await tituloPaso(pg);
+    await pg.click(`${pasoVisible} [data-accion="siguiente"]`);
+    await pg.waitForFunction((a) => { const p = document.querySelector('#formulario section[data-paso]:not([hidden])'); return p && p.dataset.titulo !== a; }, antes, { timeout: 5000 });
+    await dosCuadros(pg);
+  };
+
+  for (const [ancho, alto] of [[1366, 768], [1440, 900], [1920, 1080]]) {
+    const t = (m) => `[escritorio A ${ancho}×${alto}] ${m}`;
+    // 1 · Cabecera compacta en todas las pantallas del personal
+    {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      const malas = [];
+      for (const url of ['revision.html', 'revisar.html?folio=' + poda.folio, 'citas.html', 'cotejo.html?folio=' + conCita.folio, 'grupos.html', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`,
+        'asistencia.html', 'aplicar.html', 'capacitacion.html', 'acreditaciones.html', 'acreditacion.html?numero=PD-2025-K100', 'material-personal.html', 'ventanilla.html', 'asistido.html']) {
+        await pg.goto(BASE + url);
+        await pg.waitForSelector('[data-sesion-personal] a');
+        const m = await pg.evaluate(() => {
+          const r = (q) => document.querySelector(q).getBoundingClientRect();
+          const cab = r('.cabecera'); const ses = r('[data-sesion-personal]'); const tit = r('.cabecera-titulo'); const logo = r('.cabecera-logo');
+          const franjas = [...document.querySelectorAll('.entorno-pruebas, .ubicacion-prueba')].map((e) => Math.round(e.getBoundingClientRect().height));
+          return { cab: Math.round(cab.height), dentro: ses.top >= cab.top - 1 && ses.bottom <= cab.bottom + 1 && logo.bottom <= cab.bottom && tit.bottom <= cab.bottom,
+            choca: tit.right > ses.left && tit.bottom > ses.top, franjas, desborde: document.documentElement.scrollWidth > innerWidth + 1 };
+        });
+        if (m.cab > 88 || !m.dentro || m.choca || m.desborde || m.franjas.some((h) => h > 30)) malas.push(`${url}: ${JSON.stringify(m)}`);
+      }
+      comprueba(!malas.length && !errores.length, t(`cabecera compacta en 14 pantallas del personal: logotipo, título, sesión y secciones en una banda de 88 px o menos, sin encimarse, y cada franja de prueba en un renglón${malas.length ? ': ' + malas.slice(0, 3).join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+
+    // 2 · Revisar una solicitud: cada paso de una renovación de poda y los documentos de un dictaminador
+    for (const s of [poda, dict]) {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      await pg.goto(BASE + `revisar.html?folio=${s.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      await dosCuadros(pg);
+      const persona = APD_NOMBRE(datos.solicitante.find((p) => p.id === s.solicitante_id));
+      const fuera = [];
+      for (let i = 0; i < 12; i++) {
+        const m = await mide(pg);
+        const exento = m.paso === 'Perfil' && s.perfil_academico === 'por_clasificar';
+        const enVista = m.franja.arriba >= 0 && m.franja.abajo <= alto && m.franja.alto <= 80 && m.franja.texto.includes(persona) && m.franja.texto.includes(s.folio);
+        const botonVisto = m.boton !== null && m.boton <= alto;
+        if (!enVista || (!botonVisto && !exento) || m.fijo > alto * 0.25 || m.desborde) fuera.push(`${m.paso}: ${JSON.stringify({ franja: m.franja.abajo, boton: m.boton, fijo: m.fijo, desborde: m.desborde })}`);
+        if (exento) {
+          const pregunta = await pg.evaluate(() => Math.round(document.querySelector('[data-campo="clasificacion"]').getBoundingClientRect().top));
+          if (pregunta > alto) fuera.push(`Perfil: la pregunta empieza en ${pregunta}`);
+        }
+        // Visor debajo de la franja (E4) y con el documento del paso
+        if (m.visor !== null && m.visor < m.franja.abajo) fuera.push(`${m.paso}: el visor (${m.visor}) bajo la franja (${m.franja.abajo})`);
+        if (['Resultado', 'Fecha de la cita'].includes(m.paso) && m.lateral < 1) fuera.push(`${m.paso}: sin «Así queda la revisión» al lado`);
+        // Lo que pide el paso, para avanzar por el camino feliz
+        for (const r of await pg.$$(`${pasoVisible} input[value="aceptado"], ${pasoVisible} input[name="clasificacion"][value="afin"]`)) if (await r.isVisible()) await r.check({ force: true });
+        if (m.paso === 'Fecha de la cita' || !(await pg.isVisible(`${pasoVisible} [data-accion="siguiente"]`))) break;
+        await siguiente(pg);
+        const foco = await pg.evaluate(ocultoPorFijo);
+        const enTitulo = await pg.evaluate(() => document.activeElement.matches('.titulo-paso'));
+        if (!enTitulo || (foco && foco.tapados)) fuera.push(`${await tituloPaso(pg)}: foco ${enTitulo ? 'tapado' : 'fuera del título'}`);
+      }
+      comprueba(!fuera.length && !errores.length, t(`Revisar ${s.tipo_acreditacion} ${s.folio}: en cada paso la franja (≤ 80 px, con nombre y folio) y el botón principal a la vista sin bajar, lo fijo ≤ 25 %, sin desborde, el visor debajo de la franja, el foco en el título sin tapar y el resumen al lado en «Resultado» y «Fecha de la cita»${fuera.length ? ': ' + fuera.slice(0, 3).join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+    // Pasos verticales desde 1280, la franja fija al bajar, «Datos de la persona», «Revisiones anteriores» en la columna de la decisión y axe
+    {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      await pg.goto(BASE + `revisar.html?folio=${reenviada.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      await dosCuadros(pg);
+      const r = await pg.evaluate(() => {
+        const pasos = [...document.querySelectorAll('[data-barra] .pasos-btn')].map((b) => b.getBoundingClientRect());
+        const ant = document.querySelector('[data-anteriores]').getBoundingClientRect(); const form = document.getElementById('formulario').getBoundingClientRect();
+        return { vertical: pasos.length > 1 && pasos[1].top > pasos[0].bottom - 1 && Math.abs(pasos[1].left - pasos[0].left) < 2, actual: document.querySelectorAll('[data-barra] [aria-current="step"]').length,
+          anterioresEnDecision: Math.abs(ant.left - form.left) < 2 && ant.bottom <= form.top + 1 };
+      });
+      // Se baja lo que pide la franja para pegarse arriba más un poco: el visor sigue debajo de ella (al final del área de
+      // trabajo el visor sube con la página, como todo lo fijo)
+      await pg.evaluate(() => window.scrollTo(0, document.querySelector('[data-franja]').getBoundingClientRect().top + scrollY + 40));
+      await dosCuadros(pg);
+      const fija = await pg.evaluate(() => {
+        const f = document.querySelector('[data-franja]').getBoundingClientRect(); const v = document.querySelector('[data-visor]').getBoundingClientRect(); const a = document.querySelector('[data-area-trabajo]').getBoundingClientRect();
+        return { franja: Math.round(f.top), visor: Math.round(v.top), bajo: Math.round(f.bottom), alFinal: Math.abs(v.bottom - a.bottom) < 2,
+          // Lo que pide la hoja: el visor se pega debajo de la franja, no a 12 px del borde (E4)
+          pegado: parseFloat(getComputedStyle(document.querySelector('[data-visor]')).top) >= f.height };
+      });
+      await pg.evaluate(() => window.scrollTo(0, 0));
+      const resumen = await pg.locator('.franja-datos > summary').textContent();
+      const cerrado = await pg.isHidden('.franja-datos-panel');
+      await pg.click('.franja-datos > summary');
+      const abierto = await pg.isVisible('.franja-datos-panel') && /Número de expediente/.test(await pg.textContent('.franja-datos-panel'));
+      await pg.keyboard.press('Escape');
+      const v = await axeSin(pg);
+      comprueba(r.vertical && r.actual === 1 && r.anterioresEnDecision && fija.franja === 0 && fija.pegado && (fija.visor >= fija.bajo || fija.alFinal) && resumen === 'Datos de la persona' && cerrado && abierto && await pg.isHidden('.franja-datos-panel') && !v.length && !errores.length,
+        t(`Revisar: pasos en barra vertical con aria-current="step", «Revisiones anteriores» en la columna de la decisión, al bajar la franja queda arriba y el visor debajo (${fija.visor} ≥ ${fija.bajo}), «Datos de la persona» se abre y Escape lo cierra, axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+
+    // 3 · Cita de cotejo: los cuatro pasos por el camino feliz
+    {
+      const { c, pg, errores } = await nuevo(ancho, alto);
+      await abreCotejo(pg, conCita.folio);
+      await pg.evaluate(() => window.scrollTo(0, 0));
+      await dosCuadros(pg);
+      const persona = APD_NOMBRE(datos.solicitante.find((p) => p.id === conCita.solicitante_id));
+      const fuera = [];
+      const columna = await pg.evaluate(() => { const f = document.querySelector('.franja-contexto .perfil-foto').getBoundingClientRect(); const b = document.querySelector('[data-franja] [data-barra]'); return { ancho: Math.round(f.width), alto: Math.round(f.height), barra: Boolean(b) }; });
+      for (let i = 0; i < 4; i++) {
+        const m = await mide(pg);
+        const caso = m.franja.arriba >= 0 && m.franja.arriba < alto / 2 && m.franja.texto.includes(persona) && m.franja.texto.includes(conCita.folio);
+        if (!caso || m.boton === null || m.boton > alto || m.fijo > alto * 0.25 || m.desborde) fuera.push(`${m.paso}: ${JSON.stringify({ franja: m.franja.arriba, boton: m.boton, fijo: m.fijo, desborde: m.desborde })}`);
+        if (m.paso === '¿Es la persona?') { await pg.check('input[name="se_presento"][value="si"]', { force: true }); await pg.check('input[name="identidad"][value="misma"]', { force: true }); }
+        if (m.paso === 'Documentos originales') {
+          // Tabla compacta: una fila por documento; cada grupo de opciones conserva su nombre; «No es igual» abre la observación debajo de su fila
+          const docs = await pg.locator(`${pasoVisible} [data-doc]:visible`).count();
+          const grupos = await pg.getByRole('group', { name: '¿El original es igual al que cargó?' }).count();
+          // Alto de cada fila sin la nota que algunos documentos llevan debajo (la constancia de situación fiscal)
+          const filas = await pg.evaluate(() => [...document.querySelectorAll('#formulario section[data-paso]:not([hidden]) [data-doc]')].filter((a) => a.checkVisibility())
+            .map((a) => { const n = a.querySelector(':scope > .ayuda'); return Math.round(a.getBoundingClientRect().height - (n ? n.getBoundingClientRect().height + 8 : 0)); }));
+          const k = await pg.evaluate(() => document.querySelectorAll('#formulario section[data-paso]:not([hidden]) [data-doc]')[1].dataset.doc);
+          await pg.check(`input[name="coincide_${k}"][value="no"]`, { force: true });
+          const debajo = await pg.evaluate((q) => { const a = document.querySelector(`[data-doc="${q}"]`); const g = a.querySelector('.grupo').getBoundingClientRect(); const d = document.getElementById(`diferencia_${q}`).getBoundingClientRect(); const sig = a.parentElement.nextElementSibling.getBoundingClientRect(); return d.top > g.bottom && d.bottom < sig.top; }, k);
+          if (grupos !== docs || filas.some((h) => h > 100) || !debajo) fuera.push(`documentos: ${JSON.stringify({ docs, grupos, filas, debajo })}`);
+          await pg.check(`input[name="coincide_${k}"][value="si"]`, { force: true });
+          for (const r of await pg.$$(`${pasoVisible} input[name^="coincide_"][value="si"]`)) if (await r.isVisible()) await r.check({ force: true });
+        }
+        if (m.paso === 'Pago y factura') {
+          await pg.check('input[name="pago"][value="si"]', { force: true });
+          await pg.waitForSelector('#factura_rfc', { state: 'visible' });
+          const p3 = await pg.evaluate(() => { const l = document.querySelector('[data-pago-linea] .linea-datos'); const a = document.getElementById('factura_rfc').getBoundingClientRect(); const b = document.getElementById('factura_razon_social').getBoundingClientRect(); return { items: l && l.checkVisibility() ? l.querySelectorAll('.linea-datos-item').length : 0, ficha: document.querySelector('[data-pago-datos]').checkVisibility(), fila: Math.abs(a.top - b.top) < 2 && b.left > a.right }; });
+          if (p3.items !== 3 || p3.ficha || !p3.fila) fuera.push(`pago: ${JSON.stringify(p3)}`);
+          await pg.setInputFiles('[data-campo="factura_pago"] [data-archivos] > input[type="file"]', PDF);
+          await pg.waitForSelector('[data-campo="factura_pago"] .lista-arch li[data-estado="listo"]');
+          await pg.fill('#factura_rfc', 'XAXX010101000');
+          await pg.fill('#factura_razon_social', 'Prueba Ejemplo');
+          await pg.fill('#factura_folio_fiscal', '6f1c2d3e-4a5b-4c6d-8e7f-9a0b1c2d3e4f');
+        }
+        if (m.paso === 'Resultado') break;
+        await siguiente(pg);
+        const foco = await pg.evaluate(ocultoPorFijo);
+        if (!(await pg.evaluate(() => document.activeElement.matches('.titulo-paso'))) || (foco && foco.tapados)) fuera.push(`${await tituloPaso(pg)}: foco`);
+      }
+      const v = await axeSin(pg);
+      const columnaBien = ancho < 1280 || (columna.ancho >= 120 && columna.alto >= 150 && columna.barra);
+      comprueba(!fuera.length && columnaBien && !v.length && !errores.length, t(`Cita de cotejo: en cada paso la persona (nombre y folio) y el botón principal a la vista, lo fijo ≤ 25 %, sin desborde; documentos en filas de 100 px o menos con su grupo nombrado y la observación debajo de su fila; el pago en una línea de datos y RFC | nombre en un renglón${ancho >= 1280 ? `; fotografía de la cuenta de ${columna.ancho} × ${columna.alto} px y la barra de pasos en la columna de la persona` : ''}; axe${fuera.length ? ': ' + fuera.slice(0, 3).join(' · ') : ''}${v.length ? ' · axe: ' + v.join(', ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+      await c.close();
+    }
+  }
+
+  // 4 · De 1024 a 1279 px: la franja arriba, decisión | visor y la barra de pasos horizontal sin quedar fija (cotejo incluido)
+  {
+    const t = (m) => `[escritorio A 1024×768] ${m}`;
+    const { c, pg, errores } = await nuevo(1024, 768);
+    await pg.goto(BASE + `revisar.html?folio=${poda.folio}`);
+    await pg.waitForSelector('#formulario:not([hidden])');
+    await dosCuadros(pg);
+    const r = await mide(pg);
+    const h = await pg.evaluate(() => { const b = [...document.querySelectorAll('[data-barra] .pasos-btn')].map((x) => Math.round(x.getBoundingClientRect().top)); return { horizontal: new Set(b).size === 1, fija: getComputedStyle(document.querySelector('[data-con-formulario]')).position }; });
+    await abreCotejo(pg, conCita.folio);
+    await pg.evaluate(() => window.scrollTo(0, 0));
+    const m = await mide(pg);
+    // A 1024 px el botón principal puede quedar un poco abajo (la barra de pasos horizontal ocupa su renglón): se anota, no se exige
+    comprueba(r.franja.alto <= 80 && h.horizontal && h.fija === 'static' && !r.desborde && m.franja.alto <= 80 && m.boton <= 768 && !m.desborde && !errores.length,
+      t(`Revisar y cita de cotejo: franja de ${r.franja.alto} y ${m.franja.alto} px, barra de pasos horizontal y no fija, sin desborde; botón principal de Revisar en ${r.boton} px y del cotejo en ${m.boton} px${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
+
+  // 5 · A 390 px, como en la versión 0.70: mismo orden, mismo alto, nada fijo nuevo, lo de escritorio no se ve
+  {
+    const t = (m) => `[escritorio A 390×844] ${m}`;
+    const { c, pg, errores } = await nuevo(390, 844);
+    const malas = [];
+    const revisa = (clave) => pg.evaluate(() => {
+      const visibles = [...document.querySelectorAll('.franja-quien, .franja-caso, .franja-etiqueta, .franja-datos, .resumen-lateral, .cotejo-docs-cabeza, .pago-linea')].filter((e) => e.checkVisibility());
+      const orden = ['[data-cabeza]', '[data-con-formulario]', '#formulario'].map((q) => document.querySelector(q).getBoundingClientRect().top);
+      const ficha = document.querySelector('[data-cabeza] .persona-con-foto .datos');
+      return { alto: document.documentElement.scrollHeight, visibles: visibles.map((e) => e.className), orden: orden[0] < orden[1] && orden[1] < orden[2],
+        ficha: Boolean(ficha && ficha.checkVisibility()), franjaFija: getComputedStyle(document.querySelector('[data-franja]')).position !== 'static' };
+    }).then((x) => ({ clave, ...x }));
+    for (const s of [poda, dict, reenviada]) {
+      await pg.goto(BASE + `revisar.html?folio=${s.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      await pg.waitForTimeout(800);
+      const x = await revisa(s.folio);
+      if (x.alto > ALTO_390[s.folio] * TOLERANCIA_390 || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
+    }
+    await abreCotejo(pg, conCita.folio);
+    await pg.waitForTimeout(800);
+    const x = await revisa('cotejo');
+    if (x.alto > ALTO_390.cotejo * TOLERANCIA_390 || x.visibles.length || !x.orden || !x.ficha || x.franjaFija) malas.push(JSON.stringify(x));
+    const cab = await pg.evaluate(() => { const s = document.querySelector('[data-sesion-personal]').getBoundingClientRect(); return s.top >= document.querySelector('.cabecera').getBoundingClientRect().bottom; });
+    comprueba(!malas.length && cab && !errores.length, t(`Revisar (3 solicitudes) y cita de cotejo como en la 0.70: mismo alto o menos, la cabeza antes de la barra de pasos y del formulario, la ficha en la cabeza, sin franja fija ni piezas de escritorio, y la sesión debajo de la cabecera${malas.length ? ': ' + malas.join(' · ') : ''}${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
+
+  // 6 · «Contacto» de una persona del registro asistido sin correo: sólo el teléfono (decía «null · …», visto por la parte A
+  // al integrar el acomodo de escritorio); con correo, el correo y el teléfono, como siempre. En teléfono y en computadora.
+  const sinCorreo = enviadas.find((s) => { const p = datos.solicitante.find((x) => x.id === s.solicitante_id); return p && !p.correo && p.telefono; });
+  const conCorreo = poda;
+  for (const [ancho, alto] of [[390, 844], [1440, 900]]) {
+    const t = (m) => `[escritorio A ${ancho}×${alto}] ${m}`;
+    const { c, pg, errores } = await nuevo(ancho, alto);
+    const contacto = async (s) => {
+      await pg.goto(BASE + `revisar.html?folio=${s.folio}`);
+      await pg.waitForSelector('#formulario:not([hidden])');
+      // En computadora la ficha va en «Datos de la persona», bajo la franja; en teléfono, en la cabeza
+      return pg.evaluate(() => { const par = [...document.querySelectorAll('.datos-par')].find((x) => x.querySelector('dt').textContent.trim() === 'Contacto'); return par ? par.querySelector('.datos-valor, dd').textContent.trim() : null; });
+    };
+    const ps = (s) => datos.solicitante.find((x) => x.id === s.solicitante_id);
+    const a = sinCorreo ? await contacto(sinCorreo) : null;
+    comprueba(Boolean(sinCorreo) && a === ps(sinCorreo).telefono, t(`registro asistido sin correo: «Contacto» dice sólo el teléfono («${a}»${sinCorreo ? `, ${sinCorreo.folio}` : ', no hay solicitud por revisar sin correo en los datos'})`));
+    const b = await contacto(conCorreo);
+    comprueba(b === `${ps(conCorreo).correo} · ${ps(conCorreo).telefono}` && !errores.length, t(`con correo: «Contacto» sigue diciendo el correo y el teléfono («${b}»)${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
+    await c.close();
+  }
+}
+/* ── Acomodo de escritorio, parte C (decisión de Liber del 25/10/2026; SOLO=escritorio-c) ──
+   Asistencia, Aplicar el examen y la ficha del grupo (docs/diseno-escritorio/DIAGNOSTICO.md, 4.5, 4.6 y 4.9), con el
+   escenario de volumen del proyecto (un grupo de 25 en su día 3) y, para el pase de lista, ese mismo grupo en su día 5.
+   A 1366 × 768, 1440 × 900 y 1920 × 1080 comprueba: lo que queda a la vista sin bajar (los datos que identifican el caso y
+   la acción principal), que lo fijo no pase del 25 % del alto, que no haya desborde horizontal y axe; y lo propio de cada
+   pantalla (asistencia en renglones compactos, barra fija con «Guardar», franja fija con la cuenta e «Imprimir los códigos», una
+   persona por renglón con su fotografía de 96 px, pestañas del estándar, panel lateral). A 390 px, que nada de eso aplique:
+   el orden y la altura de antes. A 1440 × 650, que nada quede fijo (sólo desde 700 px de alto).
+   «A la vista» se mide en la posición real, con la cabecera compacta del personal (parte A) y las dos franjas de la versión
+   de prueba; lo fijo, tal cual. */
+async function escritorioC(navegador) {
+  const t = (m) => `[escritorio C] ${m}`;
+  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+  if (!axe) console.log('OMITIDO  [escritorio C] axe: falta AXE=<ruta a axe.min.js del estándar>');
+  const { execFileSync } = await import('node:child_process');
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const salida = join(mkdtempSync(join(tmpdir(), 'apd-escritorio-c-')), 'volumen.json');
+  execFileSync('node', [join(raiz, 'herramientas/escenario-volumen.mjs'), join(raiz, 'sitio/datos/ficticios.json'), salida]);
+  const vol = JSON.parse(readFileSync(salida, 'utf8'));
+  const G25 = 'APD-G-2026-020';
+  const g25 = vol.grupo.find((g) => g.folio === G25);
+  // El mismo grupo en su día 5: el corte pasa al viernes y los días 3 y 4 quedan capturados (asistieron)
+  const examen = JSON.parse(JSON.stringify(vol));
+  examen.fecha_corte = APD_SUMA_DIAS(g25.fecha_inicio, 4);
+  for (const i of examen.inscripcion.filter((x) => x.grupo_id === g25.id && x.activa)) {
+    for (const dia of [3, 4]) examen.asistencia.push({ dia, asistio: true, capturada_en: `${APD_SUMA_DIAS(g25.fecha_inicio, dia - 1)}T18:30:00-06:00`, capturada_por: g25.instructor, inscripcion_id: i.id });
+  }
+  const CAPACITACION = (datos.grupo.find((g) => g.estado === 'en_integracion' && g.fecha_inicio) || {}).folio;
+  const nuevo = async (ancho, alto, cuerpo) => {
+    const movil = ancho < 600;
+    const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+    if (cuerpo) await c.route('**/datos/ficticios.json*', (r) => r.fulfill({ body: JSON.stringify(cuerpo), contentType: 'application/json' }));
+    const page = await c.newPage();
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+    return { c, page, errores };
+  };
+  const sinErr = (errores, donde) => comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 3).join(' | ') : ''}`));
+  const revisaAxe = async (page, donde) => {
+    if (!axe) return;
+    if (!(await page.evaluate(() => Boolean(window.axe)))) await page.evaluate(axe);
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
+      .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 140)).join(' || ')}`));
+    comprueba(!v.length, t(`${donde}: axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
+  };
+  /* Posición real de cada selector al abrir, sin desplazar la página: [selector, fin, inicio] en la ventana. Desde la
+     integración de las partes A, B y C (25/10/2026) la cabecera compacta del personal es la de verdad; antes, en la rama de
+     la parte C, se tomaba desde el final de la sesión como si la cabecera midiera 88 px. */
+  const aLaVista = (page, selectores) => page.evaluate((sels) => {
+    window.scrollTo(0, 0);
+    return sels.map((s) => {
+      const e = document.querySelector(s);
+      if (!e || !e.getClientRects().length) return [s, null];
+      const b = e.getBoundingClientRect();
+      return [s, Math.round(b.bottom), Math.round(b.top)];
+    });
+  }, selectores);
+  const revisaVista = async (page, selectores, donde) => {
+    const alto = page.viewportSize().height;
+    for (const [s, fin, inicio] of await aLaVista(page, selectores)) comprueba(fin !== null && inicio >= 0 && fin <= alto, t(`${donde}: «${s}» a la vista sin bajar (${inicio}–${fin} de ${alto} px)`));
+  };
+  // Lo fijo que está en la ventana (sin el botón del menú de pruebas): suma de altos y si cada pieza cabe
+  const fijo = (page) => page.evaluate(() => {
+    const piezas = [...document.querySelectorAll('body *')].filter((e) => {
+      const p = getComputedStyle(e).position;
+      if (!['sticky', 'fixed'].includes(p) || e.closest('.menu-pruebas-boton, dialog')) return false;
+      const b = e.getBoundingClientRect();
+      return b.height > 0 && b.bottom > 0 && b.top < innerHeight;
+    }).filter((e, _, l) => !l.some((o) => o !== e && o.contains(e)));
+    // Las piezas de una misma banda (celdas de la misma fila) cuentan una vez: se suma la unión de sus intervalos verticales
+    const tramos = piezas.map((e) => { const b = e.getBoundingClientRect(); return [Math.max(0, b.top), Math.min(innerHeight, b.bottom)]; }).sort((a, b) => a[0] - b[0]);
+    let suma = 0; let fin = -1;
+    for (const [a, b] of tramos) { if (b <= fin) continue; suma += b - Math.max(a, fin); fin = b; }
+    return { suma: Math.round(suma), alto: innerHeight, piezas: piezas.map((e) => e.className || e.tagName).slice(0, 6) };
+  });
+  const revisaFijo = async (page, donde, minimo = 0) => {
+    const f = await fijo(page);
+    comprueba(f.suma <= f.alto * 0.25 && f.suma >= minimo, t(`${donde}: lo fijo mide ${f.suma} px de ${f.alto} (≤ 25 %${minimo ? `, y está` : ''}) [${f.piezas.join(', ')}]`));
+  };
+  const enVentana = (page, sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const b = e.getBoundingClientRect(); return b.height > 0 && b.top >= 0 && b.bottom <= innerHeight; }, sel);
+  const aMitad = (page) => page.evaluate(() => { window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) / 2); });
+  const pantallas = (page) => page.evaluate(() => +(document.documentElement.scrollHeight / innerHeight).toFixed(2));
+  const encima = (page, a, b) => page.evaluate(([a, b]) => {
+    const x = document.querySelector(a); if (!x) return false;
+    const r = x.getBoundingClientRect();
+    return [...document.querySelectorAll(b)].some((y) => { const q = y.getBoundingClientRect(); return q.width && r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom; });
+  }, [a, b]);
+
+  for (const [ancho, alto] of [[1366, 768], [1440, 900], [1920, 1080]]) {
+    const d = `${ancho}×${alto}`;
+    /* ── Asistencia: grupo de 25 en su día 3 ── */
+    await bloque(`asistencia ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, vol);
+      await page.goto(BASE + `asistencia.html?folio=${G25}`);
+      await page.waitForSelector('.asistencia-fila img[src^="blob:"], .asistencia-fila img[src^="data:image"]', { state: 'attached' }).catch(() => null);
+      await page.waitForTimeout(300);
+      // La franja: el día, el grupo, la regla y la leyenda en dos renglones (alto de una sola pieza)
+      const franja = await page.evaluate(() => { const f = document.querySelector('.franja-dia'); const r = f.getBoundingClientRect(); const h = document.querySelector('[data-titulo-dia]').getBoundingClientRect(); const reg = document.querySelector('[data-regla]').getBoundingClientRect(); return { alto: Math.round(r.height), juntos: Math.abs(h.top - reg.top) < h.height }; });
+      comprueba(franja.juntos && franja.alto <= 120, t(`${d}: la franja del día lleva el día, el grupo, la regla y la leyenda en dos o tres renglones (${franja.alto} px; la regla junto al día)`));
+      await revisaVista(page, ['[data-titulo-dia]', '[data-guardar]', '[data-todas]', '[data-totales]'], `asistencia ${d}`);
+      // Una persona por renglón, como el pase de lista (cambio de Liber del 25/10/2026, 14:54: ya no en rejilla), en orden
+      // alfabético; renglón compacto con la fotografía de 64 × 80 y «¿Asistió? Sí / No» a la derecha, en el mismo renglón
+      const filas = await page.evaluate(() => {
+        const f = [...document.querySelectorAll('.asistencia-fila')];
+        const cajas = f.map((x) => x.getBoundingClientRect());
+        const unaColumna = cajas.every((b, i) => !i || (b.top >= cajas[i - 1].bottom - 1 && Math.abs(b.left - cajas[0].left) < 1));
+        const derecha = f.every((x) => { const q = x.querySelector('.asis-quien').getBoundingClientRect(); const o = x.querySelector('.asis-opciones').getBoundingClientRect(); return o.left >= q.right && o.top < q.bottom && q.top < o.bottom; });
+        const foto = document.querySelector('.asistencia-foto').getBoundingClientRect();
+        return { n: f.length, unaColumna, derecha, alto: Math.max(...cajas.map((b) => Math.round(b.height))), foto: [Math.round(foto.width), Math.round(foto.height)] };
+      });
+      comprueba(filas.n === 25 && filas.unaColumna, t(`${d}: las 25 personas hacia abajo, una por renglón, en una sola columna`));
+      comprueba(filas.foto[0] === 64 && filas.foto[1] === 80 && filas.alto <= 100, t(`${d}: renglón compacto (${filas.alto} px como máximo) con la fotografía de 64 × 80 (${filas.foto.join(' × ')})`));
+      comprueba(filas.derecha, t(`${d}: «¿Asistió? Sí / No» a la derecha de cada persona, en su mismo renglón`));
+      // «¿Asistió? Sí / No» conserva sus controles y su nombre accesible
+      const primera = (await page.textContent('.asistencia-fila .asis-nombre')).trim();
+      comprueba(await page.getByRole('group', { name: `${primera}, día 3: ¿Asistió?` }).count() === 1 && await page.getByRole('radio', { name: 'Sí' }).count() === 25,
+        t(`${d}: «¿Asistió?» sigue siendo el grupo de Sí y No de cada persona, con su nombre («${primera}, día 3: ¿Asistió?»)`));
+      const pantallasAsis = await pantallas(page);
+      console.log(`INFO  [escritorio C] ${d}: asistencia de 25 mide ${pantallasAsis} pantallas (antes 3.75 a 1440 × 900)`);
+      // Barra fija abajo: totales y los dos botones siempre a la vista, también a media lista; el menú de pruebas no la tapa
+      await aMitad(page);
+      comprueba(await enVentana(page, '[data-guardar]') && await enVentana(page, '[data-todas]') && await enVentana(page, '[data-totales]'),
+        t(`${d}: a media lista, «Guardar la asistencia del día 3», «Todas asistieron» y los totales siguen a la vista (barra fija abajo)`));
+      await revisaFijo(page, `asistencia ${d}, a media lista`, 40);
+      comprueba(!(await encima(page, '.menu-pruebas-boton', '.barra-acciones-fija .asis-totales, .barra-acciones-fija .btn')), t(`${d}: el botón «Menú de pruebas» no tapa los totales ni los botones de la barra`));
+      // Marcar a una persona actualiza los totales de la barra
+      await page.locator('.asistencia-fila').nth(10).locator('input[value="no"]').check({ force: true });
+      comprueba(/^0 asistieron · 1 faltó · 24 sin marcar$/.test((await page.textContent('[data-totales]')).trim()), t(`${d}: los totales de la barra cambian al marcar («${(await page.textContent('[data-totales]')).trim()}»)`));
+      await sinDesborde(page, t(`asistencia ${d}`));
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await revisaAxe(page, `asistencia ${d}`);
+      sinErr(errores, `asistencia ${d}`);
+      await c.close();
+    });
+
+    /* ── Aplicar el examen: el mismo grupo en su día 5 ── */
+    await bloque(`aplicar ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, examen);
+      await page.goto(BASE + `aplicar.html?folio=${G25}`);
+      await page.waitForSelector('[data-filas] tr .examen-foto-boton img');
+      await page.waitForTimeout(300);
+      comprueba(await page.locator('[data-grupo] .aviso').count() === 0, t(`${d}: el día del examen, con los días capturados, no hay avisos del grupo`));
+      // Los datos del grupo en una línea de datos (uno o dos renglones), no en cinco
+      const datosAlto = await page.evaluate(() => Math.round(document.querySelector('.grupo-en-linea > .datos').getBoundingClientRect().height));
+      comprueba(datosAlto <= 80, t(`${d}: los cinco datos del grupo en una línea de datos (${datosAlto} px; antes ≈ 240)`));
+      // Franja: título, cuenta corta e «Imprimir los códigos» juntos y a la vista
+      await revisaVista(page, ['#t-pase-lista', '[data-cuenta-corta]', '[data-imprimir]'], `aplicar ${d}`);
+      comprueba(await page.evaluate(() => Boolean(document.querySelector('[data-franja-accion] [data-imprimir]'))), t(`${d}: «Imprimir los códigos» va en la franja de arriba`));
+      const corta = async () => (await page.textContent('[data-cuenta-corta]')).replace(/\s+/g, ' ').trim();
+      comprueba(/^0 presentes · 0 no llegaron · \d+ por pasar lista · de \d+ con derecho$/.test(await corta()), t(`${d}: la cuenta corta de la franja («${await corta()}»)`));
+      // Una persona por renglón, con su fotografía de 96 px (no más chica: es la verificación de identidad)
+      const filas = await page.evaluate(() => {
+        const f = [...document.querySelectorAll('[data-filas] tr')];
+        const tops = f.map((x) => Math.round(x.getBoundingClientRect().top));
+        const fotos = [...document.querySelectorAll('[data-filas] .examen-foto-lista')].map((x) => Math.round(x.getBoundingClientRect().width));
+        const altos = f.map((x) => Math.round(x.getBoundingClientRect().height));
+        return { n: f.length, unoPorRenglon: new Set(tops).size === f.length, fotoMin: Math.min(...fotos), altoMax: Math.max(...altos) };
+      });
+      comprueba(filas.n === 25 && filas.unoPorRenglon, t(`${d}: las 25 personas una por renglón, en una sola columna`));
+      comprueba(filas.fotoMin >= 96 && filas.altoMax <= 150, t(`${d}: renglones compactos (${filas.altoMax} px como máximo; antes ≈ 160) con la fotografía de ${filas.fotoMin} px`));
+      comprueba(await page.locator('[data-filas] tr', { hasText: 'Sin derecho a examen' }).count() > 0, t(`${d}: «Sin derecho a examen» se ve en su renglón`));
+      // Presente: el código grande en su renglón y la cuenta corta lo cuenta
+      for (const n of [1, 2]) {
+        await page.locator('[data-filas] [data-accion="presente"]').first().click();
+        await page.waitForFunction((k) => document.querySelectorAll('[data-filas] .examen-codigo').length === k, n);
+      }
+      const codigo = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('[data-filas] .examen-codigo')).fontSize));
+      comprueba(codigo >= 20, t(`${d}: ya presente, su código va grande (${codigo} px)`));
+      comprueba(/^2 presentes · /.test(await corta()), t(`${d}: la cuenta corta cuenta a las presentes («${await corta()}»)`));
+      console.log(`INFO  [escritorio C] ${d}: aplicar el examen con 25 mide ${await pantallas(page)} pantallas (antes 6.47 a 1440 × 900)`);
+      // A media lista la franja sigue arriba, y no pasa del 25 %
+      await aMitad(page);
+      comprueba(await enVentana(page, '#t-pase-lista') && await enVentana(page, '[data-cuenta-corta]') && await enVentana(page, '[data-imprimir]'),
+        t(`${d}: a media lista, el título, la cuenta e «Imprimir los códigos» siguen a la vista (franja fija arriba)`));
+      await revisaFijo(page, `aplicar ${d}, a media lista`, 40);
+      await sinDesborde(page, t(`aplicar ${d}`));
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await revisaAxe(page, `aplicar ${d}`);
+      sinErr(errores, `aplicar ${d}`);
+      await c.close();
+    });
+
+    /* ── Aplicar el examen fuera de su día: los dos avisos en una sola fila ── */
+    await bloque(`aplicar con avisos ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, vol);
+      await page.goto(BASE + `aplicar.html?folio=${G25}`);
+      await page.waitForSelector('[data-grupo] .aviso');
+      const tops = await page.$$eval('.avisos-grupo > .aviso', (l) => l.map((x) => Math.round(x.getBoundingClientRect().top)));
+      comprueba(tops.length === 2 && tops[0] === tops[1], t(`${d}: los dos avisos del grupo en una sola fila`));
+      await sinDesborde(page, t(`aplicar con avisos ${d}`));
+      sinErr(errores, `aplicar con avisos ${d}`);
+      await c.close();
+    });
+
+    /* ── Ficha del grupo en curso (25 personas) ── */
+    await bloque(`ficha del grupo ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto, vol);
+      await page.goto(BASE + `grupo.html?folio=${G25}`);
+      await page.waitForSelector('[data-pestanas][data-listo]');
+      await revisaVista(page, ['#t-grupo', '[data-situacion] .estado', '[data-cupo-texto]', '[role="tab"]'], `ficha ${d}`);
+      const cab = await page.evaluate(() => {
+        const ti = document.querySelector('#t-grupo').getBoundingClientRect();
+        const cu = document.querySelector('[data-cupo]').getBoundingClientRect();
+        const pares = [...document.querySelectorAll('[data-datos] .datos-par')].map((x) => Math.round(x.getBoundingClientRect().top));
+        return { derecha: cu.left > ti.right && cu.top < ti.bottom, columnas: pares.filter((v) => v === pares[0]).length };
+      });
+      comprueba(cab.derecha, t(`${d}: el cupo va a la derecha de la cabeza`));
+      comprueba(cab.columnas === 3, t(`${d}: los datos del curso en una rejilla de 3 columnas (${cab.columnas})`));
+      // Pestañas del estándar: «Personas del grupo» abierta; «Asistencia por día» con el teclado (flecha derecha)
+      const tabs = page.getByRole('tab');
+      comprueba(await tabs.count() === 2 && (await tabs.nth(0).textContent()).trim() === 'Personas del grupo' && (await tabs.nth(1).textContent()).trim() === 'Asistencia por día'
+        && await tabs.nth(0).getAttribute('aria-selected') === 'true' && await page.isVisible('[data-filas] tr') && !(await page.isVisible('[data-conc-filas] tr')),
+        t(`${d}: «Personas del grupo» y «Asistencia por día» como pestañas; abre en «Personas del grupo»`));
+      await tabs.nth(0).focus();
+      await page.keyboard.press('ArrowRight');
+      comprueba(await tabs.nth(1).getAttribute('aria-selected') === 'true' && await page.isVisible('[data-conc-filas] tr') && !(await page.isVisible('[data-filas] tr'))
+        && await page.evaluate(() => document.activeElement && document.activeElement.id === 'pt-asistencia'),
+        t(`${d}: con la flecha derecha se abre «Asistencia por día», con el foco en su pestaña`));
+      comprueba(await page.locator('[data-conc-filas] tr').count() === 25 && await page.locator('[data-filas] tr').count() === 25, t(`${d}: las dos vistas conservan a las 25 personas`));
+      console.log(`INFO  [escritorio C] ${d}: ficha del grupo de 25 mide ${await pantallas(page)} pantallas (antes 4.19 a 1440 × 900)`);
+      await revisaFijo(page, `ficha ${d}`);
+      await sinDesborde(page, t(`ficha ${d}`));
+      await revisaAxe(page, `ficha ${d}`);
+      sinErr(errores, `ficha ${d}`);
+      await c.close();
+    });
+
+    /* ── Ficha del grupo con el perfil de Capacitación: el panel en una columna lateral ── */
+    await bloque(`ficha de capacitación ${d}`, async () => {
+      const { c, page, errores } = await nuevo(ancho, alto);
+      await page.goto(BASE + `grupo.html?folio=${CAPACITACION}&perfil=capacitacion`);
+      await page.waitForSelector('#confirmar[data-formkit="listo"]');
+      const lado = await page.evaluate(() => {
+        const g = document.querySelector('section[aria-labelledby="t-grupo"]').getBoundingClientRect();
+        const p = document.querySelector('[data-confirmar]').getBoundingClientRect();
+        return p.left >= g.right && Math.abs(p.top - g.top) < 2;
+      });
+      comprueba(lado, t(`${d}: «Persona instructora y confirmación» va en una columna lateral, junto a la ficha`));
+      await revisaVista(page, ['#t-grupo', '#t-confirmar', '[data-asignar="principal"]'], `ficha de capacitación ${d}`);
+      await sinDesborde(page, t(`ficha de capacitación ${d}`));
+      await revisaAxe(page, `ficha de capacitación ${d}`);
+      sinErr(errores, `ficha de capacitación ${d}`);
+      await c.close();
+    });
+  }
+
+  /* ── Menos de 700 px de alto: nada fijo ── */
+  await bloque('1440 × 650', async () => {
+    for (const [url, cuerpo, sel] of [[`asistencia.html?folio=${G25}`, vol, '.asistencia-fila'], [`aplicar.html?folio=${G25}`, examen, '[data-filas] tr']]) {
+      const { c, page } = await nuevo(1440, 650, cuerpo);
+      await page.goto(BASE + url);
+      await page.waitForSelector(sel);
+      await aMitad(page);
+      const f = await fijo(page);
+      comprueba(f.suma === 0, t(`1440 × 650, ${url.split('?')[0]}: con menos de 700 px de alto nada queda fijo (${f.suma} px)`));
+      await c.close();
+    }
+  });
+
+  /* ── Teléfono (390 px): nada del acomodo de escritorio; el orden y el alto de antes ── */
+  await bloque('390 px', async () => {
+    const { c, page, errores } = await nuevo(390, 844, vol);
+    await page.goto(BASE + `asistencia.html?folio=${G25}`);
+    await page.waitForSelector('.asistencia-fila');
+    const asis = await page.evaluate(() => ({
+      rejilla: getComputedStyle(document.querySelector('.personas-renglon')).display, barra: getComputedStyle(document.querySelector('.barra-acciones-fija')).position,
+      franja: getComputedStyle(document.querySelector('.franja-dia')).display, foto: Math.round(document.querySelector('.asistencia-foto').getBoundingClientRect().width),
+      orden: ['[data-titulo-dia]', '[data-bajada]', '[data-regla]', '[data-leyenda]', '.asistencia-fila', '[data-guardar]'].map((s) => document.querySelector(s).getBoundingClientRect().top)
+    }));
+    comprueba(asis.rejilla === 'block' && asis.barra === 'static' && asis.franja === 'block' && asis.foto === 44 && asis.orden.every((v, i) => !i || v > asis.orden[i - 1]),
+      t('390 px: «Asistencia» como antes (lista de una columna con la fotografía de 44 px, sin barra fija; día, grupo, regla, leyenda, lista y «Guardar» en ese orden)'));
+    comprueba(await pantallas(page) <= 6.7 * 1.10, t(`390 px: «Asistencia» con 25 no crece (${await pantallas(page)} pantallas; antes 6.7, con 10 % de margen por la tipografía de cada máquina)`));
+    await page.goto(BASE + `aplicar.html?folio=${G25}`);
+    await page.waitForSelector('[data-filas] tr');
+    const apl = await page.evaluate(() => ({
+      imprimir: Boolean(document.querySelector('.examen-herramientas [data-imprimir]')), corta: getComputedStyle(document.querySelector('[data-cuenta-corta]')).display,
+      sticky: getComputedStyle(document.querySelector('#t-pase-lista')).position, datos: getComputedStyle(document.querySelector('.grupo-en-linea > .datos')).display
+    }));
+    comprueba(apl.imprimir && apl.corta === 'none' && apl.sticky === 'static' && apl.datos === 'grid', t('390 px: «Aplicar el examen» como antes («Imprimir los códigos» después de los pasos del examen, sin franja fija ni cuenta corta, datos en ficha)'));
+    comprueba(await pantallas(page) <= 15.43 * 1.10, t(`390 px: «Aplicar el examen» con 25 no crece (${await pantallas(page)} pantallas; antes 15.43, con 10 % de margen por la tipografía de cada máquina)`));
+    await page.goto(BASE + `grupo.html?folio=${G25}`);
+    await page.waitForSelector('[data-conc-filas] tr');
+    comprueba(await page.locator('[data-pestanas]').count() === 0 && await page.isVisible('[data-filas] tr') && await page.isVisible('[data-conc-filas] tr'),
+      t('390 px: la ficha del grupo sin pestañas, con «Personas del grupo» y «Asistencia por día» una debajo de otra'));
+    comprueba(await pantallas(page) <= 15.11 * 1.10, t(`390 px: la ficha del grupo con 25 no crece (${await pantallas(page)} pantallas; antes 15.11, con 10 % de margen por la tipografía de cada máquina)`));
+    await revisaAxe(page, '390 px: ficha del grupo');
+    sinErr(errores, '390 px');
+    await c.close();
+  });
+}
+// Fecha ISO más n días (sin depender de la zona de la máquina)
+function APD_SUMA_DIAS(iso, n) { const f = new Date(`${iso}T12:00:00Z`); f.setUTCDate(f.getUTCDate() + n); return f.toISOString().slice(0, 10); }
+
 const APD_NOMBRE = (p) => [p.nombre, p.primer_apellido, p.segundo_apellido].filter(Boolean).join(' ').toUpperCase();
 
 // El mapa de Google de «Mis trámites» (P68) se contesta con una página mínima: herramientas/sin-google.mjs
@@ -8068,6 +8946,14 @@ try {
   if (toca('ajustes25')) await parte('ajustes del equipo 25/10', () => ajustes25(navegador));
   // Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir
   if (toca('asistido')) await parte('registro asistido', () => registroAsistido(navegador));
+  // Acomodo de escritorio, lo común de las tres partes (integración del 25/10/2026): el botón «Menú de pruebas» y lo fijo
+  if (toca('escritorio')) await parte('escritorio, lo común', () => escritorioComun(navegador));
+  // Acomodo de escritorio, parte A (decisión de Liber del 25/10/2026): cabecera compacta, Revisar y Cita de cotejo
+  if (toca('escritorio-a')) await parte('escritorio, parte A', () => escritorioA(navegador));
+  // Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026): inicio del personal y «Grupos»
+  if (toca('escritorio-b')) await parte('escritorio, parte B', () => escritorioB(navegador));
+  // Acomodo de escritorio, parte C (25/10/2026): asistencia, aplicar el examen y ficha del grupo desde 1024 px
+  if (toca('escritorio-c')) await parte('escritorio C', () => escritorioC(navegador));
   if (toca('accesibilidad')) {
     await parte('accesibilidad en teléfono', () => accesibilidad(navegador, 390, 844));
     await parte('accesibilidad en escritorio', () => accesibilidad(navegador, 1280, 900));
