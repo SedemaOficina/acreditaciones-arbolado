@@ -7535,6 +7535,70 @@ async function ajustes25(navegador) {
   }
 }
 
+/* Letreros de ayuda (decisión de Liber del 26/10/2026): en el inicio, «Crea tu cuenta» (sólo el primer paso), «Entrar», la
+   solicitud (paso de documentos, también al corregir), «Cargar el documento correcto» y «Mis trámites»: uno y sólo uno por
+   pantalla, aviso neutro del estándar (no de alerta), con la sede, su dirección y el horario de los parámetros, sin
+   teléfono (P132); después de la acción principal, que no se mueve (se mide con y sin el letrero, a 390 y 1280 px). */
+async function letrerosAyuda(navegador) {
+  const t = (m) => `[letreros de ayuda] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const sede = (datos.parametro.find((x) => x.clave === 'sede') || {}).valor;
+  const horario = (datos.parametro.find((x) => x.clave === 'informes_horario') || {}).valor;
+  const conObsS = datos.solicitud.find((s) => s.estado === 'con_observaciones' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa'));
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sPausa = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+  // [pantalla, dirección, sesión, lo que hay que esperar, la acción principal, el título del letrero]
+  const PANTALLAS = [
+    ['inicio', 'index.html', null, '.menu-inicio', '.menu-inicio .menu-opcion', '¿Necesitas ayuda?'],
+    ['Crea tu cuenta (primer paso)', 'cuenta.html', null, '#formulario[data-formkit="listo"] section[data-paso]:not([hidden])', 'section[data-paso]:not([hidden]) [data-accion="siguiente"]', '¿Necesitas ayuda para crear tu cuenta?'],
+    ['Entrar', 'entrar.html', null, '#formulario', '[data-accion="enviar"]', '¿Necesitas ayuda para entrar?'],
+    ['solicitud al corregir (documentos)', `solicitud.html?folio=${conObsS.folio}`, conObsS.solicitante_id, 'section[data-titulo="Documentos"]:not([hidden])', 'section[data-paso]:not([hidden]) [data-accion="siguiente"]', '¿Necesitas ayuda con tus documentos?'],
+    ['Cargar el documento correcto', `corregir.html?folio=${sPausa.folio}`, sPausa.solicitante_id, '#formulario:not([hidden])', '[data-accion="enviar"]', '¿Necesitas ayuda para corregir tu documento?'],
+    ['Mis trámites', 'tramites.html', conObsS.solicitante_id, '[data-solicitudes] .ficha', '[data-solicitudes] .btn-primario', '¿Necesitas ayuda con tu trámite?']
+  ];
+  for (const [ancho, alto, donde] of [[390, 844, '390 px'], [1280, 900, '1280 px']]) {
+    for (const [nombre, url, sesion, listo, accion, titulo] of PANTALLAS) {
+      const d = `${nombre} a ${donde}`;
+      const { c, page, errores } = await contexto26(navegador, ancho, alto, sesion);
+      try {
+        await page.goto(BASE + url);
+        await page.waitForSelector(listo);
+        await page.waitForTimeout(100);
+        const r = await page.evaluate(() => {
+          const todos = [...document.querySelectorAll('[data-ayuda]')];
+          const vis = todos.filter((e) => e.checkVisibility());
+          const e = vis[0];
+          return { todos: todos.length, visibles: vis.length, clases: e ? e.className : '', texto: e ? e.textContent.replace(/\s+/g, ' ').trim() : '',
+            titulo: e ? (e.querySelector('.aviso-titulo') || {}).textContent : '', rol: e ? e.getAttribute('role') : 'x', icono: e ? (e.querySelector('use') || {}).getAttribute('href') : '' };
+        });
+        comprueba(r.todos === 1 && r.visibles === 1, t(`${d}: el letrero está y sólo una vez (${r.todos} en la página, ${r.visibles} a la vista)`));
+        comprueba(r.titulo === titulo && r.clases === 'aviso' && !r.rol && r.icono === '#i-info',
+          t(`${d}: «${r.titulo}», aviso neutro del estándar con el ícono de información, sin rol de alerta`));
+        comprueba(r.texto.includes('Puedes pedirle a un familiar, a un amigo o al personal de la Secretaría que te ayude.') && r.texto.includes(`También puedes ir al ${sede}`)
+          && r.texto.includes('Canal de Chalco s/n') && r.texto.includes(horario) && r.texto.endsWith('y ahí te ayudamos.') && !/\d{2}\s?\d{4}\s?\d{4}|tel[eé]fono|pendiente/i.test(r.texto),
+          t(`${d}: dice a quién pedir ayuda y que en el Vivero, con su dirección y su horario, le ayudan; de tú y sin teléfono`));
+        // La acción principal no se mueve por el letrero
+        const y = () => page.evaluate((s) => { const e = [...document.querySelectorAll(s)].find((x) => x.checkVisibility()); return e ? Math.round(e.getBoundingClientRect().top + scrollY) : null; }, accion);
+        const con = await y();
+        const altoLetrero = await page.evaluate(() => { const e = [...document.querySelectorAll('[data-ayuda]')].find((x) => x.checkVisibility()); const h = Math.round(e.getBoundingClientRect().height); e.remove(); return h; });
+        const sin = await y();
+        comprueba(con !== null && con === sin, t(`${d}: la acción principal no se mueve por el letrero (${con} px con él, ${sin} px sin él; el letrero mide ${altoLetrero} px)`));
+        await page.goto(BASE + url);
+        await page.waitForSelector(listo);
+        await revisaAxe(page, d);
+        await sinDesborde(page, t(d));
+        comprueba(!errores.length, t(`${d}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+      } finally { await c.close(); }
+    }
+  }
+  // Sólo en el primer paso de «Crea tu cuenta» y en el de documentos de la solicitud; en ninguna otra pantalla de la persona
+  const enPaso = (archivo) => { const h = readFileSync(join(raiz, 'sitio', archivo), 'utf8'); const i = h.indexOf('data-ayuda>'); const antes = h.slice(0, i); return (antes.match(/data-titulo="([^"]+)"/g) || []).pop() || ''; };
+  comprueba(enPaso('cuenta.html') === 'data-titulo="Quién eres"' && enPaso('solicitud.html') === 'data-titulo="Documentos"',
+    t('en «Crea tu cuenta» va en el primer paso («Quién eres») y en la solicitud, en el de documentos'));
+  const conLetrero = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html') && /\sdata-ayuda>/.test(readFileSync(join(raiz, 'sitio', f), 'utf8'))).sort();
+  comprueba(conLetrero.join(',') === 'corregir.html,cuenta.html,entrar.html,index.html,solicitud.html,tramites.html', t(`el letrero está justo en las seis pantallas: ${conLetrero.join(', ')}`));
+}
+
 /* ── Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md 4.3 y 4.4;
    SOLO=escritorio-b) ──
    Inicio del personal (bandeja) y «Grupos» (sus cuatro pasos) a 1366 × 768, 1440 × 900 y 1920 × 1080:
@@ -8666,6 +8730,7 @@ try {
   // Decisiones de Liber del 26/10/2026: sin registro asistido («Consultar un trámite»), letreros de ayuda, perfil
   // «Directivo» y la cita de cotejo dentro de 20 días hábiles
   if (toca('consulta')) await parte('consultar un trámite', () => consultaTramite(navegador));
+  if (toca('ayuda')) await parte('letreros de ayuda', () => letrerosAyuda(navegador));
   // Acomodo de escritorio, lo común de las tres partes (integración del 25/10/2026): el botón «Menú de pruebas» y lo fijo
   if (toca('escritorio')) await parte('escritorio, lo común', () => escritorioComun(navegador));
   // Acomodo de escritorio, parte A (decisión de Liber del 25/10/2026): cabecera compacta, Revisar y Cita de cotejo
