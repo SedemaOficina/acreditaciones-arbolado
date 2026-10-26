@@ -206,16 +206,6 @@
     const cursos = esperas.filter(Boolean).length;
     escribeIndicador('espera', enEspera, cursos ? `en ${plural(cursos, 'curso', 'cursos')}` : 'nadie espera');
   }
-  /* Los avisos por teléfono los pinta app/registro-asistido.js: se cuentan sus fichas cada vez que cambia la lista */
-  const listaAvisos = $('[data-avisos-lista]');
-  const cuentaAvisos = () => {
-    if (/^Cargando/.test($('[data-avisos-cuenta]').textContent)) return;
-    const n = listaAvisos.hidden ? 0 : listaAvisos.children.length;
-    escribeIndicador('avisos', n, n === 1 ? 'pendiente' : 'pendientes');
-    cuentaPestana('pe-avisos', n);
-  };
-  new MutationObserver(cuentaAvisos).observe($('[data-asistido-inicio]'), { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'], characterData: true });
-
   APD.alCambiar(() => { carga().catch(() => {}); });
   carga().catch(() => {
     // El error, sin la lista a medias: la bandeja mostraba el mensaje y además las solicitudes (auditoría «intentar

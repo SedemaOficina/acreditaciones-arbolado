@@ -432,16 +432,16 @@
       });
       $('[data-futura]').hidden = false;
     }
-    /* La cita nueva: desde el día siguiente al de hoy (fecha simulada del corte) y nunca antes de la que se perdió; hasta
-       meses_adelanto_cita meses (F2 A6 y M4). El formato «fecha-dma» del estándar lee data-min y data-max (AAAA-MM-DD) y
-       los dice en día/mes/año. Sábados y domingos no hay citas (sesión de trabajo del 23/10/2026): P.vigilaDiaCita. */
-    const base = diaCita > hoy ? diaCita : hoy;
-    const manana = APD.sumaDias(base, 1);
-    const hasta = APD.sumaMeses(hoy, APD.mesesCita(datos));
-    $('[data-campo="cita_fecha"]').dataset.min = manana;
-    $('[data-campo="cita_fecha"]').dataset.max = hasta;
-    $('[data-cita-desde]').textContent = fechaCorta(manana);
-    $('[data-cita-hasta]').textContent = fechaCorta(hasta);
+    /* La cita nueva: dentro de los 20 días hábiles siguientes al día en que se da (P205, decisión de Liber del 26/10/2026;
+       parámetro dias_habiles_cita): desde el siguiente día hábil, nunca antes de la que se perdió (F2 A6), y ya no hasta
+       meses_adelanto_cita meses (F2 M4). El formato «fecha-dma» del estándar lee data-min y data-max (AAAA-MM-DD) y los dice
+       en día/mes/año. Sábados y domingos no hay citas (sesión de trabajo del 23/10/2026): P.vigilaDiaCita. */
+    const plazo = APD.plazoCita(datos, diaCita);
+    $('[data-campo="cita_fecha"]').dataset.min = plazo.desde;
+    $('[data-campo="cita_fecha"]').dataset.max = plazo.hasta;
+    $('[data-cita-dias]').textContent = String(plazo.dias);
+    $('[data-cita-desde]').textContent = fechaCorta(plazo.desde);
+    $('[data-cita-hasta]').textContent = fechaCorta(plazo.hasta);
     // Retomar una pausa empieza en los documentos: la nota de obligatorias va en esa tarjeta (D33)
     $('[data-leyenda-docs]').hidden = !retoma;
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));

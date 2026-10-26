@@ -309,11 +309,13 @@
       // Cuántas oportunidades le quedan para corregir, contando ésta (ajustes del equipo, 25/10/2026; lo del cotejo no cuenta)
       const oport = APD.oportunidades(datos, s);
       if (oport) cambio.push(el('p', { class: 'ficha-sigue', 'data-oportunidades': oport.ultima ? 'ultima' : oport.cotejo ? 'cotejo' : String(oport.quedan) }, [el('strong', { texto: oport.texto }), oport.detalle ? document.createTextNode(` ${oport.detalle}`) : null]));
-      // El plazo con su fecha (auditoría 2026-10-18, D3). La regla del plazo todavía no está en la base (P02: propuesta de
-      // 20 días hábiles): se dice cuándo llegaron las observaciones y la fecha límite queda marcada por confirmar.
-      sigue = { texto: `Recibiste las observaciones el ${fechaCorta(s.estado_desde)}. Hay un plazo para corregir: si no reenvías tu solicitud a tiempo, se cierra.`,
+      // El plazo con su fecha (auditoría 2026-10-18, D3): dias_habiles_correccion días hábiles después de recibir las
+      // observaciones (P02, P199; decisión de Liber del 26/10/2026 de tomarlo como parámetro). Todavía no hay tarea que cierre
+      // la solicitud al vencer (P23).
+      const limite = APD.limiteCorreccion(datos, s);
+      sigue = { texto: `Recibiste las observaciones el ${fechaCorta(s.estado_desde)}. Tienes ${APD.parametro(datos, 'dias_habiles_correccion') || 20} días hábiles para corregir: si no reenvías tu solicitud a tiempo, se cierra.`,
         pasos: APD.ESTADOS.con_observaciones.sigue.pasos };
-      pares.unshift(['Corrige antes del', 'Fecha por definir', 'el plazo para atender observaciones (P02).']);
+      pares.unshift(['Corrige a más tardar el', fechaCorta(limite)]);
     }
     // En revisión (D12): qué sigue, el plazo pendiente y, si es otra vuelta, qué corrigió
     if (s.estado === 'enviada') {
@@ -325,7 +327,8 @@
         const n = vueltas + 1;
         sigue = Object.assign({}, sigue, { texto: `${ORDINAL[n] || `${n}.ª`} revisión${corregidos.length ? `: corregiste ${comoLista(corregidos)}` : ''}. ${sigue.texto}` });
       }
-      extra.push(el('p', { class: 'pendiente', texto: 'Pendiente (P02): plazo de la revisión.' }));
+      // El plazo de la revisión (P02, P199): dias_habiles_revision días hábiles desde que la enviaste o la reenviaste
+      extra.push(el('p', { texto: `La Secretaría la revisa en un máximo de ${APD.parametro(datos, 'dias_habiles_revision') || 10} días hábiles: a más tardar el ${fechaCorta(APD.limiteRevision(datos, s))}.` }));
     }
 
     const ins = datos.inscripcion.filter((i) => i.solicitud_id === s.id).pop();

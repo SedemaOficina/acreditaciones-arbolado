@@ -131,7 +131,6 @@
       // Se comprueba que siga vigente antes de decirlo (auditoría de tareas)
       ['Poda y derribo', dict && podaVigente ? `${podaVigente.numero}, ${APD.diasParaVencer(datos, podaVigente.vence_en) < 0 ? 'vencida el' : 'vigente hasta el'} ${fechaCorta(podaVigente.vence_en)}` : ''],
       ['Último grado de estudios', !dict && s.nivel_estudios ? [NIVELES[s.nivel_estudios], s.carrera || s.carrera_tecnica, estatusDe(s.nivel_estudios, s.estatus_estudios)].filter(Boolean).join(' · ') : ''],
-      // Sin correo (registro asistido), sólo el teléfono: antes decía «null · …» (visto por la parte A del acomodo de escritorio)
       ['Contacto', [p.correo, p.telefono].filter(Boolean).join(' · ')]
     ])])]));
     pintaFranja();
@@ -150,8 +149,7 @@
 
     /* ----- Franja de contexto en escritorio (decisión de Liber del 25/10/2026; DIAGNOSTICO.md, 4.1) -----
        Desde 1024 px la cabeza de la solicitud es una franja fija de 80 px como máximo: fotografía chica o iniciales,
-       nombre, CURP y adscripción, «Poda y derribo · renovación», folio, vuelta, estado y, si aplica, «Última oportunidad» o
-       «Registro asistido». La ficha completa y la nota de la renovación entran a «Datos de la persona», plegable; el aviso
+       nombre, CURP y adscripción, «Poda y derribo · renovación», folio, vuelta, estado y, si aplica, «Última oportunidad». La ficha completa y la nota de la renovación entran a «Datos de la persona», plegable; el aviso
        de la última oportunidad y las revisiones anteriores van arriba de la decisión. Debajo de 1024 px todo regresa a su
        lugar (APD_PERSONAL.acomodaEscritorio). */
     function pintaFranja() {
@@ -414,17 +412,18 @@
     /* Motivos frecuentes: data-chips-fijos en cada observación (módulo chips del estándar, P65); el motivo se agrega
        al texto, que quien revisa completa. */
 
-    // La cita es en la sede única; se elige el día, desde el siguiente al de hoy (fecha simulada del corte)
+    // La cita es en la sede única; se elige el día dentro de los 20 días hábiles siguientes a la validación (P205,
+    // decisión de Liber del 26/10/2026; parámetro dias_habiles_cita): del siguiente día hábil al último del plazo
     for (const n of $$('[data-sede]')) n.textContent = APD.sede(datos).nombre;
-    const manana = APD.sumaDias(datos.fecha_corte, 1);
     // Límites del formato «fecha-dma»: el estándar los lee de data-min y data-max del campo (AAAA-MM-DD) y avisa con la
-    // fecha en día/mes/año. Hasta meses_adelanto_cita meses (auditoría «intentar romperlo», F2 M4: se aceptaba el
-    // 31/12/9999); sábados y domingos no hay citas (sesión de trabajo del 23/10/2026): P.vigilaDiaCita
-    const hasta = APD.sumaMeses(APD.hoy(datos), APD.mesesCita(datos));
-    $('[data-campo="cita_fecha"]').dataset.min = manana;
-    $('[data-campo="cita_fecha"]').dataset.max = hasta;
-    $('[data-cita-desde]').textContent = fechaCorta(manana);
-    $('[data-cita-hasta]').textContent = fechaCorta(hasta);
+    // fecha en día/mes/año (ya no hasta meses_adelanto_cita meses, auditoría «intentar romperlo», F2 M4); sábados y
+    // domingos no hay citas (sesión de trabajo del 23/10/2026): P.vigilaDiaCita
+    const plazo = APD.plazoCita(datos);
+    $('[data-campo="cita_fecha"]').dataset.min = plazo.desde;
+    $('[data-campo="cita_fecha"]').dataset.max = plazo.hasta;
+    $('[data-cita-dias]').textContent = String(plazo.dias);
+    $('[data-cita-desde]').textContent = fechaCorta(plazo.desde);
+    $('[data-cita-hasta]').textContent = fechaCorta(plazo.hasta);
     P.pintaCargaCitas(datos, $('[data-carga-cita]'));
 
     /* ----- Los pasos (decisión de Liber del 24/10/2026) -----

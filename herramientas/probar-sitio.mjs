@@ -384,6 +384,8 @@ async function recorrido(navegador, ancho, alto, sufijo) {
   await siguiente(page);
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"] .ayuda a', 'href') === 'https://www.gob.mx/curp/',
     t('documentos: la CURP trae el enlace oficial para obtenerla'));
+  comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_constancia_situacion_fiscal"] .ayuda a', 'href') === 'https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf',
+    t('documentos: la constancia de situación fiscal trae el enlace del SAT para generarla'));
   comprueba(await page.getAttribute('[data-campo="doc_poda_nueva_curp"]', 'data-extensiones') === 'pdf', t('documentos: sólo se aceptan en PDF'));
   await page.setInputFiles('[data-campo="doc_poda_nueva_curp"] [data-archivos] > input[type="file"]', FOTO);
   comprueba(await page.locator('[data-campo="doc_poda_nueva_curp"] [data-rechazos] *').count() > 0, t('documentos: una imagen se rechaza con su motivo'));
@@ -2412,6 +2414,8 @@ const PDF_PROTEGIDO = { name: 'protegido.pdf', mimeType: 'application/pdf', buff
 const PDF_UNA_HOJA = { name: 'una-hoja.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n') };
 const pdfDe = (bytes, nombre) => ({ name: nombre, mimeType: 'application/pdf', buffer: Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(bytes - 9, 0x20)]) });
 const sumaDiasIso = (iso, n) => { const d = new Date(`${iso}T12:00:00-06:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+// n días hábiles (de lunes a viernes) después de una fecha, como apd.suma_dias_habiles (P205: la cita de cotejo)
+const sumaHabilesIso = (iso, n) => { let d = iso; for (let k = 0; k < n;) { d = sumaDiasIso(d, 1); const w = new Date(`${d}T12:00:00Z`).getUTCDay(); if (w !== 0 && w !== 6) k += 1; } return d; };
 const sumaMesesIso = (iso, n) => { const d = new Date(`${iso}T12:00:00-06:00`); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
 /* Pega un texto en un control como lo haría el navegador (evento paste con su portapapeles) y devuelve el valor */
 const pega = (pg, sel, texto) => pg.evaluate(([q, t]) => {
@@ -2586,9 +2590,10 @@ async function romper(navegador) {
     await pg.keyboard.insertText(v);
     comprueba(await pg.inputValue('#cita_fecha') === '20/10/2026', t(`F2 A1 y B2: «${v}» puesto de una vez queda 20/10/2026 (${await pg.inputValue('#cita_fecha')})`));
   }
-  const max = sumaMesesIso(datos.fecha_corte, 6);
+  // Desde el 26/10/2026 (P205) el límite es de 20 días hábiles (dias_habiles_cita), ya no de 6 meses
+  const max = sumaHabilesIso(datos.fecha_corte, 20);
   comprueba(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-max') === max && (await pg.textContent('[data-cita-hasta]')) === dma(max),
-    t(`F2 M4: la fecha de la cita tiene límite superior (${dma(max)}, meses_adelanto_cita) y la ayuda lo dice`));
+    t(`F2 M4: la fecha de la cita tiene límite superior (${dma(max)}, 20 días hábiles: dias_habiles_cita) y la ayuda lo dice`));
   await pg.fill('#cita_fecha', '31/12/9999');
   await pg.locator('#cita_fecha').blur();
   await pg.click('[data-accion="enviar"]');
@@ -2640,7 +2645,7 @@ async function romper(navegador) {
   await pg.reload();
   await pg.click('[data-atender-simulada]');
   await pg.waitForSelector('#formulario:not([hidden])');
-  comprueba(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-min') === sumaDiasIso(diaCita, 1) && await pg.getAttribute('[data-campo="cita_fecha"]', 'data-max') === sumaMesesIso(datos.fecha_corte, 6),
+  comprueba(await pg.getAttribute('[data-campo="cita_fecha"]', 'data-min') === sumaHabilesIso(diaCita, 1) && await pg.getAttribute('[data-campo="cita_fecha"]', 'data-max') === sumaHabilesIso(datos.fecha_corte, 20),
     t('F2 A6 y M4: la cita nueva no puede quedar antes de la perdida (desde el día siguiente) ni más allá del límite'));
   // M2 · RFC y folio fiscal pegados con espacios y guiones: se limpian antes de medir el largo
   comprueba(await pega(pg, '#factura_rfc', 'MUPA 800101 AB1') === 'MUPA800101AB1' && await pega(pg, '#factura_rfc', 'MUPA-800101-AB1') === 'MUPA800101AB1',
@@ -3812,7 +3817,7 @@ async function fechas(navegador) {
   // 4 · Desde los ajustes del equipo (25/10/2026) la ficha del grupo ya no tiene el primer día: la semana la elige quien
   // arma el grupo, en «Grupos», y Capacitación asigna a la persona instructora y lo confirma. Lo que se probaba al escribir,
   // pegar e insertar ese día se prueba en la otra fecha día/mes/año del personal con máximo: la cita de «Revisar»
-  // (hasta meses_adelanto_cita meses)
+  // (hasta 20 días hábiles desde el 26/10/2026, P205; antes, meses_adelanto_cita meses)
   ({ c, pg, errores } = await nuevo());
   await pg.goto(BASE + `revisar.html?folio=${porRevisar.folio}`);
   await pg.waitForSelector('#formulario:not([hidden])');
@@ -4031,9 +4036,10 @@ async function politicaContenido(navegador) {
     politicas.add(m[1]);
   }
   // 21 hasta la sesión del 23/10/2026, parte B: más «Acreditaciones», «Una acreditación» y «Reposición de tu credencial»
-  // 25 desde los ajustes del equipo (25/10/2026): el inicio de Capacitación (capacitacion.html); 27 desde el registro
-  // asistido (25/10/2026): asistido.html y ventanilla.html
-  comprueba(paginas.length === 27 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
+  // 25 desde los ajustes del equipo (25/10/2026): el inicio de Capacitación (capacitacion.html); 27 con el registro
+  // asistido (25/10/2026); 26 sin él (decisión del 26/10/2026): se quita asistido.html y queda ventanilla.html («Consultar
+  // un trámite»)
+  comprueba(paginas.length === 26 && !malas.length, t(`las ${paginas.length} páginas declaran la política y el referente justo después de charset${malas.length ? '; faltan: ' + malas.join(', ') : ''}`));
   /* Excepción documentada (decisión del 23/10/2026, P68): la página con el mapa de Google de la sede (data-mapa-sede; sólo
      «Mis trámites») agrega frame-src con los dos dominios del mapa y nada más; las demás, la política estricta sin cambio */
   const conMapa = paginas.filter((p) => /\sdata-mapa-sede[\s>]/.test(readFileSync(join(raiz, 'sitio', p), 'utf8')));
@@ -4118,8 +4124,8 @@ async function mapaSede(navegador) {
   // También va a la entrega quien tiene la reposición de su credencial con el acta aceptada (P140, sesión del 23/10/2026)
   const reponeEnSede = (p, d) => (d.reposicion || []).some((r) => r.estado === 'acta_aceptada' && d.acreditacion.some((a) => a.id === r.acreditacion_id && a.solicitante_id === p.id));
   const lugaresDe = (p, d = datos) => new Set(d.solicitud.filter((s) => s.solicitante_id === p.id).map(aQueVa).concat(reponeEnSede(p, d) ? ['entrega'] : []).filter(Boolean));
-  // Las del registro asistido que no han activado su cuenta no entran en línea (decisión 2026-10-25): no tienen «Mis trámites»
-  const activas = datos.solicitante.filter((p) => p.estado === 'activa' && !(p.registro_asistido_en && !p.activada_en));
+  // Todas las cuentas activas tienen «Mis trámites» (sin registro asistido, decisión del 26/10/2026)
+  const activas = datos.solicitante.filter((p) => p.estado === 'activa');
   const conLugar = (k) => activas.find((p) => { const l = lugaresDe(p); return l.size === 1 && l.has(k); });
   const sinLugar = activas.find((p) => !lugaresDe(p).size && datos.solicitud.some((s) => s.solicitante_id === p.id));
 
@@ -4598,6 +4604,20 @@ function observadorVivas() {
   }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'role', 'aria-live', 'open', 'class'] });
 }
 let marcaVivas = 0;
+/* Las pantallas con pestañas (módulo «pestanas» del estándar: «Grupos», el inicio del personal, la ficha del grupo) anuncian
+   la pestaña inicial al iniciarse, con el retardo de los anuncios. En una máquina lenta (la verificación de GitHub) ese
+   anuncio llegaba después de la marca de la acción que se prueba y se contaba con ella (B4-03, PR #20). Antes de tomar la
+   marca se espera a que llegue: con el observador de regiones vivas, a que se escriba «Pestaña …»; sin él, el retardo. Sin
+   pestañas no espera nada. */
+async function asientaPestanas(page) {
+  if (!(await page.$('[data-pestanas]'))) return;
+  await page.waitForSelector('[data-pestanas][data-listo]', { state: 'attached', timeout: 15000 }).catch(() => {});
+  if (await page.evaluate(() => Array.isArray(window.__vivasEscritos))) {
+    await page.waitForFunction(() => window.__vivasEscritos.some((e) => /^Pestaña /.test(e.texto)), null, { timeout: 15000 }).catch(() => {});
+  } else {
+    await page.waitForTimeout((await page.evaluate(() => FormKit.config.anuncios.retardoMs)) + 300);
+  }
+}
 const nuevaMarca = (page) => page.evaluate((k) => { window.__vivasMarca = k; return k; }, ++marcaVivas);
 const anunciosDe = (page, k) => page.evaluate((m) => window.__vivas.filter((e) => e.marca === m), k);
 // Espera a que la acción k haya anunciado algo (o a que pase su plazo) y deja correr los retardos de los anuncios
@@ -4733,6 +4753,7 @@ async function focoAccesibilidad(navegador) {
     const { c, page } = await nuevo(1440, 900);
     await page.goto(BASE + 'grupos.html?curso=poda-nueva&semana=2026-11-02&mes=2026-11&paso=2');
     await listoGrupos(page);
+    await asientaPestanas(page);
     const k = await nuevaMarca(page);
     for (const l of ['2026-11-09', '2026-11-16']) { await page.focus(`.arm-semana-elegir[data-lunes="${l}"]`); await page.keyboard.press('Enter'); await page.waitForTimeout(150); }
     const lista = await anunciosTras(page, k, { minimo: 2 });
@@ -4844,6 +4865,7 @@ async function focoAccesibilidad(navegador) {
     await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
     await listoGrupos(page);
     await page.waitForSelector('.plan-persona input');
+    await asientaPestanas(page);
     await dosCuadros(page);
     const alCargar = (await anunciosDe(page, 0)).filter((e) => !/interno|pruebas/.test(e.region));
     comprueba(!alCargar.some((e) => /en espera|elegida|lugares/.test(e.texto)), `RI-04: «Grupos» no anuncia al cargar la espera ni la cuenta de lugares (${textosDe(alCargar) || 'nada'})`);
@@ -5072,7 +5094,9 @@ async function pasosTareas(navegador) {
   // «Siguiente» con el teclado: un solo anuncio (el del paso) y el foco en el título del paso nuevo, a la vista
   const siguienteTeclado = async (pg, donde, ancho) => {
     const antes = await tituloPaso(pg);
-    // Lo que anunció lo escrito antes (p. ej., «Sexo: Mujer, tomado de la CURP») sale antes de la marca
+    // Lo que anunció lo escrito antes (p. ej., «Sexo: Mujer, tomado de la CURP») sale antes de la marca; también el de la
+    // pestaña inicial, si la pantalla tiene pestañas
+    await asientaPestanas(pg);
     await pg.waitForTimeout((await pg.evaluate(() => FormKit.config.anuncios.retardoMs)) + 150);
     const m = await nuevaMarca(pg);
     await pulsa(pg, `${pasoVisible} [data-accion="siguiente"]`);
@@ -6454,7 +6478,7 @@ async function sesion23(navegador) {
     const html = await (await fetch(BASE + 'solicitud.html')).text();
     const ayuda = (html.match(/id="ay-doc_poda_nueva_constancia_situacion_fiscal">([^<]*)</) || [])[1] || '';
     const domicilio = (html.match(/id="ay-doc_poda_nueva_comprobante_domicilio">([^<]*)</) || [])[1] || '';
-    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.$/.test(ayuda)
+    comprueba(/Constancia de situación fiscal<\/span>/.test(html) && /^Tuya, como persona solicitante, emitida en el mes en curso\. De ella se toman tu nombre, tu régimen y tu domicilio fiscal para la factura del pago\.\s*$/.test(ayuda)
       && !/pendiente/i.test(ayuda) && domicilio && !/pendiente|dejar|provisional/i.test(domicilio),
       t(`nuevos 4 y 5 (P196) y P03: la ayuda de la constancia («${ayuda}») y la del comprobante de domicilio, sin marcas`));
     for (const [pagina, sel] of [['revisar.html', '[data-doc="constancia_situacion_fiscal"]'], ['cotejo.html', '[data-doc="constancia_situacion_fiscal"]']]) {
@@ -6694,8 +6718,9 @@ async function sesion23(navegador) {
 }
 
 /* ── Cancelación de una acreditación (P120, P49; sesión de trabajo del 23/10/2026, parte B; SOLO=cancelacion) ──
-   Los instructores y la Dirección cancelan una acreditación vigente desde su ficha («Acreditaciones»), con motivo y
-   fundamento en un diálogo de confirmación (foco en el motivo, de usted); el perfil de revisión y cotejo no puede.
+   Los instructores y los directivos (perfil «directivo», P201, decisión del 26/10/2026; antes, la administración) cancelan
+   una acreditación vigente desde su ficha («Acreditaciones»), con motivo y fundamento en un diálogo de confirmación (foco
+   en el motivo, de usted); el perfil de revisión y cotejo y la administración del sistema no pueden.
    «Verificar» la muestra «Cancelada» (gris, sin el motivo); la persona la ve en «Mis trámites» cancelada, con el motivo,
    de tú, y sin «Renovar»; una renovación en trámite se cancela. La credencial ya no menciona huella ni antigüedad (P49). */
 async function cancelacion(navegador) {
@@ -6763,16 +6788,21 @@ async function cancelacion(navegador) {
     const { c, page, errores } = await nuevo(1280, 900);
     await page.goto(BASE + `acreditacion.html?numero=${vigente.numero}`);
     await page.waitForSelector('[data-situacion] .estado');
-    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y la Dirección pueden cancelar una acreditación/.test(await page.textContent('[data-acciones]')) && !errores.length,
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y los directivos pueden cancelar una acreditación/.test(await page.textContent('[data-acciones]')) && !errores.length,
       t('perfil de revisión y cotejo: no ve «Cancelar acreditación» y la ficha dice quién puede'));
+    // La administración del sistema ya no cancela (P201)
+    await page.goto(BASE + `acreditacion.html?numero=${vigente.numero}&perfil=administracion`);
+    await page.waitForSelector('[data-situacion] .estado');
+    comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Sólo los instructores y los directivos/.test(await page.textContent('[data-acciones]')),
+      t('administración del sistema: ya no ve «Cancelar acreditación» (P201)'));
     await page.goto(BASE + `acreditacion.html?numero=${vencida.numero}&perfil=instructor`);
     await page.waitForSelector('[data-situacion] .estado');
     comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0, t(`instructor: una vencida (${vencida.numero}) no se cancela`));
-    await page.goto(BASE + `acreditacion.html?numero=${cancelada.numero}&perfil=administracion`);
+    await page.goto(BASE + `acreditacion.html?numero=${cancelada.numero}&perfil=directivo`);
     await page.waitForSelector('[data-situacion] .estado');
     const ficha = await page.textContent('main');
     comprueba(await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0 && /Cancelación/.test(ficha) && /Laura Ejemplo Instructora/.test(ficha) && ficha.includes(cancelada.cancelacion_motivo),
-      t('Dirección: la cancelada muestra cuándo, quién, el motivo y el fundamento, y ya no se cancela otra vez'));
+      t('directivo: la cancelada muestra cuándo, quién, el motivo y el fundamento, y ya no se cancela otra vez'));
     await c.close();
   });
 
@@ -6829,20 +6859,20 @@ async function cancelacion(navegador) {
     });
   }
 
-  // La Dirección cancela una acreditación con su renovación en trámite: el diálogo lo dice y la renovación se cancela; la
-  // persona no puede renovarla
-  await bloque('dirección y renovación', async () => {
+  // Un directivo (P201) cancela una acreditación con su renovación en trámite: el diálogo lo dice y la renovación se
+  // cancela; la persona no puede renovarla
+  await bloque('directivo y renovación', async () => {
     const { c, page, errores } = await nuevo(1280, 900);
     const renov = datos.solicitud.find((s) => s.acreditacion_anterior_id === conRenovacion.id && s.estado === 'enviada');
-    await page.goto(BASE + `acreditacion.html?numero=${conRenovacion.numero}&perfil=administracion`);
+    await page.goto(BASE + `acreditacion.html?numero=${conRenovacion.numero}&perfil=directivo`);
     await page.click('button:has-text("Cancelar acreditación")');
     await page.waitForSelector('#dlg-cancelar[open]');
-    comprueba(new RegExp(`Su renovación en trámite \\(folio ${renov.folio}\\) se cancela`).test(await page.textContent('#dlg-cancelar')), t(`Dirección: el diálogo avisa que la renovación ${renov.folio} se cancela`));
-    await page.fill('#motivo-cancelar', 'Motivo de la prueba de la Dirección.');
+    comprueba(new RegExp(`Su renovación en trámite \\(folio ${renov.folio}\\) se cancela`).test(await page.textContent('#dlg-cancelar')), t(`directivo: el diálogo avisa que la renovación ${renov.folio} se cancela`));
+    await page.fill('#motivo-cancelar', 'Motivo de la prueba del directivo.');
     await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
     await page.click('#dlg-cancelar [data-accion="enviar"]');
     await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
-    comprueba(/Rosa Ejemplo Directora/.test(await page.textContent('main')), t('Dirección (perfil administración): cancela, y la ficha la registra a su nombre'));
+    comprueba(/Rosa Ejemplo Directiva/.test(await page.textContent('main')), t('directivo: cancela, y la ficha la registra a su nombre'));
     await page.goto(BASE + 'revision.html');
     await page.waitForLoadState('networkidle');
     comprueba(!(await page.textContent('main')).includes(renov.folio), t(`la renovación ${renov.folio} ya no está por revisar`));
@@ -6854,7 +6884,7 @@ async function cancelacion(navegador) {
       const txt = await page.textContent('main');
       comprueba(/que se renovaba fue cancelada/.test(txt) && await page.locator('[data-acreditaciones] a', { hasText: 'Renovar' }).count() === 0, t('la persona ve su renovación cancelada, con el motivo, y no puede renovar la cancelada'));
     }
-    comprueba(!errores.length, t(`Dirección: sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
+    comprueba(!errores.length, t(`directivo: sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
     await c.close();
   });
 
@@ -6897,7 +6927,7 @@ async function reposicionCredencial(navegador) {
     && datos.cuota.find((c) => c.clave === 'reposicion_credencial').monto === 88 && /pendiente P140/.test(datos.cuota[0].fundamento),
     t('ficticios: una reposición en cada paso y la cuota ficticia de $88.00 marcada por confirmar con Finanzas'));
   const claves = APD_CASOS_PRUEBA.claves();
-  comprueba(['repos-puede', 'repos-solicitada', 'repos-observada', 'repos-aceptada', 'repos-repuesta', 'acred-cancelada', 'personal-acreditaciones', 'personal-cancelar-instructor', 'personal-cancelar-direccion'].every((k) => claves.includes(k)),
+  comprueba(['repos-puede', 'repos-solicitada', 'repos-observada', 'repos-aceptada', 'repos-repuesta', 'acred-cancelada', 'personal-acreditaciones', 'personal-cancelar-instructor', 'personal-directivo'].every((k) => claves.includes(k)),
     t('menú de pruebas: casos de la reposición (pidió, acta en revisión, con observaciones, aceptada, repuesta), de la cancelada y del personal'));
 
   // Los ficticios, en «Mis trámites», en teléfono y en escritorio: cada paso con su etiqueta, de tú
@@ -7534,6 +7564,234 @@ async function ajustes25(navegador) {
   }
 }
 
+/* Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio es «Acreditaciones» (lista y ficha) con «Cancelar
+   acreditación»; no ve la cola de reposiciones ni sus formularios; su cabecera sólo lleva «Acreditaciones»; está en el menú
+   de pruebas. Cancela una vigente y la ficha la registra a su nombre. En teléfono y computadora, con axe. */
+async function perfilDirectivo(navegador) {
+  const t = (m) => `[directivo] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const porCancelar = datos.acreditacion.filter((a) => !a.cancelada_en && datos.estado_acreditacion[a.numero] === 'vigente' && !(datos.reposicion || []).some((r) => r.acreditacion_id === a.id));
+  const conRepos = (datos.reposicion || []).find((r) => r.estado === 'solicitada');
+  const aRepos = conRepos && datos.acreditacion.find((a) => a.id === conRepos.acreditacion_id);
+  const deDirectivo = datos.acreditacion.find((a) => a.cancelada_por === 'directivo.ficticio');
+  comprueba(Boolean(deDirectivo) && datos.estado_acreditacion[deDirectivo.numero] === 'cancelada' && (datos.parametro.find((x) => x.clave === 'perfiles_cancelan_acreditacion') || {}).valor === 'instructor,directivo',
+    t('ficticios: una acreditación cancelada por directivo.ficticio; perfiles_cancelan_acreditacion = instructor,directivo'));
+  for (const [ancho, alto, donde, k] of [[390, 844, 'teléfono', 0], [1280, 900, 'computadora', 1]]) {
+    const { c, page, errores } = await contexto26(navegador, ancho, alto);
+    try {
+      await page.goto(BASE + 'acreditaciones.html?perfil=directivo');
+      await page.waitForSelector('[data-filas] tr');
+      const enlaces = await page.$$eval('[data-sesion-personal] nav a', (l) => l.map((a) => [a.textContent.trim(), a.getAttribute('aria-current')]));
+      comprueba(JSON.stringify(enlaces) === JSON.stringify([['Acreditaciones', 'page'], ['Consultar un trámite', null], ['Grupos', null], ['Salir', null]])
+        && /Rosa Ejemplo Directiva/.test(await texto26(page, '[data-sesion-personal]')) && /Perfil: directivo/.test(await texto26(page, '[data-sesion-personal]'))
+        && await page.isVisible('[data-sesion-personal] a[href="ventanilla.html?perfil=directivo"]') && await page.isVisible('[data-sesion-personal] a[href="capacitacion.html?perfil=directivo"]'),
+        t(`${donde}: su inicio es «Acreditaciones»; la cabecera dice «Perfil: directivo» y lleva «Acreditaciones», «Consultar un trámite», «Grupos» y «Salir», a la vista`));
+      comprueba(await page.isHidden('[data-reposiciones]') && await page.isVisible('[data-acreditaciones-tabla]'), t(`${donde}: ve la lista de acreditaciones y no la cola de reposiciones`));
+      await revisaAxe(page, `${donde}, «Acreditaciones»`);
+      await sinDesborde(page, t(`${donde}, «Acreditaciones»`));
+      // Abre la ficha desde la lista y cancela
+      const a = porCancelar[k];
+      await page.fill('#buscar', a.numero);
+      await page.waitForFunction((n) => [...document.querySelectorAll('[data-filas] tr')].filter((x) => !x.hidden).length === 1 && document.querySelector('[data-filas] tr:not([hidden])').dataset.numero === n, a.numero);
+      await page.click(`[data-filas] tr[data-numero="${a.numero}"] a`);
+      await page.waitForURL(/acreditacion\.html\?numero=.*perfil=directivo/);
+      await page.waitForSelector('[data-situacion] .estado');
+      comprueba(await page.getAttribute('[data-volver]', 'href') === 'acreditaciones.html?perfil=directivo', t(`${donde}: la ficha regresa a su lista con su perfil`));
+      await page.click('button:has-text("Cancelar acreditación")');
+      await page.waitForSelector('#dlg-cancelar[open]');
+      comprueba(await page.evaluate(() => document.activeElement && document.activeElement.id === 'motivo-cancelar'), t(`${donde}: «Cancelar acreditación» abre el diálogo con el foco en el motivo`));
+      await revisaAxe(page, `${donde}, diálogo de cancelación`);
+      await page.fill('#motivo-cancelar', 'Motivo de la prueba del perfil directivo.');
+      await page.fill('#fundamento-cancelar', '[Art. __, fracc. __]');
+      await page.click('#dlg-cancelar [data-accion="enviar"]');
+      await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
+      const ficha = await texto26(page, 'main');
+      comprueba(/Acreditación cancelada/.test(ficha) && /Rosa Ejemplo Directiva/.test(ficha) && /Motivo de la prueba del perfil directivo/.test(ficha)
+        && await page.locator('button', { hasText: 'Cancelar acreditación' }).count() === 0,
+        t(`${donde}: el directivo cancela ${a.numero}; la ficha la registra a su nombre, con el motivo`));
+      // En la ficha de una acreditación con su reposición por revisar: la ve, pero no revisa el acta ni entrega
+      if (aRepos) {
+        await page.goto(BASE + `acreditacion.html?numero=${aRepos.numero}&perfil=directivo`);
+        await page.waitForSelector('[data-reposicion]:not([hidden])');
+        comprueba(await page.isHidden('#acta') && await page.isHidden('#entrega'), t(`${donde}: con una reposición por revisar (${aRepos.numero}), la ve pero no revisa el acta ni entrega`));
+      }
+      // «Consultar un trámite» con su perfil (respuesta de Liber del 26/10/2026)
+      await page.goto(BASE + 'ventanilla.html?perfil=directivo');
+      await page.waitForSelector('[data-sesion-personal] a');
+      const qp = datos.solicitud.find((s) => s.estado === 'con_observaciones');
+      await page.fill('#buscar', qp.folio);
+      await page.waitForSelector('[data-resultados] .ficha .btn');
+      await page.click('[data-resultados] .ficha .btn');
+      await page.waitForSelector('[data-ficha]:not([hidden])');
+      comprueba(/Perfil: directivo/.test(await texto26(page, '[data-sesion-personal]')) && await page.getAttribute('[data-sesion-personal] a[href="ventanilla.html?perfil=directivo"]', 'aria-current') === 'page'
+        && /Qué decirle:/.test(await texto26(page, '[data-ficha]')) && !(await page.$('[data-ficha] form, [data-ficha] .ficha-acciones')),
+        t(`${donde}: el directivo usa «Consultar un trámite» (busca y ve la ficha, sin acciones) con su perfil en la cabecera`));
+      await revisaAxe(page, `${donde}, «Consultar un trámite» del directivo`);
+      // Los grupos, sólo de lectura: la lista (en la página de Capacitación) y la ficha
+      await page.goto(BASE + 'capacitacion.html?perfil=directivo');
+      await page.waitForSelector('[data-por-confirmar] [data-filas] tr, [data-por-confirmar] [data-tabla-vacia]:not([hidden])');
+      const acc = await page.$$eval('main tbody a, main tbody button', (l) => l.map((x) => x.textContent.trim()));
+      comprueba(await texto26(page, '#t-por-confirmar') === 'Grupos por confirmar' && /Es una consulta/.test(await texto26(page, '[data-bajada]')) && acc.length > 0 && acc.every((x) => x === 'Ver')
+        && await page.getAttribute('[data-sesion-personal] a[href="capacitacion.html?perfil=directivo"]', 'aria-current') === 'page',
+        t(`${donde}: «Grupos» del directivo: por confirmar y confirmados, cada fila sólo con «Ver» (${acc.length} filas)`));
+      await revisaAxe(page, `${donde}, «Grupos» del directivo`);
+      await sinDesborde(page, t(`${donde}, «Grupos» del directivo`));
+      for (const g of [datos.grupo.find((x) => x.estado === 'en_integracion'), datos.grupo.find((x) => x.estado === 'en_curso')]) {
+        await page.goto(BASE + `grupo.html?folio=${g.folio}&perfil=directivo`);
+        await page.waitForSelector('[data-situacion] .estado');
+        await page.waitForTimeout(100);
+        const escribe = await page.evaluate(() => [...document.querySelectorAll('main form, main button, main a.btn')].filter((e) => e.checkVisibility()
+          && !e.closest('.pestanas-lista, .plegable-titulo, [data-visor]') && !e.matches('.btn-atras, .pestana')).map((e) => (e.textContent || e.id).trim().slice(0, 40)));
+        comprueba(!escribe.length && await page.getAttribute('.btn-atras', 'href') === 'capacitacion.html?perfil=directivo',
+          t(`${donde}: la ficha del grupo ${g.folio} (${g.estado}) es de consulta: sin formularios ni botones para cambiarlo${escribe.length ? ' · hay: ' + escribe.join(' | ') : ''}; regresa a «Grupos»`));
+        await revisaAxe(page, `${donde}, ficha del grupo ${g.estado} del directivo`);
+      }
+      comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+    } finally { await c.close(); }
+  }
+  // El menú de pruebas lo ofrece: el caso «Directivo» y la pantalla en «Ir a otra pantalla»
+  const cp = readFileSync(join(raiz, 'sitio/app/casos-prueba.js'), 'utf8');
+  comprueba(APD_CASOS_PRUEBA.claves().includes('personal-directivo') && /\['personal-directivo', 'Directivo: cancelar una acreditación', [^\n]*'acreditaciones\.html\?perfil=directivo'\]/.test(cp) && !/perfil=administracion/.test(cp),
+    t('menú de pruebas: el caso «Directivo: cancelar una acreditación» abre «Acreditaciones» con su perfil; ya no hay caso de la administración que cancela'));
+  const pr = readFileSync(join(raiz, 'sitio/app/pruebas.js'), 'utf8');
+  comprueba(/\['Directivo', \[\['acreditaciones\.html\?perfil=directivo'/.test(pr), t('menú de pruebas: «Directivo» en «Ir a otra pantalla»'));
+}
+
+/* Cita de cotejo dentro de 20 días hábiles (P205, decisión de Liber del 26/10/2026): al validar en «Revisar» y al dar una
+   cita nueva en «Cita de cotejo», el calendario va del siguiente día hábil a 20 días hábiles después (dias_habiles_cita),
+   sin sábados ni domingos, y la ayuda dice el rango; un día fuera del rango o en fin de semana se marca. Y P199: «Mis
+   trámites» dice hasta cuándo corregir y el plazo de la revisión. */
+async function citaVeinteDias(navegador) {
+  const t = (m) => `[cita en 20 días] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const corte = datos.fecha_corte;
+  const desde = sumaHabilesIso(corte, 1);
+  const hasta = sumaHabilesIso(corte, 20);
+  const fueraDia = sumaHabilesIso(corte, 21);
+  const sabado = (() => { let d = sumaDiasIso(corte, 1); while (new Date(`${d}T12:00:00Z`).getUTCDay() !== 6) d = sumaDiasIso(d, 1); return d; })();
+  const porRevisarS = datos.solicitud.find((s) => s.estado === 'enviada' && s.tipo_acreditacion === 'poda' && s.modalidad === 'nueva');
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'pendiente' && x.programada_en.startsWith(corte));
+  const sCita = pausaHoy && datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id && x.estado === 'validada_en_linea');
+  const errorDe = (page) => page.evaluate(() => (document.querySelector('[data-campo="cita_fecha"] .err') || {}).textContent || '');
+  const prueba = async (page, donde, desdeAqui) => {
+    comprueba(await page.getAttribute('[data-campo="cita_fecha"]', 'data-min') === desdeAqui && await page.getAttribute('[data-campo="cita_fecha"]', 'data-max') === hasta,
+      t(`${donde}: el calendario va del ${dma(desdeAqui)} al ${dma(hasta)} (20 días hábiles)`));
+    comprueba(new RegExp(`de lunes a viernes, dentro de los 20 días hábiles siguientes: del ${dma(desdeAqui)} al ${dma(hasta)}`).test(await texto26(page, '#ay-cita_fecha')),
+      t(`${donde}: la ayuda de la fecha dice el rango («dentro de los 20 días hábiles siguientes: del ${dma(desdeAqui)} al ${dma(hasta)}»)`));
+    await page.fill('#cita_fecha', dma(fueraDia)); await page.press('#cita_fecha', 'Tab');
+    await page.waitForFunction(() => document.getElementById('cita_fecha').getAttribute('aria-invalid') === 'true', null, { timeout: 3000 }).catch(() => null);
+    comprueba(new RegExp(`posterior al ${dma(hasta)}`).test(await errorDe(page)), t(`${donde}: el día 21 hábil (${dma(fueraDia)}) se marca («…posterior al ${dma(hasta)}»)`));
+    await page.fill('#cita_fecha', dma(sabado)); await page.press('#cita_fecha', 'Tab');
+    await page.waitForFunction(() => /lunes a viernes|sábado|domingo/i.test((document.querySelector('[data-campo="cita_fecha"] .err') || {}).textContent || ''), null, { timeout: 3000 }).catch(() => null);
+    comprueba(/lunes a viernes|sábado|domingo/i.test(await errorDe(page)), t(`${donde}: un sábado dentro del plazo (${dma(sabado)}) se marca`));
+    await page.fill('#cita_fecha', dma(hasta)); await page.press('#cita_fecha', 'Tab');
+    await page.waitForFunction(() => document.getElementById('cita_fecha').getAttribute('aria-invalid') !== 'true', null, { timeout: 3000 }).catch(() => null);
+    comprueba(await page.getAttribute('#cita_fecha', 'aria-invalid') !== 'true' && !(await errorDe(page)).trim(), t(`${donde}: el último día del plazo (${dma(hasta)}) se acepta`));
+    await revisaAxe(page, donde);
+  };
+  for (const [ancho, alto, donde] of [[390, 844, '390 px'], [1280, 900, '1280 px']]) {
+    const { c, page, errores } = await contexto26(navegador, ancho, alto);
+    try {
+      await page.goto(BASE + `revisar.html?folio=${porRevisarS.folio}`);
+      await page.waitForSelector('#formulario:not([hidden])');
+      await aceptaTodos(page);
+      await page.waitForSelector('#cita_fecha', { state: 'visible' });
+      await prueba(page, `Revisar a ${donde}`, desde);
+      if (sCita) {
+        await page.goto(BASE + `cotejo.html?folio=${sCita.folio}`);
+        await page.waitForSelector('[data-campo="cita_fecha"][data-min]', { state: 'attached' });
+        const minC = await page.getAttribute('[data-campo="cita_fecha"]', 'data-min');
+        comprueba(minC === desde && await page.getAttribute('[data-campo="cita_fecha"]', 'data-max') === hasta,
+          t(`Cita de cotejo a ${donde}: la cita nueva va del ${dma(desde)} al ${dma(hasta)}`));
+        comprueba(new RegExp(`dentro de los 20 días hábiles siguientes: del ${dma(desde)} al ${dma(hasta)}`).test(await page.textContent('#ay-cita_fecha')),
+          t(`Cita de cotejo a ${donde}: la ayuda dice el rango`));
+      }
+      comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+    } finally { await c.close(); }
+  }
+  // P199: «Mis trámites» dice hasta cuándo corregir (20 días hábiles) y el plazo de la revisión (10 días hábiles)
+  const conObsS = datos.solicitud.find((s) => s.estado === 'con_observaciones' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa'));
+  const enviadaS = datos.solicitud.find((s) => s.estado === 'enviada' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa')
+    && !datos.solicitud.some((x) => x.solicitante_id === s.solicitante_id && x.id !== s.id && !FINALES.includes(x.estado)));
+  const diaMx = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: ZONA });
+  for (const [s, que, dias, texto] of [[conObsS, 'con observaciones', 20, 'Corrige a más tardar el'], [enviadaS, 'en revisión', 10, 'a más tardar el']]) {
+    const { c, page, errores } = await contexto26(navegador, 390, 844, s.solicitante_id);
+    try {
+      await page.goto(BASE + 'tramites.html');
+      await page.waitForSelector('[data-solicitudes] .ficha');
+      const f = await texto26(page, '[data-solicitudes]');
+      const limite = dma(sumaHabilesIso(diaMx(s.estado_desde), dias));
+      comprueba(f.includes(limite) && f.includes(texto) && !/Fecha por definir|Pendiente \(P02\)/.test(f),
+        t(`«Mis trámites» ${que}: «${texto} ${limite}» (${dias} días hábiles), sin «Fecha por definir»`));
+      comprueba(!errores.length, t(`«Mis trámites» ${que}: sin errores en la consola`));
+    } finally { await c.close(); }
+  }
+}
+
+/* Letreros de ayuda (decisión de Liber del 26/10/2026): en el inicio, «Crea tu cuenta» (sólo el primer paso), «Entrar», la
+   solicitud (paso de documentos, también al corregir), «Cargar el documento correcto» y «Mis trámites»: uno y sólo uno por
+   pantalla, aviso neutro del estándar (no de alerta), con la sede, su dirección y el horario de los parámetros, sin
+   teléfono (P132); después de la acción principal, que no se mueve (se mide con y sin el letrero, a 390 y 1280 px). */
+async function letrerosAyuda(navegador) {
+  const t = (m) => `[letreros de ayuda] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const sede = (datos.parametro.find((x) => x.clave === 'sede') || {}).valor;
+  const horario = (datos.parametro.find((x) => x.clave === 'informes_horario') || {}).valor;
+  const conObsS = datos.solicitud.find((s) => s.estado === 'con_observaciones' && datos.solicitante.some((p) => p.id === s.solicitante_id && p.estado === 'activa'));
+  const pausaHoy = datos.cita.find((x) => x.resultado === 'en_pausa' && x.programada_en.startsWith(datos.fecha_corte));
+  const sPausa = datos.solicitud.find((x) => x.id === pausaHoy.solicitud_id);
+  // [pantalla, dirección, sesión, lo que hay que esperar, la acción principal, el título del letrero]
+  const PANTALLAS = [
+    ['inicio', 'index.html', null, '.menu-inicio', '.menu-inicio .menu-opcion', '¿Necesitas ayuda?'],
+    ['Crea tu cuenta (primer paso)', 'cuenta.html', null, '#formulario[data-formkit="listo"] section[data-paso]:not([hidden])', 'section[data-paso]:not([hidden]) [data-accion="siguiente"]', '¿Necesitas ayuda para crear tu cuenta?'],
+    ['Entrar', 'entrar.html', null, '#formulario', '[data-accion="enviar"]', '¿Necesitas ayuda para entrar?'],
+    ['solicitud al corregir (documentos)', `solicitud.html?folio=${conObsS.folio}`, conObsS.solicitante_id, 'section[data-titulo="Documentos"]:not([hidden])', 'section[data-paso]:not([hidden]) [data-accion="siguiente"]', '¿Necesitas ayuda con tus documentos?'],
+    ['Cargar el documento correcto', `corregir.html?folio=${sPausa.folio}`, sPausa.solicitante_id, '#formulario:not([hidden])', '[data-accion="enviar"]', '¿Necesitas ayuda para corregir tu documento?'],
+    ['Mis trámites', 'tramites.html', conObsS.solicitante_id, '[data-solicitudes] .ficha', '[data-solicitudes] .btn-primario', '¿Necesitas ayuda con tu trámite?']
+  ];
+  for (const [ancho, alto, donde] of [[390, 844, '390 px'], [1280, 900, '1280 px']]) {
+    for (const [nombre, url, sesion, listo, accion, titulo] of PANTALLAS) {
+      const d = `${nombre} a ${donde}`;
+      const { c, page, errores } = await contexto26(navegador, ancho, alto, sesion);
+      try {
+        await page.goto(BASE + url);
+        await page.waitForSelector(listo);
+        await page.waitForTimeout(100);
+        const r = await page.evaluate(() => {
+          const todos = [...document.querySelectorAll('[data-ayuda]')];
+          const vis = todos.filter((e) => e.checkVisibility());
+          const e = vis[0];
+          return { todos: todos.length, visibles: vis.length, clases: e ? e.className : '', texto: e ? e.textContent.replace(/\s+/g, ' ').trim() : '',
+            titulo: e ? (e.querySelector('.aviso-titulo') || {}).textContent : '', rol: e ? e.getAttribute('role') : 'x', icono: e ? (e.querySelector('use') || {}).getAttribute('href') : '' };
+        });
+        comprueba(r.todos === 1 && r.visibles === 1, t(`${d}: el letrero está y sólo una vez (${r.todos} en la página, ${r.visibles} a la vista)`));
+        comprueba(r.titulo === titulo && r.clases === 'aviso' && !r.rol && r.icono === '#i-info',
+          t(`${d}: «${r.titulo}», aviso neutro del estándar con el ícono de información, sin rol de alerta`));
+        comprueba(r.texto.includes('Puedes pedirle a un familiar, a un amigo o al personal de la Secretaría que te ayude.') && r.texto.includes(`También puedes ir al ${sede}`)
+          && r.texto.includes('Canal de Chalco s/n') && r.texto.includes(horario) && r.texto.endsWith('y ahí te ayudamos.') && !/\d{2}\s?\d{4}\s?\d{4}|tel[eé]fono|pendiente/i.test(r.texto),
+          t(`${d}: dice a quién pedir ayuda y que en el Vivero, con su dirección y su horario, le ayudan; de tú y sin teléfono`));
+        // La acción principal no se mueve por el letrero
+        const y = () => page.evaluate((s) => { const e = [...document.querySelectorAll(s)].find((x) => x.checkVisibility()); return e ? Math.round(e.getBoundingClientRect().top + scrollY) : null; }, accion);
+        const con = await y();
+        const altoLetrero = await page.evaluate(() => { const e = [...document.querySelectorAll('[data-ayuda]')].find((x) => x.checkVisibility()); const h = Math.round(e.getBoundingClientRect().height); e.remove(); return h; });
+        const sin = await y();
+        comprueba(con !== null && con === sin, t(`${d}: la acción principal no se mueve por el letrero (${con} px con él, ${sin} px sin él; el letrero mide ${altoLetrero} px)`));
+        await page.goto(BASE + url);
+        await page.waitForSelector(listo);
+        await revisaAxe(page, d);
+        await sinDesborde(page, t(d));
+        comprueba(!errores.length, t(`${d}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+      } finally { await c.close(); }
+    }
+  }
+  // Sólo en el primer paso de «Crea tu cuenta» y en el de documentos de la solicitud; en ninguna otra pantalla de la persona
+  const enPaso = (archivo) => { const h = readFileSync(join(raiz, 'sitio', archivo), 'utf8'); const i = h.indexOf('data-ayuda>'); const antes = h.slice(0, i); return (antes.match(/data-titulo="([^"]+)"/g) || []).pop() || ''; };
+  comprueba(enPaso('cuenta.html') === 'data-titulo="Quién eres"' && enPaso('solicitud.html') === 'data-titulo="Documentos"',
+    t('en «Crea tu cuenta» va en el primer paso («Quién eres») y en la solicitud, en el de documentos'));
+  const conLetrero = readdirSync(join(raiz, 'sitio')).filter((f) => f.endsWith('.html') && /\sdata-ayuda>/.test(readFileSync(join(raiz, 'sitio', f), 'utf8'))).sort();
+  comprueba(conLetrero.join(',') === 'corregir.html,cuenta.html,entrar.html,index.html,solicitud.html,tramites.html', t(`el letrero está justo en las seis pantallas: ${conLetrero.join(', ')}`));
+}
+
 /* ── Acomodo de escritorio, parte B (decisión de Liber del 25/10/2026; docs/diseno-escritorio/DIAGNOSTICO.md 4.3 y 4.4;
    SOLO=escritorio-b) ──
    Inicio del personal (bandeja) y «Grupos» (sus cuatro pasos) a 1366 × 768, 1440 × 900 y 1920 × 1080:
@@ -7586,7 +7844,9 @@ async function escritorioB(navegador) {
   const PANEL = ['#t-tu-grupo', '[data-panel-datos] dd', '[data-panel-siguiente]'];
   const PANTALLAS = [
     // Con la cabecera compacta de la parte A (integración), también la primera fila con su «Revisar», a 1366 × 768
-    ['bandeja', 'revision.html', '[data-filas] tr', ['[data-indicadores]', '[role="tablist"]', '#buscar', '.tabla-bandeja thead', '[data-filas] tr:first-child .btn'], 6.201],
+    // A 390 px, 5.16 pantallas desde el 26/10/2026 (antes 6.201): sin registro asistido ya no están sus dos entradas ni la
+    // lista de avisos por teléfono; queda la entrada «Consultar un trámite»
+    ['bandeja', 'revision.html', '[data-filas] tr', ['[data-indicadores]', '[role="tablist"]', '#buscar', '.tabla-bandeja thead', '[data-filas] tr:first-child .btn'], 5.16],
     ['grupos · 1 El curso', 'grupos.html?curso=poda-nueva&paso=1', '#paso-curso:not([hidden])', PANEL, 4.517],
     ['grupos · 2 La semana', 'grupos.html?curso=poda-nueva&paso=2', '#paso-semana:not([hidden]) .arm-semana', PANEL, 5.675],
     ['grupos · 3 Quiénes van', 'grupos.html?curso=poda-nueva&paso=3', '#paso-personas:not([hidden]) .plan-persona', [...PANEL, '[data-panel-cupo]'], 5.224],
@@ -7594,6 +7854,8 @@ async function escritorioB(navegador) {
   ];
   for (const [w, h] of [[1366, 768], [1440, 900], [1920, 1080]]) {
     const ctx = await navegador.newContext({ viewport: { width: w, height: h }, locale: 'es-MX', timezoneId: ZONA });
+    // El observador de regiones vivas, sólo para esperar el anuncio de la pestaña inicial antes de «Quitar» (asientaPestanas)
+    await ctx.addInitScript(observadorVivas);
     const page = await ctx.newPage();
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
@@ -7624,27 +7886,33 @@ async function escritorioB(navegador) {
       await page.waitForSelector('[data-filas] tr');
       await page.focus('#pe-solicitudes');
       await page.keyboard.press('ArrowRight');
-      comprueba(await page.evaluate(() => document.activeElement.id === 'pe-avisos' && document.getElementById('pe-avisos').getAttribute('aria-selected') === 'true'
-        && document.getElementById('panel-solicitudes').hidden && !document.getElementById('panel-avisos').hidden),
-      t('bandeja: la flecha derecha pasa a «Avisos por teléfono» y muestra su panel (módulo pestanas del estándar)'));
-      await revisaAxe(page, 'bandeja con la pestaña «Avisos por teléfono»');
-      await page.keyboard.press('End');
-      comprueba(await page.isVisible('#panel-asistido .menu-opcion') && !(await page.isVisible('#panel-avisos')), t('bandeja: Fin lleva a «Registro asistido»'));
+      // Sin registro asistido (decisión del 26/10/2026): dos pestañas, la bandeja y «Consultar un trámite»
+      comprueba(await page.evaluate(() => document.activeElement.id === 'pe-consulta' && document.getElementById('pe-consulta').getAttribute('aria-selected') === 'true'
+        && document.getElementById('panel-solicitudes').hidden && !document.getElementById('panel-consulta').hidden
+        && document.querySelectorAll('[data-pestanas] [role="tab"]').length === 2),
+      t('bandeja: la flecha derecha pasa a «Consultar un trámite» y muestra su panel (módulo pestanas del estándar); son dos pestañas'));
+      await revisaAxe(page, 'bandeja con la pestaña «Consultar un trámite»');
+      comprueba(await page.getAttribute('#panel-consulta .menu-opcion', 'href') === 'ventanilla.html', t('bandeja: «Consultar un trámite» lleva a la búsqueda (ventanilla.html)'));
+      await page.keyboard.press('Home');
+      comprueba(await page.isVisible('#panel-solicitudes') && !(await page.isVisible('#panel-consulta')), t('bandeja: Inicio regresa a «Solicitudes por revisar»'));
       await page.click('#pe-solicitudes');
       const ind = (await page.textContent('[data-indicadores]')).replace(/\s+/g, ' ').trim();
       const enviadas = datos.solicitud.filter((x) => x.estado === 'enviada').length;
-      comprueba(new RegExp(`^Por revisar ${enviadas} `).test(ind) && /Citas de hoy \d+ /.test(ind) && /Avisos por teléfono \d+ pendientes?/.test(ind) && /En espera de grupo \d+ en \d curso/.test(ind)
+      comprueba(new RegExp(`^Por revisar ${enviadas} `).test(ind) && /Citas de hoy \d+ /.test(ind) && !/Avisos por teléfono/.test(ind) && /En espera de grupo \d+ en \d curso/.test(ind)
         && (await page.textContent('#pe-solicitudes')) === `Solicitudes por revisar (${enviadas})`,
       t(`bandeja: los indicadores («${ind}») y la cuenta de la pestaña`));
-      await page.click('.indicador-inicio[href="#t-avisos-tel"]');
-      comprueba(await page.isVisible('#t-avisos-tel') && (await page.getAttribute('#pe-avisos', 'aria-selected')) === 'true', t('bandeja: el indicador «Avisos por teléfono» abre su pestaña'));
-      await page.goto(BASE + 'revision.html#t-avisos-tel');
-      await page.waitForSelector('[data-avisos-lista] .ficha');
-      comprueba(await page.isVisible('[data-avisos-lista] .ficha'), t('bandeja: revision.html#t-avisos-tel (desde la ventanilla) abre la pestaña de los avisos'));
+      comprueba((await page.$$('.indicador-inicio')).length === 3, t('bandeja: tres indicadores (sin «Avisos por teléfono»)'));
+      await page.goto(BASE + 'revision.html#t-consulta');
+      await page.waitForSelector('#panel-consulta .menu-opcion');
+      comprueba(await page.isVisible('#panel-consulta .menu-opcion') && (await page.getAttribute('#pe-consulta', 'aria-selected')) === 'true',
+        t('bandeja: revision.html#t-consulta abre la pestaña «Consultar un trámite»'));
       comprueba(await page.isHidden('[data-paginacion]'), t('bandeja: con 25 solicitudes o menos no hay paginación'));
       // «Grupos»: «Quitar» del panel desmarca, anuncia «n de 25» y deja el foco en la siguiente; los botones del panel
       await page.goto(BASE + 'grupos.html?curso=poda-nueva&paso=3');
       await page.waitForSelector('#paso-personas:not([hidden]) .plan-persona');
+      // El anuncio de la pestaña inicial, antes de «Quitar»: si llega tarde, pisaba «n de 25» (el contexto lleva el
+      // observador de regiones vivas para esperarlo)
+      await asientaPestanas(page);
       const antes = await page.$$eval('[data-quitar]', (l) => l.length);
       const folio = await page.getAttribute('[data-quitar]', 'data-quitar');
       await page.click('[data-quitar]');
@@ -7689,7 +7957,7 @@ async function escritorioB(navegador) {
     const orden = await page.evaluate(() => {
       const y = (s) => { const e = document.querySelector(s); return e && e.checkVisibility() ? e.getBoundingClientRect().top + scrollY : null; };
       const sinEscritorio = ['[data-indicadores]', '.pestanas-lista', '[data-panel-grupo]', '.espera-cabeza', '[data-filtro-org]'].every((s) => y(s) === null);
-      if (document.querySelector('#panel-solicitudes')) return sinEscritorio && y('#panel-solicitudes') < y('#panel-asistido .menu-opcion') && y('#panel-asistido .menu-opcion') < y('#t-avisos-tel');
+      if (document.querySelector('#panel-solicitudes')) return sinEscritorio && y('#panel-solicitudes') < y('#panel-consulta .menu-opcion');
       const paso = [...document.querySelectorAll('#armar [data-paso]')].findIndex((s) => !s.hidden) + 1;
       return sinEscritorio && y('#panel-armar') < y('#programados') && y('#programados') < y('[data-terminados] summary') && (paso === 1 || y('[data-eleccion]') < y('#armar'));
     });
@@ -7700,383 +7968,97 @@ async function escritorioB(navegador) {
   await ctx.close();
 }
 
-/* ── Registro asistido (decisión de Liber del 25/10/2026; SOLO=asistido) ──
-   Personas que no saben leer ni escribir: el personal de revisión y cotejo las registra en el Vivero, con ellas presentes.
-   El flujo completo por pasos en teléfono y en computadora (la fotografía cargada en teléfono y tomada con la cámara de la
-   computadora, con una cámara simulada), con axe, el foco y los textos: crear la cuenta (sin la marca del aviso no se
-   continúa; la mayoría de edad con la CURP), capturar su solicitud en el modo asistido de solicitud.html (la marca de
-   lectura en lugar de las declaraciones) e imprimir el acuse; que llega a «Revisar» con su etiqueta; la ventanilla (buscar,
-   decirle en qué va y cargar por ella lo corregido); los avisos por teléfono (el texto y los dos resultados); la activación
-   posterior en «Crea tu cuenta» y que, sin activarla, no hay nada que ver en línea. */
-async function registroAsistido(navegador) {
-  const t = (m) => `[registro asistido] ${m}`;
-  const bloque = async (nombre, fn) => { try { await fn(); } catch (e) { comprueba(false, t(`${nombre}: se detuvo (${String(e.message).split('\n')[0]})`)); } };
-  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
-  if (!axe) console.log('OMITIDO  [registro asistido] axe: falta AXE=<ruta a axe.min.js del estándar>');
-  const revisaAxe = async (page, que) => {
-    if (!axe) return;
+/* ── Decisiones de Liber del 26/10/2026 (SOLO=consulta, SOLO=ayuda, SOLO=directivo, SOLO=cita20) ──
+   Sin registro asistido: la ventanilla queda como «Consultar un trámite», consulta general del personal de revisión y
+   cotejo; letreros de ayuda para la persona solicitante; perfil «Directivo» (P201) y la cita de cotejo dentro de 20 días
+   hábiles (P205). En teléfono (390 px) y computadora (1280 px), con axe, sin desborde y sin errores en la consola. */
+const axeDel26 = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null;
+function revisaAxe26(t) {
+  return async (page, que) => {
+    if (!axeDel26) return;
     await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))));
-    if (!(await page.evaluate(() => Boolean(window.axe)))) await page.evaluate(axe);
+    if (!(await page.evaluate(() => Boolean(window.axe)))) await page.evaluate(axeDel26);
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations
       .map((x) => `${x.id} (${x.nodes.length}): ${x.nodes.map((n) => n.html.slice(0, 160)).join(' || ')}`));
     comprueba(!v.length, t(`${que}: axe sin violaciones${v.length ? ': ' + v.join(', ') : ''}`));
   };
-  const nuevoEn = async (nav, ancho, alto, sesion) => {
-    const movil = ancho < 600;
-    const c = await nav.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
-    if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
-    const page = await c.newPage();
-    const errores = [];
-    page.on('pageerror', (e) => errores.push(String(e)));
-    page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
-    return { c, page, errores };
-  };
-  const texto = async (page, sel) => ((await page.textContent(sel)) || '').replace(/\s+/g, ' ').trim();
-  const curpDe = (nombre, primer, segundo, nacimiento, sexo) => conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre, primer, segundo }, nacimiento, sexo, 'NE')
-    + (nacimiento < '2000' ? '0' : 'A'));
-  const AMALIA = datos.solicitante.find((p) => p.registro_asistido_en && !p.activada_en && datos.solicitud.some((s) => s.solicitante_id === p.id && s.estado === 'con_observaciones'));
-  const BENITO = datos.solicitante.find((p) => p.registro_asistido_en && !p.activada_en && datos.solicitud.some((s) => s.solicitante_id === p.id && s.estado === 'enviada'));
-  const sAmalia = datos.solicitud.find((s) => s.solicitante_id === AMALIA.id);
-  const sBenito = datos.solicitud.find((s) => s.solicitante_id === BENITO.id);
-  comprueba(Boolean(AMALIA && BENITO && sAmalia && sBenito) && datos.aviso_telefono.some((a) => a.solicitante_id === AMALIA.id && a.aviso === 'S2' && !a.resultado),
-    t('los ficticios traen personas del registro asistido sin activar, con su solicitud capturada por el personal y un aviso por teléfono pendiente'));
-  const tel = (p) => `${p.telefono.slice(0, 2)} ${p.telefono.slice(2, 6)} ${p.telefono.slice(6)}`;
+}
+async function contexto26(navegador, ancho, alto, sesion) {
+  const movil = ancho < 600;
+  const c = await navegador.newContext({ timezoneId: ZONA, locale: 'es-MX', viewport: { width: ancho, height: alto }, isMobile: movil, hasTouch: movil, reducedMotion: 'reduce' });
+  if (sesion) await c.addInitScript((id) => { try { if (!sessionStorage.getItem('prueba.sesion')) { localStorage.setItem('apd.sesion', JSON.stringify({ id })); sessionStorage.setItem('prueba.sesion', '1'); } } catch (e) { /* sin almacenamiento */ } }, sesion);
+  const page = await c.newPage();
+  const errores = [];
+  page.on('pageerror', (e) => errores.push(String(e)));
+  page.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+  return { c, page, errores };
+}
+const texto26 = async (page, sel) => ((await page.textContent(sel)) || '').replace(/\s+/g, ' ').trim();
 
-  /* 1 · El flujo completo: crear la cuenta, capturar la solicitud y el acuse; en teléfono (fotografía cargada) y en
-     computadora (cámara de la computadora simulada). La solicitud llega a «Revisar». */
-  const camaraNav = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}),
-    args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] });
-  const personas = [
-    { ancho: 390, alto: 844, donde: 'teléfono', nav: navegador, nombre: 'Fermín', primer: 'Supuesto', segundo: 'Ejemplo', nacimiento: '1975-03-09', sexo: 'H', tel: '0000000092', correo: '', camara: false },
-    { ancho: 1280, alto: 900, donde: 'computadora', nav: camaraNav, nombre: 'Elvira', primer: 'Supuesto', segundo: 'Modelo', nacimiento: '1980-05-17', sexo: 'M', tel: '0000000091', correo: 'elvira-supuesto@ejemplo.local', camara: true }
-  ];
-  try {
-    for (const x of personas) {
-      await bloque(`flujo en ${x.donde}`, async () => {
-        const curp = curpDe(x.nombre, x.primer, x.segundo, x.nacimiento, x.sexo);
-        const { c, page, errores } = await nuevoEn(x.nav, x.ancho, x.alto);
-        if (x.camara) await c.grantPermissions(['camera']);
-        await page.goto(BASE + 'asistido.html');
-        await page.waitForSelector('#formulario[data-formkit="listo"]');
-        // Paso 1: el aviso de privacidad; sin la marca no se continúa y el foco va a la marca
-        comprueba(await tituloPaso(page) === 'Aviso de privacidad' && /Léale el aviso de privacidad/.test(await texto(page, pasoVisible))
-          && /recaba tu nombre, tu CURP/.test(await texto(page, pasoVisible)) && /María Ejemplo Revisora/.test(await texto(page, '[data-sesion-personal]')),
-          t(`${x.donde}: el primer paso es leerle el aviso de privacidad, de usted al personal y el aviso de tú para la persona, con la cabecera del personal`));
-        await revisaAxe(page, `${x.donde}, paso «Aviso de privacidad»`);
-        await page.click(`${pasoVisible} [data-accion="siguiente"]`);
-        await page.waitForSelector('[data-campo="aviso_leido"] .err:not(:empty)');
-        comprueba(await tituloPaso(page) === 'Aviso de privacidad' && /Marque la casilla/.test(await texto(page, '[data-campo="aviso_leido"] .err')),
-          t(`${x.donde}: sin la marca «Le leí el aviso de privacidad…» no se continúa, con el error de usted`));
-        comprueba(await page.evaluate(() => { const a = document.activeElement; return Boolean(a && (a.name === 'aviso_leido' || a.closest('.resumen-errores'))); }),
-          t(`${x.donde}: el foco va a la marca que falta (o al resumen de errores)`));
-        await marcar(page, 'input[name="aviso_leido"]');
-        await sigPaso(page);
-        // Paso 2: datos; la CURP con la misma comprobación que «Crea tu cuenta» y la mayoría de edad
-        comprueba(await tituloPaso(page) === 'Datos', t(`${x.donde}: con la marca pasa a los datos`));
-        await page.fill('#nombre', x.nombre); await page.fill('#primer_apellido', x.primer); await page.fill('#segundo_apellido', x.segundo);
-        const menor = curpDe(x.nombre, x.primer, x.segundo, '2012-05-17', x.sexo);
-        await page.fill('#curp', menor);
-        await page.fill('#telefono', x.tel);
-        await page.check('input[name="adscrito"][value="no"]', { force: true });
-        await page.click(`${pasoVisible} [data-accion="siguiente"]`);
-        await page.waitForSelector('[data-campo="curp"] .err:not(:empty)');
-        comprueba(await tituloPaso(page) === 'Datos' && /todavía no tiene 18 años cumplidos/.test(await texto(page, '[data-campo="curp"] .err')),
-          t(`${x.donde}: una CURP de menor de edad no deja continuar («todavía no tiene 18 años cumplidos»)`));
-        await revisaAxe(page, `${x.donde}, paso «Datos» con errores`);
-        await page.fill('#curp', curpDe(x.nombre, 'Otro', x.segundo, x.nacimiento, x.sexo));
-        await page.click(`${pasoVisible} [data-accion="siguiente"]`);
-        await page.waitForSelector('[data-campo="curp"] .err:not(:empty)');
-        comprueba(await tituloPaso(page) === 'Datos', t(`${x.donde}: una CURP que no corresponde al nombre no deja continuar (la misma comprobación que «Crea tu cuenta»)`));
-        await page.fill('#curp', curp);
-        if (x.correo) await page.fill('#correo', x.correo);
-        await sigPaso(page);
-        comprueba(await tituloPaso(page) === 'Fotografía' && await page.inputValue('#fecha_nacimiento') === dma(x.nacimiento) && await page.inputValue('#sexo') !== '',
-          t(`${x.donde}: con la CURP correcta pasa a la fotografía; la fecha y el sexo salen de la CURP${x.correo ? '' : '; el correo es opcional'}`));
-        // Paso 3: la fotografía, cargada o tomada con la cámara de la computadora
-        if (x.camara) {
-          await page.click('[data-camara-abrir]');
-          await page.waitForSelector('[data-camara-panel]:not([hidden])');
-          await page.waitForFunction(() => document.querySelector('[data-camara-vista]').videoWidth > 0);
-          comprueba(await page.evaluate(() => document.activeElement && document.activeElement.matches('[data-camara-tomar]')), t('computadora: al abrir la cámara, el foco va a «Tomar la fotografía»'));
-          await revisaAxe(page, 'computadora, la cámara abierta');
-          await page.click('[data-camara-tomar]');
-          await page.waitForSelector('[data-campo="foto"] .lista-arch li[data-estado="listo"]');
-          comprueba(await page.isHidden('[data-camara-panel]') && /fotografia-camara\.jpg/.test(await texto(page, '[data-campo="foto"] .lista-arch')),
-            t('computadora: la fotografía tomada con la cámara de la computadora entra al campo como un archivo, y la cámara se cierra'));
-        } else {
-          await cargaFoto(page);
-          bien(t('teléfono: la fotografía se carga en el mismo campo de «Crea tu cuenta»'));
-        }
-        await revisaAxe(page, `${x.donde}, paso «Fotografía»`);
-        await sigPaso(page);
-        // Paso 4: confirmar, con el resumen
-        const resumen = await texto(page, '[data-resumen-asistido]');
-        comprueba(await tituloPaso(page) === 'Confirmar' && resumen.includes(`${x.nombre} ${x.primer} ${x.segundo}`.toUpperCase()) && resumen.includes(curp)
-          && resumen.includes(tel({ telefono: x.tel })) && (x.correo ? resumen.includes(x.correo) : /No tiene \(es opcional\)/.test(resumen)) && /Se le leyó y lo aceptó/.test(resumen),
-          t(`${x.donde}: «Confirmar» resume lo capturado (aviso leído, nombre, CURP, teléfono, ${x.correo ? 'correo' : 'sin correo'} y fotografía)`));
-        await revisaAxe(page, `${x.donde}, paso «Confirmar»`);
-        await sinDesborde(page, t(`${x.donde}, registro`));
-        await pulsaEnviar(page);
-        await page.waitForURL(/solicitud\.html\?asistida=/);
-        await page.waitForSelector('[data-asistido-banner]:not([hidden])');
-        comprueba(new URL(page.url()).searchParams.get('asistida') === `prueba:${curp}`, t(`${x.donde}: al registrar sigue directo a capturar su solicitud`));
-        // La solicitud en modo asistido
-        await page.waitForSelector('#formulario[data-formkit="listo"]');
-        comprueba(new RegExp(`usted captura la solicitud de ${x.nombre.toUpperCase()}`).test(await texto(page, '[data-asistido-banner]'))
-          && /María Ejemplo Revisora/.test(await texto(page, '[data-sesion]')) && await page.inputValue('#asistido') === 'si'
-          && /se capturó al registrar a la persona/.test(await texto(page, '[data-adscripcion-info]')),
-          t(`${x.donde}: la solicitud se captura en el mismo formulario, en modo asistido (aviso al personal, su cabecera y la adscripción capturada)`));
-        await revisaAxe(page, `${x.donde}, solicitud asistida, paso «Trámite»`);
-        await page.check('input[name="tipo"][value="poda"]', { force: true });
-        // La carrera que no aparece en el catálogo (ajustes del equipo, 25/10/2026) también en el modo asistido: la misma
-        // ayuda y el mismo renglón del combo, para leérselos a la persona
-        await page.selectOption('#nivel_estudios', 'licenciatura');
-        await page.waitForSelector('#carrera', { state: 'visible' });
-        await page.click('#carrera');
-        await page.keyboard.type('Ingeniería en Arboricultura y Paisaje Urbano');
-        const renglon = await page.waitForSelector('[data-campo="carrera"] .combo-lista:not([hidden]) .combo-vacio').then((n) => n.textContent(), () => '');
-        comprueba(/Si la tuya no aparece, escríbela completa, como viene en tu título o cédula: la Secretaría la revisa\./.test(await texto(page, '[data-campo="carrera"] .ayuda'))
-          && renglon === 'No está en la lista: puedes dejarla así. Escríbela completa, como aparece en tu título o cédula; la Secretaría la revisa.',
-          t(`${x.donde}: en el modo asistido, la carrera que no está en el catálogo tiene la misma ayuda y el mismo renglón del combo («${renglon}»)`));
-        await page.keyboard.press('Escape');
-        await page.fill('#carrera', '');
-        await page.selectOption('#nivel_estudios', 'primaria');
-        await sigPaso(page);
-        comprueba(await cargaObligatorios(page) === 4, t(`${x.donde}: el personal carga sus 4 documentos escaneados`));
-        await sigPaso(page);
-        comprueba(await tituloPaso(page) === 'Revisión' && !(await page.isVisible('input[name="protesta"]')) && !(await page.isVisible('input[name="aviso"]'))
-          && /Le leí a la persona lo capturado, la declaración bajo protesta de decir verdad y el aviso de privacidad/.test(await texto(page, '[data-campo="lectura_aceptada"]')),
-          t(`${x.donde}: en la revisión, la marca de lectura del personal en lugar de las declaraciones de la persona`));
-        await page.click('[data-accion="enviar"]');
-        await page.waitForSelector('[data-campo="lectura_aceptada"] .err:not(:empty)');
-        comprueba(await page.isHidden('[data-acuse]'), t(`${x.donde}: sin la marca «Le leí a la persona lo capturado…» no se envía`));
-        await revisaAxe(page, `${x.donde}, solicitud asistida, revisión con error`);
-        await marcar(page, 'input[name="lectura_aceptada"]');
-        await page.click('[data-accion="enviar"]');
-        await page.waitForSelector('[data-acuse]:not([hidden])');
-        const folio = (await page.textContent('[data-acuse-folio]')).trim();
-        x.folio = folio;
-        x.curp = curp;
-        comprueba(/^APD-S-2026-\d{5}$/.test(folio) && await page.isVisible('[data-imprimir-acuse]') && !(await page.$('a[href="tramites.html"].btn-primario'))
-          && /Te avisamos por teléfono/.test(await texto(page, '[data-acuse] .secuencia')),
-          t(`${x.donde}: al enviar queda como una solicitud enviada, con su folio y el acuse para imprimir (sin «Ir a mis trámites»)`));
-        // La duración del curso en el acuse (ajustes del equipo, 25/10/2026: quinto día), también en el modo asistido
-        comprueba(/te avisamos las fechas por teléfono\. El curso es de 5 días, de lunes a viernes; el día 5 es de repaso de conocimientos y examen final\./.test(await texto(page, '[data-acuse] .secuencia')),
-          t(`${x.donde}: el acuse de la solicitud asistida dice la duración del curso: 5 días, de lunes a viernes, y el día 5 de repaso y examen final`));
-        // La hoja sencilla: el folio, la fecha y los informes de la Secretaría; en pantalla no se ve
-        await page.evaluate(() => { window.print = () => { window.__impreso = true; }; });
-        await page.click('[data-imprimir-acuse]');
-        await page.waitForFunction(() => window.__impreso === true);
-        const hoja = await texto(page, '[data-hoja-acuse]');
-        comprueba(hoja.includes(folio) && /\d{4} a las \d{2}:\d{2}/.test(hoja) && /Vivero Nezahualcóyotl/.test(hoja) && /de lunes a viernes/.test(hoja) && /Pendiente \(P132\)/.test(hoja)
-          && await page.evaluate(() => document.body.classList.contains('imprime-hoja')),
-          t(`${x.donde}: el acuse se imprime en una hoja sencilla con el folio, la fecha y los informes de la Secretaría (el teléfono, pendiente P132)`));
-        await page.emulateMedia({ media: 'print' });
-        comprueba(await page.isVisible('[data-hoja-acuse]') && await page.isHidden('main'), t(`${x.donde}: al imprimir sólo sale la hoja`));
-        await page.emulateMedia({ media: 'screen' });
-        await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
-        comprueba(await page.isHidden('[data-hoja-acuse]'), t(`${x.donde}: en pantalla la hoja no se ve`));
-        await revisaAxe(page, `${x.donde}, acuse de la solicitud asistida`);
-        await sinDesborde(page, t(`${x.donde}, acuse`));
-        // Llega a «Revisar»: en la bandeja y, al abrirla, con su etiqueta discreta
-        await page.goto(BASE + 'revision.html');
-        await page.waitForSelector('[data-filas] tr');
-        comprueba((await texto(page, '[data-filas]')).includes(folio), t(`${x.donde}: la solicitud asistida llega a «Solicitudes por revisar»`));
-        await page.goto(BASE + `revisar.html?folio=${folio}`);
-        await page.waitForSelector('[data-asistido-etiqueta]:not([hidden])');
-        comprueba(await texto(page, '[data-asistido-etiqueta]') === `Registro asistido: avisar por teléfono, ${tel({ telefono: x.tel })}`,
-          t(`${x.donde}: en «Revisar una solicitud», la etiqueta «Registro asistido: avisar por teléfono, ${tel({ telefono: x.tel })}»`));
-        comprueba(!errores.length, t(`${x.donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
-        x.contexto = { c, page, errores };
-      });
-    }
-  } finally { /* la cámara simulada se cierra al final */ }
-
-  /* 2 · Los avisos por teléfono: el pendiente de los ficticios, con el texto listo para decirlo; al validar en «Revisar» una
-     solicitud asistida aparece el de la cita; «Se le avisó» y «No contestó» lo quitan de la lista, con su mensaje y el foco */
-  await bloque('avisos por teléfono', async () => {
-    const x = personas[1];
-    if (!x.contexto) throw new Error('no se creó la persona de la computadora');
-    const { page, errores } = x.contexto;
-    // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
-    await page.goto(BASE + 'revision.html#t-avisos-tel');
-    await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
-    const ficha = page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) });
-    const txt = ((await ficha.textContent()) || '').replace(/\s+/g, ' ');
-    comprueba(txt.includes(tel(AMALIA)) && /Solicitud con observaciones/.test(txt) && txt.includes(`Solicitud ${sAmalia.folio}`) && /Comprobante de domicilio/.test(txt)
-      && /ventanilla del Vivero Nezahualcóyotl/.test(txt) && /Hola, te llamamos de la Secretaría del Medio Ambiente/.test(txt),
-      t('inicio del personal: el aviso pendiente con nombre, teléfono, qué avisar (de tú, listo para decirlo) y sus botones'));
-    comprueba(await page.getAttribute(`[data-avisos-lista] .ficha a[href="tel:${AMALIA.telefono}"]`, 'href') === `tel:${AMALIA.telefono}`, t('el teléfono se marca desde la lista'));
-    await revisaAxe(page, 'computadora, inicio del personal con avisos');
-    // Validar en «Revisar» la solicitud asistida: aparece el aviso de la cita, con su fecha y los datos para pagar
-    await page.goto(BASE + `revisar.html?folio=${x.folio}`);
-    await page.waitForSelector('#formulario:not([hidden])');
-    await aceptaTodos(page);
-    await page.fill('#cita_fecha', '21/10/2026'); await page.selectOption('#cita_hora', '10:00');
-    await page.focus('[data-accion="enviar"]');
-    await page.click('[data-accion="enviar"]');
-    await page.waitForSelector('[data-hecho]:not(.pasos-btn):not([hidden])');
-    // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
-    await page.goto(BASE + 'revision.html#t-avisos-tel');
-    await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
-    const cita = page.locator('[data-avisos-lista] .ficha', { hasText: 'ELVIRA SUPUESTO MODELO' });
-    const tc = ((await cita.textContent()) || '').replace(/\s+/g, ' ');
-    comprueba(/Cita de cotejo/.test(tc) && /miércoles 21 de octubre de 2026 a las 10:00/.test(tc) && /Lleva los mismos documentos impresos/.test(tc) && /referencia APDS2026/.test(tc),
-      t('al validar en «Revisar» la solicitud asistida queda el aviso por teléfono de la cita, con su día y hora y los datos para pagar'));
-    const antes = await page.locator('[data-avisos-lista] .ficha').count();
-    await cita.locator('button', { hasText: 'Se le avisó' }).click();
-    await page.waitForSelector('[data-avisos-resultado]:not([hidden]) .aviso');
-    comprueba(/Se registró que se le avisó/.test(await texto(page, '[data-avisos-resultado]')) && await page.locator('[data-avisos-lista] .ficha').count() === antes - 1
-      && !(await texto(page, '[data-avisos-lista]')).includes('ELVIRA SUPUESTO MODELO'),
-      t('«Se le avisó» lo registra y lo quita de la lista, con su mensaje'));
-    comprueba(await page.evaluate(() => { const a = document.activeElement; return Boolean(a && (a.matches('.ficha-titulo') || a.id === 't-avisos-tel')); }),
-      t('después de registrar, el foco va al siguiente aviso (o al título de la lista)'));
-    await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) }).locator('button', { hasText: 'No contestó' }).click();
-    await page.waitForFunction(() => /no contestó/.test(document.querySelector('[data-avisos-resultado]').textContent));
-    comprueba(!(await texto(page, '[data-avisos-lista]')).includes(APD_NOMBRE(AMALIA)) && /Se registró que no contestó/.test(await texto(page, '[data-avisos-resultado]')),
-      t('«No contestó» también lo registra (con quién y cuándo) y lo quita de la lista'));
-    comprueba(Object.values(await page.evaluate(() => JSON.parse(localStorage.getItem('apd.personal.avisos_telefono') || '{}'))).every((m) => m.por === 'revision.prueba' && m.en && ['se_le_aviso', 'no_contesto'].includes(m.resultado)),
-      t('cada resultado guarda quién lo registró y cuándo'));
-    await revisaAxe(page, 'computadora, inicio del personal después de registrar');
-    // En «Cita de cotejo», la misma etiqueta
-    await abreCotejo(page, x.folio);
-    await page.waitForSelector('[data-asistido-etiqueta]:not([hidden])');
-    comprueba(/^Registro asistido: avisar por teléfono, 00 0000 0091$/.test(await texto(page, '[data-asistido-etiqueta]')), t('en «Cita de cotejo», la etiqueta «Registro asistido: avisar por teléfono, …»'));
-    comprueba(!errores.length, t(`avisos: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
-  });
-
-  /* 3 · Ventanilla: buscar por CURP, nombre o folio; decirle en qué va y qué sigue; con observaciones, leerle lo que falta y
-     cargar por ella lo corregido, con la marca de lectura */
+/* «Consultar un trámite» (ventanilla.html): busca por CURP, nombre, folio o expediente; dice en qué va y qué sigue, de tú y
+   con lo de «Mis trámites»; sin cuentas asistidas, avisos por teléfono ni carga por el personal. Y que las piezas del
+   registro asistido ya no están. */
+async function consultaTramite(navegador) {
+  const t = (m) => `[consultar un trámite] ${m}`;
+  const revisaAxe = revisaAxe26(t);
+  const conObsP = datos.solicitante.find((p) => p.estado === 'activa' && datos.solicitud.some((s) => s.solicitante_id === p.id && s.estado === 'con_observaciones'));
+  const sObs = datos.solicitud.find((s) => s.solicitante_id === conObsP.id && s.estado === 'con_observaciones');
+  const conCitaP = datos.solicitante.find((p) => datos.solicitud.some((s) => s.solicitante_id === p.id && s.estado === 'validada_en_linea' && citaSencilla(s)));
+  const migrada = datos.solicitante.find((p) => p.estado === 'sin_activar');
+  comprueba(Boolean(conObsP && sObs && conCitaP && migrada) && !datos.solicitante.some((p) => 'registro_asistido_en' in p || 'activada_en' in p)
+    && !('aviso_telefono' in datos) && !datos.solicitud.some((s) => 'capturada_por' in s) && datos.solicitante.every((p) => p.correo),
+    t('los ficticios ya no traen cuentas asistidas, avisos por teléfono ni solicitudes capturadas por el personal; toda cuenta tiene correo'));
   for (const [ancho, alto, donde] of [[390, 844, 'teléfono'], [1280, 900, 'computadora']]) {
-    await bloque(`ventanilla en ${donde}`, async () => {
-      const { c, page, errores } = await nuevoEn(navegador, ancho, alto);
+    const { c, page, errores } = await contexto26(navegador, ancho, alto);
+    try {
+      // Las piezas del registro asistido ya no existen
+      const r = await page.goto(BASE + 'asistido.html');
+      comprueba(r && r.status() === 404, t(`${donde}: asistido.html ya no existe (${r && r.status()})`));
+      errores.length = 0; // el 404 de esa página no es un error de las pantallas
       await page.goto(BASE + 'ventanilla.html');
-      await page.waitForSelector('[data-sesion-personal] .sesion-nombre');
-      for (const [q, que] of [[AMALIA.curp, 'su CURP'], ['amalia supuesto', 'su nombre'], [sAmalia.folio, 'el folio de su solicitud']]) {
+      await page.waitForSelector('[data-sesion-personal] a');
+      comprueba(await page.title() === 'Consultar un trámite · Personal · Acreditaciones de arbolado urbano' && await texto26(page, '#t-ventanilla') === 'Consultar un trámite'
+        && !/asistid|ventanilla/i.test(await texto26(page, 'main')),
+        t(`${donde}: la página se llama «Consultar un trámite» y no dice «asistido» ni «ventanilla»`));
+      comprueba(await page.getAttribute('[data-sesion-personal] a[href="ventanilla.html"]', 'aria-current') === 'page'
+        && await texto26(page, '[data-sesion-personal] a[href="ventanilla.html"]') === 'Consultar un trámite',
+        t(`${donde}: la cabecera del personal lleva a «Consultar un trámite» y la marca como la página actual`));
+      await revisaAxe(page, `${donde}, sin búsqueda`);
+      // Por CURP, por nombre y por folio
+      for (const [que, q] of [['CURP', conObsP.curp], ['nombre', `${conObsP.nombre} ${conObsP.primer_apellido}`], ['folio', sObs.folio]]) {
         await page.fill('#buscar', q);
-        await page.waitForFunction((n) => document.querySelector('[data-resultados]').textContent.includes(n), APD_NOMBRE(AMALIA));
-        bien(t(`${donde}: la ventanilla encuentra a la persona por ${que}`));
+        await page.waitForFunction((n) => [...document.querySelectorAll('[data-resultados] .ficha-titulo')].some((h) => h.textContent.includes(n)), conObsP.nombre);
+        bien(t(`${donde}: encuentra a la persona por ${que}`));
       }
-      await revisaAxe(page, `${donde}, ventanilla con resultados`);
-      await page.click('[data-resultados] button');
+      await page.click('[data-resultados] .ficha .btn');
       await page.waitForSelector('[data-ficha]:not([hidden])');
-      comprueba(await page.evaluate(() => document.activeElement && document.activeElement.id === 't-persona'), t(`${donde}: al abrir su trámite el foco va a su nombre`));
-      const f = await texto(page, '[data-ficha]');
-      comprueba(/Registro asistido · avisos por teléfono/.test(f) && f.includes(tel(AMALIA)) && /Qué decirle:/.test(f) && /A tu solicitud le falta corregir un documento/.test(f)
-        && /Comprobante de domicilio: está a nombre de otra persona/.test(f) && /Lo corregimos aquí contigo/.test(f),
-        t(`${donde}: en qué va y qué sigue, en lenguaje sencillo y de tú, con lo que le falta`));
-      await revisaAxe(page, `${donde}, ventanilla con la ficha`);
-      await sinDesborde(page, t(`${donde}, ventanilla`));
-      if (ancho >= 1024) {
-        // Cargar por ella lo corregido: el modo asistido de la solicitud, con su observación y la marca de lectura
-        await page.click('a:has-text("Leerle lo que falta y cargar lo corregido")');
-        await page.waitForURL(/solicitud\.html\?asistida=.*&folio=/);
-        await page.waitForSelector('#formulario[data-formkit="listo"]');
-        await page.waitForSelector('[data-observaciones]:not([hidden])');
-        comprueba(await tituloPaso(page) === 'Documentos' && /Comprobante de domicilio/.test(await texto(page, '[data-observaciones]')) && await page.isVisible('[data-asistido-banner]'),
-          t('ventanilla: «Leerle lo que falta» abre su solicitud en modo asistido, en sus documentos, con lo que debe corregir'));
-        await page.setInputFiles('[data-campo="doc_poda_nueva_comprobante_domicilio"] [data-archivos] > input[type="file"]', PDF);
-        await page.waitForSelector('[data-campo="doc_poda_nueva_comprobante_domicilio"] .lista-arch li');
-        await sigPaso(page);
-        await marcar(page, 'input[name="lectura_aceptada"]');
-        await page.click('[data-accion="enviar"]');
-        await page.waitForSelector('[data-acuse]:not([hidden])');
-        comprueba(/Recibimos la corrección de tus documentos/.test(await texto(page, '[data-acuse]')) && /te avisamos por teléfono y lo corregimos contigo en la ventanilla/.test(await texto(page, '[data-acuse] .secuencia')),
-          t('ventanilla: lo corregido se reenvía con la marca de lectura; el acuse es el de una corrección, con los avisos por teléfono'));
-        await page.goto(BASE + 'revision.html');
-        await page.waitForSelector('[data-filas] tr');
-        comprueba((await texto(page, '[data-filas]')).includes(sAmalia.folio), t('ventanilla: la solicitud corregida vuelve a «Solicitudes por revisar»'));
-      }
-      comprueba(!errores.length, t(`${donde}, ventanilla: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
-      await c.close();
-    });
+      const f = await texto26(page, '[data-ficha]');
+      comprueba(/Cuenta en línea/.test(f) && /Qué decirle:/.test(f) && /Corrígelos en línea, en «Mis trámites», y vuelve a enviar tu solicitud/.test(f) && f.includes(conObsP.correo),
+        t(`${donde}: la ficha dice qué falta y que se corrige en línea, en «Mis trámites» (de tú), con el correo de la persona`));
+      comprueba(!/teléfono pendiente|avisos? por teléfono|Registro asistido|en el Vivero/i.test(f) && !(await page.$('[data-ficha] a[href*="asistida"], [data-ficha] .ficha-acciones')),
+        t(`${donde}: sin avisos por teléfono, sin «registro asistido» y sin acciones para cargar por la persona`));
+      comprueba(await page.evaluate(() => document.activeElement && document.activeElement.matches('[data-ficha-nombre]')), t(`${donde}: «Ver su trámite» lleva el foco al nombre de la persona`));
+      await revisaAxe(page, `${donde}, con la ficha`);
+      await sinDesborde(page, t(`${donde}, con la ficha`));
+      // Con cita y del registro anterior
+      await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(conCitaP.id)}`);
+      await page.waitForSelector('[data-ficha]:not([hidden])');
+      comprueba(/Tu cita de cotejo es el/.test(await texto26(page, '[data-ficha-tramites]')), t(`${donde}: con su cita, dice cuándo es y qué llevar`));
+      await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(migrada.id)}`);
+      await page.waitForSelector('[data-ficha]:not([hidden])');
+      comprueba(/Registro anterior · sin cuenta en línea/.test(await texto26(page, '[data-ficha-datos]')), t(`${donde}: la persona del registro anterior sin activar se dice así`));
+      // Su entrada en el inicio del personal
+      await page.goto(BASE + 'revision.html');
+      await page.waitForSelector('[data-filas] tr');
+      comprueba(await page.isVisible('#panel-consulta .menu-opcion[href="ventanilla.html"]') || (ancho >= 1024 && await page.isVisible('#pe-consulta')),
+        t(`${donde}: el inicio del personal tiene la entrada «Consultar un trámite»`));
+      comprueba(!/asistid|avisos? por teléfono/i.test(await texto26(page, 'main')), t(`${donde}: el inicio del personal ya no habla del registro asistido ni de avisos por teléfono`));
+      comprueba(!errores.length, t(`${donde}: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
+    } finally { await c.close(); }
   }
-
-  /* 4 · Lo que ve la persona: sin activar no entra ni ve nada en línea; al activar su cuenta en «Crea tu cuenta» (el
-     camino del registro de Kobo: CURP y nombre) ve en «Mis trámites» lo que se capturó por ella */
-  await bloque('activación', async () => {
-    const { c, page, errores } = await nuevoEn(navegador, 390, 844);
-    await page.goto(BASE + 'entrar.html');
-    await page.fill('#curp', BENITO.curp); await page.fill('#contrasena', CONTRASENA);
-    await page.click('[data-accion="enviar"]');
-    await page.waitForSelector('[data-estado-envio]:not([hidden])');
-    comprueba(/Tu cuenta todavía no está activa/.test(await texto(page, '[data-estado-envio]')) && /actívala en «Crea tu cuenta»/.test(await texto(page, '[data-estado-envio]')) && /entrar\.html/.test(page.url()),
-      t('sin activarla, la persona no entra (la cuenta no tiene contraseña) y se le dice cómo activarla'));
-    await page.evaluate((id) => localStorage.setItem('apd.sesion', JSON.stringify({ id })), BENITO.id);
-    await page.goto(BASE + 'tramites.html');
-    await page.waitForURL(/entrar\.html/);
-    bien(t('sin activarla no hay nada que ver en línea: «Mis trámites» manda a «Entrar»'));
-    await page.evaluate(() => localStorage.removeItem('apd.sesion'));
-    await page.goto(BASE + 'cuenta.html');
-    await page.waitForSelector('#formulario[data-formkit="listo"]');
-    await llenaCuenta(page, BENITO);
-    await pulsaEnviar(page);
-    await page.waitForSelector('[data-acuse]:not([hidden])');
-    comprueba(/Tu cuenta ya tiene lo que la Secretaría capturó contigo en el Vivero/.test(await texto(page, '[data-acuse]')), t('al activar su cuenta (CURP, nombre, correo y contraseña) el acuse dice que ya tiene lo capturado en el Vivero'));
-    await page.goto(BASE + 'tramites.html');
-    await page.waitForSelector('[data-solicitudes] .ficha');
-    comprueba((await texto(page, '[data-solicitudes]')).includes(sBenito.folio), t('activada, ve en «Mis trámites» la solicitud que capturó el personal por ella'));
-    await page.goto(BASE + 'revision.html');
-    await page.goto(BASE + `revisar.html?folio=${sBenito.folio}`);
-    await page.waitForSelector('#formulario:not([hidden])');
-    comprueba(await page.isHidden('[data-asistido-etiqueta]'), t('ya activada, «Revisar» no pide avisarle por teléfono (le llegan los avisos de su cuenta)'));
-    comprueba(!errores.length, t(`activación: sin errores en la consola${errores.length ? ': ' + errores.slice(0, 2).join(' | ') : ''}`));
-    await c.close();
-  });
-
-  /* 5 · Sólo para el registro asistido: la solicitud en modo asistido de quien no lo es no se abre */
-  await bloque('persona ajena', async () => {
-    const { c, page } = await nuevoEn(navegador, 1280, 900);
-    const otra = datos.solicitante.find((p) => p.estado === 'activa' && !p.registro_asistido_en);
-    await page.goto(BASE + `solicitud.html?asistida=${encodeURIComponent(otra.id)}`);
-    await page.waitForSelector('[data-sin-opciones]:not([hidden])');
-    comprueba(/No encontramos a esta persona entre las registradas en el Vivero/.test(await texto(page, '[data-sin-opciones]')) && await page.getAttribute('[data-sin-opciones] .btn-primario', 'href') === 'ventanilla.html',
-      t('el modo asistido sólo abre la solicitud de una persona del registro asistido'));
-    await c.close();
-  });
-  /* Con las oportunidades para corregir (ajustes del equipo, 25/10/2026): el aviso S2 dice cuántas le quedan; la solicitud
-     cerrada al agotarlas deja su aviso (S7) y la ventanilla dice qué pasó; en teléfono y en computadora, con axe */
-  await bloque('avisos con las oportunidades para corregir', async () => {
-    for (const [ancho, alto] of [[390, 844], [1280, 900]]) {
-      const { c, page, errores } = await nuevoEn(navegador, ancho, alto);
-      await c.route('**/datos/ficticios.json*', async (r) => {
-        const d = structuredClone(datos);
-        Object.assign(d.solicitud.find((x) => x.id === sBenito.id), { estado: 'concluida_sin_atender', motivo_cierre: 'Se agotaron las oportunidades de corrección',
-          estado_desde: `${d.fecha_corte}T12:00:00-06:00` });
-        await r.fulfill({ contentType: 'application/json', body: JSON.stringify(d) });
-      });
-      // Con #t-avisos-tel, como el enlace de la ventanilla: en escritorio abre la pestaña de los avisos (parte B, 25/10/2026)
-      await page.goto(BASE + 'revision.html#t-avisos-tel');
-      await page.waitForSelector('[data-avisos-lista]:not([hidden]) .ficha');
-      const amalia = ((await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(AMALIA) }).first().textContent()) || '').replace(/\s+/g, ' ');
-      comprueba(/Hay un plazo para corregir\. Te quedan 2 oportunidades para corregir\./.test(amalia), t(`${ancho} px: el aviso de las observaciones (S2) dice cuántas oportunidades le quedan`));
-      const benito = ((await page.locator('[data-avisos-lista] .ficha', { hasText: APD_NOMBRE(BENITO) }).first().textContent()) || '').replace(/\s+/g, ' ');
-      comprueba(/Cerrada: sin más oportunidades de corrección/.test(benito) && benito.includes(`Tu solicitud ${sBenito.folio} se cerró porque, después de tu última oportunidad para corregir`)
-        && /No pagaste nada y puedes iniciar una solicitud nueva en la ventanilla del Vivero/.test(benito),
-        t(`${ancho} px: la solicitud cerrada al agotar las oportunidades deja su aviso por teléfono (S7), de tú y listo para decirlo`));
-      // El aviso del grupo (G1) dice también la duración del curso (ajustes del equipo, 25/10/2026: quinto día)
-      const g1 = await page.evaluate(() => APD.cargar().then((d) => [
-        APD_ASISTIDO.texto(d, { aviso: 'G1', datos: { tipo_acreditacion: 'poda', modalidad: 'nueva', fecha_inicio: '2026-11-02', hora_entrada: '09:00' } }),
-        APD_ASISTIDO.texto(d, { aviso: 'G1', datos: { tipo_acreditacion: 'poda', modalidad: 'renovacion', fecha_inicio: '2026-11-02', hora_entrada: '09:00' } })]));
-      comprueba(/Son 5 días, de lunes a viernes; el día 5 es de repaso de conocimientos y examen final\. Llega a tiempo/.test(g1[0]) && /Es un solo día y ese mismo día presentas el examen\./.test(g1[1]),
-        t(`${ancho} px: el aviso por teléfono del grupo (G1) dice la duración del curso y qué es el último día`));
-      await sinDesborde(page, t(`${ancho} px: avisos por teléfono con las oportunidades`));
-      await revisaAxe(page, `${ancho} px: avisos por teléfono con las oportunidades`);
-      await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(BENITO.id)}`);
-      await page.waitForSelector('[data-ficha]:not([hidden]) [data-ficha-tramites] .ficha');
-      const tram = await texto(page, '[data-ficha-tramites]');
-      comprueba(/Cerrada: sin más oportunidades de corrección/.test(tram) && /después de tu última oportunidad para corregir, tus documentos siguieron con observaciones/.test(tram)
-        && /Capturar una solicitud nueva/.test(tram), t(`${ancho} px: la ventanilla dice que se cerró al agotar las oportunidades y ofrece capturar una nueva`));
-      await page.goto(BASE + `ventanilla.html?persona=${encodeURIComponent(AMALIA.id)}`);
-      await page.waitForSelector('[data-ficha]:not([hidden]) [data-ficha-tramites] .ficha');
-      comprueba(/Te quedan 2 oportunidades para corregir\./.test(await texto(page, '[data-ficha-tramites]')), t(`${ancho} px: la ventanilla dice cuántas oportunidades le quedan para corregir`));
-      await revisaAxe(page, `${ancho} px: ventanilla con las oportunidades`);
-      comprueba(!errores.length, t(`${ancho} px: avisos y ventanilla sin errores en la consola${errores.length ? ': ' + errores.join(' | ') : ''}`));
-      await c.close();
-    }
-  });
-  for (const x of personas) if (x.contexto) await x.contexto.c.close();
-  await camaraNav.close();
+  // La solicitud ya no tiene modo asistido: ni el auxiliar ni la marca de lectura ni la hoja del acuse
+  const sol = readFileSync(join(raiz, 'sitio/solicitud.html'), 'utf8');
+  comprueba(!/data-asistido|name="asistido"|asistida=|registro-asistido\.js|lectura_aceptada|hoja-acuse/.test(sol), t('solicitud.html ya no tiene el modo asistido, la marca de lectura ni el acuse impreso'));
 }
 
 // ── Ajustes del equipo de la Dirección (25/10/2026): carrera que no aparece en el catálogo y duración del curso ──
@@ -8227,8 +8209,7 @@ async function escritorioComun(navegador) {
     ['capacitación', 'capacitacion.html?perfil=capacitacion', '[data-sesion-personal] a', false],
     ['acreditaciones', 'acreditaciones.html', '[data-sesion-personal] a', false],
     ['material del personal', 'material-personal.html', '[data-sesion-personal] a', false],
-    ['ventanilla', 'ventanilla.html', '[data-sesion-personal] a', false],
-    ['registro asistido', 'asistido.html', '[data-sesion-personal] a', false]
+    ['consultar un trámite', 'ventanilla.html', '[data-sesion-personal] a', false]
   ];
   /* Lo fijo es lo que en ese momento está pegado: fixed, o sticky en su lugar de pegado (una pieza sticky que todavía va con
      la página, como la columna de la persona al abrir la cita, es contenido, y para el contenido la página reserva el lugar
@@ -8369,7 +8350,7 @@ async function escritorioA(navegador) {
       const { c, pg, errores } = await nuevo(ancho, alto);
       const malas = [];
       for (const url of ['revision.html', 'revisar.html?folio=' + poda.folio, 'citas.html', 'cotejo.html?folio=' + conCita.folio, 'grupos.html', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}`,
-        'asistencia.html', 'aplicar.html', 'capacitacion.html', 'acreditaciones.html', 'acreditacion.html?numero=PD-2025-K100', 'material-personal.html', 'ventanilla.html', 'asistido.html']) {
+        'asistencia.html', 'aplicar.html', 'capacitacion.html', 'acreditaciones.html', 'acreditacion.html?numero=PD-2025-K100', 'material-personal.html', 'ventanilla.html']) {
         await pg.goto(BASE + url);
         await pg.waitForSelector('[data-sesion-personal] a');
         const m = await pg.evaluate(() => {
@@ -8548,8 +8529,9 @@ async function escritorioA(navegador) {
     await c.close();
   }
 
-  // 6 · «Contacto» de una persona del registro asistido sin correo: sólo el teléfono (decía «null · …», visto por la parte A
-  // al integrar el acomodo de escritorio); con correo, el correo y el teléfono, como siempre. En teléfono y en computadora.
+  // 6 · «Contacto»: el correo y el teléfono. Con el registro asistido (25/10/2026) había cuentas sin correo y decía «null · …»
+  // (visto por la parte A al integrar el acomodo de escritorio); sin registro asistido (26/10/2026) toda cuenta tiene correo.
+  // En teléfono y en computadora.
   const sinCorreo = enviadas.find((s) => { const p = datos.solicitante.find((x) => x.id === s.solicitante_id); return p && !p.correo && p.telefono; });
   const conCorreo = poda;
   for (const [ancho, alto] of [[390, 844], [1440, 900]]) {
@@ -8562,8 +8544,7 @@ async function escritorioA(navegador) {
       return pg.evaluate(() => { const par = [...document.querySelectorAll('.datos-par')].find((x) => x.querySelector('dt').textContent.trim() === 'Contacto'); return par ? par.querySelector('.datos-valor, dd').textContent.trim() : null; });
     };
     const ps = (s) => datos.solicitante.find((x) => x.id === s.solicitante_id);
-    const a = sinCorreo ? await contacto(sinCorreo) : null;
-    comprueba(Boolean(sinCorreo) && a === ps(sinCorreo).telefono, t(`registro asistido sin correo: «Contacto» dice sólo el teléfono («${a}»${sinCorreo ? `, ${sinCorreo.folio}` : ', no hay solicitud por revisar sin correo en los datos'})`));
+    comprueba(!sinCorreo, t(`sin registro asistido, ninguna solicitud por revisar es de una persona sin correo${sinCorreo ? ` (${sinCorreo.folio})` : ''}`));
     const b = await contacto(conCorreo);
     comprueba(b === `${ps(conCorreo).correo} · ${ps(conCorreo).telefono}` && !errores.length, t(`con correo: «Contacto» sigue diciendo el correo y el teléfono («${b}»)${errores.length ? ' · errores: ' + errores.slice(0, 2).join(' | ') : ''}`));
     await c.close();
@@ -8944,8 +8925,12 @@ try {
   if (toca('asistencia5')) await parte('asistencia hasta el día 5', () => asistenciaDia5(navegador));
   // Ajustes del equipo, 25/10/2026: grupo propio sólo de gobierno, perfil Capacitación y dos oportunidades para corregir
   if (toca('ajustes25')) await parte('ajustes del equipo 25/10', () => ajustes25(navegador));
-  // Registro asistido (decisión de Liber del 25/10/2026): personas que no saben leer ni escribir
-  if (toca('asistido')) await parte('registro asistido', () => registroAsistido(navegador));
+  // Decisiones de Liber del 26/10/2026: sin registro asistido («Consultar un trámite»), letreros de ayuda, perfil
+  // «Directivo» y la cita de cotejo dentro de 20 días hábiles
+  if (toca('consulta')) await parte('consultar un trámite', () => consultaTramite(navegador));
+  if (toca('ayuda')) await parte('letreros de ayuda', () => letrerosAyuda(navegador));
+  if (toca('directivo')) await parte('perfil directivo', () => perfilDirectivo(navegador));
+  if (toca('cita20')) await parte('cita en 20 días hábiles', () => citaVeinteDias(navegador));
   // Acomodo de escritorio, lo común de las tres partes (integración del 25/10/2026): el botón «Menú de pruebas» y lo fijo
   if (toca('escritorio')) await parte('escritorio, lo común', () => escritorioComun(navegador));
   // Acomodo de escritorio, parte A (decisión de Liber del 25/10/2026): cabecera compacta, Revisar y Cita de cotejo

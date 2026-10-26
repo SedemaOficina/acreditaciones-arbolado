@@ -22,22 +22,20 @@ await import(pathToFileURL(join(raiz, 'sitio/app/codigo-examen.js')).href);
 // Formatos propios «carrera» y «numero-acreditacion» (auditoría «intentar romperlo» 2026-10-18, F1 10 y 12)
 await import(pathToFileURL(join(raiz, 'sitio/app/formatos-propios.js')).href);
 await import(pathToFileURL(join(raiz, 'sitio/app/perfil-academico.js')).href);
-// Cruzada propia «curp-mayoria-edad» (registro asistido, decisión 2026-10-25): la mayoría de edad con la fecha de la CURP
-await import(pathToFileURL(join(raiz, 'sitio/app/cruzadas-propias.js')).href);
 // Textos de usted de las pantallas del personal (desde la 1.3.2 todos viven en «mensajes», P95): el servidor los recibe
 // igual, con validaPayload(…, { mensajes })
 await import(pathToFileURL(join(raiz, 'sitio/app/mensajes-usted.js')).href);
 const PERSONAL = new Set(['revisar', 'cotejo', 'examen-suspender', 'grupo-crear', 'grupo-confirmar', 'grupo-baja', 'grupo-cancelar', 'material',
-  'acreditacion-cancelar', 'reposicion-acta', 'reposicion-entrega', 'asistido']);
+  'acreditacion-cancelar', 'reposicion-acta', 'reposicion-entrega']);
 let ultimo = null;
 const cfgEstandar = globalThis.FORMKIT_VALIDACIONES;
-const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS }, cruzadas: { ...cfgEstandar.cruzadas, ...globalThis.APD_CRUZADAS } };
+const config = { ...cfgEstandar, formatos: { ...cfgEstandar.formatos, ...globalThis.APD_FORMATOS } };
 
 const salida = join(raiz, 'db/esquemas-formularios');
 mkdirSync(salida, { recursive: true });
 const esquema = {};
-// La reposición de la credencial (persona; P140, sesión de trabajo del 23/10/2026) y el registro asistido (personal, 25/10/2026)
-for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir', 'reposicion', 'asistido']) {
+// La reposición de la credencial (persona; P140, sesión de trabajo del 23/10/2026)
+for (const f of ['cuenta', 'entrar', 'solicitud', 'verificar', 'revisar', 'cotejo', 'corregir', 'reposicion']) {
   execFileSync('node', [join(estandar, 'herramientas/esquema-desde-html.mjs'), join(raiz, 'sitio', `${f}.html`), join(salida, `${f}.json`)]);
   esquema[f] = JSON.parse(readFileSync(join(salida, `${f}.json`), 'utf8'));
 }
@@ -92,10 +90,9 @@ const pdf = (n) => ({ nombre: `${n}.pdf`, size: 200000, type: 'application/pdf',
 //     de la licenciatura sólo se pregunta en dictaminador (pedir_situacion; sesión de trabajo del 23/10/2026).
 function calcula(form, d, ctx) {
   d = { ...d, ...ctx };
-  // Registro asistido (25/10/2026): «asistido» lo calcula la API con la sesión: el personal que captura por la persona (`_asistido`)
   if (form === 'solicitud') {
     return { tramite: d.tipo ? `${d.tipo}_${d._modalidad || 'nueva'}` : '',
-      pedir_situacion: d.tipo === 'dictaminador' && d.nivel_estudios === 'licenciatura' ? 'si' : 'no', asistido: d._asistido ? 'si' : 'no' };
+      pedir_situacion: d.tipo === 'dictaminador' && d.nivel_estudios === 'licenciatura' ? 'si' : 'no' };
   }
   // Revisión documental del personal (etapa 2): el servidor calcula los auxiliares con la base (perfil de la
   // solicitud y documentos cargados) y con las decisiones recibidas, igual que app/revisar.js. El caso indica
@@ -232,27 +229,9 @@ caso('Solicitud sin la declaración bajo protesta de decir verdad se rechaza', '
 caso('Solicitud con una acreditación que no existe se rechaza', 'solicitud', { ...base, tipo: 'otra' }, ['tipo']);
 caso('Renovación de dictaminador: no vuelve a pedir los años de experiencia', 'solicitud', { ...dictRenov, nivel_estudios: 'tecnica', carrera_tecnica: 'Técnico forestal', anios_experiencia: '' }, true, csf);
 
-// Registro asistido (decisión de Liber del 25/10/2026): la solicitud que captura el personal pide su marca de lectura en
-// lugar de las declaraciones de la persona; la cuenta, la marca del aviso de privacidad, teléfono y CURP de una persona
-// mayor de edad, sin contraseña y con el correo opcional
-const asisSol = { nivel_estudios: 'primaria', tipo: 'poda', _asistido: true, ...docs('poda_nueva', podaNueva) };
-const asisDocs = podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`));
-caso('Registro asistido: la solicitud con la marca de lectura del personal se acepta, sin las declaraciones de la persona', 'solicitud', { ...asisSol, lectura_aceptada: 'si' }, true, asisDocs);
-caso('Registro asistido: la solicitud sin la marca de lectura se rechaza', 'solicitud', asisSol, ['lectura_aceptada'], asisDocs);
-caso('Registro asistido: en la solicitud de la persona se piden sus declaraciones; la marca de lectura no aplica', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva), lectura_aceptada: 'si' }, true, asisDocs);
-caso('Registro asistido: el navegador no decide si la solicitud es asistida (lo calcula la API)', 'solicitud', { ...asisSol, lectura_aceptada: 'si', asistido: 'si' }, ['asistido'], asisDocs);
-const curpElvira = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Elvira', primer: 'Supuesto', segundo: 'Modelo' }, '1980-05-17', 'M', 'NE') + '0');
-const asistida = { aviso_leido: 'si', nombre: 'Elvira', primer_apellido: 'Supuesto', segundo_apellido: 'Modelo', curp: curpElvira, fecha_nacimiento: '17/05/1980', telefono: '0000000091', adscrito: 'no' };
-caso('Registro asistido: cuenta sin correo ni contraseña, con su fotografía, se acepta', 'asistido', asistida, true, foto());
-caso('Registro asistido: con correo también se acepta', 'asistido', { ...asistida, correo: 'elvira@ejemplo.local' }, true, foto());
-caso('Registro asistido: sin la marca del aviso de privacidad se rechaza', 'asistido', { ...asistida, aviso_leido: '' }, ['aviso_leido'], foto());
-caso('Registro asistido: sin teléfono se rechaza', 'asistido', { ...asistida, telefono: '' }, ['telefono'], foto());
-caso('Registro asistido: un correo mal escrito se rechaza', 'asistido', { ...asistida, correo: 'elvira@' }, ['correo'], foto());
-caso('Registro asistido: sin fotografía se rechaza', 'asistido', asistida, ['foto']);
-caso('Registro asistido: una CURP de otro nombre se rechaza', 'asistido', { ...asistida, nombre: 'Pedro' }, ['curp'], foto());
-const curpMenor = conDigito(globalThis.FORMKIT_VALIDACIONES.prefijoCurp({ nombre: 'Elvira', primer: 'Supuesto', segundo: 'Modelo' }, '2012-05-17', 'M', 'NE') + 'A');
-caso('Registro asistido: una persona menor de edad según su CURP se rechaza', 'asistido', { ...asistida, curp: curpMenor, fecha_nacimiento: '17/05/2012' }, ['curp'], foto());
-caso('Registro asistido: la contraseña no es un campo de este formulario', 'asistido', { ...asistida, contrasena: 'una frase larga de prueba' }, ['contrasena'], foto());
+// Sin registro asistido (decisión de Liber del 26/10/2026): la solicitud ya no tiene la marca de lectura del personal ni
+// el auxiliar «asistido»; la persona siempre hace sus declaraciones
+caso('Sin registro asistido: la marca de lectura del personal ya no es un campo de la solicitud', 'solicitud', { ...base, tipo: 'poda', ...docs('poda_nueva', podaNueva), lectura_aceptada: 'si' }, ['lectura_aceptada'], podaNueva.map((r) => pdf(`doc_poda_nueva_${r}`)));
 
 // Adscripción (en la cuenta y en «Mi perfil»): según el tipo, su pregunta; lo que depende de una respuesta se oculta con ella
 const conFoto = foto();

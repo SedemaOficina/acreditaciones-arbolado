@@ -185,27 +185,30 @@
     ['Público', [['index.html', 'Inicio'], ['verificar.html', 'Verificar una acreditación'], ['material.html', 'Material de estudio']]],
     ['Persona solicitante', [['cuenta.html', 'Crear cuenta'], ['entrar.html', 'Entrar'], ['tramites.html', 'Mis trámites'], ['datos.html', 'Mi perfil'], ['solicitud.html', 'Solicitud']]],
     ['Personal', [['revision.html', 'Solicitudes por revisar'], ['citas.html', 'Citas de cotejo'], ['grupos.html', 'Grupos (armar un grupo)'], ['material-personal.html', 'Material de estudio (personal)'],
-      // Registro asistido (decisión 2026-10-25)
-      ['asistido.html', 'Registro asistido'], ['ventanilla.html', 'Ventanilla']]],
+      // Consulta general del trámite de una persona (sin registro asistido, decisión del 26/10/2026)
+      ['ventanilla.html', 'Consultar un trámite']]],
     ['Instructor', [['asistencia.html', 'Asistencia'], ['aplicar.html', 'Aplicar el examen']]],
     // Perfil «capacitación» (ajustes del equipo, 25/10/2026): asigna instructores y confirma los grupos
     ['Instructores y Capacitación', [['capacitacion.html', 'Grupos por asignar y confirmar']]],
+    // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio es «Acreditaciones», con «Cancelar acreditación»
+    ['Directivo', [['acreditaciones.html?perfil=directivo', 'Acreditaciones (cancelar)'], ['ventanilla.html?perfil=directivo', 'Consultar un trámite (directivo)'],
+      ['capacitacion.html?perfil=directivo', 'Grupos (consulta del directivo)']]],
     ['Salón de cómputo', [['examen.html', 'Examen en línea']]]
   ];
   const NOMBRES = Object.assign({ 'revisar.html': 'Revisar una solicitud', 'cotejo.html': 'Atender una cita de cotejo', 'corregir.html': 'Cargar el documento correcto', 'programar.html': 'Programar un curso (lleva a Grupos)', 'grupo.html': 'Un grupo' }, Object.fromEntries(PANTALLAS.flatMap(([, l]) => l)));
-  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'programar.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html', 'capacitacion.html', 'asistido.html', 'ventanilla.html'];
+  const DEL_PERSONAL = ['revision.html', 'revisar.html', 'citas.html', 'cotejo.html', 'grupos.html', 'programar.html', 'grupo.html', 'asistencia.html', 'aplicar.html', 'material-personal.html', 'capacitacion.html', 'ventanilla.html'];
   const LLENA = ['cuenta.html', 'solicitud.html', 'verificar.html'];           // «Llenar con datos ficticios»
   const ENVIO = ['cuenta.html', 'datos.html', 'entrar.html', 'solicitud.html']; // aceptan ?simular= (config-*.js)
   /* Mapa del trámite («Quién hace qué, fase por fase»): siempre a la mano para ubicarse (decisión 2026-10-17) */
   const MAPA = 'https://claude.ai/artifact/UzM6bcm2uZz6rKMwLTKrzc';
   const FASES = ['Cuenta y solicitud', 'Revisión en línea', 'Cotejo y pago', 'Bandeja y grupos', 'Curso y examen', 'Emisión y entrega', 'Vigencia y renovación'];
-  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'asistido.html': 1, 'ventanilla.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'capacitacion.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7,
+  const FASE_PANTALLA = { 'index.html': 1, 'cuenta.html': 1, 'ventanilla.html': 1, 'entrar.html': 1, 'datos.html': 1, 'solicitud.html': 1, 'revision.html': 2, 'revisar.html': 2, 'citas.html': 3, 'cotejo.html': 3, 'corregir.html': 3, 'grupos.html': 4, 'programar.html': 4, 'grupo.html': 4, 'capacitacion.html': 4, 'asistencia.html': 5, 'aplicar.html': 5, 'examen.html': 5, 'material.html': 5, 'material-personal.html': 5, 'verificar.html': 7,
     'acreditaciones.html': 7, 'acreditacion.html': 7, 'reposicion.html': 7 };
   const FASE_ESTADO = { borrador: 1, enviada: 2, con_observaciones: 2, rechazada: 2, cancelada: 1, concluida_sin_atender: 2, validada_en_linea: 3,
     lista_para_curso: 4, inscrita: 4, aprobada: 5, no_acreditada: 5, sin_derecho_examen: 5, acreditada: 6 };
 
   /* Lo guardado en este navegador (auditoría 2026-10-18, C 1.1): lo cuenta archivos-prueba.js, que también lo borra */
-  const VACIO = { cuentas: 0, envios: 0, fotos: 0, documentos: 0, borradores: 0, borradorArchivos: 0, perfiles: 0, material: 0, revisiones: 0, cotejos: 0, grupos: 0, lista: 0, examenes: 0, acreditaciones: 0, avisos: 0, otras: 0 };
+  const VACIO = { cuentas: 0, envios: 0, fotos: 0, documentos: 0, borradores: 0, borradorArchivos: 0, perfiles: 0, material: 0, revisiones: 0, cotejos: 0, grupos: 0, lista: 0, examenes: 0, acreditaciones: 0, otras: 0 };
   function guardado() {
     if (typeof APD_ARCHIVOS_PRUEBA === 'undefined') return Promise.resolve(VACIO);
     return APD_ARCHIVOS_PRUEBA.guardado().catch(() => VACIO);
@@ -222,9 +225,7 @@
     ['lista', '1 pase de lista del examen', 'pases de lista del examen'], ['examenes', '1 código de examen', 'códigos de examen'],
     ['material', '1 cambio en el material de estudio', 'cambios en el material de estudio'],
     // Cancelaciones y reposiciones de credencial (sesión de trabajo del 23/10/2026)
-    ['acreditaciones', '1 cancelación o paso de una reposición', 'cancelaciones o pasos de reposiciones'],
-    // Registro asistido (decisión 2026-10-25): los avisos por teléfono que registró el personal
-    ['avisos', '1 aviso por teléfono registrado', 'avisos por teléfono registrados']
+    ['acreditaciones', '1 cancelación o paso de una reposición', 'cancelaciones o pasos de reposiciones']
   ];
   function textoGuardado(g) {
     const partes = TEXTOS_GUARDADO.filter(([k]) => g[k]).map(([k, uno, varios]) => (g[k] === 1 ? uno : `${g[k]} ${varios}`)
@@ -267,7 +268,7 @@
     const quien = capacitacion ? `${typeof APD_PERSONAL !== 'undefined' ? APD_PERSONAL.CAPACITACION.nombre : 'Patricia Ejemplo Capacitadora'} · personal, Instructores y Capacitación (asigna a la persona instructora y confirma el grupo)`
       : ['aplicar.html', 'asistencia.html'].includes(pagina) ? `Laura Ejemplo Instructora · personal, instructor (${pagina === 'aplicar.html' ? 'aplica el examen' : 'captura la asistencia'})`
       : pagina === 'examen.html' ? 'persona en el salón de cómputo (entra con su código, sin cuenta)'
-      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'programar.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : pagina === 'material-personal.html' ? 'material de estudio' : ['asistido.html', 'ventanilla.html'].includes(pagina) ? 'registro asistido y ventanilla' : 'revisión documental'}`
+      : enPersonal ? `${APD_PERSONAL_NOMBRE()} · personal, ${['citas.html', 'cotejo.html'].includes(pagina) ? 'citas de cotejo' : ['grupos.html', 'programar.html', 'grupo.html'].includes(pagina) ? 'grupos del curso' : pagina === 'material-personal.html' ? 'material de estudio' : pagina === 'ventanilla.html' ? 'consulta de trámites' : 'revisión documental'}`
       : persona ? `${APD.nombreCompleto(persona)} · persona solicitante${persona.de_prueba ? ' (cuenta creada en la prueba)' : ''}` : 'nadie (sin sesión)';
     const ahora = el('div', { class: 'menu-pruebas-ahora' }, [
       el('div', { class: 'menu-pruebas-fila' }, [

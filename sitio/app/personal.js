@@ -229,15 +229,25 @@
     { usuario: 'instructor2.ficticio', nombre: 'Instructor Ejemplo Dos' }
   ];
   const INSTRUCTORA = Object.assign({ perfil: 'Instructor' }, INSTRUCTORES[0]);
-  /* Perfil ficticio de la Dirección (perfil «administración» del acceso del SIA, P27): cancela acreditaciones con los
-     instructores (P120, sesión de trabajo del 23/10/2026). No es una persona real. */
-  const DIRECTORA = { usuario: 'direccion.prueba', nombre: 'Rosa Ejemplo Directora', perfil: 'Administración (Dirección)' };
+  /* Perfil ficticio de la administración del sistema (perfil «administración» del acceso del SIA, P27): ya no cancela
+     acreditaciones (P201, decisión de Liber del 26/10/2026); sigue en perfiles_asignan_instructor. No es una persona real. */
+  const DIRECTORA = { usuario: 'administracion.prueba', nombre: 'Alberto Ejemplo Administrador', perfil: 'Administración del sistema' };
+  /* Perfil ficticio «Directivo» (P201, decisión de Liber del 26/10/2026; perfil «directivo» del acceso del SIA, P27),
+     distinto de la administración del sistema: consulta «Acreditaciones» (lista y ficha) y cancela una acreditación con los
+     instructores (parámetro perfiles_cancelan_acreditacion). No atiende reposiciones. No es una persona real. */
+  const DIRECTIVO = { usuario: 'directivo.ficticio', nombre: 'Rosa Ejemplo Directiva', perfil: 'Directivo' };
   /* Perfil ficticio del área de Instructores y Capacitación (perfil «capacitación» del acceso del SIA, P27; ajustes del
      equipo, 25/10/2026): asigna o cambia la persona instructora de un grupo y lo confirma. No es una persona real. */
   const CAPACITACION = { usuario: 'capacitacion.prueba', nombre: 'Patricia Ejemplo Capacitadora', perfil: 'Capacitación' };
   /* El perfil con que entra una pantalla del personal en la prueba (?perfil=, lo pone el menú de pruebas): revisión y
-     cotejo, instructor, capacitación o administración. En la etapa 3 lo da el acceso del SIA. */
-  const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, capacitacion: CAPACITACION, administracion: DIRECTORA };
+     cotejo, instructor, capacitación, directivo o administración. En la etapa 3 lo da el acceso del SIA. */
+  const PERFILES = { revision_cotejo: REVISORA, instructor: INSTRUCTORA, capacitacion: CAPACITACION, directivo: DIRECTIVO, administracion: DIRECTORA };
+  /* ¿Sólo consulta las reposiciones de credencial (no revisa el acta ni entrega)? El directivo (P201) */
+  const soloConsultaReposicion = (perfil) => perfil === 'directivo';
+  /* ¿Ve los grupos sólo para consultarlos, sin crearlos, cambiarlos, confirmarlos ni inscribir? Los perfiles del parámetro
+     perfiles_grupos_solo_lectura: el directivo (respuesta de Liber del 26/10/2026; la base: grupos_solo_lectura) */
+  const gruposSoloLectura = (datos, perfil) => String((datos && APD.parametroTexto(datos, 'perfiles_grupos_solo_lectura')) || 'directivo')
+    .split(',').map((x) => x.trim()).includes(perfil);
   function perfilDePrueba(predeterminado) {
     const p = new URLSearchParams(global.location.search).get('perfil');
     return PERFILES[p] ? p : predeterminado || 'revision_cotejo';
@@ -248,7 +258,7 @@
   /* La dirección de la ficha de un grupo con el perfil de la prueba (el de revisión y cotejo no la lleva) */
   const fichaGrupo = (folio, perfil) => `grupo.html?folio=${encodeURIComponent(folio)}${perfil && perfil !== 'revision_cotejo' ? `&perfil=${perfil}` : ''}`;
   /* El nombre de una cuenta del personal (las ficticias de la prueba); si no es de ellas, la cuenta tal cual */
-  const nombreDeCuenta = (u) => ([REVISORA, DIRECTORA, CAPACITACION].find((x) => x.usuario === u) || {}).nombre || nombreInstructor(u);
+  const nombreDeCuenta = (u) => ([REVISORA, DIRECTORA, DIRECTIVO, CAPACITACION].find((x) => x.usuario === u) || {}).nombre || nombreInstructor(u);
   const nombreInstructor = (u) => (INSTRUCTORES.find((i) => i.usuario === u) || {}).nombre || u || '';
   /* Cada evento lleva su uid, para retirarlo si la base no lo habría aplicado */
   const uid = () => (global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -571,10 +581,16 @@
     const acreditaciones = enlace(`acreditaciones.html${perfil && perfil !== 'revision_cotejo' ? `?perfil=${perfil}` : ''}`, 'acreditaciones', 'Acreditaciones');
     const enlaces = perfil === 'instructor'
       ? [enlace('asistencia.html', 'asistencia', 'Asistencia'), enlace('aplicar.html', 'aplicar', 'Aplicar el examen'), acreditaciones]
+      // Directivo (P201, 26/10/2026): «Acreditaciones», que es su inicio, y, para consultar (respuesta de Liber del
+      // 26/10/2026), «Consultar un trámite» y los grupos (en la página de Capacitación, sólo de lectura)
+      : perfil === 'directivo' ? [acreditaciones, enlace('ventanilla.html?perfil=directivo', 'ventanilla', 'Consultar un trámite'),
+        enlace('capacitacion.html?perfil=directivo', 'capacitacion', 'Grupos')]
       : perfil === 'capacitacion'
         ? [enlace('capacitacion.html', 'capacitacion', 'Grupos por asignar y confirmar')]
         : [enlace('revision.html', 'revision', 'Revisión documental'), enlace('citas.html', 'citas', 'Citas de cotejo'), enlace('grupos.html', 'grupos', 'Grupos'),
-          enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones];
+          enlace('material-personal.html', 'material', 'Material de estudio'), acreditaciones,
+          // Consulta general del trámite de una persona (sin registro asistido, decisión de Liber del 26/10/2026)
+          enlace('ventanilla.html', 'ventanilla', 'Consultar un trámite')];
     contenedor.replaceChildren(
       // El perfil no es un estado (auditoría 2026-10-18, B11 y D6): va como texto, no como etiqueta de estado
       el('p', { class: 'sesion-nombre' }, [document.createTextNode(quien.nombre), el('span', { class: 'sesion-perfil', texto: `Perfil: ${quien.perfil.toLowerCase()}` })]),
@@ -672,7 +688,7 @@
 
   global.APD_PERSONAL = { filaEspera, bloqueEspera, lunesDe, primerDiaPosible, ultimoDiaPosible, diasInhabiles, ocupado, razonNoInicio, bloquesEspera, lasQueMasEsperan,
     delDia, motivoDiaCita, vigilaDiaCita,
-    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
+    diaDelCurso, gruposDeHoy, proximosDe, pintaMisGrupos, porRevisar, REVISORA, INSTRUCTORA, CAPACITACION, INSTRUCTORES, perfilDePrueba, quienEs, soloConsultaReposicion, gruposSoloLectura, asignaInstructor, fichaGrupo, nombreDeCuenta, nombreInstructor, guardaGrupo, CURSOS, claveCurso, deClave,
     organizacionDe, enEspera, grupo, grupos, siguienteFolioGrupo, UMBRAL, revisiones, guardaRevision, guardaCotejo, SITUACION, citas, cargadosEnPausa, diaDe, horaDe, siguienteExpediente, pintaCargaCitas, espera, vuelta, corregidos, senales, pintaSesion, pintaConcentrado,
     retiraRevision, retiraCotejo, retiraGrupo, guardaGrupoComprobado, razonNoConfirma, sinDerechoPorFaltas, acomodaEscritorio };
 }(window));

@@ -26,13 +26,10 @@ sólo se cuida que funcionen. La asistencia y el examen se cuidan en los dos tam
 | Lo común del examen | `app/examen-servidor.js` · `app/examen-grupo.js` · `app/codigo-examen.js` · `datos/examen-ficticio.js` | Servidor simulado del examen (códigos, orden por persona, respuestas, tiempo, calificación, suspensión, reposición), quién presenta el examen de un grupo, formato propio del código y banco ficticio (10 preguntas de cultura general en los dos exámenes, 60 minutos; el real nunca entra al repositorio, P85) |
 | Material de estudio (personal) | `sitio/material-personal.html` · `app/material-personal.js` | Agregar un PDF (hasta 30 MB), editar datos y apartados, reemplazar el archivo (no borra el anterior), publicar u ocultar (ocultar pide confirmación) |
 | Acreditaciones (sesión de trabajo del 23/10/2026) | `sitio/acreditaciones.html` · `app/acreditaciones.js` | Pantalla nueva: no había otra del personal que mostrara las acreditaciones de una persona. «Reposiciones por atender» (acta por revisar, por entregar y esperando el acta corregida) y el padrón, con búsqueda por número, nombre o CURP; cada fila abre la ficha. En la prueba, el perfil llega en `?perfil=` (`instructor` o `administracion`; sin él, revisión y cotejo) |
-| Una acreditación | `sitio/acreditacion.html?numero=…` · `app/acreditacion.js` | Situación, titular, fechas, origen y entrega. «Cancelar acreditación» (P120) sólo para instructores y la Dirección y sólo si está vigente: diálogo de confirmación con sus consecuencias, motivo (10 caracteres o más) y fundamento, con el foco en el motivo (excepción del 20/10/2026). Cancelada: cuándo, quién, el motivo y el fundamento. Reposición de la credencial (P140): el acta (ver), revisarla (aceptarla u observaciones) y, con el acta aceptada, entregar la credencial repuesta con la factura de la cuota (RFC, nombre y folio fiscal) |
+| Una acreditación | `sitio/acreditacion.html?numero=…` · `app/acreditacion.js` | Situación, titular, fechas, origen y entrega. «Cancelar acreditación» (P120) sólo para instructores y directivos (P201, 26/10/2026; la administración del sistema ya no) y sólo si está vigente: diálogo de confirmación con sus consecuencias, motivo (10 caracteres o más) y fundamento, con el foco en el motivo (excepción del 20/10/2026). Cancelada: cuándo, quién, el motivo y el fundamento. Reposición de la credencial (P140): el acta (ver), revisarla (aceptarla u observaciones) y, con el acta aceptada, entregar la credencial repuesta con la factura de la cuota (RFC, nombre y folio fiscal) |
 | Reposición de tu credencial (persona) | `sitio/reposicion.html?numero=…` · `app/reposicion.js` | Desde «Mis trámites» («Pedir la reposición de tu credencial»), de tú: qué pasó (pérdida o robo) y el acta (PDF, JPG o PNG de hasta 5 MB, módulo `archivos`); con observaciones, carga el acta corregida. «Mis trámites» muestra cada paso y, con el acta aceptada, la cuota y «Dónde es» |
-| Registrar a una persona (registro asistido) | `sitio/asistido.html` · `app/asistido.js` · `app/config-asistido.js` | Decisión de Liber del 25/10/2026, para personas que no saben leer ni escribir; sólo el perfil de revisión y cotejo. En usted. Por pasos (módulo `pasos`): «Antes de empezar» (leerle el aviso de privacidad y marcar que se le leyó), «Sus datos» (nombre, CURP con la revisión de su fecha y de la mayoría de edad, teléfono obligatorio, correo opcional y adscripción, el mismo fragmento de «Crea tu cuenta»), «Su fotografía» (con la cámara de la computadora o un archivo; se agrega sin ubicación) y «Confirmar» con el resumen. Crea la cuenta sin contraseña (con quién y cuándo) y abre la solicitud en modo asistido. Si la CURP ya tiene cuenta, lo dice y lleva a la ventanilla |
-| Solicitud capturada por el personal | `sitio/solicitud.html?asistida=…` · `app/solicitud.js` · `app/config-solicitud.js` | El mismo formulario de la persona, sin duplicarlo: un aviso arriba («Usted captura la solicitud de …»), el borrador por persona y, en lugar de la declaración y el aviso de privacidad, «Le leí lo capturado y está de acuerdo». El envío lleva `capturada_por`. Acuse imprimible (folio, fecha con `APD.fechaLarga`, teléfono de la persona y teléfono de informes) |
-| Ventanilla | `sitio/ventanilla.html?buscar=…` · `app/ventanilla.js` | Buscar por CURP, nombre o folio. Ficha en lenguaje sencillo, listo para decírselo a la persona: en qué va su trámite, qué sigue, sus avisos por teléfono pendientes y, con observaciones, «Leerle lo que falta» (abre su solicitud en modo asistido, en sus documentos, para cargar lo corregido y reenviarlo con la marca de lectura) |
-| Avisos por teléfono | `sitio/revision.html` (sección «Registro asistido») · `app/registro-asistido.js` | Debajo de la bandeja: «Registrar a una persona», «Ventanilla» y la lista de avisos por teléfono pendientes (de la vista `apd.avisos_telefono_pendientes`), cada uno con lo que hay que decirle, de tú, y «Se le avisó» / «No contestó». En «Revisar una solicitud» y «Atender una cita de cotejo», una etiqueta discreta «Registro asistido: avisar por teléfono, …» con su teléfono (sólo mientras no activa su cuenta) |
-| Lo común | `app/personal.js` | Perfiles ficticios «revisión y cotejo», «instructor», «capacitación» (Instructores y Capacitación, 25/10/2026) y «administración (Dirección)», cabecera del personal (con «Acreditaciones»), espera y vuelta de cada solicitud, citas de cotejo y su situación, siguiente expediente, decisiones de la prueba en el navegador |
+| Consultar un trámite (sin registro asistido, decisión de Liber del 26/10/2026) | `sitio/ventanilla.html?buscar=…` · `app/ventanilla.js` | Consulta general del personal de revisión y cotejo (era la ventanilla del registro asistido; el archivo conserva su nombre). Buscar por CURP, nombre, folio o expediente. Ficha en lenguaje sencillo, de tú, para decírsela a la persona: qué cuenta tiene, en qué va cada trámite y qué sigue, con los estados de «Mis trámites». Sólo consulta: no carga nada por la persona ni tiene avisos por teléfono. Entrada en el inicio del personal (pestaña «Consultar un trámite» en escritorio) y en la cabecera desde 1024 px (en teléfono agregaba un renglón a todas las pantallas del personal) |
+| Lo común | `app/personal.js` | Perfiles ficticios «revisión y cotejo», «instructor», «capacitación» (Instructores y Capacitación, 25/10/2026) «directivo» (P201, 26/10/2026: «Acreditaciones» con «Cancelar acreditación», sin la cola de reposiciones) y «administración del sistema», cabecera del personal (con «Acreditaciones»), espera y vuelta de cada solicitud, citas de cotejo y su situación, siguiente expediente, decisiones de la prueba en el navegador |
 
 En el menú de pruebas, «¿Quién?» → «Personal de la Secretaría» abre la pantalla de cada papel; también está en «Ir a otra pantalla».
 
@@ -261,7 +258,7 @@ más chicas.
   versión de prueba, en un renglón cada una.
 - **Franja de contexto fija** (≤ 80 px): «← Solicitudes por revisar» o «← Citas de cotejo», fotografía o iniciales,
   nombre, CURP, adscripción, «Poda y derribo · renovación», folio y vuelta («1.ª revisión», «3.ª revisión (reenviada)») o
-  cita, estado y, si aplica, «Última oportunidad» o «Registro asistido». «Datos de la persona» (plegable del estándar, se
+  cita, estado y, si aplica, «Última oportunidad». «Datos de la persona» (plegable del estándar, se
   abre como lista bajo la franja; Escape o un clic fuera lo cierran) lleva la ficha completa y la nota de la renovación.
 - **Revisar una solicitud**: de 1024 a 1279 px, decisión | visor con la barra de pasos horizontal (sin quedar fija);
   desde 1280 px, pasos en barra vertical (el mismo módulo, con sus estados y `aria-current="step"`) | decisión (504 px) |
@@ -297,7 +294,7 @@ Prueba permanente: `SOLO=escritorio-a node herramientas/probar-sitio.mjs …` (1
   de la persona del cotejo, a lo alto). En teléfono y tableta, donde estaba (a la izquierda sólo en Asistencia, F3 B11).
 - **Lo fijo**: en cada pantalla, a lo más la franja de arriba o la barra de acciones de abajo, y el encabezado de la tabla
   del inicio; sumado, nunca más del 25 % del alto. Las columnas laterales fijas caben en la ventana.
-- **Revisar**: sin correo (registro asistido), «Contacto» dice sólo el teléfono.
+- **Revisar**: «Contacto» dice el correo y el teléfono (sin registro asistido, 26/10/2026, toda cuenta tiene correo).
 
 Prueba permanente: `SOLO=escritorio node herramientas/probar-sitio.mjs …` (19 pantallas del personal a 1024 × 768,
 1366 × 768, 1440 × 900, 1920 × 1080 y 390 × 844, al abrir, a media página y al final).
@@ -350,18 +347,33 @@ IndexedDB; `app/archivos-prueba.js` (`aplicaAcreditaciones`) lo aplica como la b
 
 - Cancelación: causas, audiencia, notificación y si se puede volver a solicitar (P120, Dirección Jurídica). Reposición:
   monto vigente de la cuota y horario para recogerla (P140, Finanzas).
-- Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02); dirección del Vivero Nezahualcóyotl (P68);
+- Cuentas y perfiles del personal en el SIA (P27); plazos de la espera (P02; la cita, 20 días hábiles, P205); dirección del Vivero Nezahualcóyotl (P68);
   motivos frecuentes y quién fija la fecha (P64).
 - Visor de documentos: en la prueba muestra el archivo cargado en el navegador o un PDF ficticio por requisito; en la etapa 3 la API entrega el archivo de cada solicitud.
 - Siguiente pantalla: emisión y entrega el mismo día (P10). Grupos: horarios (P91). Las cuentas reales del perfil
   «capacitación» van con las demás del personal en el SIA (P27). Examen: tablas en la base y API (etapa 3), banco real (P74), regla con la práctica (P83), redondeo (P88) y tiempo adicional (P89).
 - Cotejo: aviso a la Dirección y desbloqueo (P79); tarea nocturna de pausas vencidas (P80); duración y cupo de las citas (P69; el horario, de 9:30 a 14:30 de lunes a viernes, ya está).
-- Registro asistido (25/10/2026): recordatorios por fecha por teléfono (P207), persona del padrón de Kobo que no sabe leer
-  (P208), qué hacer con «No contestó» (P209), avisos de lo que pasa con la persona presente (P210), la declaración de
-  quien no sabe firmar (P211), lo que se vuelve a pedir al activar la cuenta (P212) y la carga en ventanilla de una cita
-  en pausa (P213). El teléfono de informes del acuse es P132.
+- Sin registro asistido (26/10/2026): P207 a P213 ya no aplican; los letreros de ayuda no llevan teléfono hasta P132.
+  Plazos: la bandeja todavía marca la espera en días naturales (P199).
 - Hallazgos del estándar abiertos (siguen en la 1.5.1): P152 (fecha pegada como AAAA-MM-DD), P153 (PDF con contraseña y
   foco al cargar), P154 (total de 25 MB con un solo archivo y redondeo del peso), P155 (`maxlength` antes de limpiar lo
   pegado), P156 (el combo libre ignora `data-formato`), P157 (`botonEnviar` sólo bloquea el primer botón), P158 (rechazo
   del servidor sin errores por campo) y P166 (foto enorme leída antes de revisar su peso). Los resolvió la 1.5.1 (o una
   anterior) y el proyecto quitó sus soluciones provisionales: P126 a P131, P134, P135 y P145 a P148.
+
+## Decisiones del 26/10/2026: sin registro asistido, letreros de ayuda, perfil «Directivo» y cita en 20 días hábiles
+
+- **Letreros de ayuda** (persona, de tú): aviso neutro del estándar, una vez por pantalla y después de la acción
+  principal, en el inicio, «Crea tu cuenta» (primer paso), «Entrar» (junto a «¿Olvidaste tu contraseña?»), la solicitud
+  (paso de documentos, también al corregir), «Cargar el documento correcto» y «Mis trámites». Un solo fragmento,
+  `herramientas/plantillas/ayuda.html`, que pone `construir-sitio.mjs` con la sede, su dirección y el horario de los
+  parámetros. Sin teléfono (P132) y sin «Cómo llegar» (no existe en el sitio). Prueba: `SOLO=ayuda`.
+- **Consultar un trámite** (`ventanilla.html`): arriba, en la tabla. Prueba: `SOLO=consulta`.
+- **Directivo** (P201): su inicio es «Acreditaciones» (`acreditaciones.html?perfil=directivo`), lista y ficha con «Cancelar
+  acreditación»; no ve «Reposiciones por atender» ni revisa actas o entrega. Además (respuesta de Liber del 26/10/2026) usa
+  «Consultar un trámite» (`ventanilla.html?perfil=directivo`) y ve los grupos sólo de lectura: la lista en
+  `capacitacion.html?perfil=directivo` («Grupos por confirmar» y confirmados, cada fila con «Ver») y la ficha del grupo sin
+  formularios ni botones para cambiarlo. Prueba: `SOLO=directivo`.
+- **Cita de cotejo** (P205): en «Revisar» y en la cita nueva de «Cita de cotejo», del siguiente día hábil a 20 días hábiles
+  después (`dias_habiles_cita`), sin sábados ni domingos; la ayuda de la fecha dice el rango. «Mis trámites» dice «Corrige
+  antes del …» (20 días hábiles) y hasta cuándo se revisa (10) (P199). Prueba: `SOLO=cita20`.

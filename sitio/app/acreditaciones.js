@@ -33,6 +33,8 @@
 
   APD.cargar().then((datos) => {
     P.pintaSesion($('[data-sesion-personal]'), 'acreditaciones', perfil);
+    // El directivo (P201, 26/10/2026) no atiende reposiciones: no ve «Reposiciones por atender»
+    if (P.soloConsultaReposicion(perfil)) $('[data-reposiciones]').hidden = true;
     const persona = Object.fromEntries(datos.solicitante.map((p) => [p.id, p]));
     const porId = Object.fromEntries(datos.acreditacion.map((a) => [a.id, a]));
 

@@ -29,13 +29,9 @@ const VISTAS_EXTRA = { telefono360: { viewport: { width: 360, height: 780 }, has
 
 // Estados a recorrer: [nombre, página, sesión (id de solicitante) o null]
 const sol = (estado, f = () => true) => datos.solicitud.find((s) => s.estado === estado && f(s));
-// Las del registro asistido que no han activado su cuenta no entran en línea (decisión 2026-10-25): no son «con sesión»
-const activa = (s) => s && datos.solicitante.find((p) => p.id === s.solicitante_id && p.estado === 'activa' && !(p.registro_asistido_en && !p.activada_en));
-// Registro asistido: una persona con observaciones (se le cargan en la ventanilla) y una en revisión
-const asisSin = (estado) => { const p = datos.solicitante.find((x) => x.registro_asistido_en && !x.activada_en && datos.solicitud.some((s) => s.solicitante_id === x.id && s.estado === estado));
-  return p ? [p, datos.solicitud.find((s) => s.solicitante_id === p.id && s.estado === estado)] : [null, null]; };
-const [asisObs, sAsisObs] = asisSin('con_observaciones');
-const [, sAsisRev] = asisSin('enviada');
+const activa = (s) => s && datos.solicitante.find((p) => p.id === s.solicitante_id && p.estado === 'activa');
+// «Consultar un trámite» (sin registro asistido, decisión del 26/10/2026): la ficha de una persona con observaciones
+const conObsConsulta = datos.solicitud.find((s) => s.estado === 'con_observaciones' && activa(s));
 const conPersona = (estado, f) => { const s = datos.solicitud.find((x) => x.estado === estado && (!f || f(x)) && activa(x)); return s ? [s, s.solicitante_id] : [null, null]; };
 const [borr, pBorr] = conPersona('borrador');
 const [obs, pObs] = conPersona('con_observaciones');
@@ -119,13 +115,17 @@ const ESTADOS = [
   segundaCorreccion && ['revisar-ultima-oportunidad', `revisar.html?folio=${segundaCorreccion.folio}`, null],
   ultimaOportunidad && ['tramites-ultima-oportunidad', 'tramites.html', ultimaOportunidad.solicitante_id],
   sinOportunidades && ['tramites-sin-oportunidades', 'tramites.html', sinOportunidades.solicitante_id],
-  // Registro asistido (decisión de Liber del 25/10/2026): registrar, la ventanilla, la solicitud que se captura por la persona
-  // y la etiqueta de «Revisar»
-  ['registro-asistido', 'asistido.html', null],
+  // «Consultar un trámite» (sin registro asistido, decisión de Liber del 26/10/2026): la búsqueda y la ficha de una persona.
+  // Ya no están «Registrar a una persona», la solicitud capturada por el personal ni la etiqueta de «Revisar»
   ['ventanilla', 'ventanilla.html', null],
-  asisObs && ['ventanilla-ficha', `ventanilla.html?persona=${encodeURIComponent(asisObs.id)}`, null],
-  asisObs && ['solicitud-asistida-corregir', `solicitud.html?asistida=${encodeURIComponent(asisObs.id)}&folio=${sAsisObs.folio}`, null],
-  sAsisRev && ['revisar-asistida', `revisar.html?folio=${sAsisRev.folio}`, null]
+  conObsConsulta && ['ventanilla-ficha', `ventanilla.html?persona=${encodeURIComponent(conObsConsulta.solicitante_id)}`, null],
+  // Perfil «Directivo» (P201, decisión de Liber del 26/10/2026): su inicio («Acreditaciones») y la ficha de una vigente, con
+  // «Cancelar acreditación»
+  ['acreditaciones-directivo', 'acreditaciones.html?perfil=directivo', null],
+  ['acreditacion-directivo', 'acreditacion.html?numero=PD-2025-K100&perfil=directivo', null],
+  // Y lo que consulta (respuesta de Liber del 26/10/2026): sus grupos, sólo de lectura, y la ficha de uno en curso
+  ['grupos-directivo', 'capacitacion.html?perfil=directivo', null],
+  ['grupo-en-curso-directivo', `grupo.html?folio=${datos.grupo.find((g) => g.estado === 'en_curso').folio}&perfil=directivo`, null]
 ].filter(Boolean);
 
 // Por partes (25/10/2026): AUDITAR_PARTE=k/n recorre sólo la parte k de n de los estados (uno de cada n), para que cada

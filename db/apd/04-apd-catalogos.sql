@@ -20,8 +20,12 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Cuándo se recoge la acreditación emitida (el lugar es la sede); se muestra a la persona (decisión 2026-10-14).'),
   ('dias_anticipacion_grupo', '7',
    'Días mínimos entre confirmar un grupo y el primer día del curso, para que la persona se entere y se organice (decisión 2026-10-17, Liber).'),
-  ('meses_adelanto_cita', '6',
-   'Meses hacia adelante en los que se puede asignar una cita de cotejo (auditoría «intentar romperlo» 2026-10-18, F2 M4; valor de prueba a confirmar con la Dirección).'),
+  ('dias_habiles_cita', '20',
+   'Días hábiles (de lunes a viernes) dentro de los que se da la cita de cotejo: al validar la solicitud y al dar una cita nueva, del siguiente día hábil a este número de días hábiles después (P205, decisión de Liber del 26/10/2026, como dicen los lineamientos; P02). Sustituye al límite de 6 meses (meses_adelanto_cita).'),
+  ('dias_habiles_revision', '10',
+   'Días hábiles que tiene la Secretaría para la revisión documental de una solicitud enviada; se le dice a la persona con su fecha (P02, sesión de trabajo del 23/10/2026; P199).'),
+  ('dias_habiles_correccion', '20',
+   'Días hábiles que tiene la persona para atender las observaciones de la revisión; «Mis trámites» le dice hasta cuándo (P02, sesión de trabajo del 23/10/2026; P199). Todavía no hay tarea que cierre sola la solicitud al vencer (P23).'),
   ('inasistencias_cotejo_maximas', '2',
    'Inasistencias a la cita de cotejo con las que la solicitud se cierra como concluida sin atender: a la primera se da una cita nueva, una sola vez (decisión 2026-10-17, Liber).'),
   ('sede', 'Vivero Nezahualcóyotl',
@@ -48,14 +52,14 @@ INSERT INTO apd.parametro (clave, valor, descripcion) VALUES
    'Hora de salida del curso, todos los días; se muestra a la persona con su grupo (P91, sesión de trabajo del 23/10/2026).'),
   ('informes_horario', 'de lunes a viernes, de 9:00 a 15:00',
    'Horario de informes de la Secretaría para aclaraciones del trámite; se muestra a la persona donde se le pide acudir o comunicarse. El teléfono y el correo están pendientes (P132, sesión de trabajo del 23/10/2026).'),
-  ('perfiles_cancelan_acreditacion', 'instructor,administracion',
-   'Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y la Dirección (administración) (P120, sesión de trabajo del 23/10/2026).'),
+  ('perfiles_cancelan_acreditacion', 'instructor,directivo',
+   'Perfiles del personal (acceso del SIA, P27) que pueden cancelar una acreditación vigente, separados por coma: los instructores y los directivos (P120, sesión de trabajo del 23/10/2026). El perfil «directivo» es distinto de la administración del sistema, que ya no cancela (P201, decisión de Liber del 26/10/2026).'),
+  ('perfiles_grupos_solo_lectura', 'directivo',
+   'Perfiles del personal (acceso del SIA, P27) que consultan los grupos sin crearlos, cambiarlos, confirmarlos ni inscribir, separados por coma: el directivo (P201, respuesta de Liber del 26/10/2026).'),
   ('perfiles_asignan_instructor', 'capacitacion,administracion',
    'Perfiles del personal (acceso del SIA, P27) que asignan o cambian la persona instructora de un grupo y lo confirman, separados por coma: el área de Instructores y Capacitación (capacitación) y la Dirección (administración), que ya podía hacerlo todo. Quien arma los grupos (revisión y cotejo) ya no lo hace (ajustes del equipo, 25/10/2026).'),
   ('oportunidades_correccion', '2',
    'Veces que la persona puede corregir las observaciones de la revisión en línea. Si en la revisión de la última corrección siguen las observaciones, la solicitud se cierra («Se agotaron las oportunidades de corrección») y la persona puede iniciar una nueva. Que el cotejo regrese la solicitud con observaciones no cuenta (ajustes del equipo, 25/10/2026).'),
-  ('perfiles_registro_asistido', 'revision_cotejo',
-   'Perfiles del personal (acceso del SIA, P27) que registran a una persona que no sabe leer ni escribir (registro asistido), capturan su solicitud, cargan sus documentos corregidos y registran los avisos por teléfono, separados por coma: el de revisión y cotejo, en el Vivero (decisión 2026-10-25, Liber).'),
   ('minutos_bloqueo', '15',
    'Minutos que dura el bloqueo de la entrada al llegar a intentos_maximos; más intentos no lo alargan (D-07, auditoría 2026-10-19) [pendiente: confirmar con el esquema acceso del SIA].');
 
@@ -232,3 +236,7 @@ UPDATE apd.requisito SET formatos = ARRAY['application/pdf'] WHERE clave IN ('fa
 -- Dónde se obtiene un documento (decisión 2026-10-15, Liber): la CURP se consulta y descarga en gob.mx.
 UPDATE apd.requisito SET enlace = 'https://www.gob.mx/curp/', enlace_texto = 'Consulta y descarga tu CURP en gob.mx'
  WHERE clave = 'curp';
+-- La constancia de situación fiscal se genera en el portal del SAT (decisión de Liber, 25/10/2026): para quien no la tiene.
+UPDATE apd.requisito SET enlace = 'https://www.gob.mx/sat/articulos/genera-tu-constancia-de-situacion-fiscal-csf',
+       enlace_texto = 'Cómo generar tu constancia de situación fiscal en el SAT'
+ WHERE clave = 'constancia_situacion_fiscal';

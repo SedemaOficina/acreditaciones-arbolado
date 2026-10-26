@@ -7,7 +7,8 @@
 //
 // Lo que escribe es generado y no se edita a mano: sitio/formkit/, sitio/datos/ (con examen-ficticio.js, copiado de datos/), sitio/VERSION,
 // sitio/vendor/pdfjs-dist/, sitio/app/version-visible.js, y los bloques entre marcadores de solicitud.html, revisar.html, cotejo.html,
-// corregir.html, cuenta.html, datos.html y asistido.html.
+// corregir.html, cuenta.html y datos.html, y el letrero de ayuda de index.html, cuenta.html, entrar.html, solicitud.html,
+// corregir.html y tramites.html.
 
 import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -332,11 +333,10 @@ for (const [pagina, marcas] of [['cotejo.html', [['cotejo-documentos', cotejoDoc
   writeFileSync(r, h);
 }
 
-// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta», en «Mi perfil» y en el
-//     registro asistido del personal (decisión 2026-10-25: las mismas preguntas, que se le leen a la persona)
+// 5 · Adscripción: un solo fragmento (herramientas/plantillas/adscripcion.html) en «Crea tu cuenta» y en «Mi perfil»
 const fragmento = readFileSync(join(raiz, 'herramientas/plantillas/adscripcion.html'), 'utf8').trimEnd()
   .replace(/^( *)<!-- alcaldias:opciones -->$/m, (_, s) => alcaldias.map((o) => `${s}<option value="${esc(o.clave)}">${esc(o.nombre)}</option>`).join('\n'));
-for (const p of ['cuenta.html', 'datos.html', 'asistido.html']) {
+for (const p of ['cuenta.html', 'datos.html']) {
   const r = join(sitio, p);
   const h = readFileSync(r, 'utf8');
   const ini = h.match(/^( *)<!-- adscripcion:inicio[^>]*-->/m);
@@ -345,6 +345,27 @@ for (const p of ['cuenta.html', 'datos.html', 'asistido.html']) {
   const sangria = ini[1];
   const dentro = fragmento.split('\n').map((l) => (l ? sangria + l : l)).join('\n');
   writeFileSync(r, h.slice(0, ini.index + ini[0].length) + '\n' + dentro + '\n' + sangria + h.slice(fin2));
+}
+
+// 6 · Letreros de ayuda (decisión de Liber del 26/10/2026: sin registro asistido): un solo fragmento
+//     (herramientas/plantillas/ayuda.html) en el inicio, «Crea tu cuenta» (primer paso), «Entrar», la solicitud (paso de
+//     documentos), «Cargar el documento correcto» y «Mis trámites». El título de cada pantalla va en su marcador; la sede, su
+//     dirección (sin lo marcado «[pendiente]») y el horario, de los parámetros de la base.
+const param = (c) => ((datos.parametro.find((x) => x.clave === c) || {}).valor || '').trim();
+const sinPendiente = (x) => x.replace(/\s*\[pendiente[^\]]*\][^.]*\.?/gi, '').trim().replace(/\.$/, '');
+const ayudaDir = sinPendiente(param('sede_direccion'));
+const ayuda = readFileSync(join(raiz, 'herramientas/plantillas/ayuda.html'), 'utf8').trimEnd()
+  .replace('{{sede}}', esc(param('sede'))).replace('{{direccion}}', ayudaDir ? ` (${esc(ayudaDir)})` : '').replace('{{horario}}', esc(param('informes_horario')));
+const AYUDA_EN = ['index.html', 'cuenta.html', 'entrar.html', 'solicitud.html', 'corregir.html', 'tramites.html'];
+for (const p of AYUDA_EN) {
+  const r = join(sitio, p);
+  const h = readFileSync(r, 'utf8');
+  const ini = [...h.matchAll(/^( *)<!-- ayuda:inicio titulo="([^"]+)"[^>]*-->/gm)];
+  const fin2 = h.indexOf('<!-- ayuda:fin -->');
+  if (ini.length !== 1 || fin2 < 0) { console.error(`sitio/${p} necesita un solo par de marcadores de ayuda (ayuda:inicio titulo="…" y ayuda:fin)`); process.exit(1); }
+  const [m, sangria, titulo] = ini[0];
+  const dentro = ayuda.replace('{{titulo}}', titulo).split('\n').map((l) => (l ? sangria + l : l)).join('\n');
+  writeFileSync(r, h.slice(0, ini[0].index + m.length) + '\n' + dentro + '\n' + sangria + h.slice(fin2));
 }
 
 console.log(`sitio/ construido · versión ${version} · estándar ${cambios ? cambios[1] : '?'} · ${alcaldias.length} alcaldías · ${bloques.length} grupos de documentos · ${enLinea.length} documentos en la revisión`);

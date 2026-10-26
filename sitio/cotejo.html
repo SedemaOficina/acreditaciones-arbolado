@@ -66,8 +66,6 @@
       <div class="aviso-texto" data-antecedente-texto></div>
     </div>
     <div data-persona></div>
-    <!-- Registro asistido (decisión de Liber del 25/10/2026): los avisos a esta persona van por teléfono (app/registro-asistido.js) -->
-    <p data-asistido-etiqueta hidden></p>
   </section>
   </div>
   <p class="bajada" data-cargando>Cargando la cita…</p>
@@ -438,7 +436,7 @@
                mínimo (mañana) lo pone la página en data-min. -->
           <div class="campo" data-campo="cita_fecha" data-formato="fecha-dma" data-requerido data-uso="Fijar el día de la cita nueva de cotejo (apd.solicitud.cita_en).">
             <label class="etiqueta" for="cita_fecha">Fecha de la cita nueva</label>
-            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, de lunes a viernes, del <span data-cita-desde></span> al <span data-cita-hasta></span>; las diagonales se ponen solas. También puede elegirla en el calendario.</p>
+            <p class="ayuda" id="ay-cita_fecha">Día, mes y año, de lunes a viernes, dentro de los <span data-cita-dias>20</span> días hábiles siguientes: del <span data-cita-desde></span> al <span data-cita-hasta></span>. Las diagonales se ponen solas. También puede elegirla en el calendario.</p>
             <!-- autocomplete off: la fecha la elige quien atiende. -->
             <!-- Calendario (Liber, 18/10/2026): se escribe día/mes/año o se elige en el calendario del navegador, que llena
                  el campo en dd/mm/aaaa (app/apd.js, «Calendario»). La fecha de nacimiento no lo lleva. -->
@@ -539,7 +537,6 @@
 <script src="formkit/modulos/estado/estado.js?v=1.5.1"></script>
 <script src="formkit/modulos/resultado/resultado.js?v=1.5.1"></script>
 <script src="app/cotejo.js?v=0.71"></script>
-<script src="app/registro-asistido.js?v=0.71"></script>
 <!-- Menú de pruebas: sólo en la versión de prueba; se quita al pasar al SIA. -->
 <script src="app/casos-prueba.js?v=0.71"></script>
 <script src="app/pruebas.js?v=0.71"></script>

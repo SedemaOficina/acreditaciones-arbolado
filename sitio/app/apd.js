@@ -306,16 +306,9 @@
   function personaDeSesion(datos) {
     const s = leeSesion();
     if (!s || !s.id) return null;
-    // Registro asistido (decisión 2026-10-25): mientras la persona no activa su cuenta no hay nada que ver en línea (la
-    // base no abre sesión sin contraseña: apd.sesion_sin_contrasena)
-    return datos.solicitante.find((x) => x.id === s.id && x.estado === 'activa' && !asistidaSinActivar(x)) || null;
+    return datos.solicitante.find((x) => x.id === s.id && x.estado === 'activa') || null;
   }
-  /* ----- Registro asistido (decisión 2026-10-25, Liber): personas que no saben leer ni escribir -----
-     El personal de revisión y cotejo registra la cuenta en el Vivero (registro_asistido_en); queda sin contraseña hasta
-     que la persona la activa (activada_en). Mientras, sus avisos van por teléfono. */
-  const esAsistida = (p) => Boolean(p && p.registro_asistido_en);
-  const asistidaSinActivar = (p) => esAsistida(p) && !p.activada_en;
-  /* Teléfono de 10 dígitos como se dicta: «55 1234 5678» */
+  /* Teléfono de 10 dígitos como se dicta: «55 1234 5678» (la consulta del personal, ventanilla.html) */
   const telefonoTexto = (t) => (/^\d{10}$/.test(String(t || '')) ? `${t.slice(0, 2)} ${t.slice(2, 6)} ${t.slice(6)}` : String(t || ''));
 
   /* ===== Dos pestañas, dos personas a la vez y doble clic (auditoría «intentar romperlo», bloque 2) =====
@@ -1077,11 +1070,28 @@
     global.addEventListener('focus', fn);
     return undefined;
   }
-  /* Los meses de anticipación máxima de una cita de cotejo (parámetro meses_adelanto_cita; F2 M4) */
-  const mesesCita = (datos) => parametro(datos, 'meses_adelanto_cita') || 6;
+  /* Plazos en días hábiles (de lunes a viernes; sin calendario de festivos todavía), como apd.suma_dias_habiles: el día que
+     resulta de sumar n días hábiles a una fecha */
+  function sumaHabiles(iso, n) {
+    let d = String(iso).slice(0, 10);
+    for (let k = 0; k < n;) { d = sumaDias(d, 1); if (esHabil(d)) k += 1; }
+    return d;
+  }
+  /* La cita de cotejo se da dentro de los dias_habiles_cita días hábiles siguientes (P205, decisión de Liber del 26/10/2026;
+     sustituye al límite de 6 meses): del siguiente día hábil después de «desde» (hoy, o el día de la cita perdida) al
+     último del plazo, contado desde hoy. La base: cita_fuera_de_plazo. */
+  function plazoCita(datos, desde) {
+    const dias = parametro(datos, 'dias_habiles_cita') || 20;
+    const h = hoy(datos);
+    return { dias, desde: sumaHabiles(desde && desde > h ? desde : h, 1), hasta: sumaHabiles(h, dias) };
+  }
+  /* El último día para corregir las observaciones: dias_habiles_correccion días hábiles después de recibirlas (P199) */
+  const limiteCorreccion = (datos, s) => sumaHabiles(diaDe(s.estado_desde), parametro(datos, 'dias_habiles_correccion') || 20);
+  /* El último día de la revisión documental: dias_habiles_revision días hábiles después del envío o del reenvío (P199) */
+  const limiteRevision = (datos, s) => sumaHabiles(diaDe(s.estado_desde), parametro(datos, 'dias_habiles_revision') || 10);
 
   global.APD = {
-    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, mesesCita, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
+    fechaPegada, pdfConContrasena, formatoEnCombos, alCambiar, plazoCita, limiteCorreccion, limiteRevision, rechazo, muestraRechazo, sesionCambio, ocupa, escribe,
     textoNoGuardo, noGuardo, caducada,
     CONTRASENA_FICTICIA, ESTADOS, vigencia, TIPOS, MODALIDADES, FINALES,
     cursoLargo, MESES, ultimoDia, nombreGrupo, grupoTitulo,
@@ -1094,6 +1104,6 @@
     perfilesCancelan, perfilesAsignan, REPOSICION_ABIERTA, estadoReposicion, reposicionesDe, reposicionAbierta, porQueNoReponer, cuotaReposicion, moneda,
     el, lineaDatos, estado, estadoSolicitud, nombrePersonal, sigueEn, hhmm, icono, pintaAviso, tituloPasos, datosLista, pintaSesion, pintaCorte, adscripcionPares, adscripcionDe,
     perfilAcademico, SUPERIORES, correoEnUso, CORREO_EN_USO, avisa, materialPublico, tamano,
-    esAsistida, asistidaSinActivar, telefonoTexto
+    telefonoTexto
   };
 }(window));

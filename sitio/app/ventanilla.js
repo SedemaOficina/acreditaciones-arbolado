@@ -1,11 +1,12 @@
-/* ventanilla.js · «Ventanilla» del personal (registro asistido, decisión de Liber del 25/10/2026)
+/* ventanilla.js · «Consultar un trámite» del personal de revisión y cotejo (sin registro asistido, decisión de Liber del
+   26/10/2026)
 
    Busca a una persona por CURP, nombre, folio de solicitud o número de expediente, y muestra en qué va cada trámite y qué
-   sigue, en lenguaje sencillo y de tú, para decírselo de palabra (APD_ASISTIDO.queDecir, con los estados de «Mis
-   trámites»). Para una persona del registro asistido, desde aquí se sigue capturando su solicitud, se le leen sus
-   observaciones y se cargan por ella los documentos corregidos (solicitud.html?asistida=…&folio=…), o se captura una
-   solicitud nueva. ?buscar=… abre con la búsqueda hecha; ?persona=<id>, con la ficha de esa persona.
-   Lee los datos ficticios; en la etapa 3 los da la API del personal. */
+   sigue, en lenguaje sencillo y de tú, para decírselo a la persona cuando pregunta en el Vivero o por otro medio (con los
+   estados de «Mis trámites», APD.ESTADOS). Es sólo una consulta: el personal no carga nada por la persona; ella corrige y
+   envía en línea, con su propia cuenta. Era la ventanilla del registro asistido (25/10/2026), sin las cuentas asistidas,
+   los avisos por teléfono ni la captura por el personal. ?buscar=… abre con la búsqueda hecha; ?persona=<id>, con la
+   ficha de esa persona. Lee los datos ficticios; en la etapa 3 los da la API del personal. */
 (function () {
   'use strict';
   const { el } = APD;
@@ -40,60 +41,86 @@
     lista.hidden = !halladas.length;
     return halladas;
   }
-  /* Qué cuenta tiene: del registro asistido (sin activar o activada), en línea o del registro anterior sin activar */
+  /* Qué cuenta tiene: en línea, bloqueada o del registro anterior sin activar */
   function cuentaDe(p) {
-    if (APD.asistidaSinActivar(p)) return APD.estado('Registro asistido · avisos por teléfono', 'marcha');
-    if (APD.esAsistida(p)) return APD.estado('Registro asistido · ya activó su cuenta', 'ok');
     if (p.estado === 'sin_activar') return APD.estado('Registro anterior · sin cuenta en línea', 'cerrado');
     if (p.estado === 'bloqueada') return APD.estado('Cuenta bloqueada', 'error');
     return APD.estado('Cuenta en línea', 'ok');
   }
-  const enlace = (href, texto, extra) => el('a', { class: 'btn btn-primario', href }, [document.createTextNode(texto), el('span', { class: 'solo-lector', texto: extra })]);
 
-  function tramite(datos, p, s) {
-    const asistida = APD.esAsistida(p) && p.estado === 'activa';
-    const destino = `solicitud.html?asistida=${encodeURIComponent(p.id)}&folio=${encodeURIComponent(s.folio)}`;
-    const accion = !asistida ? null
-      : s.estado === 'con_observaciones' ? enlace(destino, 'Leerle lo que falta y cargar lo corregido', `: solicitud ${s.folio}`)
-        : s.estado === 'borrador' ? enlace(destino, 'Seguir capturando su solicitud', `: ${s.folio}`) : null;
-    const dichos = APD_ASISTIDO.queDecir(datos, s);
+  /* ----- En qué va el trámite y qué sigue, en lenguaje sencillo (de tú, para decírselo a la persona) ----- */
+  const nombreDoc = (datos, k) => ((datos.requisito || []).find((r) => r.clave === k) || {}).nombre || k;
+  /* Cuánto dura el curso y qué es el último día (ajustes del equipo, 25/10/2026: duración y quinto día), como «Mis trámites» */
+  function duracion(datos, s) {
+    const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad);
+    if (!c) return '';
+    return c.dias_duracion > 1 ? ` Son ${c.dias_duracion} días, de lunes a viernes; el día ${c.dias_duracion} es de ${APD.diaFinal(c).toLowerCase()}.`
+      : ' Es un solo día y ese mismo día presentas el examen.';
+  }
+  function plano(x) {
+    if (!x) return [];
+    if (typeof x === 'string') return [x];
+    const o = Array.isArray(x) ? { pasos: x } : x;
+    return [o.texto, ...(o.pasos || [])].filter(Boolean);
+  }
+  function queDecir(datos, s) {
+    const e = APD.ESTADOS[s.estado] || {};
+    const sede = APD.sede(datos).nombre;
+    const obs = (datos.documento || []).filter((x) => x.solicitud_id === s.id && x.vigente && x.estado === 'con_observacion');
+    switch (s.estado) {
+      case 'borrador': return ['Tu solicitud todavía no se envía: termina de cargar tus documentos y envíala desde «Mis trámites».'];
+      case 'enviada': return ['La Secretaría está revisando tus documentos.', 'Si falta algo, te avisamos por correo y lo ves en «Mis trámites»; si todo está completo, te damos una cita de cotejo.'];
+      case 'con_observaciones': return [`A tu solicitud le falta corregir ${obs.length === 1 ? 'un documento' : 'algunos documentos'}:`,
+        ...obs.map((x) => APD.observacionDe(nombreDoc(datos, x.requisito), APD.paraTi(x.observacion))),
+        'Corrígelos en línea, en «Mis trámites», y vuelve a enviar tu solicitud. Hay un plazo para corregir.',
+        // Cuántas oportunidades le quedan, o que es la última (ajustes del equipo, 25/10/2026)
+        ...(() => { const op = APD.oportunidades(datos, s); return op ? [op.detalle ? `${op.texto} ${op.detalle}` : op.texto] : []; })()];
+      case 'concluida_sin_atender':
+        if (APD.cerradaSinOportunidades(s)) return ['Tu solicitud se cerró porque, después de tu última oportunidad para corregir, tus documentos siguieron con observaciones.', 'No pagaste nada y puedes iniciar una solicitud nueva en línea.'];
+        return plano(e.sigue);
+      case 'validada_en_linea': {
+        if (s.cotejo_pausa) return [`Tu cita está en pausa: carga hoy en «Mis trámites» el documento que no coincidió (${(s.cotejo_pausa.docs || []).map((k) => nombreDoc(datos, k)).join(', ')}).`];
+        const c = APD.curso(datos, s.tipo_acreditacion, s.modalidad) || {};
+        const monto = s.pago_monto != null ? s.pago_monto : c.pago_monto;
+        return [`Tu cita de cotejo es el ${APD.fechaLarga(s.cita_en, { hora: true })}, en el ${sede}.`,
+          'Trae los mismos documentos impresos y tu identificación oficial.',
+          monto ? `Paga ${APD.moneda(monto)} con la referencia ${s.pago_referencia} y trae tu comprobante.` : 'Trae el comprobante de tu pago.'];
+      }
+      case 'inscrita': {
+        const i = (datos.inscripcion || []).find((x) => x.solicitud_id === s.id && x.activa);
+        const g = i && datos.grupo.find((x) => x.id === i.grupo_id);
+        if (g && g.fecha_inicio && g.estado !== 'en_integracion') return [`Tu curso empieza el ${APD.fechaLarga(g.fecha_inicio)} a las ${APD.hhmm(g.hora_entrada)}, en el ${sede}.${duracion(datos, s)}`, 'Llega a tiempo todos los días del curso.'];
+        return ['Ya tienes grupo del curso; falta confirmar las fechas. Te avisamos por correo y lo ves en «Mis trámites».'];
+      }
+      case 'lista_para_curso': return ['Tu cotejo terminó. Estás en espera de un grupo del curso: te avisamos las fechas por correo y en «Mis trámites».'];
+      case 'rechazada': return [`Tu solicitud no se aceptó: ${APD.paraTi(s.motivo_cierre)}.`, ...plano(e.sigue).slice(1)];
+      default: return plano(e.sigue);
+    }
+  }
+
+  function tramite(datos, s) {
     return el('article', { class: 'ficha' }, [
       el('div', { class: 'ficha-cabeza' }, [el('h3', { class: 'ficha-titulo', texto: APD.TIPOS[s.tipo_acreditacion] || s.tipo_acreditacion }), APD.estadoSolicitud(s, true)]),
-      APD.lineaDatos([s.folio, APD.MODALIDADES[s.modalidad], s.enviada_en ? `Enviada el ${APD.fechaCorta(s.enviada_en)}` : 'Sin enviar',
-        s.capturada_por ? 'Capturada en el Vivero' : null]),
-      el('div', { class: 'ficha-sigue' }, [el('p', {}, [el('strong', { texto: 'Qué decirle:' })]), ...dichos.map((t) => el('p', { texto: t }))]),
-      accion ? el('div', { class: 'ficha-acciones' }, [accion]) : null
+      APD.lineaDatos([s.folio, APD.MODALIDADES[s.modalidad], s.enviada_en ? `Enviada el ${APD.fechaCorta(s.enviada_en)}` : 'Sin enviar']),
+      el('div', { class: 'ficha-sigue' }, [el('p', {}, [el('strong', { texto: 'Qué decirle:' })]), ...queDecir(datos, s).map((t) => el('p', { texto: t }))])
     ]);
   }
   function ficha(datos, p, enfoca) {
     const caja = $('[data-ficha]');
     $('[data-ficha-nombre]').textContent = APD.nombreCompleto(p);
     $('[data-ficha-datos]').replaceChildren(el('p', {}, [cuentaDe(p)]), APD.datosLista([
-      ['CURP', p.curp], ['Teléfono', APD.telefonoTexto(p.telefono)], ['Correo electrónico', p.correo || 'No tiene'],
-      ['Expediente', p.numero_expediente || ''], ['Registrada en el Vivero', p.registro_asistido_en ? APD.fechaCorta(p.registro_asistido_en, { hora: true }) : '']
+      ['CURP', p.curp], ['Teléfono', APD.telefonoTexto(p.telefono)], ['Correo electrónico', p.correo || ''],
+      ['Expediente', p.numero_expediente || '']
     ]));
-    // Los avisos por teléfono que tiene pendientes: si está en la ventanilla, se le dicen aquí
-    const pend = APD.asistidaSinActivar(p) ? APD_ASISTIDO.pendientes(datos).filter((a) => a.solicitante_id === p.id) : [];
-    $('[data-ficha-avisos]').replaceChildren(...(pend.length ? [el('div', { class: 'aviso aviso-advertencia' }, [APD.icono('alerta'), el('div', { class: 'aviso-texto' }, [
-      el('strong', { class: 'aviso-titulo', texto: pend.length === 1 ? 'Tiene un aviso por teléfono pendiente' : `Tiene ${pend.length} avisos por teléfono pendientes` }),
-      el('p', {}, [document.createTextNode('Si está aquí, dígaselo y regístrelo en la lista de '), el('a', { href: 'revision.html#t-avisos-tel', texto: 'avisos por teléfono pendientes' }), document.createTextNode('.')])])])] : []));
     const sols = APD.solicitudesDe(datos, p);
-    const activas = sols.filter((s) => APD.activa(s));
-    const cajaTramites = $('[data-ficha-tramites]');
-    const hijos = sols.length ? sols.map((s) => tramite(datos, p, s)) : [el('p', { class: 'vacio', texto: 'No tiene solicitudes.' })];
-    // Una persona del registro asistido sin trámite en curso de algún tipo que pueda pedir hoy: capturar una nueva
-    if (APD.esAsistida(p) && p.estado === 'activa') {
-      const op = APD.opciones(datos, p);
-      const puede = ['poda', 'dictaminador'].filter((t) => op[t] && op[t].disponible && !activas.some((s) => s.tipo_acreditacion === t));
-      if (puede.length) hijos.push(el('div', { class: 'acciones acciones-izq' }, [el('a', { class: 'btn btn-secundario', href: `solicitud.html?asistida=${encodeURIComponent(p.id)}` }, [document.createTextNode('Capturar una solicitud nueva'), el('span', { class: 'solo-lector', texto: `: ${APD.nombreCompleto(p)}` })])]));
-    }
-    cajaTramites.replaceChildren(...hijos);
+    $('[data-ficha-tramites]').replaceChildren(...(sols.length ? sols.map((s) => tramite(datos, s)) : [el('p', { class: 'vacio', texto: 'No tiene solicitudes.' })]));
     caja.hidden = false;
     if (enfoca) $('[data-ficha-nombre]').focus();
   }
 
   APD.cargar().then((datos) => {
-    APD_PERSONAL.pintaSesion($('[data-sesion-personal]'), 'ventanilla');
+    // El perfil de la prueba (?perfil=): revisión y cotejo o, para consultar, el directivo (respuesta de Liber del 26/10/2026)
+    APD_PERSONAL.pintaSesion($('[data-sesion-personal]'), 'ventanilla', APD_PERSONAL.perfilDePrueba());
     const u = new URLSearchParams(location.search);
     if (u.get('buscar')) { entrada.value = u.get('buscar'); APD.avisa(entrada); }
     let ultimos = buscar(datos);
