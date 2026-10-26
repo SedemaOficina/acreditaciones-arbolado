@@ -26,7 +26,7 @@ Transiciones admitidas (cualquier otra se rechaza con `transicion_invalida`):
 | → rechazada | Revisión (revisión con resultado `rechazada`) | Sólo dictaminador cuyo perfil no cumple (`rechazo_sin_causa`): carrera clasificada como no afín, o estudios que el comprobante confirma por debajo del lineamiento. Motivo obligatorio (`rechazo_sin_motivo`), que se copia a `motivo_cierre`. Es final: la persona puede iniciar otra solicitud |
 | Clasificar una carrera | Personal (`apd.carrera.grupo`) | Sólo el personal (`clasificacion_sin_permiso`); queda en la bitácora y las solicitudes abiertas con esa carrera recalculan perfil y experiencia mínima |
 | → lista_para_curso | Cotejo | La factura del pago en PDF, cargada por el personal, con RFC, nombre o razón social y folio fiscal capturados, y la fotografía de la cuenta confirmada por el personal (en la cita no se toma otra, decisión 2026-10-17). Abre el expediente de la persona si es su primer cotejo (uno por CURP) y arranca la espera de grupo. Sin factura no hay grupo ni fecha. Además, todos los documentos en línea coincidieron (`documentos_sin_cotejar`) y la cita quedó atendida (`cotejo_sin_cita`). El folio fiscal no se repite en dos solicitudes (`folio_fiscal_repetido`) |
-| Cita de cotejo (`apd.cita`) | Personal | La crea la base al validar o al cambiar la cita (el cambio queda en la bitácora); con una cita abierta no se asigna otra (`cita_abierta`), y sólo el personal la asigna (`cita_de_personal`). Se cierra una vez (`cita_cerrada`): atendida, en pausa (con un documento marcado como no coincidente, `cotejo_sin_documento`; sólo ese día, `pausa_vencida`), con observaciones (la solicitud regresa), sin pago, no se presentó (a la segunda, la solicitud se cierra: `inasistencias_cotejo_maximas`) o no era la persona (la cuenta queda bloqueada; sólo la Secretaría la bloquea o desbloquea, `bloqueo_de_personal`). Si la solicitud se cancela con la cita abierta, la base la cierra como `cancelada`, con el motivo (decisión 8, 2026-10-19); nadie la marca así a mano (`cita_sin_cancelacion`). En pausa la persona sólo carga el documento que no coincidió. `apd.cerrar_pausas_vencidas()` regresa con observaciones las pausas de días anteriores. Lo que pasó en una cita se registra su día, no antes (`cita_futura`), y una cita se asigna hasta `meses_adelanto_cita` meses adelante (`cita_lejana`; auditoría «intentar romperlo», 2026-10-18), de lunes a viernes (`cita_en_fin_de_semana`) y de `cita_hora_desde` a `cita_hora_hasta` (9:30 a 14:30; `cita_fuera_de_horario`; P69, sesión de trabajo del 23/10/2026) |
+| Cita de cotejo (`apd.cita`) | Personal | La crea la base al validar o al cambiar la cita (el cambio queda en la bitácora); con una cita abierta no se asigna otra (`cita_abierta`), y sólo el personal la asigna (`cita_de_personal`). Se cierra una vez (`cita_cerrada`): atendida, en pausa (con un documento marcado como no coincidente, `cotejo_sin_documento`; sólo ese día, `pausa_vencida`), con observaciones (la solicitud regresa), sin pago, no se presentó (a la segunda, la solicitud se cierra: `inasistencias_cotejo_maximas`) o no era la persona (la cuenta queda bloqueada; sólo la Secretaría la bloquea o desbloquea, `bloqueo_de_personal`). Si la solicitud se cancela con la cita abierta, la base la cierra como `cancelada`, con el motivo (decisión 8, 2026-10-19); nadie la marca así a mano (`cita_sin_cancelacion`). En pausa la persona sólo carga el documento que no coincidió. `apd.cerrar_pausas_vencidas()` regresa con observaciones las pausas de días anteriores. Lo que pasó en una cita se registra su día, no antes (`cita_futura`), y una cita se da dentro de los `dias_habiles_cita` días hábiles siguientes (20), al validar o al dar una cita nueva: del siguiente día hábil al último del plazo (`cita_fuera_de_plazo`; P205, decisión de Liber del 26/10/2026, que sustituye al límite de 6 meses, `meses_adelanto_cita`), de lunes a viernes (`cita_en_fin_de_semana`) y de `cita_hora_desde` a `cita_hora_hasta` (9:30 a 14:30; `cita_fuera_de_horario`; P69, sesión de trabajo del 23/10/2026) |
 | → inscrita | Al inscribir en un grupo | Ver «Grupos» |
 | → aprobada / no_acreditada | Al capturar el examen | El resultado sale de la calificación contra el mínimo del curso |
 | → sin_derecho_examen | Al concluir el grupo | Asistencia por debajo del mínimo |
@@ -65,9 +65,10 @@ No se guarda: se calcula con la fecha del día (`apd.estado_acreditacion`, `apd.
 
 ## Cancelación de una acreditación (P120, sesión de trabajo del 23/10/2026)
 
-- La registran los instructores y la Dirección: el backend declara el perfil del personal (`apd.perfil`) y la base sólo
-  admite los del parámetro `perfiles_cancelan_acreditacion` (`instructor,administracion`, P27). La persona solicitante y
-  los demás perfiles reciben `cancelacion_sin_permiso`.
+- La registran los instructores y los directivos: el backend declara el perfil del personal (`apd.perfil`) y la base sólo
+  admite los del parámetro `perfiles_cancelan_acreditacion` (`instructor,directivo`, P27). El perfil `directivo` es distinto
+  de la administración del sistema, que ya no cancela (P201, decisión de Liber del 26/10/2026; en la base no hay una regla
+  que le permita todo a la administración). La persona solicitante y los demás perfiles reciben `cancelacion_sin_permiso`.
 - Sólo de una acreditación vigente ese día (`cancelacion_no_vigente`), con motivo de al menos 10 caracteres
   (`cancelacion_sin_motivo`) y fundamento (`cancelacion_sin_fundamento`; mientras la Dirección Jurídica fija las causas,
   «[Art. __, fracc. __]»). La base pone el día y quién (`cancelada_en`, `cancelada_por`: la cuenta del servicio no los
@@ -228,52 +229,35 @@ queda bien, pero la persona del personal debe recibir «La solicitud cambió: re
 transacción que decide sobre una solicitud con `SELECT 1 FROM apd.solicitud WHERE id = $1 FOR UPDATE`, o reintentándola
 una vez ante `40P01`.
 
-## Registro asistido (decisión de Liber del 25/10/2026)
+## Sin registro asistido (decisión de Liber del 26/10/2026)
 
-Personas que no saben leer ni escribir. El personal de revisión y cotejo (los perfiles del parámetro
-`perfiles_registro_asistido`, hoy `revision_cotejo`; P27) las registra en el Vivero, con ellas presentes. Las reglas están en
-su propio archivo, `db/apd/03b-apd-registro-asistido.sql`, con disparadores que corren después de los de
-`03-apd-reglas.sql` (no cambian sus reglas).
+Quien no sabe leer ni escribir usa el sistema igual que todos, con su propia cuenta, correo y contraseña, y puede pedir
+ayuda (letreros de ayuda en las pantallas de la persona). El registro asistido del 25/10/2026 se quitó completo: la cuenta
+sin contraseña y con correo opcional, las marcas «se le leyó», la captura de la solicitud por el personal
+(`capturada_por`), la activación posterior, los avisos por teléfono (`apd.aviso_telefono`) y el parámetro
+`perfiles_registro_asistido`. Las restricciones de la cuenta volvieron a su forma anterior: sin contraseña sólo una cuenta
+del padrón migrado sin activar (`solicitante_contrasena_ck`), y toda cuenta tiene correo. Como no se usó con datos reales,
+basta con que `instalar.sql` deje la base sin esas piezas (no hay migración).
 
-| Paso | Quién | Qué pide la base |
+## Plazos de P02 (P199 y P205, decisión de Liber del 26/10/2026)
+
+Parámetros editables (su cambio queda en la bitácora, `cambio_parametro`), en días hábiles de lunes a viernes
+(`apd.suma_dias_habiles`; sin calendario de festivos todavía):
+
+| Parámetro | Valor | Uso |
 |---|---|---|
-| Registrar la cuenta (`apd.solicitante` sin contraseña) | Personal de revisión y cotejo (`registro_asistido_sin_permiso`) | La marca «se le leyó el aviso de privacidad y lo aceptó» (`apd.lectura_aceptada = aviso_privacidad`; si no, `sin_lectura`), la cuenta activa (`asistida_no_activa`) y la mayoría de edad con la fecha de la CURP (`menor_de_edad`). Teléfono obligatorio; correo opcional, pero si se da, de nadie más (`correo_registrado`). La base pone quién la registró y cuándo (`registro_asistido_por`, `registro_asistido_en`) y deja la marca en la bitácora (`lectura_aviso_privacidad`, con la cuenta del personal y la hora) |
-| Su fotografía | Personal de revisión y cotejo | Queda pendiente (`origen = registro_asistido`): la confirma el cotejo contra la identificación oficial |
-| Capturar la solicitud | Personal de revisión y cotejo | Sólo de una cuenta del registro asistido; la base guarda quién la capturó (`capturada_por`), que no cambia (`registro_asistido_fijo`) |
-| Enviarla o reenviarla con lo corregido | Personal de revisión y cotejo | La marca «se le leyó lo capturado y lo aceptó» (`lo_capturado`; si no, `sin_lectura`), que queda en la bitácora (`lectura_lo_capturado`). Después, las mismas reglas que cualquier envío |
-| Cargar por ella un documento en línea | Personal de revisión y cotejo | Su perfil; con la cita en pausa (no sigue un envío), también la marca de lectura |
-| Entrar | La persona | Sin contraseña no se abre sesión (`cuenta_sin_contrasena`, en `apd.sesion_solicitante`): la cuenta no entra sola |
-| Activar la cuenta | La persona (`activacion_de_persona`), por el mismo camino que las cuentas del registro de Kobo (la API compara CURP y nombre) | Su correo (`activacion_sin_correo`) y su contraseña; la base pone la hora (`activada_en`) y lo anota (`activacion`). Quién la registró, cuándo y cuándo se activó no cambian (`registro_asistido_fijo`) |
+| `dias_habiles_cita` | 20 | La cita de cotejo, al validar y al dar una cita nueva: del siguiente día hábil al día 20 hábil (`cita_fuera_de_plazo`); el calendario de «Revisar» y de «Cita de cotejo» y su ayuda dicen el rango |
+| `dias_habiles_revision` | 10 | «Mis trámites» dice hasta cuándo se revisa una solicitud enviada |
+| `dias_habiles_correccion` | 20 | «Mis trámites» dice «Corrige antes del …»; todavía no hay tarea que cierre la solicitud al vencer (P23) |
 
-Restricciones de la cuenta (cambiadas lo mínimo; `docs/MODELO-DE-DATOS.md`):
-- `solicitante_contrasena_ck`: sin contraseña sólo una cuenta del padrón migrado sin activar o una del registro asistido que
-  la persona todavía no activa (antes: sólo la del padrón).
-- `solicitante_correo_ck` y `solicitante_correo_obligatorio_ck`: el correo sólo puede faltar en una cuenta del registro
-  asistido sin activar; si existe, tiene el formato de siempre.
-- `solicitante_asistido_ck`: quién y cuándo van juntos; la activación sólo existe en una cuenta del registro asistido.
-- El índice único del correo (`solicitante_correo_uk`) y la regla «un correo, una cuenta» no cambian: varias cuentas sin
-  correo no chocan (en un índice único, los vacíos no se repiten entre sí) y un correo escrito no se repite.
-
-**Avisos por teléfono** (`apd.aviso_telefono`). Mientras la persona no activa su cuenta, cada cambio del trámite que a otra
-persona le llegaría por correo (catálogo de `docs/AVISOS-POR-CORREO.md`, «Registro asistido») deja un aviso pendiente con
-sus datos: lo crea sólo la base (`apd.avisar_por_telefono`, desde sus disparadores; llamarla directo es `aviso_directo` y la
-cuenta del servicio no tiene INSERT). El personal de revisión y cotejo registra una sola vez el resultado, «se le avisó» o
-«no contestó» (`aviso_atendido`, `aviso_sin_resultado`); la base pone quién y cuándo y lo anota en la bitácora
-(`aviso_telefono`). Lo que dice un aviso no cambia (`aviso_inmutable`) y ninguno se borra. La vista
-`apd.avisos_telefono_pendientes` los da con el nombre y el teléfono de la persona. Una cuenta ya activada, o que no es del
-registro asistido, no recibe avisos por teléfono.
-Con las oportunidades para corregir (ajustes del equipo, 25/10/2026), la solicitud que la base cierra porque la revisión de
-la última corrección siguió con observaciones (`enviada → concluida_sin_atender`, «Se agotaron las oportunidades de
-corrección») deja el aviso **S7**, con su motivo: que se cerró, por qué y que puede iniciar una nueva en la ventanilla. El
-aviso S2 dice, además, cuántas oportunidades le quedan o que es la última. (La fila de S7 en la tabla del registro asistido
-de `docs/AVISOS-POR-CORREO.md` está por agregarse.)
+La bandeja de revisión todavía marca la espera en días naturales con los valores de prueba 3 y 10 (P199, abierto).
 
 ## Permisos
 
 Los perfiles del personal (acceso del SIA, P27) los declara el backend en `apd.perfil`: `revision_cotejo`, `instructor`,
-`capacitacion` (área de Instructores y Capacitación, ajustes del equipo del 25/10/2026), `emision`, `consulta` y
-`administracion`. Las reglas reservadas a ciertos perfiles los leen de parámetros editables: cancelar una acreditación
-(`perfiles_cancelan_acreditacion`: instructor y administración) y asignar o cambiar la persona instructora y confirmar un
+`capacitacion` (área de Instructores y Capacitación, ajustes del equipo del 25/10/2026), `emision`, `consulta`,
+`directivo` (P201, 26/10/2026) y `administracion`. Las reglas reservadas a ciertos perfiles los leen de parámetros
+editables: cancelar una acreditación (`perfiles_cancelan_acreditacion`: instructor y directivo) y asignar o cambiar la persona instructora y confirmar un
 grupo (`perfiles_asignan_instructor`: capacitación y administración). Quien no está en la lista recibe
 `cancelacion_sin_permiso`, `instructor_sin_permiso` o `confirmacion_sin_permiso`.
 

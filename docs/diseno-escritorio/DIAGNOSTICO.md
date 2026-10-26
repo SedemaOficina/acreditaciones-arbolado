@@ -1,5 +1,9 @@
 # Diagnóstico de acomodo en escritorio · Sistema de Acreditaciones de Poda y Dictaminación
 
+> **Nota del 26/10/2026.** Este diagnóstico se midió con el registro asistido del 25/10/2026, que se quitó (decisión de
+> Liber del 26/10/2026): «Registrar a una persona», los avisos por teléfono y su indicador ya no existen, y la ventanilla
+> quedó como «Consultar un trámite». Las medidas de esas pantallas se conservan como registro de lo medido entonces.
+
 Versión de prueba medida: **0.70** (rama `main`, sin cambios en el repositorio). Estándar de formularios del SIA: **1.5.1**.
 Fecha de la medición: 25/10/2026. Ventanas: **1440 × 900** y **1920 × 1080**.
 Evidencia: 77 capturas de página completa a 1440 px en `capturas/` (lista al final).
